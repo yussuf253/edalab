@@ -10,6 +10,7 @@ class FoodOrderTrackingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final displayOrderId = orderId.startsWith('#') ? orderId : '#$orderId';
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -35,6 +36,8 @@ class FoodOrderTrackingScreen extends StatelessWidget {
                   Text('Estimated Delivery', style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70)),
                   const SizedBox(height: 4),
                   Text('15-20 minutes', style: AppTextStyles.h2.copyWith(color: AppColors.white)),
+                  const SizedBox(height: 8),
+                  Text(displayOrderId, style: AppTextStyles.labelMedium.copyWith(color: AppColors.white)),
                 ],
               ),
             ),

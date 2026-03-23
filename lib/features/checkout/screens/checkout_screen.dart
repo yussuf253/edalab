@@ -8,7 +8,8 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/providers/providers.dart';
 
 class CheckoutScreen extends StatefulWidget {
-  const CheckoutScreen({super.key});
+  final Map<String, dynamic>? checkoutData;
+  const CheckoutScreen({super.key, this.checkoutData});
   @override
   State<CheckoutScreen> createState() => _CheckoutScreenState();
 }
@@ -16,7 +17,29 @@ class CheckoutScreen extends StatefulWidget {
 class _CheckoutScreenState extends State<CheckoutScreen> {
   int _selectedPayment = 0;
   int _selectedAddress = 0;
+  int _selectedDeliveryOption = 0;
   final TextEditingController _promoController = TextEditingController();
+
+  static const _deliveryOptions = [
+    ('Standard', '3-5 days', 0.0),
+    ('Express', '1-2 days', 9.99),
+    ('Same Day', 'Today', 14.99),
+  ];
+
+  String _moduleLabel(String? moduleType) {
+    switch (moduleType) {
+      case 'food':
+        return 'Food order';
+      case 'shopping':
+        return 'Shopping order';
+      case 'pharmacy':
+        return 'Pharmacy order';
+      case 'grocery':
+        return 'Grocery order';
+      default:
+        return 'Order';
+    }
+  }
 
   @override
   void dispose() {
@@ -30,13 +53,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final authProvider = context.watch<AuthProvider>();
     
     final addresses = authProvider.user?.addresses ?? [];
+    final moduleType = widget.checkoutData?['moduleType'] as String?;
+    final moduleItems = moduleType == null ? cartProvider.items : cartProvider.getModuleItems(moduleType);
+    final moduleName = widget.checkoutData?['moduleName'] as String?;
+    final instructions = widget.checkoutData?['instructions'] as String?;
+    final tip = (widget.checkoutData?['tip'] as num?)?.toDouble() ?? 0.0;
     
-    // Getting raw total
-    final total = cartProvider.total;
-    final subtotal = cartProvider.subtotal;
-    final tax = cartProvider.tax;
-    final shipping = cartProvider.deliveryFee;
-    final discount = cartProvider.discount;
+    final subtotal = moduleType == null ? cartProvider.subtotal : cartProvider.getModuleSubtotal(moduleType);
+    final shipping = moduleItems.isEmpty ? 0.0 : _deliveryOptions[_selectedDeliveryOption].$3;
+    final tax = subtotal * 0.08;
+    final discount = cartProvider.discount > subtotal ? subtotal : cartProvider.discount;
+    final total = subtotal + shipping + tax + tip - discount;
+    final paymentName = ['Credit Card', 'Apple Pay', 'PayPal', 'Cash on Delivery'][_selectedPayment];
+    final selectedAddress = addresses.isNotEmpty ? addresses[_selectedAddress] : null;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -49,6 +78,101 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (moduleType != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: AppSpacing.shadowSm,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: moduleType == 'food' ? AppColors.foodBg : AppColors.primarySurface,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        moduleType == 'food' ? Icons.restaurant_rounded : Icons.shopping_bag_rounded,
+                        color: moduleType == 'food' ? AppColors.food : AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(moduleName ?? 'Order review', style: AppTextStyles.labelLarge),
+                          Text(
+                            '${moduleItems.fold<int>(0, (sum, item) => sum + item.quantity)} items prepared for checkout',
+                            style: AppTextStyles.caption,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (moduleItems.isNotEmpty) ...[
+              Text('Items in this order', style: AppTextStyles.h4),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: AppSpacing.shadowSm,
+                ),
+                child: Column(
+                  children: moduleItems
+                      .map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  color: moduleType == 'food'
+                                      ? AppColors.foodBg
+                                      : AppColors.primarySurface,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  moduleType == 'food'
+                                      ? Icons.restaurant_menu_rounded
+                                      : Icons.shopping_bag_rounded,
+                                  color: moduleType == 'food' ? AppColors.food : AppColors.primary,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(item.name, style: AppTextStyles.labelMedium),
+                                    Text(
+                                      'Qty ${item.quantity}${item.brand != null ? ' • ${item.brand}' : ''}',
+                                      style: AppTextStyles.caption,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Text('\$${item.total.toStringAsFixed(2)}', style: AppTextStyles.labelMedium),
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
             // Delivery Address
             Text('Delivery Address', style: AppTextStyles.h4),
             const SizedBox(height: 12),
@@ -119,15 +243,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             Text('Delivery Option', style: AppTextStyles.h4),
             const SizedBox(height: 12),
             Row(
-              children: [
-                _TimeChip('Standard', '3-5 days', 'Free', shipping <= 0.0),
-                const SizedBox(width: 10),
-                _TimeChip('Express', '1-2 days', '\$9.99', shipping == 9.99),
-                const SizedBox(width: 10),
-                _TimeChip('Same Day', 'Today', '\$14.99', shipping > 14.0),
-              ],
+              children: _deliveryOptions.asMap().entries.map((entry) {
+                final i = entry.key;
+                final option = entry.value;
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: i == _deliveryOptions.length - 1 ? 0 : 10),
+                    child: GestureDetector(
+                      onTap: () => setState(() => _selectedDeliveryOption = i),
+                      child: _TimeChip(
+                        option.$1,
+                        option.$2,
+                        option.$3 == 0 ? 'Free' : '\$${option.$3.toStringAsFixed(2)}',
+                        _selectedDeliveryOption == i,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
             const SizedBox(height: 20),
+
+            if (instructions != null && instructions.isNotEmpty) ...[
+              Text('Order Notes', style: AppTextStyles.h4),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: AppSpacing.shadowSm,
+                ),
+                child: Text(instructions, style: AppTextStyles.bodyMedium),
+              ),
+              const SizedBox(height: 20),
+            ],
 
             // Payment method
             Text('Payment Method', style: AppTextStyles.h4),
@@ -249,10 +400,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
               child: Column(
                 children: [
-                  _SumRow('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
-                  _SumRow('Delivery', shipping <= 0.0 ? 'Free' : '\$${shipping.toStringAsFixed(2)}'),
-                  _SumRow('Tax', '\$${tax.toStringAsFixed(2)}'),
-                  if (discount > 0)
+                _SumRow('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
+                _SumRow('Delivery', shipping <= 0.0 ? 'Free' : '\$${shipping.toStringAsFixed(2)}'),
+                _SumRow('Tax', '\$${tax.toStringAsFixed(2)}'),
+                if (tip > 0) _SumRow('Tip', '\$${tip.toStringAsFixed(2)}'),
+                if (discount > 0)
                     _SumRow('Discount', '-\$${discount.toStringAsFixed(2)}', isDiscount: true),
                   if (cartProvider.promoCode != null)
                     _SumRow('Promo (${cartProvider.promoCode})', 'Applied', isDiscount: true),
@@ -264,19 +416,43 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 24),
 
             AppButton(
-              text: 'Place Order • \$${total.toStringAsFixed(2)}',
+              text: 'Place ${_moduleLabel(moduleType)} • \$${total.toStringAsFixed(2)}',
               onPressed: () async {
-                if (cartProvider.items.isEmpty) {
+                if (moduleItems.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Your cart is empty!'), backgroundColor: AppColors.error),
                   );
+                } else if (addresses.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please add a delivery address first.'), backgroundColor: AppColors.error),
+                  );
                 } else {
-                  final modules = cartProvider.items.map((e) => e.moduleType).toSet();
+                  final modules = moduleType == null
+                      ? cartProvider.items.map((e) => e.moduleType).toSet()
+                      : {moduleType};
+                  final orderId = 'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
                   for (var m in modules) {
                     await cartProvider.submitModuleOrder(authProvider.user?.id ?? 'guest', m);
                   }
-                  cartProvider.clearCart();
-                  context.push('/checkout/success');
+                  if (moduleType == null) {
+                    cartProvider.clearCart();
+                  }
+                  if (!context.mounted) return;
+                  context.push(
+                    '/checkout/success',
+                    extra: {
+                      'orderId': orderId,
+                      'amount': total,
+                      'payment': paymentName,
+                      'delivery': _deliveryOptions[_selectedDeliveryOption].$1,
+                      'moduleName': moduleName ?? _moduleLabel(moduleType),
+                      'address': selectedAddress == null
+                          ? null
+                          : '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
+                      'itemCount': moduleItems.fold<int>(0, (sum, item) => sum + item.quantity),
+                      'trackingRoute': moduleType == 'food' ? '/food/tracking/$orderId' : '/orders',
+                    },
+                  );
                 }
               },
             ),

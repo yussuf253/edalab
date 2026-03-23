@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
@@ -9,13 +10,18 @@ import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
 
 class RideBookingScreen extends StatefulWidget {
-  const RideBookingScreen({super.key});
+  final Map<String, dynamic>? bookingData;
+  const RideBookingScreen({super.key, this.bookingData});
   @override
   State<RideBookingScreen> createState() => _RideBookingScreenState();
 }
 
 class _RideBookingScreenState extends State<RideBookingScreen> {
   int _selectedVehicle = 0;
+  int _selectedPayment = 0;
+  bool _isSubmitting = false;
+
+  final _payments = const ['•••• 4242', 'Apple Pay', 'Cash'];
 
   IconData _getIconForCategory(String name) {
     if (name.toLowerCase().contains('xl')) return Icons.airport_shuttle_rounded;
@@ -26,7 +32,10 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
   @override
   Widget build(BuildContext context) {
     final categories = RideModel.sampleCategories;
-    final routeDistance = 5.2;
+    final pickup = widget.bookingData?['pickup'] as String? ?? '123 Main Street';
+    final destinationTitle = widget.bookingData?['destinationTitle'] as String? ?? 'City Mall';
+    final destination = widget.bookingData?['destination'] as String? ?? 'City Mall, Downtown';
+    final routeDistance = (widget.bookingData?['distance'] as num?)?.toDouble() ?? 5.2;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -75,13 +84,13 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                     children: [
                       Container(width: 10, height: 10, decoration: const BoxDecoration(color: AppColors.success, shape: BoxShape.circle)),
                       const SizedBox(width: 8),
-                      Text('123 Main Street', style: AppTextStyles.bodySmall),
+                      Expanded(child: Text(pickup, style: AppTextStyles.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis)),
                       const SizedBox(width: 12),
                       const Icon(Icons.arrow_forward_rounded, size: 16, color: AppColors.mediumGrey),
                       const SizedBox(width: 12),
                       Container(width: 10, height: 10, decoration: const BoxDecoration(color: AppColors.accent, shape: BoxShape.circle)),
                       const SizedBox(width: 8),
-                      Text('City Mall', style: AppTextStyles.bodySmall),
+                      Expanded(child: Text(destinationTitle, style: AppTextStyles.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis)),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -90,7 +99,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                   Expanded(
                     child: ListView.separated(
                       itemCount: categories.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 8),
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
                         final cat = categories[index];
                         final estPrice = cat.basePrice + (cat.pricePerMile * routeDistance);
@@ -140,9 +149,12 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                       children: [
                         const Icon(Icons.credit_card_rounded, color: AppColors.primary),
                         const SizedBox(width: 10),
-                        Text('•••• 4242', style: AppTextStyles.labelMedium),
+                        Text(_payments[_selectedPayment], style: AppTextStyles.labelMedium),
                         const Spacer(),
-                        Text('Change', style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary)),
+                        GestureDetector(
+                          onTap: _selectPayment,
+                          child: Text('Change', style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary)),
+                        ),
                       ],
                     ),
                   ),
@@ -151,31 +163,42 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                     child: AppButton(
                       text: 'Confirm Ride • \$${(categories[_selectedVehicle].basePrice + categories[_selectedVehicle].pricePerMile * routeDistance).toStringAsFixed(2)}',
                       color: AppColors.ride,
+                      isLoading: _isSubmitting,
                       onPressed: () async {
+                        if (_isSubmitting) return;
                         final estPrice = categories[_selectedVehicle].basePrice + categories[_selectedVehicle].pricePerMile * routeDistance;
                         final auth = context.read<AuthProvider>();
-                        try {
-                          await ApiClient.post('/orders', {
-                            'userId': auth.user?.id ?? 'guest',
-                            'moduleType': 'RIDE',
-                            'subtotal': estPrice,
-                            'tax': estPrice * 0.08,
-                            'deliveryFee': 0,
-                            'total': estPrice * 1.08,
-                            'items': [{'vehicle': categories[_selectedVehicle].name, 'distance': routeDistance}],
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Ride confirmed! Driver is on the way 🚗'),
-                              backgroundColor: AppColors.success,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
-                          );
-                          context.go('/ride/tracking/r1');
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: \$e')));
-                        }
+                        final rideId = 'ride_${DateTime.now().millisecondsSinceEpoch}';
+                        setState(() => _isSubmitting = true);
+                        if (!context.mounted) return;
+                        unawaited(_persistRideOrder(
+                          userId: auth.user?.id ?? 'guest',
+                          vehicle: categories[_selectedVehicle].name,
+                          routeDistance: routeDistance,
+                          pickup: pickup,
+                          destination: destination,
+                          estPrice: estPrice,
+                        ));
+                        setState(() => _isSubmitting = false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Ride confirmed! Driver is on the way 🚗'),
+                            backgroundColor: AppColors.success,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        );
+                        context.go(
+                          '/ride/tracking/$rideId',
+                          extra: {
+                            'pickup': pickup,
+                            'destination': destination,
+                            'eta': categories[_selectedVehicle].timeToArrive,
+                            'vehicle': categories[_selectedVehicle].name,
+                            'distance': routeDistance,
+                            'payment': _payments[_selectedPayment],
+                          },
+                        );
                       },
                     ),
                   ),
@@ -187,5 +210,74 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _selectPayment() async {
+    final selected = await showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Payment Method', style: AppTextStyles.h3),
+                const SizedBox(height: 16),
+                ..._payments.asMap().entries.map(
+                  (entry) => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(entry.value, style: AppTextStyles.labelMedium),
+                    trailing: _selectedPayment == entry.key
+                        ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
+                        : null,
+                    onTap: () => Navigator.of(context).pop(entry.key),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selected != null) {
+      setState(() => _selectedPayment = selected);
+    }
+  }
+
+  Future<void> _persistRideOrder({
+    required String userId,
+    required String vehicle,
+    required double routeDistance,
+    required String pickup,
+    required String destination,
+    required double estPrice,
+  }) async {
+    try {
+      await ApiClient.post('/orders', {
+        'userId': userId,
+        'moduleType': 'RIDE',
+        'subtotal': estPrice,
+        'tax': estPrice * 0.08,
+        'deliveryFee': 0,
+        'total': estPrice * 1.08,
+        'items': [
+          {
+            'vehicle': vehicle,
+            'distance': routeDistance,
+            'pickup': pickup,
+            'destination': destination,
+          }
+        ],
+      }).timeout(const Duration(seconds: 4));
+    } catch (_) {
+      // Ride UX should not depend on background order persistence.
+    }
   }
 }

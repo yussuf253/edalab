@@ -196,12 +196,15 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
     ),
     GoRoute(
       path: '/ride/book',
-      builder: (context, state) => const RideBookingScreen(),
+      builder: (context, state) => RideBookingScreen(
+        bookingData: state.extra as Map<String, dynamic>?,
+      ),
     ),
     GoRoute(
       path: '/ride/tracking/:id',
       builder: (context, state) => RideTrackingScreen(
         rideId: state.pathParameters['id']!,
+        rideData: state.extra as Map<String, dynamic>?,
       ),
     ),
 
@@ -256,11 +259,19 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
     // Checkout
     GoRoute(
       path: '/checkout',
-      builder: (context, state) => const CheckoutScreen(),
+      builder: (context, state) => CheckoutScreen(
+        checkoutData: state.extra is Map<String, dynamic>
+            ? state.extra as Map<String, dynamic>
+            : null,
+      ),
     ),
     GoRoute(
       path: '/checkout/success',
-      builder: (context, state) => const OrderSuccessScreen(),
+      builder: (context, state) => OrderSuccessScreen(
+        orderData: state.extra is Map<String, dynamic>
+            ? state.extra as Map<String, dynamic>
+            : null,
+      ),
     ),
 
     // Rewards

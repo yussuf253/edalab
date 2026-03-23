@@ -5,10 +5,21 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
-  const OrderSuccessScreen({super.key});
+  final Map<String, dynamic>? orderData;
+  const OrderSuccessScreen({super.key, this.orderData});
 
   @override
   Widget build(BuildContext context) {
+    final rawOrderId = orderData?['orderId'] as String? ?? 'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+    final orderId = rawOrderId.startsWith('#') ? rawOrderId : '#$rawOrderId';
+    final amount = (orderData?['amount'] as num?)?.toDouble() ?? 87.19;
+    final payment = orderData?['payment'] as String? ?? 'Credit Card';
+    final delivery = orderData?['delivery'] as String? ?? 'Standard';
+    final moduleName = orderData?['moduleName'] as String? ?? 'Order';
+    final itemCount = orderData?['itemCount'] as int? ?? 0;
+    final address = orderData?['address'] as String?;
+    final trackingRoute = orderData?['trackingRoute'] as String? ?? '/orders';
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -45,7 +56,7 @@ class OrderSuccessScreen extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  'Your order has been placed successfully. You will receive a confirmation email shortly.',
+                  'Your $moduleName is confirmed and already moving through the next step. We will keep you updated along the way.',
                   style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey, height: 1.5),
                   textAlign: TextAlign.center,
                 ),
@@ -60,17 +71,20 @@ class OrderSuccessScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    _InfoRow('Order ID', '#ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}'),
-                    _InfoRow('Amount', '\$87.19'),
-                    _InfoRow('Payment', 'Credit Card •••• 4242'),
-                    _InfoRow('Delivery', 'Standard (3-5 days)'),
+                    _InfoRow('Order ID', orderId),
+                    _InfoRow('Module', moduleName),
+                    _InfoRow('Items', itemCount > 0 ? '$itemCount item${itemCount == 1 ? '' : 's'}' : 'Ready'),
+                    _InfoRow('Amount', '\$${amount.toStringAsFixed(2)}'),
+                    _InfoRow('Payment', payment),
+                    _InfoRow('Delivery', delivery),
+                    if (address != null && address.isNotEmpty) _InfoRow('Address', address),
                   ],
                 ),
               ),
               const Spacer(),
               AppButton(
                 text: 'Track Order',
-                onPressed: () => context.go('/orders'),
+                onPressed: () => context.go(trackingRoute),
               ),
               const SizedBox(height: 12),
               TextButton(

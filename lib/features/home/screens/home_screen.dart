@@ -257,7 +257,7 @@ class _PromoBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 170,
+      height: 138,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [Color(0xFF6C63FF), Color(0xFF9D97FF)],
@@ -280,8 +280,8 @@ class _PromoBanner extends StatelessWidget {
             right: -20,
             top: -20,
             child: Container(
-              width: 120,
-              height: 120,
+              width: 96,
+              height: 96,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white.withValues(alpha: 0.1),
@@ -292,8 +292,8 @@ class _PromoBanner extends StatelessWidget {
             right: 30,
             bottom: -30,
             child: Container(
-              width: 80,
-              height: 80,
+              width: 60,
+              height: 60,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.white.withValues(alpha: 0.1),
@@ -302,57 +302,63 @@ class _PromoBanner extends StatelessWidget {
           ),
           // Content
           Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+            padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+            child: Row(
               children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          'LIMITED OFFER',
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: AppColors.white,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Get 30% Off',
+                        style: AppTextStyles.h3.copyWith(
+                          color: AppColors.white,
+                          fontSize: 24,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'On your first order from any service',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: Colors.white.withValues(alpha: 0.85),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '🎉 LIMITED OFFER',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.white,
-                      letterSpacing: 1,
+                    'Order Now',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: AppColors.primary,
                     ),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Text(
-                  'Get 30% Off',
-                  style: AppTextStyles.h2.copyWith(
-                    color: AppColors.white,
-                    fontSize: 28,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'On your first order from any service',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: Colors.white.withValues(alpha: 0.85),
-                  ),
-                ),
               ],
-            ),
-          ),
-          // CTA
-          Positioned(
-            right: 20,
-            bottom: 20,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                'Order Now',
-                style: AppTextStyles.labelMedium.copyWith(color: AppColors.primary),
-              ),
             ),
           ),
         ],
@@ -448,7 +454,7 @@ class _SpecialOffers extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: offers.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        separatorBuilder: (_, _) => const SizedBox(width: 14),
         itemBuilder: (context, index) {
           final offer = offers[index];
           return Container(
@@ -540,7 +546,7 @@ class _PopularRestaurants extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: restaurants.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        separatorBuilder: (_, _) => const SizedBox(width: 14),
         itemBuilder: (context, index) {
           final r = restaurants[index];
           return GestureDetector(
@@ -650,7 +656,7 @@ class _TopDoctors extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: doctors.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        separatorBuilder: (_, _) => const SizedBox(width: 14),
         itemBuilder: (context, index) {
           final d = doctors[index];
           return GestureDetector(
@@ -735,7 +741,7 @@ class _TrendingProducts extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: products.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        separatorBuilder: (_, _) => const SizedBox(width: 14),
         itemBuilder: (context, index) {
           final p = products[index];
           return GestureDetector(

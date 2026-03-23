@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/models/models.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
@@ -18,6 +20,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   List<dynamic> _allOrders = [];
   bool _isLoading = true;
   String? _error;
+  bool _usingSampleData = false;
 
   @override
   void initState() {
@@ -30,8 +33,10 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     final userId = context.read<AuthProvider>().user?.id;
     if (userId == null) {
       setState(() {
+        _allOrders = _sampleOrders();
         _isLoading = false;
-        _error = "Please login first.";
+        _usingSampleData = true;
+        _error = null;
       });
       return;
     }
@@ -41,13 +46,40 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
       setState(() {
         _allOrders = data;
         _isLoading = false;
+        _usingSampleData = false;
       });
     } catch (e) {
       setState(() {
-        _error = e.toString();
+        _allOrders = _sampleOrders();
         _isLoading = false;
+        _usingSampleData = true;
+        _error = null;
       });
     }
+  }
+
+  List<Map<String, dynamic>> _sampleOrders() {
+    return OrderModel.sampleOrders.map((order) {
+      final status = order.status.toUpperCase() == 'ACTIVE'
+          ? 'DISPATCHED'
+          : order.status.toUpperCase() == 'COMPLETED'
+              ? 'COMPLETED'
+              : 'CANCELLED';
+      return {
+        'id': order.id,
+        'moduleType': order.moduleType.toUpperCase(),
+        'status': status,
+        'total': order.total,
+        'createdAt': order.createdAt.toIso8601String(),
+        'items': order.items
+            .map((item) => {
+                  'name': item.name,
+                  'quantity': item.quantity,
+                })
+            .toList(),
+        'moduleName': order.moduleName,
+      };
+    }).toList();
   }
 
   @override
@@ -96,12 +128,40 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          _OrderList(orders: activeOrders),
-          _OrderList(orders: completedOrders),
-          _OrderList(orders: cancelledOrders),
+          if (_usingSampleData)
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.warningLight,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.info_outline_rounded, color: AppColors.warning),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Showing demo orders so you can keep reviewing the app flow while backend work is paused.',
+                      style: AppTextStyles.bodySmall.copyWith(color: AppColors.dark),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _OrderList(orders: activeOrders),
+                _OrderList(orders: completedOrders),
+                _OrderList(orders: cancelledOrders),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -145,7 +205,7 @@ class _OrderList extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(20),
       itemCount: orders.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final o = orders[index];
         final module = o['moduleType'].toString().toUpperCase();
@@ -177,31 +237,66 @@ class _OrderList extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: AppSpacing.shadowSm,
           ),
-          child: Row(
+          child: Column(
             children: [
-              Container(
-                width: 50, height: 50,
-                decoration: BoxDecoration(color: _getColor(module).withValues(alpha: 0.12), borderRadius: BorderRadius.circular(14)),
-                child: Icon(_getIcon(module), color: _getColor(module), size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(displayItem, style: AppTextStyles.labelLarge),
-                    const SizedBox(height: 2),
-                    Text(module, style: AppTextStyles.caption),
-                    const SizedBox(height: 6),
-                    Row(
+              Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: _getColor(module).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(_getIcon(module), color: _getColor(module), size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        StatusBadge(text: st, color: statusColor),
-                        const Spacer(),
-                        Text('\$${(o['total'] ?? 0).toStringAsFixed(2)}', style: AppTextStyles.priceSmall),
+                        Text(displayItem, style: AppTextStyles.labelLarge),
+                        const SizedBox(height: 2),
+                        Text(o['moduleName']?.toString() ?? module, style: AppTextStyles.caption),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            StatusBadge(text: st, color: statusColor),
+                            const Spacer(),
+                            Text('\$${(o['total'] ?? 0).toStringAsFixed(2)}', style: AppTextStyles.priceSmall),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Text(
+                    'Order ${o['id']}',
+                    style: AppTextStyles.caption,
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () {
+                      if (module == 'FOOD' && st != 'COMPLETED' && st != 'CANCELLED') {
+                        context.push('/food/tracking/${o['id']}');
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Detailed tracking will appear here next.')),
+                        );
+                      }
+                    },
+                    child: Text(
+                      module == 'FOOD' && st != 'COMPLETED' && st != 'CANCELLED'
+                          ? 'Track'
+                          : 'Details',
+                      style: AppTextStyles.labelMedium.copyWith(color: AppColors.primary),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
