@@ -1,0 +1,301 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../features/auth/screens/login_screen.dart';
+import '../../features/auth/screens/register_screen.dart';
+import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/home/screens/home_screen.dart';
+import '../../features/shell/app_shell.dart';
+import '../../features/explore/screens/explore_screen.dart';
+import '../../features/orders/screens/orders_screen.dart';
+import '../../features/profile/screens/profile_screen.dart';
+import '../../features/shopping/screens/shopping_screen.dart';
+import '../../features/shopping/screens/product_detail_screen.dart';
+import '../../features/shopping/screens/cart_screen.dart';
+import '../../features/shopping/screens/wishlist_screen.dart';
+import '../../features/shopping/screens/shopping_category_screen.dart';
+import '../../features/food/screens/food_screen.dart';
+import '../../features/food/screens/restaurant_detail_screen.dart';
+import '../../features/food/screens/food_cart_screen.dart';
+import '../../features/food/screens/food_order_tracking_screen.dart';
+import '../../features/doctor/screens/doctor_screen.dart';
+import '../../features/doctor/screens/doctor_detail_screen.dart';
+import '../../features/doctor/screens/book_appointment_screen.dart';
+import '../../features/doctor/screens/my_appointments_screen.dart';
+import '../../features/hotel/screens/hotel_screen.dart';
+import '../../features/hotel/screens/hotel_detail_screen.dart';
+import '../../features/hotel/screens/hotel_booking_screen.dart';
+import '../../features/ride/screens/ride_screen.dart';
+import '../../features/ride/screens/ride_booking_screen.dart';
+import '../../features/ride/screens/ride_tracking_screen.dart';
+import '../../features/pharmacy/screens/pharmacy_screen.dart';
+import '../../features/pharmacy/screens/medicine_detail_screen.dart';
+import '../../features/pharmacy/screens/pharmacy_cart_screen.dart';
+import '../../features/grocery/screens/grocery_screen.dart';
+import '../../features/grocery/screens/grocery_category_screen.dart';
+import '../../features/grocery/screens/grocery_cart_screen.dart';
+import '../../features/laundry/screens/laundry_screen.dart';
+import '../../features/laundry/screens/laundry_order_screen.dart';
+import '../../features/laundry/screens/laundry_tracking_screen.dart';
+import '../../features/checkout/screens/checkout_screen.dart';
+import '../../features/checkout/screens/order_success_screen.dart';
+import '../../features/rewards/screens/coupons_screen.dart';
+import '../../features/profile/screens/edit_profile_screen.dart';
+import '../../features/profile/screens/addresses_screen.dart';
+import '../../features/profile/screens/payment_methods_screen.dart';
+import '../../features/profile/screens/settings_screen.dart';
+import '../../features/profile/screens/help_center_screen.dart';
+import '../../features/notifications/screens/notifications_screen.dart';
+import '../../features/search/screens/search_screen.dart';
+
+final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
+
+GoRouter createAppRouter({required bool hasSeenOnboarding}) {
+  return GoRouter(
+    navigatorKey: _rootNavigatorKey,
+    initialLocation: hasSeenOnboarding ? '/' : '/onboarding',
+    routes: [
+    // Onboarding
+    GoRoute(
+      path: '/onboarding',
+      builder: (context, state) => const OnboardingScreen(),
+    ),
+
+    // Auth
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/register',
+      builder: (context, state) => const RegisterScreen(),
+    ),
+
+    // Main App Shell with Bottom Navigation
+    ShellRoute(
+      navigatorKey: _shellNavigatorKey,
+      builder: (context, state, child) => AppShell(child: child),
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const HomeScreen(),
+        ),
+        GoRoute(
+          path: '/explore',
+          builder: (context, state) => const ExploreScreen(),
+        ),
+        GoRoute(
+          path: '/orders',
+          builder: (context, state) => const OrdersScreen(),
+        ),
+        GoRoute(
+          path: '/profile',
+          builder: (context, state) => const ProfileScreen(),
+        ),
+      ],
+    ),
+
+    // Search
+    GoRoute(
+      path: '/search',
+      builder: (context, state) => const SearchScreen(),
+    ),
+
+    // Shopping
+    GoRoute(
+      path: '/shopping',
+      builder: (context, state) => const ShoppingScreen(),
+    ),
+    GoRoute(
+      path: '/shopping/product/:id',
+      builder: (context, state) => ProductDetailScreen(
+        productId: state.pathParameters['id']!,
+      ),
+    ),
+    GoRoute(
+      path: '/shopping/category/:id',
+      builder: (context, state) => ShoppingCategoryScreen(
+        categoryId: state.pathParameters['id']!,
+      ),
+    ),
+    GoRoute(
+      path: '/shopping/cart',
+      builder: (context, state) => const CartScreen(),
+    ),
+    GoRoute(
+      path: '/shopping/wishlist',
+      builder: (context, state) => const WishlistScreen(),
+    ),
+
+    // Food
+    GoRoute(
+      path: '/food',
+      builder: (context, state) => const FoodScreen(),
+    ),
+    GoRoute(
+      path: '/food/restaurant/:id',
+      builder: (context, state) => RestaurantDetailScreen(
+        restaurantId: state.pathParameters['id']!,
+      ),
+    ),
+    GoRoute(
+      path: '/food/cart',
+      builder: (context, state) => const FoodCartScreen(),
+    ),
+    GoRoute(
+      path: '/food/tracking/:id',
+      builder: (context, state) => FoodOrderTrackingScreen(
+        orderId: state.pathParameters['id']!,
+      ),
+    ),
+
+    // Doctor
+    GoRoute(
+      path: '/doctor',
+      builder: (context, state) => const DoctorScreen(),
+    ),
+    GoRoute(
+      path: '/doctor/detail/:id',
+      builder: (context, state) => DoctorDetailScreen(
+        doctorId: state.pathParameters['id']!,
+      ),
+    ),
+    GoRoute(
+      path: '/doctor/book/:id',
+      builder: (context, state) => BookAppointmentScreen(
+        doctorId: state.pathParameters['id']!,
+      ),
+    ),
+    GoRoute(
+      path: '/doctor/appointments',
+      builder: (context, state) => const MyAppointmentsScreen(),
+    ),
+
+    // Hotel
+    GoRoute(
+      path: '/hotel',
+      builder: (context, state) => const HotelScreen(),
+    ),
+    GoRoute(
+      path: '/hotel/detail/:id',
+      builder: (context, state) => HotelDetailScreen(
+        hotelId: state.pathParameters['id']!,
+      ),
+    ),
+    GoRoute(
+      path: '/hotel/book/:id',
+      builder: (context, state) => HotelBookingScreen(
+        hotelId: state.pathParameters['id']!,
+      ),
+    ),
+
+    // Ride
+    GoRoute(
+      path: '/ride',
+      builder: (context, state) => const RideScreen(),
+    ),
+    GoRoute(
+      path: '/ride/book',
+      builder: (context, state) => const RideBookingScreen(),
+    ),
+    GoRoute(
+      path: '/ride/tracking/:id',
+      builder: (context, state) => RideTrackingScreen(
+        rideId: state.pathParameters['id']!,
+      ),
+    ),
+
+    // Pharmacy
+    GoRoute(
+      path: '/pharmacy',
+      builder: (context, state) => const PharmacyScreen(),
+    ),
+    GoRoute(
+      path: '/pharmacy/medicine/:id',
+      builder: (context, state) => MedicineDetailScreen(
+        medicineId: state.pathParameters['id']!,
+      ),
+    ),
+    GoRoute(
+      path: '/pharmacy/cart',
+      builder: (context, state) => const PharmacyCartScreen(),
+    ),
+
+    // Grocery
+    GoRoute(
+      path: '/grocery',
+      builder: (context, state) => const GroceryScreen(),
+    ),
+    GoRoute(
+      path: '/grocery/category/:id',
+      builder: (context, state) => GroceryCategoryScreen(
+        categoryId: state.pathParameters['id']!,
+      ),
+    ),
+    GoRoute(
+      path: '/grocery/cart',
+      builder: (context, state) => const GroceryCartScreen(),
+    ),
+
+    // Laundry
+    GoRoute(
+      path: '/laundry',
+      builder: (context, state) => const LaundryScreen(),
+    ),
+    GoRoute(
+      path: '/laundry/order',
+      builder: (context, state) => const LaundryOrderScreen(),
+    ),
+    GoRoute(
+      path: '/laundry/tracking/:id',
+      builder: (context, state) => LaundryTrackingScreen(
+        orderId: state.pathParameters['id']!,
+      ),
+    ),
+
+    // Checkout
+    GoRoute(
+      path: '/checkout',
+      builder: (context, state) => const CheckoutScreen(),
+    ),
+    GoRoute(
+      path: '/checkout/success',
+      builder: (context, state) => const OrderSuccessScreen(),
+    ),
+
+    // Rewards
+    GoRoute(
+      path: '/rewards',
+      builder: (context, state) => const CouponsScreen(),
+    ),
+
+    // Profile Sub-screens
+    GoRoute(
+      path: '/profile/edit',
+      builder: (context, state) => const EditProfileScreen(),
+    ),
+    GoRoute(
+      path: '/profile/addresses',
+      builder: (context, state) => const AddressesScreen(),
+    ),
+    GoRoute(
+      path: '/profile/payment-methods',
+      builder: (context, state) => const PaymentMethodsScreen(),
+    ),
+    GoRoute(
+      path: '/profile/settings',
+      builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/profile/help',
+      builder: (context, state) => const HelpCenterScreen(),
+    ),
+
+    // Notifications
+    GoRoute(
+      path: '/notifications',
+      builder: (context, state) => const NotificationsScreen(),
+    ),
+    ],
+  );
+}

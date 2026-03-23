@@ -1,0 +1,292 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text_styles.dart';
+import '../../../core/constants/app_spacing.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/providers/providers.dart';
+
+class FoodCartScreen extends StatefulWidget {
+  const FoodCartScreen({super.key});
+
+  @override
+  State<FoodCartScreen> createState() => _FoodCartScreenState();
+}
+
+class _FoodCartScreenState extends State<FoodCartScreen> {
+  double _tip = 2.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final cartProvider = context.watch<CartProvider>();
+    final items = cartProvider.getModuleItems('food');
+    final subtotal = cartProvider.getModuleSubtotal('food');
+    
+    // Sample static fees
+    final deliveryFee = items.isEmpty ? 0.0 : 2.99;
+    final serviceFee = items.isEmpty ? 0.0 : 1.50;
+    final tipAmount = items.isEmpty ? 0.0 : _tip;
+    final total = subtotal + deliveryFee + serviceFee + tipAmount;
+
+    final String vendorName = items.isNotEmpty && items.first.brand != null 
+        ? items.first.brand! 
+        : 'Restaurant';
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('Food Cart'),
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), onPressed: () => context.pop()),
+        actions: [
+          if (items.isNotEmpty)
+            TextButton(
+              onPressed: () => cartProvider.clearModuleCart('food'),
+              child: Text('Clear', style: AppTextStyles.labelMedium.copyWith(color: AppColors.error)),
+            ),
+        ],
+      ),
+      body: items.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.fastfood_outlined, size: 80, color: AppColors.lightGrey),
+                  const SizedBox(height: 16),
+                  Text('Your food cart is empty', style: AppTextStyles.h3.copyWith(color: AppColors.grey)),
+                  const SizedBox(height: 16),
+                  AppButton(
+                    text: 'Browse Restaurants',
+                    width: 200,
+                    color: AppColors.food,
+                    onPressed: () => context.pop(),
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              children: [
+                // Restaurant name
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44, height: 44,
+                        decoration: BoxDecoration(
+                          color: AppColors.foodBg,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.restaurant_rounded, color: AppColors.food, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(vendorName, style: AppTextStyles.labelLarge),
+                            Text('Estimated: 15-25 min delivery', style: AppTextStyles.caption),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Items
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    children: [
+                      ...items.map((item) => _CartRow(
+                            name: item.name,
+                            qty: item.quantity,
+                            price: item.price,
+                            onIncrement: () => cartProvider.updateQuantity(item.id, item.quantity + 1),
+                            onDecrement: () => cartProvider.updateQuantity(item.id, item.quantity - 1),
+                          )),
+                      const SizedBox(height: 16),
+                      // Add instructions
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.note_alt_outlined, color: AppColors.primary, size: 20),
+                            const SizedBox(width: 10),
+                            Text('Add cooking instructions', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.primary)),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Tip
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Delivery Tip', style: AppTextStyles.labelLarge),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [0.0, 1.0, 2.0, 5.0].map((t) {
+                                final isSelected = t == _tip;
+                                final label = t == 0.0 ? 'None' : '\$${t.toInt()}';
+                                return Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => setState(() => _tip = t),
+                                    child: Container(
+                                      margin: const EdgeInsets.only(right: 8),
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: isSelected ? AppColors.food : AppColors.extraLightGrey,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          label,
+                                          style: AppTextStyles.labelSmall.copyWith(
+                                            color: isSelected ? AppColors.white : AppColors.dark,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Summary
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, -5))],
+                  ),
+                  child: SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _SummLine('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
+                        _SummLine('Delivery', '\$${deliveryFee.toStringAsFixed(2)}'),
+                        _SummLine('Tip', '\$${tipAmount.toStringAsFixed(2)}'),
+                        _SummLine('Service fee', '\$${serviceFee.toStringAsFixed(2)}'),
+                        const Divider(height: 24),
+                        _SummLine('Total', '\$${total.toStringAsFixed(2)}', bold: true),
+                        const SizedBox(height: 16),
+                        AppButton(
+                          text: 'Place Order • \$${total.toStringAsFixed(2)}',
+                          color: AppColors.food,
+                          onPressed: () {
+                            // Empty cart and go to tracking
+                            cartProvider.clearModuleCart('food');
+                            context.push('/food/tracking/ord1');
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+class _CartRow extends StatelessWidget {
+  final String name;
+  final int qty;
+  final double price;
+  final VoidCallback onIncrement;
+  final VoidCallback onDecrement;
+
+  const _CartRow({
+    required this.name,
+    required this.qty,
+    required this.price,
+    required this.onIncrement,
+    required this.onDecrement,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: AppSpacing.shadowSm,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 50, height: 50,
+            decoration: BoxDecoration(color: AppColors.extraLightGrey, borderRadius: BorderRadius.circular(10)),
+            child: Icon(Icons.fastfood_rounded, color: AppColors.food.withValues(alpha: 0.3)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: AppTextStyles.labelMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text('\$${price.toStringAsFixed(2)}', style: AppTextStyles.priceSmall.copyWith(fontSize: 13)),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(color: AppColors.extraLightGrey, borderRadius: BorderRadius.circular(8)),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: onDecrement,
+                  child: const SizedBox(width: 28, height: 28, child: Icon(Icons.remove, size: 16)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6), 
+                  child: Text('$qty', style: AppTextStyles.labelMedium),
+                ),
+                GestureDetector(
+                  onTap: onIncrement,
+                  child: const SizedBox(width: 28, height: 28, child: Icon(Icons.add, size: 16)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummLine extends StatelessWidget {
+  final String label, value;
+  final bool bold;
+  const _SummLine(this.label, this.value, {this.bold = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: bold ? AppTextStyles.labelLarge : AppTextStyles.bodyMedium.copyWith(color: AppColors.grey)),
+          Text(value, style: bold ? AppTextStyles.price : AppTextStyles.labelLarge),
+        ],
+      ),
+    );
+  }
+}

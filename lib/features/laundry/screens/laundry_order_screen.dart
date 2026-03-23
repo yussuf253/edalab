@@ -1,0 +1,307 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text_styles.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/models/models.dart';
+import 'package:provider/provider.dart';
+import '../../../core/providers/providers.dart';
+import '../../../core/network/api_client.dart';
+
+class LaundryOrderScreen extends StatefulWidget {
+  const LaundryOrderScreen({super.key});
+  @override
+  State<LaundryOrderScreen> createState() => _LaundryOrderScreenState();
+}
+
+class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
+  int _selectedService = 0;
+  int _selectedDate = 1;
+  int _selectedTime = 2;
+  final _items = {'Shirts': 3, 'Pants': 2, 'Dresses': 1, 'Jackets': 0};
+
+  IconData _getIcon(String id) {
+    if (id == 'l1') return Icons.local_laundry_service_rounded;
+    if (id == 'l2') return Icons.dry_cleaning_rounded;
+    if (id == 'l3') return Icons.iron_rounded;
+    return Icons.auto_awesome_rounded;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final services = LaundryModel.sampleServices;
+    final selectedModel = services[_selectedService];
+    final totalItems = _items.values.fold(0, (a, b) => a + b);
+    final estTotal = selectedModel.price * totalItems; // Simplified estimate
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('New Order'),
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), onPressed: () => context.pop()),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Service type
+            Text('Service Type', style: AppTextStyles.h4),
+            const SizedBox(height: 12),
+            Row(
+              children: List.generate(services.length, (index) {
+                final s = services[index];
+                if (index > 2) return const SizedBox.shrink(); // Show up to 3 inline
+                return Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(right: index < 2 ? 10 : 0),
+                    child: _ServiceOption(s.name, _getIcon(s.id), _selectedService == index, () => setState(() => _selectedService = index)),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 24),
+            // Items
+            Text('Items', style: AppTextStyles.h4),
+            const SizedBox(height: 12),
+            ..._items.entries.map((e) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  children: [
+                    Text(e.key, style: AppTextStyles.labelMedium),
+                    const Spacer(),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.extraLightGrey,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 36, height: 36,
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(Icons.remove, size: 16),
+                              onPressed: () {
+                                setState(() {
+                                  if (_items[e.key]! > 0) _items[e.key] = _items[e.key]! - 1;
+                                });
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text('${e.value}', style: AppTextStyles.labelLarge),
+                          ),
+                          SizedBox(
+                            width: 36, height: 36,
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(Icons.add, size: 16),
+                              onPressed: () {
+                                setState(() => _items[e.key] = _items[e.key]! + 1);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: 20),
+            // Pickup date
+            Text('Pickup Date', style: AppTextStyles.h4),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 80,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: 5,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, i) {
+                  final sel = _selectedDate == i;
+                  final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+                  final dates = ['22', '23', '24', '25', '26'];
+                  return GestureDetector(
+                    onTap: () => setState(() => _selectedDate = i),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 60,
+                      decoration: BoxDecoration(
+                        color: sel ? AppColors.laundry : AppColors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: sel ? null : Border.all(color: AppColors.lightGrey),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(days[i], style: AppTextStyles.caption.copyWith(color: sel ? Colors.white60 : AppColors.grey)),
+                          const SizedBox(height: 4),
+                          Text(dates[i], style: AppTextStyles.h4.copyWith(color: sel ? AppColors.white : AppColors.dark)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Time slot
+            Text('Time Slot', style: AppTextStyles.h4),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 10, runSpacing: 10,
+              children: List.generate(4, (i) {
+                final sel = _selectedTime == i;
+                final slots = ['08:00 - 10:00', '10:00 - 12:00', '02:00 - 04:00', '04:00 - 06:00'];
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedTime = i),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: sel ? AppColors.laundry : AppColors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: sel ? null : Border.all(color: AppColors.lightGrey),
+                    ),
+                    child: Text(slots[i], style: AppTextStyles.labelMedium.copyWith(color: sel ? AppColors.white : AppColors.dark)),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 24),
+            // Address
+            Text('Pickup Address', style: AppTextStyles.h4),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(14)),
+              child: Row(
+                children: [
+                  const Icon(Icons.location_on_rounded, color: AppColors.laundry, size: 22),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Home', style: AppTextStyles.labelMedium),
+                        Text('123 Main Street, Downtown', style: AppTextStyles.caption),
+                      ],
+                    ),
+                  ),
+                  Text('Change', style: AppTextStyles.labelSmall.copyWith(color: AppColors.laundry)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Summary
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(color: AppColors.laundryBg, borderRadius: BorderRadius.circular(16)),
+              child: Column(
+                children: [
+                  _Row('Service', selectedModel.name),
+                  _Row('Items', '$totalItems items'),
+                  _Row('Pickup', 'Tue, Mar 23 • 02:00 - 04:00'),
+                  const Divider(height: 20),
+                  _Row('Estimated Total', '\$${estTotal.toStringAsFixed(2)}', bold: true),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            AppButton(
+              text: 'Schedule Pickup',
+              color: AppColors.laundry,
+              onPressed: () async {
+                final auth = context.read<AuthProvider>();
+                try {
+                  await ApiClient.post('/orders', {
+                    'userId': auth.user?.id ?? 'guest',
+                    'moduleType': 'LAUNDRY',
+                    'subtotal': estTotal,
+                    'tax': estTotal * 0.08,
+                    'deliveryFee': 0,
+                    'total': estTotal * 1.08,
+                    'items': [{'service': selectedModel.name, 'itemCount': totalItems}],
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Pickup scheduled! 🧺'),
+                      backgroundColor: AppColors.success,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  );
+                  context.go('/');
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: \$e')));
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ServiceOption extends StatelessWidget {
+  final String name;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+  const _ServiceOption(this.name, this.icon, this.selected, this.onTap);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.laundry : AppColors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: selected ? null : Border.all(color: AppColors.lightGrey),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: selected ? AppColors.white : AppColors.laundry, size: 28),
+            const SizedBox(height: 6),
+            Text(name, style: AppTextStyles.labelSmall.copyWith(color: selected ? AppColors.white : AppColors.dark), textAlign: TextAlign.center, maxLines: 1),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Row extends StatelessWidget {
+  final String label, value;
+  final bool bold;
+  const _Row(this.label, this.value, {this.bold = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: bold ? AppTextStyles.labelLarge : AppTextStyles.bodyMedium.copyWith(color: AppColors.grey)),
+          Expanded(
+            child: Text(value, style: bold ? AppTextStyles.priceSmall.copyWith(color: AppColors.laundry) : AppTextStyles.labelMedium, textAlign: TextAlign.right),
+          ),
+        ],
+      ),
+    );
+  }
+}
