@@ -6,6 +6,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/utils/auth_gate.dart';
 
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
@@ -25,28 +26,40 @@ class CartScreen extends StatelessWidget {
             onPressed: () {
               context.read<CartProvider>().clearModuleCart('shopping');
             },
-            child: Text('Clear', style: AppTextStyles.labelMedium.copyWith(color: AppColors.accent)),
+            child: Text(
+              'Clear',
+              style: AppTextStyles.labelMedium.copyWith(
+                color: AppColors.accent,
+              ),
+            ),
           ),
         ],
       ),
       body: Consumer<CartProvider>(
         builder: (context, cart, child) {
           final items = cart.getModuleItems('shopping');
-          
+
           if (items.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.shopping_bag_outlined, size: 80, color: AppColors.lightGrey),
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 80,
+                    color: AppColors.lightGrey,
+                  ),
                   const SizedBox(height: 16),
-                  Text('Your cart is empty', style: AppTextStyles.h3.copyWith(color: AppColors.grey)),
+                  Text(
+                    'Your cart is empty',
+                    style: AppTextStyles.h3.copyWith(color: AppColors.grey),
+                  ),
                   const SizedBox(height: 24),
                   AppButton(
                     text: 'Start Shopping',
                     width: 200,
                     onPressed: () => context.pop(),
-                  )
+                  ),
                 ],
               ),
             );
@@ -63,7 +76,7 @@ class CartScreen extends StatelessWidget {
                 child: ListView.separated(
                   padding: const EdgeInsets.all(20),
                   itemCount: items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 14),
+                  separatorBuilder: (_, _) => const SizedBox(height: 14),
                   itemBuilder: (context, index) {
                     final item = items[index];
                     return Container(
@@ -82,23 +95,36 @@ class CartScreen extends StatelessWidget {
                               color: AppColors.extraLightGrey,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.shopping_bag_rounded, color: AppColors.lightGrey),
+                            child: const Icon(
+                              Icons.shopping_bag_rounded,
+                              color: AppColors.lightGrey,
+                            ),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(item.name, style: AppTextStyles.labelLarge),
+                                Text(
+                                  item.name,
+                                  style: AppTextStyles.labelLarge,
+                                ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  [item.brand, item.color, item.size].where((e) => e != null).join(' • '),
-                                  style: AppTextStyles.caption
+                                  [
+                                    item.brand,
+                                    item.color,
+                                    item.size,
+                                  ].where((e) => e != null).join(' • '),
+                                  style: AppTextStyles.caption,
                                 ),
                                 const SizedBox(height: 8),
                                 Row(
                                   children: [
-                                    Text('\$${item.price}', style: AppTextStyles.priceSmall),
+                                    Text(
+                                      '\$${item.price}',
+                                      style: AppTextStyles.priceSmall,
+                                    ),
                                     const Spacer(),
                                     Container(
                                       decoration: BoxDecoration(
@@ -112,21 +138,34 @@ class CartScreen extends StatelessWidget {
                                             height: 32,
                                             child: IconButton(
                                               padding: EdgeInsets.zero,
-                                              icon: const Icon(Icons.remove, size: 16),
-                                              onPressed: () => cart.decrementQuantity(item.id),
+                                              icon: const Icon(
+                                                Icons.remove,
+                                                size: 16,
+                                              ),
+                                              onPressed: () => cart
+                                                  .decrementQuantity(item.id),
                                             ),
                                           ),
                                           Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                                            child: Text('${item.quantity}', style: AppTextStyles.labelMedium),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 4,
+                                            ),
+                                            child: Text(
+                                              '${item.quantity}',
+                                              style: AppTextStyles.labelMedium,
+                                            ),
                                           ),
                                           SizedBox(
                                             width: 32,
                                             height: 32,
                                             child: IconButton(
                                               padding: EdgeInsets.zero,
-                                              icon: const Icon(Icons.add, size: 16),
-                                              onPressed: () => cart.incrementQuantity(item.id),
+                                              icon: const Icon(
+                                                Icons.add,
+                                                size: 16,
+                                              ),
+                                              onPressed: () => cart
+                                                  .incrementQuantity(item.id),
                                             ),
                                           ),
                                         ],
@@ -148,7 +187,9 @@ class CartScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(alpha: 0.05),
@@ -161,18 +202,37 @@ class CartScreen extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _summaryRow('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
-                      _summaryRow('Shipping', shipping == 0 ? 'FREE' : '\$${shipping.toStringAsFixed(2)}'),
+                      _summaryRow(
+                        'Subtotal',
+                        '\$${subtotal.toStringAsFixed(2)}',
+                      ),
+                      _summaryRow(
+                        'Shipping',
+                        shipping == 0
+                            ? 'FREE'
+                            : '\$${shipping.toStringAsFixed(2)}',
+                      ),
                       _summaryRow('Tax', '\$${tax.toStringAsFixed(2)}'),
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 8),
                         child: Divider(),
                       ),
-                      _summaryRow('Total', '\$${total.toStringAsFixed(2)}', isTotal: true),
+                      _summaryRow(
+                        'Total',
+                        '\$${total.toStringAsFixed(2)}',
+                        isTotal: true,
+                      ),
                       const SizedBox(height: 16),
                       AppButton(
                         text: 'Checkout (\$${total.toStringAsFixed(2)})',
-                        onPressed: () => context.push('/checkout'),
+                        onPressed: () async {
+                          final allowed = await requireLoggedIn(
+                            context,
+                            message: 'Please log in to continue to checkout.',
+                          );
+                          if (!context.mounted || !allowed) return;
+                          context.push('/checkout');
+                        },
                       ),
                     ],
                   ),
@@ -191,8 +251,16 @@ class CartScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: isTotal ? AppTextStyles.labelLarge : AppTextStyles.bodyMedium.copyWith(color: AppColors.grey)),
-          Text(value, style: isTotal ? AppTextStyles.price : AppTextStyles.labelLarge),
+          Text(
+            label,
+            style: isTotal
+                ? AppTextStyles.labelLarge
+                : AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+          ),
+          Text(
+            value,
+            style: isTotal ? AppTextStyles.price : AppTextStyles.labelLarge,
+          ),
         ],
       ),
     );

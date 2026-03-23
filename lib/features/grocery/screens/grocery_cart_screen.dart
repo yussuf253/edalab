@@ -6,6 +6,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/utils/auth_gate.dart';
 
 class GroceryCartScreen extends StatelessWidget {
   const GroceryCartScreen({super.key});
@@ -22,12 +23,20 @@ class GroceryCartScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Grocery Cart'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), onPressed: () => context.pop()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => context.pop(),
+        ),
         actions: [
           if (items.isNotEmpty)
             TextButton(
               onPressed: () => cartProvider.clearModuleCart('grocery'),
-              child: Text('Clear', style: AppTextStyles.labelMedium.copyWith(color: AppColors.error)),
+              child: Text(
+                'Clear',
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.error,
+                ),
+              ),
             ),
         ],
       ),
@@ -36,9 +45,16 @@ class GroceryCartScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.shopping_basket_outlined, size: 80, color: AppColors.lightGrey),
+                  Icon(
+                    Icons.shopping_basket_outlined,
+                    size: 80,
+                    color: AppColors.lightGrey,
+                  ),
                   const SizedBox(height: 16),
-                  Text('Your grocery cart is empty', style: AppTextStyles.h3.copyWith(color: AppColors.grey)),
+                  Text(
+                    'Your grocery cart is empty',
+                    style: AppTextStyles.h3.copyWith(color: AppColors.grey),
+                  ),
                   const SizedBox(height: 16),
                   AppButton(
                     text: 'Browse Groceries',
@@ -62,8 +78,14 @@ class GroceryCartScreen extends StatelessWidget {
                         qty: '${item.quantity} ${item.brand ?? ''}',
                         price: item.price * item.quantity,
                         quantity: item.quantity,
-                        onIncrement: () => cartProvider.updateQuantity(item.id, item.quantity + 1),
-                        onDecrement: () => cartProvider.updateQuantity(item.id, item.quantity - 1),
+                        onIncrement: () => cartProvider.updateQuantity(
+                          item.id,
+                          item.quantity + 1,
+                        ),
+                        onDecrement: () => cartProvider.updateQuantity(
+                          item.id,
+                          item.quantity - 1,
+                        ),
                       );
                     },
                   ),
@@ -72,22 +94,42 @@ class GroceryCartScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, -5))],
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, -5),
+                      ),
+                    ],
                   ),
                   child: SafeArea(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _SumRow('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
-                        _SumRow('Delivery', '\$${deliveryFee.toStringAsFixed(2)}'),
+                        _SumRow(
+                          'Delivery',
+                          '\$${deliveryFee.toStringAsFixed(2)}',
+                        ),
                         const Divider(height: 20),
-                        _SumRow('Total', '\$${total.toStringAsFixed(2)}', bold: true),
+                        _SumRow(
+                          'Total',
+                          '\$${total.toStringAsFixed(2)}',
+                          bold: true,
+                        ),
                         const SizedBox(height: 16),
                         AppButton(
-                          text: 'Checkout • \$${total.toStringAsFixed(2)}', 
-                          color: AppColors.grocery, 
-                          onPressed: () {
+                          text: 'Checkout • \$${total.toStringAsFixed(2)}',
+                          color: AppColors.grocery,
+                          onPressed: () async {
+                            final allowed = await requireLoggedIn(
+                              context,
+                              message: 'Please log in to continue to checkout.',
+                            );
+                            if (!context.mounted || !allowed) return;
                             context.push('/checkout');
                           },
                         ),
@@ -109,8 +151,8 @@ class _ItemRow extends StatelessWidget {
   final VoidCallback onDecrement;
 
   const _ItemRow({
-    required this.name, 
-    required this.qty, 
+    required this.name,
+    required this.qty,
     required this.price,
     required this.quantity,
     required this.onIncrement,
@@ -122,12 +164,20 @@ class _ItemRow extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(14), boxShadow: AppSpacing.shadowSm),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: AppSpacing.shadowSm,
+      ),
       child: Row(
         children: [
           Container(
-            width: 50, height: 50,
-            decoration: BoxDecoration(color: AppColors.groceryBg, borderRadius: BorderRadius.circular(12)),
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: AppColors.groceryBg,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: const Icon(Icons.eco_rounded, color: AppColors.grocery),
           ),
           const SizedBox(width: 12),
@@ -135,19 +185,31 @@ class _ItemRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: AppTextStyles.labelMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  name,
+                  style: AppTextStyles.labelMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 Text(qty, style: AppTextStyles.caption),
               ],
             ),
           ),
           Container(
-            decoration: BoxDecoration(color: AppColors.extraLightGrey, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: AppColors.extraLightGrey,
+              borderRadius: BorderRadius.circular(8),
+            ),
             margin: const EdgeInsets.only(right: 12),
             child: Row(
               children: [
                 GestureDetector(
                   onTap: onDecrement,
-                  child: const SizedBox(width: 28, height: 28, child: Icon(Icons.remove, size: 16)),
+                  child: const SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: Icon(Icons.remove, size: 16),
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -155,12 +217,19 @@ class _ItemRow extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: onIncrement,
-                  child: const SizedBox(width: 28, height: 28, child: Icon(Icons.add, size: 16)),
+                  child: const SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: Icon(Icons.add, size: 16),
+                  ),
                 ),
               ],
             ),
           ),
-          Text('\$${price.toStringAsFixed(2)}', style: AppTextStyles.labelLarge),
+          Text(
+            '\$${price.toStringAsFixed(2)}',
+            style: AppTextStyles.labelLarge,
+          ),
         ],
       ),
     );
@@ -179,8 +248,18 @@ class _SumRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: bold ? AppTextStyles.labelLarge : AppTextStyles.bodyMedium.copyWith(color: AppColors.grey)),
-          Text(value, style: bold ? AppTextStyles.priceSmall.copyWith(color: AppColors.grocery) : AppTextStyles.labelMedium),
+          Text(
+            label,
+            style: bold
+                ? AppTextStyles.labelLarge
+                : AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+          ),
+          Text(
+            value,
+            style: bold
+                ? AppTextStyles.priceSmall.copyWith(color: AppColors.grocery)
+                : AppTextStyles.labelMedium,
+          ),
         ],
       ),
     );

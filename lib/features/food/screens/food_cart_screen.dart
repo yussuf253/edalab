@@ -7,6 +7,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/models/models.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/utils/auth_gate.dart';
 
 class FoodCartScreen extends StatefulWidget {
   const FoodCartScreen({super.key});
@@ -39,27 +40,39 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
     );
     final recommendedItems = restaurant.menu
         .expand((category) => category.items)
-        .where((menuItem) => !items.any((cartItem) => cartItem.id == menuItem.id))
+        .where(
+          (menuItem) => !items.any((cartItem) => cartItem.id == menuItem.id),
+        )
         .take(3)
         .toList();
-    
+
     // Sample static fees
     final deliveryFee = items.isEmpty ? 0.0 : 2.99;
     final serviceFee = items.isEmpty ? 0.0 : 1.50;
     final tipAmount = items.isEmpty ? 0.0 : _tip;
     final total = subtotal + deliveryFee + serviceFee + tipAmount;
-    final freeDeliveryGap = items.isEmpty ? 0.0 : (25 - subtotal).clamp(0, 25).toDouble();
+    final freeDeliveryGap = items.isEmpty
+        ? 0.0
+        : (25 - subtotal).clamp(0, 25).toDouble();
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Food Cart'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), onPressed: () => context.pop()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => context.pop(),
+        ),
         actions: [
           if (items.isNotEmpty)
             TextButton(
               onPressed: () => cartProvider.clearModuleCart('food'),
-              child: Text('Clear', style: AppTextStyles.labelMedium.copyWith(color: AppColors.error)),
+              child: Text(
+                'Clear',
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: AppColors.error,
+                ),
+              ),
             ),
         ],
       ),
@@ -68,9 +81,16 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.fastfood_outlined, size: 80, color: AppColors.lightGrey),
+                  Icon(
+                    Icons.fastfood_outlined,
+                    size: 80,
+                    color: AppColors.lightGrey,
+                  ),
                   const SizedBox(height: 16),
-                  Text('Your food cart is empty', style: AppTextStyles.h3.copyWith(color: AppColors.grey)),
+                  Text(
+                    'Your food cart is empty',
+                    style: AppTextStyles.h3.copyWith(color: AppColors.grey),
+                  ),
                   const SizedBox(height: 16),
                   AppButton(
                     text: 'Browse Restaurants',
@@ -89,20 +109,31 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                   child: Row(
                     children: [
                       Container(
-                        width: 44, height: 44,
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
                           color: AppColors.foodBg,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.restaurant_rounded, color: AppColors.food, size: 22),
+                        child: const Icon(
+                          Icons.restaurant_rounded,
+                          color: AppColors.food,
+                          size: 22,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(restaurantName, style: AppTextStyles.labelLarge),
-                            Text('Estimated: 15-25 min delivery', style: AppTextStyles.caption),
+                            Text(
+                              restaurantName,
+                              style: AppTextStyles.labelLarge,
+                            ),
+                            Text(
+                              'Estimated: 15-25 min delivery',
+                              style: AppTextStyles.caption,
+                            ),
                           ],
                         ),
                       ),
@@ -130,7 +161,10 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                 color: AppColors.white,
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(Icons.local_shipping_rounded, color: AppColors.food),
+                              child: const Icon(
+                                Icons.local_shipping_rounded,
+                                color: AppColors.food,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -141,7 +175,9 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                     freeDeliveryGap > 0
                                         ? 'Add \$${freeDeliveryGap.toStringAsFixed(2)} more for free delivery'
                                         : 'You unlocked free delivery on your next food order',
-                                    style: AppTextStyles.labelMedium.copyWith(color: AppColors.food),
+                                    style: AppTextStyles.labelMedium.copyWith(
+                                      color: AppColors.food,
+                                    ),
                                   ),
                                   const SizedBox(height: 6),
                                   ClipRRect(
@@ -150,7 +186,10 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                       value: (subtotal / 25).clamp(0, 1),
                                       minHeight: 7,
                                       backgroundColor: AppColors.white,
-                                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.food),
+                                      valueColor:
+                                          const AlwaysStoppedAnimation<Color>(
+                                            AppColors.food,
+                                          ),
                                     ),
                                   ),
                                 ],
@@ -159,14 +198,22 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                           ],
                         ),
                       ),
-                      ...items.map((item) => _CartRow(
-                            name: item.name,
-                            qty: item.quantity,
-                            price: item.price,
-                            brand: item.brand,
-                            onIncrement: () => cartProvider.updateQuantity(item.id, item.quantity + 1),
-                            onDecrement: () => cartProvider.updateQuantity(item.id, item.quantity - 1),
-                          )),
+                      ...items.map(
+                        (item) => _CartRow(
+                          name: item.name,
+                          qty: item.quantity,
+                          price: item.price,
+                          brand: item.brand,
+                          onIncrement: () => cartProvider.updateQuantity(
+                            item.id,
+                            item.quantity + 1,
+                          ),
+                          onDecrement: () => cartProvider.updateQuantity(
+                            item.id,
+                            item.quantity - 1,
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       // Add instructions
                       Container(
@@ -180,9 +227,18 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                           children: [
                             Row(
                               children: [
-                                const Icon(Icons.note_alt_outlined, color: AppColors.primary, size: 20),
+                                const Icon(
+                                  Icons.note_alt_outlined,
+                                  color: AppColors.primary,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 10),
-                                Text('Cooking instructions', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+                                Text(
+                                  'Cooking instructions',
+                                  style: AppTextStyles.labelLarge.copyWith(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
                               ],
                             ),
                             const SizedBox(height: 10),
@@ -190,8 +246,11 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                               controller: _instructionsController,
                               maxLines: 3,
                               decoration: InputDecoration(
-                                hintText: 'No onions, extra spicy, leave at the door...',
-                                hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.mediumGrey),
+                                hintText:
+                                    'No onions, extra spicy, leave at the door...',
+                                hintStyle: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.mediumGrey,
+                                ),
                                 filled: true,
                                 fillColor: AppColors.background,
                                 border: OutlineInputBorder(
@@ -215,28 +274,40 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Delivery Tip', style: AppTextStyles.labelLarge),
+                            Text(
+                              'Delivery Tip',
+                              style: AppTextStyles.labelLarge,
+                            ),
                             const SizedBox(height: 10),
                             Row(
                               children: [0.0, 1.0, 2.0, 5.0].map((t) {
                                 final isSelected = t == _tip;
-                                final label = t == 0.0 ? 'None' : '\$${t.toInt()}';
+                                final label = t == 0.0
+                                    ? 'None'
+                                    : '\$${t.toInt()}';
                                 return Expanded(
                                   child: GestureDetector(
                                     onTap: () => setState(() => _tip = t),
                                     child: Container(
                                       margin: const EdgeInsets.only(right: 8),
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
                                       decoration: BoxDecoration(
-                                        color: isSelected ? AppColors.food : AppColors.extraLightGrey,
+                                        color: isSelected
+                                            ? AppColors.food
+                                            : AppColors.extraLightGrey,
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Center(
                                         child: Text(
                                           label,
-                                          style: AppTextStyles.labelSmall.copyWith(
-                                            color: isSelected ? AppColors.white : AppColors.dark,
-                                          ),
+                                          style: AppTextStyles.labelSmall
+                                              .copyWith(
+                                                color: isSelected
+                                                    ? AppColors.white
+                                                    : AppColors.dark,
+                                              ),
                                         ),
                                       ),
                                     ),
@@ -249,7 +320,10 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                       ),
                       if (recommendedItems.isNotEmpty) ...[
                         const SizedBox(height: 16),
-                        Text('Add More From $restaurantName', style: AppTextStyles.h4),
+                        Text(
+                          'Add More From $restaurantName',
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 10),
                         ...recommendedItems.map(
                           (menuItem) => _RecommendedFoodCard(
@@ -267,7 +341,9 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                               );
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text('${menuItem.name} added to cart!'),
+                                  content: Text(
+                                    '${menuItem.name} added to cart!',
+                                  ),
                                   backgroundColor: AppColors.success,
                                 ),
                               );
@@ -283,30 +359,58 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, -5))],
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, -5),
+                      ),
+                    ],
                   ),
                   child: SafeArea(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _SummLine('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
-                        _SummLine('Delivery', '\$${deliveryFee.toStringAsFixed(2)}'),
+                        _SummLine(
+                          'Subtotal',
+                          '\$${subtotal.toStringAsFixed(2)}',
+                        ),
+                        _SummLine(
+                          'Delivery',
+                          '\$${deliveryFee.toStringAsFixed(2)}',
+                        ),
                         _SummLine('Tip', '\$${tipAmount.toStringAsFixed(2)}'),
-                        _SummLine('Service fee', '\$${serviceFee.toStringAsFixed(2)}'),
+                        _SummLine(
+                          'Service fee',
+                          '\$${serviceFee.toStringAsFixed(2)}',
+                        ),
                         const Divider(height: 24),
-                        _SummLine('Total', '\$${total.toStringAsFixed(2)}', bold: true),
+                        _SummLine(
+                          'Total',
+                          '\$${total.toStringAsFixed(2)}',
+                          bold: true,
+                        ),
                         const SizedBox(height: 16),
                         AppButton(
-                          text: 'Continue to Checkout • \$${total.toStringAsFixed(2)}',
+                          text:
+                              'Continue to Checkout • \$${total.toStringAsFixed(2)}',
                           color: AppColors.food,
-                          onPressed: () {
+                          onPressed: () async {
+                            final allowed = await requireLoggedIn(
+                              context,
+                              message: 'Please log in to continue to checkout.',
+                            );
+                            if (!context.mounted || !allowed) return;
                             context.push(
                               '/checkout',
                               extra: {
                                 'moduleType': 'food',
                                 'moduleName': restaurantName,
-                                'instructions': _instructionsController.text.trim(),
+                                'instructions': _instructionsController.text
+                                    .trim(),
                                 'tip': _tip,
                                 'source': 'food_cart',
                               },
@@ -353,37 +457,62 @@ class _CartRow extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 50, height: 50,
-            decoration: BoxDecoration(color: AppColors.extraLightGrey, borderRadius: BorderRadius.circular(10)),
-            child: Icon(Icons.fastfood_rounded, color: AppColors.food.withValues(alpha: 0.3)),
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: AppColors.extraLightGrey,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              Icons.fastfood_rounded,
+              color: AppColors.food.withValues(alpha: 0.3),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: AppTextStyles.labelMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
-                if (brand != null)
-                  Text(brand!, style: AppTextStyles.caption),
-                Text('\$${price.toStringAsFixed(2)}', style: AppTextStyles.priceSmall.copyWith(fontSize: 13)),
+                Text(
+                  name,
+                  style: AppTextStyles.labelMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (brand != null) Text(brand!, style: AppTextStyles.caption),
+                Text(
+                  '\$${price.toStringAsFixed(2)}',
+                  style: AppTextStyles.priceSmall.copyWith(fontSize: 13),
+                ),
               ],
             ),
           ),
           Container(
-            decoration: BoxDecoration(color: AppColors.extraLightGrey, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: AppColors.extraLightGrey,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Row(
               children: [
                 GestureDetector(
                   onTap: onDecrement,
-                  child: const SizedBox(width: 28, height: 28, child: Icon(Icons.remove, size: 16)),
+                  child: const SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: Icon(Icons.remove, size: 16),
+                  ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6), 
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: Text('$qty', style: AppTextStyles.labelMedium),
                 ),
                 GestureDetector(
                   onTap: onIncrement,
-                  child: const SizedBox(width: 28, height: 28, child: Icon(Icons.add, size: 16)),
+                  child: const SizedBox(
+                    width: 28,
+                    height: 28,
+                    child: Icon(Icons.add, size: 16),
+                  ),
                 ),
               ],
             ),
@@ -398,10 +527,7 @@ class _RecommendedFoodCard extends StatelessWidget {
   final MenuItem item;
   final VoidCallback onAdd;
 
-  const _RecommendedFoodCard({
-    required this.item,
-    required this.onAdd,
-  });
+  const _RecommendedFoodCard({required this.item, required this.onAdd});
 
   @override
   Widget build(BuildContext context) {
@@ -422,7 +548,10 @@ class _RecommendedFoodCard extends StatelessWidget {
               color: AppColors.foodBg,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.restaurant_menu_rounded, color: AppColors.food),
+            child: const Icon(
+              Icons.restaurant_menu_rounded,
+              color: AppColors.food,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -444,17 +573,28 @@ class _RecommendedFoodCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('\$${item.price.toStringAsFixed(2)}', style: AppTextStyles.priceSmall),
+              Text(
+                '\$${item.price.toStringAsFixed(2)}',
+                style: AppTextStyles.priceSmall,
+              ),
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: onAdd,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.food,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text('Add', style: AppTextStyles.labelMedium.copyWith(color: AppColors.white)),
+                  child: Text(
+                    'Add',
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: AppColors.white,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -477,8 +617,16 @@ class _SummLine extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: bold ? AppTextStyles.labelLarge : AppTextStyles.bodyMedium.copyWith(color: AppColors.grey)),
-          Text(value, style: bold ? AppTextStyles.price : AppTextStyles.labelLarge),
+          Text(
+            label,
+            style: bold
+                ? AppTextStyles.labelLarge
+                : AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+          ),
+          Text(
+            value,
+            style: bold ? AppTextStyles.price : AppTextStyles.labelLarge,
+          ),
         ],
       ),
     );

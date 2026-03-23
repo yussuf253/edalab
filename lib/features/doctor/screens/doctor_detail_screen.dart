@@ -5,6 +5,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/models/models.dart';
+import '../../../core/utils/auth_gate.dart';
 
 class DoctorDetailScreen extends StatelessWidget {
   final String doctorId;
@@ -12,15 +13,24 @@ class DoctorDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final d = DoctorModel.sampleDoctors.firstWhere((doc) => doc.id == doctorId, orElse: () => DoctorModel.sampleDoctors.first);
+    final d = DoctorModel.sampleDoctors.firstWhere(
+      (doc) => doc.id == doctorId,
+      orElse: () => DoctorModel.sampleDoctors.first,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), onPressed: () => context.pop()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => context.pop(),
+        ),
         actions: [
           IconButton(icon: const Icon(Icons.share_outlined), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.favorite_border_rounded), onPressed: () {}),
+          IconButton(
+            icon: const Icon(Icons.favorite_border_rounded),
+            onPressed: () {},
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -31,24 +41,45 @@ class DoctorDetailScreen extends StatelessWidget {
               margin: const EdgeInsets.all(20),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [AppColors.doctor, Color(0xFF5DADE2)]),
+                gradient: const LinearGradient(
+                  colors: [AppColors.doctor, Color(0xFF5DADE2)],
+                ),
                 borderRadius: BorderRadius.circular(24),
-                boxShadow: [BoxShadow(color: AppColors.doctor.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 10))],
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.doctor.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
                   Container(
-                    width: 90, height: 90,
+                    width: 90,
+                    height: 90,
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(24),
                     ),
-                    child: const Icon(Icons.person_rounded, color: AppColors.white, size: 48),
+                    child: const Icon(
+                      Icons.person_rounded,
+                      color: AppColors.white,
+                      size: 48,
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  Text(d.name, style: AppTextStyles.h2.copyWith(color: AppColors.white)),
+                  Text(
+                    d.name,
+                    style: AppTextStyles.h2.copyWith(color: AppColors.white),
+                  ),
                   const SizedBox(height: 4),
-                  Text('${d.specialty} • ${d.experience} experience', style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70)),
+                  Text(
+                    '${d.specialty} • ${d.experience} experience',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: Colors.white70,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -73,7 +104,10 @@ class DoctorDetailScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     d.about ?? 'No information available.',
-                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey, height: 1.6),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.grey,
+                      height: 1.6,
+                    ),
                   ),
                   const SizedBox(height: 20),
                   Text('Working Hours', style: AppTextStyles.h4),
@@ -82,16 +116,25 @@ class DoctorDetailScreen extends StatelessWidget {
                     ('Mon - Fri', d.workingHours.weekdays),
                     ('Saturday', d.workingHours.saturday),
                     ('Sunday', d.workingHours.sunday),
-                  ].map((h) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(h.$1, style: AppTextStyles.bodyMedium),
-                        Text(h.$2, style: AppTextStyles.labelMedium.copyWith(color: h.$2 == 'Closed' ? AppColors.accent : AppColors.dark)),
-                      ],
+                  ].map(
+                    (h) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(h.$1, style: AppTextStyles.bodyMedium),
+                          Text(
+                            h.$2,
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: h.$2 == 'Closed'
+                                  ? AppColors.accent
+                                  : AppColors.dark,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  )),
+                  ),
                   const SizedBox(height: 20),
                   Text('Location', style: AppTextStyles.h4),
                   const SizedBox(height: 12),
@@ -106,12 +149,21 @@ class DoctorDetailScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.location_on_rounded, color: AppColors.primary, size: 32),
+                          const Icon(
+                            Icons.location_on_rounded,
+                            color: AppColors.primary,
+                            size: 32,
+                          ),
                           const SizedBox(height: 8),
                           if (d.location != null) ...[
-                            Text(d.location!.split(', ').first, style: AppTextStyles.labelMedium),
+                            Text(
+                              d.location!.split(', ').first,
+                              style: AppTextStyles.labelMedium,
+                            ),
                             if (d.location!.split(', ').length > 1)
-                              Text(d.location!.split(', ').sublist(1).join(', ')),
+                              Text(
+                                d.location!.split(', ').sublist(1).join(', '),
+                              ),
                           ],
                         ],
                       ),
@@ -121,35 +173,58 @@ class DoctorDetailScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     Text('Patient Reviews', style: AppTextStyles.h4),
                     const SizedBox(height: 12),
-                    ...d.reviews.map((r) => Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: AppSpacing.shadowSm,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 36, height: 36,
-                                decoration: BoxDecoration(color: AppColors.doctorBg, borderRadius: BorderRadius.circular(10)),
-                                child: const Icon(Icons.person_rounded, color: AppColors.doctor, size: 20),
+                    ...d.reviews.map(
+                      (r) => Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: AppSpacing.shadowSm,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.doctorBg,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.person_rounded,
+                                    color: AppColors.doctor,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(r.name, style: AppTextStyles.labelMedium),
+                                const SizedBox(width: 8),
+                                ...List.generate(
+                                  r.rating,
+                                  (_) => const Icon(
+                                    Icons.star_rounded,
+                                    size: 14,
+                                    color: AppColors.warning,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              r.comment,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.dark,
+                                height: 1.5,
                               ),
-                              const SizedBox(width: 10),
-                              Text(r.name, style: AppTextStyles.labelMedium),
-                              const SizedBox(width: 8),
-                              ...List.generate(r.rating, (_) => const Icon(Icons.star_rounded, size: 14, color: AppColors.warning)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(r.comment, style: AppTextStyles.bodySmall.copyWith(color: AppColors.dark, height: 1.5)),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
-                    )),
+                    ),
                   ],
                   const SizedBox(height: 80),
                 ],
@@ -162,7 +237,13 @@ class DoctorDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppColors.white,
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, -5))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
+            ),
+          ],
         ),
         child: SafeArea(
           child: Row(
@@ -172,7 +253,12 @@ class DoctorDetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Consultation Fee', style: AppTextStyles.caption),
-                  Text('\$${d.consultationFee.toInt()}', style: AppTextStyles.price.copyWith(color: AppColors.doctor)),
+                  Text(
+                    '\$${d.consultationFee.toInt()}',
+                    style: AppTextStyles.price.copyWith(
+                      color: AppColors.doctor,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(width: 20),
@@ -180,7 +266,14 @@ class DoctorDetailScreen extends StatelessWidget {
                 child: AppButton(
                   text: 'Book Appointment',
                   color: AppColors.doctor,
-                  onPressed: () => context.push('/doctor/book/${d.id}'),
+                  onPressed: () async {
+                    final allowed = await requireLoggedIn(
+                      context,
+                      message: 'Please log in to book an appointment.',
+                    );
+                    if (!context.mounted || !allowed) return;
+                    context.push('/doctor/book/${d.id}');
+                  },
                 ),
               ),
             ],
@@ -200,7 +293,10 @@ class _StatCol extends StatelessWidget {
     return Column(
       children: [
         Text(value, style: AppTextStyles.h4.copyWith(color: AppColors.white)),
-        Text(label, style: AppTextStyles.caption.copyWith(color: Colors.white60)),
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(color: Colors.white60),
+        ),
       ],
     );
   }

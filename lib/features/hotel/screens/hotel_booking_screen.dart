@@ -7,6 +7,7 @@ import '../../../core/models/models.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/auth_gate.dart';
 
 class HotelBookingScreen extends StatelessWidget {
   final String hotelId;
@@ -14,7 +15,11 @@ class HotelBookingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final h = HotelModel.sampleHotels.firstWhere((h) => h.id == hotelId, orElse: () => HotelModel.sampleHotels.first);
+    final auth = context.watch<AuthProvider>();
+    final h = HotelModel.sampleHotels.firstWhere(
+      (h) => h.id == hotelId,
+      orElse: () => HotelModel.sampleHotels.first,
+    );
     final nights = 3;
     final roomRate = h.pricePerNight * nights;
     final serviceFee = roomRate * 0.05;
@@ -25,7 +30,10 @@ class HotelBookingScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Booking Summary'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), onPressed: () => context.pop()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -35,13 +43,24 @@ class HotelBookingScreen extends StatelessWidget {
             // Hotel mini
             Container(
               padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16)),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Row(
                 children: [
                   Container(
-                    width: 60, height: 60,
-                    decoration: BoxDecoration(color: AppColors.hotelBg, borderRadius: BorderRadius.circular(14)),
-                    child: const Icon(Icons.hotel_rounded, color: AppColors.hotel, size: 28),
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: AppColors.hotelBg,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.hotel_rounded,
+                      color: AppColors.hotel,
+                      size: 28,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -49,7 +68,10 @@ class HotelBookingScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(h.name, style: AppTextStyles.labelLarge),
-                        Text('Standard Room • City View', style: AppTextStyles.caption),
+                        Text(
+                          'Standard Room • City View',
+                          style: AppTextStyles.caption,
+                        ),
                       ],
                     ),
                   ),
@@ -60,7 +82,10 @@ class HotelBookingScreen extends StatelessWidget {
             // Booking details
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(16)),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Column(
                 children: [
                   _Row('Check-in', 'Mar 25, 2026'),
@@ -74,23 +99,49 @@ class HotelBookingScreen extends StatelessWidget {
             const SizedBox(height: 20),
             Text('Guest Information', style: AppTextStyles.h4),
             const SizedBox(height: 12),
-            TextFormField(decoration: const InputDecoration(hintText: 'Full Name', prefixIcon: Icon(Icons.person_outline_rounded))),
+            TextFormField(
+              decoration: InputDecoration(
+                hintText: auth.user?.fullName ?? 'Full Name',
+                prefixIcon: const Icon(Icons.person_outline_rounded),
+              ),
+            ),
             const SizedBox(height: 12),
-            TextFormField(decoration: const InputDecoration(hintText: 'Email', prefixIcon: Icon(Icons.email_outlined))),
+            TextFormField(
+              decoration: InputDecoration(
+                hintText: auth.user?.email ?? 'Email',
+                prefixIcon: const Icon(Icons.email_outlined),
+              ),
+            ),
             const SizedBox(height: 12),
-            TextFormField(decoration: const InputDecoration(hintText: 'Phone', prefixIcon: Icon(Icons.phone_outlined))),
+            TextFormField(
+              decoration: const InputDecoration(
+                hintText: 'Phone',
+                prefixIcon: Icon(Icons.phone_outlined),
+              ),
+            ),
             const SizedBox(height: 20),
             Text('Special Requests', style: AppTextStyles.h4),
             const SizedBox(height: 12),
-            TextFormField(maxLines: 3, decoration: const InputDecoration(hintText: 'Any special requests...')),
+            TextFormField(
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Any special requests...',
+              ),
+            ),
             const SizedBox(height: 20),
             // Price breakdown
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: AppColors.hotelBg, borderRadius: BorderRadius.circular(16)),
+              decoration: BoxDecoration(
+                color: AppColors.hotelBg,
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Column(
                 children: [
-                  _Row('Room Rate ($nights nights)', '\$${roomRate.toStringAsFixed(2)}'),
+                  _Row(
+                    'Room Rate ($nights nights)',
+                    '\$${roomRate.toStringAsFixed(2)}',
+                  ),
                   _Row('Service Fee', '\$${serviceFee.toStringAsFixed(2)}'),
                   _Row('Tax', '\$${tax.toStringAsFixed(2)}'),
                   const Divider(height: 20),
@@ -103,28 +154,41 @@ class HotelBookingScreen extends StatelessWidget {
               text: 'Confirm Booking • \$${total.toStringAsFixed(2)}',
               color: AppColors.hotel,
               onPressed: () async {
-                final auth = context.read<AuthProvider>();
+                final allowed = await requireLoggedIn(
+                  context,
+                  message: 'Please log in to confirm your hotel booking.',
+                );
+                if (!context.mounted || !allowed) return;
+
                 try {
                   await ApiClient.post('/orders', {
-                    'userId': auth.user?.id ?? 'guest',
+                    'userId': auth.user!.id,
                     'moduleType': 'HOTEL',
                     'subtotal': roomRate,
                     'tax': tax,
                     'deliveryFee': serviceFee,
                     'total': total,
-                    'items': [{'hotelId': h.id, 'name': h.name, 'nights': nights}],
+                    'items': [
+                      {'hotelId': h.id, 'name': h.name, 'nights': nights},
+                    ],
                   });
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: const Text('Hotel booked successfully! 🎉'),
                       backgroundColor: AppColors.success,
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   );
                   context.go('/');
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: \$e')));
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
                 }
               },
             ),
@@ -147,8 +211,18 @@ class _Row extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: bold ? AppTextStyles.labelLarge : AppTextStyles.bodyMedium.copyWith(color: AppColors.grey)),
-          Text(value, style: bold ? AppTextStyles.priceSmall.copyWith(color: AppColors.hotel) : AppTextStyles.labelMedium),
+          Text(
+            label,
+            style: bold
+                ? AppTextStyles.labelLarge
+                : AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+          ),
+          Text(
+            value,
+            style: bold
+                ? AppTextStyles.priceSmall.copyWith(color: AppColors.hotel)
+                : AppTextStyles.labelMedium,
+          ),
         ],
       ),
     );

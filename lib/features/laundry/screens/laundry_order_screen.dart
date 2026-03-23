@@ -7,6 +7,7 @@ import '../../../core/models/models.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/auth_gate.dart';
 
 class LaundryOrderScreen extends StatefulWidget {
   const LaundryOrderScreen({super.key});
@@ -38,7 +39,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('New Order'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), onPressed: () => context.pop()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -51,11 +55,18 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             Row(
               children: List.generate(services.length, (index) {
                 final s = services[index];
-                if (index > 2) return const SizedBox.shrink(); // Show up to 3 inline
+                if (index > 2) {
+                  return const SizedBox.shrink(); // Show up to 3 inline
+                }
                 return Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(right: index < 2 ? 10 : 0),
-                    child: _ServiceOption(s.name, _getIcon(s.id), _selectedService == index, () => setState(() => _selectedService = index)),
+                    child: _ServiceOption(
+                      s.name,
+                      _getIcon(s.id),
+                      _selectedService == index,
+                      () => setState(() => _selectedService = index),
+                    ),
                   ),
                 );
               }),
@@ -67,7 +78,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             ..._items.entries.map((e) {
               return Container(
                 margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(14),
@@ -84,28 +98,37 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       child: Row(
                         children: [
                           SizedBox(
-                            width: 36, height: 36,
+                            width: 36,
+                            height: 36,
                             child: IconButton(
                               padding: EdgeInsets.zero,
                               icon: const Icon(Icons.remove, size: 16),
                               onPressed: () {
                                 setState(() {
-                                  if (_items[e.key]! > 0) _items[e.key] = _items[e.key]! - 1;
+                                  if (_items[e.key]! > 0) {
+                                    _items[e.key] = _items[e.key]! - 1;
+                                  }
                                 });
                               },
                             ),
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Text('${e.value}', style: AppTextStyles.labelLarge),
+                            child: Text(
+                              '${e.value}',
+                              style: AppTextStyles.labelLarge,
+                            ),
                           ),
                           SizedBox(
-                            width: 36, height: 36,
+                            width: 36,
+                            height: 36,
                             child: IconButton(
                               padding: EdgeInsets.zero,
                               icon: const Icon(Icons.add, size: 16),
                               onPressed: () {
-                                setState(() => _items[e.key] = _items[e.key]! + 1);
+                                setState(
+                                  () => _items[e.key] = _items[e.key]! + 1,
+                                );
                               },
                             ),
                           ),
@@ -125,7 +148,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: 5,
-                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (context, i) {
                   final sel = _selectedDate == i;
                   final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
@@ -138,14 +161,26 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       decoration: BoxDecoration(
                         color: sel ? AppColors.laundry : AppColors.white,
                         borderRadius: BorderRadius.circular(14),
-                        border: sel ? null : Border.all(color: AppColors.lightGrey),
+                        border: sel
+                            ? null
+                            : Border.all(color: AppColors.lightGrey),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(days[i], style: AppTextStyles.caption.copyWith(color: sel ? Colors.white60 : AppColors.grey)),
+                          Text(
+                            days[i],
+                            style: AppTextStyles.caption.copyWith(
+                              color: sel ? Colors.white60 : AppColors.grey,
+                            ),
+                          ),
                           const SizedBox(height: 4),
-                          Text(dates[i], style: AppTextStyles.h4.copyWith(color: sel ? AppColors.white : AppColors.dark)),
+                          Text(
+                            dates[i],
+                            style: AppTextStyles.h4.copyWith(
+                              color: sel ? AppColors.white : AppColors.dark,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -158,21 +193,37 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             Text('Time Slot', style: AppTextStyles.h4),
             const SizedBox(height: 12),
             Wrap(
-              spacing: 10, runSpacing: 10,
+              spacing: 10,
+              runSpacing: 10,
               children: List.generate(4, (i) {
                 final sel = _selectedTime == i;
-                final slots = ['08:00 - 10:00', '10:00 - 12:00', '02:00 - 04:00', '04:00 - 06:00'];
+                final slots = [
+                  '08:00 - 10:00',
+                  '10:00 - 12:00',
+                  '02:00 - 04:00',
+                  '04:00 - 06:00',
+                ];
                 return GestureDetector(
                   onTap: () => setState(() => _selectedTime = i),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: sel ? AppColors.laundry : AppColors.white,
                       borderRadius: BorderRadius.circular(12),
-                      border: sel ? null : Border.all(color: AppColors.lightGrey),
+                      border: sel
+                          ? null
+                          : Border.all(color: AppColors.lightGrey),
                     ),
-                    child: Text(slots[i], style: AppTextStyles.labelMedium.copyWith(color: sel ? AppColors.white : AppColors.dark)),
+                    child: Text(
+                      slots[i],
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: sel ? AppColors.white : AppColors.dark,
+                      ),
+                    ),
                   ),
                 );
               }),
@@ -183,21 +234,36 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(14)),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(14),
+              ),
               child: Row(
                 children: [
-                  const Icon(Icons.location_on_rounded, color: AppColors.laundry, size: 22),
+                  const Icon(
+                    Icons.location_on_rounded,
+                    color: AppColors.laundry,
+                    size: 22,
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Home', style: AppTextStyles.labelMedium),
-                        Text('123 Main Street, Downtown', style: AppTextStyles.caption),
+                        Text(
+                          '123 Main Street, Downtown',
+                          style: AppTextStyles.caption,
+                        ),
                       ],
                     ),
                   ),
-                  Text('Change', style: AppTextStyles.labelSmall.copyWith(color: AppColors.laundry)),
+                  Text(
+                    'Change',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.laundry,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -205,14 +271,21 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             // Summary
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: AppColors.laundryBg, borderRadius: BorderRadius.circular(16)),
+              decoration: BoxDecoration(
+                color: AppColors.laundryBg,
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Column(
                 children: [
                   _Row('Service', selectedModel.name),
                   _Row('Items', '$totalItems items'),
                   _Row('Pickup', 'Tue, Mar 23 • 02:00 - 04:00'),
                   const Divider(height: 20),
-                  _Row('Estimated Total', '\$${estTotal.toStringAsFixed(2)}', bold: true),
+                  _Row(
+                    'Estimated Total',
+                    '\$${estTotal.toStringAsFixed(2)}',
+                    bold: true,
+                  ),
                 ],
               ),
             ),
@@ -222,27 +295,40 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
               color: AppColors.laundry,
               onPressed: () async {
                 final auth = context.read<AuthProvider>();
+                final allowed = await requireLoggedIn(
+                  context,
+                  message: 'Please log in to schedule your laundry pickup.',
+                );
+                if (!context.mounted || !allowed) return;
                 try {
                   await ApiClient.post('/orders', {
-                    'userId': auth.user?.id ?? 'guest',
+                    'userId': auth.user!.id,
                     'moduleType': 'LAUNDRY',
                     'subtotal': estTotal,
                     'tax': estTotal * 0.08,
                     'deliveryFee': 0,
                     'total': estTotal * 1.08,
-                    'items': [{'service': selectedModel.name, 'itemCount': totalItems}],
+                    'items': [
+                      {'service': selectedModel.name, 'itemCount': totalItems},
+                    ],
                   });
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: const Text('Pickup scheduled! 🧺'),
                       backgroundColor: AppColors.success,
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   );
                   context.go('/');
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: \$e')));
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
                 }
               },
             ),
@@ -274,9 +360,20 @@ class _ServiceOption extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, color: selected ? AppColors.white : AppColors.laundry, size: 28),
+            Icon(
+              icon,
+              color: selected ? AppColors.white : AppColors.laundry,
+              size: 28,
+            ),
             const SizedBox(height: 6),
-            Text(name, style: AppTextStyles.labelSmall.copyWith(color: selected ? AppColors.white : AppColors.dark), textAlign: TextAlign.center, maxLines: 1),
+            Text(
+              name,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: selected ? AppColors.white : AppColors.dark,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+            ),
           ],
         ),
       ),
@@ -296,9 +393,20 @@ class _Row extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: bold ? AppTextStyles.labelLarge : AppTextStyles.bodyMedium.copyWith(color: AppColors.grey)),
+          Text(
+            label,
+            style: bold
+                ? AppTextStyles.labelLarge
+                : AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+          ),
           Expanded(
-            child: Text(value, style: bold ? AppTextStyles.priceSmall.copyWith(color: AppColors.laundry) : AppTextStyles.labelMedium, textAlign: TextAlign.right),
+            child: Text(
+              value,
+              style: bold
+                  ? AppTextStyles.priceSmall.copyWith(color: AppColors.laundry)
+                  : AppTextStyles.labelMedium,
+              textAlign: TextAlign.right,
+            ),
           ),
         ],
       ),

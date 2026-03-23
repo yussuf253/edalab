@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -23,152 +24,35 @@ class AddressesScreen extends StatelessWidget {
     BuildContext context, {
     AddressModel? address,
   }) async {
-    final labelController = TextEditingController(text: address?.label ?? '');
-    final addressController = TextEditingController(text: address?.address ?? '');
-    final cityController = TextEditingController(text: address?.city ?? '');
-    final zipCodeController = TextEditingController(text: address?.zipCode ?? '');
-    var isDefault = address?.isDefault ?? false;
-    var isSubmitting = false;
+    final auth = context.read<AuthProvider>();
+    if (!auth.isLoggedIn || auth.user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please log in to manage your addresses.'),
+          action: SnackBarAction(
+            label: 'Login',
+            onPressed: () => context.push('/login'),
+          ),
+        ),
+      );
+      return;
+    }
 
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 40,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        address == null ? 'Add Address' : 'Edit Address',
-                        style: AppTextStyles.h4,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: labelController,
-                        decoration: const InputDecoration(
-                          labelText: 'Label',
-                          prefixIcon: Icon(Icons.label_outline_rounded),
-                          hintText: 'Home, Work, Mom\'s House',
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: addressController,
-                        maxLines: 2,
-                        decoration: const InputDecoration(
-                          labelText: 'Street Address',
-                          prefixIcon: Icon(Icons.location_on_outlined),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: cityController,
-                        decoration: const InputDecoration(
-                          labelText: 'City',
-                          prefixIcon: Icon(Icons.location_city_outlined),
-                        ),
-                      ),
-                      const SizedBox(height: 14),
-                      TextFormField(
-                        controller: zipCodeController,
-                        decoration: const InputDecoration(
-                          labelText: 'ZIP Code',
-                          prefixIcon: Icon(Icons.markunread_mailbox_outlined),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      SwitchListTile(
-                        value: isDefault,
-                        onChanged: (value) => setModalState(() => isDefault = value),
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Set as default'),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: isSubmitting
-                              ? null
-                              : () async {
-                                  setModalState(() {
-                                    isSubmitting = true;
-                                  });
-
-                                  final auth = context.read<AuthProvider>();
-                                  final success = address == null
-                                      ? await auth.addAddress(
-                                          label: labelController.text,
-                                          address: addressController.text,
-                                          city: cityController.text,
-                                          zipCode: zipCodeController.text,
-                                          isDefault: isDefault,
-                                        )
-                                      : await auth.updateAddress(
-                                          addressId: address.id,
-                                          label: labelController.text,
-                                          address: addressController.text,
-                                          city: cityController.text,
-                                          zipCode: zipCodeController.text,
-                                          isDefault: isDefault,
-                                        );
-
-                                  if (!context.mounted) {
-                                    return;
-                                  }
-
-                                  if (success) {
-                                    Navigator.of(context).pop();
-                                  } else {
-                                    setModalState(() {
-                                      isSubmitting = false;
-                                    });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(auth.errorMessage ?? 'Failed to save address.'),
-                                      ),
-                                    );
-                                  }
-                                },
-                          child: Text(address == null ? 'Add Address' : 'Save Changes'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
+        return _AddressSheet(address: address);
       },
     );
-
-    labelController.dispose();
-    addressController.dispose();
-    cityController.dispose();
-    zipCodeController.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final addresses = authProvider.user?.addresses ?? const [];
+    final isLoggedIn = authProvider.isLoggedIn && authProvider.user != null;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -200,10 +84,15 @@ class AddressesScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Text('No saved addresses yet', style: AppTextStyles.h4),
+                    Text(
+                      isLoggedIn ? 'No saved addresses yet' : 'Log in to manage addresses',
+                      style: AppTextStyles.h4,
+                    ),
                     const SizedBox(height: 8),
                     Text(
-                      'Add delivery locations to make checkout faster and keep your favorite places handy.',
+                      isLoggedIn
+                          ? 'Add delivery locations to make checkout faster and keep your favorite places handy.'
+                          : 'Save delivery locations after logging in so checkout is faster across the app.',
                       style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
                       textAlign: TextAlign.center,
                     ),
@@ -320,8 +209,178 @@ class AddressesScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddressSheet(context),
         backgroundColor: AppColors.primary,
-        label: const Text('Add Address', style: TextStyle(color: AppColors.white)),
-        icon: const Icon(Icons.add_rounded, color: AppColors.white),
+        label: Text(
+          isLoggedIn ? 'Add Address' : 'Login Required',
+          style: const TextStyle(color: AppColors.white),
+        ),
+        icon: Icon(
+          isLoggedIn ? Icons.add_rounded : Icons.lock_outline_rounded,
+          color: AppColors.white,
+        ),
+      ),
+    );
+  }
+}
+
+class _AddressSheet extends StatefulWidget {
+  final AddressModel? address;
+
+  const _AddressSheet({this.address});
+
+  @override
+  State<_AddressSheet> createState() => _AddressSheetState();
+}
+
+class _AddressSheetState extends State<_AddressSheet> {
+  late final TextEditingController _labelController;
+  late final TextEditingController _addressController;
+  late final TextEditingController _cityController;
+  late final TextEditingController _zipCodeController;
+  late bool _isDefault;
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _labelController = TextEditingController(text: widget.address?.label ?? '');
+    _addressController = TextEditingController(text: widget.address?.address ?? '');
+    _cityController = TextEditingController(text: widget.address?.city ?? '');
+    _zipCodeController = TextEditingController(text: widget.address?.zipCode ?? '');
+    _isDefault = widget.address?.isDefault ?? false;
+  }
+
+  @override
+  void dispose() {
+    _labelController.dispose();
+    _addressController.dispose();
+    _cityController.dispose();
+    _zipCodeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Material(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(24),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.address == null ? 'Add Address' : 'Edit Address',
+                      style: AppTextStyles.h4,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _labelController,
+                      decoration: const InputDecoration(
+                        labelText: 'Label',
+                        prefixIcon: Icon(Icons.label_outline_rounded),
+                        hintText: 'Home, Work, Mom\'s House',
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _addressController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Street Address',
+                        prefixIcon: Icon(Icons.location_on_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _cityController,
+                      decoration: const InputDecoration(
+                        labelText: 'City',
+                        prefixIcon: Icon(Icons.location_city_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: _zipCodeController,
+                      decoration: const InputDecoration(
+                        labelText: 'ZIP Code',
+                        prefixIcon: Icon(Icons.markunread_mailbox_outlined),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SwitchListTile(
+                      value: _isDefault,
+                      onChanged: (value) => setState(() => _isDefault = value),
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Set as default'),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: _isSubmitting ? null : _submit,
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
+                              )
+                            : Text(widget.address == null ? 'Add Address' : 'Save Changes'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
+    setState(() => _isSubmitting = true);
+
+    final auth = context.read<AuthProvider>();
+    final success = widget.address == null
+        ? await auth.addAddress(
+            label: _labelController.text,
+            address: _addressController.text,
+            city: _cityController.text,
+            zipCode: _zipCodeController.text,
+            isDefault: _isDefault,
+          )
+        : await auth.updateAddress(
+            addressId: widget.address!.id,
+            label: _labelController.text,
+            address: _addressController.text,
+            city: _cityController.text,
+            zipCode: _zipCodeController.text,
+            isDefault: _isDefault,
+          );
+
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.of(context).pop();
+      return;
+    }
+
+    setState(() => _isSubmitting = false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(auth.errorMessage ?? 'Failed to save address.'),
       ),
     );
   }

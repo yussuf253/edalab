@@ -47,11 +47,15 @@ class _HotelScreenState extends State<HotelScreen> {
               child: AppSearchBar(
                 hint: 'Search hotels, locations...',
                 controller: _searchController,
-                onChanged: (value) => setState(() => _searchQuery = value.trim()),
+                onChanged: (value) =>
+                    setState(() => _searchQuery = value.trim()),
                 suffix: _searchQuery.isEmpty
                     ? null
                     : IconButton(
-                        icon: const Icon(Icons.close_rounded, color: AppColors.mediumGrey),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: AppColors.mediumGrey,
+                        ),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _searchQuery = '');
@@ -108,11 +112,31 @@ class _HotelScreenState extends State<HotelScreen> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.all(16),
                 children: [
-                  _DestChip('🏖️', 'Beach', onTap: () => _applyDestination('Beach')),
-                  _DestChip('🏔️', 'Mountain', onTap: () => _applyDestination('Mountain')),
-                  _DestChip('🌆', 'City', onTap: () => _applyDestination('City')),
-                  _DestChip('🏝️', 'Island', onTap: () => _applyDestination('Island')),
-                  _DestChip('🏜️', 'Desert', onTap: () => _applyDestination('Desert')),
+                  _DestChip(
+                    '🏖️',
+                    'Beach',
+                    onTap: () => _applyDestination('Beach'),
+                  ),
+                  _DestChip(
+                    '🏔️',
+                    'Mountain',
+                    onTap: () => _applyDestination('Mountain'),
+                  ),
+                  _DestChip(
+                    '🌆',
+                    'City',
+                    onTap: () => _applyDestination('City'),
+                  ),
+                  _DestChip(
+                    '🏝️',
+                    'Island',
+                    onTap: () => _applyDestination('Island'),
+                  ),
+                  _DestChip(
+                    '🏜️',
+                    'Desert',
+                    onTap: () => _applyDestination('Desert'),
+                  ),
                 ],
               ),
             ),
@@ -124,10 +148,7 @@ class _HotelScreenState extends State<HotelScreen> {
                 children: [
                   Text('Recommended Hotels', style: AppTextStyles.h4),
                   const Spacer(),
-                  Text(
-                    '${hotels.length} found',
-                    style: AppTextStyles.caption,
-                  ),
+                  Text('${hotels.length} found', style: AppTextStyles.caption),
                 ],
               ),
             ),
@@ -145,14 +166,23 @@ class _HotelScreenState extends State<HotelScreen> {
                   ),
                   child: Column(
                     children: [
-                      const Icon(Icons.hotel_rounded, size: 44, color: AppColors.mediumGrey),
+                      const Icon(
+                        Icons.hotel_rounded,
+                        size: 44,
+                        color: AppColors.mediumGrey,
+                      ),
                       const SizedBox(height: 12),
-                      Text('No hotels match your search', style: AppTextStyles.h4),
+                      Text(
+                        'No hotels match your search',
+                        style: AppTextStyles.h4,
+                      ),
                       const SizedBox(height: 6),
                       Text(
                         'Try another hotel name or destination.',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -163,7 +193,9 @@ class _HotelScreenState extends State<HotelScreen> {
             SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
                 final h = hotels[index];
-                final type = h.amenities.isNotEmpty ? h.amenities.first : 'Hotel';
+                final type = h.amenities.isNotEmpty
+                    ? h.amenities.first
+                    : 'Hotel';
                 return GestureDetector(
                   onTap: () => context.push('/hotel/detail/${h.id}'),
                   child: Container(
@@ -185,7 +217,9 @@ class _HotelScreenState extends State<HotelScreen> {
                                 AppColors.hotel.withValues(alpha: 0.1),
                               ],
                             ),
-                            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
                           ),
                           child: Stack(
                             children: [
@@ -200,7 +234,10 @@ class _HotelScreenState extends State<HotelScreen> {
                                 top: 12,
                                 left: 12,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: AppColors.hotel,
                                     borderRadius: BorderRadius.circular(8),
@@ -237,7 +274,11 @@ class _HotelScreenState extends State<HotelScreen> {
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  const Icon(Icons.location_on_outlined, size: 14, color: AppColors.grey),
+                                  const Icon(
+                                    Icons.location_on_outlined,
+                                    size: 14,
+                                    color: AppColors.grey,
+                                  ),
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
@@ -252,18 +293,29 @@ class _HotelScreenState extends State<HotelScreen> {
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  const Icon(Icons.star_rounded, size: 16, color: AppColors.warning),
+                                  const Icon(
+                                    Icons.star_rounded,
+                                    size: 16,
+                                    color: AppColors.warning,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     '${h.rating}',
-                                    style: AppTextStyles.labelSmall.copyWith(color: AppColors.dark),
+                                    style: AppTextStyles.labelSmall.copyWith(
+                                      color: AppColors.dark,
+                                    ),
                                   ),
                                   const SizedBox(width: 6),
-                                  Text('(${h.reviewsCount})', style: AppTextStyles.caption),
+                                  Text(
+                                    '(${h.reviewsCount})',
+                                    style: AppTextStyles.caption,
+                                  ),
                                   const Spacer(),
                                   Text(
                                     '\$${h.pricePerNight.toInt()}',
-                                    style: AppTextStyles.priceSmall.copyWith(color: AppColors.hotel),
+                                    style: AppTextStyles.priceSmall.copyWith(
+                                      color: AppColors.hotel,
+                                    ),
                                   ),
                                   Text('/night', style: AppTextStyles.caption),
                                 ],
@@ -292,7 +344,9 @@ class _HotelScreenState extends State<HotelScreen> {
       return hotel.name.toLowerCase().contains(query) ||
           hotel.city.toLowerCase().contains(query) ||
           hotel.address.toLowerCase().contains(query) ||
-          hotel.amenities.any((amenity) => amenity.toLowerCase().contains(query));
+          hotel.amenities.any(
+            (amenity) => amenity.toLowerCase().contains(query),
+          );
     }).toList();
   }
 
@@ -411,7 +465,9 @@ class _HotelScreenState extends State<HotelScreen> {
                         ),
                         child: Text(
                           'Apply',
-                          style: AppTextStyles.labelMedium.copyWith(color: AppColors.white),
+                          style: AppTextStyles.labelMedium.copyWith(
+                            color: AppColors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -494,10 +550,7 @@ class _GuestButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onTap;
 
-  const _GuestButton({
-    required this.icon,
-    required this.onTap,
-  });
+  const _GuestButton({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
