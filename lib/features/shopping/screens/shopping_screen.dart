@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/models/models.dart';
 import '../../../core/providers/providers.dart';
@@ -17,10 +18,39 @@ class ShoppingScreen extends StatefulWidget {
 
 class _ShoppingScreenState extends State<ShoppingScreen> {
   int _selectedCategory = 0;
+  bool _isLoading = true;
+  List<ProductModel> _products = ProductModel.sampleProducts;
 
   final _categories = [
     'All', 'Shoes', 'Electronics', 'Clothing', 'Home', 'Accessories',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      final response = await ApiClient.get('/catalog/products?moduleType=shopping');
+      final items = (response as List)
+          .map((entry) => ProductModel.fromApi(Map<String, dynamic>.from(entry as Map)))
+          .toList();
+
+      if (!mounted) return;
+      setState(() {
+        _products = items.isEmpty ? ProductModel.sampleProducts : items;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _products = ProductModel.sampleProducts;
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +58,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
     
     // Filter products by category
     final categoryFilter = _selectedCategory == 0 ? null : _categories[_selectedCategory];
-    final products = ProductModel.sampleProducts.where((p) {
+    final products = _products.where((p) {
       if (categoryFilter == null) return true;
       return p.category == categoryFilter;
     }).toList();
@@ -163,7 +193,9 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
           const SizedBox(height: 8),
           // Products Grid
           Expanded(
-            child: products.isEmpty 
+            child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : products.isEmpty 
               ? Center(child: Text("No products found.", style: AppTextStyles.bodyMedium))
               : GridView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),

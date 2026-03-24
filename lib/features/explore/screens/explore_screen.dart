@@ -11,14 +11,62 @@ class ExploreScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final services = [
-      _ServiceItem('Food Delivery', '200+ restaurants', Icons.restaurant_rounded, AppColors.food, '/food'),
-      _ServiceItem('Shopping', '500+ products', Icons.shopping_bag_rounded, AppColors.shopping, '/shopping'),
-      _ServiceItem('Doctor', '100+ specialists', Icons.medical_services_rounded, AppColors.doctor, '/doctor'),
-      _ServiceItem('Hotel', '50+ hotels', Icons.hotel_rounded, AppColors.hotel, '/hotel'),
-      _ServiceItem('Ride', 'Anywhere, anytime', Icons.directions_car_rounded, AppColors.ride, '/ride'),
-      _ServiceItem('Pharmacy', '1000+ medicines', Icons.local_pharmacy_rounded, AppColors.pharmacy, '/pharmacy'),
-      _ServiceItem('Grocery', 'Fresh everyday', Icons.eco_rounded, AppColors.grocery, '/grocery'),
-      _ServiceItem('Laundry', 'Clean & fresh', Icons.local_laundry_service_rounded, AppColors.laundry, '/laundry'),
+      _ServiceItem(
+        'Food Delivery',
+        '200+ restaurants',
+        Icons.restaurant_rounded,
+        AppColors.food,
+        '/food',
+      ),
+      _ServiceItem(
+        'Shopping',
+        '500+ products',
+        Icons.shopping_bag_rounded,
+        AppColors.shopping,
+        '/shopping',
+      ),
+      _ServiceItem(
+        'Doctor',
+        '100+ specialists',
+        Icons.medical_services_rounded,
+        AppColors.doctor,
+        '/doctor',
+      ),
+      _ServiceItem(
+        'Hotel',
+        '50+ hotels',
+        Icons.hotel_rounded,
+        AppColors.hotel,
+        '/hotel',
+      ),
+      _ServiceItem(
+        'Ride',
+        'Anywhere, anytime',
+        Icons.directions_car_rounded,
+        AppColors.ride,
+        '/ride',
+      ),
+      _ServiceItem(
+        'Pharmacy',
+        '1000+ medicines',
+        Icons.local_pharmacy_rounded,
+        AppColors.pharmacy,
+        '/pharmacy',
+      ),
+      _ServiceItem(
+        'Grocery',
+        'Fresh everyday',
+        Icons.eco_rounded,
+        AppColors.grocery,
+        '/grocery',
+      ),
+      _ServiceItem(
+        'Laundry',
+        'Clean & fresh',
+        Icons.local_laundry_service_rounded,
+        AppColors.laundry,
+        '/laundry',
+      ),
     ];
 
     return Scaffold(
@@ -33,7 +81,11 @@ class ExploreScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-              child: AppSearchBar(hint: 'Search services, products, doctors...'),
+              child: AppSearchBar(
+                hint: 'Search services, products, doctors...',
+                readOnly: true,
+                onTap: () => context.push('/search'),
+              ),
             ),
           ),
           // Categories
@@ -60,7 +112,8 @@ class ExploreScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          width: 56, height: 56,
+                          width: 56,
+                          height: 56,
                           decoration: BoxDecoration(
                             color: s.color.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(16),
@@ -96,10 +149,34 @@ class ExploreScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: [
-                  _ActionTile(Icons.fastfood_rounded, 'Order Food', 'Hungry? Order from 200+ restaurants', AppColors.food, () => context.push('/food')),
-                  _ActionTile(Icons.directions_car_rounded, 'Book a Ride', 'Get where you need to go', AppColors.ride, () => context.push('/ride')),
-                  _ActionTile(Icons.medical_services_rounded, 'Consult Doctor', 'Talk to a specialist now', AppColors.doctor, () => context.push('/doctor')),
-                  _ActionTile(Icons.local_laundry_service_rounded, 'Laundry Pickup', 'Schedule a pickup today', AppColors.laundry, () => context.push('/laundry')),
+                  _ActionTile(
+                    Icons.fastfood_rounded,
+                    'Order Food',
+                    'Hungry? Order from 200+ restaurants',
+                    AppColors.food,
+                    () => context.push('/food'),
+                  ),
+                  _ActionTile(
+                    Icons.directions_car_rounded,
+                    'Book a Ride',
+                    'Get where you need to go',
+                    AppColors.ride,
+                    () => context.push('/ride'),
+                  ),
+                  _ActionTile(
+                    Icons.medical_services_rounded,
+                    'Consult Doctor',
+                    'Talk to a specialist now',
+                    AppColors.doctor,
+                    () => context.push('/doctor'),
+                  ),
+                  _ActionTile(
+                    Icons.local_laundry_service_rounded,
+                    'Laundry Pickup',
+                    'Schedule a pickup today',
+                    AppColors.laundry,
+                    () => context.push('/laundry'),
+                  ),
                 ],
               ),
             ),
@@ -123,7 +200,13 @@ class _ActionTile extends StatelessWidget {
   final String title, subtitle;
   final Color color;
   final VoidCallback onTap;
-  const _ActionTile(this.icon, this.title, this.subtitle, this.color, this.onTap);
+  const _ActionTile(
+    this.icon,
+    this.title,
+    this.subtitle,
+    this.color,
+    this.onTap,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -140,8 +223,12 @@ class _ActionTile extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 48, height: 48,
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(14)),
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
               child: Icon(icon, color: color, size: 24),
             ),
             const SizedBox(width: 14),
@@ -154,7 +241,11 @@ class _ActionTile extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.mediumGrey),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
+              color: AppColors.mediumGrey,
+            ),
           ],
         ),
       ),

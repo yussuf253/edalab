@@ -20,6 +20,8 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
   int _selectedDate = 1;
   int _selectedTime = 2;
   final _items = {'Shirts': 3, 'Pants': 2, 'Dresses': 1, 'Jackets': 0};
+  List<LaundryService> _services = LaundryModel.sampleServices;
+  bool _isLoading = true;
 
   IconData _getIcon(String id) {
     if (id == 'l1') return Icons.local_laundry_service_rounded;
@@ -29,11 +31,54 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadServices();
+  }
+
+  Future<void> _loadServices() async {
+    try {
+      final response = await ApiClient.get('/catalog/laundry-services');
+      final items = (response as List)
+          .map(
+            (item) =>
+                LaundryService.fromApi(Map<String, dynamic>.from(item as Map)),
+          )
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _services = items.isEmpty ? LaundryModel.sampleServices : items;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final services = LaundryModel.sampleServices;
+    final auth = context.watch<AuthProvider>();
+    final services = _services;
     final selectedModel = services[_selectedService];
     final totalItems = _items.values.fold(0, (a, b) => a + b);
     final estTotal = selectedModel.price * totalItems; // Simplified estimate
+    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+    final dates = ['22', '23', '24', '25', '26'];
+    final slots = [
+      '08:00 - 10:00',
+      '10:00 - 12:00',
+      '02:00 - 04:00',
+      '04:00 - 06:00',
+    ];
+    final defaultAddress = auth.user?.addresses
+        .cast<AddressModel?>()
+        .firstWhere(
+          (address) => address?.isDefault == true,
+          orElse: () => auth.user?.addresses.isNotEmpty == true
+              ? auth.user!.addresses.first
+              : null,
+        );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -52,6 +97,11 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             // Service type
             Text('Service Type', style: AppTextStyles.h4),
             const SizedBox(height: 12),
+            if (_isLoading)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 12),
+                child: LinearProgressIndicator(minHeight: 3),
+              ),
             Row(
               children: List.generate(services.length, (index) {
                 final s = services[index];
@@ -151,8 +201,6 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                 separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (context, i) {
                   final sel = _selectedDate == i;
-                  final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-                  final dates = ['22', '23', '24', '25', '26'];
                   return GestureDetector(
                     onTap: () => setState(() => _selectedDate = i),
                     child: AnimatedContainer(
@@ -197,12 +245,6 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
               runSpacing: 10,
               children: List.generate(4, (i) {
                 final sel = _selectedTime == i;
-                final slots = [
-                  '08:00 - 10:00',
-                  '10:00 - 12:00',
-                  '02:00 - 04:00',
-                  '04:00 - 06:00',
-                ];
                 return GestureDetector(
                   onTap: () => setState(() => _selectedTime = i),
                   child: AnimatedContainer(
@@ -252,7 +294,8 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       children: [
                         Text('Home', style: AppTextStyles.labelMedium),
                         Text(
-                          '123 Main Street, Downtown',
+                          defaultAddress?.address ??
+                              '123 Main Street, Downtown',
                           style: AppTextStyles.caption,
                         ),
                       ],
@@ -279,7 +322,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                 children: [
                   _Row('Service', selectedModel.name),
                   _Row('Items', '$totalItems items'),
-                  _Row('Pickup', 'Tue, Mar 23 • 02:00 - 04:00'),
+                  _Row(
+                    'Pickup',
+                    '${days[_selectedDate]}, Mar ${dates[_selectedDate]} • ${slots[_selectedTime]}',
+                  ),
                   const Divider(height: 20),
                   _Row(
                     'Estimated Total',
@@ -294,7 +340,6 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
               text: 'Schedule Pickup',
               color: AppColors.laundry,
               onPressed: () async {
-                final auth = context.read<AuthProvider>();
                 final allowed = await requireLoggedIn(
                   context,
                   message: 'Please log in to schedule your laundry pickup.',
@@ -309,7 +354,22 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                     'deliveryFee': 0,
                     'total': estTotal * 1.08,
                     'items': [
-                      {'service': selectedModel.name, 'itemCount': totalItems},
+                      {
+                        'id': selectedModel.id,
+                        'name': selectedModel.name,
+                        'price': selectedModel.price,
+                        'quantity': totalItems == 0 ? 1 : totalItems,
+                        'total': estTotal == 0 ? selectedModel.price : estTotal,
+                        'metadata': {
+                          'serviceId': selectedModel.id,
+                          'serviceUnit': selectedModel.unit,
+                          'itemCount': totalItems,
+                          'pickupSlot': slots[_selectedTime],
+                          'pickupDay': days[_selectedDate],
+                          'pickupDate': dates[_selectedDate],
+                          'items': _items,
+                        },
+                      },
                     ],
                   });
                   if (!context.mounted) return;

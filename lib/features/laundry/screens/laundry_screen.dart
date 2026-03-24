@@ -4,10 +4,19 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/models/models.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/utils/auth_gate.dart';
 
-class LaundryScreen extends StatelessWidget {
+class LaundryScreen extends StatefulWidget {
   const LaundryScreen({super.key});
+
+  @override
+  State<LaundryScreen> createState() => _LaundryScreenState();
+}
+
+class _LaundryScreenState extends State<LaundryScreen> {
+  List<LaundryService> _services = LaundryModel.sampleServices;
+  bool _isLoading = true;
 
   IconData _getIcon(String id) {
     if (id == 'l1') return Icons.local_laundry_service_rounded;
@@ -24,8 +33,34 @@ class LaundryScreen extends StatelessWidget {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _loadServices();
+  }
+
+  Future<void> _loadServices() async {
+    try {
+      final response = await ApiClient.get('/catalog/laundry-services');
+      final items = (response as List)
+          .map(
+            (item) =>
+                LaundryService.fromApi(Map<String, dynamic>.from(item as Map)),
+          )
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _services = items.isEmpty ? LaundryModel.sampleServices : items;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final services = LaundryModel.sampleServices;
+    final services = _services;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -121,6 +156,11 @@ class LaundryScreen extends StatelessWidget {
             // Services
             Text('Our Services', style: AppTextStyles.h4),
             const SizedBox(height: 14),
+            if (_isLoading)
+              const Padding(
+                padding: EdgeInsets.only(bottom: 14),
+                child: Center(child: CircularProgressIndicator()),
+              ),
             ...services.map(
               (s) => GestureDetector(
                 onTap: () => context.push('/laundry/order'),

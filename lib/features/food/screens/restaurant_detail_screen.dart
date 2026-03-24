@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/models/models.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
@@ -19,6 +20,36 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'All';
   String _searchQuery = '';
+  late RestaurantModel _restaurant;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _restaurant = RestaurantModel.sampleRestaurants.firstWhere(
+      (r) => r.id == widget.restaurantId,
+      orElse: () => RestaurantModel.sampleRestaurants.first,
+    );
+    _loadRestaurant();
+  }
+
+  Future<void> _loadRestaurant() async {
+    try {
+      final response = await ApiClient.get(
+        '/catalog/restaurants/${widget.restaurantId}',
+      );
+      if (!mounted) return;
+      setState(() {
+        _restaurant = RestaurantModel.fromApi(
+          Map<String, dynamic>.from(response as Map),
+        );
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -28,10 +59,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final restaurant = RestaurantModel.sampleRestaurants.firstWhere(
-      (r) => r.id == widget.restaurantId,
-      orElse: () => RestaurantModel.sampleRestaurants.first,
-    );
+    final restaurant = _restaurant;
     final menu = _resolvedMenu(restaurant);
 
     final cartProvider = context.watch<CartProvider>();
@@ -41,23 +69,31 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
 
     final categories = ['All', ...menu.map((category) => category.name)];
     final normalizedQuery = _searchQuery.trim().toLowerCase();
-    final visibleCategories = menu.where((category) {
-      final matchesCategory = _selectedCategory == 'All' || category.name == _selectedCategory;
-      final matchesSearch = normalizedQuery.isEmpty ||
-          category.items.any((item) =>
-              item.name.toLowerCase().contains(normalizedQuery) ||
-              item.description.toLowerCase().contains(normalizedQuery));
-      return matchesCategory && matchesSearch;
-    }).map((category) {
-      final items = category.items.where((item) {
-        if (normalizedQuery.isEmpty) {
-          return true;
-        }
-        return item.name.toLowerCase().contains(normalizedQuery) ||
-            item.description.toLowerCase().contains(normalizedQuery);
-      }).toList();
-      return MapEntry(category.name, items);
-    }).where((entry) => entry.value.isNotEmpty).toList();
+    final visibleCategories = menu
+        .where((category) {
+          final matchesCategory =
+              _selectedCategory == 'All' || category.name == _selectedCategory;
+          final matchesSearch =
+              normalizedQuery.isEmpty ||
+              category.items.any(
+                (item) =>
+                    item.name.toLowerCase().contains(normalizedQuery) ||
+                    item.description.toLowerCase().contains(normalizedQuery),
+              );
+          return matchesCategory && matchesSearch;
+        })
+        .map((category) {
+          final items = category.items.where((item) {
+            if (normalizedQuery.isEmpty) {
+              return true;
+            }
+            return item.name.toLowerCase().contains(normalizedQuery) ||
+                item.description.toLowerCase().contains(normalizedQuery);
+          }).toList();
+          return MapEntry(category.name, items);
+        })
+        .where((entry) => entry.value.isNotEmpty)
+        .toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -161,9 +197,14 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 children: [
                   Row(
                     children: [
-                      Expanded(child: Text(restaurant.name, style: AppTextStyles.h2)),
+                      Expanded(
+                        child: Text(restaurant.name, style: AppTextStyles.h2),
+                      ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: restaurant.isOpen
                               ? AppColors.successLight
@@ -173,7 +214,9 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                         child: Text(
                           restaurant.isOpen ? 'Open' : 'Closed',
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: restaurant.isOpen ? AppColors.success : AppColors.error,
+                            color: restaurant.isOpen
+                                ? AppColors.success
+                                : AppColors.error,
                           ),
                         ),
                       ),
@@ -182,27 +225,37 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                   const SizedBox(height: 4),
                   Text(
                     restaurant.cuisine,
-                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.grey,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: restaurant.tags
-                        .map(
-                          (tag) => Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: AppColors.foodBg,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              tag,
-                              style: AppTextStyles.labelSmall.copyWith(color: AppColors.food),
-                            ),
-                          ),
-                        )
-                        .toList(),
+                    children:
+                        (restaurant.tags.isEmpty
+                                ? ['Popular']
+                                : restaurant.tags)
+                            .map(
+                              (tag) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.foodBg,
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: Text(
+                                  tag,
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: AppColors.food,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -223,26 +276,42 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                       const SizedBox(width: 10),
                       _StatChip(
                         Icons.delivery_dining_rounded,
-                        restaurant.deliveryFee == 'Free' ? 'Free' : restaurant.deliveryFee,
+                        restaurant.deliveryFee == 'Free'
+                            ? 'Free'
+                            : restaurant.deliveryFee,
                         'delivery',
                         AppColors.success,
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
+                  if (_isLoading)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: LinearProgressIndicator(minHeight: 3),
+                    ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.background,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: TextField(
                       controller: _searchController,
-                      onChanged: (value) => setState(() => _searchQuery = value),
+                      onChanged: (value) =>
+                          setState(() => _searchQuery = value),
                       decoration: InputDecoration(
-                        icon: const Icon(Icons.search_rounded, color: AppColors.grey),
+                        icon: const Icon(
+                          Icons.search_rounded,
+                          color: AppColors.grey,
+                        ),
                         hintText: 'Search dishes, drinks, sides...',
-                        hintStyle: AppTextStyles.bodyMedium.copyWith(color: AppColors.mediumGrey),
+                        hintStyle: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.mediumGrey,
+                        ),
                         border: InputBorder.none,
                       ),
                     ),
@@ -260,17 +329,25 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                         final category = categories[index];
                         final isSelected = _selectedCategory == category;
                         return GestureDetector(
-                          onTap: () => setState(() => _selectedCategory = category),
+                          onTap: () =>
+                              setState(() => _selectedCategory = category),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.food : AppColors.background,
+                              color: isSelected
+                                  ? AppColors.food
+                                  : AppColors.background,
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
                               category,
                               style: AppTextStyles.labelMedium.copyWith(
-                                color: isSelected ? AppColors.white : AppColors.dark,
+                                color: isSelected
+                                    ? AppColors.white
+                                    : AppColors.dark,
                               ),
                             ),
                           ),
@@ -301,12 +378,17 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                         color: AppColors.mediumGrey,
                       ),
                       const SizedBox(height: 12),
-                      Text('No dishes match your search', style: AppTextStyles.h4),
+                      Text(
+                        'No dishes match your search',
+                        style: AppTextStyles.h4,
+                      ),
                       const SizedBox(height: 6),
                       Text(
                         'Try another keyword or switch categories to keep exploring the menu.',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -323,26 +405,33 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                       children: [
                         Text(entry.key, style: AppTextStyles.h3),
                         const SizedBox(width: 8),
-                        Text('${entry.value.length} items', style: AppTextStyles.caption),
+                        Text(
+                          '${entry.value.length} items',
+                          style: AppTextStyles.caption,
+                        ),
                       ],
                     ),
                   ),
                 ),
                 SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final item = entry.value[index];
-                      final itemQuantity = _getItemQuantity(foodCartItems, item.id);
-                      return _MenuItemCard(
-                        item: item,
-                        quantity: itemQuantity,
-                        onAdd: () => _addItem(context, item, restaurant.name),
-                        onIncrement: () => context.read<CartProvider>().updateQuantity(item.id, itemQuantity + 1),
-                        onDecrement: () => context.read<CartProvider>().updateQuantity(item.id, itemQuantity - 1),
-                      );
-                    },
-                    childCount: entry.value.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final item = entry.value[index];
+                    final itemQuantity = _getItemQuantity(
+                      foodCartItems,
+                      item.id,
+                    );
+                    return _MenuItemCard(
+                      item: item,
+                      quantity: itemQuantity,
+                      onAdd: () => _addItem(context, item, restaurant.name),
+                      onIncrement: () => context
+                          .read<CartProvider>()
+                          .updateQuantity(item.id, itemQuantity + 1),
+                      onDecrement: () => context
+                          .read<CartProvider>()
+                          .updateQuantity(item.id, itemQuantity - 1),
+                    );
+                  }, childCount: entry.value.length),
                 ),
               ],
             ),
@@ -358,7 +447,10 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 label: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6),
@@ -368,7 +460,10 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                     const SizedBox(width: 12),
                     Text('View Cart', style: AppTextStyles.button),
                     const SizedBox(width: 12),
-                    Text('\$${moduleTotal.toStringAsFixed(2)}', style: AppTextStyles.button),
+                    Text(
+                      '\$${moduleTotal.toStringAsFixed(2)}',
+                      style: AppTextStyles.button,
+                    ),
                   ],
                 ),
               ),
@@ -380,9 +475,9 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
 
   int _getItemQuantity(List<CartItem> cartItems, String itemId) {
     final match = cartItems.cast<CartItem?>().firstWhere(
-          (item) => item?.id == itemId,
-          orElse: () => null,
-        );
+      (item) => item?.id == itemId,
+      orElse: () => null,
+    );
     return match?.quantity ?? 0;
   }
 
@@ -652,23 +747,37 @@ class _MenuItemCard extends StatelessWidget {
                     if (item.isPopular) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.food.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           'Popular',
-                          style: AppTextStyles.labelSmall.copyWith(color: AppColors.food, fontSize: 9),
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: AppColors.food,
+                            fontSize: 9,
+                          ),
                         ),
                       ),
                     ],
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(item.description, style: AppTextStyles.caption, maxLines: 2, overflow: TextOverflow.ellipsis),
+                Text(
+                  item.description,
+                  style: AppTextStyles.caption,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 8),
-                Text('\$${item.price.toStringAsFixed(2)}', style: AppTextStyles.priceSmall),
+                Text(
+                  '\$${item.price.toStringAsFixed(2)}',
+                  style: AppTextStyles.priceSmall,
+                ),
               ],
             ),
           ),
@@ -683,7 +792,10 @@ class _MenuItemCard extends StatelessWidget {
                   color: AppColors.extraLightGrey,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.fastfood_rounded, color: AppColors.food.withValues(alpha: 0.3)),
+                child: Icon(
+                  Icons.fastfood_rounded,
+                  color: AppColors.food.withValues(alpha: 0.3),
+                ),
               ),
               Positioned(
                 bottom: -8,
@@ -694,18 +806,29 @@ class _MenuItemCard extends StatelessWidget {
                       ? GestureDetector(
                           onTap: onAdd,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 5,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.white,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(color: AppColors.food),
                               boxShadow: AppSpacing.shadowSm,
                             ),
-                            child: Text('ADD', style: AppTextStyles.labelSmall.copyWith(color: AppColors.food)),
+                            child: Text(
+                              'ADD',
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.food,
+                              ),
+                            ),
                           ),
                         )
                       : Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.white,
                             borderRadius: BorderRadius.circular(10),
@@ -717,18 +840,30 @@ class _MenuItemCard extends StatelessWidget {
                             children: [
                               GestureDetector(
                                 onTap: onDecrement,
-                                child: const Icon(Icons.remove, size: 16, color: AppColors.food),
+                                child: const Icon(
+                                  Icons.remove,
+                                  size: 16,
+                                  color: AppColors.food,
+                                ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
                                 child: Text(
                                   '$quantity',
-                                  style: AppTextStyles.labelMedium.copyWith(color: AppColors.food),
+                                  style: AppTextStyles.labelMedium.copyWith(
+                                    color: AppColors.food,
+                                  ),
                                 ),
                               ),
                               GestureDetector(
                                 onTap: onIncrement,
-                                child: const Icon(Icons.add, size: 16, color: AppColors.food),
+                                child: const Icon(
+                                  Icons.add,
+                                  size: 16,
+                                  color: AppColors.food,
+                                ),
                               ),
                             ],
                           ),
@@ -767,7 +902,10 @@ class _StatChip extends StatelessWidget {
               children: [
                 Icon(icon, size: 16, color: color),
                 const SizedBox(width: 4),
-                Text(value, style: AppTextStyles.labelLarge.copyWith(color: color)),
+                Text(
+                  value,
+                  style: AppTextStyles.labelLarge.copyWith(color: color),
+                ),
               ],
             ),
             const SizedBox(height: 2),

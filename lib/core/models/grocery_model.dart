@@ -1,7 +1,8 @@
 class GroceryCategory {
   final String id;
   final String name;
-  final String? iconUrl; // Or IconData if preferred, but string works for sample
+  final String?
+  iconUrl; // Or IconData if preferred, but string works for sample
 
   GroceryCategory({required this.id, required this.name, this.iconUrl});
 }
@@ -10,6 +11,7 @@ class GroceryModel {
   final String id;
   final String name;
   final String categoryId;
+  final String? categoryName;
   final double price;
   final String unit; // 'kg', 'lb', 'piece', 'bunch'
   final String description;
@@ -21,6 +23,7 @@ class GroceryModel {
     required this.id,
     required this.name,
     required this.categoryId,
+    this.categoryName,
     required this.price,
     required this.unit,
     required this.description,
@@ -28,6 +31,23 @@ class GroceryModel {
     this.isOrganic = false,
     required this.rating,
   });
+
+  factory GroceryModel.fromApi(Map<String, dynamic> json) {
+    return GroceryModel(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Grocery Item',
+      categoryId: json['categoryId']?.toString() ?? 'grocery',
+      categoryName: json['category']?.toString(),
+      price: (json['price'] as num?)?.toDouble() ?? 0,
+      unit: json['unit']?.toString() ?? 'unit',
+      description: json['description']?.toString() ?? '',
+      imageUrl: (json['images'] as List?)?.isNotEmpty == true
+          ? json['images'][0]?.toString()
+          : json['imageUrl']?.toString(),
+      isOrganic: json['isOrganic'] as bool? ?? false,
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+    );
+  }
 
   static List<GroceryCategory> sampleCategories = [
     GroceryCategory(id: 'c1', name: 'Fruits & Veg'),

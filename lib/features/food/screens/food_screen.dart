@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/models/models.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 
@@ -19,6 +20,8 @@ class _FoodScreenState extends State<FoodScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedSort = 'Top Rated';
   String _searchQuery = '';
+  List<RestaurantModel> _restaurants = RestaurantModel.sampleRestaurants;
+  bool _isLoading = true;
 
   final _sorts = ['Top Rated', 'Fastest', 'Free Delivery'];
   final _quickCategories = const [
@@ -31,6 +34,37 @@ class _FoodScreenState extends State<FoodScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadRestaurants();
+  }
+
+  Future<void> _loadRestaurants() async {
+    try {
+      final response = await ApiClient.get('/catalog/restaurants');
+      final items = (response as List)
+          .map(
+            (item) =>
+                RestaurantModel.fromApi(Map<String, dynamic>.from(item as Map)),
+          )
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _restaurants = items.isEmpty
+            ? RestaurantModel.sampleRestaurants
+            : items;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _restaurants = RestaurantModel.sampleRestaurants;
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
@@ -38,7 +72,9 @@ class _FoodScreenState extends State<FoodScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cartItemCount = context.watch<CartProvider>().getModuleItemCount('food');
+    final cartItemCount = context.watch<CartProvider>().getModuleItemCount(
+      'food',
+    );
     final restaurants = _filteredRestaurants();
 
     return Scaffold(
@@ -88,16 +124,23 @@ class _FoodScreenState extends State<FoodScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Discover restaurants and dishes', style: AppTextStyles.h4),
+                  Text(
+                    'Discover restaurants and dishes',
+                    style: AppTextStyles.h4,
+                  ),
                   const SizedBox(height: 12),
                   AppSearchBar(
                     hint: 'Search restaurants, cuisines, dishes...',
                     controller: _searchController,
-                    onChanged: (value) => setState(() => _searchQuery = value.trim()),
+                    onChanged: (value) =>
+                        setState(() => _searchQuery = value.trim()),
                     suffix: _searchQuery.isEmpty
                         ? null
                         : IconButton(
-                            icon: const Icon(Icons.close_rounded, color: AppColors.mediumGrey),
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              color: AppColors.mediumGrey,
+                            ),
                             onPressed: () {
                               _searchController.clear();
                               setState(() => _searchQuery = '');
@@ -113,7 +156,10 @@ class _FoodScreenState extends State<FoodScreen> {
               height: 110,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 children: _quickCategories
                     .map(
                       (category) => _FoodCategory(
@@ -141,7 +187,10 @@ class _FoodScreenState extends State<FoodScreen> {
                   return GestureDetector(
                     onTap: () => setState(() => _selectedSort = sort),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: isSelected ? AppColors.primary : AppColors.white,
                         borderRadius: BorderRadius.circular(20),
@@ -152,16 +201,20 @@ class _FoodScreenState extends State<FoodScreen> {
                             sort == 'Fastest'
                                 ? Icons.bolt_rounded
                                 : sort == 'Free Delivery'
-                                    ? Icons.delivery_dining_rounded
-                                    : Icons.star_rounded,
+                                ? Icons.delivery_dining_rounded
+                                : Icons.star_rounded,
                             size: 16,
-                            color: isSelected ? AppColors.white : AppColors.primary,
+                            color: isSelected
+                                ? AppColors.white
+                                : AppColors.primary,
                           ),
                           const SizedBox(width: 6),
                           Text(
                             sort,
                             style: AppTextStyles.labelMedium.copyWith(
-                              color: isSelected ? AppColors.white : AppColors.dark,
+                              color: isSelected
+                                  ? AppColors.white
+                                  : AppColors.dark,
                             ),
                           ),
                         ],
@@ -178,7 +231,14 @@ class _FoodScreenState extends State<FoodScreen> {
               child: Text('Popular Nearby', style: AppTextStyles.h3),
             ),
           ),
-          if (restaurants.isEmpty)
+          if (_isLoading)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            )
+          else if (restaurants.isEmpty)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -191,14 +251,20 @@ class _FoodScreenState extends State<FoodScreen> {
                   ),
                   child: Column(
                     children: [
-                      const Icon(Icons.search_off_rounded, size: 44, color: AppColors.mediumGrey),
+                      const Icon(
+                        Icons.search_off_rounded,
+                        size: 44,
+                        color: AppColors.mediumGrey,
+                      ),
                       const SizedBox(height: 12),
                       Text('No restaurants found', style: AppTextStyles.h4),
                       const SizedBox(height: 6),
                       Text(
                         'Try another cuisine, clear the search, or switch sorting to keep exploring.',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.grey,
+                        ),
                       ),
                     ],
                   ),
@@ -207,137 +273,170 @@ class _FoodScreenState extends State<FoodScreen> {
             )
           else
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final restaurant = restaurants[index];
-                  return GestureDetector(
-                    onTap: () => context.push('/food/restaurant/${restaurant.id}'),
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: AppSpacing.shadowSm,
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColors.food.withValues(alpha: 0.3),
-                                  AppColors.food.withValues(alpha: 0.08),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Icon(
-                              Icons.restaurant_rounded,
-                              color: AppColors.food.withValues(alpha: 0.5),
-                              size: 36,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(child: Text(restaurant.name, style: AppTextStyles.labelLarge)),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: restaurant.isOpen
-                                            ? AppColors.successLight
-                                            : AppColors.errorLight,
-                                        borderRadius: BorderRadius.circular(999),
-                                      ),
-                                      child: Text(
-                                        restaurant.isOpen ? 'Open' : 'Closed',
-                                        style: AppTextStyles.labelSmall.copyWith(
-                                          color: restaurant.isOpen ? AppColors.success : AppColors.error,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  restaurant.cuisine,
-                                  style: AppTextStyles.caption,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 8),
-                                Wrap(
-                                  spacing: 6,
-                                  runSpacing: 6,
-                                  children: restaurant.tags.take(2).map((tag) {
-                                    return Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.foodBg,
-                                        borderRadius: BorderRadius.circular(999),
-                                      ),
-                                      child: Text(
-                                        tag,
-                                        style: AppTextStyles.labelSmall.copyWith(color: AppColors.food),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.star_rounded, size: 16, color: AppColors.warning),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${restaurant.rating}',
-                                      style: AppTextStyles.labelSmall.copyWith(color: AppColors.dark),
-                                    ),
-                                    Text(' (${restaurant.reviewCount}+)', style: AppTextStyles.caption),
-                                    const SizedBox(width: 10),
-                                    const Icon(Icons.schedule_rounded, size: 14, color: AppColors.mediumGrey),
-                                    const SizedBox(width: 4),
-                                    Text('${restaurant.deliveryTime} min', style: AppTextStyles.caption),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.delivery_dining_rounded, size: 16, color: AppColors.primary),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      restaurant.deliveryFee == 'Free'
-                                          ? 'Free delivery'
-                                          : 'Delivery ${restaurant.deliveryFee}',
-                                      style: AppTextStyles.caption.copyWith(
-                                        color: restaurant.deliveryFee == 'Free'
-                                            ? AppColors.success
-                                            : AppColors.grey,
-                                      ),
-                                    ),
-                                    const Spacer(),
-                                    Text(
-                                      '${restaurant.distance.toStringAsFixed(1)} km',
-                                      style: AppTextStyles.caption,
-                                    ),
-                                  ],
-                                ),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final restaurant = restaurants[index];
+                return GestureDetector(
+                  onTap: () =>
+                      context.push('/food/restaurant/${restaurant.id}'),
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: AppSpacing.shadowSm,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 90,
+                          height: 90,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.food.withValues(alpha: 0.3),
+                                AppColors.food.withValues(alpha: 0.08),
                               ],
                             ),
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                        ],
-                      ),
+                          child: Icon(
+                            Icons.restaurant_rounded,
+                            color: AppColors.food.withValues(alpha: 0.5),
+                            size: 36,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      restaurant.name,
+                                      style: AppTextStyles.labelLarge,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: restaurant.isOpen
+                                          ? AppColors.successLight
+                                          : AppColors.errorLight,
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: Text(
+                                      restaurant.isOpen ? 'Open' : 'Closed',
+                                      style: AppTextStyles.labelSmall.copyWith(
+                                        color: restaurant.isOpen
+                                            ? AppColors.success
+                                            : AppColors.error,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                restaurant.cuisine,
+                                style: AppTextStyles.caption,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
+                                children: restaurant.tags.take(2).map((tag) {
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.foodBg,
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: Text(
+                                      tag,
+                                      style: AppTextStyles.labelSmall.copyWith(
+                                        color: AppColors.food,
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.star_rounded,
+                                    size: 16,
+                                    color: AppColors.warning,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${restaurant.rating}',
+                                    style: AppTextStyles.labelSmall.copyWith(
+                                      color: AppColors.dark,
+                                    ),
+                                  ),
+                                  Text(
+                                    ' (${restaurant.reviewCount}+)',
+                                    style: AppTextStyles.caption,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Icon(
+                                    Icons.schedule_rounded,
+                                    size: 14,
+                                    color: AppColors.mediumGrey,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${restaurant.deliveryTime} min',
+                                    style: AppTextStyles.caption,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.delivery_dining_rounded,
+                                    size: 16,
+                                    color: AppColors.primary,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    restaurant.deliveryFee == 'Free'
+                                        ? 'Free delivery'
+                                        : 'Delivery ${restaurant.deliveryFee}',
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: restaurant.deliveryFee == 'Free'
+                                          ? AppColors.success
+                                          : AppColors.grey,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '${restaurant.distance.toStringAsFixed(1)} km',
+                                    style: AppTextStyles.caption,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                },
-                childCount: restaurants.length,
-              ),
+                  ),
+                );
+              }, childCount: restaurants.length),
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
@@ -348,12 +447,13 @@ class _FoodScreenState extends State<FoodScreen> {
   List<RestaurantModel> _filteredRestaurants() {
     final query = _normalize(_searchQuery);
 
-    final filtered = RestaurantModel.sampleRestaurants.where((restaurant) {
+    final filtered = _restaurants.where((restaurant) {
       final searchableCuisine = _normalize(restaurant.cuisine);
       final searchableName = _normalize(restaurant.name);
       final searchableTags = restaurant.tags.map(_normalize).toList();
 
-      final matchesQuery = query.isEmpty ||
+      final matchesQuery =
+          query.isEmpty ||
           searchableName.contains(query) ||
           searchableCuisine.contains(query) ||
           searchableTags.any((tag) => tag.contains(query)) ||
@@ -365,7 +465,11 @@ class _FoodScreenState extends State<FoodScreen> {
     }).toList();
 
     if (_selectedSort == 'Fastest') {
-      filtered.sort((a, b) => _deliveryMinutes(a.deliveryTime).compareTo(_deliveryMinutes(b.deliveryTime)));
+      filtered.sort(
+        (a, b) => _deliveryMinutes(
+          a.deliveryTime,
+        ).compareTo(_deliveryMinutes(b.deliveryTime)),
+      );
     } else if (_selectedSort == 'Free Delivery') {
       filtered.sort((a, b) {
         final aFree = a.deliveryFee == 'Free' ? 0 : 1;
@@ -436,7 +540,10 @@ class _FoodCategory extends StatelessWidget {
               child: Icon(icon, color: color, size: 28),
             ),
             const SizedBox(height: 6),
-            Text(name, style: AppTextStyles.labelSmall.copyWith(color: AppColors.dark)),
+            Text(
+              name,
+              style: AppTextStyles.labelSmall.copyWith(color: AppColors.dark),
+            ),
           ],
         ),
       ),

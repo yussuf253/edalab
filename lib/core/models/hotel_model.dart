@@ -23,6 +23,27 @@ class HotelModel {
     this.imageUrls,
   });
 
+  factory HotelModel.fromApi(Map<String, dynamic> json) {
+    return HotelModel(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Hotel',
+      address: json['address']?.toString() ?? '',
+      city: json['city']?.toString() ?? '',
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      reviewsCount: (json['reviewsCount'] as num?)?.toInt() ?? 0,
+      pricePerNight: (json['pricePerNight'] as num?)?.toDouble() ?? 0,
+      amenities:
+          (json['amenities'] as List?)
+              ?.map((item) => item.toString())
+              .toList() ??
+          const [],
+      description: json['description']?.toString() ?? '',
+      imageUrls: (json['imageUrls'] as List?)
+          ?.map((item) => item.toString())
+          .toList(),
+    );
+  }
+
   static List<HotelModel> sampleHotels = [
     HotelModel(
       id: 'h1',

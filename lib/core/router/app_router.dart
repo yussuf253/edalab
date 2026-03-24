@@ -5,7 +5,8 @@ import '../../features/auth/screens/register_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/shell/app_shell.dart';
-import '../../features/explore/screens/explore_screen.dart';
+import '../../features/promotions/screens/promotions_screen.dart';
+import '../../features/cart/screens/cart_hub_screen.dart';
 import '../../features/orders/screens/orders_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/shopping/screens/shopping_screen.dart';
@@ -48,265 +49,244 @@ import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/search/screens/search_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _shellNavigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<NavigatorState> _shellNavigatorKey =
+    GlobalKey<NavigatorState>();
 
 GoRouter createAppRouter({required bool hasSeenOnboarding}) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: hasSeenOnboarding ? '/' : '/onboarding',
     routes: [
-    // Onboarding
-    GoRoute(
-      path: '/onboarding',
-      builder: (context, state) => const OnboardingScreen(),
-    ),
+      // Onboarding
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
 
-    // Auth
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/register',
-      builder: (context, state) => const RegisterScreen(),
-    ),
+      // Auth
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => const RegisterScreen(),
+      ),
 
-    // Main App Shell with Bottom Navigation
-    ShellRoute(
-      navigatorKey: _shellNavigatorKey,
-      builder: (context, state, child) => AppShell(child: child),
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => const HomeScreen(),
+      // Main App Shell with Bottom Navigation
+      ShellRoute(
+        navigatorKey: _shellNavigatorKey,
+        builder: (context, state, child) => AppShell(child: child),
+        routes: [
+          GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+          GoRoute(
+            path: '/promotions',
+            builder: (context, state) => const PromotionsScreen(),
+          ),
+          GoRoute(
+            path: '/cart',
+            builder: (context, state) => const CartHubScreen(),
+          ),
+          GoRoute(
+            path: '/orders',
+            builder: (context, state) => const OrdersScreen(),
+          ),
+          GoRoute(
+            path: '/profile',
+            builder: (context, state) => const ProfileScreen(),
+          ),
+        ],
+      ),
+
+      // Search
+      GoRoute(
+        path: '/search',
+        builder: (context, state) => const SearchScreen(),
+      ),
+
+      // Shopping
+      GoRoute(
+        path: '/shopping',
+        builder: (context, state) => const ShoppingScreen(),
+      ),
+      GoRoute(
+        path: '/shopping/product/:id',
+        builder: (context, state) =>
+            ProductDetailScreen(productId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/shopping/category/:id',
+        builder: (context, state) =>
+            ShoppingCategoryScreen(categoryId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/shopping/cart',
+        builder: (context, state) => const CartScreen(),
+      ),
+      GoRoute(
+        path: '/shopping/wishlist',
+        builder: (context, state) => const WishlistScreen(),
+      ),
+
+      // Food
+      GoRoute(path: '/food', builder: (context, state) => const FoodScreen()),
+      GoRoute(
+        path: '/food/restaurant/:id',
+        builder: (context, state) =>
+            RestaurantDetailScreen(restaurantId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/food/cart',
+        builder: (context, state) => const FoodCartScreen(),
+      ),
+      GoRoute(
+        path: '/food/tracking/:id',
+        builder: (context, state) =>
+            FoodOrderTrackingScreen(orderId: state.pathParameters['id']!),
+      ),
+
+      // Doctor
+      GoRoute(
+        path: '/doctor',
+        builder: (context, state) => const DoctorScreen(),
+      ),
+      GoRoute(
+        path: '/doctor/detail/:id',
+        builder: (context, state) =>
+            DoctorDetailScreen(doctorId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/doctor/book/:id',
+        builder: (context, state) =>
+            BookAppointmentScreen(doctorId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/doctor/appointments',
+        builder: (context, state) => const MyAppointmentsScreen(),
+      ),
+
+      // Hotel
+      GoRoute(path: '/hotel', builder: (context, state) => const HotelScreen()),
+      GoRoute(
+        path: '/hotel/detail/:id',
+        builder: (context, state) =>
+            HotelDetailScreen(hotelId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/hotel/book/:id',
+        builder: (context, state) =>
+            HotelBookingScreen(hotelId: state.pathParameters['id']!),
+      ),
+
+      // Ride
+      GoRoute(path: '/ride', builder: (context, state) => const RideScreen()),
+      GoRoute(
+        path: '/ride/book',
+        builder: (context, state) => RideBookingScreen(
+          bookingData: state.extra as Map<String, dynamic>?,
         ),
-        GoRoute(
-          path: '/explore',
-          builder: (context, state) => const ExploreScreen(),
+      ),
+      GoRoute(
+        path: '/ride/tracking/:id',
+        builder: (context, state) => RideTrackingScreen(
+          rideId: state.pathParameters['id']!,
+          rideData: state.extra as Map<String, dynamic>?,
         ),
-        GoRoute(
-          path: '/orders',
-          builder: (context, state) => const OrdersScreen(),
+      ),
+
+      // Pharmacy
+      GoRoute(
+        path: '/pharmacy',
+        builder: (context, state) => const PharmacyScreen(),
+      ),
+      GoRoute(
+        path: '/pharmacy/medicine/:id',
+        builder: (context, state) =>
+            MedicineDetailScreen(medicineId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/pharmacy/cart',
+        builder: (context, state) => const PharmacyCartScreen(),
+      ),
+
+      // Grocery
+      GoRoute(
+        path: '/grocery',
+        builder: (context, state) => const GroceryScreen(),
+      ),
+      GoRoute(
+        path: '/grocery/category/:id',
+        builder: (context, state) =>
+            GroceryCategoryScreen(categoryId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/grocery/cart',
+        builder: (context, state) => const GroceryCartScreen(),
+      ),
+
+      // Laundry
+      GoRoute(
+        path: '/laundry',
+        builder: (context, state) => const LaundryScreen(),
+      ),
+      GoRoute(
+        path: '/laundry/order',
+        builder: (context, state) => const LaundryOrderScreen(),
+      ),
+      GoRoute(
+        path: '/laundry/tracking/:id',
+        builder: (context, state) =>
+            LaundryTrackingScreen(orderId: state.pathParameters['id']!),
+      ),
+
+      // Checkout
+      GoRoute(
+        path: '/checkout',
+        builder: (context, state) => CheckoutScreen(
+          checkoutData: state.extra is Map<String, dynamic>
+              ? state.extra as Map<String, dynamic>
+              : null,
         ),
-        GoRoute(
-          path: '/profile',
-          builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/checkout/success',
+        builder: (context, state) => OrderSuccessScreen(
+          orderData: state.extra is Map<String, dynamic>
+              ? state.extra as Map<String, dynamic>
+              : null,
         ),
-      ],
-    ),
+      ),
 
-    // Search
-    GoRoute(
-      path: '/search',
-      builder: (context, state) => const SearchScreen(),
-    ),
+      // Rewards
+      GoRoute(
+        path: '/rewards',
+        builder: (context, state) => const CouponsScreen(),
+      ),
 
-    // Shopping
-    GoRoute(
-      path: '/shopping',
-      builder: (context, state) => const ShoppingScreen(),
-    ),
-    GoRoute(
-      path: '/shopping/product/:id',
-      builder: (context, state) => ProductDetailScreen(
-        productId: state.pathParameters['id']!,
+      // Profile Sub-screens
+      GoRoute(
+        path: '/profile/edit',
+        builder: (context, state) => const EditProfileScreen(),
       ),
-    ),
-    GoRoute(
-      path: '/shopping/category/:id',
-      builder: (context, state) => ShoppingCategoryScreen(
-        categoryId: state.pathParameters['id']!,
+      GoRoute(
+        path: '/profile/addresses',
+        builder: (context, state) => const AddressesScreen(),
       ),
-    ),
-    GoRoute(
-      path: '/shopping/cart',
-      builder: (context, state) => const CartScreen(),
-    ),
-    GoRoute(
-      path: '/shopping/wishlist',
-      builder: (context, state) => const WishlistScreen(),
-    ),
+      GoRoute(
+        path: '/profile/payment-methods',
+        builder: (context, state) => const PaymentMethodsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/profile/help',
+        builder: (context, state) => const HelpCenterScreen(),
+      ),
 
-    // Food
-    GoRoute(
-      path: '/food',
-      builder: (context, state) => const FoodScreen(),
-    ),
-    GoRoute(
-      path: '/food/restaurant/:id',
-      builder: (context, state) => RestaurantDetailScreen(
-        restaurantId: state.pathParameters['id']!,
+      // Notifications
+      GoRoute(
+        path: '/notifications',
+        builder: (context, state) => const NotificationsScreen(),
       ),
-    ),
-    GoRoute(
-      path: '/food/cart',
-      builder: (context, state) => const FoodCartScreen(),
-    ),
-    GoRoute(
-      path: '/food/tracking/:id',
-      builder: (context, state) => FoodOrderTrackingScreen(
-        orderId: state.pathParameters['id']!,
-      ),
-    ),
-
-    // Doctor
-    GoRoute(
-      path: '/doctor',
-      builder: (context, state) => const DoctorScreen(),
-    ),
-    GoRoute(
-      path: '/doctor/detail/:id',
-      builder: (context, state) => DoctorDetailScreen(
-        doctorId: state.pathParameters['id']!,
-      ),
-    ),
-    GoRoute(
-      path: '/doctor/book/:id',
-      builder: (context, state) => BookAppointmentScreen(
-        doctorId: state.pathParameters['id']!,
-      ),
-    ),
-    GoRoute(
-      path: '/doctor/appointments',
-      builder: (context, state) => const MyAppointmentsScreen(),
-    ),
-
-    // Hotel
-    GoRoute(
-      path: '/hotel',
-      builder: (context, state) => const HotelScreen(),
-    ),
-    GoRoute(
-      path: '/hotel/detail/:id',
-      builder: (context, state) => HotelDetailScreen(
-        hotelId: state.pathParameters['id']!,
-      ),
-    ),
-    GoRoute(
-      path: '/hotel/book/:id',
-      builder: (context, state) => HotelBookingScreen(
-        hotelId: state.pathParameters['id']!,
-      ),
-    ),
-
-    // Ride
-    GoRoute(
-      path: '/ride',
-      builder: (context, state) => const RideScreen(),
-    ),
-    GoRoute(
-      path: '/ride/book',
-      builder: (context, state) => RideBookingScreen(
-        bookingData: state.extra as Map<String, dynamic>?,
-      ),
-    ),
-    GoRoute(
-      path: '/ride/tracking/:id',
-      builder: (context, state) => RideTrackingScreen(
-        rideId: state.pathParameters['id']!,
-        rideData: state.extra as Map<String, dynamic>?,
-      ),
-    ),
-
-    // Pharmacy
-    GoRoute(
-      path: '/pharmacy',
-      builder: (context, state) => const PharmacyScreen(),
-    ),
-    GoRoute(
-      path: '/pharmacy/medicine/:id',
-      builder: (context, state) => MedicineDetailScreen(
-        medicineId: state.pathParameters['id']!,
-      ),
-    ),
-    GoRoute(
-      path: '/pharmacy/cart',
-      builder: (context, state) => const PharmacyCartScreen(),
-    ),
-
-    // Grocery
-    GoRoute(
-      path: '/grocery',
-      builder: (context, state) => const GroceryScreen(),
-    ),
-    GoRoute(
-      path: '/grocery/category/:id',
-      builder: (context, state) => GroceryCategoryScreen(
-        categoryId: state.pathParameters['id']!,
-      ),
-    ),
-    GoRoute(
-      path: '/grocery/cart',
-      builder: (context, state) => const GroceryCartScreen(),
-    ),
-
-    // Laundry
-    GoRoute(
-      path: '/laundry',
-      builder: (context, state) => const LaundryScreen(),
-    ),
-    GoRoute(
-      path: '/laundry/order',
-      builder: (context, state) => const LaundryOrderScreen(),
-    ),
-    GoRoute(
-      path: '/laundry/tracking/:id',
-      builder: (context, state) => LaundryTrackingScreen(
-        orderId: state.pathParameters['id']!,
-      ),
-    ),
-
-    // Checkout
-    GoRoute(
-      path: '/checkout',
-      builder: (context, state) => CheckoutScreen(
-        checkoutData: state.extra is Map<String, dynamic>
-            ? state.extra as Map<String, dynamic>
-            : null,
-      ),
-    ),
-    GoRoute(
-      path: '/checkout/success',
-      builder: (context, state) => OrderSuccessScreen(
-        orderData: state.extra is Map<String, dynamic>
-            ? state.extra as Map<String, dynamic>
-            : null,
-      ),
-    ),
-
-    // Rewards
-    GoRoute(
-      path: '/rewards',
-      builder: (context, state) => const CouponsScreen(),
-    ),
-
-    // Profile Sub-screens
-    GoRoute(
-      path: '/profile/edit',
-      builder: (context, state) => const EditProfileScreen(),
-    ),
-    GoRoute(
-      path: '/profile/addresses',
-      builder: (context, state) => const AddressesScreen(),
-    ),
-    GoRoute(
-      path: '/profile/payment-methods',
-      builder: (context, state) => const PaymentMethodsScreen(),
-    ),
-    GoRoute(
-      path: '/profile/settings',
-      builder: (context, state) => const SettingsScreen(),
-    ),
-    GoRoute(
-      path: '/profile/help',
-      builder: (context, state) => const HelpCenterScreen(),
-    ),
-
-    // Notifications
-    GoRoute(
-      path: '/notifications',
-      builder: (context, state) => const NotificationsScreen(),
-    ),
     ],
   );
 }

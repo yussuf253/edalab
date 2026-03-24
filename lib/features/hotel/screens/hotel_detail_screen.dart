@@ -3,20 +3,50 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/models/models.dart';
 import '../../../core/utils/auth_gate.dart';
 
-class HotelDetailScreen extends StatelessWidget {
+class HotelDetailScreen extends StatefulWidget {
   final String hotelId;
   const HotelDetailScreen({super.key, required this.hotelId});
 
   @override
-  Widget build(BuildContext context) {
-    final h = HotelModel.sampleHotels.firstWhere(
-      (h) => h.id == hotelId,
+  State<HotelDetailScreen> createState() => _HotelDetailScreenState();
+}
+
+class _HotelDetailScreenState extends State<HotelDetailScreen> {
+  late HotelModel _hotel;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _hotel = HotelModel.sampleHotels.firstWhere(
+      (hotel) => hotel.id == widget.hotelId,
       orElse: () => HotelModel.sampleHotels.first,
     );
+    _loadHotel();
+  }
+
+  Future<void> _loadHotel() async {
+    try {
+      final response = await ApiClient.get('/catalog/hotels/${widget.hotelId}');
+      if (!mounted) return;
+      setState(() {
+        _hotel = HotelModel.fromApi(Map<String, dynamic>.from(response as Map));
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final h = _hotel;
     final type = h.amenities.isNotEmpty ? h.amenities.first : 'Hotel';
 
     return Scaffold(
@@ -78,6 +108,10 @@ class HotelDetailScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (_isLoading) ...[
+                    const SizedBox(height: 12),
+                    const LinearProgressIndicator(minHeight: 3),
+                  ],
                   const SizedBox(height: 8),
                   Row(
                     children: [

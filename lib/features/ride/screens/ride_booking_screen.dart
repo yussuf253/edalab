@@ -21,8 +21,36 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
   int _selectedVehicle = 0;
   int _selectedPayment = 0;
   bool _isSubmitting = false;
+  List<RideCategory> _categories = RideModel.sampleCategories;
+  bool _isLoading = true;
 
   final _payments = const ['•••• 4242', 'Apple Pay', 'Cash'];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRideCategories();
+  }
+
+  Future<void> _loadRideCategories() async {
+    try {
+      final response = await ApiClient.get('/catalog/ride-categories');
+      final items = (response as List)
+          .map(
+            (item) =>
+                RideCategory.fromApi(Map<String, dynamic>.from(item as Map)),
+          )
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _categories = items.isEmpty ? RideModel.sampleCategories : items;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
 
   IconData _getIconForCategory(String name) {
     if (name.toLowerCase().contains('xl')) return Icons.airport_shuttle_rounded;
@@ -32,7 +60,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final categories = RideModel.sampleCategories;
+    final categories = _categories;
     final pickup =
         widget.bookingData?['pickup'] as String? ?? '123 Main Street';
     final destinationTitle =
@@ -213,6 +241,11 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                       },
                     ),
                   ),
+                  if (_isLoading)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: LinearProgressIndicator(minHeight: 3),
+                    ),
                   const SizedBox(height: 12),
                   // Payment method
                   Container(
@@ -376,10 +409,16 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
         'total': estPrice * 1.08,
         'items': [
           {
-            'vehicle': vehicle,
-            'distance': routeDistance,
-            'pickup': pickup,
-            'destination': destination,
+            'name': '$vehicle Ride',
+            'price': estPrice,
+            'quantity': 1,
+            'total': estPrice,
+            'metadata': {
+              'vehicle': vehicle,
+              'distance': routeDistance,
+              'pickup': pickup,
+              'destination': destination,
+            },
           },
         ],
       }).timeout(const Duration(seconds: 4));

@@ -19,6 +19,13 @@ class AuthProvider extends ChangeNotifier {
     _isLoggedIn = true;
   }
 
+  Future<void> _persistSession({required String userId, String? token}) async {
+    await AppPreferences.setCurrentUserId(userId);
+    if (token != null && token.isNotEmpty) {
+      await ApiClient.setToken(token);
+    }
+  }
+
   UserModel _userFromResponse(Map<String, dynamic> response) {
     final name = (response['name'] as String? ?? '').trim();
     final parts = name.isEmpty ? ['User'] : name.split(RegExp(r'\s+'));
@@ -62,19 +69,24 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await ApiClient.post('/users/login', {
+      final response = Map<String, dynamic>.from(await ApiClient.post('/auth/login', {
         'email': email.trim(),
         'password': password,
-      });
+      }) as Map);
 
-      _setUserFromResponse(Map<String, dynamic>.from(response as Map));
-      await AppPreferences.setCurrentUserId(_user!.id);
+      final userResponse = Map<String, dynamic>.from(response['user'] as Map);
+      _setUserFromResponse(userResponse);
+      await _persistSession(
+        userId: _user!.id,
+        token: response['token'] as String?,
+      );
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
       _isLoading = false;
+      _user = null;
       _isLoggedIn = false;
       notifyListeners();
       return false;
@@ -87,21 +99,26 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await ApiClient.post('/users', {
+      final response = Map<String, dynamic>.from(await ApiClient.post('/auth/register', {
         'name': name.trim(),
         'email': email.trim(),
         'phone': phone.trim(),
         'password': password,
-      });
+      }) as Map);
 
-      _setUserFromResponse(Map<String, dynamic>.from(response as Map));
-      await AppPreferences.setCurrentUserId(_user!.id);
+      final userResponse = Map<String, dynamic>.from(response['user'] as Map);
+      _setUserFromResponse(userResponse);
+      await _persistSession(
+        userId: _user!.id,
+        token: response['token'] as String?,
+      );
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
       _isLoading = false;
+      _user = null;
       _isLoggedIn = false;
       notifyListeners();
       return false;
@@ -113,6 +130,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      await ApiClient.initialize();
       final userId = await AppPreferences.getCurrentUserId();
       if (userId == null || userId.isEmpty) {
         _user = null;
@@ -128,6 +146,7 @@ class AuthProvider extends ChangeNotifier {
       _isLoggedIn = false;
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
       await AppPreferences.clearCurrentUserId();
+      await ApiClient.setToken(null);
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -310,6 +329,7 @@ class AuthProvider extends ChangeNotifier {
     _isLoggedIn = false;
     _errorMessage = null;
     await AppPreferences.clearCurrentUserId();
+    await ApiClient.setToken(null);
     notifyListeners();
   }
 }

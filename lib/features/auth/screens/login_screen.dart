@@ -59,49 +59,49 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppColors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: 8),
                 // Logo
                 FadeInDown(
                   child: Container(
-                    width: 70,
-                    height: 70,
+                    width: 56,
+                    height: 56,
                     decoration: BoxDecoration(
                       gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Icon(
                       Icons.all_inclusive_rounded,
                       color: AppColors.white,
-                      size: 36,
+                      size: 28,
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 18),
                 // Title
                 FadeInDown(
                   delay: const Duration(milliseconds: 100),
                   child: Text(
                     'Welcome\nBack! 👋',
-                    style: AppTextStyles.h1.copyWith(fontSize: 34),
+                    style: AppTextStyles.h1.copyWith(fontSize: 28, height: 1.05),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 FadeInDown(
                   delay: const Duration(milliseconds: 200),
                   child: Text(
                     'Sign in to continue your journey',
-                    style: AppTextStyles.bodyLarge.copyWith(
+                    style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.grey,
                     ),
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
                 // Email Field
                 FadeInDown(
                   delay: const Duration(milliseconds: 300),
@@ -109,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Email', style: AppTextStyles.labelLarge),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
@@ -127,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
                 // Password Field
                 FadeInDown(
                   delay: const Duration(milliseconds: 400),
@@ -135,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Password', style: AppTextStyles.labelLarge),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
@@ -165,7 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 4),
                 // Forgot Password
                 FadeInDown(
                   delay: const Duration(milliseconds: 450),
@@ -182,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
                 // Sign In Button
                 FadeInDown(
                   delay: const Duration(milliseconds: 500),
@@ -192,7 +192,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _handleLogin,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 4),
+                FadeInDown(
+                  delay: const Duration(milliseconds: 520),
+                  child: Center(
+                    child: TextButton(
+                      onPressed: () => context.go('/'),
+                      child: Text(
+                        'Continue as Guest',
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
                 // Divider
                 FadeInDown(
                   delay: const Duration(milliseconds: 550),
@@ -210,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 14),
                 // Social buttons
                 FadeInDown(
                   delay: const Duration(milliseconds: 600),
@@ -234,7 +249,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 20),
                 // Register link
                 FadeInUp(
                   delay: const Duration(milliseconds: 700),

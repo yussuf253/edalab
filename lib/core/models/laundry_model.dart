@@ -14,6 +14,17 @@ class LaundryService {
     required this.unit,
     required this.iconUrl,
   });
+
+  factory LaundryService.fromApi(Map<String, dynamic> json) {
+    return LaundryService(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Laundry Service',
+      description: json['description']?.toString() ?? '',
+      price: (json['price'] as num?)?.toDouble() ?? 0,
+      unit: json['unit']?.toString() ?? '',
+      iconUrl: json['iconUrl']?.toString() ?? '',
+    );
+  }
 }
 
 class LaundryModel {

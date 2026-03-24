@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/models/models.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
 
 class HotelScreen extends StatefulWidget {
@@ -19,6 +20,34 @@ class _HotelScreenState extends State<HotelScreen> {
   DateTime _checkOutDate = DateTime.now().add(const Duration(days: 4));
   int _guestCount = 2;
   String _searchQuery = '';
+  List<HotelModel> _hotels = HotelModel.sampleHotels;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHotels();
+  }
+
+  Future<void> _loadHotels() async {
+    try {
+      final response = await ApiClient.get('/catalog/hotels');
+      final items = (response as List)
+          .map(
+            (item) =>
+                HotelModel.fromApi(Map<String, dynamic>.from(item as Map)),
+          )
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _hotels = items.isEmpty ? HotelModel.sampleHotels : items;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -153,7 +182,14 @@ class _HotelScreenState extends State<HotelScreen> {
               ),
             ),
           ),
-          if (hotels.isEmpty)
+          if (_isLoading)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            )
+          else if (hotels.isEmpty)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -337,10 +373,10 @@ class _HotelScreenState extends State<HotelScreen> {
   List<HotelModel> _filteredHotels() {
     final query = _searchQuery.toLowerCase();
     if (query.isEmpty) {
-      return HotelModel.sampleHotels;
+      return _hotels;
     }
 
-    return HotelModel.sampleHotels.where((hotel) {
+    return _hotels.where((hotel) {
       return hotel.name.toLowerCase().contains(query) ||
           hotel.city.toLowerCase().contains(query) ||
           hotel.address.toLowerCase().contains(query) ||

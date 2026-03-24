@@ -6,6 +6,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/models/models.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 
 class ProductDetailScreen extends StatefulWidget {
@@ -20,17 +21,32 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _selectedColor = 0;
   int _selectedSize = 0;
   int _quantity = 1;
+  bool _isLoading = true;
 
   late ProductModel _product;
 
   @override
   void initState() {
     super.initState();
-    // Default fallback product if ID not found
     _product = ProductModel.sampleProducts.firstWhere(
       (p) => p.id == widget.productId,
       orElse: () => ProductModel.sampleProducts.first,
     );
+    _loadProduct();
+  }
+
+  Future<void> _loadProduct() async {
+    try {
+      final response = await ApiClient.get('/catalog/products/${widget.productId}');
+      if (!mounted) return;
+      setState(() {
+        _product = ProductModel.fromApi(Map<String, dynamic>.from(response as Map));
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
   }
 
   // Pre-defined UI colors mapping for mock products
@@ -83,7 +99,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

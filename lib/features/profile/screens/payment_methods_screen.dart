@@ -1,147 +1,211 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../core/constants/app_spacing.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/providers/providers.dart';
 
-class PaymentMethodsScreen extends StatelessWidget {
+class PaymentMethodsScreen extends StatefulWidget {
   const PaymentMethodsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final cards = [
-      _Card('Visa', '•••• •••• •••• 4242', '12/28', AppColors.primary, true),
-      _Card('Mastercard', '•••• •••• •••• 8523', '06/27', AppColors.food, false),
-    ];
+  State<PaymentMethodsScreen> createState() => _PaymentMethodsScreenState();
+}
 
+class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
+  List<Map<String, dynamic>> _methods = const [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMethods();
+  }
+
+  Future<void> _loadMethods() async {
+    final userId = context.read<AuthProvider>().user?.id;
+    if (userId == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
+
+    try {
+      final response = await ApiClient.get('/users/$userId/payment-methods');
+      if (!mounted) return;
+      setState(() {
+        _methods = (response as List)
+            .map((item) => Map<String, dynamic>.from(item as Map))
+            .toList();
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _setDefault(String paymentMethodId) async {
+    final userId = context.read<AuthProvider>().user?.id;
+    if (userId == null) return;
+    try {
+      await ApiClient.patch(
+        '/users/$userId/payment-methods/$paymentMethodId/default',
+        {},
+      );
+      await _loadMethods();
+    } catch (_) {}
+  }
+
+  Future<void> _deleteMethod(String paymentMethodId) async {
+    final userId = context.read<AuthProvider>().user?.id;
+    if (userId == null) return;
+    try {
+      await ApiClient.delete('/users/$userId/payment-methods/$paymentMethodId');
+      await _loadMethods();
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Payment Methods'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), onPressed: () => context.pop()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => context.pop(),
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Credit/Debit Cards
-            Text('Cards', style: AppTextStyles.h4),
-            const SizedBox(height: 12),
-            ...cards.map((c) => Container(
-              margin: const EdgeInsets.only(bottom: 14),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [c.color, c.color.withValues(alpha: 0.7)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: c.color.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
-              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(c.type, style: AppTextStyles.h4.copyWith(color: AppColors.white)),
-                      if (c.isDefault)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(6)),
-                          child: Text('Default', style: AppTextStyles.badge.copyWith(fontSize: 9)),
+                  Text('Cards', style: AppTextStyles.h4),
+                  const SizedBox(height: 12),
+                  if (_methods.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        'No saved payment methods yet.',
+                        style: AppTextStyles.bodyMedium,
+                      ),
+                    )
+                  else
+                    ..._methods.map((method) {
+                      final color =
+                          (method['type']?.toString() ?? '').contains('CARD')
+                          ? AppColors.primary
+                          : AppColors.secondary;
+                      final last4 = method['last4']?.toString() ?? '0000';
+                      final month = method['expiryMonth']?.toString() ?? '--';
+                      final year = method['expiryYear']?.toString() ?? '--';
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 14),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [color, color.withValues(alpha: 0.7)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: color.withValues(alpha: 0.3),
+                              blurRadius: 15,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  Text(c.number, style: AppTextStyles.h3.copyWith(color: AppColors.white, letterSpacing: 2)),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('EXPIRES', style: AppTextStyles.caption.copyWith(color: Colors.white60, fontSize: 9)),
-                          Text(c.expiry, style: AppTextStyles.labelMedium.copyWith(color: AppColors.white)),
-                        ],
-                      ),
-                      const SizedBox(width: 30),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('CARDHOLDER', style: AppTextStyles.caption.copyWith(color: Colors.white60, fontSize: 9)),
-                          Text('JOHN DOE', style: AppTextStyles.labelMedium.copyWith(color: AppColors.white)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            )),
-            const SizedBox(height: 10),
-
-            // Other payment methods
-            Text('Other Methods', style: AppTextStyles.h4),
-            const SizedBox(height: 12),
-            ...[
-              ('Apple Pay', 'Connected', Icons.phone_iphone_rounded, AppColors.dark),
-              ('Google Pay', 'Connected', Icons.g_mobiledata_rounded, AppColors.primary),
-              ('PayPal', 'john.doe@paypal.com', Icons.account_balance_wallet_rounded, AppColors.secondary),
-            ].map((p) => Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(14), boxShadow: AppSpacing.shadowSm),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44, height: 44,
-                    decoration: BoxDecoration(color: p.$4.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
-                    child: Icon(p.$3, color: p.$4, size: 24),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(p.$1, style: AppTextStyles.labelMedium),
-                        Text(p.$2, style: AppTextStyles.caption),
-                      ],
-                    ),
-                  ),
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.mediumGrey),
-                ],
-              ),
-            )),
-
-            const SizedBox(height: 20),
-            // Add new card
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.lightGrey, style: BorderStyle.solid),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
-                  const SizedBox(width: 10),
-                  Text('Add New Card', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  method['brand']?.toString() ??
+                                      method['type']?.toString() ??
+                                      'Payment',
+                                  style: AppTextStyles.h4.copyWith(
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                                if (method['isDefault'] == true)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      'Default',
+                                      style: AppTextStyles.badge.copyWith(
+                                        fontSize: 9,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            Text(
+                              '•••• •••• •••• $last4',
+                              style: AppTextStyles.h3.copyWith(
+                                color: AppColors.white,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                Text(
+                                  'Expires $month/$year',
+                                  style: AppTextStyles.labelMedium.copyWith(
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                                const Spacer(),
+                                if (method['isDefault'] != true)
+                                  TextButton(
+                                    onPressed: () =>
+                                        _setDefault(method['id'].toString()),
+                                    child: Text(
+                                      'Set default',
+                                      style: AppTextStyles.labelSmall.copyWith(
+                                        color: AppColors.white,
+                                      ),
+                                    ),
+                                  ),
+                                IconButton(
+                                  onPressed: () =>
+                                      _deleteMethod(method['id'].toString()),
+                                  icon: const Icon(
+                                    Icons.delete_outline_rounded,
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
-}
-
-class _Card {
-  final String type, number, expiry;
-  final Color color;
-  final bool isDefault;
-  _Card(this.type, this.number, this.expiry, this.color, this.isDefault);
 }

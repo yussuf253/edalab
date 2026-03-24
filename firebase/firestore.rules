@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isServiceAccount() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isSelf(userId) || isServiceAccount();
+
+      match /addresses/{addressId} {
+        allow read, write: if isSelf(userId) || isServiceAccount();
+      }
+
+      match /payment_methods/{paymentMethodId} {
+        allow read, write: if isSelf(userId) || isServiceAccount();
+      }
+
+      match /wishlist/{wishlistItemId} {
+        allow read, write: if isSelf(userId) || isServiceAccount();
+      }
+
+      match /notifications/{notificationId} {
+        allow read, write: if isSelf(userId) || isServiceAccount();
+      }
+
+      match /rewards/{rewardDocId} {
+        allow read, write: if isSelf(userId) || isServiceAccount();
+      }
+
+      match /coupons/{couponId} {
+        allow read, write: if isSelf(userId) || isServiceAccount();
+      }
+
+      match /cart/{cartItemId} {
+        allow read, write: if isSelf(userId) || isServiceAccount();
+      }
+    }
+
+    match /orders/{orderId} {
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if (isSignedIn()
+        && resource.data.userId == request.auth.uid)
+        || isServiceAccount();
+      allow update, delete: if isServiceAccount();
+
+      match /events/{eventId} {
+        allow read: if (isSignedIn()
+          && get(/databases/$(database)/documents/orders/$(orderId)).data.userId == request.auth.uid)
+          || isServiceAccount();
+        allow write: if isServiceAccount();
+      }
+    }
+
+    match /appointments/{appointmentId} {
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if (isSignedIn()
+        && resource.data.userId == request.auth.uid)
+        || isServiceAccount();
+      allow update, delete: if isServiceAccount();
+    }
+
+    match /hotel_bookings/{bookingId} {
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if (isSignedIn()
+        && resource.data.userId == request.auth.uid)
+        || isServiceAccount();
+      allow update, delete: if isServiceAccount();
+    }
+
+    match /ride_bookings/{rideId} {
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if (isSignedIn()
+        && resource.data.userId == request.auth.uid)
+        || isServiceAccount();
+      allow update, delete: if isServiceAccount();
+
+      match /tracking/{trackingId} {
+        allow read: if (isSignedIn()
+          && get(/databases/$(database)/documents/ride_bookings/$(rideId)).data.userId == request.auth.uid)
+          || isServiceAccount();
+        allow write: if isServiceAccount();
+      }
+    }
+
+    match /laundry_orders/{laundryOrderId} {
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if (isSignedIn()
+        && resource.data.userId == request.auth.uid)
+        || isServiceAccount();
+      allow update, delete: if isServiceAccount();
+    }
+
+    match /promotions/{promotionId} {
+      allow read: if true;
+      allow write: if isServiceAccount();
+    }
+
+    match /catalog/{module}/items/{docId} {
+      allow read: if true;
+      allow write: if isServiceAccount();
+    }
+  }
+}

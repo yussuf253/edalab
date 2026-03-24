@@ -89,7 +89,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
           child: Form(
             key: _formKey,
             child: Column(
@@ -98,18 +98,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 FadeInDown(
                   child: Text(
                     'Create\nAccount ✨',
-                    style: AppTextStyles.h1.copyWith(fontSize: 34),
+                    style: AppTextStyles.h1.copyWith(fontSize: 28, height: 1.05),
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 FadeInDown(
                   delay: const Duration(milliseconds: 100),
                   child: Text(
                     'Start your journey with EdaLab',
-                    style: AppTextStyles.bodyLarge.copyWith(color: AppColors.grey),
+                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 22),
                 // Full Name
                 FadeInDown(
                   delay: const Duration(milliseconds: 200),
@@ -120,7 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _nameController,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 // Email
                 FadeInDown(
                   delay: const Duration(milliseconds: 300),
@@ -132,7 +132,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     keyboardType: TextInputType.emailAddress,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 // Phone
                 FadeInDown(
                   delay: const Duration(milliseconds: 400),
@@ -144,7 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     keyboardType: TextInputType.phone,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 // Password
                 FadeInDown(
                   delay: const Duration(milliseconds: 500),
@@ -152,7 +152,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Password', style: AppTextStyles.labelLarge),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
@@ -183,7 +183,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
                 // Terms
                 FadeInDown(
                   delay: const Duration(milliseconds: 600),
@@ -230,7 +230,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 18),
                 // Sign Up Button
                 FadeInUp(
                   delay: const Duration(milliseconds: 700),
@@ -240,7 +240,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onPressed: _handleRegister,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 4),
+                FadeInUp(
+                  delay: const Duration(milliseconds: 720),
+                  child: Center(
+                    child: TextButton(
+                      onPressed: () => context.go('/'),
+                      child: Text(
+                        'Continue as Guest',
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 // Login Link
                 FadeInUp(
                   delay: const Duration(milliseconds: 800),
@@ -282,7 +297,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTextStyles.labelLarge),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,

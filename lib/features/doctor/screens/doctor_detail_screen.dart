@@ -3,20 +3,54 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/models/models.dart';
 import '../../../core/utils/auth_gate.dart';
 
-class DoctorDetailScreen extends StatelessWidget {
+class DoctorDetailScreen extends StatefulWidget {
   final String doctorId;
   const DoctorDetailScreen({super.key, required this.doctorId});
 
   @override
-  Widget build(BuildContext context) {
-    final d = DoctorModel.sampleDoctors.firstWhere(
-      (doc) => doc.id == doctorId,
+  State<DoctorDetailScreen> createState() => _DoctorDetailScreenState();
+}
+
+class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
+  late DoctorModel _doctor;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _doctor = DoctorModel.sampleDoctors.firstWhere(
+      (doc) => doc.id == widget.doctorId,
       orElse: () => DoctorModel.sampleDoctors.first,
     );
+    _loadDoctor();
+  }
+
+  Future<void> _loadDoctor() async {
+    try {
+      final response = await ApiClient.get(
+        '/catalog/doctors/${widget.doctorId}',
+      );
+      if (!mounted) return;
+      setState(() {
+        _doctor = DoctorModel.fromApi(
+          Map<String, dynamic>.from(response as Map),
+        );
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final d = _doctor;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -80,6 +114,14 @@ class DoctorDetailScreen extends StatelessWidget {
                       color: Colors.white70,
                     ),
                   ),
+                  if (_isLoading) ...[
+                    const SizedBox(height: 12),
+                    const LinearProgressIndicator(
+                      minHeight: 3,
+                      color: AppColors.white,
+                      backgroundColor: Colors.white24,
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,

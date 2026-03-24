@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
@@ -9,17 +10,56 @@ import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/auth_gate.dart';
 
-class HotelBookingScreen extends StatelessWidget {
+class HotelBookingScreen extends StatefulWidget {
   final String hotelId;
   const HotelBookingScreen({super.key, required this.hotelId});
 
   @override
-  Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-    final h = HotelModel.sampleHotels.firstWhere(
-      (h) => h.id == hotelId,
+  State<HotelBookingScreen> createState() => _HotelBookingScreenState();
+}
+
+class _HotelBookingScreenState extends State<HotelBookingScreen> {
+  late HotelModel _hotel;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _hotel = HotelModel.sampleHotels.firstWhere(
+      (hotel) => hotel.id == widget.hotelId,
       orElse: () => HotelModel.sampleHotels.first,
     );
+    _loadHotel();
+  }
+
+  Future<void> _loadHotel() async {
+    try {
+      final response = await ApiClient.get('/catalog/hotels/${widget.hotelId}');
+      if (!mounted) return;
+      setState(() {
+        _hotel = HotelModel.fromApi(Map<String, dynamic>.from(response as Map));
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final h = _hotel;
+    final defaultAddress = auth.user?.addresses
+        .cast<AddressModel?>()
+        .firstWhere(
+          (address) => address?.isDefault == true,
+          orElse: () => auth.user?.addresses.isNotEmpty == true
+              ? auth.user!.addresses.first
+              : null,
+        );
+    final checkIn = DateTime.now().add(const Duration(days: 1));
+    final checkOut = checkIn.add(const Duration(days: 3));
     final nights = 3;
     final roomRate = h.pricePerNight * nights;
     final serviceFee = roomRate * 0.05;
@@ -72,6 +112,14 @@ class HotelBookingScreen extends StatelessWidget {
                           'Standard Room • City View',
                           style: AppTextStyles.caption,
                         ),
+                        if (_isLoading)
+                          const Padding(
+                            padding: EdgeInsets.only(top: 6),
+                            child: SizedBox(
+                              width: 120,
+                              child: LinearProgressIndicator(minHeight: 3),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -88,8 +136,8 @@ class HotelBookingScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _Row('Check-in', 'Mar 25, 2026'),
-                  _Row('Check-out', 'Mar 28, 2026'),
+                  _Row('Check-in', DateFormat('MMM d, y').format(checkIn)),
+                  _Row('Check-out', DateFormat('MMM d, y').format(checkOut)),
                   _Row('Nights', '$nights'),
                   _Row('Guests', '2 Adults'),
                   _Row('Room', 'Standard Room'),
@@ -129,6 +177,26 @@ class HotelBookingScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
+            if (defaultAddress != null)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Saved Address', style: AppTextStyles.h4),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${defaultAddress.label}: ${defaultAddress.address}',
+                      style: AppTextStyles.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+            if (defaultAddress != null) const SizedBox(height: 20),
             // Price breakdown
             Container(
               padding: const EdgeInsets.all(16),
@@ -169,7 +237,21 @@ class HotelBookingScreen extends StatelessWidget {
                     'deliveryFee': serviceFee,
                     'total': total,
                     'items': [
-                      {'hotelId': h.id, 'name': h.name, 'nights': nights},
+                      {
+                        'id': h.id,
+                        'name': '${h.name} - Standard Room',
+                        'price': roomRate,
+                        'quantity': 1,
+                        'total': roomRate,
+                        'metadata': {
+                          'hotelId': h.id,
+                          'hotelName': h.name,
+                          'nights': nights,
+                          'checkIn': checkIn.toIso8601String(),
+                          'checkOut': checkOut.toIso8601String(),
+                          'guests': 2,
+                        },
+                      },
                     ],
                   });
                   if (!context.mounted) return;

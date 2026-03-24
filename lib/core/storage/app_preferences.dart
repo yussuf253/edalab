@@ -5,6 +5,7 @@ class AppPreferences {
 
   static const _hasSeenOnboardingKey = 'has_seen_onboarding';
   static const _currentUserIdKey = 'current_user_id';
+  static const _authTokenKey = 'auth_token';
 
   static Future<bool> hasSeenOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
@@ -29,5 +30,20 @@ class AppPreferences {
   static Future<void> clearCurrentUserId() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_currentUserIdKey);
+  }
+
+  static Future<String?> getAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_authTokenKey);
+  }
+
+  static Future<void> setAuthToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_authTokenKey, token);
+  }
+
+  static Future<void> clearAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_authTokenKey);
   }
 }

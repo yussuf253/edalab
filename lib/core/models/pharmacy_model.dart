@@ -25,6 +25,30 @@ class PharmacyModel {
     required this.reviewsCount,
   });
 
+  factory PharmacyModel.fromApi(Map<String, dynamic> json) {
+    return PharmacyModel(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Medicine',
+      category:
+          json['category']?.toString() ??
+          json['categoryId']?.toString() ??
+          'General',
+      price: (json['price'] as num?)?.toDouble() ?? 0,
+      description: json['description']?.toString() ?? '',
+      imageUrl: (json['images'] as List?)?.isNotEmpty == true
+          ? json['images'][0]?.toString()
+          : json['imageUrl']?.toString(),
+      requiresPrescription: json['requiresPrescription'] as bool? ?? false,
+      dosage: json['dosage']?.toString() ?? 'Use as directed.',
+      size: json['packageSize']?.toString() ?? json['size']?.toString() ?? '',
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      reviewsCount:
+          (json['reviewCount'] as num?)?.toInt() ??
+          (json['reviewsCount'] as num?)?.toInt() ??
+          0,
+    );
+  }
+
   static List<PharmacyModel> sampleItems = [
     PharmacyModel(
       id: 'p1',

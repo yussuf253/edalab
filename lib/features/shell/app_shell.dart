@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_text_styles.dart';
+import '../../core/providers/providers.dart';
 
 class AppShell extends StatefulWidget {
   final Widget child;
@@ -13,41 +17,63 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  int _currentIndex = 0;
-
   final List<_NavItem> _navItems = [
-    _NavItem(icon: Icons.home_rounded, activeIcon: Icons.home_rounded, label: 'Home'),
-    _NavItem(icon: Icons.explore_outlined, activeIcon: Icons.explore_rounded, label: 'Explore'),
-    _NavItem(icon: Icons.receipt_long_outlined, activeIcon: Icons.receipt_long_rounded, label: 'Orders'),
-    _NavItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: 'Profile'),
+    _NavItem(
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home_rounded,
+      label: 'Home',
+      path: '/',
+    ),
+    _NavItem(
+      icon: Icons.local_offer_outlined,
+      activeIcon: Icons.local_offer_rounded,
+      label: 'Promos',
+      path: '/promotions',
+    ),
+    _NavItem(
+      icon: Icons.shopping_cart_outlined,
+      activeIcon: Icons.shopping_cart_rounded,
+      label: 'Cart',
+      path: '/cart',
+      isCenter: true,
+    ),
+    _NavItem(
+      icon: Icons.receipt_long_outlined,
+      activeIcon: Icons.receipt_long_rounded,
+      label: 'Orders',
+      path: '/orders',
+    ),
+    _NavItem(
+      icon: Icons.person_outline_rounded,
+      activeIcon: Icons.person_rounded,
+      label: 'Profile',
+      path: '/profile',
+    ),
   ];
-
-  final List<String> _paths = ['/', '/explore', '/orders', '/profile'];
 
   @override
   Widget build(BuildContext context) {
+    final path = GoRouterState.of(context).uri.path;
+    final currentIndex = _currentIndexForPath(path);
+    final cartCount = context.watch<CartProvider>().itemCount;
+
     return Scaffold(
       body: widget.child,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
+          boxShadow: AppSpacing.shadowSm,
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: List.generate(_navItems.length, (index) {
                 final item = _navItems[index];
-                final isActive = _currentIndex == index;
-                return _buildNavItem(item, isActive, index);
+                final isActive = currentIndex == index;
+                return Expanded(
+                  child: _buildNavItem(item, isActive, cartCount: cartCount),
+                );
               }),
             ),
           ),
@@ -56,42 +82,87 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
-  Widget _buildNavItem(_NavItem item, bool isActive, int index) {
+  int _currentIndexForPath(String path) {
+    if (path == '/' || path.startsWith('/search')) {
+      return 0;
+    }
+
+    for (var index = 1; index < _navItems.length; index++) {
+      if (path == _navItems[index].path ||
+          path.startsWith('${_navItems[index].path}/')) {
+        return index;
+      }
+    }
+
+    return 0;
+  }
+
+  Widget _buildNavItem(_NavItem item, bool isActive, {required int cartCount}) {
+    final foreground = isActive ? AppColors.primary : AppColors.mediumGrey;
+
     return GestureDetector(
-      onTap: () {
-        setState(() => _currentIndex = index);
-        context.go(_paths[index]);
-      },
+      onTap: () => context.go(item.path),
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeInOut,
-        padding: EdgeInsets.symmetric(
-          horizontal: isActive ? 16 : 12,
-          vertical: 8,
-        ),
-        decoration: BoxDecoration(
-          color: isActive ? AppColors.primarySurface : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isActive ? item.activeIcon : item.icon,
-              color: isActive ? AppColors.primary : AppColors.mediumGrey,
-              size: 24,
-            ),
-            if (isActive) ...[
-              const SizedBox(width: 8),
-              Text(
-                item.label,
-                style: AppTextStyles.labelMedium.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? AppColors.primarySurface
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    isActive ? item.activeIcon : item.icon,
+                    color: foreground,
+                    size: 22,
+                  ),
                 ),
+                if (item.path == '/cart' && cartCount > 0)
+                  Positioned(
+                    top: -4,
+                    right: -4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.accent,
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: AppColors.white, width: 2),
+                      ),
+                      child: Text(
+                        cartCount > 99 ? '99+' : '$cartCount',
+                        style: AppTextStyles.badge.copyWith(fontSize: 8),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              item.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: isActive ? AppColors.primary : AppColors.mediumGrey,
+                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 11,
               ),
-            ],
+            ),
           ],
         ),
       ),
@@ -103,10 +174,14 @@ class _NavItem {
   final IconData icon;
   final IconData activeIcon;
   final String label;
+  final String path;
+  final bool isCenter;
 
   _NavItem({
     required this.icon,
     required this.activeIcon,
     required this.label,
+    required this.path,
+    this.isCenter = false,
   });
 }

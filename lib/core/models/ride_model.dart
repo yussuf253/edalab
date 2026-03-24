@@ -16,6 +16,18 @@ class RideCategory {
     required this.pricePerMile,
     required this.timeToArrive,
   });
+
+  factory RideCategory.fromApi(Map<String, dynamic> json) {
+    return RideCategory(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Ride',
+      description: json['description']?.toString() ?? '',
+      capacity: (json['capacity'] as num?)?.toInt() ?? 4,
+      basePrice: (json['basePrice'] as num?)?.toDouble() ?? 0,
+      pricePerMile: (json['pricePerMile'] as num?)?.toDouble() ?? 0,
+      timeToArrive: json['timeToArrive']?.toString() ?? '5 min',
+    );
+  }
 }
 
 class RideModel {

@@ -61,6 +61,33 @@ class ProductModel {
     );
   }
 
+  factory ProductModel.fromApi(Map<String, dynamic> json) {
+    List<String> readStringList(dynamic value) {
+      if (value is List) {
+        return value.map((entry) => entry.toString()).toList();
+      }
+      return const [];
+    }
+
+    return ProductModel(
+      id: json['id'] as String,
+      name: json['name'] as String? ?? '',
+      brand: json['brand'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      price: (json['price'] as num?)?.toDouble() ?? 0,
+      originalPrice: (json['originalPrice'] as num?)?.toDouble(),
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
+      images: readStringList(json['images']),
+      colors: readStringList(json['colors']),
+      sizes: readStringList(json['sizes']),
+      category: json['category'] as String? ?? json['categoryId'] as String? ?? 'Uncategorized',
+      badge: json['badge'] as String?,
+      inStock: json['inStock'] as bool? ?? true,
+      features: readStringList(json['features']),
+    );
+  }
+
   static List<ProductModel> sampleProducts = [
     ProductModel(
       id: 'p1', name: 'Nike Air Max 270', brand: 'Nike',

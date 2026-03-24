@@ -20,6 +20,8 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   int _selectedDate = 1;
   int _selectedTime = 2;
   int _selectedType = 0;
+  late DoctorModel _doctor;
+  bool _isLoading = true;
 
   final _dates = [
     ('Mon', '22'),
@@ -42,11 +44,36 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    final d = DoctorModel.sampleDoctors.firstWhere(
+  void initState() {
+    super.initState();
+    _doctor = DoctorModel.sampleDoctors.firstWhere(
       (doc) => doc.id == widget.doctorId,
       orElse: () => DoctorModel.sampleDoctors.first,
     );
+    _loadDoctor();
+  }
+
+  Future<void> _loadDoctor() async {
+    try {
+      final response = await ApiClient.get(
+        '/catalog/doctors/${widget.doctorId}',
+      );
+      if (!mounted) return;
+      setState(() {
+        _doctor = DoctorModel.fromApi(
+          Map<String, dynamic>.from(response as Map),
+        );
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final d = _doctor;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -90,6 +117,14 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     children: [
                       Text(d.name, style: AppTextStyles.labelLarge),
                       Text(d.specialty, style: AppTextStyles.caption),
+                      if (_isLoading)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 6),
+                          child: SizedBox(
+                            width: 120,
+                            child: LinearProgressIndicator(minHeight: 3),
+                          ),
+                        ),
                     ],
                   ),
                 ],
@@ -252,10 +287,15 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 );
                 if (!context.mounted || !allowed) return;
                 try {
+                  final selectedDate = DateTime.utc(
+                    2026,
+                    3,
+                    int.parse(_dates[_selectedDate].$2),
+                  );
                   await ApiClient.post('/appointments', {
                     'userId': auth.user!.id,
                     'doctorId': d.id,
-                    'date': '2026-03-${_dates[_selectedDate].$2}T00:00:00.000Z',
+                    'date': selectedDate.toIso8601String(),
                     'timeSlot': '${_times[_selectedTime]} AM',
                     'type': ['video', 'chat', 'in_person'][_selectedType],
                     'notes': 'Booked via EdaLab Super App',

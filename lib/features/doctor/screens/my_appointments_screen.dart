@@ -12,10 +12,29 @@ import '../../../core/models/models.dart';
 class MyAppointmentsScreen extends StatelessWidget {
   const MyAppointmentsScreen({super.key});
 
-  Future<List<dynamic>> _fetchAppointments(BuildContext context) async {
+  Future<Map<String, dynamic>> _fetchAppointments(BuildContext context) async {
     final auth = context.read<AuthProvider>();
-    if (auth.user == null) return [];
-    return await ApiClient.get('/appointments/${auth.user!.id}');
+    if (auth.user == null) {
+      return {'appointments': <dynamic>[], 'doctors': <String, DoctorModel>{}};
+    }
+
+    final appointments = await ApiClient.get('/appointments/${auth.user!.id}');
+    Map<String, DoctorModel> doctorsById = {
+      for (final doctor in DoctorModel.sampleDoctors) doctor.id: doctor,
+    };
+
+    try {
+      final doctorsResponse = await ApiClient.get('/catalog/doctors');
+      final doctors = (doctorsResponse as List)
+          .map(
+            (entry) =>
+                DoctorModel.fromApi(Map<String, dynamic>.from(entry as Map)),
+          )
+          .toList();
+      doctorsById = {for (final doctor in doctors) doctor.id: doctor};
+    } catch (_) {}
+
+    return {'appointments': appointments, 'doctors': doctorsById};
   }
 
   @override
@@ -24,19 +43,28 @@ class MyAppointmentsScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('My Appointments'),
-        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), onPressed: () => context.pop()),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => context.pop(),
+        ),
       ),
-      body: FutureBuilder<List<dynamic>>(
+      body: FutureBuilder<Map<String, dynamic>>(
         future: _fetchAppointments(context),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Error loading appointments: ${snapshot.error}'));
+            return Center(
+              child: Text('Error loading appointments: ${snapshot.error}'),
+            );
           }
 
-          final appointments = snapshot.data ?? [];
+          final payload = snapshot.data ?? const {};
+          final appointments = (payload['appointments'] as List?) ?? const [];
+          final doctorsById =
+              (payload['doctors'] as Map<String, DoctorModel>?) ??
+              const <String, DoctorModel>{};
           if (appointments.isEmpty) {
             return const Center(
               child: EmptyState(
@@ -50,22 +78,27 @@ class MyAppointmentsScreen extends StatelessWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(20),
             itemCount: appointments.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final apiAppt = appointments[index];
-              // Try to map to local doctor for extended details
               final dId = apiAppt['doctorId'];
-              final docMatch = DoctorModel.sampleDoctors.where((d) => d.id == dId).toList();
-              final String name = docMatch.isNotEmpty ? docMatch.first.name : 'Doctor $dId';
-              final String specialty = docMatch.isNotEmpty ? docMatch.first.specialty : 'Specialist';
+              final doctor = doctorsById[dId];
+              final String name = doctor?.name ?? 'Doctor $dId';
+              final String specialty = doctor?.specialty ?? 'Specialist';
               final String status = apiAppt['status'] ?? 'Unknown';
               final dateObj = DateTime.tryParse(apiAppt['date'] ?? '');
-              final dateStr = dateObj != null ? '${dateObj.month}/${dateObj.day}/${dateObj.year}' : 'Unknown Date';
+              final dateStr = dateObj != null
+                  ? '${dateObj.month}/${dateObj.day}/${dateObj.year}'
+                  : 'Unknown Date';
               final timeStr = apiAppt['timeSlot'] ?? '00:00';
 
               Color statusColor = AppColors.primary;
-              if (status.toLowerCase().contains('cancel')) statusColor = AppColors.error;
-              if (status.toLowerCase().contains('complet')) statusColor = AppColors.success;
+              if (status.toLowerCase().contains('cancel')) {
+                statusColor = AppColors.error;
+              }
+              if (status.toLowerCase().contains('complet')) {
+                statusColor = AppColors.success;
+              }
 
               return Container(
                 padding: const EdgeInsets.all(16),
@@ -79,9 +112,17 @@ class MyAppointmentsScreen extends StatelessWidget {
                     Row(
                       children: [
                         Container(
-                          width: 50, height: 50,
-                          decoration: BoxDecoration(color: AppColors.doctorBg, borderRadius: BorderRadius.circular(14)),
-                          child: const Icon(Icons.person_rounded, color: AppColors.doctor, size: 26),
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: AppColors.doctorBg,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.person_rounded,
+                            color: AppColors.doctor,
+                            size: 26,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -94,7 +135,10 @@ class MyAppointmentsScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-                        StatusBadge(text: status.toUpperCase(), color: statusColor),
+                        StatusBadge(
+                          text: status.toUpperCase(),
+                          color: statusColor,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -106,9 +150,16 @@ class MyAppointmentsScreen extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.primary),
+                          const Icon(
+                            Icons.calendar_today_rounded,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
                           const SizedBox(width: 8),
-                          Text('$dateStr, $timeStr', style: AppTextStyles.labelMedium),
+                          Text(
+                            '$dateStr, $timeStr',
+                            style: AppTextStyles.labelMedium,
+                          ),
                         ],
                       ),
                     ),
