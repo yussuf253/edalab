@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
@@ -43,8 +42,13 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
           )
           .toList();
       if (!mounted) return;
+      final nextCategories = items.isEmpty ? RideModel.sampleCategories : items;
       setState(() {
-        _categories = items.isEmpty ? RideModel.sampleCategories : items;
+        _categories = nextCategories;
+        final maxIndex = nextCategories.isEmpty ? 0 : nextCategories.length - 1;
+        if (_selectedVehicle > maxIndex) {
+          _selectedVehicle = maxIndex;
+        }
         _isLoading = false;
       });
     } catch (_) {
@@ -62,6 +66,10 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
   @override
   Widget build(BuildContext context) {
     final categories = _categories;
+    final selectedVehicleIndex = _selectedVehicle >= categories.length
+        ? 0
+        : _selectedVehicle;
+    final selectedCategory = categories[selectedVehicleIndex];
     final pickup =
         widget.bookingData?['pickup'] as String? ?? '123 Main Street';
     final destinationTitle =
@@ -70,6 +78,9 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
         widget.bookingData?['destination'] as String? ?? 'City Mall, Downtown';
     final routeDistance =
         (widget.bookingData?['distance'] as num?)?.toDouble() ?? 5.2;
+    final estimatedRidePrice =
+        selectedCategory.basePrice +
+        (selectedCategory.pricePerMile * routeDistance);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -289,60 +300,57 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                   SafeArea(
                     child: AppButton(
                       text:
-                          'Confirm Ride • \$${(categories[_selectedVehicle].basePrice + categories[_selectedVehicle].pricePerMile * routeDistance).toStringAsFixed(2)}',
+                          'Confirm Ride • \$${estimatedRidePrice.toStringAsFixed(2)}',
                       color: AppColors.ride,
                       isLoading: _isSubmitting,
                       onPressed: () async {
-                        if (_isSubmitting) return;
+                        if (_isSubmitting || _isLoading || categories.isEmpty) {
+                          return;
+                        }
                         final allowed = await requireLoggedIn(
                           context,
                           message: 'Please log in to confirm your ride.',
                         );
                         if (!context.mounted || !allowed) return;
-                        final estPrice =
-                            categories[_selectedVehicle].basePrice +
-                            categories[_selectedVehicle].pricePerMile *
-                                routeDistance;
                         final auth = context.read<AuthProvider>();
-                        final rideId =
-                            'ride_${DateTime.now().millisecondsSinceEpoch}';
                         setState(() => _isSubmitting = true);
-                        if (!context.mounted) return;
-                        unawaited(
-                          _persistRideOrder(
+                        try {
+                          final ride = await _createRideBooking(
                             userId: auth.user!.id,
-                            vehicle: categories[_selectedVehicle].name,
+                            selectedCategory: selectedCategory,
                             routeDistance: routeDistance,
                             pickup: pickup,
                             destination: destination,
-                            estPrice: estPrice,
-                          ),
-                        );
-                        setState(() => _isSubmitting = false);
-                        if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text(
-                              'Ride confirmed! Driver is on the way 🚗',
+                            estimatedRidePrice: estimatedRidePrice,
+                          );
+                          if (!context.mounted) return;
+                          setState(() => _isSubmitting = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text(
+                                'Ride confirmed! Driver is on the way.',
+                              ),
+                              backgroundColor: AppColors.success,
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                            backgroundColor: AppColors.success,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                          );
+                          context.go(
+                            '/ride/tracking/${ride['id']}',
+                            extra: ride,
+                          );
+                        } catch (e) {
+                          if (!context.mounted) return;
+                          setState(() => _isSubmitting = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Failed to confirm ride: $e'),
+                              backgroundColor: AppColors.error,
                             ),
-                          ),
-                        );
-                        context.go(
-                          '/ride/tracking/$rideId',
-                          extra: {
-                            'pickup': pickup,
-                            'destination': destination,
-                            'eta': categories[_selectedVehicle].timeToArrive,
-                            'vehicle': categories[_selectedVehicle].name,
-                            'distance': routeDistance,
-                            'payment': _payments[_selectedPayment],
-                          },
-                        );
+                          );
+                        }
                       },
                     ),
                   ),
@@ -398,39 +406,32 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
     }
   }
 
-  Future<void> _persistRideOrder({
+  Future<Map<String, dynamic>> _createRideBooking({
     required String userId,
-    required String vehicle,
+    required RideCategory selectedCategory,
     required double routeDistance,
     required String pickup,
     required String destination,
-    required double estPrice,
+    required double estimatedRidePrice,
   }) async {
-    try {
-      await ApiClient.post('/orders', {
-        'userId': userId,
-        'moduleType': 'RIDE',
-        'subtotal': estPrice,
-        'tax': estPrice * 0.08,
-        'deliveryFee': 0,
-        'total': estPrice * 1.08,
-        'items': [
-          {
-            'name': '$vehicle Ride',
-            'price': estPrice,
-            'quantity': 1,
-            'total': estPrice,
-            'metadata': {
-              'vehicle': vehicle,
-              'distance': routeDistance,
-              'pickup': pickup,
-              'destination': destination,
-            },
-          },
-        ],
-      }).timeout(const Duration(seconds: 4));
-    } catch (_) {
-      // Ride UX should not depend on background order persistence.
-    }
+    final tax = estimatedRidePrice * 0.08;
+    final total = estimatedRidePrice + tax;
+    final response = await ApiClient.post('/rides', {
+      'userId': userId,
+      'rideCategoryId': selectedCategory.id,
+      'pickupLabel': pickup,
+      'dropoffLabel': destination,
+      'distanceKm': routeDistance,
+      'estimatedFare': estimatedRidePrice,
+      'tax': tax,
+      'total': total,
+      'etaLabel': selectedCategory.timeToArrive,
+      'vehicleName': selectedCategory.name,
+      'trackingData': {
+        'payment': _payments[_selectedPayment],
+        'distance': routeDistance,
+      },
+    });
+    return Map<String, dynamic>.from(response as Map);
   }
 }

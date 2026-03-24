@@ -5,15 +5,44 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
 
-class GroceryCartScreen extends StatelessWidget {
+class GroceryCartScreen extends StatefulWidget {
   const GroceryCartScreen({super.key});
+
+  @override
+  State<GroceryCartScreen> createState() => _GroceryCartScreenState();
+}
+
+class _GroceryCartScreenState extends State<GroceryCartScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<CartProvider>().refreshFromStorage();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final cartProvider = context.watch<CartProvider>();
+    if (cartProvider.isHydrating) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Grocery Cart'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: const ModuleCartShimmer(),
+      );
+    }
+
     final items = cartProvider.getModuleItems('grocery');
     final subtotal = cartProvider.getModuleSubtotal('grocery');
     final deliveryFee = items.isEmpty ? 0.0 : 3.99;

@@ -272,10 +272,24 @@ class InlineSectionListShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppShimmer(
-      child: Column(
-        children: List.generate(itemCount, (index) => const _ShimmerListCard()),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final hasBoundedHeight = constraints.maxHeight.isFinite;
+        return AppShimmer(
+          child: hasBoundedHeight
+              ? ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: itemCount,
+                  itemBuilder: (context, index) => const _ShimmerListCard(),
+                )
+              : Column(
+                  children: List.generate(
+                    itemCount,
+                    (index) => const _ShimmerListCard(),
+                  ),
+                ),
+        );
+      },
     );
   }
 }
@@ -292,20 +306,27 @@ class InlineSectionGridShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppShimmer(
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.zero,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: 14,
-          crossAxisSpacing: 14,
-          childAspectRatio: childAspectRatio,
-        ),
-        itemCount: itemCount,
-        itemBuilder: (context, index) => const _ShimmerGridCard(),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final hasBoundedHeight = constraints.maxHeight.isFinite;
+        return AppShimmer(
+          child: GridView.builder(
+            shrinkWrap: !hasBoundedHeight,
+            physics: hasBoundedHeight
+                ? const ClampingScrollPhysics()
+                : const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 14,
+              crossAxisSpacing: 14,
+              childAspectRatio: childAspectRatio,
+            ),
+            itemCount: itemCount,
+            itemBuilder: (context, index) => const _ShimmerGridCard(),
+          ),
+        );
+      },
     );
   }
 }
@@ -706,6 +727,120 @@ class SearchResultsShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SimpleListShimmer(itemCount: 6);
+  }
+}
+
+class CartHubShimmer extends StatelessWidget {
+  const CartHubShimmer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+            child: AppShimmer(
+              child: ShimmerBlock(
+                width: double.infinity,
+                height: 64,
+                radius: 14,
+              ),
+            ),
+          ),
+        ),
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20, 18, 20, 12),
+            child: AppShimmer(child: ShimmerBlock(width: 170, height: 22)),
+          ),
+        ),
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) => const Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: AppShimmer(
+                child: ShimmerBlock(
+                  width: double.infinity,
+                  height: 84,
+                  radius: 16,
+                ),
+              ),
+            ),
+            childCount: 4,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class ModuleCartShimmer extends StatelessWidget {
+  final bool showHeaderCard;
+  final int itemCount;
+
+  const ModuleCartShimmer({
+    super.key,
+    this.showHeaderCard = false,
+    this.itemCount = 3,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        if (showHeaderCard)
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: AppShimmer(
+              child: ShimmerBlock(
+                width: double.infinity,
+                height: 72,
+                radius: 14,
+              ),
+            ),
+          ),
+        Expanded(
+          child: ListView.separated(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            itemCount: itemCount,
+            separatorBuilder: (_, _) => const SizedBox(height: 14),
+            itemBuilder: (context, index) => const AppShimmer(
+              child: ShimmerBlock(
+                width: double.infinity,
+                height: 108,
+                radius: 16,
+              ),
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: const SafeArea(
+            child: AppShimmer(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ShimmerBlock(width: double.infinity, height: 16, radius: 10),
+                  SizedBox(height: 10),
+                  ShimmerBlock(width: double.infinity, height: 16, radius: 10),
+                  SizedBox(height: 10),
+                  ShimmerBlock(width: double.infinity, height: 1, radius: 1),
+                  SizedBox(height: 10),
+                  ShimmerBlock(width: double.infinity, height: 18, radius: 10),
+                  SizedBox(height: 16),
+                  ShimmerBlock(width: double.infinity, height: 54, radius: 16),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 

@@ -6,6 +6,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/models/models.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
 
@@ -21,6 +22,15 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
   final TextEditingController _instructionsController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<CartProvider>().refreshFromStorage();
+    });
+  }
+
+  @override
   void dispose() {
     _instructionsController.dispose();
     super.dispose();
@@ -29,6 +39,20 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
   @override
   Widget build(BuildContext context) {
     final cartProvider = context.watch<CartProvider>();
+    if (cartProvider.isHydrating) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Food Cart'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: const ModuleCartShimmer(showHeaderCard: true),
+      );
+    }
+
     final items = cartProvider.getModuleItems('food');
     final subtotal = cartProvider.getModuleSubtotal('food');
     final restaurantName = items.isNotEmpty && items.first.brand != null

@@ -79,92 +79,144 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Promotions'), centerTitle: false),
-      body: _isLoading
-          ? const PromotionsShimmer()
-          : CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: AppSpacing.shadowSm,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
                       decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: AppSpacing.shadowSm,
+                        color: AppColors.primarySurface,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 42,
-                            height: 42,
-                            decoration: BoxDecoration(
-                              color: AppColors.primarySurface,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.sell_rounded,
-                              color: AppColors.primary,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Live offers, flash sales, and coupon codes are synced from the backend.',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.grey,
-                              ),
-                            ),
-                          ),
-                        ],
+                      child: const Icon(
+                        Icons.sell_rounded,
+                        color: AppColors.primary,
+                        size: 20,
                       ),
                     ),
-                  ),
-                ),
-                _SectionHeaderSliver(title: 'Special Offers'),
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 132,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: specialOffers.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(width: 12),
-                      itemBuilder: (context, index) =>
-                          _SpecialOfferCard(deal: specialOffers[index]),
-                    ),
-                  ),
-                ),
-                _SectionHeaderSliver(title: 'Flash Sales'),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                      child: _DealCard(deal: flashSales[index]),
-                    ),
-                    childCount: flashSales.length,
-                  ),
-                ),
-                _SectionHeaderSliver(title: 'Coupon Codes'),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) => Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                      child: _CouponCard(
-                        deal: coupons[index],
-                        onCopy: coupons[index].code == null
-                            ? null
-                            : () => _copyCode(coupons[index].code!),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Live offers, flash sales, and coupon codes are synced from the backend.',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.grey,
+                        ),
                       ),
                     ),
-                    childCount: coupons.length,
-                  ),
+                  ],
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
-              ],
+              ),
             ),
+          ),
+          _SectionHeaderSliver(title: 'Special Offers'),
+          if (_isLoading)
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 136,
+                child: AppShimmer(
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: 3,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) => const ShimmerBlock(
+                      width: 280,
+                      height: 132,
+                      radius: 20,
+                    ),
+                  ),
+                ),
+              ),
+            )
+          else
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 132,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: specialOffers.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 12),
+                  itemBuilder: (context, index) =>
+                      _SpecialOfferCard(deal: specialOffers[index]),
+                ),
+              ),
+            ),
+          _SectionHeaderSliver(title: 'Flash Sales'),
+          if (_isLoading)
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: AppShimmer(
+                    child: ShimmerBlock(
+                      width: double.infinity,
+                      height: 82,
+                      radius: 16,
+                    ),
+                  ),
+                ),
+                childCount: 3,
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: _DealCard(deal: flashSales[index]),
+                ),
+                childCount: flashSales.length,
+              ),
+            ),
+          _SectionHeaderSliver(title: 'Coupon Codes'),
+          if (_isLoading)
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: AppShimmer(
+                    child: ShimmerBlock(
+                      width: double.infinity,
+                      height: 108,
+                      radius: 16,
+                    ),
+                  ),
+                ),
+                childCount: 2,
+              ),
+            )
+          else
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: _CouponCard(
+                    deal: coupons[index],
+                    onCopy: coupons[index].code == null
+                        ? null
+                        : () => _copyCode(coupons[index].code!),
+                  ),
+                ),
+                childCount: coupons.length,
+              ),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
+      ),
     );
   }
 }

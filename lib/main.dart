@@ -11,6 +11,8 @@ Future<void> main() async {
   final hasSeenOnboarding = await AppPreferences.hasSeenOnboarding();
   final authProvider = AuthProvider();
   authProvider.initialize();
+  final cartProvider = CartProvider();
+  cartProvider.initialize();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -26,7 +28,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: authProvider),
-        ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider.value(value: cartProvider),
         ChangeNotifierProxyProvider<AuthProvider, WishlistProvider>(
           create: (_) => WishlistProvider(),
           update: (_, auth, wishlist) {

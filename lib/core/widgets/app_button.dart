@@ -73,6 +73,11 @@ class AppButton extends StatelessWidget {
   }
 
   Widget _buildChild(Color color) {
+    final textStyle = TextStyle(
+      fontSize: isSmall ? 14 : 16,
+      fontWeight: FontWeight.w600,
+    );
+
     if (isLoading) {
       return SizedBox(
         width: 24,
@@ -86,15 +91,18 @@ class AppButton extends StatelessWidget {
 
     if (icon != null) {
       return Row(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(icon, size: isSmall ? 18 : 20),
           const SizedBox(width: 8),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: isSmall ? 14 : 16,
-              fontWeight: FontWeight.w600,
+          Flexible(
+            child: Text(
+              text,
+              style: textStyle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
           ),
         ],
@@ -103,10 +111,10 @@ class AppButton extends StatelessWidget {
 
     return Text(
       text,
-      style: TextStyle(
-        fontSize: isSmall ? 14 : 16,
-        fontWeight: FontWeight.w600,
-      ),
+      style: textStyle,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.center,
     );
   }
 }

@@ -6,6 +6,7 @@ import modulesRoutes from './modules.routes';
 import notificationsRoutes from './notifications.routes';
 import ordersRoutes from './orders.routes';
 import promotionsRoutes from './promotions.routes';
+import ridesRoutes from './rides.routes';
 import usersRoutes from './users.routes';
 
 const router = Router();
@@ -23,6 +24,7 @@ router.use('/modules', modulesRoutes);
 router.use('/users', usersRoutes);
 router.use('/orders', ordersRoutes);
 router.use('/appointments', appointmentsRoutes);
+router.use('/rides', ridesRoutes);
 router.use('/promotions', promotionsRoutes);
 router.use('/notifications', notificationsRoutes);
 
