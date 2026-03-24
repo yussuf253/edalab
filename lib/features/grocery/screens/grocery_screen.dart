@@ -8,6 +8,7 @@ import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
+import '../../../core/widgets/app_shimmer.dart';
 
 class GroceryScreen extends StatefulWidget {
   const GroceryScreen({super.key});
@@ -193,54 +194,80 @@ class _GroceryScreenState extends State<GroceryScreen> {
               child: Text('Categories', style: AppTextStyles.h4),
             ),
           ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: SizedBox(
-                height: 100,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: categories.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: 14),
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    return GestureDetector(
-                      onTap: () =>
-                          context.push('/grocery/category/${category.id}'),
-                      child: Column(
+          if (_isLoading)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: AppShimmer(
+                  child: SizedBox(
+                    height: 100,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
                         children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: AppColors.grocery.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.category_rounded,
-                                color: AppColors.grocery,
-                                size: 28,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            category.name,
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.dark,
-                            ),
-                          ),
+                          _GroceryCategoryShimmer(),
+                          _GroceryCategoryShimmer(),
+                          _GroceryCategoryShimmer(),
+                          _GroceryCategoryShimmer(),
                         ],
                       ),
-                    );
-                  },
+                    ),
+                  ),
+                ),
+              ),
+            )
+          else
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: SizedBox(
+                  height: 100,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: categories.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(width: 14),
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      return GestureDetector(
+                        onTap: () =>
+                            context.push('/grocery/category/${category.id}'),
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: AppColors.grocery.withValues(
+                                  alpha: 0.12,
+                                ),
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.category_rounded,
+                                  color: AppColors.grocery,
+                                  size: 28,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              category.name,
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.dark,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
-          ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
@@ -248,12 +275,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
             ),
           ),
           if (_isLoading)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            )
+            const SliverSectionGridShimmer(itemCount: 6)
           else
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -382,6 +404,24 @@ class _GroceryScreenState extends State<GroceryScreen> {
               ),
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
+      ),
+    );
+  }
+}
+
+class _GroceryCategoryShimmer extends StatelessWidget {
+  const _GroceryCategoryShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(right: 14),
+      child: Column(
+        children: [
+          ShimmerBlock(width: 60, height: 60, radius: 18),
+          SizedBox(height: 6),
+          ShimmerBlock(width: 52, height: 12, radius: 10),
         ],
       ),
     );

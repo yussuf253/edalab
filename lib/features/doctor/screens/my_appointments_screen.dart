@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
@@ -52,7 +53,7 @@ class MyAppointmentsScreen extends StatelessWidget {
         future: _fetchAppointments(context),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const SimpleListShimmer(itemCount: 4, trailingBadge: true);
           }
           if (snapshot.hasError) {
             return Center(

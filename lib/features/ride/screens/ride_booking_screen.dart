@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/providers.dart';
@@ -180,72 +181,78 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                   Text('Choose Vehicle', style: AppTextStyles.h4),
                   const SizedBox(height: 12),
                   Expanded(
-                    child: ListView.separated(
-                      itemCount: categories.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 8),
-                      itemBuilder: (context, index) {
-                        final cat = categories[index];
-                        final estPrice =
-                            cat.basePrice + (cat.pricePerMile * routeDistance);
-                        final sel = _selectedVehicle == index;
-                        return GestureDetector(
-                          onTap: () => setState(() => _selectedVehicle = index),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: sel
-                                  ? AppColors.rideBg
-                                  : AppColors.extraLightGrey,
-                              borderRadius: BorderRadius.circular(14),
-                              border: sel
-                                  ? Border.all(color: AppColors.ride, width: 2)
-                                  : null,
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  _getIconForCategory(cat.name),
-                                  color: sel ? AppColors.ride : AppColors.grey,
-                                  size: 32,
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                    child: _isLoading
+                        ? const InlineSectionListShimmer(itemCount: 4)
+                        : ListView.separated(
+                            itemCount: categories.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
+                              final cat = categories[index];
+                              final estPrice =
+                                  cat.basePrice +
+                                  (cat.pricePerMile * routeDistance);
+                              final sel = _selectedVehicle == index;
+                              return GestureDetector(
+                                onTap: () =>
+                                    setState(() => _selectedVehicle = index),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.all(14),
+                                  decoration: BoxDecoration(
+                                    color: sel
+                                        ? AppColors.rideBg
+                                        : AppColors.extraLightGrey,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: sel
+                                        ? Border.all(
+                                            color: AppColors.ride,
+                                            width: 2,
+                                          )
+                                        : null,
+                                  ),
+                                  child: Row(
                                     children: [
-                                      Text(
-                                        cat.name,
-                                        style: AppTextStyles.labelLarge,
+                                      Icon(
+                                        _getIconForCategory(cat.name),
+                                        color: sel
+                                            ? AppColors.ride
+                                            : AppColors.grey,
+                                        size: 32,
+                                      ),
+                                      const SizedBox(width: 14),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              cat.name,
+                                              style: AppTextStyles.labelLarge,
+                                            ),
+                                            Text(
+                                              '${cat.timeToArrive} away • ${cat.capacity} seats',
+                                              style: AppTextStyles.caption,
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                       Text(
-                                        '${cat.timeToArrive} away • ${cat.capacity} seats',
-                                        style: AppTextStyles.caption,
+                                        '\$${estPrice.toStringAsFixed(2)}',
+                                        style: AppTextStyles.priceSmall
+                                            .copyWith(
+                                              color: sel
+                                                  ? AppColors.ride
+                                                  : AppColors.dark,
+                                            ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                Text(
-                                  '\$${estPrice.toStringAsFixed(2)}',
-                                  style: AppTextStyles.priceSmall.copyWith(
-                                    color: sel
-                                        ? AppColors.ride
-                                        : AppColors.dark,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
-                  if (_isLoading)
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 12),
-                      child: LinearProgressIndicator(minHeight: 3),
-                    ),
                   const SizedBox(height: 12),
                   // Payment method
                   Container(

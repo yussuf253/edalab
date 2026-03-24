@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/providers.dart';
@@ -90,47 +91,51 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Doctor mini card
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: AppColors.doctorBg,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(
-                      Icons.person_rounded,
-                      color: AppColors.doctor,
-                      size: 28,
-                    ),
+            if (_isLoading)
+              const AppShimmer(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 24),
+                  child: ShimmerBlock(
+                    width: double.infinity,
+                    height: 84,
+                    radius: 16,
                   ),
-                  const SizedBox(width: 14),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(d.name, style: AppTextStyles.labelLarge),
-                      Text(d.specialty, style: AppTextStyles.caption),
-                      if (_isLoading)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 6),
-                          child: SizedBox(
-                            width: 120,
-                            child: LinearProgressIndicator(minHeight: 3),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: AppColors.doctorBg,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(
+                        Icons.person_rounded,
+                        color: AppColors.doctor,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(d.name, style: AppTextStyles.labelLarge),
+                        Text(d.specialty, style: AppTextStyles.caption),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 24),
+            if (!_isLoading) const SizedBox(height: 24),
             // Appointment type
             Text('Appointment Type', style: AppTextStyles.h4),
             const SizedBox(height: 12),

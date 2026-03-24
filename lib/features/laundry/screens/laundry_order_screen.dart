@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/providers.dart';
@@ -98,29 +99,55 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             Text('Service Type', style: AppTextStyles.h4),
             const SizedBox(height: 12),
             if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 12),
-                child: LinearProgressIndicator(minHeight: 3),
-              ),
-            Row(
-              children: List.generate(services.length, (index) {
-                final s = services[index];
-                if (index > 2) {
-                  return const SizedBox.shrink(); // Show up to 3 inline
-                }
-                return Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(right: index < 2 ? 10 : 0),
-                    child: _ServiceOption(
-                      s.name,
-                      _getIcon(s.id),
-                      _selectedService == index,
-                      () => setState(() => _selectedService = index),
+              const AppShimmer(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ShimmerBlock(
+                        width: double.infinity,
+                        height: 92,
+                        radius: 16,
+                      ),
                     ),
-                  ),
-                );
-              }),
-            ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: ShimmerBlock(
+                        width: double.infinity,
+                        height: 92,
+                        radius: 16,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: ShimmerBlock(
+                        width: double.infinity,
+                        height: 92,
+                        radius: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              Row(
+                children: List.generate(services.length, (index) {
+                  final s = services[index];
+                  if (index > 2) {
+                    return const SizedBox.shrink();
+                  }
+                  return Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: index < 2 ? 10 : 0),
+                      child: _ServiceOption(
+                        s.name,
+                        _getIcon(s.id),
+                        _selectedService == index,
+                        () => setState(() => _selectedService = index),
+                      ),
+                    ),
+                  );
+                }),
+              ),
             const SizedBox(height: 24),
             // Items
             Text('Items', style: AppTextStyles.h4),

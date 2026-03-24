@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/widgets/app_shimmer.dart';
 
 class PromotionsScreen extends StatefulWidget {
   const PromotionsScreen({super.key});
@@ -79,7 +80,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Promotions'), centerTitle: false),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const PromotionsShimmer()
           : CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(

@@ -6,6 +6,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
+import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
 import '../../../core/providers/providers.dart';
 
@@ -22,7 +23,12 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
   List<ProductModel> _products = ProductModel.sampleProducts;
 
   final _categories = [
-    'All', 'Shoes', 'Electronics', 'Clothing', 'Home', 'Accessories',
+    'All',
+    'Shoes',
+    'Electronics',
+    'Clothing',
+    'Home',
+    'Accessories',
   ];
 
   @override
@@ -33,9 +39,14 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
 
   Future<void> _loadProducts() async {
     try {
-      final response = await ApiClient.get('/catalog/products?moduleType=shopping');
+      final response = await ApiClient.get(
+        '/catalog/products?moduleType=shopping',
+      );
       final items = (response as List)
-          .map((entry) => ProductModel.fromApi(Map<String, dynamic>.from(entry as Map)))
+          .map(
+            (entry) =>
+                ProductModel.fromApi(Map<String, dynamic>.from(entry as Map)),
+          )
           .toList();
 
       if (!mounted) return;
@@ -54,10 +65,14 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cartItemCount = context.watch<CartProvider>().getModuleItemCount('shopping');
-    
+    final cartItemCount = context.watch<CartProvider>().getModuleItemCount(
+      'shopping',
+    );
+
     // Filter products by category
-    final categoryFilter = _selectedCategory == 0 ? null : _categories[_selectedCategory];
+    final categoryFilter = _selectedCategory == 0
+        ? null
+        : _categories[_selectedCategory];
     final products = _products.where((p) {
       if (categoryFilter == null) return true;
       return p.category == categoryFilter;
@@ -75,6 +90,9 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
           IconButton(
             icon: const Icon(Icons.favorite_border_rounded),
             onPressed: () => context.push('/shopping/wishlist'),
+            splashRadius: 24,
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+            padding: const EdgeInsets.all(12),
           ),
           Stack(
             alignment: Alignment.center,
@@ -95,7 +113,10 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                       shape: BoxShape.circle,
                     ),
                     child: Center(
-                      child: Text('$cartItemCount', style: AppTextStyles.badge.copyWith(fontSize: 10)),
+                      child: Text(
+                        '$cartItemCount',
+                        style: AppTextStyles.badge.copyWith(fontSize: 10),
+                      ),
                     ),
                   ),
                 ),
@@ -108,9 +129,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
           // Search
           const Padding(
             padding: EdgeInsets.fromLTRB(20, 8, 20, 0),
-            child: AppSearchBar(
-              hint: 'Search products, brands...',
-            ),
+            child: AppSearchBar(hint: 'Search products, brands...'),
           ),
           // Categories
           SizedBox(
@@ -119,18 +138,23 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               itemCount: _categories.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
+              separatorBuilder: (context, index) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
                 final isSelected = _selectedCategory == index;
                 return GestureDetector(
                   onTap: () => setState(() => _selectedCategory = index),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected ? AppColors.primary : AppColors.white,
                       borderRadius: BorderRadius.circular(20),
-                      border: isSelected ? null : Border.all(color: AppColors.lightGrey),
+                      border: isSelected
+                          ? null
+                          : Border.all(color: AppColors.lightGrey),
                     ),
                     child: Text(
                       _categories[index],
@@ -157,7 +181,11 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  const Icon(Icons.flash_on_rounded, color: AppColors.white, size: 32),
+                  const Icon(
+                    Icons.flash_on_rounded,
+                    color: AppColors.white,
+                    size: 32,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -166,24 +194,33 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                       children: [
                         Text(
                           'Flash Sale!',
-                          style: AppTextStyles.h4.copyWith(color: AppColors.white),
+                          style: AppTextStyles.h4.copyWith(
+                            color: AppColors.white,
+                          ),
                         ),
                         Text(
                           'Up to 70% off • Ends in 02:45:30',
-                          style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: Colors.white70,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.white,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       'Shop',
-                      style: AppTextStyles.labelMedium.copyWith(color: AppColors.shopping),
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.shopping,
+                      ),
                     ),
                   ),
                 ],
@@ -194,136 +231,197 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
           // Products Grid
           Expanded(
             child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : products.isEmpty 
-              ? Center(child: Text("No products found.", style: AppTextStyles.bodyMedium))
-              : GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 14,
-                crossAxisSpacing: 14,
-                childAspectRatio: 0.62,
-              ),
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                final p = products[index];
-                final isFavorite = context.watch<WishlistProvider>().isFavorite(p.id);
-
-                return GestureDetector(
-                  onTap: () => context.push('/shopping/product/${p.id}'),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: AppSpacing.shadowSm,
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: InlineSectionGridShimmer(
+                      itemCount: 6,
+                      childAspectRatio: 0.62,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Image
-                        Expanded(
-                          flex: 3,
-                          child: Stack(
+                  )
+                : products.isEmpty
+                ? Center(
+                    child: Text(
+                      "No products found.",
+                      style: AppTextStyles.bodyMedium,
+                    ),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 14,
+                          crossAxisSpacing: 14,
+                          childAspectRatio: 0.62,
+                        ),
+                    itemCount: products.length,
+                    itemBuilder: (context, index) {
+                      final p = products[index];
+                      final isFavorite = context
+                          .watch<WishlistProvider>()
+                          .isFavorite(p.id);
+
+                      return GestureDetector(
+                        onTap: () => context.push('/shopping/product/${p.id}'),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: AppSpacing.shadowSm,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: double.infinity,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.extraLightGrey,
-                                  borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(16),
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Icon(
-                                    Icons.shopping_bag_rounded,
-                                    size: 40,
-                                    color: AppColors.shopping.withValues(alpha: 0.3),
-                                  ),
+                              // Image
+                              Expanded(
+                                flex: 3,
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      width: double.infinity,
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.extraLightGrey,
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(16),
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.shopping_bag_rounded,
+                                          size: 40,
+                                          color: AppColors.shopping.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    if (p.badge != null)
+                                      Positioned(
+                                        top: 8,
+                                        left: 8,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.accent,
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            p.badge!,
+                                            style: AppTextStyles.badge,
+                                          ),
+                                        ),
+                                      ),
+                                    Positioned(
+                                      top: 8,
+                                      right: 8,
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: InkWell(
+                                          onTap: () {
+                                            context
+                                                .read<WishlistProvider>()
+                                                .toggleFavorite(p);
+                                          },
+                                          borderRadius: BorderRadius.circular(
+                                            24,
+                                          ),
+                                          child: Ink(
+                                            width: 44,
+                                            height: 44,
+                                            decoration: BoxDecoration(
+                                              color: AppColors.white,
+                                              shape: BoxShape.circle,
+                                              boxShadow: AppSpacing.shadowSm,
+                                            ),
+                                            child: Icon(
+                                              isFavorite
+                                                  ? Icons.favorite_rounded
+                                                  : Icons
+                                                        .favorite_border_rounded,
+                                              size: 20,
+                                              color: isFavorite
+                                                  ? AppColors.accent
+                                                  : AppColors.grey,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              if (p.badge != null)
-                                Positioned(
-                                  top: 8,
-                                  left: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.accent,
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(p.badge!, style: AppTextStyles.badge),
-                                  ),
-                                ),
-                              Positioned(
-                                top: 8,
-                                right: 8,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    context.read<WishlistProvider>().toggleFavorite(p);
-                                  },
-                                  child: Container(
-                                    width: 30,
-                                    height: 30,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.white,
-                                      shape: BoxShape.circle,
-                                      boxShadow: AppSpacing.shadowSm,
-                                    ),
-                                    child: Icon(
-                                      isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                      size: 16,
-                                      color: isFavorite ? AppColors.accent : AppColors.grey,
-                                    ),
+                              // Details
+                              Expanded(
+                                flex: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        p.name,
+                                        style: AppTextStyles.labelMedium,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        p.brand,
+                                        style: AppTextStyles.caption,
+                                      ),
+                                      const Spacer(),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            '\$${p.price}',
+                                            style: AppTextStyles.priceSmall,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          if (p.originalPrice != null)
+                                            Text(
+                                              '\$${p.originalPrice}',
+                                              style: AppTextStyles.priceOld
+                                                  .copyWith(fontSize: 10),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.star_rounded,
+                                            size: 14,
+                                            color: AppColors.warning,
+                                          ),
+                                          const SizedBox(width: 3),
+                                          Text(
+                                            '${p.rating}',
+                                            style: AppTextStyles.caption
+                                                .copyWith(
+                                                  color: AppColors.dark,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        // Details
-                        Expanded(
-                          flex: 2,
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  p.name,
-                                  style: AppTextStyles.labelMedium,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(p.brand, style: AppTextStyles.caption),
-                                const Spacer(),
-                                Row(
-                                  children: [
-                                    Text('\$${p.price}', style: AppTextStyles.priceSmall),
-                                    const SizedBox(width: 4),
-                                    if (p.originalPrice != null)
-                                      Text('\$${p.originalPrice}', style: AppTextStyles.priceOld.copyWith(fontSize: 10)),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.star_rounded, size: 14, color: AppColors.warning),
-                                    const SizedBox(width: 3),
-                                    Text('${p.rating}', style: AppTextStyles.caption.copyWith(color: AppColors.dark)),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),

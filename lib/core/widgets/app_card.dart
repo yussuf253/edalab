@@ -34,7 +34,9 @@ class AppCard extends StatelessWidget {
         padding: padding ?? AppSpacing.cardPadding,
         decoration: BoxDecoration(
           color: color ?? AppColors.white,
-          borderRadius: BorderRadius.circular(borderRadius ?? AppSpacing.radiusLg),
+          borderRadius: BorderRadius.circular(
+            borderRadius ?? AppSpacing.radiusLg,
+          ),
           boxShadow: shadow ?? AppSpacing.shadowSm,
           border: border,
         ),
@@ -150,7 +152,8 @@ class ProductCard extends StatelessWidget {
                           child: Image.network(
                             imageUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                            errorBuilder: (context, error, stackTrace) =>
+                                _buildPlaceholder(),
                           ),
                         )
                       : _buildPlaceholder(),
@@ -160,10 +163,15 @@ class ProductCard extends StatelessWidget {
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: badgeColor ?? AppColors.accent,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusSm,
+                        ),
                       ),
                       child: Text(badge!, style: AppTextStyles.badge),
                     ),
@@ -172,20 +180,26 @@ class ProductCard extends StatelessWidget {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: GestureDetector(
-                      onTap: onFavorite,
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: AppSpacing.shadowSm,
-                        ),
-                        child: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          size: 18,
-                          color: isFavorite ? AppColors.accent : AppColors.grey,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: onFavorite,
+                        borderRadius: BorderRadius.circular(24),
+                        child: Ink(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: AppSpacing.shadowSm,
+                          ),
+                          child: Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            size: 20,
+                            color: isFavorite
+                                ? AppColors.accent
+                                : AppColors.grey,
+                          ),
                         ),
                       ),
                     ),
@@ -223,11 +237,17 @@ class ProductCard extends StatelessWidget {
                       if (rating != null)
                         Row(
                           children: [
-                            const Icon(Icons.star_rounded, size: 16, color: AppColors.warning),
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 16,
+                              color: AppColors.warning,
+                            ),
                             const SizedBox(width: 2),
                             Text(
                               rating!.toStringAsFixed(1),
-                              style: AppTextStyles.labelSmall.copyWith(color: AppColors.dark),
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.dark,
+                              ),
                             ),
                           ],
                         ),
@@ -244,11 +264,7 @@ class ProductCard extends StatelessWidget {
 
   Widget _buildPlaceholder() {
     return Center(
-      child: Icon(
-        Icons.image_outlined,
-        size: 40,
-        color: AppColors.lightGrey,
-      ),
+      child: Icon(Icons.image_outlined, size: 40, color: AppColors.lightGrey),
     );
   }
 }

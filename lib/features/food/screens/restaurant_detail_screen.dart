@@ -7,6 +7,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/widgets/app_shimmer.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
   final String restaurantId;
@@ -119,15 +120,24 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             actions: [
               Padding(
                 padding: const EdgeInsets.all(8),
-                child: CircleAvatar(
-                  backgroundColor: AppColors.white,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.favorite_border_rounded,
-                      size: 20,
-                      color: AppColors.dark,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {},
+                    borderRadius: BorderRadius.circular(24),
+                    child: Ink(
+                      width: 48,
+                      height: 48,
+                      decoration: const BoxDecoration(
+                        color: AppColors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.favorite_border_rounded,
+                        size: 22,
+                        color: AppColors.dark,
+                      ),
                     ),
-                    onPressed: () {},
                   ),
                 ),
               ),
@@ -192,171 +202,178 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 color: AppColors.white,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(restaurant.name, style: AppTextStyles.h2),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
+              child: _isLoading
+                  ? const DetailContentShimmer(
+                      accentColor: AppColors.food,
+                      showHero: false,
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                restaurant.name,
+                                style: AppTextStyles.h2,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: restaurant.isOpen
+                                    ? AppColors.successLight
+                                    : AppColors.error.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                restaurant.isOpen ? 'Open' : 'Closed',
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: restaurant.isOpen
+                                      ? AppColors.success
+                                      : AppColors.error,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        decoration: BoxDecoration(
-                          color: restaurant.isOpen
-                              ? AppColors.successLight
-                              : AppColors.error.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          restaurant.isOpen ? 'Open' : 'Closed',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: restaurant.isOpen
-                                ? AppColors.success
-                                : AppColors.error,
+                        const SizedBox(height: 4),
+                        Text(
+                          restaurant.cuisine,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.grey,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    restaurant.cuisine,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.grey,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children:
-                        (restaurant.tags.isEmpty
-                                ? ['Popular']
-                                : restaurant.tags)
-                            .map(
-                              (tag) => Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children:
+                              (restaurant.tags.isEmpty
+                                      ? ['Popular']
+                                      : restaurant.tags)
+                                  .map(
+                                    (tag) => Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.foodBg,
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        tag,
+                                        style: AppTextStyles.labelSmall
+                                            .copyWith(color: AppColors.food),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            _StatChip(
+                              Icons.star_rounded,
+                              '${restaurant.rating}',
+                              '${restaurant.reviewCount}+ reviews',
+                              AppColors.warning,
+                            ),
+                            const SizedBox(width: 10),
+                            _StatChip(
+                              Icons.schedule_rounded,
+                              restaurant.deliveryTime,
+                              'min delivery',
+                              AppColors.primary,
+                            ),
+                            const SizedBox(width: 10),
+                            _StatChip(
+                              Icons.delivery_dining_rounded,
+                              restaurant.deliveryFee == 'Free'
+                                  ? 'Free'
+                                  : restaurant.deliveryFee,
+                              'delivery',
+                              AppColors.success,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.background,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (value) =>
+                                setState(() => _searchQuery = value),
+                            decoration: InputDecoration(
+                              icon: const Icon(
+                                Icons.search_rounded,
+                                color: AppColors.grey,
+                              ),
+                              hintText: 'Search dishes, drinks, sides...',
+                              hintStyle: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.mediumGrey,
+                              ),
+                              border: InputBorder.none,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text('Categories', style: AppTextStyles.h3),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          height: 40,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: categories.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: 8),
+                            itemBuilder: (context, index) {
+                              final category = categories[index];
+                              final isSelected = _selectedCategory == category;
+                              return GestureDetector(
+                                onTap: () => setState(
+                                  () => _selectedCategory = category,
                                 ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.foodBg,
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Text(
-                                  tag,
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    color: AppColors.food,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? AppColors.food
+                                        : AppColors.background,
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Text(
+                                    category,
+                                    style: AppTextStyles.labelMedium.copyWith(
+                                      color: isSelected
+                                          ? AppColors.white
+                                          : AppColors.dark,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            )
-                            .toList(),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      _StatChip(
-                        Icons.star_rounded,
-                        '${restaurant.rating}',
-                        '${restaurant.reviewCount}+ reviews',
-                        AppColors.warning,
-                      ),
-                      const SizedBox(width: 10),
-                      _StatChip(
-                        Icons.schedule_rounded,
-                        restaurant.deliveryTime,
-                        'min delivery',
-                        AppColors.primary,
-                      ),
-                      const SizedBox(width: 10),
-                      _StatChip(
-                        Icons.delivery_dining_rounded,
-                        restaurant.deliveryFee == 'Free'
-                            ? 'Free'
-                            : restaurant.deliveryFee,
-                        'delivery',
-                        AppColors.success,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  if (_isLoading)
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 12),
-                      child: LinearProgressIndicator(minHeight: 3),
-                    ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (value) =>
-                          setState(() => _searchQuery = value),
-                      decoration: InputDecoration(
-                        icon: const Icon(
-                          Icons.search_rounded,
-                          color: AppColors.grey,
-                        ),
-                        hintText: 'Search dishes, drinks, sides...',
-                        hintStyle: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.mediumGrey,
-                        ),
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text('Categories', style: AppTextStyles.h3),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 40,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: categories.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 8),
-                      itemBuilder: (context, index) {
-                        final category = categories[index];
-                        final isSelected = _selectedCategory == category;
-                        return GestureDetector(
-                          onTap: () =>
-                              setState(() => _selectedCategory = category),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 10,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.food
-                                  : AppColors.background,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              category,
-                              style: AppTextStyles.labelMedium.copyWith(
-                                color: isSelected
-                                    ? AppColors.white
-                                    : AppColors.dark,
-                              ),
-                            ),
+                              );
+                            },
                           ),
-                        );
-                      },
+                        ),
+                        if (menu.isNotEmpty) const SizedBox(height: 10),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
           ),
           if (visibleCategories.isEmpty)
@@ -379,12 +396,16 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'No dishes match your search',
+                        menu.isEmpty
+                            ? 'Menu coming soon'
+                            : 'No dishes match your search',
                         style: AppTextStyles.h4,
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Try another keyword or switch categories to keep exploring the menu.',
+                        menu.isEmpty
+                            ? 'This restaurant does not have live menu items yet.'
+                            : 'Try another keyword or switch categories to keep exploring the menu.',
                         textAlign: TextAlign.center,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.grey,
@@ -400,7 +421,12 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
               (entry) => [
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+                    padding: EdgeInsets.fromLTRB(
+                      20,
+                      entry.key == visibleCategories.first.key ? 28 : 22,
+                      20,
+                      12,
+                    ),
                     child: Row(
                       children: [
                         Text(entry.key, style: AppTextStyles.h3),
@@ -423,6 +449,14 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                     return _MenuItemCard(
                       item: item,
                       quantity: itemQuantity,
+                      onTap: () => context.push(
+                        '/food/dish/${item.id}',
+                        extra: {
+                          'restaurantName': restaurant.name,
+                          'categoryName': entry.key,
+                          'item': item,
+                        },
+                      ),
                       onAdd: () => _addItem(context, item, restaurant.name),
                       onIncrement: () => context
                           .read<CartProvider>()
@@ -491,221 +525,17 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
       brand: restaurantName,
     );
     context.read<CartProvider>().addItem(cartItem);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${item.name} added to cart!'),
-        backgroundColor: AppColors.success,
-      ),
-    );
   }
 
   List<MenuCategory> _resolvedMenu(RestaurantModel restaurant) {
-    if (restaurant.menu.isNotEmpty) {
-      return restaurant.menu;
-    }
-
-    final cuisine = restaurant.cuisine.toLowerCase();
-    if (cuisine.contains('pizza') || cuisine.contains('italian')) {
-      return [
-        MenuCategory('Signature Pizzas', [
-          MenuItem(
-            id: '${restaurant.id}_p1',
-            name: 'Margherita Special',
-            description: 'Fresh mozzarella, basil, and rich tomato sauce',
-            price: 13.99,
-            isPopular: true,
-          ),
-          MenuItem(
-            id: '${restaurant.id}_p2',
-            name: 'Pepperoni Royale',
-            description: 'Loaded pepperoni with extra cheese and herbs',
-            price: 15.99,
-          ),
-        ]),
-        MenuCategory('Sides', [
-          MenuItem(
-            id: '${restaurant.id}_p3',
-            name: 'Garlic Bread',
-            description: 'Toasted bread with garlic butter and parmesan',
-            price: 5.49,
-          ),
-          MenuItem(
-            id: '${restaurant.id}_p4',
-            name: 'Caesar Salad',
-            description: 'Crisp romaine with parmesan and Caesar dressing',
-            price: 6.99,
-          ),
-        ]),
-      ];
-    }
-
-    if (cuisine.contains('sushi') || cuisine.contains('japanese')) {
-      return [
-        MenuCategory('Rolls', [
-          MenuItem(
-            id: '${restaurant.id}_s1',
-            name: 'Salmon Avocado Roll',
-            description: 'Fresh salmon, avocado, and seasoned rice',
-            price: 14.49,
-            isPopular: true,
-          ),
-          MenuItem(
-            id: '${restaurant.id}_s2',
-            name: 'Crunchy Shrimp Roll',
-            description: 'Crispy shrimp with spicy mayo and cucumber',
-            price: 15.99,
-          ),
-        ]),
-        MenuCategory('Bowls', [
-          MenuItem(
-            id: '${restaurant.id}_s3',
-            name: 'Teriyaki Chicken Bowl',
-            description: 'Grilled chicken, steamed rice, and teriyaki glaze',
-            price: 12.99,
-          ),
-          MenuItem(
-            id: '${restaurant.id}_s4',
-            name: 'Miso Soup',
-            description: 'Traditional broth with tofu and seaweed',
-            price: 4.49,
-          ),
-        ]),
-      ];
-    }
-
-    if (cuisine.contains('mexican') || cuisine.contains('taco')) {
-      return [
-        MenuCategory('Tacos', [
-          MenuItem(
-            id: '${restaurant.id}_m1',
-            name: 'Beef Street Tacos',
-            description: 'Three tacos with salsa fresca and lime',
-            price: 11.99,
-            isPopular: true,
-          ),
-          MenuItem(
-            id: '${restaurant.id}_m2',
-            name: 'Chicken Fajita Wrap',
-            description: 'Grilled chicken, peppers, onions, and chipotle sauce',
-            price: 10.99,
-          ),
-        ]),
-        MenuCategory('Sides', [
-          MenuItem(
-            id: '${restaurant.id}_m3',
-            name: 'Loaded Nachos',
-            description: 'Crispy chips with cheese, beans, and jalapenos',
-            price: 8.49,
-          ),
-          MenuItem(
-            id: '${restaurant.id}_m4',
-            name: 'Churros',
-            description: 'Warm cinnamon churros with chocolate dip',
-            price: 5.99,
-          ),
-        ]),
-      ];
-    }
-
-    if (cuisine.contains('chinese') || cuisine.contains('asian')) {
-      return [
-        MenuCategory('Mains', [
-          MenuItem(
-            id: '${restaurant.id}_c1',
-            name: 'Kung Pao Chicken',
-            description: 'Spicy chicken stir fry with peanuts and peppers',
-            price: 13.49,
-            isPopular: true,
-          ),
-          MenuItem(
-            id: '${restaurant.id}_c2',
-            name: 'Beef Chow Mein',
-            description: 'Wok-fried noodles with beef and vegetables',
-            price: 12.99,
-          ),
-        ]),
-        MenuCategory('Rice & Sides', [
-          MenuItem(
-            id: '${restaurant.id}_c3',
-            name: 'Vegetable Fried Rice',
-            description: 'Fragrant rice with vegetables and egg',
-            price: 9.49,
-          ),
-          MenuItem(
-            id: '${restaurant.id}_c4',
-            name: 'Spring Rolls',
-            description: 'Crispy rolls served with sweet chili sauce',
-            price: 5.99,
-          ),
-        ]),
-      ];
-    }
-
-    if (cuisine.contains('indian') || cuisine.contains('curry')) {
-      return [
-        MenuCategory('Curries', [
-          MenuItem(
-            id: '${restaurant.id}_i1',
-            name: 'Butter Chicken',
-            description: 'Creamy tomato curry with tender chicken pieces',
-            price: 14.99,
-            isPopular: true,
-          ),
-          MenuItem(
-            id: '${restaurant.id}_i2',
-            name: 'Paneer Tikka Masala',
-            description: 'Paneer cubes in a rich spiced masala sauce',
-            price: 13.49,
-          ),
-        ]),
-        MenuCategory('Sides', [
-          MenuItem(
-            id: '${restaurant.id}_i3',
-            name: 'Garlic Naan',
-            description: 'Soft naan bread with garlic butter',
-            price: 3.99,
-          ),
-          MenuItem(
-            id: '${restaurant.id}_i4',
-            name: 'Mango Lassi',
-            description: 'Refreshing yogurt drink with mango puree',
-            price: 4.99,
-          ),
-        ]),
-      ];
-    }
-
-    return [
-      MenuCategory('Featured', [
-        MenuItem(
-          id: '${restaurant.id}_f1',
-          name: 'Chef Special',
-          description: 'A signature dish prepared fresh for every order',
-          price: 12.99,
-          isPopular: true,
-        ),
-        MenuItem(
-          id: '${restaurant.id}_f2',
-          name: 'House Favorite',
-          description: 'One of the most loved meals on the menu',
-          price: 10.99,
-        ),
-      ]),
-      MenuCategory('Drinks', [
-        MenuItem(
-          id: '${restaurant.id}_f3',
-          name: 'Fresh Juice',
-          description: 'Freshly prepared and served chilled',
-          price: 3.99,
-        ),
-      ]),
-    ];
+    return restaurant.menu;
   }
 }
 
 class _MenuItemCard extends StatelessWidget {
   final MenuItem item;
   final int quantity;
+  final VoidCallback onTap;
   final VoidCallback onAdd;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
@@ -713,6 +543,7 @@ class _MenuItemCard extends StatelessWidget {
   const _MenuItemCard({
     required this.item,
     required this.quantity,
+    required this.onTap,
     required this.onAdd,
     required this.onIncrement,
     required this.onDecrement,
@@ -720,159 +551,162 @@ class _MenuItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: AppSpacing.shadowSm,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item.name,
-                        style: AppTextStyles.labelLarge,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (item.isPopular) ...[
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.food.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: AppSpacing.shadowSm,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
                         child: Text(
-                          'Popular',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.food,
-                            fontSize: 9,
+                          item.name,
+                          style: AppTextStyles.labelLarge,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (item.isPopular) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.food.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Popular',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.food,
+                              fontSize: 9,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  item.description,
-                  style: AppTextStyles.caption,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '\$${item.price.toStringAsFixed(2)}',
-                  style: AppTextStyles.priceSmall,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.extraLightGrey,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.fastfood_rounded,
-                  color: AppColors.food.withValues(alpha: 0.3),
-                ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.description,
+                    style: AppTextStyles.caption,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '\$${item.price.toStringAsFixed(2)}',
+                    style: AppTextStyles.priceSmall,
+                  ),
+                ],
               ),
-              Positioned(
-                bottom: -8,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: quantity == 0
-                      ? GestureDetector(
-                          onTap: onAdd,
-                          child: Container(
+            ),
+            const SizedBox(width: 12),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.extraLightGrey,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.fastfood_rounded,
+                    color: AppColors.food.withValues(alpha: 0.3),
+                  ),
+                ),
+                Positioned(
+                  bottom: -8,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: quantity == 0
+                        ? GestureDetector(
+                            onTap: onAdd,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: AppColors.food),
+                                boxShadow: AppSpacing.shadowSm,
+                              ),
+                              child: Text(
+                                'ADD',
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: AppColors.food,
+                                ),
+                              ),
+                            ),
+                          )
+                        : Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 5,
+                              horizontal: 8,
+                              vertical: 4,
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.white,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(10),
                               border: Border.all(color: AppColors.food),
                               boxShadow: AppSpacing.shadowSm,
                             ),
-                            child: Text(
-                              'ADD',
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: AppColors.food,
-                              ),
-                            ),
-                          ),
-                        )
-                      : Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: AppColors.food),
-                            boxShadow: AppSpacing.shadowSm,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              GestureDetector(
-                                onTap: onDecrement,
-                                child: const Icon(
-                                  Icons.remove,
-                                  size: 16,
-                                  color: AppColors.food,
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                                child: Text(
-                                  '$quantity',
-                                  style: AppTextStyles.labelMedium.copyWith(
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                GestureDetector(
+                                  onTap: onDecrement,
+                                  child: const Icon(
+                                    Icons.remove,
+                                    size: 16,
                                     color: AppColors.food,
                                   ),
                                 ),
-                              ),
-                              GestureDetector(
-                                onTap: onIncrement,
-                                child: const Icon(
-                                  Icons.add,
-                                  size: 16,
-                                  color: AppColors.food,
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                  child: Text(
+                                    '$quantity',
+                                    style: AppTextStyles.labelMedium.copyWith(
+                                      color: AppColors.food,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
+                                GestureDetector(
+                                  onTap: onIncrement,
+                                  child: const Icon(
+                                    Icons.add,
+                                    size: 16,
+                                    color: AppColors.food,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/widgets/app_shimmer.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -195,180 +196,175 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (showSearchResults) ...[
-                    Text('Results', style: AppTextStyles.h4),
-                    const SizedBox(height: 12),
-                    if (_results.isEmpty)
-                      Text(
-                        'No matches found for "$_query".',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.grey,
-                        ),
-                      )
-                    else
-                      ..._results.map(
-                        (item) => GestureDetector(
-                          onTap: () => context.push(item.route),
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 10),
-                            padding: const EdgeInsets.all(14),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (showSearchResults) ...[
+              Text('Results', style: AppTextStyles.h4),
+              const SizedBox(height: 12),
+              if (_isLoading)
+                const InlineSectionListShimmer(itemCount: 6)
+              else if (_results.isEmpty)
+                Text(
+                  'No matches found for "$_query".',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.grey,
+                  ),
+                )
+              else
+                ..._results.map(
+                  (item) => GestureDetector(
+                    onTap: () => context.push(item.route),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: AppSpacing.shadowSm,
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
                             decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: AppSpacing.shadowSm,
+                              color: item.color.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Row(
+                            child: Icon(item.icon, color: item.color, size: 22),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    color: item.color.withValues(alpha: 0.12),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    item.icon,
-                                    color: item.color,
-                                    size: 22,
-                                  ),
+                                Text(
+                                  item.title,
+                                  style: AppTextStyles.labelMedium,
                                 ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item.title,
-                                        style: AppTextStyles.labelMedium,
-                                      ),
-                                      Text(
-                                        item.subtitle,
-                                        style: AppTextStyles.caption,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  size: 16,
-                                  color: AppColors.mediumGrey,
+                                Text(
+                                  item.subtitle,
+                                  style: AppTextStyles.caption,
                                 ),
                               ],
                             ),
                           ),
-                        ),
-                      ),
-                  ] else ...[
-                    Text('Trending Now', style: AppTextStyles.h4),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _trending.map((item) {
-                        return GestureDetector(
-                          onTap: () {
-                            _controller.text = item;
-                            _onChanged(item);
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: AppColors.lightGrey),
-                            ),
-                            child: Text(
-                              item,
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: AppColors.dark,
-                              ),
-                            ),
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 16,
+                            color: AppColors.mediumGrey,
                           ),
-                        );
-                      }).toList(),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 24),
-                    Text('Quick Access', style: AppTextStyles.h4),
-                    const SizedBox(height: 12),
-                    ...[
-                      (
-                        'Order Food',
-                        Icons.restaurant_rounded,
-                        AppColors.food,
-                        '/food',
+                  ),
+                ),
+            ] else ...[
+              Text('Trending Now', style: AppTextStyles.h4),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _trending.map((item) {
+                  return GestureDetector(
+                    onTap: () {
+                      _controller.text = item;
+                      _onChanged(item);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
                       ),
-                      (
-                        'Book a Ride',
-                        Icons.directions_car_rounded,
-                        AppColors.ride,
-                        '/ride',
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: AppColors.lightGrey),
                       ),
-                      (
-                        'Find a Doctor',
-                        Icons.medical_services_rounded,
-                        AppColors.doctor,
-                        '/doctor',
-                      ),
-                      (
-                        'Shop Online',
-                        Icons.shopping_bag_rounded,
-                        AppColors.shopping,
-                        '/shopping',
-                      ),
-                    ].map(
-                      (item) => GestureDetector(
-                        onTap: () => context.push(item.$4),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: AppSpacing.shadowSm,
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 44,
-                                height: 44,
-                                decoration: BoxDecoration(
-                                  color: item.$3.withValues(alpha: 0.12),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(item.$2, color: item.$3, size: 22),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Text(
-                                  item.$1,
-                                  style: AppTextStyles.labelMedium,
-                                ),
-                              ),
-                              const Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                size: 16,
-                                color: AppColors.mediumGrey,
-                              ),
-                            ],
-                          ),
+                      child: Text(
+                        item,
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: AppColors.dark,
                         ),
                       ),
                     ),
-                  ],
-                ],
+                  );
+                }).toList(),
               ),
-            ),
+              const SizedBox(height: 24),
+              Text('Quick Access', style: AppTextStyles.h4),
+              const SizedBox(height: 12),
+              ...[
+                (
+                  'Order Food',
+                  Icons.restaurant_rounded,
+                  AppColors.food,
+                  '/food',
+                ),
+                (
+                  'Book a Ride',
+                  Icons.directions_car_rounded,
+                  AppColors.ride,
+                  '/ride',
+                ),
+                (
+                  'Find a Doctor',
+                  Icons.medical_services_rounded,
+                  AppColors.doctor,
+                  '/doctor',
+                ),
+                (
+                  'Shop Online',
+                  Icons.shopping_bag_rounded,
+                  AppColors.shopping,
+                  '/shopping',
+                ),
+              ].map(
+                (item) => GestureDetector(
+                  onTap: () => context.push(item.$4),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: AppSpacing.shadowSm,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: item.$3.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(item.$2, color: item.$3, size: 22),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Text(
+                            item.$1,
+                            style: AppTextStyles.labelMedium,
+                          ),
+                        ),
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 16,
+                          color: AppColors.mediumGrey,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

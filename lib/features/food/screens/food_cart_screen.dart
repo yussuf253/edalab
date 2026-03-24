@@ -339,14 +339,6 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                   brand: restaurantName,
                                 ),
                               );
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    '${menuItem.name} added to cart!',
-                                  ),
-                                  backgroundColor: AppColors.success,
-                                ),
-                              );
                             },
                           ),
                         ),

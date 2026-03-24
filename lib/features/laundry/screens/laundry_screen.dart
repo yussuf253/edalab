@@ -6,6 +6,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/auth_gate.dart';
+import '../../../core/widgets/app_shimmer.dart';
 
 class LaundryScreen extends StatefulWidget {
   const LaundryScreen({super.key});
@@ -157,60 +158,58 @@ class _LaundryScreenState extends State<LaundryScreen> {
             Text('Our Services', style: AppTextStyles.h4),
             const SizedBox(height: 14),
             if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 14),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            ...services.map(
-              (s) => GestureDetector(
-                onTap: () => context.push('/laundry/order'),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: AppSpacing.shadowSm,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: _getColor(s.id).withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(16),
+              const InlineSectionListShimmer(itemCount: 4)
+            else
+              ...services.map(
+                (s) => GestureDetector(
+                  onTap: () => context.push('/laundry/order'),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: AppSpacing.shadowSm,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: _getColor(s.id).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Icon(
+                            _getIcon(s.id),
+                            color: _getColor(s.id),
+                            size: 28,
+                          ),
                         ),
-                        child: Icon(
-                          _getIcon(s.id),
-                          color: _getColor(s.id),
-                          size: 28,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(s.name, style: AppTextStyles.labelLarge),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Starting from \$${s.price.toInt()} ${s.unit}',
+                                style: AppTextStyles.caption,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(s.name, style: AppTextStyles.labelLarge),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Starting from \$${s.price.toInt()} ${s.unit}',
-                              style: AppTextStyles.caption,
-                            ),
-                          ],
+                        const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 16,
+                          color: AppColors.mediumGrey,
                         ),
-                      ),
-                      const Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        size: 16,
-                        color: AppColors.mediumGrey,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
             const SizedBox(height: 20),
             // How it works
             Text('How It Works', style: AppTextStyles.h4),

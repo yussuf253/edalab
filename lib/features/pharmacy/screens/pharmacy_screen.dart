@@ -8,6 +8,7 @@ import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
+import '../../../core/widgets/app_shimmer.dart';
 
 class PharmacyScreen extends StatefulWidget {
   const PharmacyScreen({super.key});
@@ -236,12 +237,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
             ),
           ),
           if (_isLoading)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            )
+            const SliverSectionListShimmer(itemCount: 6)
           else
             SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {

@@ -5,6 +5,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
+import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
 
 class DoctorScreen extends StatefulWidget {
@@ -249,12 +250,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
             ),
           ),
           if (_isLoading)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            )
+            const SliverSectionListShimmer(itemCount: 5)
           else
             SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {

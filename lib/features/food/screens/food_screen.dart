@@ -8,6 +8,7 @@ import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
+import '../../../core/widgets/app_shimmer.dart';
 
 class FoodScreen extends StatefulWidget {
   const FoodScreen({super.key});
@@ -83,7 +84,13 @@ class _FoodScreenState extends State<FoodScreen> {
         title: const Text('Food Delivery'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
         ),
         actions: [
           Stack(
@@ -232,12 +239,7 @@ class _FoodScreenState extends State<FoodScreen> {
             ),
           ),
           if (_isLoading)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            )
+            const SliverSectionListShimmer(itemCount: 5)
           else if (restaurants.isEmpty)
             SliverToBoxAdapter(
               child: Padding(

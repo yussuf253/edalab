@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/providers.dart';
@@ -81,52 +82,56 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Hotel mini
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: AppColors.hotelBg,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Icon(
-                      Icons.hotel_rounded,
-                      color: AppColors.hotel,
-                      size: 28,
-                    ),
+            if (_isLoading)
+              const AppShimmer(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 20),
+                  child: ShimmerBlock(
+                    width: double.infinity,
+                    height: 88,
+                    radius: 16,
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(h.name, style: AppTextStyles.labelLarge),
-                        Text(
-                          'Standard Room • City View',
-                          style: AppTextStyles.caption,
-                        ),
-                        if (_isLoading)
-                          const Padding(
-                            padding: EdgeInsets.only(top: 6),
-                            child: SizedBox(
-                              width: 120,
-                              child: LinearProgressIndicator(minHeight: 3),
-                            ),
+                ),
+              )
+            else
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: AppColors.hotelBg,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.hotel_rounded,
+                        color: AppColors.hotel,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(h.name, style: AppTextStyles.labelLarge),
+                          Text(
+                            'Standard Room • City View',
+                            style: AppTextStyles.caption,
                           ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 20),
+            if (!_isLoading) const SizedBox(height: 20),
             // Booking details
             Container(
               padding: const EdgeInsets.all(16),

@@ -6,6 +6,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
+import '../../../core/widgets/app_shimmer.dart';
 
 class HotelScreen extends StatefulWidget {
   const HotelScreen({super.key});
@@ -177,18 +178,21 @@ class _HotelScreenState extends State<HotelScreen> {
                 children: [
                   Text('Recommended Hotels', style: AppTextStyles.h4),
                   const Spacer(),
-                  Text('${hotels.length} found', style: AppTextStyles.caption),
+                  if (_isLoading)
+                    const AppShimmer(
+                      child: ShimmerBlock(width: 54, height: 14, radius: 10),
+                    )
+                  else
+                    Text(
+                      '${hotels.length} found',
+                      style: AppTextStyles.caption,
+                    ),
                 ],
               ),
             ),
           ),
           if (_isLoading)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            )
+            const SliverSectionListShimmer(itemCount: 4)
           else if (hotels.isEmpty)
             SliverToBoxAdapter(
               child: Padding(

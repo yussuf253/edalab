@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../models/models.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
@@ -16,6 +17,7 @@ import '../../features/shopping/screens/wishlist_screen.dart';
 import '../../features/shopping/screens/shopping_category_screen.dart';
 import '../../features/food/screens/food_screen.dart';
 import '../../features/food/screens/restaurant_detail_screen.dart';
+import '../../features/food/screens/food_dish_detail_screen.dart';
 import '../../features/food/screens/food_cart_screen.dart';
 import '../../features/food/screens/food_order_tracking_screen.dart';
 import '../../features/doctor/screens/doctor_screen.dart';
@@ -131,6 +133,36 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         path: '/food/restaurant/:id',
         builder: (context, state) =>
             RestaurantDetailScreen(restaurantId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/food/dish/:id',
+        builder: (context, state) {
+          final extra = state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : <String, dynamic>{};
+          final item = extra['item'];
+          return FoodDishDetailScreen(
+            itemId: state.pathParameters['id']!,
+            item: item is MenuItem ? item : null,
+            restaurantName: extra['restaurantName'] as String?,
+            categoryName: extra['categoryName'] as String?,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/food/dishes/:id',
+        builder: (context, state) {
+          final extra = state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : <String, dynamic>{};
+          final item = extra['item'];
+          return FoodDishDetailScreen(
+            itemId: state.pathParameters['id']!,
+            item: item is MenuItem ? item : null,
+            restaurantName: extra['restaurantName'] as String?,
+            categoryName: extra['categoryName'] as String?,
+          );
+        },
       ),
       GoRoute(
         path: '/food/cart',

@@ -6,6 +6,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/widgets/app_shimmer.dart';
 
 class CouponsScreen extends StatefulWidget {
   const CouponsScreen({super.key});
@@ -155,10 +156,33 @@ class _CouponsScreenState extends State<CouponsScreen> {
             ),
           ),
           if (_isLoading)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Center(child: CircularProgressIndicator()),
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: AppShimmer(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    children: [
+                      ShimmerBlock(
+                        width: double.infinity,
+                        height: 104,
+                        radius: 18,
+                      ),
+                      SizedBox(height: 12),
+                      ShimmerBlock(
+                        width: double.infinity,
+                        height: 104,
+                        radius: 18,
+                      ),
+                      SizedBox(height: 12),
+                      ShimmerBlock(
+                        width: double.infinity,
+                        height: 104,
+                        radius: 18,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             )
           else if (_coupons.isEmpty)

@@ -7,6 +7,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/widgets/app_shimmer.dart';
 
 class GroceryCategoryScreen extends StatelessWidget {
   final String categoryId;
@@ -50,7 +51,22 @@ class GroceryCategoryScreen extends StatelessWidget {
                     .name;
 
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return const Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppShimmer(child: ShimmerBlock(width: 140, height: 24)),
+                  SizedBox(height: 20),
+                  Expanded(
+                    child: InlineSectionGridShimmer(
+                      itemCount: 6,
+                      childAspectRatio: 0.72,
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
           if (items.isEmpty) {
