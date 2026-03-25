@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
-import '../../../core/models/models.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
@@ -35,9 +34,9 @@ class _OrdersScreenState extends State<OrdersScreen>
     final userId = context.read<AuthProvider>().user?.id;
     if (userId == null) {
       setState(() {
-        _allOrders = _sampleOrders();
+        _allOrders = [];
         _isLoading = false;
-        _usingSampleData = true;
+        _usingSampleData = false;
         _error = null;
       });
       return;
@@ -65,16 +64,16 @@ class _OrdersScreenState extends State<OrdersScreen>
       final hasLiveResponse = results.any((result) => result['ok'] == true);
 
       setState(() {
-        _allOrders = hasLiveResponse ? data : _sampleOrders();
+        _allOrders = hasLiveResponse ? data : [];
         _isLoading = false;
-        _usingSampleData = !hasLiveResponse;
+        _usingSampleData = false;
         _error = null;
       });
     } catch (e) {
       setState(() {
-        _allOrders = _sampleOrders();
+        _allOrders = [];
         _isLoading = false;
-        _usingSampleData = true;
+        _usingSampleData = false;
         _error = null;
       });
     }
@@ -185,27 +184,6 @@ class _OrdersScreenState extends State<OrdersScreen>
             },
           },
         ],
-      };
-    }).toList();
-  }
-
-  List<Map<String, dynamic>> _sampleOrders() {
-    return OrderModel.sampleOrders.map((order) {
-      final status = order.status.toUpperCase() == 'ACTIVE'
-          ? 'DISPATCHED'
-          : order.status.toUpperCase() == 'COMPLETED'
-          ? 'COMPLETED'
-          : 'CANCELLED';
-      return {
-        'id': order.id,
-        'moduleType': order.moduleType.toUpperCase(),
-        'status': status,
-        'total': order.total,
-        'createdAt': order.createdAt.toIso8601String(),
-        'items': order.items
-            .map((item) => {'name': item.name, 'quantity': item.quantity})
-            .toList(),
-        'moduleName': order.moduleName,
       };
     }).toList();
   }

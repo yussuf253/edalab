@@ -47,6 +47,8 @@ class AppColors {
   static const Color foodBg = Color(0xFFFFF3EB);
   static const Color grocery = Color(0xFF2ED573);
   static const Color groceryBg = Color(0xFFE8FAF0);
+  static const Color homeServices = Color(0xFF0F9D92);
+  static const Color homeServicesBg = Color(0xFFE8FAF7);
   static const Color ride = Color(0xFF6C63FF);
   static const Color rideBg = Color(0xFFF0EFFF);
   static const Color hotel = Color(0xFF00D2FF);

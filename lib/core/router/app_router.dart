@@ -22,6 +22,7 @@ import '../../features/food/screens/food_dish_detail_screen.dart';
 import '../../features/food/screens/food_cart_screen.dart';
 import '../../features/food/screens/food_order_tracking_screen.dart';
 import '../../features/doctor/screens/doctor_screen.dart';
+import '../../features/doctor/screens/doctor_professionals_screen.dart';
 import '../../features/doctor/screens/doctor_detail_screen.dart';
 import '../../features/doctor/screens/book_appointment_screen.dart';
 import '../../features/doctor/screens/my_appointments_screen.dart';
@@ -38,6 +39,10 @@ import '../../features/grocery/screens/grocery_screen.dart';
 import '../../features/grocery/screens/grocery_category_screen.dart';
 import '../../features/grocery/screens/grocery_cart_screen.dart';
 import '../../features/grocery/screens/grocery_detail_screen.dart';
+import '../../features/home_services/screens/home_services_screen.dart';
+import '../../features/home_services/screens/home_service_category_screen.dart';
+import '../../features/home_services/screens/home_service_provider_screen.dart';
+import '../../features/home_services/screens/home_service_booking_screen.dart';
 import '../../features/laundry/screens/laundry_screen.dart';
 import '../../features/laundry/screens/laundry_order_screen.dart';
 import '../../features/laundry/screens/laundry_tracking_screen.dart';
@@ -117,9 +122,8 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
       ),
       GoRoute(
         path: '/shopping/store/:id',
-        builder: (context, state) => ShoppingStoreDetailScreen(
-          storeId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            ShoppingStoreDetailScreen(storeId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/shopping/category/:id',
@@ -193,6 +197,25 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
             DoctorDetailScreen(doctorId: state.pathParameters['id']!),
       ),
       GoRoute(
+        path: '/doctor/professionals/:categoryId',
+        builder: (context, state) {
+          final extra = state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : <String, dynamic>{};
+          return DoctorProfessionalsScreen(
+            categoryId: state.pathParameters['categoryId']!,
+            categoryLabel:
+                extra['label']?.toString() ?? 'Available Professionals',
+            keywords:
+                (extra['keywords'] as List?)
+                    ?.map((item) => item.toString())
+                    .toList() ??
+                const [],
+            initialQuery: extra['searchQuery']?.toString() ?? '',
+          );
+        },
+      ),
+      GoRoute(
         path: '/doctor/book/:id',
         builder: (context, state) =>
             BookAppointmentScreen(doctorId: state.pathParameters['id']!),
@@ -258,13 +281,37 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
       ),
       GoRoute(
         path: '/grocery/product/:id',
-        builder: (context, state) => GroceryDetailScreen(
-          productId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            GroceryDetailScreen(productId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: '/grocery/cart',
         builder: (context, state) => const GroceryCartScreen(),
+      ),
+
+      // Home Services
+      GoRoute(
+        path: '/home-services',
+        builder: (context, state) => const HomeServicesScreen(),
+      ),
+      GoRoute(
+        path: '/home-services/category/:slug',
+        builder: (context, state) => HomeServiceCategoryScreen(
+          categorySlug: state.pathParameters['slug']!,
+          categoryLabel: state.extra is Map
+              ? (state.extra as Map)['label']?.toString()
+              : null,
+        ),
+      ),
+      GoRoute(
+        path: '/home-services/provider/:id',
+        builder: (context, state) =>
+            HomeServiceProviderScreen(providerId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/home-services/book/:id',
+        builder: (context, state) =>
+            HomeServiceBookingScreen(providerId: state.pathParameters['id']!),
       ),
 
       // Laundry

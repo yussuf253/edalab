@@ -3,6 +3,7 @@ export 'product_model.dart';
 export 'cart_model.dart';
 export 'restaurant_model.dart';
 export 'doctor_model.dart';
+export 'home_service_model.dart';
 export 'pharmacy_model.dart';
 export 'grocery_model.dart';
 export 'hotel_model.dart';

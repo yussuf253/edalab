@@ -37,6 +37,65 @@ function readJsonStringArray(value: unknown): string[] {
     .filter((entry): entry is string => entry != null);
 }
 
+function serializeHomeServiceCategory(
+  category: Awaited<ReturnType<typeof prisma.homeServiceCategory.findMany>>[number] & {
+    providers?: { id: string }[];
+  },
+) {
+  return {
+    id: category.id,
+    name: category.name,
+    slug: category.slug,
+    description: category.description,
+    iconKey: category.iconKey,
+    colorHex: category.colorHex,
+    providerCount: category.providers?.length ?? 0,
+  };
+}
+
+function serializeHomeServiceProvider(
+  provider: Awaited<ReturnType<typeof prisma.homeServiceProvider.findMany>>[number] & {
+    category?: {
+      id: string;
+      name: string;
+      slug: string;
+      iconKey: string;
+      colorHex: string;
+    } | null;
+  },
+) {
+  return {
+    id: provider.id,
+    categoryId: provider.categoryId,
+    category: provider.category == null
+        ? null
+        : {
+            id: provider.category.id,
+            name: provider.category.name,
+            slug: provider.category.slug,
+            iconKey: provider.category.iconKey,
+            colorHex: provider.category.colorHex,
+          },
+    name: provider.name,
+    title: provider.title,
+    rating: toNumber(provider.rating),
+    reviewCount: provider.reviewCount,
+    yearsExperience: provider.yearsExperience,
+    startingPrice: toNumber(provider.startingPrice),
+    isAvailable: provider.isAvailable,
+    isVerified: provider.isVerified,
+    responseTime: provider.responseTime,
+    imageUrl: provider.imageUrl,
+    about: provider.about,
+    location: provider.location,
+    contactPhone: provider.contactPhone,
+    services: readJsonStringArray(provider.servicesJson),
+    highlights: readJsonStringArray(provider.highlightsJson),
+    bookingModes: readJsonStringArray(provider.bookingModesJson),
+    availability: provider.availabilityJson ?? {},
+  };
+}
+
 function slugifyStoreName(value: string) {
   return value
     .trim()
@@ -209,16 +268,21 @@ router.get(
         id: doctor.id,
         name: doctor.name,
         specialty: doctor.specialty,
+        providerType: doctor.providerType,
         rating: toNumber(doctor.rating),
         reviewCount: doctor.reviewCount,
         experience: doctor.experience,
         consultationFee: toNumber(doctor.consultationFee),
         isAvailable: doctor.isAvailable,
+        isSignedUp: doctor.isSignedUp,
         imageUrl: doctor.imageUrl,
         about: doctor.about,
         location: doctor.location,
+        contactPhone: doctor.contactPhone,
+        contactWhatsApp: doctor.contactWhatsApp,
         languages: doctor.languagesJson ?? [],
         services: doctor.servicesJson ?? [],
+        careModes: doctor.careModesJson ?? [],
         workingHours: doctor.workingHoursJson ?? {},
       })),
     );
@@ -246,16 +310,21 @@ router.get(
       id: doctor.id,
       name: doctor.name,
       specialty: doctor.specialty,
+      providerType: doctor.providerType,
       rating: toNumber(doctor.rating),
       reviewCount: doctor.reviewCount,
       experience: doctor.experience,
       consultationFee: toNumber(doctor.consultationFee),
       isAvailable: doctor.isAvailable,
+      isSignedUp: doctor.isSignedUp,
       imageUrl: doctor.imageUrl,
       about: doctor.about,
       location: doctor.location,
+      contactPhone: doctor.contactPhone,
+      contactWhatsApp: doctor.contactWhatsApp,
       languages: doctor.languagesJson ?? [],
       services: doctor.servicesJson ?? [],
+      careModes: doctor.careModesJson ?? [],
       workingHours: doctor.workingHoursJson ?? {},
       reviews: doctor.reviews.map((review) => ({
         id: review.id,
@@ -266,6 +335,67 @@ router.get(
         avatarUrl: review.avatarUrl,
       })),
     });
+  }),
+);
+
+router.get(
+  '/home-service-categories',
+  asyncHandler(async (_req, res) => {
+    const categories = await prisma.homeServiceCategory.findMany({
+      where: { active: true },
+      include: {
+        providers: {
+          where: { isAvailable: true },
+          select: { id: true },
+        },
+      },
+      orderBy: { sortOrder: 'asc' },
+    });
+
+    res.json(categories.map((category) => serializeHomeServiceCategory(category)));
+  }),
+);
+
+router.get(
+  '/home-service-providers',
+  asyncHandler(async (req, res) => {
+    const categorySlug = req.query.category?.toString();
+    const providers = await prisma.homeServiceProvider.findMany({
+      where: {
+        ...(categorySlug
+            ? {
+                category: {
+                  slug: categorySlug,
+                },
+              }
+            : {}),
+      },
+      include: {
+        category: true,
+      },
+      orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
+    });
+
+    res.json(providers.map((provider) => serializeHomeServiceProvider(provider)));
+  }),
+);
+
+router.get(
+  '/home-service-providers/:id',
+  asyncHandler(async (req, res) => {
+    const providerId = getParam(req.params.id, 'providerId');
+    const provider = await prisma.homeServiceProvider.findUnique({
+      where: { id: providerId },
+      include: {
+        category: true,
+      },
+    });
+
+    if (!provider) {
+      return res.status(404).json({ error: 'Home service provider not found.' });
+    }
+
+    res.json(serializeHomeServiceProvider(provider));
   }),
 );
 

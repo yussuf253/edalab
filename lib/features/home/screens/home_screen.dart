@@ -417,11 +417,11 @@ class _ServicesGrid extends StatelessWidget {
       route: '/pharmacy',
     ),
     _ServiceItem(
-      icon: Icons.local_grocery_store_rounded,
-      title: 'Grocery',
-      color: AppColors.grocery,
-      bgColor: AppColors.groceryBg,
-      route: '/grocery',
+      icon: Icons.home_repair_service_rounded,
+      title: 'Home Help',
+      color: AppColors.homeServices,
+      bgColor: AppColors.homeServicesBg,
+      route: '/home-services',
     ),
     _ServiceItem(
       icon: Icons.local_laundry_service_rounded,
