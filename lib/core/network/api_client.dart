@@ -7,6 +7,7 @@ import '../storage/app_preferences.dart';
 
 class ApiClient {
   static const _defaultPort = '5050';
+  static const Duration _defaultCacheDuration = Duration(minutes: 5);
   static const String _configuredBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'https://edalab.onrender.com/api',
@@ -16,6 +17,9 @@ class ApiClient {
     defaultValue: '127.0.0.1',
   );
   static const Duration _requestTimeout = Duration(seconds: 12);
+  static final http.Client _httpClient = http.Client();
+  static final Map<String, _CachedResponse> _getCache = {};
+  static final Map<String, Future<dynamic>> _pendingGets = {};
   static String? _token;
 
   static String get baseUrl {
@@ -37,7 +41,11 @@ class ApiClient {
   }
 
   static Future<void> setToken(String? token) async {
+    final previousToken = _token;
     _token = token;
+    if (previousToken != token) {
+      clearCache();
+    }
     if (token == null || token.isEmpty) {
       await AppPreferences.clearAuthToken();
       return;
@@ -84,10 +92,68 @@ class ApiClient {
     );
   }
 
-  static Future<dynamic> get(String endpoint) async {
+  static String _cacheKey(String endpoint) => '$baseUrl|$endpoint|${_token ?? ''}';
+
+  static dynamic _decodeBody(String body) => json.decode(body);
+
+  static dynamic _cloneDecodedData(dynamic value) {
+    if (value is Map || value is List) {
+      return json.decode(json.encode(value));
+    }
+    return value;
+  }
+
+  static void clearCache() {
+    _getCache.clear();
+    _pendingGets.clear();
+  }
+
+  static void invalidateCache([String? endpointPrefix]) {
+    if (endpointPrefix == null || endpointPrefix.isEmpty) {
+      clearCache();
+      return;
+    }
+
+    final matchingKeys = _getCache.keys
+        .where((key) => key.contains('|$endpointPrefix|') || key.contains('|$endpointPrefix?'))
+        .toList();
+    for (final key in matchingKeys) {
+      _getCache.remove(key);
+    }
+  }
+
+  static Future<dynamic> get(
+    String endpoint, {
+    Duration cacheDuration = _defaultCacheDuration,
+    bool forceRefresh = false,
+  }) async {
+    final cacheKey = _cacheKey(endpoint);
+    if (!forceRefresh) {
+      final cached = _getCache[cacheKey];
+      if (cached != null && !cached.isExpired(cacheDuration)) {
+        return _decodeBody(cached.body);
+      }
+
+      final pending = _pendingGets[cacheKey];
+      if (pending != null) {
+        return pending.then(_cloneDecodedData);
+      }
+    }
+
+    final future = _performGet(endpoint, cacheKey);
+    _pendingGets[cacheKey] = future;
+
+    try {
+      return await future;
+    } finally {
+      _pendingGets.remove(cacheKey);
+    }
+  }
+
+  static Future<dynamic> _performGet(String endpoint, String cacheKey) async {
     late http.Response response;
     try {
-      response = await http
+      response = await _httpClient
           .get(
             Uri.parse('$baseUrl$endpoint'),
             headers: await _headers(),
@@ -100,7 +166,11 @@ class ApiClient {
     }
 
     if (response.statusCode == 200) {
-      return json.decode(response.body);
+      _getCache[cacheKey] = _CachedResponse(
+        body: response.body,
+        cachedAt: DateTime.now(),
+      );
+      return _decodeBody(response.body);
     } else {
       final body = response.body.trim();
       if (body.isNotEmpty) {
@@ -114,7 +184,7 @@ class ApiClient {
   static Future<dynamic> post(String endpoint, Map<String, dynamic> data) async {
     late http.Response response;
     try {
-      response = await http
+      response = await _httpClient
           .post(
             Uri.parse('$baseUrl$endpoint'),
             headers: await _headers(),
@@ -128,6 +198,7 @@ class ApiClient {
     }
 
     if (response.statusCode == 200 || response.statusCode == 201) {
+      clearCache();
       return json.decode(response.body);
     } else {
       final errorDecoded = json.decode(response.body);
@@ -138,7 +209,7 @@ class ApiClient {
   static Future<dynamic> patch(String endpoint, Map<String, dynamic> data) async {
     late http.Response response;
     try {
-      response = await http
+      response = await _httpClient
           .patch(
             Uri.parse('$baseUrl$endpoint'),
             headers: await _headers(),
@@ -152,6 +223,7 @@ class ApiClient {
     }
 
     if (response.statusCode == 200 || response.statusCode == 201) {
+      clearCache();
       return json.decode(response.body);
     } else {
       final errorDecoded = json.decode(response.body);
@@ -162,7 +234,7 @@ class ApiClient {
   static Future<dynamic> delete(String endpoint) async {
     late http.Response response;
     try {
-      response = await http
+      response = await _httpClient
           .delete(
             Uri.parse('$baseUrl$endpoint'),
             headers: await _headers(),
@@ -175,6 +247,7 @@ class ApiClient {
     }
 
     if (response.statusCode == 200 || response.statusCode == 204) {
+      clearCache();
       if (response.body.isEmpty) {
         return null;
       }
@@ -183,5 +256,19 @@ class ApiClient {
       final errorDecoded = json.decode(response.body);
       throw Exception(errorDecoded['error'] ?? 'Failed to delete data: ${response.statusCode}');
     }
+  }
+}
+
+class _CachedResponse {
+  final String body;
+  final DateTime cachedAt;
+
+  const _CachedResponse({
+    required this.body,
+    required this.cachedAt,
+  });
+
+  bool isExpired(Duration maxAge) {
+    return DateTime.now().difference(cachedAt) > maxAge;
   }
 }

@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_colors.dart';
-import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_text_styles.dart';
 import '../../core/providers/providers.dart';
 
@@ -60,13 +59,21 @@ class _AppShellState extends State<AppShell> {
     return Scaffold(
       body: widget.child,
       bottomNavigationBar: Container(
+        margin: const EdgeInsets.fromLTRB(0, 0, 0, 6),
         decoration: BoxDecoration(
-          color: AppColors.white,
-          boxShadow: AppSpacing.shadowSm,
+          color: AppColors.white.withValues(alpha: 0.98),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.dark.withValues(alpha: 0.06),
+              blurRadius: 18,
+              offset: const Offset(0, -2),
+            ),
+          ],
         ),
         child: SafeArea(
+          top: false,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
+            padding: const EdgeInsets.fromLTRB(10, 3, 10, 4),
             child: Row(
               children: List.generate(_navItems.length, (index) {
                 final item = _navItems[index];
@@ -100,70 +107,73 @@ class _AppShellState extends State<AppShell> {
   Widget _buildNavItem(_NavItem item, bool isActive, {required int cartCount}) {
     final foreground = isActive ? AppColors.primary : AppColors.mediumGrey;
 
-    return GestureDetector(
-      onTap: () => context.go(item.path),
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Stack(
-              clipBehavior: Clip.none,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 1),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.go(item.path),
+          borderRadius: BorderRadius.circular(16),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
-                  curve: Curves.easeOutCubic,
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? AppColors.primarySurface
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    isActive ? item.activeIcon : item.icon,
-                    color: foreground,
-                    size: 22,
-                  ),
-                ),
-                if (item.path == '/cart' && cartCount > 0)
-                  Positioned(
-                    top: -4,
-                    right: -4,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 5,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.accent,
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: AppColors.white, width: 2),
-                      ),
-                      child: Text(
-                        cartCount > 99 ? '99+' : '$cartCount',
-                        style: AppTextStyles.badge.copyWith(fontSize: 8),
+                Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 36,
+                      height: 28,
+                      child: Icon(
+                        isActive ? item.activeIcon : item.icon,
+                        color: isActive ? AppColors.primary : foreground,
+                        size: 21,
                       ),
                     ),
+                    if (item.path == '/cart' && cartCount > 0)
+                      Positioned(
+                        top: -4,
+                        right: -5,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 1.5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.accent,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: AppColors.white,
+                              width: 2,
+                            ),
+                          ),
+                          child: Text(
+                            cartCount > 99 ? '99+' : '$cartCount',
+                            style: AppTextStyles.badge.copyWith(fontSize: 8),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  item.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    color: isActive ? AppColors.primaryDark : AppColors.grey,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    fontSize: 10.5,
+                    letterSpacing: 0.1,
                   ),
+                ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              item.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTextStyles.labelMedium.copyWith(
-                color: isActive ? AppColors.primary : AppColors.mediumGrey,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 11,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

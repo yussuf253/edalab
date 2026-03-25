@@ -8,3 +8,4 @@ export 'grocery_model.dart';
 export 'hotel_model.dart';
 export 'ride_model.dart';
 export 'laundry_model.dart';
+export 'shopping_store_model.dart';

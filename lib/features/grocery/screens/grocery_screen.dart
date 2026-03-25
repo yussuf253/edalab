@@ -59,9 +59,9 @@ class _GroceryScreenState extends State<GroceryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cartItemCount = context.watch<CartProvider>().getModuleItemCount(
-      'grocery',
-    );
+    final cartProvider = context.watch<CartProvider>();
+    final cartItemCount = cartProvider.getModuleItemCount('grocery');
+    final moduleTotal = cartProvider.getModuleSubtotal('grocery');
     final query = _searchQuery.trim().toLowerCase();
     final filteredItems = _items.where((item) {
       if (query.isEmpty) return true;
@@ -223,47 +223,20 @@ class _GroceryScreenState extends State<GroceryScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: SizedBox(
                   height: 100,
-                  child: ListView.separated(
+                  child: ListView(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: categories.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(width: 14),
-                    itemBuilder: (context, index) {
-                      final category = categories[index];
-                      return GestureDetector(
-                        onTap: () =>
-                            context.push('/grocery/category/${category.id}'),
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: AppColors.grocery.withValues(
-                                  alpha: 0.12,
-                                ),
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  Icons.category_rounded,
-                                  color: AppColors.grocery,
-                                  size: 28,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              category.name,
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: AppColors.dark,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
+                    children: categories
+                        .map(
+                          (category) => _GroceryCategoryCard(
+                            symbol: _groceryCategorySymbol(category.name),
+                            name: category.name,
+                            color: _groceryCategoryColor(category.name),
+                            onTap: () =>
+                                context.push('/grocery/category/${category.id}'),
+                          ),
+                        )
+                        .toList(),
                   ),
                 ),
               ),
@@ -282,116 +255,102 @@ class _GroceryScreenState extends State<GroceryScreen> {
               sliver: SliverGrid(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final item = filteredItems[index];
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: AppSpacing.shadowSm,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.groceryBg,
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(14),
+                  final itemIcon = _groceryCategoryIcon(
+                    item.categoryName ?? item.categoryId,
+                  );
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => context.push('/grocery/product/${item.id}'),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: AppSpacing.shadowSm,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.groceryBg,
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(14),
+                                ),
                               ),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.eco_rounded,
-                                size: 36,
-                                color: AppColors.grocery.withValues(alpha: 0.4),
+                              child: Center(
+                                child: Icon(
+                                  itemIcon,
+                                  size: 36,
+                                  color: AppColors.grocery.withValues(alpha: 0.55),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        Expanded(
-                          flex: 3,
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.name,
-                                  style: AppTextStyles.labelMedium,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  item.isOrganic ? 'Organic' : 'Standard',
-                                  style: AppTextStyles.caption,
-                                ),
-                                const Spacer(),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            '\$${item.price.toStringAsFixed(2)}',
-                                            style: AppTextStyles.priceSmall
-                                                .copyWith(
-                                                  color: AppColors.grocery,
-                                                  fontSize: 13,
-                                                ),
-                                          ),
-                                          Text(
-                                            '/${item.unit}',
-                                            style: AppTextStyles.caption,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        context.read<CartProvider>().addItem(
-                                          CartItem(
-                                            id: item.id,
-                                            name: item.name,
-                                            price: item.price,
-                                            moduleType: 'grocery',
-                                            brand: item.unit,
-                                          ),
-                                        );
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              '${item.name} added!',
+                          Expanded(
+                            flex: 3,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 9, 10, 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.name,
+                                    style: AppTextStyles.labelMedium,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    item.isOrganic ? 'Organic pick' : 'Fresh daily',
+                                    style: AppTextStyles.caption,
+                                  ),
+                                  const Spacer(),
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              '\$${item.price.toStringAsFixed(2)}',
+                                              style: AppTextStyles.priceSmall.copyWith(
+                                                color: AppColors.grocery,
+                                                fontSize: 13,
+                                              ),
                                             ),
-                                            backgroundColor: AppColors.success,
-                                          ),
-                                        );
-                                      },
-                                      child: Container(
-                                        width: 30,
-                                        height: 30,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.grocery,
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.add,
-                                          color: AppColors.white,
-                                          size: 18,
+                                            Text(
+                                              'per ${item.unit}',
+                                              style: AppTextStyles.caption,
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                      _GroceryAddButton(
+                                        onPressed: () {
+                                          context.read<CartProvider>().addItem(
+                                            CartItem(
+                                              id: item.id,
+                                              name: item.name,
+                                              price: item.price,
+                                              moduleType: 'grocery',
+                                              brand: item.unit,
+                                              imageUrl: item.imageUrl,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 }, childCount: filteredItems.length),
@@ -406,8 +365,99 @@ class _GroceryScreenState extends State<GroceryScreen> {
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
+      floatingActionButton: cartItemCount > 0
+          ? SizedBox(
+              width: MediaQuery.of(context).size.width - 40,
+              child: FloatingActionButton.extended(
+                onPressed: () => context.push('/grocery/cart'),
+                backgroundColor: AppColors.grocery,
+                label: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text('$cartItemCount', style: AppTextStyles.badge),
+                    ),
+                    const SizedBox(width: 12),
+                    Text('View Cart', style: AppTextStyles.button),
+                    const SizedBox(width: 12),
+                    Text(
+                      '\$${moduleTotal.toStringAsFixed(2)}',
+                      style: AppTextStyles.button,
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
+}
+
+IconData _groceryCategoryIcon(String value) {
+  final normalized = value.toLowerCase();
+  if (normalized.contains('fruit') || normalized.contains('veg')) {
+    return Icons.apple_rounded;
+  }
+  if (normalized.contains('dairy') || normalized.contains('egg')) {
+    return Icons.egg_alt_rounded;
+  }
+  if (normalized.contains('meat') || normalized.contains('seafood')) {
+    return Icons.set_meal_rounded;
+  }
+  if (normalized.contains('bakery') || normalized.contains('bread')) {
+    return Icons.bakery_dining_rounded;
+  }
+  if (normalized.contains('beverage') || normalized.contains('drink')) {
+    return Icons.local_drink_rounded;
+  }
+  if (normalized.contains('snack')) {
+    return Icons.cookie_rounded;
+  }
+  return Icons.shopping_basket_rounded;
+}
+
+String _groceryCategorySymbol(String value) {
+  final normalized = value.toLowerCase();
+  if (normalized.contains('fruit')) return '🍎';
+  if (normalized.contains('veg') || normalized.contains('salad')) return '🥬';
+  if (normalized.contains('dairy')) return '🥛';
+  if (normalized.contains('egg')) return '🥚';
+  if (normalized.contains('meat')) return '🥩';
+  if (normalized.contains('seafood')) return '🐟';
+  if (normalized.contains('bakery') || normalized.contains('bread')) return '🥖';
+  if (normalized.contains('beverage') || normalized.contains('drink')) return '🥤';
+  if (normalized.contains('snack')) return '🍪';
+  return '🧺';
+}
+
+Color _groceryCategoryColor(String value) {
+  final normalized = value.toLowerCase();
+  if (normalized.contains('fruit')) return const Color(0xFFFF6B6B);
+  if (normalized.contains('veg') || normalized.contains('salad')) {
+    return const Color(0xFF2ED573);
+  }
+  if (normalized.contains('dairy') || normalized.contains('egg')) {
+    return const Color(0xFFFFBE21);
+  }
+  if (normalized.contains('meat') || normalized.contains('seafood')) {
+    return const Color(0xFF3498DB);
+  }
+  if (normalized.contains('bakery') || normalized.contains('bread')) {
+    return const Color(0xFFFF8C42);
+  }
+  if (normalized.contains('beverage') || normalized.contains('drink')) {
+    return const Color(0xFF6C63FF);
+  }
+  if (normalized.contains('snack')) return const Color(0xFF9B59B6);
+  return AppColors.grocery;
 }
 
 class _GroceryCategoryShimmer extends StatelessWidget {
@@ -423,6 +473,91 @@ class _GroceryCategoryShimmer extends StatelessWidget {
           SizedBox(height: 6),
           ShimmerBlock(width: 52, height: 12, radius: 10),
         ],
+      ),
+    );
+  }
+}
+
+class _GroceryAddButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _GroceryAddButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(10),
+        child: Ink(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: AppColors.grocery,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Center(
+            child: Icon(
+              Icons.add_rounded,
+              color: AppColors.white,
+              size: 18,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GroceryCategoryCard extends StatelessWidget {
+  final String symbol;
+  final String name;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _GroceryCategoryCard({
+    required this.symbol,
+    required this.name,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: Text(
+                  symbol,
+                  style: const TextStyle(fontSize: 24),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            SizedBox(
+              width: 68,
+              child: Text(
+                name,
+                style: AppTextStyles.labelSmall.copyWith(color: AppColors.dark),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

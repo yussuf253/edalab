@@ -7,6 +7,151 @@ import { toNumber } from '../utils/serializers';
 
 const router = Router();
 
+type CatalogProductWithCategory = Awaited<
+  ReturnType<typeof prisma.product.findMany>
+>[number] & {
+  category: { name: string; id: string } | null;
+  shop?: {
+    id: string;
+    name: string;
+    slug: string;
+    tagline: string | null;
+    description: string | null;
+    imageUrl: string | null;
+    rating: unknown;
+    reviewCount: number;
+    badge: string | null;
+    minPrice: unknown;
+    maxPrice: unknown;
+    highlightsJson: unknown;
+  } | null;
+};
+
+function readJsonStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((entry) => (typeof entry === 'string' ? entry : null))
+    .filter((entry): entry is string => entry != null);
+}
+
+function slugifyStoreName(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function serializeProduct(product: CatalogProductWithCategory) {
+  return {
+    id: product.id,
+    moduleType: product.moduleType,
+    categoryId: product.categoryId,
+    category: product.category?.name ?? product.categoryId,
+    name: product.name,
+    brand: product.brand,
+    description: product.description,
+    price: toNumber(product.price),
+    originalPrice: toNumber(product.originalPrice),
+    unit: product.unit,
+    dosage: product.dosage,
+    packageSize: product.packageSize,
+    requiresPrescription: product.requiresPrescription,
+    rating: toNumber(product.rating),
+    reviewCount: product.reviewCount,
+    images: readJsonStringArray(product.imageUrlsJson),
+    colors: readJsonStringArray(product.colorsJson),
+    sizes: readJsonStringArray(product.sizesJson),
+    tags: readJsonStringArray(product.tagsJson),
+    features: readJsonStringArray(product.featuresJson),
+    badge: product.badge,
+    inStock: product.inStock,
+    isOrganic: product.isOrganic,
+    metadata: product.metadata,
+    shopId: product.shopId,
+    shopName: product.shop?.name ?? product.brand,
+  };
+}
+
+function serializeShoppingStore(
+  store: Awaited<ReturnType<typeof prisma.shoppingStore.findMany>>[number],
+  products: CatalogProductWithCategory[],
+) {
+  const categories = Array.from(
+    new Set(
+      products
+        .map((item) => item.category?.name ?? item.categoryId)
+        .filter((entry): entry is string => Boolean(entry)),
+    ),
+  );
+
+  return {
+    id: store.slug,
+    name: store.name,
+    tagline: store.tagline ?? 'Curated shopping picks for every style.',
+    imageUrl: store.imageUrl ?? '',
+    rating: toNumber(store.rating) ?? 0,
+    reviewCount: store.reviewCount,
+    productCount: products.length,
+    categories,
+    badge: store.badge,
+    minPrice: toNumber(store.minPrice) ?? 0,
+    maxPrice: toNumber(store.maxPrice) ?? 0,
+    highlights: readJsonStringArray(store.highlightsJson),
+  };
+}
+
+router.get(
+  '/shopping-stores',
+  asyncHandler(async (_req, res) => {
+    const stores = await prisma.shoppingStore.findMany({
+      include: {
+        products: {
+          where: { moduleType: ModuleType.SHOPPING },
+          include: { category: true, shop: true },
+        },
+      },
+      orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
+    });
+
+    res.json(
+      stores
+        .map((store) => serializeShoppingStore(store, store.products))
+        .filter((store) => store.productCount > 0),
+    );
+  }),
+);
+
+router.get(
+  '/shopping-stores/:id',
+  asyncHandler(async (req, res) => {
+    const storeId = getParam(req.params.id, 'storeId');
+    const store = await prisma.shoppingStore.findFirst({
+      where: { slug: storeId },
+    });
+    if (!store) {
+      return res.status(404).json({ error: 'Store not found.' });
+    }
+
+    const storeProducts = await prisma.product.findMany({
+      where: {
+        moduleType: ModuleType.SHOPPING,
+        shopId: store.id,
+      },
+      include: { category: true, shop: true },
+      orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
+    });
+
+    res.json({
+      ...serializeShoppingStore(store, storeProducts),
+      products: storeProducts.map((product) => serializeProduct(product)),
+    });
+  }),
+);
+
 router.get(
   '/products',
   asyncHandler(async (req, res) => {
@@ -23,38 +168,12 @@ router.get(
       },
       include: {
         category: true,
+        shop: true,
       },
       orderBy: [{ createdAt: 'desc' }],
     });
 
-    res.json(
-      products.map((product) => ({
-        id: product.id,
-        moduleType: product.moduleType,
-        categoryId: product.categoryId,
-        category: product.category?.name ?? product.categoryId,
-        name: product.name,
-        brand: product.brand,
-        description: product.description,
-        price: toNumber(product.price),
-        originalPrice: toNumber(product.originalPrice),
-        unit: product.unit,
-        dosage: product.dosage,
-        packageSize: product.packageSize,
-        requiresPrescription: product.requiresPrescription,
-        rating: toNumber(product.rating),
-        reviewCount: product.reviewCount,
-        images: product.imageUrlsJson ?? [],
-        colors: product.colorsJson ?? [],
-        sizes: product.sizesJson ?? [],
-        tags: product.tagsJson ?? [],
-        features: product.featuresJson ?? [],
-        badge: product.badge,
-        inStock: product.inStock,
-        isOrganic: product.isOrganic,
-        metadata: product.metadata,
-      })),
-    );
+    res.json(products.map((product) => serializeProduct(product)));
   }),
 );
 
@@ -66,6 +185,7 @@ router.get(
       where: { id: productId },
       include: {
         category: true,
+        shop: true,
       },
     });
 
@@ -73,32 +193,7 @@ router.get(
       return res.status(404).json({ error: 'Product not found.' });
     }
 
-    res.json({
-      id: product.id,
-      moduleType: product.moduleType,
-      categoryId: product.categoryId,
-      category: product.category?.name ?? product.categoryId,
-      name: product.name,
-      brand: product.brand,
-      description: product.description,
-      price: toNumber(product.price),
-      originalPrice: toNumber(product.originalPrice),
-      unit: product.unit,
-      dosage: product.dosage,
-      packageSize: product.packageSize,
-      requiresPrescription: product.requiresPrescription,
-      rating: toNumber(product.rating),
-      reviewCount: product.reviewCount,
-      images: product.imageUrlsJson ?? [],
-      colors: product.colorsJson ?? [],
-      sizes: product.sizesJson ?? [],
-      tags: product.tagsJson ?? [],
-      features: product.featuresJson ?? [],
-      badge: product.badge,
-      inStock: product.inStock,
-      isOrganic: product.isOrganic,
-      metadata: product.metadata,
-    });
+    res.json(serializeProduct(product as CatalogProductWithCategory));
   }),
 );
 

@@ -71,8 +71,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = context.watch<CartProvider>();
     final wishlistProvider = context.watch<WishlistProvider>();
     final isFavorite = wishlistProvider.isFavorite(_product.id);
+    final cartItems = cartProvider.getModuleItems('shopping');
+    final existingCartItem = cartItems.cast<CartItem?>().firstWhere(
+      (item) => item?.id == _product.id,
+      orElse: () => null,
+    );
+    final isInCart = existingCartItem != null;
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -461,10 +468,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
               Expanded(
                 child: AppButton(
-                  text: 'Add to Cart',
-                  icon: Icons.shopping_bag_outlined,
+                  text: isInCart ? 'View Cart' : 'Add to Cart',
+                  icon: isInCart
+                      ? Icons.arrow_forward_rounded
+                      : Icons.shopping_bag_outlined,
                   onPressed: () {
-                    // Add to cart provider
+                    if (isInCart) {
+                      context.push('/shopping/cart');
+                      return;
+                    }
+
                     final cartItem = CartItem(
                       id: _product.id,
                       name: _product.name,
@@ -480,23 +493,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           : null,
                     );
 
-                    context.read<CartProvider>().addItem(cartItem);
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('Added to cart!'),
-                        backgroundColor: AppColors.success,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        action: SnackBarAction(
-                          label: 'VIEW CART',
-                          textColor: AppColors.white,
-                          onPressed: () => context.push('/shopping/cart'),
-                        ),
-                      ),
-                    );
+                    cartProvider.addItem(cartItem);
                   },
                 ),
               ),

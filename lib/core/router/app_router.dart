@@ -12,6 +12,7 @@ import '../../features/orders/screens/orders_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/shopping/screens/shopping_screen.dart';
 import '../../features/shopping/screens/product_detail_screen.dart';
+import '../../features/shopping/screens/shopping_store_detail_screen.dart';
 import '../../features/shopping/screens/cart_screen.dart';
 import '../../features/shopping/screens/wishlist_screen.dart';
 import '../../features/shopping/screens/shopping_category_screen.dart';
@@ -36,6 +37,7 @@ import '../../features/pharmacy/screens/pharmacy_cart_screen.dart';
 import '../../features/grocery/screens/grocery_screen.dart';
 import '../../features/grocery/screens/grocery_category_screen.dart';
 import '../../features/grocery/screens/grocery_cart_screen.dart';
+import '../../features/grocery/screens/grocery_detail_screen.dart';
 import '../../features/laundry/screens/laundry_screen.dart';
 import '../../features/laundry/screens/laundry_order_screen.dart';
 import '../../features/laundry/screens/laundry_tracking_screen.dart';
@@ -112,6 +114,12 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         path: '/shopping/product/:id',
         builder: (context, state) =>
             ProductDetailScreen(productId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/shopping/store/:id',
+        builder: (context, state) => ShoppingStoreDetailScreen(
+          storeId: state.pathParameters['id']!,
+        ),
       ),
       GoRoute(
         path: '/shopping/category/:id',
@@ -247,6 +255,12 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         path: '/grocery/category/:id',
         builder: (context, state) =>
             GroceryCategoryScreen(categoryId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/grocery/product/:id',
+        builder: (context, state) => GroceryDetailScreen(
+          productId: state.pathParameters['id']!,
+        ),
       ),
       GoRoute(
         path: '/grocery/cart',

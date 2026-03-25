@@ -132,36 +132,33 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        Row(
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
                           children: [
                             _InfoChip(
                               Icons.star_rounded,
                               '${h.rating}',
                               AppColors.warning,
                             ),
-                            const SizedBox(width: 10),
                             if (h.amenities.contains('Free WiFi'))
                               _InfoChip(
                                 Icons.wifi_rounded,
                                 'Free WiFi',
                                 AppColors.primary,
                               ),
-                            if (h.amenities.contains('Pool')) ...[
-                              const SizedBox(width: 10),
+                            if (h.amenities.contains('Pool'))
                               _InfoChip(
                                 Icons.pool_rounded,
                                 'Pool',
                                 AppColors.secondary,
                               ),
-                            ],
-                            if (h.amenities.contains('Restaurant')) ...[
-                              const SizedBox(width: 10),
+                            if (h.amenities.contains('Restaurant'))
                               _InfoChip(
                                 Icons.restaurant_rounded,
                                 'Restaurant',
                                 AppColors.food,
                               ),
-                            ],
                           ],
                         ),
                         const SizedBox(height: 24),

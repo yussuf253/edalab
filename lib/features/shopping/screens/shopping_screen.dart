@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/constants/app_text_styles.dart';
+import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
-import '../../../core/models/models.dart';
-import '../../../core/providers/providers.dart';
 
 class ShoppingScreen extends StatefulWidget {
   const ShoppingScreen({super.key});
@@ -18,49 +19,47 @@ class ShoppingScreen extends StatefulWidget {
 }
 
 class _ShoppingScreenState extends State<ShoppingScreen> {
-  int _selectedCategory = 0;
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedCategory = 'All';
+  String _searchQuery = '';
   bool _isLoading = true;
-  List<ProductModel> _products = ProductModel.sampleProducts;
-
-  final _categories = [
-    'All',
-    'Shoes',
-    'Electronics',
-    'Clothing',
-    'Home',
-    'Accessories',
-  ];
+  List<ShoppingStoreModel> _stores = ShoppingStoreModel.sampleStores;
 
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    _loadStores();
   }
 
-  Future<void> _loadProducts() async {
+  Future<void> _loadStores() async {
     try {
-      final response = await ApiClient.get(
-        '/catalog/products?moduleType=shopping',
-      );
-      final items = (response as List)
+      final response = await ApiClient.get('/catalog/shopping-stores');
+      final stores = (response as List)
           .map(
-            (entry) =>
-                ProductModel.fromApi(Map<String, dynamic>.from(entry as Map)),
+            (entry) => ShoppingStoreModel.fromApi(
+              Map<String, dynamic>.from(entry as Map),
+            ),
           )
           .toList();
 
       if (!mounted) return;
       setState(() {
-        _products = items.isEmpty ? ProductModel.sampleProducts : items;
+        _stores = stores.isEmpty ? ShoppingStoreModel.sampleStores : stores;
         _isLoading = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _products = ProductModel.sampleProducts;
+        _stores = ShoppingStoreModel.sampleStores;
         _isLoading = false;
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -68,14 +67,23 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
     final cartItemCount = context.watch<CartProvider>().getModuleItemCount(
       'shopping',
     );
-
-    // Filter products by category
-    final categoryFilter = _selectedCategory == 0
-        ? null
-        : _categories[_selectedCategory];
-    final products = _products.where((p) {
-      if (categoryFilter == null) return true;
-      return p.category == categoryFilter;
+    final categories = [
+      'All',
+      ...{
+        for (final store in _stores) ...store.categories,
+      },
+    ];
+    final normalizedQuery = _searchQuery.trim().toLowerCase();
+    final stores = _stores.where((store) {
+      final matchesCategory = _selectedCategory == 'All' ||
+          store.categories.contains(_selectedCategory);
+      final matchesSearch = normalizedQuery.isEmpty ||
+          store.name.toLowerCase().contains(normalizedQuery) ||
+          store.tagline.toLowerCase().contains(normalizedQuery) ||
+          store.categories.any(
+            (category) => category.toLowerCase().contains(normalizedQuery),
+          );
+      return matchesCategory && matchesSearch;
     }).toList();
 
     return Scaffold(
@@ -90,9 +98,6 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
           IconButton(
             icon: const Icon(Icons.favorite_border_rounded),
             onPressed: () => context.push('/shopping/wishlist'),
-            splashRadius: 24,
-            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-            padding: const EdgeInsets.all(12),
           ),
           Stack(
             alignment: Alignment.center,
@@ -126,38 +131,37 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
       ),
       body: Column(
         children: [
-          // Search
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 8, 20, 0),
-            child: AppSearchBar(hint: 'Search products, brands...'),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+            child: AppSearchBar(
+              hint: 'Search stores, brands, categories...',
+              controller: _searchController,
+              onChanged: (value) => setState(() => _searchQuery = value),
+            ),
           ),
-          // Categories
           SizedBox(
-            height: 56,
+            height: 44,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              itemCount: _categories.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 8),
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+              itemCount: categories.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
               itemBuilder: (context, index) {
-                final isSelected = _selectedCategory == index;
+                final category = categories[index];
+                final isSelected = _selectedCategory == category;
                 return GestureDetector(
-                  onTap: () => setState(() => _selectedCategory = index),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
+                  onTap: () => setState(() => _selectedCategory = category),
+                  child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
+                      horizontal: 14,
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
                       color: isSelected ? AppColors.primary : AppColors.white,
                       borderRadius: BorderRadius.circular(20),
-                      border: isSelected
-                          ? null
-                          : Border.all(color: AppColors.lightGrey),
                     ),
                     child: Text(
-                      _categories[index],
+                      category,
                       style: AppTextStyles.labelMedium.copyWith(
                         color: isSelected ? AppColors.white : AppColors.dark,
                       ),
@@ -167,39 +171,38 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
               },
             ),
           ),
-          // Flash Sale Banner
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             child: Container(
-              height: 80,
+              height: 96,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppColors.shopping, Color(0xFFFF9E9E)],
+                  colors: [AppColors.shopping, Color(0xFFFFA6A6)],
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
                   const Icon(
-                    Icons.flash_on_rounded,
+                    Icons.storefront_rounded,
                     color: AppColors.white,
-                    size: 32,
+                    size: 34,
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Flash Sale!',
+                          'Explore shops first',
                           style: AppTextStyles.h4.copyWith(
                             color: AppColors.white,
                           ),
                         ),
                         Text(
-                          'Up to 70% off • Ends in 02:45:30',
+                          'Open a store to browse all of its products',
                           style: AppTextStyles.bodySmall.copyWith(
                             color: Colors.white70,
                           ),
@@ -207,219 +210,30 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      'Shop',
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: AppColors.shopping,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          // Products Grid
           Expanded(
             child: _isLoading
                 ? const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: InlineSectionGridShimmer(
-                      itemCount: 6,
-                      childAspectRatio: 0.62,
-                    ),
+                    child: InlineSectionListShimmer(itemCount: 4),
                   )
-                : products.isEmpty
+                : stores.isEmpty
                 ? Center(
                     child: Text(
-                      "No products found.",
+                      'No shops found.',
                       style: AppTextStyles.bodyMedium,
                     ),
                   )
-                : GridView.builder(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 8,
-                    ),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 14,
-                          crossAxisSpacing: 14,
-                          childAspectRatio: 0.62,
-                        ),
-                    itemCount: products.length,
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                    itemCount: stores.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 14),
                     itemBuilder: (context, index) {
-                      final p = products[index];
-                      final isFavorite = context
-                          .watch<WishlistProvider>()
-                          .isFavorite(p.id);
-
-                      return GestureDetector(
-                        onTap: () => context.push('/shopping/product/${p.id}'),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: AppSpacing.shadowSm,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Image
-                              Expanded(
-                                flex: 3,
-                                child: Stack(
-                                  children: [
-                                    Container(
-                                      width: double.infinity,
-                                      decoration: const BoxDecoration(
-                                        color: AppColors.extraLightGrey,
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16),
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Icon(
-                                          Icons.shopping_bag_rounded,
-                                          size: 40,
-                                          color: AppColors.shopping.withValues(
-                                            alpha: 0.3,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    if (p.badge != null)
-                                      Positioned(
-                                        top: 8,
-                                        left: 8,
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.accent,
-                                            borderRadius: BorderRadius.circular(
-                                              6,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            p.badge!,
-                                            style: AppTextStyles.badge,
-                                          ),
-                                        ),
-                                      ),
-                                    Positioned(
-                                      top: 8,
-                                      right: 8,
-                                      child: Material(
-                                        color: Colors.transparent,
-                                        child: InkWell(
-                                          onTap: () {
-                                            context
-                                                .read<WishlistProvider>()
-                                                .toggleFavorite(p);
-                                          },
-                                          borderRadius: BorderRadius.circular(
-                                            24,
-                                          ),
-                                          child: Ink(
-                                            width: 44,
-                                            height: 44,
-                                            decoration: BoxDecoration(
-                                              color: AppColors.white,
-                                              shape: BoxShape.circle,
-                                              boxShadow: AppSpacing.shadowSm,
-                                            ),
-                                            child: Icon(
-                                              isFavorite
-                                                  ? Icons.favorite_rounded
-                                                  : Icons
-                                                        .favorite_border_rounded,
-                                              size: 20,
-                                              color: isFavorite
-                                                  ? AppColors.accent
-                                                  : AppColors.grey,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Details
-                              Expanded(
-                                flex: 2,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        p.name,
-                                        style: AppTextStyles.labelMedium,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        p.brand,
-                                        style: AppTextStyles.caption,
-                                      ),
-                                      const Spacer(),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            '\$${p.price}',
-                                            style: AppTextStyles.priceSmall,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          if (p.originalPrice != null)
-                                            Text(
-                                              '\$${p.originalPrice}',
-                                              style: AppTextStyles.priceOld
-                                                  .copyWith(fontSize: 10),
-                                            ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.star_rounded,
-                                            size: 14,
-                                            color: AppColors.warning,
-                                          ),
-                                          const SizedBox(width: 3),
-                                          Text(
-                                            '${p.rating}',
-                                            style: AppTextStyles.caption
-                                                .copyWith(
-                                                  color: AppColors.dark,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
+                      final store = stores[index];
+                      return _ShoppingStoreCard(store: store);
                     },
                   ),
           ),
@@ -427,4 +241,192 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
       ),
     );
   }
+}
+
+class _ShoppingStoreCard extends StatelessWidget {
+  final ShoppingStoreModel store;
+
+  const _ShoppingStoreCard({required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push('/shopping/store/${store.id}'),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: AppSpacing.shadowSm,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 150,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.shopping.withValues(alpha: 0.18),
+                    AppColors.primary.withValues(alpha: 0.10),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: 18,
+                    right: 18,
+                    child: Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: Icon(
+                        _storeIcon(store.categories),
+                        color: AppColors.shopping,
+                        size: 38,
+                      ),
+                    ),
+                  ),
+                  if (store.badge != null)
+                    Positioned(
+                      top: 16,
+                      left: 16,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.accent,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(store.badge!, style: AppTextStyles.badge),
+                      ),
+                    ),
+                  Positioned(
+                    left: 18,
+                    bottom: 18,
+                    right: 110,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(store.name, style: AppTextStyles.h3),
+                        const SizedBox(height: 4),
+                        Text(
+                          store.tagline,
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.grey,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: store.categories
+                        .take(3)
+                        .map(
+                          (category) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primarySurface,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              category,
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      _StoreStat(
+                        icon: Icons.star_rounded,
+                        value: store.rating.toStringAsFixed(1),
+                        color: AppColors.warning,
+                      ),
+                      const SizedBox(width: 12),
+                      _StoreStat(
+                        icon: Icons.inventory_2_outlined,
+                        value: '${store.productCount} items',
+                        color: AppColors.primary,
+                      ),
+                      const Spacer(),
+                      Text(
+                        '\$${store.minPrice.toStringAsFixed(0)} - \$${store.maxPrice.toStringAsFixed(0)}',
+                        style: AppTextStyles.labelMedium.copyWith(
+                          color: AppColors.shopping,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StoreStat extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final Color color;
+
+  const _StoreStat({
+    required this.icon,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: 4),
+        Text(value, style: AppTextStyles.labelSmall),
+      ],
+    );
+  }
+}
+
+IconData _storeIcon(List<String> categories) {
+  final joined = categories.join(' ').toLowerCase();
+  if (joined.contains('shoe')) return Icons.shopping_bag_rounded;
+  if (joined.contains('electronic')) return Icons.headphones_rounded;
+  if (joined.contains('clothing')) return Icons.checkroom_rounded;
+  if (joined.contains('home')) return Icons.chair_rounded;
+  if (joined.contains('accessor')) return Icons.watch_rounded;
+  return Icons.storefront_rounded;
 }

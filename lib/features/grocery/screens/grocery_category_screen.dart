@@ -15,6 +15,10 @@ class GroceryCategoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = context.watch<CartProvider>();
+    final cartItemCount = cartProvider.getModuleItemCount('grocery');
+    final moduleTotal = cartProvider.getModuleSubtotal('grocery');
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -97,106 +101,101 @@ class GroceryCategoryScreen extends StatelessWidget {
                   itemCount: items.length,
                   itemBuilder: (context, index) {
                     final item = items[index];
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: AppSpacing.shadowSm,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.groceryBg,
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(14),
+                    final itemIcon = _groceryCategoryIcon(
+                      item.categoryName ?? item.categoryId,
+                    );
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () => context.push('/grocery/product/${item.id}'),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: AppSpacing.shadowSm,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.groceryBg,
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(14),
+                                  ),
                                 ),
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  Icons.eco_rounded,
-                                  size: 36,
-                                  color: AppColors.grocery.withValues(
-                                    alpha: 0.4,
+                                child: Center(
+                                  child: Icon(
+                                    itemIcon,
+                                    size: 36,
+                                    color: AppColors.grocery.withValues(
+                                      alpha: 0.55,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item.name,
-                                    style: AppTextStyles.labelMedium,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const Spacer(),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        '\$${item.price.toStringAsFixed(2)}',
-                                        style: AppTextStyles.priceSmall
-                                            .copyWith(
-                                              color: AppColors.grocery,
-                                              fontSize: 13,
-                                            ),
-                                      ),
-                                      const Spacer(),
-                                      GestureDetector(
-                                        onTap: () {
-                                          context.read<CartProvider>().addItem(
-                                            CartItem(
-                                              id: item.id,
-                                              name: item.name,
-                                              price: item.price,
-                                              moduleType: 'grocery',
-                                              brand: item.unit,
-                                            ),
-                                          );
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                '${item.name} added!',
+                            Expanded(
+                              flex: 2,
+                              child: Padding(
+                                padding: const EdgeInsets.all(10),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item.name,
+                                      style: AppTextStyles.labelMedium,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const Spacer(),
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                '\$${item.price.toStringAsFixed(2)}',
+                                                style: AppTextStyles.priceSmall
+                                                    .copyWith(
+                                                      color: AppColors.grocery,
+                                                      fontSize: 13,
+                                                    ),
                                               ),
-                                              backgroundColor:
-                                                  AppColors.success,
-                                            ),
-                                          );
-                                        },
-                                        child: Container(
-                                          width: 30,
-                                          height: 30,
-                                          decoration: BoxDecoration(
-                                            color: AppColors.grocery,
-                                            borderRadius: BorderRadius.circular(
-                                              8,
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            Icons.add,
-                                            color: AppColors.white,
-                                            size: 18,
+                                              Text(
+                                                'per ${item.unit}',
+                                                style: AppTextStyles.caption,
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                        _GroceryAddButton(
+                                          onPressed: () {
+                                            context.read<CartProvider>().addItem(
+                                              CartItem(
+                                                id: item.id,
+                                                name: item.name,
+                                                price: item.price,
+                                                moduleType: 'grocery',
+                                                brand: item.unit,
+                                                imageUrl: item.imageUrl,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -206,6 +205,93 @@ class GroceryCategoryScreen extends StatelessWidget {
           );
         },
       ),
+      floatingActionButton: cartItemCount > 0
+          ? SizedBox(
+              width: MediaQuery.of(context).size.width - 40,
+              child: FloatingActionButton.extended(
+                onPressed: () => context.push('/grocery/cart'),
+                backgroundColor: AppColors.grocery,
+                label: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text('$cartItemCount', style: AppTextStyles.badge),
+                    ),
+                    const SizedBox(width: 12),
+                    Text('View Cart', style: AppTextStyles.button),
+                    const SizedBox(width: 12),
+                    Text(
+                      '\$${moduleTotal.toStringAsFixed(2)}',
+                      style: AppTextStyles.button,
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
+}
+
+class _GroceryAddButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _GroceryAddButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(10),
+        child: Ink(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: AppColors.grocery,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Center(
+            child: Icon(
+              Icons.add_rounded,
+              color: AppColors.white,
+              size: 18,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+IconData _groceryCategoryIcon(String value) {
+  final normalized = value.toLowerCase();
+  if (normalized.contains('fruit') || normalized.contains('veg')) {
+    return Icons.apple_rounded;
+  }
+  if (normalized.contains('dairy') || normalized.contains('egg')) {
+    return Icons.egg_alt_rounded;
+  }
+  if (normalized.contains('meat') || normalized.contains('seafood')) {
+    return Icons.set_meal_rounded;
+  }
+  if (normalized.contains('bakery') || normalized.contains('bread')) {
+    return Icons.bakery_dining_rounded;
+  }
+  if (normalized.contains('beverage') || normalized.contains('drink')) {
+    return Icons.local_drink_rounded;
+  }
+  if (normalized.contains('snack')) {
+    return Icons.cookie_rounded;
+  }
+  return Icons.shopping_basket_rounded;
 }
