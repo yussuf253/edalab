@@ -7,7 +7,15 @@ const zod_1 = require("zod");
 function notFoundHandler(_req, res) {
     res.status(404).json({ error: 'Route not found.' });
 }
-function errorHandler(error, _req, res, _next) {
+function errorHandler(error, req, res, _next) {
+    const message = error instanceof Error ? error.message : 'Internal server error.';
+    const stack = error instanceof Error ? error.stack : undefined;
+    console.error('[API ERROR]', {
+        method: req.method,
+        path: req.originalUrl,
+        message,
+        stack,
+    });
     if (error instanceof zod_1.ZodError) {
         return res.status(400).json({
             error: 'Validation failed.',
@@ -20,6 +28,5 @@ function errorHandler(error, _req, res, _next) {
             code: error.code,
         });
     }
-    const message = error instanceof Error ? error.message : 'Internal server error.';
     return res.status(500).json({ error: message });
 }

@@ -1,6 +1,6 @@
 # EdaLab Backend
 
-Node.js + TypeScript + Prisma + MySQL + JWT backend scaffold for the EdaLab app.
+Node.js + TypeScript + Prisma + Supabase Postgres + JWT backend scaffold for the EdaLab app.
 
 ## Stack
 
@@ -8,32 +8,33 @@ Node.js + TypeScript + Prisma + MySQL + JWT backend scaffold for the EdaLab app.
 - TypeScript
 - Express
 - Prisma
-- MySQL
+- Supabase Postgres
 - JWT
 - bcrypt
 
 ## Why this fits your direction
 
-- Works well with Hostinger MySQL.
+- Works well with a Render backend plus Supabase database.
 - Lets Flutter and a future web app share the same REST API.
 - Keeps your business data relational from day one.
-- Avoids locking the app into Firestore as the primary database.
+- Gives you managed Postgres, backups, and easier remote access than shared-hosting databases.
 
 ## Environment
 
 Copy `.env.example` to `.env` and fill in:
 
 ```bash
-DATABASE_URL="mysql://USERNAME:PASSWORD@HOST:3306/DATABASE_NAME"
+DATABASE_URL="postgresql://postgres.PROJECT_REF:PASSWORD@aws-0-REGION.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
+DIRECT_URL="postgresql://postgres.PROJECT_REF:PASSWORD@db.PROJECT_REF.supabase.co:5432/postgres"
 JWT_SECRET="replace-with-a-long-random-secret"
 ```
 
-For Hostinger, the database values normally come from:
+For Supabase, the database values normally come from:
 
-- hPanel database host
-- database username
-- database password
-- database name
+- Project Settings -> Database -> Connection string
+- `DATABASE_URL` should use the pooled connection string
+- `DIRECT_URL` should use the direct connection string
+- replace `PASSWORD`, `PROJECT_REF`, and `REGION` with your real project values
 
 ## Install
 
@@ -88,10 +89,11 @@ npm run dev
 ## Recommended next steps
 
 1. Install dependencies and generate Prisma client.
-2. Run `prisma db push` against your local MySQL first.
-3. Seed module catalogs with `npm run db:seed`.
-4. Update Flutter auth flow to use `/api/auth/login` and persist JWT.
-5. Protect write routes with bearer-token auth once the mobile app sends JWTs.
+2. Create your Supabase project and copy both pooled and direct Postgres URLs into `.env`.
+3. Run `prisma db push` against Supabase.
+4. Seed module catalogs with `npm run db:seed`.
+5. Update Flutter auth flow to use `/api/auth/login` and persist JWT.
+6. Protect write routes with bearer-token auth once the mobile app sends JWTs.
 
 ## Note about the Flutter app
 

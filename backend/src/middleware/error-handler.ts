@@ -8,10 +8,20 @@ export function notFoundHandler(_req: Request, res: Response) {
 
 export function errorHandler(
   error: unknown,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction,
 ) {
+  const message = error instanceof Error ? error.message : 'Internal server error.';
+  const stack = error instanceof Error ? error.stack : undefined;
+
+  console.error('[API ERROR]', {
+    method: req.method,
+    path: req.originalUrl,
+    message,
+    stack,
+  });
+
   if (error instanceof ZodError) {
     return res.status(400).json({
       error: 'Validation failed.',
@@ -26,6 +36,5 @@ export function errorHandler(
     });
   }
 
-  const message = error instanceof Error ? error.message : 'Internal server error.';
   return res.status(500).json({ error: message });
 }

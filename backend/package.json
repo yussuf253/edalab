@@ -2,7 +2,7 @@
   "name": "edalab-backend",
   "version": "1.0.0",
   "private": true,
-  "description": "EdaLab API using Node.js, TypeScript, Prisma, MySQL, and JWT",
+  "description": "EdaLab API using Node.js, TypeScript, Prisma, Supabase Postgres, and JWT",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",

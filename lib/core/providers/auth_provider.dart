@@ -14,6 +14,22 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
+  bool _isConnectionError(Object error) {
+    final message = error.toString();
+    return message.contains('Could not reach the API at');
+  }
+
+  void _setOfflineSession(String userId) {
+    _user = UserModel(
+      id: userId,
+      firstName: 'User',
+      lastName: '',
+      email: '',
+      phone: '',
+    );
+    _isLoggedIn = true;
+  }
+
   void _setUserFromResponse(Map<String, dynamic> response) {
     _user = _userFromResponse(response);
     _isLoggedIn = true;
@@ -52,7 +68,8 @@ class AuthProvider extends ChangeNotifier {
             isDefault: address['isDefault'] as bool? ?? false,
           );
         }),
-        if (rawAddresses.isEmpty && (response['address'] as String?)?.isNotEmpty == true)
+        if (rawAddresses.isEmpty &&
+            (response['address'] as String?)?.isNotEmpty == true)
           AddressModel(
             id: 'primary_address',
             label: 'Primary',
@@ -69,10 +86,13 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = Map<String, dynamic>.from(await ApiClient.post('/auth/login', {
-        'email': email.trim(),
-        'password': password,
-      }) as Map);
+      final response = Map<String, dynamic>.from(
+        await ApiClient.post('/auth/login', {
+              'email': email.trim(),
+              'password': password,
+            })
+            as Map,
+      );
 
       final userResponse = Map<String, dynamic>.from(response['user'] as Map);
       _setUserFromResponse(userResponse);
@@ -93,18 +113,26 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> register(String name, String email, String phone, String password) async {
+  Future<bool> register(
+    String name,
+    String email,
+    String phone,
+    String password,
+  ) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final response = Map<String, dynamic>.from(await ApiClient.post('/auth/register', {
-        'name': name.trim(),
-        'email': email.trim(),
-        'phone': phone.trim(),
-        'password': password,
-      }) as Map);
+      final response = Map<String, dynamic>.from(
+        await ApiClient.post('/auth/register', {
+              'name': name.trim(),
+              'email': email.trim(),
+              'phone': phone.trim(),
+              'password': password,
+            })
+            as Map,
+      );
 
       final userResponse = Map<String, dynamic>.from(response['user'] as Map);
       _setUserFromResponse(userResponse);
@@ -129,12 +157,14 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
+    String? userId;
     try {
       await ApiClient.initialize();
-      final userId = await AppPreferences.getCurrentUserId();
+      userId = await AppPreferences.getCurrentUserId();
       if (userId == null || userId.isEmpty) {
         _user = null;
         _isLoggedIn = false;
+        _errorMessage = null;
         return;
       }
 
@@ -142,11 +172,15 @@ class AuthProvider extends ChangeNotifier {
       _setUserFromResponse(Map<String, dynamic>.from(response as Map));
       _errorMessage = null;
     } catch (e) {
-      _user = null;
-      _isLoggedIn = false;
       _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      await AppPreferences.clearCurrentUserId();
-      await ApiClient.setToken(null);
+      if (userId != null && userId.isNotEmpty && _isConnectionError(e)) {
+        _setOfflineSession(userId);
+      } else {
+        _user = null;
+        _isLoggedIn = false;
+        await AppPreferences.clearCurrentUserId();
+        await ApiClient.setToken(null);
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -171,10 +205,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final fullName = [firstName.trim(), lastName.trim()]
-          .where((part) => part.isNotEmpty)
-          .join(' ')
-          .trim();
+      final fullName = [
+        firstName.trim(),
+        lastName.trim(),
+      ].where((part) => part.isNotEmpty).join(' ').trim();
 
       final response = await ApiClient.patch('/users/${_user!.id}', {
         'name': fullName,
@@ -252,13 +286,14 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await ApiClient.patch('/users/${_user!.id}/addresses/$addressId', {
-        'label': label.trim(),
-        'address': address.trim(),
-        'city': city?.trim() ?? '',
-        'zipCode': zipCode?.trim() ?? '',
-        'isDefault': isDefault,
-      });
+      final response =
+          await ApiClient.patch('/users/${_user!.id}/addresses/$addressId', {
+            'label': label.trim(),
+            'address': address.trim(),
+            'city': city?.trim() ?? '',
+            'zipCode': zipCode?.trim() ?? '',
+            'isDefault': isDefault,
+          });
 
       _setUserFromResponse(Map<String, dynamic>.from(response as Map));
       _isLoading = false;
@@ -284,7 +319,10 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await ApiClient.patch('/users/${_user!.id}/addresses/$addressId/default', {});
+      final response = await ApiClient.patch(
+        '/users/${_user!.id}/addresses/$addressId/default',
+        {},
+      );
       _setUserFromResponse(Map<String, dynamic>.from(response as Map));
       _isLoading = false;
       notifyListeners();
@@ -309,7 +347,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await ApiClient.delete('/users/${_user!.id}/addresses/$addressId');
+      final response = await ApiClient.delete(
+        '/users/${_user!.id}/addresses/$addressId',
+      );
       if (response is Map) {
         _setUserFromResponse(Map<String, dynamic>.from(response));
       }

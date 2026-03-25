@@ -10,9 +10,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final hasSeenOnboarding = await AppPreferences.hasSeenOnboarding();
   final authProvider = AuthProvider();
-  authProvider.initialize();
+  await authProvider.initialize();
   final cartProvider = CartProvider();
-  cartProvider.initialize();
+  await cartProvider.initialize();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,

@@ -44,11 +44,31 @@ class _OrdersScreenState extends State<OrdersScreen>
     }
 
     try {
-      final data = await ApiClient.get('/orders/$userId');
+      final results = await Future.wait<Map<String, dynamic>>([
+        _loadHistoryList('/orders/$userId'),
+        _loadHistoryList('/appointments/$userId'),
+        _loadHistoryList('/rides/user/$userId'),
+      ]);
+      final orders = _normalizeOrders(results[0]['data']);
+      final appointments = _normalizeAppointments(results[1]['data']);
+      final rides = _normalizeRides(results[2]['data']);
+      final data = [...orders, ...appointments, ...rides]
+        ..sort((a, b) {
+          final aDate =
+              DateTime.tryParse(a['createdAt']?.toString() ?? '') ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          final bDate =
+              DateTime.tryParse(b['createdAt']?.toString() ?? '') ??
+              DateTime.fromMillisecondsSinceEpoch(0);
+          return bDate.compareTo(aDate);
+      });
+      final hasLiveResponse = results.any((result) => result['ok'] == true);
+
       setState(() {
-        _allOrders = data;
+        _allOrders = hasLiveResponse ? data : _sampleOrders();
         _isLoading = false;
-        _usingSampleData = false;
+        _usingSampleData = !hasLiveResponse;
+        _error = null;
       });
     } catch (e) {
       setState(() {
@@ -58,6 +78,115 @@ class _OrdersScreenState extends State<OrdersScreen>
         _error = null;
       });
     }
+  }
+
+  Future<Map<String, dynamic>> _loadHistoryList(String endpoint) async {
+    try {
+      final data = await ApiClient.get(endpoint);
+      return {'ok': true, 'data': data};
+    } catch (_) {
+      return {'ok': false, 'data': const []};
+    }
+  }
+
+  List<Map<String, dynamic>> _normalizeOrders(dynamic value) {
+    if (value is! List) return const [];
+    return value.map<Map<String, dynamic>>((entry) {
+      final order = Map<String, dynamic>.from(entry as Map);
+      final moduleType =
+          order['moduleType']?.toString().toUpperCase() ?? 'ORDER';
+      final items = (order['items'] as List? ?? const [])
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .toList();
+      final firstItem = items.isNotEmpty ? items.first : null;
+      return {
+        ...order,
+        'moduleType': moduleType,
+        'moduleName':
+            order['moduleName']?.toString() ??
+            firstItem?['brand']?.toString() ??
+            firstItem?['name']?.toString() ??
+            moduleType,
+        'trackingRoute': order['trackingRoute']?.toString(),
+      };
+    }).toList();
+  }
+
+  List<Map<String, dynamic>> _normalizeAppointments(dynamic value) {
+    if (value is! List) return const [];
+    return value.map<Map<String, dynamic>>((entry) {
+      final appointment = Map<String, dynamic>.from(entry as Map);
+      return {
+        'id': appointment['id'],
+        'moduleType': 'DOCTOR',
+        'moduleName': appointment['doctorName']?.toString() ?? 'Appointment',
+        'status': appointment['status']?.toString().toUpperCase() ?? 'UPCOMING',
+        'total': appointment['fee'] ?? 0,
+        'createdAt':
+            appointment['createdAt']?.toString() ??
+            appointment['date']?.toString() ??
+            DateTime.now().toIso8601String(),
+        'updatedAt':
+            appointment['updatedAt']?.toString() ??
+            appointment['date']?.toString() ??
+            DateTime.now().toIso8601String(),
+        'trackingRoute': '/doctor/appointments',
+        'items': [
+          {
+            'name':
+                appointment['typeLabel']?.toString() ??
+                appointment['type']?.toString() ??
+                'Consultation',
+            'quantity': 1,
+            'metadata': {
+              'doctorId': appointment['doctorId'],
+              'date': appointment['date'],
+              'timeSlot': appointment['timeSlot'],
+            },
+          },
+        ],
+      };
+    }).toList();
+  }
+
+  List<Map<String, dynamic>> _normalizeRides(dynamic value) {
+    if (value is! List) return const [];
+    return value.map<Map<String, dynamic>>((entry) {
+      final ride = Map<String, dynamic>.from(entry as Map);
+      return {
+        'id': ride['id'],
+        'moduleType': 'RIDE',
+        'moduleName': ride['rideCategory'] is Map
+            ? Map<String, dynamic>.from(ride['rideCategory'] as Map)['name']
+            : ride['vehicle']?.toString() ?? 'Ride',
+        'status': ride['status']?.toString().toUpperCase() ?? 'REQUESTED',
+        'total': ride['total'] ?? 0,
+        'createdAt':
+            ride['createdAt']?.toString() ?? DateTime.now().toIso8601String(),
+        'updatedAt':
+            ride['updatedAt']?.toString() ?? DateTime.now().toIso8601String(),
+        'trackingRoute':
+            [
+              'COMPLETED',
+              'CANCELLED',
+            ].contains(ride['status']?.toString().toUpperCase())
+            ? null
+            : '/ride/tracking/${ride['id']}',
+        'items': [
+          {
+            'name':
+                ride['vehicle']?.toString() ??
+                ride['moduleName']?.toString() ??
+                'Ride',
+            'quantity': 1,
+            'metadata': {
+              'pickup': ride['pickup'],
+              'destination': ride['destination'],
+            },
+          },
+        ],
+      };
+    }).toList();
   }
 
   List<Map<String, dynamic>> _sampleOrders() {
@@ -115,17 +244,38 @@ class _OrdersScreenState extends State<OrdersScreen>
         .where(
           (o) => [
             'PENDING',
+            'CONFIRMED',
             'PROCESSING',
             'DISPATCHED',
             'IN_PROGRESS',
+            'UPCOMING',
+            'REQUESTED',
+            'ACCEPTED',
+            'DRIVER_ARRIVING',
+            'SCHEDULED',
+            'PICKED_UP',
+            'CLEANING',
+            'OUT_FOR_DELIVERY',
+            'CHECKED_IN',
           ].contains(o['status'].toString().toUpperCase()),
         )
         .toList();
     final completedOrders = _allOrders
-        .where((o) => o['status'].toString().toUpperCase() == 'COMPLETED')
+        .where(
+          (o) => [
+            'COMPLETED',
+            'CHECKED_OUT',
+          ].contains(o['status'].toString().toUpperCase()),
+        )
         .toList();
     final cancelledOrders = _allOrders
-        .where((o) => o['status'].toString().toUpperCase() == 'CANCELLED')
+        .where(
+          (o) => [
+            'CANCELLED',
+            'REFUNDED',
+            'NO_SHOW',
+          ].contains(o['status'].toString().toUpperCase()),
+        )
         .toList();
 
     return Scaffold(
@@ -204,6 +354,8 @@ class _OrderList extends StatelessWidget {
         return Icons.shopping_bag_rounded;
       case 'HOTEL':
         return Icons.hotel_rounded;
+      case 'DOCTOR':
+        return Icons.medical_services_rounded;
       case 'PHARMACY':
         return Icons.local_pharmacy_rounded;
       case 'GROCERY':
@@ -225,8 +377,12 @@ class _OrderList extends StatelessWidget {
         return AppColors.shopping;
       case 'HOTEL':
         return AppColors.hotel;
+      case 'DOCTOR':
+        return AppColors.doctor;
       case 'PHARMACY':
         return AppColors.pharmacy;
+      case 'GROCERY':
+        return AppColors.grocery;
       case 'RIDE':
         return AppColors.ride;
       default:
@@ -272,6 +428,12 @@ class _OrderList extends StatelessWidget {
             }
           } catch (_) {}
         }
+        if (displayItem.startsWith('Order #') &&
+            (o['moduleName']?.toString().isNotEmpty ?? false)) {
+          displayItem = o['moduleName'].toString();
+        }
+
+        final trackingRoute = o['trackingRoute']?.toString();
 
         return Container(
           padding: const EdgeInsets.all(16),
@@ -331,10 +493,14 @@ class _OrderList extends StatelessWidget {
                   const Spacer(),
                   TextButton(
                     onPressed: () {
-                      if (module == 'FOOD' &&
-                          st != 'COMPLETED' &&
-                          st != 'CANCELLED') {
-                        context.push('/food/tracking/${o['id']}');
+                      if (trackingRoute != null && trackingRoute.isNotEmpty) {
+                        if (module == 'RIDE') {
+                          context.push(trackingRoute, extra: o);
+                          return;
+                        }
+                        context.push(trackingRoute);
+                      } else if (module == 'DOCTOR') {
+                        context.push('/doctor/appointments');
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -346,8 +512,10 @@ class _OrderList extends StatelessWidget {
                       }
                     },
                     child: Text(
-                      module == 'FOOD' && st != 'COMPLETED' && st != 'CANCELLED'
+                      trackingRoute != null && trackingRoute.isNotEmpty
                           ? 'Track'
+                          : module == 'DOCTOR'
+                          ? 'Open'
                           : 'Details',
                       style: AppTextStyles.labelMedium.copyWith(
                         color: AppColors.primary,
