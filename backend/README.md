@@ -46,6 +46,34 @@ npm run db:seed
 npm run dev
 ```
 
+## Deploy To Render
+
+This backend is ready for Render.
+
+1. Push the repo to GitHub.
+2. In Render, create a new Blueprint or Web Service from the repo.
+3. If you use the included [`render.yaml`](../render.yaml), Render will detect:
+   - `rootDir: backend`
+   - build command: `npm install && npm run build`
+   - start command: `npm run start`
+4. In Render environment variables, set:
+
+```bash
+DATABASE_URL=your-supabase-pooled-connection-string
+DIRECT_URL=your-supabase-direct-connection-string
+JWT_SECRET=your-long-random-production-secret
+CORS_ORIGIN=https://your-website-domain.com
+```
+
+For first deployment, you should also run schema sync and seed once:
+
+```bash
+npx prisma db push
+npm run db:seed
+```
+
+You can do that locally before deploy, or from a Render shell if needed.
+
 ## Current API routes
 
 ### Auth

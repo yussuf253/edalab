@@ -44,7 +44,6 @@ class _LoginScreenState extends State<LoginScreen> {
           SnackBar(
             content: Text(errorMessage),
             backgroundColor: AppColors.error,
-            behavior: SnackBarBehavior.floating,
           ),
         );
       }

@@ -7,6 +7,10 @@ import '../storage/app_preferences.dart';
 
 class ApiClient {
   static const _defaultPort = '5050';
+  static const String _configuredBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://edalab.onrender.com/api',
+  );
   static const String _configuredHost = String.fromEnvironment(
     'API_HOST',
     defaultValue: '127.0.0.1',
@@ -15,6 +19,11 @@ class ApiClient {
   static String? _token;
 
   static String get baseUrl {
+    if (_configuredBaseUrl.isNotEmpty) {
+      return _configuredBaseUrl.endsWith('/')
+          ? _configuredBaseUrl.substring(0, _configuredBaseUrl.length - 1)
+          : _configuredBaseUrl;
+    }
     if (kIsWeb) return 'http://localhost:$_defaultPort/api';
     if (Platform.isAndroid) {
       final host = _configuredHost == '127.0.0.1' ? '10.0.2.2' : _configuredHost;
@@ -50,6 +59,10 @@ class ApiClient {
   }
 
   static String get _connectionHint {
+    if (_configuredBaseUrl.isNotEmpty) {
+      return 'Confirm the hosted backend URL is correct and publicly reachable: $_configuredBaseUrl.';
+    }
+
     if (kIsWeb) {
       return 'For web, make sure the backend is running on localhost:$_defaultPort.';
     }

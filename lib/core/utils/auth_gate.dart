@@ -18,7 +18,6 @@ Future<bool> requireLoggedIn(
     SnackBar(
       content: Text(message),
       backgroundColor: AppColors.dark,
-      behavior: SnackBarBehavior.floating,
       action: SnackBarAction(
         label: 'Login',
         textColor: AppColors.white,
