@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
 class RideTrackingScreen extends StatefulWidget {
@@ -420,30 +421,49 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
+                                  child: GestureDetector(
+                                    onTap: () => openConversation(
+                                      context,
+                                      moduleType: 'RIDE',
+                                      entityType: 'RIDE',
+                                      entityId: widget.rideId,
+                                      title: driverName,
+                                      subtitle: vehicle,
+                                      accentColor: '#6C63FF',
+                                      metadata: {
+                                        'rideId': widget.rideId,
+                                        'vehicle': vehicle,
+                                        'pickup': pickup,
+                                        'destination': destination,
+                                      },
                                     ),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: AppColors.lightGrey,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
                                       ),
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        const Icon(
-                                          Icons.chat_rounded,
-                                          color: AppColors.ride,
-                                          size: 20,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: AppColors.lightGrey,
                                         ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          'Message',
-                                          style: AppTextStyles.labelMedium
-                                              .copyWith(color: AppColors.ride),
-                                        ),
-                                      ],
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          const Icon(
+                                            Icons.chat_rounded,
+                                            color: AppColors.ride,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            'Message',
+                                            style: AppTextStyles.labelMedium
+                                                .copyWith(
+                                                  color: AppColors.ride,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),

@@ -7,6 +7,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
@@ -475,6 +476,31 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                       ],
                     ),
                     const SizedBox(width: 20),
+                    SizedBox(
+                      width: 112,
+                      child: AppButton(
+                        text: 'Message',
+                        isSmall: true,
+                        isOutlined: true,
+                        color: AppColors.doctor,
+                        onPressed: () => openConversation(
+                          context,
+                          moduleType: 'DOCTOR',
+                          entityType: 'DOCTOR',
+                          entityId: doctor.id,
+                          title: doctor.name,
+                          subtitle: doctor.specialty,
+                          avatarUrl: doctor.imageUrl,
+                          accentColor: '#3498DB',
+                          metadata: {
+                            'doctorId': doctor.id,
+                            'specialty': doctor.specialty,
+                            'professionLabel': doctor.professionLabel,
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: AppButton(
                         text: doctor.primaryActionLabel,

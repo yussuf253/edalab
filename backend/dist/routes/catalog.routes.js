@@ -15,6 +15,49 @@ function readJsonStringArray(value) {
         .map((entry) => (typeof entry === 'string' ? entry : null))
         .filter((entry) => entry != null);
 }
+function serializeHomeServiceCategory(category) {
+    return {
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
+        description: category.description,
+        iconKey: category.iconKey,
+        colorHex: category.colorHex,
+        providerCount: category.providers?.length ?? 0,
+    };
+}
+function serializeHomeServiceProvider(provider) {
+    return {
+        id: provider.id,
+        categoryId: provider.categoryId,
+        category: provider.category == null
+            ? null
+            : {
+                id: provider.category.id,
+                name: provider.category.name,
+                slug: provider.category.slug,
+                iconKey: provider.category.iconKey,
+                colorHex: provider.category.colorHex,
+            },
+        name: provider.name,
+        title: provider.title,
+        rating: (0, serializers_1.toNumber)(provider.rating),
+        reviewCount: provider.reviewCount,
+        yearsExperience: provider.yearsExperience,
+        startingPrice: (0, serializers_1.toNumber)(provider.startingPrice),
+        isAvailable: provider.isAvailable,
+        isVerified: provider.isVerified,
+        responseTime: provider.responseTime,
+        imageUrl: provider.imageUrl,
+        about: provider.about,
+        location: provider.location,
+        contactPhone: provider.contactPhone,
+        services: readJsonStringArray(provider.servicesJson),
+        highlights: readJsonStringArray(provider.highlightsJson),
+        bookingModes: readJsonStringArray(provider.bookingModesJson),
+        availability: provider.availabilityJson ?? {},
+    };
+}
 function slugifyStoreName(value) {
     return value
         .trim()
@@ -147,16 +190,21 @@ router.get('/doctors', (0, async_handler_1.asyncHandler)(async (_req, res) => {
         id: doctor.id,
         name: doctor.name,
         specialty: doctor.specialty,
+        providerType: doctor.providerType,
         rating: (0, serializers_1.toNumber)(doctor.rating),
         reviewCount: doctor.reviewCount,
         experience: doctor.experience,
         consultationFee: (0, serializers_1.toNumber)(doctor.consultationFee),
         isAvailable: doctor.isAvailable,
+        isSignedUp: doctor.isSignedUp,
         imageUrl: doctor.imageUrl,
         about: doctor.about,
         location: doctor.location,
+        contactPhone: doctor.contactPhone,
+        contactWhatsApp: doctor.contactWhatsApp,
         languages: doctor.languagesJson ?? [],
         services: doctor.servicesJson ?? [],
+        careModes: doctor.careModesJson ?? [],
         workingHours: doctor.workingHoursJson ?? {},
     })));
 }));
@@ -177,16 +225,21 @@ router.get('/doctors/:id', (0, async_handler_1.asyncHandler)(async (req, res) =>
         id: doctor.id,
         name: doctor.name,
         specialty: doctor.specialty,
+        providerType: doctor.providerType,
         rating: (0, serializers_1.toNumber)(doctor.rating),
         reviewCount: doctor.reviewCount,
         experience: doctor.experience,
         consultationFee: (0, serializers_1.toNumber)(doctor.consultationFee),
         isAvailable: doctor.isAvailable,
+        isSignedUp: doctor.isSignedUp,
         imageUrl: doctor.imageUrl,
         about: doctor.about,
         location: doctor.location,
+        contactPhone: doctor.contactPhone,
+        contactWhatsApp: doctor.contactWhatsApp,
         languages: doctor.languagesJson ?? [],
         services: doctor.servicesJson ?? [],
+        careModes: doctor.careModesJson ?? [],
         workingHours: doctor.workingHoursJson ?? {},
         reviews: doctor.reviews.map((review) => ({
             id: review.id,
@@ -197,6 +250,51 @@ router.get('/doctors/:id', (0, async_handler_1.asyncHandler)(async (req, res) =>
             avatarUrl: review.avatarUrl,
         })),
     });
+}));
+router.get('/home-service-categories', (0, async_handler_1.asyncHandler)(async (_req, res) => {
+    const categories = await db_1.prisma.homeServiceCategory.findMany({
+        where: { active: true },
+        include: {
+            providers: {
+                where: { isAvailable: true },
+                select: { id: true },
+            },
+        },
+        orderBy: { sortOrder: 'asc' },
+    });
+    res.json(categories.map((category) => serializeHomeServiceCategory(category)));
+}));
+router.get('/home-service-providers', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const categorySlug = req.query.category?.toString();
+    const providers = await db_1.prisma.homeServiceProvider.findMany({
+        where: {
+            ...(categorySlug
+                ? {
+                    category: {
+                        slug: categorySlug,
+                    },
+                }
+                : {}),
+        },
+        include: {
+            category: true,
+        },
+        orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
+    });
+    res.json(providers.map((provider) => serializeHomeServiceProvider(provider)));
+}));
+router.get('/home-service-providers/:id', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const providerId = (0, http_1.getParam)(req.params.id, 'providerId');
+    const provider = await db_1.prisma.homeServiceProvider.findUnique({
+        where: { id: providerId },
+        include: {
+            category: true,
+        },
+    });
+    if (!provider) {
+        return res.status(404).json({ error: 'Home service provider not found.' });
+    }
+    res.json(serializeHomeServiceProvider(provider));
 }));
 router.get('/restaurants', (0, async_handler_1.asyncHandler)(async (_req, res) => {
     const restaurants = await db_1.prisma.restaurant.findMany({

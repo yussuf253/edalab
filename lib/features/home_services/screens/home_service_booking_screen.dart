@@ -21,14 +21,15 @@ class HomeServiceBookingScreen extends StatefulWidget {
 }
 
 class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
-  final _addressController = TextEditingController();
   final _notesController = TextEditingController();
   int _selectedDate = 1;
   int _selectedTime = 1;
   int _selectedMode = 0;
   int _selectedService = 0;
+  int _selectedAddress = 0;
   HomeServiceProviderModel? _provider;
   bool _isLoading = true;
+  bool _didInitializeAddress = false;
 
   final _dates = [
     ('Mon', '22'),
@@ -68,14 +69,28 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
 
   @override
   void dispose() {
-    _addressController.dispose();
     _notesController.dispose();
     super.dispose();
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didInitializeAddress) return;
+    final addresses = context.read<AuthProvider>().user?.addresses ?? const [];
+    final defaultIndex = addresses.indexWhere((address) => address.isDefault);
+    _selectedAddress = defaultIndex >= 0 ? defaultIndex : 0;
+    _didInitializeAddress = true;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final provider = _provider;
+    final auth = context.watch<AuthProvider>();
+    final addresses = auth.user?.addresses ?? const [];
+    final selectedAddress = addresses.isNotEmpty
+        ? addresses[_selectedAddress.clamp(0, addresses.length - 1)]
+        : null;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -365,12 +380,147 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                           const SizedBox(height: 24),
                           Text('Service Address', style: AppTextStyles.h4),
                           const SizedBox(height: 12),
-                          TextFormField(
-                            controller: _addressController,
-                            decoration: const InputDecoration(
-                              hintText: 'Enter your address',
+                          if (addresses.isEmpty)
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: AppColors.lightGrey),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.location_on_rounded,
+                                    color: AppColors.grey,
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: Text(
+                                      'No saved addresses found',
+                                      style: AppTextStyles.bodyMedium,
+                                    ),
+                                  ),
+                                  AppButton(
+                                    text: 'Add',
+                                    width: 84,
+                                    isSmall: true,
+                                    onPressed: () =>
+                                        context.push('/profile/addresses'),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            Column(
+                              children: addresses.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final address = entry.value;
+                                final isSelected = _selectedAddress == index;
+                                final subtitle = [
+                                  address.address,
+                                  if ((address.city ?? '').isNotEmpty)
+                                    address.city!,
+                                  if ((address.zipCode ?? '').isNotEmpty)
+                                    address.zipCode!,
+                                ].join(', ');
+
+                                return GestureDetector(
+                                  onTap: () =>
+                                      setState(() => _selectedAddress = index),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 180),
+                                    margin: const EdgeInsets.only(bottom: 10),
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.white,
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: isSelected
+                                          ? Border.all(
+                                              color: AppColors.homeServices,
+                                              width: 2,
+                                            )
+                                          : Border.all(
+                                              color: AppColors.extraLightGrey,
+                                            ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 42,
+                                          height: 42,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.homeServicesBg,
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            Icons.location_on_rounded,
+                                            color: AppColors.homeServices,
+                                            size: 20,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Row(
+                                                children: [
+                                                  Flexible(
+                                                    child: Text(
+                                                      address.label,
+                                                      style: AppTextStyles
+                                                          .labelMedium,
+                                                    ),
+                                                  ),
+                                                  if (address.isDefault) ...[
+                                                    const SizedBox(width: 8),
+                                                    Container(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 8,
+                                                            vertical: 3,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: AppColors
+                                                            .homeServicesBg,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              999,
+                                                            ),
+                                                      ),
+                                                      child: Text(
+                                                        'Default',
+                                                        style: AppTextStyles
+                                                            .labelSmall
+                                                            .copyWith(
+                                                              color: AppColors
+                                                                  .homeServices,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                subtitle,
+                                                style: AppTextStyles.caption,
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
                             ),
-                          ),
                           const SizedBox(height: 24),
                           Text('Notes (optional)', style: AppTextStyles.h4),
                           const SizedBox(height: 12),
@@ -401,6 +551,11 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 ),
                                 _SummaryRow('Time', _times[_selectedTime]),
                                 _SummaryRow('Mode', modeOptions[selectedMode]),
+                                if (selectedAddress != null)
+                                  _SummaryRow(
+                                    'Address',
+                                    '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
+                                  ),
                                 const Divider(height: 20),
                                 _SummaryRow(
                                   'Fee',
@@ -415,7 +570,6 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                             text: 'Confirm Booking',
                             color: AppColors.homeServices,
                             onPressed: () async {
-                              final auth = context.read<AuthProvider>();
                               final allowed = await requireLoggedIn(
                                 context,
                                 message:
@@ -423,15 +577,19 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               );
                               if (!context.mounted || !allowed) return;
 
-                              final address = _addressController.text.trim();
-                              if (address.isEmpty) {
+                              if (selectedAddress == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Please enter your address.'),
+                                    content: Text(
+                                      'Please add or select a saved address.',
+                                    ),
                                   ),
                                 );
                                 return;
                               }
+
+                              final addressText =
+                                  '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}';
 
                               final order = await ApiClient.post('/orders', {
                                 'userId': auth.user!.id,
@@ -458,7 +616,9 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                       'scheduledDate':
                                           '2026-03-${_dates[_selectedDate].$2}',
                                       'timeSlot': _times[_selectedTime],
-                                      'address': address,
+                                      'address': addressText,
+                                      'addressId': selectedAddress.id,
+                                      'addressLabel': selectedAddress.label,
                                       'bookingMode': modeOptions[selectedMode],
                                     },
                                   },
@@ -474,7 +634,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                   'delivery': modeOptions[selectedMode],
                                   'moduleName': serviceOptions[selectedService],
                                   'itemCount': 1,
-                                  'address': address,
+                                  'address': addressText,
                                   'trackingRoute': '/orders',
                                 },
                               );

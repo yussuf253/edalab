@@ -23,7 +23,8 @@ class HomeScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: FadeInDown(
+                child: FadeInLeft(
+                  duration: const Duration(milliseconds: 500),
                   child: Row(
                     children: [
                       // Avatar
@@ -106,8 +107,9 @@ class HomeScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: FadeInDown(
-                  delay: const Duration(milliseconds: 100),
+                child: FadeInUp(
+                  delay: const Duration(milliseconds: 80),
+                  duration: const Duration(milliseconds: 520),
                   child: AppSearchBar(
                     hint: 'Search services, products, restaurants...',
                     readOnly: true,
@@ -134,8 +136,9 @@ class HomeScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                child: FadeInDown(
-                  delay: const Duration(milliseconds: 200),
+                child: FadeInUp(
+                  delay: const Duration(milliseconds: 150),
+                  duration: const Duration(milliseconds: 560),
                   child: _PromoBanner(),
                 ),
               ),
@@ -145,8 +148,9 @@ class HomeScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
-                child: FadeInDown(
-                  delay: const Duration(milliseconds: 300),
+                child: FadeInUp(
+                  delay: const Duration(milliseconds: 220),
+                  duration: const Duration(milliseconds: 560),
                   child: Column(
                     children: [
                       const SectionHeader(
@@ -165,13 +169,15 @@ class HomeScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
-                child: FadeInDown(
-                  delay: const Duration(milliseconds: 400),
+                child: FadeInUp(
+                  delay: const Duration(milliseconds: 300),
+                  duration: const Duration(milliseconds: 560),
                   child: Column(
                     children: [
-                      const SectionHeader(
+                      SectionHeader(
                         title: 'Special Offers 🔥',
                         actionText: 'See All',
+                        onAction: () => context.push('/promotions'),
                       ),
                       const SizedBox(height: 16),
                       _SpecialOffers(),
@@ -185,8 +191,9 @@ class HomeScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
-                child: FadeInDown(
-                  delay: const Duration(milliseconds: 500),
+                child: FadeInUp(
+                  delay: const Duration(milliseconds: 380),
+                  duration: const Duration(milliseconds: 560),
                   child: Column(
                     children: [
                       SectionHeader(
@@ -206,8 +213,9 @@ class HomeScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
-                child: FadeInDown(
-                  delay: const Duration(milliseconds: 550),
+                child: FadeInUp(
+                  delay: const Duration(milliseconds: 460),
+                  duration: const Duration(milliseconds: 560),
                   child: Column(
                     children: [
                       SectionHeader(
@@ -227,8 +235,9 @@ class HomeScreen extends StatelessWidget {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 28, 0, 24),
-                child: FadeInDown(
-                  delay: const Duration(milliseconds: 600),
+                child: FadeInUp(
+                  delay: const Duration(milliseconds: 540),
+                  duration: const Duration(milliseconds: 560),
                   child: Column(
                     children: [
                       SectionHeader(
@@ -375,56 +384,56 @@ class _PromoBanner extends StatelessWidget {
 class _ServicesGrid extends StatelessWidget {
   final _services = const [
     _ServiceItem(
-      icon: Icons.fastfood_rounded,
+      assetPath: 'assets/icons/food.png',
       title: 'Food',
       color: AppColors.food,
       bgColor: AppColors.foodBg,
       route: '/food',
     ),
     _ServiceItem(
-      icon: Icons.shopping_bag_rounded,
+      assetPath: 'assets/icons/shopping.png',
       title: 'Shopping',
       color: AppColors.shopping,
       bgColor: AppColors.shoppingBg,
       route: '/shopping',
     ),
     _ServiceItem(
-      icon: Icons.local_hospital_rounded,
+      assetPath: 'assets/icons/doctor.png',
       title: 'Doctor',
       color: AppColors.doctor,
       bgColor: AppColors.doctorBg,
       route: '/doctor',
     ),
     _ServiceItem(
-      icon: Icons.hotel_rounded,
+      assetPath: 'assets/icons/hotel.png',
       title: 'Hotel',
       color: AppColors.hotel,
       bgColor: AppColors.hotelBg,
       route: '/hotel',
     ),
     _ServiceItem(
-      icon: Icons.directions_car_rounded,
+      assetPath: 'assets/icons/car.png',
       title: 'Ride',
       color: AppColors.ride,
       bgColor: AppColors.rideBg,
       route: '/ride',
     ),
     _ServiceItem(
-      icon: Icons.local_pharmacy_rounded,
+      assetPath: 'assets/icons/pharmacy.png',
       title: 'Pharmacy',
       color: AppColors.pharmacy,
       bgColor: AppColors.pharmacyBg,
       route: '/pharmacy',
     ),
     _ServiceItem(
-      icon: Icons.home_repair_service_rounded,
+      assetPath: 'assets/icons/repair-service.png',
       title: 'Home Help',
       color: AppColors.homeServices,
       bgColor: AppColors.homeServicesBg,
       route: '/home-services',
     ),
     _ServiceItem(
-      icon: Icons.local_laundry_service_rounded,
+      assetPath: 'assets/icons/laundry.png',
       title: 'Laundry',
       color: AppColors.laundry,
       bgColor: AppColors.laundryBg,
@@ -450,24 +459,41 @@ class _ServicesGrid extends StatelessWidget {
           final service = _services[index];
           return GestureDetector(
             onTap: () => context.push(service.route),
-            child: Column(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: service.bgColor,
-                    borderRadius: BorderRadius.circular(18),
+            child: ZoomIn(
+              delay: Duration(milliseconds: 140 * index),
+              duration: const Duration(milliseconds: 420),
+              child: Column(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: service.bgColor,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Image.asset(
+                        service.assetPath,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.widgets_rounded,
+                            color: service.color,
+                            size: 28,
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                  child: Icon(service.icon, color: service.color, size: 28),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  service.title,
-                  style: AppTextStyles.labelMedium,
-                  textAlign: TextAlign.center,
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  Text(
+                    service.title,
+                    style: AppTextStyles.labelMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -477,14 +503,14 @@ class _ServicesGrid extends StatelessWidget {
 }
 
 class _ServiceItem {
-  final IconData icon;
+  final String assetPath;
   final String title;
   final Color color;
   final Color bgColor;
   final String route;
 
   const _ServiceItem({
-    required this.icon,
+    required this.assetPath,
     required this.title,
     required this.color,
     required this.bgColor,
@@ -528,63 +554,67 @@ class _SpecialOffers extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: 14),
         itemBuilder: (context, index) {
           final offer = offers[index];
-          return Container(
-            width: 280,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: offer.color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: offer.color.withValues(alpha: 0.2)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: offer.color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(14),
+          return FadeInRight(
+            delay: Duration(milliseconds: 120 * index),
+            duration: const Duration(milliseconds: 420),
+            child: Container(
+              width: 280,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: offer.color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: offer.color.withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: offer.color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(offer.icon, color: offer.color, size: 26),
                   ),
-                  child: Icon(offer.icon, color: offer.color, size: 26),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: offer.color,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            offer.discount,
+                            style: AppTextStyles.badge.copyWith(fontSize: 11),
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          color: offer.color,
-                          borderRadius: BorderRadius.circular(6),
+                        const SizedBox(height: 8),
+                        Text(
+                          offer.title,
+                          style: AppTextStyles.labelLarge,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        child: Text(
-                          offer.discount,
-                          style: AppTextStyles.badge.copyWith(fontSize: 11),
+                        const SizedBox(height: 2),
+                        Text(
+                          offer.subtitle,
+                          style: AppTextStyles.caption,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        offer.title,
-                        style: AppTextStyles.labelLarge,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        offer.subtitle,
-                        style: AppTextStyles.caption,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
@@ -629,94 +659,99 @@ class _PopularRestaurants extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
               final restaurant = restaurants[index];
-              return GestureDetector(
-                onTap: () => context.push('/food/restaurant/${restaurant.id}'),
-                child: Container(
-                  width: 220,
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: AppSpacing.shadowSm,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 120,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColors.food.withValues(alpha: 0.3),
-                              AppColors.food.withValues(alpha: 0.1),
-                            ],
-                          ),
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(16),
-                          ),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            Icons.restaurant_rounded,
-                            size: 40,
-                            color: AppColors.food.withValues(alpha: 0.5),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              restaurant.name,
-                              style: AppTextStyles.labelLarge,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              restaurant.cuisine,
-                              style: AppTextStyles.caption,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.star_rounded,
-                                  size: 16,
-                                  color: AppColors.warning,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  restaurant.rating.toString(),
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    color: AppColors.dark,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                const Icon(
-                                  Icons.schedule_rounded,
-                                  size: 14,
-                                  color: AppColors.mediumGrey,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  restaurant.deliveryTime,
-                                  style: AppTextStyles.caption,
-                                ),
-                                const Spacer(),
-                                Text(
-                                  restaurant.deliveryFee,
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    color: AppColors.primary,
-                                  ),
-                                ),
+              return FadeInUp(
+                delay: Duration(milliseconds: 120 * index),
+                duration: const Duration(milliseconds: 420),
+                child: GestureDetector(
+                  onTap: () =>
+                      context.push('/food/restaurant/${restaurant.id}'),
+                  child: Container(
+                    width: 220,
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: AppSpacing.shadowSm,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 120,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.food.withValues(alpha: 0.3),
+                                AppColors.food.withValues(alpha: 0.1),
                               ],
                             ),
-                          ],
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16),
+                            ),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.restaurant_rounded,
+                              size: 40,
+                              color: AppColors.food.withValues(alpha: 0.5),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                restaurant.name,
+                                style: AppTextStyles.labelLarge,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                restaurant.cuisine,
+                                style: AppTextStyles.caption,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.star_rounded,
+                                    size: 16,
+                                    color: AppColors.warning,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    restaurant.rating.toString(),
+                                    style: AppTextStyles.labelSmall.copyWith(
+                                      color: AppColors.dark,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Icon(
+                                    Icons.schedule_rounded,
+                                    size: 14,
+                                    color: AppColors.mediumGrey,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    restaurant.deliveryTime,
+                                    style: AppTextStyles.caption,
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    restaurant.deliveryFee,
+                                    style: AppTextStyles.labelSmall.copyWith(
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -754,74 +789,78 @@ class _TopDoctors extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
               final doctor = doctors[index];
-              return GestureDetector(
-                onTap: () => context.push('/doctor/detail/${doctor.id}'),
-                child: Container(
-                  width: 260,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: AppSpacing.shadowSm,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 56,
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: AppColors.doctor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(16),
+              return FadeInRight(
+                delay: Duration(milliseconds: 120 * index),
+                duration: const Duration(milliseconds: 420),
+                child: GestureDetector(
+                  onTap: () => context.push('/doctor/detail/${doctor.id}'),
+                  child: Container(
+                    width: 260,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: AppSpacing.shadowSm,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: AppColors.doctor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Icon(
+                            Icons.person_rounded,
+                            color: AppColors.doctor,
+                            size: 28,
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.person_rounded,
-                          color: AppColors.doctor,
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              doctor.name,
-                              style: AppTextStyles.labelLarge,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              doctor.specialty,
-                              style: AppTextStyles.caption,
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.star_rounded,
-                                  size: 14,
-                                  color: AppColors.warning,
-                                ),
-                                const SizedBox(width: 3),
-                                Text(
-                                  '${doctor.rating}',
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    color: AppColors.dark,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                doctor.name,
+                                style: AppTextStyles.labelLarge,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                doctor.specialty,
+                                style: AppTextStyles.caption,
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.star_rounded,
+                                    size: 14,
+                                    color: AppColors.warning,
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  doctor.experience,
-                                  style: AppTextStyles.caption,
-                                ),
-                              ],
-                            ),
-                          ],
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    '${doctor.rating}',
+                                    style: AppTextStyles.labelSmall.copyWith(
+                                      color: AppColors.dark,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    doctor.experience,
+                                    style: AppTextStyles.caption,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -859,94 +898,98 @@ class _TrendingProducts extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
               final product = products[index];
-              return GestureDetector(
-                onTap: () => context.push('/shopping/product/${product.id}'),
-                child: Container(
-                  width: 180,
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: AppSpacing.shadowSm,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Stack(
-                        children: [
-                          Container(
-                            height: 150,
-                            decoration: BoxDecoration(
-                              color: AppColors.extraLightGrey,
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(16),
-                              ),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.shopping_bag_rounded,
-                                size: 44,
-                                color: AppColors.shopping.withValues(
-                                  alpha: 0.4,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: AppColors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: AppSpacing.shadowSm,
-                              ),
-                              child: const Icon(
-                                Icons.favorite_border_rounded,
-                                size: 16,
-                                color: AppColors.grey,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+              return FadeInUp(
+                delay: Duration(milliseconds: 120 * index),
+                duration: const Duration(milliseconds: 420),
+                child: GestureDetector(
+                  onTap: () => context.push('/shopping/product/${product.id}'),
+                  child: Container(
+                    width: 180,
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: AppSpacing.shadowSm,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Stack(
                           children: [
-                            Text(
-                              product.name,
-                              style: AppTextStyles.labelLarge,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              product.category,
-                              style: AppTextStyles.caption,
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Text(
-                                  '\$${product.price.toStringAsFixed(0)}',
-                                  style: AppTextStyles.priceSmall,
+                            Container(
+                              height: 150,
+                              decoration: BoxDecoration(
+                                color: AppColors.extraLightGrey,
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(16),
                                 ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  product.originalPrice != null
-                                      ? '\$${product.originalPrice!.toStringAsFixed(0)}'
-                                      : '',
-                                  style: AppTextStyles.priceOld,
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  Icons.shopping_bag_rounded,
+                                  size: 44,
+                                  color: AppColors.shopping.withValues(
+                                    alpha: 0.4,
+                                  ),
                                 ),
-                              ],
+                              ),
+                            ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: AppSpacing.shadowSm,
+                                ),
+                                child: const Icon(
+                                  Icons.favorite_border_rounded,
+                                  size: 16,
+                                  color: AppColors.grey,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                product.name,
+                                style: AppTextStyles.labelLarge,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                product.category,
+                                style: AppTextStyles.caption,
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Text(
+                                    '\$${product.price.toStringAsFixed(0)}',
+                                    style: AppTextStyles.priceSmall,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    product.originalPrice != null
+                                        ? '\$${product.originalPrice!.toStringAsFixed(0)}'
+                                        : '',
+                                    style: AppTextStyles.priceOld,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );

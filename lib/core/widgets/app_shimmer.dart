@@ -872,7 +872,7 @@ class _ShimmerGridCard extends StatelessWidget {
         color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
@@ -891,21 +891,41 @@ class _ShimmerGridCard extends StatelessWidget {
             flex: 3,
             child: Padding(
               padding: EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ShimmerBlock(width: double.infinity, height: 14),
-                  SizedBox(height: 8),
-                  ShimmerBlock(width: 110, height: 12, radius: 10),
-                  Spacer(),
-                  Row(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final compact = constraints.maxHeight < 72;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      ShimmerBlock(width: 70, height: 14, radius: 10),
-                      Spacer(),
-                      ShimmerBlock(width: 34, height: 34, radius: 10),
+                      ShimmerBlock(
+                        width: double.infinity,
+                        height: compact ? 12 : 14,
+                      ),
+                      SizedBox(height: compact ? 6 : 8),
+                      ShimmerBlock(
+                        width: compact ? 82 : 110,
+                        height: compact ? 10 : 12,
+                        radius: 10,
+                      ),
+                      const Spacer(),
+                      Row(
+                        children: [
+                          ShimmerBlock(
+                            width: compact ? 54 : 70,
+                            height: compact ? 12 : 14,
+                            radius: 10,
+                          ),
+                          const Spacer(),
+                          ShimmerBlock(
+                            width: compact ? 26 : 34,
+                            height: compact ? 26 : 34,
+                            radius: 10,
+                          ),
+                        ],
+                      ),
                     ],
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),

@@ -5,6 +5,8 @@ import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
 import '../../features/home/screens/home_screen.dart';
+import '../../features/messages/screens/chat_screen.dart';
+import '../../features/messages/screens/messages_screen.dart';
 import '../../features/shell/app_shell.dart';
 import '../../features/promotions/screens/promotions_screen.dart';
 import '../../features/cart/screens/cart_hub_screen.dart';
@@ -86,8 +88,8 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         routes: [
           GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
           GoRoute(
-            path: '/promotions',
-            builder: (context, state) => const PromotionsScreen(),
+            path: '/messages',
+            builder: (context, state) => const MessagesScreen(),
           ),
           GoRoute(
             path: '/cart',
@@ -102,6 +104,16 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
             builder: (context, state) => const ProfileScreen(),
           ),
         ],
+      ),
+
+      GoRoute(
+        path: '/promotions',
+        builder: (context, state) => const PromotionsScreen(),
+      ),
+      GoRoute(
+        path: '/messages/chat/:id',
+        builder: (context, state) =>
+            ChatScreen(conversationId: state.pathParameters['id']!),
       ),
 
       // Search

@@ -6,6 +6,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
@@ -310,6 +311,31 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                       ],
                     ),
                     const SizedBox(width: 20),
+                    SizedBox(
+                      width: 112,
+                      child: AppButton(
+                        text: 'Message',
+                        isSmall: true,
+                        isOutlined: true,
+                        color: AppColors.homeServices,
+                        onPressed: () => openConversation(
+                          context,
+                          moduleType: 'HOME_SERVICES',
+                          entityType: 'HOME_SERVICE_PROVIDER',
+                          entityId: provider.id,
+                          title: provider.name,
+                          subtitle: provider.title,
+                          avatarUrl: provider.imageUrl,
+                          accentColor: '#0F9D92',
+                          metadata: {
+                            'providerId': provider.id,
+                            'categorySlug': provider.categorySlug,
+                            'serviceModes': provider.bookingModes,
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: AppButton(
                         text: 'Book Service',

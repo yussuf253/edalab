@@ -6,6 +6,7 @@ router.get('/', (_req, res) => {
     res.json([
         { id: 'shopping', name: 'Shopping', active: true },
         { id: 'doctor', name: 'Doctor', active: true },
+        { id: 'home-services', name: 'Home Services', active: true },
         { id: 'hotel', name: 'Hotel', active: true },
         { id: 'ride', name: 'Ride', active: true },
         { id: 'pharmacy', name: 'Pharmacy', active: true },

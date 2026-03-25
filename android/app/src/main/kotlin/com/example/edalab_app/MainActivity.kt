@@ -1,4 +1,4 @@
-package com.example.edalab_app
+package com.edalab.app
 
 import io.flutter.embedding.android.FlutterActivity
 

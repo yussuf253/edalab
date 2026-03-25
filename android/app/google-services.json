@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "491118296425",
+    "firebase_url": "https://edalab-app-default-rtdb.firebaseio.com",
+    "project_id": "edalab-app",
+    "storage_bucket": "edalab-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:491118296425:android:395634678de33ee2d611f8",
+        "android_client_info": {
+          "package_name": "com.edalab.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "491118296425-9ehs3eho2uqfrfr31pm2acoqa35qh7ri.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.edalab.app",
+            "certificate_hash": "cb6ea14f212722c60565246038277de6feb71295"
+          }
+        },
+        {
+          "client_id": "491118296425-r97qmdg8s34caf47j5fbdlc2givf1dne.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.edalab.app",
+            "certificate_hash": "d4294d3009e6b084e0627460b1591c09ab3e80a9"
+          }
+        },
+        {
+          "client_id": "491118296425-h3bhq1blmadjnkgt21ijr7ln32chgla9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD43z5Xr1IhSQ-SNgBj95SAzN_C53EiymU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "491118296425-h3bhq1blmadjnkgt21ijr7ln32chgla9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

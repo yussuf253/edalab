@@ -1,4 +1,4 @@
-# edalab_app
+# edalab
 
 A new Flutter project.
 

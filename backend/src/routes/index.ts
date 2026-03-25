@@ -3,6 +3,7 @@ import appointmentsRoutes from './appointments.routes';
 import authRoutes from './auth.routes';
 import catalogRoutes from './catalog.routes';
 import modulesRoutes from './modules.routes';
+import messagesRoutes from './messages.routes';
 import notificationsRoutes from './notifications.routes';
 import ordersRoutes from './orders.routes';
 import promotionsRoutes from './promotions.routes';
@@ -21,6 +22,7 @@ router.get('/health', (_req, res) => {
 router.use('/auth', authRoutes);
 router.use('/catalog', catalogRoutes);
 router.use('/modules', modulesRoutes);
+router.use('/messages', messagesRoutes);
 router.use('/users', usersRoutes);
 router.use('/orders', ordersRoutes);
 router.use('/appointments', appointmentsRoutes);

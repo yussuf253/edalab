@@ -8,6 +8,7 @@ const appointments_routes_1 = __importDefault(require("./appointments.routes"));
 const auth_routes_1 = __importDefault(require("./auth.routes"));
 const catalog_routes_1 = __importDefault(require("./catalog.routes"));
 const modules_routes_1 = __importDefault(require("./modules.routes"));
+const messages_routes_1 = __importDefault(require("./messages.routes"));
 const notifications_routes_1 = __importDefault(require("./notifications.routes"));
 const orders_routes_1 = __importDefault(require("./orders.routes"));
 const promotions_routes_1 = __importDefault(require("./promotions.routes"));
@@ -23,6 +24,7 @@ router.get('/health', (_req, res) => {
 router.use('/auth', auth_routes_1.default);
 router.use('/catalog', catalog_routes_1.default);
 router.use('/modules', modules_routes_1.default);
+router.use('/messages', messages_routes_1.default);
 router.use('/users', users_routes_1.default);
 router.use('/orders', orders_routes_1.default);
 router.use('/appointments', appointments_routes_1.default);

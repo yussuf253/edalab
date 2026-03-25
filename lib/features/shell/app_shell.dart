@@ -24,10 +24,10 @@ class _AppShellState extends State<AppShell> {
       path: '/',
     ),
     _NavItem(
-      icon: Icons.local_offer_outlined,
-      activeIcon: Icons.local_offer_rounded,
-      label: 'Promos',
-      path: '/promotions',
+      icon: Icons.chat_bubble_outline_rounded,
+      activeIcon: Icons.chat_bubble_rounded,
+      label: 'Messages',
+      path: '/messages',
     ),
     _NavItem(
       icon: Icons.shopping_cart_outlined,

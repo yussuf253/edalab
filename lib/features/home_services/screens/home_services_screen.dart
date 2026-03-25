@@ -101,19 +101,18 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
               child: Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [AppColors.homeServices, Color(0xFF27B5A8)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
@@ -122,69 +121,51 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Trusted help, right at home',
-                                style: AppTextStyles.h3.copyWith(
+                                'Home services on demand',
+                                style: AppTextStyles.h4.copyWith(
                                   color: AppColors.white,
                                 ),
                               ),
-                              const SizedBox(height: 6),
+                              const SizedBox(height: 4),
                               Text(
-                                'Book cleaning, repairs, beauty, and technical support with verified professionals.',
+                                '${_providers.length} active professionals across ${_categories.length} service types.',
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: Colors.white.withValues(alpha: 0.86),
-                                  height: 1.45,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  'Book a Service',
+                                  style: AppTextStyles.labelMedium.copyWith(
+                                    color: AppColors.homeServices,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: 12),
                         Container(
-                          width: 68,
-                          height: 68,
+                          width: 64,
+                          height: 64,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.16),
-                            borderRadius: BorderRadius.circular(22),
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Icon(
-                            Icons.handyman_rounded,
+                            Icons.home_repair_service_rounded,
                             color: AppColors.white,
-                            size: 34,
+                            size: 32,
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _BannerChip(
-                          label: '${_categories.length} service types',
-                        ),
-                        _BannerChip(label: '${_providers.length} active pros'),
-                        const _BannerChip(label: 'Same-day slots'),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        const Expanded(
-                          child: _BannerStat(
-                            value: '15m',
-                            label: 'Avg response',
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: _BannerStat(
-                            value: _availableNow.length.toString(),
-                            label: 'Available now',
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        const Expanded(
-                          child: _BannerStat(value: '4.8', label: 'Avg rating'),
                         ),
                       ],
                     ),
@@ -195,7 +176,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
           ),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
               child: Row(
                 children: [
                   Text('Popular Categories', style: AppTextStyles.h3),
@@ -210,7 +191,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
             ),
           ),
           if (_isLoading)
-            const SliverSectionGridShimmer(itemCount: 6, childAspectRatio: 0.95)
+            const SliverSectionGridShimmer(itemCount: 6, childAspectRatio: 2.25)
           else
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -223,51 +204,61 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                       extra: {'label': category.name},
                     ),
                     child: Container(
-                      padding: const EdgeInsets.all(14),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(14),
                         boxShadow: AppSpacing.shadowSm,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
                           Container(
-                            width: 46,
-                            height: 46,
+                            width: 36,
+                            height: 36,
                             decoration: BoxDecoration(
                               color: category.color.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                             child: Icon(
                               category.icon,
                               color: category.color,
-                              size: 24,
+                              size: 18,
                             ),
                           ),
-                          const Spacer(),
-                          Text(
-                            category.name,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.labelLarge,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            category.description,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.grey,
-                              height: 1.35,
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  category.name,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${category.providerCount} available',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: category.color,
+                                    fontSize: 10.5,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${category.providerCount} available',
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: category.color,
-                            ),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: 18,
+                            color: AppColors.mediumGrey,
                           ),
                         ],
                       ),
@@ -276,9 +267,9 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                 }, childCount: _categories.length),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.95,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 2.25,
                 ),
               ),
             ),
@@ -386,57 +377,6 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        ],
-      ),
-    );
-  }
-}
-
-class _BannerChip extends StatelessWidget {
-  final String label;
-  const _BannerChip({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.labelSmall.copyWith(color: AppColors.white),
-      ),
-    );
-  }
-}
-
-class _BannerStat extends StatelessWidget {
-  final String value;
-  final String label;
-
-  const _BannerStat({required this.value, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Text(value, style: AppTextStyles.h4.copyWith(color: AppColors.white)),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: AppTextStyles.labelSmall.copyWith(
-              color: Colors.white.withValues(alpha: 0.85),
-            ),
-            textAlign: TextAlign.center,
-          ),
         ],
       ),
     );
