@@ -69,7 +69,13 @@ class _LaundryScreenState extends State<LaundryScreen> {
         title: const Text('Laundry'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
         ),
       ),
       body: SingleChildScrollView(

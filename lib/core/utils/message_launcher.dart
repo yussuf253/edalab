@@ -24,17 +24,26 @@ Future<void> openConversation(
   if (!context.mounted || !allowed) return;
 
   final auth = context.read<AuthProvider>();
-  final response = await ApiClient.post('/messages/conversations/start', {
+  final payload = <String, dynamic>{
     'userId': auth.user!.id,
     'moduleType': moduleType,
     'entityType': entityType,
     'entityId': entityId,
     'title': title,
-    'subtitle': subtitle,
-    'avatarUrl': avatarUrl,
-    'accentColor': accentColor,
     'metadata': metadata ?? const <String, dynamic>{},
-  });
+  };
+
+  if (subtitle != null && subtitle.trim().isNotEmpty) {
+    payload['subtitle'] = subtitle.trim();
+  }
+  if (avatarUrl != null && avatarUrl.trim().isNotEmpty) {
+    payload['avatarUrl'] = avatarUrl.trim();
+  }
+  if (accentColor != null && accentColor.trim().isNotEmpty) {
+    payload['accentColor'] = accentColor.trim();
+  }
+
+  final response = await ApiClient.post('/messages/conversations/start', payload);
 
   if (!context.mounted) return;
   final conversationId = response['id']?.toString();

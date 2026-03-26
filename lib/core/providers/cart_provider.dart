@@ -186,9 +186,13 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> submitModuleOrder(String userId, String moduleType) async {
+  Future<String?> submitModuleOrder(
+    String userId,
+    String moduleType, {
+    Map<String, dynamic>? orderMetadata,
+  }) async {
     final moduleItems = getModuleItems(moduleType);
-    if (moduleItems.isEmpty) return false;
+    if (moduleItems.isEmpty) return null;
 
     final sub = getModuleSubtotal(moduleType);
     final modTax = sub * 0.08;
@@ -199,15 +203,19 @@ class CartProvider extends ChangeNotifier {
           (item) => {
             'id': item.id,
             'name': item.name,
+            'brand': item.brand,
             'price': item.price,
             'quantity': item.quantity,
             'total': item.total,
+            'color': item.color,
+            'size': item.size,
+            'metadata': orderMetadata,
           },
         )
         .toList();
 
     try {
-      await ApiClient.post('/orders', {
+      final response = await ApiClient.post('/orders', {
         'userId': userId,
         'moduleType': moduleType.toUpperCase(),
         'subtotal': sub,
@@ -218,10 +226,10 @@ class CartProvider extends ChangeNotifier {
       });
 
       clearModuleCart(moduleType);
-      return true;
+      return response is Map ? response['id']?.toString() : null;
     } catch (e) {
       debugPrint('Failed to submit order: $e');
-      return false;
+      return null;
     }
   }
 

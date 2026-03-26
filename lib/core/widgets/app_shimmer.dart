@@ -867,70 +867,112 @@ class _ShimmerGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 4,
-            child: ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-              child: ColoredBox(
-                color: AppColors.white,
-                child: Center(
-                  child: ShimmerBlock(width: 86, height: 86, radius: 22),
-                ),
-              ),
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compactTile = constraints.maxHeight < 120;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(18),
           ),
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: EdgeInsets.all(12),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final compact = constraints.maxHeight < 72;
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ShimmerBlock(
-                        width: double.infinity,
-                        height: compact ? 12 : 14,
+          child: compactTile
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  child: Row(
+                    children: const [
+                      ShimmerBlock(width: 36, height: 36, radius: 10),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ShimmerBlock(
+                              width: double.infinity,
+                              height: 12,
+                              radius: 10,
+                            ),
+                            SizedBox(height: 6),
+                            ShimmerBlock(width: 76, height: 10, radius: 10),
+                          ],
+                        ),
                       ),
-                      SizedBox(height: compact ? 6 : 8),
-                      ShimmerBlock(
-                        width: compact ? 82 : 110,
-                        height: compact ? 10 : 12,
-                        radius: 10,
-                      ),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          ShimmerBlock(
-                            width: compact ? 54 : 70,
-                            height: compact ? 12 : 14,
-                            radius: 10,
-                          ),
-                          const Spacer(),
-                          ShimmerBlock(
-                            width: compact ? 26 : 34,
-                            height: compact ? 26 : 34,
-                            radius: 10,
-                          ),
-                        ],
-                      ),
+                      SizedBox(width: 8),
+                      ShimmerBlock(width: 14, height: 14, radius: 10),
                     ],
-                  );
-                },
-              ),
-            ),
-          ),
-        ],
-      ),
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(18),
+                        ),
+                        child: ColoredBox(
+                          color: AppColors.white,
+                          child: const Center(
+                            child: ShimmerBlock(
+                              width: 86,
+                              height: 86,
+                              radius: 22,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 3,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final compact = constraints.maxHeight < 72;
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ShimmerBlock(
+                                  width: double.infinity,
+                                  height: compact ? 12 : 14,
+                                ),
+                                SizedBox(height: compact ? 6 : 8),
+                                ShimmerBlock(
+                                  width: compact ? 82 : 110,
+                                  height: compact ? 10 : 12,
+                                  radius: 10,
+                                ),
+                                const Spacer(),
+                                Row(
+                                  children: [
+                                    ShimmerBlock(
+                                      width: compact ? 54 : 70,
+                                      height: compact ? 12 : 14,
+                                      radius: 10,
+                                    ),
+                                    const Spacer(),
+                                    ShimmerBlock(
+                                      width: compact ? 26 : 34,
+                                      height: compact ? 26 : 34,
+                                      radius: 10,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+        );
+      },
     );
   }
 }

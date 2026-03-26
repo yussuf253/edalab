@@ -128,18 +128,23 @@ class StatusBadge extends StatelessWidget {
   final String text;
   final Color color;
   final Color? textColor;
+  final bool isCompact;
 
   const StatusBadge({
     super.key,
     required this.text,
     required this.color,
     this.textColor,
+    this.isCompact = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: EdgeInsets.symmetric(
+        horizontal: isCompact ? 8 : 10,
+        vertical: isCompact ? 3 : 5,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
@@ -149,6 +154,7 @@ class StatusBadge extends StatelessWidget {
         style: AppTextStyles.labelSmall.copyWith(
           color: textColor ?? color,
           fontWeight: FontWeight.w700,
+          fontSize: isCompact ? 10.5 : null,
         ),
       ),
     );

@@ -67,40 +67,57 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
         }),
     ]);
     const history = [
-        ...orders.map((order) => ({
-            id: order.id,
-            entryType: 'ORDER',
-            userId: order.userId,
-            moduleType: order.moduleType,
-            moduleName: order.items[0]?.brand ??
-                order.items[0]?.name ??
-                order.moduleType.toLowerCase(),
-            status: order.status,
-            subtotal: (0, serializers_1.toNumber)(order.subtotal),
-            tax: (0, serializers_1.toNumber)(order.tax),
-            deliveryFee: (0, serializers_1.toNumber)(order.deliveryFee),
-            discount: (0, serializers_1.toNumber)(order.discount),
-            total: (0, serializers_1.toNumber)(order.total),
-            createdAt: order.createdAt,
-            updatedAt: order.updatedAt,
-            trackingRoute: order.moduleType === 'FOOD' &&
-                !['COMPLETED', 'CANCELLED', 'REFUNDED'].includes(order.status)
-                ? `/food/tracking/${order.id}`
-                : null,
-            items: order.items.map((item) => ({
-                id: item.id,
-                productId: item.productId,
-                externalRefId: item.externalRefId,
-                name: item.name,
-                brand: item.brand,
-                quantity: item.quantity,
-                price: (0, serializers_1.toNumber)(item.unitPrice),
-                total: (0, serializers_1.toNumber)(item.lineTotal),
-                color: item.color,
-                size: item.size,
-                metadata: item.metadata,
-            })),
-        })),
+        ...orders.map((order) => {
+            const firstMetadata = order.items[0]?.metadata && typeof order.items[0].metadata === 'object'
+                ? order.items[0].metadata
+                : null;
+            return {
+                id: order.id,
+                entryType: 'ORDER',
+                userId: order.userId,
+                moduleType: order.moduleType,
+                moduleName: order.items[0]?.brand ??
+                    order.items[0]?.name ??
+                    order.moduleType.toLowerCase(),
+                status: order.status,
+                subtotal: (0, serializers_1.toNumber)(order.subtotal),
+                tax: (0, serializers_1.toNumber)(order.tax),
+                deliveryFee: (0, serializers_1.toNumber)(order.deliveryFee),
+                discount: (0, serializers_1.toNumber)(order.discount),
+                total: (0, serializers_1.toNumber)(order.total),
+                createdAt: order.createdAt,
+                updatedAt: order.updatedAt,
+                address: typeof firstMetadata?.address === 'string'
+                    ? firstMetadata.address
+                    : null,
+                deliveryLabel: typeof firstMetadata?.deliveryLabel === 'string'
+                    ? firstMetadata.deliveryLabel
+                    : null,
+                deliveryEta: typeof firstMetadata?.deliveryEta === 'string'
+                    ? firstMetadata.deliveryEta
+                    : null,
+                paymentLabel: typeof firstMetadata?.paymentLabel === 'string'
+                    ? firstMetadata.paymentLabel
+                    : null,
+                trackingRoute: order.moduleType === 'FOOD' &&
+                    !['COMPLETED', 'CANCELLED', 'REFUNDED'].includes(order.status)
+                    ? `/food/tracking/${order.id}`
+                    : null,
+                items: order.items.map((item) => ({
+                    id: item.id,
+                    productId: item.productId,
+                    externalRefId: item.externalRefId,
+                    name: item.name,
+                    brand: item.brand,
+                    quantity: item.quantity,
+                    price: (0, serializers_1.toNumber)(item.unitPrice),
+                    total: (0, serializers_1.toNumber)(item.lineTotal),
+                    color: item.color,
+                    size: item.size,
+                    metadata: item.metadata,
+                })),
+            };
+        }),
         ...appointments.map((appointment) => ({
             id: appointment.id,
             entryType: 'APPOINTMENT',

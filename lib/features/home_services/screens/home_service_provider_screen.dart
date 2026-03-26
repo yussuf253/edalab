@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/providers/providers.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -22,11 +24,19 @@ class HomeServiceProviderScreen extends StatefulWidget {
 class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
   HomeServiceProviderModel? _provider;
   bool _isLoading = true;
+  bool _hasBookedService = false;
+  String? _bookingLookupUserId;
 
   @override
   void initState() {
     super.initState();
     _loadProvider();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadBookingAccess();
   }
 
   Future<void> _loadProvider() async {
@@ -45,6 +55,49 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadBookingAccess() async {
+    final userId = context.read<AuthProvider>().user?.id;
+    if (_bookingLookupUserId == userId) return;
+    _bookingLookupUserId = userId;
+
+    if (userId == null || userId.isEmpty) {
+      if (!mounted) return;
+      setState(() => _hasBookedService = false);
+      return;
+    }
+
+    try {
+      final response = await ApiClient.get('/orders/$userId', forceRefresh: true);
+      final orders = response is List ? response : const [];
+      final hasBooked = orders.any((entry) {
+        final order = Map<String, dynamic>.from(entry as Map);
+        final moduleType = order['moduleType']?.toString().toUpperCase() ?? '';
+        if (moduleType != 'HOME_SERVICES') return false;
+
+        final status = order['status']?.toString().toUpperCase() ?? '';
+        if (status == 'CANCELLED' || status == 'REFUNDED') return false;
+
+        final items = (order['items'] as List? ?? const []);
+        return items.any((item) {
+          final orderItem = Map<String, dynamic>.from(item as Map);
+          if (orderItem['id']?.toString() == widget.providerId) return true;
+
+          final metadata = orderItem['metadata'];
+          if (metadata is Map) {
+            return metadata['providerId']?.toString() == widget.providerId;
+          }
+          return false;
+        });
+      });
+
+      if (!mounted) return;
+      setState(() => _hasBookedService = hasBooked);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _hasBookedService = false);
     }
   }
 
@@ -283,7 +336,12 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
       bottomSheet: _isLoading || provider == null
           ? null
           : Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                16,
+                20,
+                16 + MediaQuery.of(context).padding.bottom,
+              ),
               decoration: BoxDecoration(
                 color: AppColors.white,
                 boxShadow: [
@@ -294,58 +352,83 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                   ),
                 ],
               ),
-              child: SafeArea(
-                child: Row(
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Starting From', style: AppTextStyles.caption),
-                        Text(
-                          '\$${provider.startingPrice.toInt()}',
-                          style: AppTextStyles.price.copyWith(
-                            color: AppColors.homeServices,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (!_hasBookedService) {
+                        return Row(
+                          children: [
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Starting From', style: AppTextStyles.caption),
+                                Text(
+                                  '\$${provider.startingPrice.toInt()}',
+                                  style: AppTextStyles.price.copyWith(
+                                    color: AppColors.homeServices,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: SizedBox(
+                                width: constraints.maxWidth,
+                                child: AppButton(
+                                  text: 'Book Service',
+                                  color: AppColors.homeServices,
+                                  onPressed: () => context.push(
+                                    '/home-services/book/${provider.id}',
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: AppButton(
+                              text: 'Message',
+                              isOutlined: true,
+                              color: AppColors.homeServices,
+                              onPressed: () => openConversation(
+                                context,
+                                moduleType: 'HOME_SERVICES',
+                                entityType: 'HOME_SERVICE_PROVIDER',
+                                entityId: provider.id,
+                                title: provider.name,
+                                subtitle: provider.title,
+                                avatarUrl: provider.imageUrl,
+                                accentColor: '#0F9D92',
+                                metadata: {
+                                  'providerId': provider.id,
+                                  'categorySlug': provider.categorySlug,
+                                  'serviceModes': provider.bookingModes,
+                                },
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(width: 20),
-                    SizedBox(
-                      width: 112,
-                      child: AppButton(
-                        text: 'Message',
-                        isSmall: true,
-                        isOutlined: true,
-                        color: AppColors.homeServices,
-                        onPressed: () => openConversation(
-                          context,
-                          moduleType: 'HOME_SERVICES',
-                          entityType: 'HOME_SERVICE_PROVIDER',
-                          entityId: provider.id,
-                          title: provider.name,
-                          subtitle: provider.title,
-                          avatarUrl: provider.imageUrl,
-                          accentColor: '#0F9D92',
-                          metadata: {
-                            'providerId': provider.id,
-                            'categorySlug': provider.categorySlug,
-                            'serviceModes': provider.bookingModes,
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: AppButton(
-                        text: 'Book Service',
-                        color: AppColors.homeServices,
-                        onPressed: () =>
-                            context.push('/home-services/book/${provider.id}'),
-                      ),
-                    ),
-                  ],
-                ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: AppButton(
+                              text: 'Book Again',
+                              color: AppColors.homeServices,
+                              onPressed: () => context.push(
+                                '/home-services/book/${provider.id}',
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
     );

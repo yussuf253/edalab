@@ -193,7 +193,13 @@ class _DoctorScreenState extends State<DoctorScreen> {
         title: const Text('Home Care & Doctors'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
         ),
       ),
       body: CustomScrollView(

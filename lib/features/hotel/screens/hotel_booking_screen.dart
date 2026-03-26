@@ -234,7 +234,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                 if (!context.mounted || !allowed) return;
 
                 try {
-                  await ApiClient.post('/orders', {
+                  final order = await ApiClient.post('/orders', {
                     'userId': auth.user!.id,
                     'moduleType': 'HOTEL',
                     'subtotal': roomRate,
@@ -260,17 +260,51 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                     ],
                   });
                   if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Hotel booked successfully! 🎉'),
-                      backgroundColor: AppColors.success,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
+                  context.push(
+                    '/checkout/success',
+                    extra: {
+                      'orderId': order is Map ? order['id'] : null,
+                      'amount': total,
+                      'payment': 'Pay at hotel',
+                      'delivery': 'Booking confirmed',
+                      'moduleName': h.name,
+                      'itemCount': 1,
+                      'address': defaultAddress == null
+                          ? null
+                          : '${defaultAddress.address}${defaultAddress.city != null ? ', ${defaultAddress.city}' : ''}',
+                      'trackingRoute':
+                          order is Map && order['id'] != null
+                          ? '/hotel/order/${order['id']}'
+                          : '/hotel',
+                      'trackingExtra': {
+                        'id': order is Map ? order['id'] : null,
+                        'moduleType': 'HOTEL',
+                        'moduleName': h.name,
+                        'status': 'CONFIRMED',
+                        'subtotal': roomRate,
+                        'tax': tax,
+                        'deliveryFee': serviceFee,
+                        'total': total,
+                        'createdAt': DateTime.now().toIso8601String(),
+                        'items': [
+                          {
+                            'name': 'Standard Room',
+                            'quantity': nights,
+                            'price': roomRate,
+                            'total': total,
+                            'metadata': {
+                              'hotelId': h.id,
+                              'hotelName': h.name,
+                              'checkInAt': checkIn.toIso8601String(),
+                              'checkOutAt': checkOut.toIso8601String(),
+                              'guestCount': 2,
+                              'nights': nights,
+                            },
+                          },
+                        ],
+                      },
+                    },
                   );
-                  context.go('/');
                 } catch (e) {
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(

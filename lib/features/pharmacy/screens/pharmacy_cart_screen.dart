@@ -159,7 +159,14 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
                               message: 'Please log in to continue to checkout.',
                             );
                             if (!context.mounted || !allowed) return;
-                            context.push('/checkout');
+                            context.push(
+                              '/checkout',
+                              extra: {
+                                'moduleType': 'pharmacy',
+                                'moduleName': 'Pharmacy Order',
+                                'source': 'pharmacy_cart',
+                              },
+                            );
                           },
                         ),
                       ],

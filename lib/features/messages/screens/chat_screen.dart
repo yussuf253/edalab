@@ -8,7 +8,6 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
-import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -207,7 +206,12 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  padding: EdgeInsets.fromLTRB(
+                    16,
+                    12,
+                    16,
+                    12 + MediaQuery.of(context).padding.bottom,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     boxShadow: [
@@ -218,30 +222,48 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ],
                   ),
-                  child: SafeArea(
-                    top: false,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _messageController,
-                            minLines: 1,
-                            maxLines: 4,
-                            decoration: const InputDecoration(
-                              hintText: 'Type your message...',
-                            ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _messageController,
+                          minLines: 1,
+                          maxLines: 4,
+                          decoration: const InputDecoration(
+                            hintText: 'Type your message...',
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        AppButton(
-                          text: 'Send',
-                          width: 90,
-                          isSmall: true,
-                          isLoading: _isSending,
-                          onPressed: _sendMessage,
+                      ),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: IconButton(
+                            onPressed: _isSending ? null : _sendMessage,
+                            icon: _isSending
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.2,
+                                      color: AppColors.white,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.send_rounded,
+                                    color: AppColors.white,
+                                    size: 20,
+                                  ),
+                          ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
               ],

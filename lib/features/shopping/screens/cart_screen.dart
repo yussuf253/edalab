@@ -250,7 +250,14 @@ class _CartScreenState extends State<CartScreen> {
                             message: 'Please log in to continue to checkout.',
                           );
                           if (!context.mounted || !allowed) return;
-                          context.push('/checkout');
+                          context.push(
+                            '/checkout',
+                            extra: {
+                              'moduleType': 'shopping',
+                              'moduleName': 'Shopping Order',
+                              'source': 'shopping_cart',
+                            },
+                          );
                         },
                       ),
                     ],

@@ -66,7 +66,13 @@ class _HotelScreenState extends State<HotelScreen> {
         title: const Text('Hotels'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
         ),
       ),
       body: CustomScrollView(

@@ -4,15 +4,15 @@ class AppColors {
   AppColors._();
 
   // Primary Brand Colors
-  static const Color primary = Color(0xFF6C63FF);
-  static const Color primaryLight = Color(0xFF9D97FF);
-  static const Color primaryDark = Color(0xFF4A42E8);
-  static const Color primarySurface = Color(0xFFF0EFFF);
+  static const Color primary = Color(0xFF039D55);
+  static const Color primaryLight = Color(0xFF32BB79);
+  static const Color primaryDark = Color(0xFF027A42);
+  static const Color primarySurface = Color(0xFFE8FBF1);
 
   // Secondary Colors
-  static const Color secondary = Color(0xFF00D2FF);
-  static const Color secondaryLight = Color(0xFF66E3FF);
-  static const Color secondaryDark = Color(0xFF00A3CC);
+  static const Color secondary = Color(0xFF04D472);
+  static const Color secondaryLight = Color(0xFF52E59D);
+  static const Color secondaryDark = Color(0xFF03B261);
 
   // Accent Colors
   static const Color accent = Color(0xFFFF6B6B);
@@ -35,8 +35,8 @@ class AppColors {
   static const Color grey = Color(0xFF6B7280);
   static const Color mediumGrey = Color(0xFF9CA3AF);
   static const Color lightGrey = Color(0xFFD1D5DB);
-  static const Color extraLightGrey = Color(0xFFF3F4F6);
-  static const Color background = Color(0xFFF8F9FE);
+  static const Color extraLightGrey = Color(0xFFF2F6F3);
+  static const Color background = Color(0xFFF7FBF8);
   static const Color white = Color(0xFFFFFFFF);
   static const Color surface = Color(0xFFFFFFFF);
 
@@ -62,13 +62,13 @@ class AppColors {
 
   // Gradient
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [primary, Color(0xFF8B83FF)],
+    colors: [primary, Color(0xFF04D472)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient secondaryGradient = LinearGradient(
-    colors: [secondary, Color(0xFF00F5A0)],
+    colors: [secondary, Color(0xFF52E59D)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

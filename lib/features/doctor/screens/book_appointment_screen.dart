@@ -439,7 +439,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       3,
                       int.parse(_dates[_selectedDate].$2),
                     );
-                    await ApiClient.post('/appointments', {
+                    final appointment = await ApiClient.post('/appointments', {
                       'userId': auth.user!.id,
                       'doctorId': doctor.id,
                       'date': selectedDate.toIso8601String(),
@@ -456,56 +456,23 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                           : 'Care service booked via EdaLab Super App',
                     });
                     if (!context.mounted) return;
-
-                    showDialog(
-                      context: context,
-                      builder: (dialogContext) => AlertDialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 70,
-                              height: 70,
-                              decoration: const BoxDecoration(
-                                color: AppColors.successLight,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.check_rounded,
-                                color: AppColors.success,
-                                size: 40,
-                              ),
-                            ),
-                            const SizedBox(height: 20),
-                            Text(
-                              doctor.isDoctorProvider
-                                  ? 'Booking Confirmed!'
-                                  : 'Care Service Booked!',
-                              style: AppTextStyles.h3,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Your appointment has been scheduled successfully.',
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.grey,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 20),
-                            AppButton(
-                              text: 'Done',
-                              color: AppColors.doctor,
-                              onPressed: () {
-                                Navigator.pop(dialogContext);
-                                context.go('/');
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
+                    context.push(
+                      '/checkout/success',
+                      extra: {
+                        'orderId': appointment is Map ? appointment['id'] : null,
+                        'amount': doctor.consultationFee,
+                        'payment': 'Pay on confirmation',
+                        'delivery': doctor.isDoctorProvider
+                            ? 'Appointment scheduled'
+                            : 'Care service scheduled',
+                        'moduleName': doctor.isDoctorProvider
+                            ? doctor.name
+                            : (doctor.services.isNotEmpty
+                                  ? doctor.services.first
+                                  : doctor.name),
+                        'itemCount': 1,
+                        'trackingRoute': '/doctor/appointments',
+                      },
                     );
                   } catch (error) {
                     if (!context.mounted) return;

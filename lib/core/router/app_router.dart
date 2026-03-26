@@ -14,6 +14,7 @@ import '../../features/orders/screens/orders_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/shopping/screens/shopping_screen.dart';
 import '../../features/shopping/screens/product_detail_screen.dart';
+import '../../features/shopping/screens/shopping_order_detail_screen.dart';
 import '../../features/shopping/screens/shopping_store_detail_screen.dart';
 import '../../features/shopping/screens/cart_screen.dart';
 import '../../features/shopping/screens/wishlist_screen.dart';
@@ -31,11 +32,13 @@ import '../../features/doctor/screens/my_appointments_screen.dart';
 import '../../features/hotel/screens/hotel_screen.dart';
 import '../../features/hotel/screens/hotel_detail_screen.dart';
 import '../../features/hotel/screens/hotel_booking_screen.dart';
+import '../../features/hotel/screens/hotel_order_detail_screen.dart';
 import '../../features/ride/screens/ride_screen.dart';
 import '../../features/ride/screens/ride_booking_screen.dart';
 import '../../features/ride/screens/ride_tracking_screen.dart';
 import '../../features/pharmacy/screens/pharmacy_screen.dart';
 import '../../features/pharmacy/screens/medicine_detail_screen.dart';
+import '../../features/pharmacy/screens/pharmacy_order_detail_screen.dart';
 import '../../features/pharmacy/screens/pharmacy_cart_screen.dart';
 import '../../features/grocery/screens/grocery_screen.dart';
 import '../../features/grocery/screens/grocery_category_screen.dart';
@@ -45,6 +48,7 @@ import '../../features/home_services/screens/home_services_screen.dart';
 import '../../features/home_services/screens/home_service_category_screen.dart';
 import '../../features/home_services/screens/home_service_provider_screen.dart';
 import '../../features/home_services/screens/home_service_booking_screen.dart';
+import '../../features/home_services/screens/home_service_appointment_detail_screen.dart';
 import '../../features/laundry/screens/laundry_screen.dart';
 import '../../features/laundry/screens/laundry_order_screen.dart';
 import '../../features/laundry/screens/laundry_tracking_screen.dart';
@@ -150,6 +154,15 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         path: '/shopping/wishlist',
         builder: (context, state) => const WishlistScreen(),
       ),
+      GoRoute(
+        path: '/shopping/order/:id',
+        builder: (context, state) => ShoppingOrderDetailScreen(
+          orderId: state.pathParameters['id']!,
+          order: state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : null,
+        ),
+      ),
 
       // Food
       GoRoute(path: '/food', builder: (context, state) => const FoodScreen()),
@@ -249,6 +262,15 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         builder: (context, state) =>
             HotelBookingScreen(hotelId: state.pathParameters['id']!),
       ),
+      GoRoute(
+        path: '/hotel/order/:id',
+        builder: (context, state) => HotelOrderDetailScreen(
+          bookingId: state.pathParameters['id']!,
+          booking: state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : null,
+        ),
+      ),
 
       // Ride
       GoRoute(path: '/ride', builder: (context, state) => const RideScreen()),
@@ -279,6 +301,15 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
       GoRoute(
         path: '/pharmacy/cart',
         builder: (context, state) => const PharmacyCartScreen(),
+      ),
+      GoRoute(
+        path: '/pharmacy/order/:id',
+        builder: (context, state) => PharmacyOrderDetailScreen(
+          orderId: state.pathParameters['id']!,
+          order: state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : null,
+        ),
       ),
 
       // Grocery
@@ -324,6 +355,15 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         path: '/home-services/book/:id',
         builder: (context, state) =>
             HomeServiceBookingScreen(providerId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/home-services/booking/:id',
+        builder: (context, state) => HomeServiceAppointmentDetailScreen(
+          orderId: state.pathParameters['id']!,
+          initialOrder: state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : null,
+        ),
       ),
 
       // Laundry

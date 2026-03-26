@@ -19,6 +19,7 @@ class OrderSuccessScreen extends StatelessWidget {
     final itemCount = orderData?['itemCount'] as int? ?? 0;
     final address = orderData?['address'] as String?;
     final trackingRoute = orderData?['trackingRoute'] as String? ?? '/orders';
+    final trackingExtra = orderData?['trackingExtra'];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -84,7 +85,7 @@ class OrderSuccessScreen extends StatelessWidget {
               const Spacer(),
               AppButton(
                 text: 'Track Order',
-                onPressed: () => context.go(trackingRoute),
+                onPressed: () => context.go(trackingRoute, extra: trackingExtra),
               ),
               const SizedBox(height: 12),
               TextButton(

@@ -635,7 +635,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                   'moduleName': serviceOptions[selectedService],
                                   'itemCount': 1,
                                   'address': addressText,
-                                  'trackingRoute': '/orders',
+                                  'trackingRoute':
+                                      '/home-services/booking/${order['id']}',
                                 },
                               );
                             },

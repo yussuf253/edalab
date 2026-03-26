@@ -54,7 +54,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final authProvider = context.watch<AuthProvider>();
 
     final addresses = authProvider.user?.addresses ?? [];
-    final moduleType = widget.checkoutData?['moduleType'] as String?;
+    final rawModuleType = widget.checkoutData?['moduleType'] as String?;
+    final moduleType = rawModuleType?.toLowerCase();
     final moduleItems = moduleType == null
         ? cartProvider.items
         : cartProvider.getModuleItems(moduleType);
@@ -572,18 +573,36 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   final modules = moduleType == null
                       ? cartProvider.items.map((e) => e.moduleType).toSet()
                       : {moduleType};
-                  final orderId =
-                      'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
+                  String? primaryOrderId;
                   for (var m in modules) {
-                    await cartProvider.submitModuleOrder(
+                    final createdOrderId = await cartProvider.submitModuleOrder(
                       authProvider.user!.id,
                       m,
+                      orderMetadata: {
+                        'address': selectedAddress == null
+                            ? null
+                            : '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
+                        'addressLabel': selectedAddress?.label,
+                        'deliveryLabel':
+                            _deliveryOptions[_selectedDeliveryOption].$1,
+                        'deliveryEta':
+                            _deliveryOptions[_selectedDeliveryOption].$2,
+                        'paymentLabel': paymentName,
+                      },
                     );
+                    if (moduleType == null) {
+                      primaryOrderId ??= createdOrderId;
+                    } else if (m == moduleType) {
+                      primaryOrderId = createdOrderId;
+                    }
                   }
                   if (moduleType == null) {
                     cartProvider.clearCart();
                   }
                   if (!context.mounted) return;
+                  final orderId =
+                      primaryOrderId ??
+                      'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
                   context.push(
                     '/checkout/success',
                     extra: {
@@ -599,9 +618,44 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         0,
                         (sum, item) => sum + item.quantity,
                       ),
-                      'trackingRoute': moduleType == 'food'
-                          ? '/food/tracking/$orderId'
-                          : '/orders',
+                      'trackingRoute': _trackingRouteForModule(
+                        moduleType,
+                        orderId,
+                      ),
+                      'trackingExtra': {
+                        'id': orderId,
+                        'moduleType': moduleType?.toUpperCase(),
+                        'moduleName': moduleName ?? _moduleLabel(moduleType),
+                        'status': 'PENDING',
+                        'subtotal': subtotal,
+                        'tax': tax,
+                        'deliveryFee': shipping,
+                        'discount': discount,
+                        'total': total,
+                        'createdAt': DateTime.now().toIso8601String(),
+                        'paymentLabel': paymentName,
+                        'deliveryLabel':
+                            _deliveryOptions[_selectedDeliveryOption].$1,
+                        'deliveryEta':
+                            _deliveryOptions[_selectedDeliveryOption].$2,
+                        'address': selectedAddress == null
+                            ? null
+                            : '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
+                        'items': moduleItems
+                            .map(
+                              (item) => {
+                                'id': item.id,
+                                'name': item.name,
+                                'brand': item.brand,
+                                'price': item.price,
+                                'quantity': item.quantity,
+                                'total': item.total,
+                                'color': item.color,
+                                'size': item.size,
+                              },
+                            )
+                            .toList(),
+                      },
                     },
                   );
                 }
@@ -612,6 +666,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ),
       ),
     );
+  }
+
+  String _trackingRouteForModule(String? moduleType, String orderId) {
+    switch (moduleType?.toLowerCase()) {
+      case 'food':
+        return '/food/tracking/$orderId';
+      case 'shopping':
+        return '/shopping/order/$orderId';
+      case 'hotel':
+        return '/hotel/order/$orderId';
+      case 'pharmacy':
+        return '/pharmacy/order/$orderId';
+      case 'laundry':
+        return '/laundry/tracking/$orderId';
+      default:
+        return '/orders';
+    }
   }
 }
 
