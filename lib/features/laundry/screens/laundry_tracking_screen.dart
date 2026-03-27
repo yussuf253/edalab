@@ -41,7 +41,9 @@ class LaundryTrackingScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [AppColors.laundry, Color(0xFFBB8FCE)]),
+                gradient: const LinearGradient(
+                  colors: [AppColors.laundry, AppColors.secondaryLight],
+                ),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(

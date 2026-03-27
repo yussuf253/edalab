@@ -41,24 +41,24 @@ class AppColors {
   static const Color surface = Color(0xFFFFFFFF);
 
   // Module Colors
-  static const Color shopping = Color(0xFFFF6B6B);
-  static const Color shoppingBg = Color(0xFFFFF0F0);
-  static const Color food = Color(0xFFFF8C42);
-  static const Color foodBg = Color(0xFFFFF3EB);
-  static const Color grocery = Color(0xFF2ED573);
-  static const Color groceryBg = Color(0xFFE8FAF0);
-  static const Color homeServices = Color(0xFF0F9D92);
-  static const Color homeServicesBg = Color(0xFFE8FAF7);
-  static const Color ride = Color(0xFF6C63FF);
-  static const Color rideBg = Color(0xFFF0EFFF);
-  static const Color hotel = Color(0xFF00D2FF);
-  static const Color hotelBg = Color(0xFFE6FAFF);
-  static const Color doctor = Color(0xFF3498DB);
-  static const Color doctorBg = Color(0xFFEBF5FB);
-  static const Color pharmacy = Color(0xFF00B894);
-  static const Color pharmacyBg = Color(0xFFE6FFF9);
-  static const Color laundry = Color(0xFF9B59B6);
-  static const Color laundryBg = Color(0xFFF5EEFF);
+  static const Color shopping = Color(0xFF199A60);
+  static const Color shoppingBg = Color(0xFFEAF8F0);
+  static const Color food = Color(0xFF3BAA5C);
+  static const Color foodBg = Color(0xFFEDF8EF);
+  static const Color grocery = Color(0xFF04D472);
+  static const Color groceryBg = Color(0xFFEAFBF2);
+  static const Color homeServices = Color(0xFF1A9A77);
+  static const Color homeServicesBg = Color(0xFFEAF8F3);
+  static const Color ride = Color(0xFF1D9070);
+  static const Color rideBg = Color(0xFFE9F7F2);
+  static const Color hotel = Color(0xFF2B9D73);
+  static const Color hotelBg = Color(0xFFEAF8F2);
+  static const Color doctor = Color(0xFF188E68);
+  static const Color doctorBg = Color(0xFFE8F7F0);
+  static const Color pharmacy = Color(0xFF03B261);
+  static const Color pharmacyBg = Color(0xFFE9FBF3);
+  static const Color laundry = Color(0xFF4A9C73);
+  static const Color laundryBg = Color(0xFFEDF8F2);
 
   // Gradient
   static const LinearGradient primaryGradient = LinearGradient(

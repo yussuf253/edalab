@@ -108,7 +108,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [AppColors.doctor, Color(0xFF5DADE2)],
+                        colors: [AppColors.doctor, AppColors.secondaryLight],
                       ),
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [

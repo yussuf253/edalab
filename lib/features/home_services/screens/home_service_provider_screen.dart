@@ -132,7 +132,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [AppColors.homeServices, Color(0xFF27B5A8)],
+                        colors: [AppColors.homeServices, AppColors.secondaryLight],
                       ),
                       borderRadius: BorderRadius.circular(24),
                     ),

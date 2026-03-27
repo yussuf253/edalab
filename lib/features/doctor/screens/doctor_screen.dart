@@ -42,7 +42,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
       label: 'All Care',
       subtitle: 'Doctors and visits',
       icon: Icons.favorite_border_rounded,
-      color: Color(0xFF2563EB),
+      color: AppColors.doctor,
       keywords: [],
     ),
     _CareCategory(
@@ -50,7 +50,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
       label: 'Nursing',
       subtitle: 'Wound care',
       icon: Icons.medical_services_rounded,
-      color: Color(0xFFF97316),
+      color: AppColors.primary,
       keywords: ['nursing', 'wound', 'injection', 'elderly'],
     ),
     _CareCategory(
@@ -58,7 +58,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
       label: 'Physiotherapy',
       subtitle: 'Mobility rehab',
       icon: Icons.accessibility_new_rounded,
-      color: Color(0xFF10B981),
+      color: AppColors.secondary,
       keywords: ['physio', 'therapy', 'rehab', 'kine', 'back pain'],
     ),
     _CareCategory(
@@ -66,7 +66,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
       label: 'Mental Care',
       subtitle: 'Stress support',
       icon: Icons.psychology_rounded,
-      color: Color(0xFF8B5CF6),
+      color: AppColors.homeServices,
       keywords: ['mental', 'stress', 'counseling', 'emotional'],
     ),
     _CareCategory(
@@ -74,7 +74,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
       label: 'Child Care',
       subtitle: 'Pediatric follow-up',
       icon: Icons.child_care_rounded,
-      color: Color(0xFFEF4444),
+      color: AppColors.shopping,
       keywords: ['pediatric', 'child', 'vaccination'],
     ),
     _CareCategory(
@@ -82,7 +82,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
       label: 'Specialists',
       subtitle: 'Heart and skin',
       icon: Icons.local_hospital_rounded,
-      color: Color(0xFF0EA5E9),
+      color: AppColors.ride,
       keywords: ['cardio', 'derma', 'neuro', 'ortho', 'specialist'],
     ),
     _CareCategory(
@@ -90,7 +90,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
       label: 'Elderly Care',
       subtitle: 'Home monitoring',
       icon: Icons.elderly_rounded,
-      color: Color(0xFF14B8A6),
+      color: AppColors.hotel,
       keywords: ['elderly', 'home nursing', 'monitoring'],
     ),
     _CareCategory(
@@ -98,7 +98,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
       label: 'Recovery',
       subtitle: 'Post-op support',
       icon: Icons.healing_rounded,
-      color: Color(0xFFF59E0B),
+      color: AppColors.food,
       keywords: ['rehab', 'recovery', 'wound', 'post', 'pain'],
     ),
   ];
@@ -231,7 +231,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                 ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppColors.doctor, Color(0xFF4F86F7)],
+                    colors: [AppColors.doctor, AppColors.secondaryLight],
                   ),
                   borderRadius: BorderRadius.circular(18),
                 ),

@@ -24,7 +24,7 @@ class HomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                 child: FadeInLeft(
-                  duration: const Duration(milliseconds: 500),
+                  duration: const Duration(milliseconds: 240),
                   child: Row(
                     children: [
                       // Avatar
@@ -108,25 +108,12 @@ class HomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                 child: FadeInUp(
-                  delay: const Duration(milliseconds: 80),
-                  duration: const Duration(milliseconds: 520),
+                  delay: const Duration(milliseconds: 20),
+                  duration: const Duration(milliseconds: 240),
                   child: AppSearchBar(
                     hint: 'Search services, products, restaurants...',
                     readOnly: true,
                     onTap: () => context.push('/search'),
-                    suffix: Container(
-                      margin: const EdgeInsets.all(6),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        gradient: AppColors.primaryGradient,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.tune_rounded,
-                        color: AppColors.white,
-                        size: 18,
-                      ),
-                    ),
                   ),
                 ),
               ),
@@ -137,8 +124,8 @@ class HomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                 child: FadeInUp(
-                  delay: const Duration(milliseconds: 150),
-                  duration: const Duration(milliseconds: 560),
+                  delay: const Duration(milliseconds: 40),
+                  duration: const Duration(milliseconds: 240),
                   child: _PromoBanner(),
                 ),
               ),
@@ -149,8 +136,8 @@ class HomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
                 child: FadeInUp(
-                  delay: const Duration(milliseconds: 220),
-                  duration: const Duration(milliseconds: 560),
+                  delay: const Duration(milliseconds: 60),
+                  duration: const Duration(milliseconds: 240),
                   child: Column(
                     children: [
                       const SectionHeader(
@@ -170,8 +157,8 @@ class HomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
                 child: FadeInUp(
-                  delay: const Duration(milliseconds: 300),
-                  duration: const Duration(milliseconds: 560),
+                  delay: const Duration(milliseconds: 80),
+                  duration: const Duration(milliseconds: 240),
                   child: Column(
                     children: [
                       SectionHeader(
@@ -192,8 +179,8 @@ class HomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
                 child: FadeInUp(
-                  delay: const Duration(milliseconds: 380),
-                  duration: const Duration(milliseconds: 560),
+                  delay: const Duration(milliseconds: 100),
+                  duration: const Duration(milliseconds: 240),
                   child: Column(
                     children: [
                       SectionHeader(
@@ -214,8 +201,8 @@ class HomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
                 child: FadeInUp(
-                  delay: const Duration(milliseconds: 460),
-                  duration: const Duration(milliseconds: 560),
+                  delay: const Duration(milliseconds: 120),
+                  duration: const Duration(milliseconds: 240),
                   child: Column(
                     children: [
                       SectionHeader(
@@ -236,8 +223,8 @@ class HomeScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 28, 0, 24),
                 child: FadeInUp(
-                  delay: const Duration(milliseconds: 540),
-                  duration: const Duration(milliseconds: 560),
+                  delay: const Duration(milliseconds: 140),
+                  duration: const Duration(milliseconds: 240),
                   child: Column(
                     children: [
                       SectionHeader(
@@ -363,43 +350,39 @@ class _ServicesGrid extends StatelessWidget {
           final service = _services[index];
           return GestureDetector(
             onTap: () => context.push(service.route),
-            child: ZoomIn(
-              delay: Duration(milliseconds: 140 * index),
-              duration: const Duration(milliseconds: 420),
-              child: Column(
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: AppColors.secondary.withValues(alpha: 0.14),
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Image.asset(
-                        service.assetPath,
-                        fit: BoxFit.contain,
-                        color: service.color,
-                        colorBlendMode: BlendMode.srcIn,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(
-                            Icons.widgets_rounded,
-                            color: service.color,
-                            size: 28,
-                          );
-                        },
-                      ),
+            child: Column(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Image.asset(
+                      service.assetPath,
+                      fit: BoxFit.contain,
+                      color: AppColors.primary,
+                      colorBlendMode: BlendMode.srcIn,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.widgets_rounded,
+                          color: AppColors.primary,
+                          size: 28,
+                        );
+                      },
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    service.title,
-                    style: AppTextStyles.labelMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  service.title,
+                  style: AppTextStyles.labelMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           );
         },
@@ -460,10 +443,7 @@ class _SpecialOffers extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: 14),
         itemBuilder: (context, index) {
           final offer = offers[index];
-          return FadeInRight(
-            delay: Duration(milliseconds: 120 * index),
-            duration: const Duration(milliseconds: 420),
-            child: Container(
+          return Container(
               width: 280,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -521,7 +501,6 @@ class _SpecialOffers extends StatelessWidget {
                   ),
                 ],
               ),
-            ),
           );
         },
       ),
@@ -565,10 +544,7 @@ class _PopularRestaurants extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
               final restaurant = restaurants[index];
-              return FadeInUp(
-                delay: Duration(milliseconds: 120 * index),
-                duration: const Duration(milliseconds: 420),
-                child: GestureDetector(
+              return GestureDetector(
                   onTap: () =>
                       context.push('/food/restaurant/${restaurant.id}'),
                   child: Container(
@@ -659,7 +635,6 @@ class _PopularRestaurants extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
               );
             },
           ),
@@ -695,10 +670,7 @@ class _TopDoctors extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
               final doctor = doctors[index];
-              return FadeInRight(
-                delay: Duration(milliseconds: 120 * index),
-                duration: const Duration(milliseconds: 420),
-                child: GestureDetector(
+              return GestureDetector(
                   onTap: () => context.push('/doctor/detail/${doctor.id}'),
                   child: Container(
                     width: 260,
@@ -768,7 +740,6 @@ class _TopDoctors extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
               );
             },
           ),
@@ -804,10 +775,7 @@ class _TrendingProducts extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(width: 14),
             itemBuilder: (context, index) {
               final product = products[index];
-              return FadeInUp(
-                delay: Duration(milliseconds: 120 * index),
-                duration: const Duration(milliseconds: 420),
-                child: GestureDetector(
+              return GestureDetector(
                   onTap: () => context.push('/shopping/product/${product.id}'),
                   child: Container(
                     width: 180,
@@ -897,7 +865,6 @@ class _TrendingProducts extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
               );
             },
           ),

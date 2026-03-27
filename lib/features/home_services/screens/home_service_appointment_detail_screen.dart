@@ -181,7 +181,7 @@ class _HomeServiceAppointmentDetailScreenState
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [AppColors.homeServices, Color(0xFF27B5A8)],
+                        colors: [AppColors.homeServices, AppColors.secondaryLight],
                       ),
                       borderRadius: BorderRadius.circular(22),
                     ),

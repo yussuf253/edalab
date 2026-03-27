@@ -42,7 +42,9 @@ class FoodOrderTrackingScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [AppColors.food, Color(0xFFFFB347)]),
+                gradient: const LinearGradient(
+                  colors: [AppColors.food, AppColors.secondaryLight],
+                ),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Column(

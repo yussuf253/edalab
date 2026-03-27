@@ -119,7 +119,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppColors.homeServices, Color(0xFF27B5A8)],
+                    colors: [AppColors.homeServices, AppColors.secondaryLight],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),

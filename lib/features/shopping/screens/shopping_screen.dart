@@ -190,7 +190,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
               height: 96,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppColors.shopping, Color(0xFFFFA6A6)],
+                  colors: [AppColors.shopping, AppColors.secondaryLight],
                 ),
                 borderRadius: BorderRadius.circular(18),
               ),

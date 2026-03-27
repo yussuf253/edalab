@@ -95,7 +95,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [AppColors.laundry, Color(0xFFBB8FCE)],
+                  colors: [AppColors.laundry, AppColors.secondaryLight],
                 ),
                 borderRadius: BorderRadius.circular(20),
               ),

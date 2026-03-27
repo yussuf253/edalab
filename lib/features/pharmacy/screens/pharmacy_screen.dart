@@ -148,7 +148,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppColors.pharmacy, Color(0xFF55EFC4)],
+                    colors: [AppColors.pharmacy, AppColors.secondaryLight],
                   ),
                   borderRadius: BorderRadius.circular(20),
                 ),

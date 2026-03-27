@@ -152,7 +152,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
                 height: 120,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [AppColors.grocery, Color(0xFF55EFC4)],
+                    colors: [AppColors.grocery, AppColors.secondaryLight],
                   ),
                   borderRadius: BorderRadius.circular(20),
                 ),
