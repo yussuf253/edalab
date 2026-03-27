@@ -22,6 +22,7 @@ class NotificationProvider extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   bool get isSyncing => _isSyncing;
+  String? get currentUserId => _currentUserId;
   NotificationPreferences get preferences => _preferences;
   List<AppNotificationModel> get notifications {
     final items = List<AppNotificationModel>.from(_notifications)
@@ -151,16 +152,18 @@ class NotificationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> refreshFromServer(String userId) async {
-    if (_isSyncing) return;
+  Future<List<AppNotificationModel>> refreshFromServer(String userId) async {
+    if (_isSyncing) return const [];
     _isSyncing = true;
     notifyListeners();
     try {
       final remoteItems = await _repository.fetchForUser(userId);
       if (remoteItems.isNotEmpty) {
-        _mergeNotifications(remoteItems);
+        final addedItems = _mergeNotifications(remoteItems);
         await _persist();
+        return addedItems;
       }
+      return const [];
     } finally {
       _isSyncing = false;
       notifyListeners();
@@ -259,7 +262,14 @@ class NotificationProvider extends ChangeNotifier {
     );
   }
 
-  void _mergeNotifications(List<AppNotificationModel> remoteItems) {
+  List<AppNotificationModel> _mergeNotifications(
+    List<AppNotificationModel> remoteItems,
+  ) {
+    final existingIds = _notifications.map((item) => item.id).toSet();
+    final existingDedupeKeys = _notifications
+        .map((item) => item.dedupeKey)
+        .whereType<String>()
+        .toSet();
     final mergedById = {
       for (final item in _notifications) item.id: item,
     };
@@ -268,6 +278,7 @@ class NotificationProvider extends ChangeNotifier {
         if (item.dedupeKey != null) item.dedupeKey!: item.id,
     };
 
+    final added = <AppNotificationModel>[];
     for (final remote in remoteItems) {
       final existingId = mergedById[remote.id]?.id;
       final existingDedupeId = remote.dedupeKey == null
@@ -290,6 +301,11 @@ class NotificationProvider extends ChangeNotifier {
       }
 
       mergedById[remote.id] = remote;
+      if (!existingIds.contains(remote.id) &&
+          (remote.dedupeKey == null ||
+              !existingDedupeKeys.contains(remote.dedupeKey))) {
+        added.add(remote);
+      }
       if (remote.dedupeKey != null) {
         mergedByDedupe[remote.dedupeKey!] = remote.id;
       }
@@ -299,6 +315,7 @@ class NotificationProvider extends ChangeNotifier {
       ..clear()
       ..addAll(mergedById.values);
     _notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return added;
   }
 
   AppNotificationModel _prefer(

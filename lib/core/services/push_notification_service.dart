@@ -234,4 +234,10 @@ class PushNotificationService {
       payload: notification.route,
     );
   }
+
+  static Future<void> showSyncedNotification(
+    AppNotificationModel notification,
+  ) async {
+    await _showLocalNotification(notification);
+  }
 }

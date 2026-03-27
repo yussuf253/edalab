@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'app.dart';
 import 'core/providers/providers.dart';
 import 'core/router/app_router.dart';
+import 'core/services/notification_sync_service.dart';
 import 'core/services/push_notification_service.dart';
 import 'core/storage/app_preferences.dart';
 
@@ -23,6 +24,8 @@ Future<void> main() async {
   PushNotificationService.bindProvider(notificationProvider);
   await PushNotificationService.initialize();
   await PushNotificationService.syncInitialMessage();
+  NotificationSyncService.instance.start(notificationProvider);
+  await NotificationSyncService.instance.syncNow(showAlerts: false);
   final initialToken = PushNotificationService.token;
   if (initialToken != null && initialToken.isNotEmpty) {
     await notificationProvider.syncPushToken(initialToken);
@@ -64,6 +67,7 @@ Future<void> main() async {
               cartProvider: cart,
             );
             PushNotificationService.bindProvider(provider);
+            NotificationSyncService.instance.updateProvider(provider);
             final token = PushNotificationService.token;
             if (token != null && token.isNotEmpty) {
               provider.syncPushToken(token);
