@@ -153,8 +153,8 @@ export async function createOrderCreatedNotification({
         body: detailName.length === 0
             ? 'Your laundry order is scheduled and we will keep you updated.'
             : `${detailName} is scheduled for pickup.`,
-        route: '/laundry',
-        dedupeKey: `order:${orderId}:/laundry`,
+        route: `/laundry/tracking/${orderId}`,
+        dedupeKey: `order:${orderId}:/laundry/tracking/${orderId}`,
         metadata: {
           orderId,
           moduleType,
@@ -170,8 +170,8 @@ export async function createOrderCreatedNotification({
         body: detailName.length === 0
             ? 'Your shopping order is confirmed and will move through fulfillment shortly.'
             : `${detailName} is confirmed and will move through fulfillment shortly.`,
-        route: '/orders',
-        dedupeKey: `order:${orderId}:/orders`,
+        route: `/shopping/order/${orderId}`,
+        dedupeKey: `order:${orderId}:/shopping/order/${orderId}`,
         metadata: {
           orderId,
           moduleType,
@@ -204,8 +204,8 @@ export async function createOrderCreatedNotification({
         body: detailName.length === 0
             ? 'Your pharmacy order is confirmed. Double-check the medicines when they arrive.'
             : `${detailName} is confirmed. Double-check the medicines when they arrive.`,
-        route: '/orders',
-        dedupeKey: `order:${orderId}:/orders`,
+        route: `/pharmacy/order/${orderId}`,
+        dedupeKey: `order:${orderId}:/pharmacy/order/${orderId}`,
         metadata: {
           orderId,
           moduleType,
