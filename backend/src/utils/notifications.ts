@@ -7,6 +7,7 @@ import {
 } from '@prisma/client';
 
 import { prisma } from '../db';
+import { sendPushToUser } from './push';
 
 type NotificationPayload = {
   userId: string;
@@ -44,7 +45,7 @@ export async function createBackendNotification({
     }
   }
 
-  return prisma.notification.create({
+  const notification = await prisma.notification.create({
     data: {
       userId,
       type,
@@ -58,6 +59,24 @@ export async function createBackendNotification({
       metadata: metadata ?? undefined,
     },
   });
+
+  await sendPushToUser({
+    userId,
+    title,
+    body,
+    route,
+    module: module.toString().toLowerCase(),
+    priority: priority.toString().toLowerCase(),
+    dedupeKey,
+    metadata: {
+      notificationId: notification.id,
+      ...(metadata && typeof metadata === 'object'
+          ? (metadata as Record<string, unknown>)
+          : {}),
+    },
+  });
+
+  return notification;
 }
 
 export async function createOrderCreatedNotification({

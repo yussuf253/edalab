@@ -6,6 +6,7 @@ exports.createAppointmentCreatedNotification = createAppointmentCreatedNotificat
 exports.createRideCreatedNotification = createRideCreatedNotification;
 const client_1 = require("@prisma/client");
 const db_1 = require("../db");
+const push_1 = require("./push");
 async function createBackendNotification({ userId, type, module, title, body, route, dedupeKey, metadata, priority = client_1.NotificationPriority.HIGH, }) {
     if (dedupeKey) {
         const existing = await db_1.prisma.notification.findFirst({
@@ -18,7 +19,7 @@ async function createBackendNotification({ userId, type, module, title, body, ro
             return existing;
         }
     }
-    return db_1.prisma.notification.create({
+    const notification = await db_1.prisma.notification.create({
         data: {
             userId,
             type,
@@ -32,6 +33,22 @@ async function createBackendNotification({ userId, type, module, title, body, ro
             metadata: metadata ?? undefined,
         },
     });
+    await (0, push_1.sendPushToUser)({
+        userId,
+        title,
+        body,
+        route,
+        module: module.toString().toLowerCase(),
+        priority: priority.toString().toLowerCase(),
+        dedupeKey,
+        metadata: {
+            notificationId: notification.id,
+            ...(metadata && typeof metadata === 'object'
+                ? metadata
+                : {}),
+        },
+    });
+    return notification;
 }
 async function createOrderCreatedNotification({ userId, orderId, moduleType, moduleName, }) {
     const detailName = moduleName?.trim() ?? '';

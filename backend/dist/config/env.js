@@ -14,5 +14,9 @@ const envSchema = zod_1.z.object({
     JWT_SECRET: zod_1.z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
     JWT_EXPIRES_IN: zod_1.z.string().default('7d'),
     CORS_ORIGIN: zod_1.z.string().default('*'),
+    FIREBASE_PROJECT_ID: zod_1.z.string().optional(),
+    FIREBASE_CLIENT_EMAIL: zod_1.z.string().optional(),
+    FIREBASE_PRIVATE_KEY: zod_1.z.string().optional(),
+    FIREBASE_SERVICE_ACCOUNT_JSON: zod_1.z.string().optional(),
 });
 exports.env = envSchema.parse(process.env);
