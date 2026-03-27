@@ -8,7 +8,6 @@ import '../../../core/models/models.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/services/notification_service.dart';
 import '../../../core/utils/auth_gate.dart';
 
 class RideBookingScreen extends StatefulWidget {
@@ -314,7 +313,6 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                         );
                         if (!context.mounted || !allowed) return;
                         final auth = context.read<AuthProvider>();
-                        final notifications = context.read<NotificationProvider>();
                         setState(() => _isSubmitting = true);
                         try {
                           final ride = await _createRideBooking(
@@ -324,20 +322,6 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                             pickup: pickup,
                             destination: destination,
                             estimatedRidePrice: estimatedRidePrice,
-                          );
-                          await notifications.addNotification(
-                            NotificationService.rideConfirmed(
-                              title: 'Ride confirmed',
-                              body:
-                                  '${selectedCategory.name} is heading to $pickup. Driver updates will appear here.',
-                              route: '/ride/tracking/${ride['id']}',
-                              rideId: ride['id']?.toString(),
-                              metadata: {
-                                'vehicle': selectedCategory.name,
-                                'pickup': pickup,
-                                'destination': destination,
-                              },
-                            ),
                           );
                           if (!context.mounted) return;
                           setState(() => _isSubmitting = false);

@@ -8,7 +8,6 @@ import '../../../core/models/models.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/services/notification_service.dart';
 import '../../../core/utils/auth_gate.dart';
 
 class LaundryOrderScreen extends StatefulWidget {
@@ -373,9 +372,8 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                   message: 'Please log in to schedule your laundry pickup.',
                 );
                 if (!context.mounted || !allowed) return;
-                final notifications = context.read<NotificationProvider>();
                 try {
-                  final order = await ApiClient.post('/orders', {
+                  await ApiClient.post('/orders', {
                     'userId': auth.user!.id,
                     'moduleType': 'LAUNDRY',
                     'subtotal': estTotal,
@@ -401,20 +399,6 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       },
                     ],
                   });
-                  await notifications.addNotification(
-                    NotificationService.orderPlaced(
-                      title: 'Laundry pickup scheduled',
-                      body:
-                          '${selectedModel.name} pickup is booked for ${days[_selectedDate]} at ${slots[_selectedTime]}.',
-                      module: NotificationModule.laundry,
-                      route: '/laundry',
-                      orderId: order is Map ? order['id']?.toString() : null,
-                      metadata: {
-                        'serviceName': selectedModel.name,
-                        'itemCount': totalItems,
-                      },
-                    ),
-                  );
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(

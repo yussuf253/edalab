@@ -9,7 +9,6 @@ import '../../../core/models/models.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/services/notification_service.dart';
 import '../../../core/utils/auth_gate.dart';
 
 class HotelBookingScreen extends StatefulWidget {
@@ -235,7 +234,6 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                 if (!context.mounted || !allowed) return;
 
                 try {
-                  final notifications = context.read<NotificationProvider>();
                   final order = await ApiClient.post('/orders', {
                     'userId': auth.user!.id,
                     'moduleType': 'HOTEL',
@@ -261,22 +259,6 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       },
                     ],
                   });
-                  await notifications.addNotification(
-                    NotificationService.orderPlaced(
-                      title: 'Hotel stay confirmed',
-                      body:
-                          '${h.name} is booked from ${DateFormat('MMM d').format(checkIn)} to ${DateFormat('MMM d').format(checkOut)}.',
-                      module: NotificationModule.hotel,
-                      route: order is Map && order['id'] != null
-                          ? '/hotel/order/${order['id']}'
-                          : '/hotel',
-                      orderId: order is Map ? order['id']?.toString() : null,
-                      metadata: {
-                        'hotelName': h.name,
-                        'nights': nights,
-                      },
-                    ),
-                  );
                   if (!context.mounted) return;
                   context.push(
                     '/checkout/success',

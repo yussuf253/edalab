@@ -61,9 +61,9 @@ async function createOrderCreatedNotification({ userId, orderId, moduleType, mod
                 title: 'Food order confirmed',
                 body: detailName.length === 0
                     ? 'Your food order is confirmed and the kitchen has started preparing it.'
-                    : 'Your order from $detailName is confirmed and already being prepared.',
-                route: '/food/tracking/$orderId',
-                dedupeKey: 'order:$orderId:/food/tracking/$orderId',
+                    : `Your order from ${detailName} is confirmed and already being prepared.`,
+                route: `/food/tracking/${orderId}`,
+                dedupeKey: `order:${orderId}:/food/tracking/${orderId}`,
                 metadata: {
                     orderId,
                     moduleType,
@@ -78,9 +78,9 @@ async function createOrderCreatedNotification({ userId, orderId, moduleType, mod
                 title: 'Hotel stay confirmed',
                 body: detailName.length === 0
                     ? 'Your hotel booking is confirmed.'
-                    : '$detailName is booked and confirmed.',
-                route: '/hotel/order/$orderId',
-                dedupeKey: 'order:$orderId:/hotel/order/$orderId',
+                    : `${detailName} is booked and confirmed.`,
+                route: `/hotel/order/${orderId}`,
+                dedupeKey: `order:${orderId}:/hotel/order/${orderId}`,
                 metadata: {
                     orderId,
                     moduleType,
@@ -95,9 +95,9 @@ async function createOrderCreatedNotification({ userId, orderId, moduleType, mod
                 title: 'Home service scheduled',
                 body: detailName.length === 0
                     ? 'Your home service booking is confirmed.'
-                    : '$detailName has been scheduled successfully.',
-                route: '/home-services/booking/$orderId',
-                dedupeKey: 'order:$orderId:/home-services/booking/$orderId',
+                    : `${detailName} has been scheduled successfully.`,
+                route: `/home-services/booking/${orderId}`,
+                dedupeKey: `order:${orderId}:/home-services/booking/${orderId}`,
                 metadata: {
                     orderId,
                     moduleType,
@@ -112,9 +112,9 @@ async function createOrderCreatedNotification({ userId, orderId, moduleType, mod
                 title: 'Laundry pickup scheduled',
                 body: detailName.length === 0
                     ? 'Your laundry order is scheduled and we will keep you updated.'
-                    : '$detailName is scheduled for pickup.',
+                    : `${detailName} is scheduled for pickup.`,
                 route: '/laundry',
-                dedupeKey: 'order:$orderId:/laundry',
+                dedupeKey: `order:${orderId}:/laundry`,
                 metadata: {
                     orderId,
                     moduleType,
@@ -127,9 +127,11 @@ async function createOrderCreatedNotification({ userId, orderId, moduleType, mod
                 type: client_1.NotificationType.ORDER,
                 module: client_1.NotificationModule.SHOPPING,
                 title: 'Shopping order confirmed',
-                body: 'Your shopping order is confirmed and will move through fulfillment shortly.',
+                body: detailName.length === 0
+                    ? 'Your shopping order is confirmed and will move through fulfillment shortly.'
+                    : `${detailName} is confirmed and will move through fulfillment shortly.`,
                 route: '/orders',
-                dedupeKey: 'order:$orderId:/orders',
+                dedupeKey: `order:${orderId}:/orders`,
                 metadata: {
                     orderId,
                     moduleType,
@@ -142,9 +144,11 @@ async function createOrderCreatedNotification({ userId, orderId, moduleType, mod
                 type: client_1.NotificationType.ORDER,
                 module: client_1.NotificationModule.GROCERY,
                 title: 'Grocery order confirmed',
-                body: 'Your grocery order is confirmed and the store is preparing your items.',
+                body: detailName.length === 0
+                    ? 'Your grocery order is confirmed and the store is preparing your items.'
+                    : `${detailName} is confirmed and the store is preparing your items.`,
                 route: '/orders',
-                dedupeKey: 'order:$orderId:/orders',
+                dedupeKey: `order:${orderId}:/orders`,
                 metadata: {
                     orderId,
                     moduleType,
@@ -157,9 +161,11 @@ async function createOrderCreatedNotification({ userId, orderId, moduleType, mod
                 type: client_1.NotificationType.ORDER,
                 module: client_1.NotificationModule.PHARMACY,
                 title: 'Pharmacy order confirmed',
-                body: 'Your pharmacy order is confirmed. Double-check the medicines when they arrive.',
+                body: detailName.length === 0
+                    ? 'Your pharmacy order is confirmed. Double-check the medicines when they arrive.'
+                    : `${detailName} is confirmed. Double-check the medicines when they arrive.`,
                 route: '/orders',
-                dedupeKey: 'order:$orderId:/orders',
+                dedupeKey: `order:${orderId}:/orders`,
                 metadata: {
                     orderId,
                     moduleType,
@@ -177,9 +183,9 @@ async function createAppointmentCreatedNotification({ userId, appointmentId, doc
         type: client_1.NotificationType.APPOINTMENT,
         module: client_1.NotificationModule.DOCTOR,
         title: 'Appointment booked',
-        body: '$doctorName is scheduled for $timeSlot.',
+        body: `${doctorName} is scheduled for ${timeSlot}.`,
         route: '/doctor/appointments',
-        dedupeKey: 'appointment:$appointmentId:/doctor/appointments',
+        dedupeKey: `appointment:${appointmentId}:/doctor/appointments`,
         metadata: {
             appointmentId,
             doctorName,
@@ -193,9 +199,9 @@ async function createRideCreatedNotification({ userId, rideId, vehicleName, pick
         type: client_1.NotificationType.RIDE,
         module: client_1.NotificationModule.RIDE,
         title: 'Ride confirmed',
-        body: '$vehicleName is assigned and heading to $pickupLabel.',
-        route: '/ride/tracking/$rideId',
-        dedupeKey: 'ride:$rideId:/ride/tracking/$rideId',
+        body: `${vehicleName} is assigned and heading to ${pickupLabel}.`,
+        route: `/ride/tracking/${rideId}`,
+        dedupeKey: `ride:${rideId}:/ride/tracking/${rideId}`,
         metadata: {
             rideId,
             vehicleName,
