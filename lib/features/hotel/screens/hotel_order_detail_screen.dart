@@ -77,7 +77,14 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
         ? Map<String, dynamic>.from(firstItem!['metadata'] as Map)
         : <String, dynamic>{};
 
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !context.canPop()) {
+          context.go('/hotel');
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Hotel Booking'),
@@ -175,6 +182,7 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
                 ],
               ),
             ),
+      ),
     );
   }
 }

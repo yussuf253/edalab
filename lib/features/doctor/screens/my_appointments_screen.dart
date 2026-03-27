@@ -40,7 +40,14 @@ class MyAppointmentsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !context.canPop()) {
+          context.go('/doctor');
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('My Appointments'),
@@ -176,6 +183,7 @@ class MyAppointmentsScreen extends StatelessWidget {
             },
           );
         },
+      ),
       ),
     );
   }

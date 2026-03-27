@@ -39,7 +39,7 @@ class AppSearchBar extends StatelessWidget {
           onChanged: onChanged,
           readOnly: readOnly,
           autofocus: autofocus,
-          onTap: readOnly ? null : onTap,
+          onTap: onTap,
           decoration: InputDecoration(
             hintText: hint,
             prefixIcon: prefix ??

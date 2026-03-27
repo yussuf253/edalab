@@ -86,21 +86,28 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
       return matchesCategory && matchesSearch;
     }).toList();
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Shopping'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/');
-            }
-          },
-        ),
-        actions: [
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !context.canPop()) {
+          context.go('/');
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text('Shopping'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/');
+              }
+            },
+          ),
+          actions: [
           IconButton(
             icon: const Icon(Icons.favorite_border_rounded),
             onPressed: () => context.push('/shopping/wishlist'),
@@ -133,10 +140,10 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                 ),
             ],
           ),
-        ],
-      ),
-      body: Column(
-        children: [
+          ],
+        ),
+        body: Column(
+          children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
             child: AppSearchBar(
@@ -243,7 +250,8 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                     },
                   ),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }

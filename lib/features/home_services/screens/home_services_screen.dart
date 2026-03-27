@@ -77,7 +77,14 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !context.canPop()) {
+          context.go('/');
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Home Services'),
@@ -384,6 +391,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
+      ),
       ),
     );
   }

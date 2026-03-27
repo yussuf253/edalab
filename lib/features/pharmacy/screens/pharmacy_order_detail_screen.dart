@@ -79,7 +79,14 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
       (sum, item) => sum + ((item['quantity'] as num?)?.toInt() ?? 0),
     );
 
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !context.canPop()) {
+          context.go('/pharmacy');
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Pharmacy Order'),
@@ -202,6 +209,7 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
                 ],
               ),
             ),
+      ),
     );
   }
 }

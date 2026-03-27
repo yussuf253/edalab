@@ -88,7 +88,14 @@ class _RideScreenState extends State<RideScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !context.canPop()) {
+          context.go('/');
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Ride'),
@@ -520,6 +527,7 @@ class _RideScreenState extends State<RideScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

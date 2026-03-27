@@ -60,7 +60,14 @@ class _HotelScreenState extends State<HotelScreen> {
   Widget build(BuildContext context) {
     final hotels = _filteredHotels();
 
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !context.canPop()) {
+          context.go('/');
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Hotels'),
@@ -376,6 +383,7 @@ class _HotelScreenState extends State<HotelScreen> {
               }, childCount: hotels.length),
             ),
         ],
+      ),
       ),
     );
   }

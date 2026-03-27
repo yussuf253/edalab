@@ -52,6 +52,15 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final medicine = _medicine;
+    final cartProvider = context.watch<CartProvider>();
+    final cartItemCount = cartProvider.getModuleItemCount('pharmacy');
+    final moduleTotal = cartProvider.getModuleSubtotal('pharmacy');
+    final cartItems = cartProvider.getModuleItems('pharmacy');
+    final existingCartItem = cartItems.cast<CartItem?>().firstWhere(
+      (item) => item?.id == medicine.id,
+      orElse: () => null,
+    );
+    final isInCart = existingCartItem != null;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -60,6 +69,43 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
         ),
+        actions: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                splashRadius: 24,
+                constraints: const BoxConstraints(
+                  minWidth: 52,
+                  minHeight: 52,
+                ),
+                padding: const EdgeInsets.all(12),
+                onPressed: () => context.push('/pharmacy/cart'),
+                icon: const Icon(Icons.shopping_bag_outlined, size: 24),
+              ),
+              if (cartItemCount > 0)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 20),
+                    height: 20,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: const BoxDecoration(
+                      color: AppColors.accent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$cartItemCount',
+                        style: AppTextStyles.badge.copyWith(fontSize: 10),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -206,42 +252,79 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                 ],
               ),
       ),
-      bottomSheet: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: AppButton(
-            text: 'Add to Cart • \$${medicine.price.toStringAsFixed(2)}',
-            color: AppColors.pharmacy,
-            onPressed: () {
-              context.read<CartProvider>().addItem(
-                CartItem(
-                  id: medicine.id,
-                  name: medicine.name,
-                  price: medicine.price,
-                  moduleType: 'pharmacy',
-                  brand: medicine.category,
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        child: isInCart
+            ? GestureDetector(
+                onTap: () => context.push('/pharmacy/cart'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.pharmacy,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.pharmacy.withValues(alpha: 0.22),
+                        blurRadius: 22,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$cartItemCount',
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: AppColors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'View Cart',
+                          style: AppTextStyles.button.copyWith(
+                            color: AppColors.white,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '\$${moduleTotal.toStringAsFixed(2)}',
+                        style: AppTextStyles.labelLarge.copyWith(
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              );
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${medicine.name} added to cart!'),
-                  backgroundColor: AppColors.success,
-                ),
-              );
-              context.pop();
-            },
-          ),
-        ),
+              )
+            : AppButton(
+                text: 'Add to Cart • \$${medicine.price.toStringAsFixed(2)}',
+                color: AppColors.pharmacy,
+                onPressed: () {
+                  cartProvider.addItem(
+                    CartItem(
+                      id: medicine.id,
+                      name: medicine.name,
+                      price: medicine.price,
+                      moduleType: 'pharmacy',
+                      brand: medicine.category,
+                    ),
+                  );
+                },
+              ),
       ),
     );
   }

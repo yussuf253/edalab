@@ -78,7 +78,14 @@ class _FoodScreenState extends State<FoodScreen> {
     );
     final restaurants = _filteredRestaurants();
 
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !context.canPop()) {
+          context.go('/');
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Food Delivery'),
@@ -442,6 +449,7 @@ class _FoodScreenState extends State<FoodScreen> {
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
+      ),
       ),
     );
   }

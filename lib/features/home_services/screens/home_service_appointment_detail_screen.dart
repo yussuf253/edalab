@@ -138,7 +138,14 @@ class _HomeServiceAppointmentDetailScreenState
     final timeSlot = _metadataValue('timeSlot');
     final address = _metadataValue('address');
 
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !context.canPop()) {
+          context.go('/home-services');
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Service Booking'),
@@ -319,6 +326,7 @@ class _HomeServiceAppointmentDetailScreenState
                 ],
               ),
             ),
+      ),
     );
   }
 }

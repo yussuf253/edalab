@@ -59,9 +59,9 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cartItemCount = context.watch<CartProvider>().getModuleItemCount(
-      'pharmacy',
-    );
+    final cartProvider = context.watch<CartProvider>();
+    final cartItemCount = cartProvider.getModuleItemCount('pharmacy');
+    final moduleTotal = cartProvider.getModuleSubtotal('pharmacy');
     final query = _searchQuery.trim().toLowerCase();
     final medicines = _medicines.where((medicine) {
       if (query.isEmpty) return true;
@@ -70,7 +70,14 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
           medicine.category.toLowerCase().contains(query);
     }).toList();
 
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !context.canPop()) {
+          context.go('/');
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Pharmacy'),
@@ -86,19 +93,26 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
         ),
         actions: [
           Stack(
-            alignment: Alignment.center,
+            clipBehavior: Clip.none,
             children: [
               IconButton(
-                icon: const Icon(Icons.shopping_bag_outlined),
+                splashRadius: 24,
+                constraints: const BoxConstraints(
+                  minWidth: 52,
+                  minHeight: 52,
+                ),
+                padding: const EdgeInsets.all(12),
+                icon: const Icon(Icons.shopping_bag_outlined, size: 24),
                 onPressed: () => context.push('/pharmacy/cart'),
               ),
               if (cartItemCount > 0)
                 Positioned(
-                  top: 8,
-                  right: 8,
+                  top: 4,
+                  right: 4,
                   child: Container(
-                    width: 18,
-                    height: 18,
+                    constraints: const BoxConstraints(minWidth: 20),
+                    height: 20,
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: const BoxDecoration(
                       color: AppColors.accent,
                       shape: BoxShape.circle,
@@ -309,21 +323,13 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                             const SizedBox(height: 8),
                             GestureDetector(
                               onTap: () {
-                                context.read<CartProvider>().addItem(
+                                cartProvider.addItem(
                                   CartItem(
                                     id: medicine.id,
                                     name: medicine.name,
                                     price: medicine.price,
                                     moduleType: 'pharmacy',
                                     brand: medicine.category,
-                                  ),
-                                );
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      '${medicine.name} added to cart!',
-                                    ),
-                                    backgroundColor: AppColors.success,
                                   ),
                                 );
                               },
@@ -354,6 +360,67 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
             ),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
+      ),
+      bottomNavigationBar: cartItemCount > 0
+          ? SafeArea(
+              minimum: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: GestureDetector(
+                onTap: () => context.push('/pharmacy/cart'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.pharmacy,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.pharmacy.withValues(alpha: 0.22),
+                        blurRadius: 22,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 34,
+                        height: 34,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$cartItemCount',
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: AppColors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'View Cart',
+                          style: AppTextStyles.button.copyWith(
+                            color: AppColors.white,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        '\$${moduleTotal.toStringAsFixed(2)}',
+                        style: AppTextStyles.labelLarge.copyWith(
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          : null,
       ),
     );
   }

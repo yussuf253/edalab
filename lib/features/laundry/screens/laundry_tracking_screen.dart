@@ -10,7 +10,14 @@ class LaundryTrackingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !context.canPop()) {
+          context.go('/laundry');
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Order Tracking'),
@@ -119,6 +126,7 @@ class LaundryTrackingScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

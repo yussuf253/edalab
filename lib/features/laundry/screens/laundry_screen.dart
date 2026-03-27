@@ -63,7 +63,14 @@ class _LaundryScreenState extends State<LaundryScreen> {
   Widget build(BuildContext context) {
     final services = _services;
 
-    return Scaffold(
+    return PopScope(
+      canPop: context.canPop(),
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && !context.canPop()) {
+          context.go('/');
+        }
+      },
+      child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Laundry'),
@@ -288,6 +295,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
