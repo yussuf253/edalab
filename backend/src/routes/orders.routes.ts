@@ -17,8 +17,8 @@ const orderItemSchema = z.object({
   price: z.coerce.number(),
   quantity: z.coerce.number().int().positive(),
   total: z.coerce.number().optional(),
-  color: z.string().optional(),
-  size: z.string().optional(),
+  color: z.string().optional().nullable(),
+  size: z.string().optional().nullable(),
   metadata: z.record(z.any()).optional(),
 });
 

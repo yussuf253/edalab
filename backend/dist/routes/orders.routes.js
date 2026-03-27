@@ -17,8 +17,8 @@ const orderItemSchema = zod_1.z.object({
     price: zod_1.z.coerce.number(),
     quantity: zod_1.z.coerce.number().int().positive(),
     total: zod_1.z.coerce.number().optional(),
-    color: zod_1.z.string().optional(),
-    size: zod_1.z.string().optional(),
+    color: zod_1.z.string().optional().nullable(),
+    size: zod_1.z.string().optional().nullable(),
     metadata: zod_1.z.record(zod_1.z.any()).optional(),
 });
 const createOrderSchema = zod_1.z.object({
