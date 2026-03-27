@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/models/app_notification_model.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/utils/auth_gate.dart';
 
 class CheckoutScreen extends StatefulWidget {
@@ -39,6 +41,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         return 'Grocery order';
       default:
         return 'Order';
+    }
+  }
+
+  NotificationModule _notificationModuleFor(String? moduleType) {
+    switch (moduleType) {
+      case 'food':
+        return NotificationModule.food;
+      case 'shopping':
+        return NotificationModule.shopping;
+      case 'pharmacy':
+        return NotificationModule.pharmacy;
+      case 'grocery':
+        return NotificationModule.grocery;
+      default:
+        return NotificationModule.orders;
     }
   }
 
@@ -473,6 +490,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       if (code.isNotEmpty) {
                         try {
                           cartProvider.applyPromo(code);
+                          final appliedCode = cartProvider.promoCode;
+                          if (appliedCode != null) {
+                            context.read<NotificationProvider>().addNotification(
+                              NotificationService.promotion(
+                                title: 'Promo applied successfully',
+                                body: '$appliedCode is active on your current basket.',
+                                promoCode: appliedCode,
+                                route: '/checkout',
+                              ),
+                            );
+                          }
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Promo code applied!'),
@@ -573,6 +601,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   final modules = moduleType == null
                       ? cartProvider.items.map((e) => e.moduleType).toSet()
                       : {moduleType};
+                  final notifications = context.read<NotificationProvider>();
                   String? primaryOrderId;
                   for (var m in modules) {
                     final createdOrderId = await cartProvider.submitModuleOrder(
@@ -595,6 +624,20 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     } else if (m == moduleType) {
                       primaryOrderId = createdOrderId;
                     }
+                    await notifications.addNotification(
+                      NotificationService.orderPlaced(
+                        title: '${_moduleLabel(m)} confirmed',
+                        body:
+                            'Your ${_moduleLabel(m).toLowerCase()} is now in progress and future updates will appear here.',
+                        module: _notificationModuleFor(m),
+                        route: '/orders',
+                        orderId: createdOrderId,
+                        metadata: {
+                          'moduleType': m,
+                          'payment': paymentName,
+                        },
+                      ),
+                    );
                   }
                   if (moduleType == null) {
                     cartProvider.clearCart();

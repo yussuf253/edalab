@@ -9,6 +9,7 @@ class AppPreferences {
   static const _cartItemsKey = 'cart_items';
   static const _cartPromoCodeKey = 'cart_promo_code';
   static const _cartPromoDiscountKey = 'cart_promo_discount';
+  static const _notificationsPrefsKey = 'notifications_preferences';
 
   static Future<bool> hasSeenOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
@@ -94,5 +95,28 @@ class AppPreferences {
     await prefs.remove(_cartItemsKey);
     await prefs.remove(_cartPromoCodeKey);
     await prefs.remove(_cartPromoDiscountKey);
+  }
+
+  static Future<String?> getNotificationsJson(String scope) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('notifications_$scope');
+  }
+
+  static Future<void> setNotificationsJson(
+    String scope,
+    String value,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('notifications_$scope', value);
+  }
+
+  static Future<String?> getNotificationsPreferencesJson() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_notificationsPrefsKey);
+  }
+
+  static Future<void> setNotificationsPreferencesJson(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_notificationsPrefsKey, value);
   }
 }

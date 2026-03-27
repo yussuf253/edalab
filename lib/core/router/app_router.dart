@@ -67,6 +67,12 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey =
     GlobalKey<NavigatorState>();
 
+void openAppRoute(String route) {
+  final context = _rootNavigatorKey.currentContext;
+  if (context == null) return;
+  context.push(route);
+}
+
 GoRouter createAppRouter({required bool hasSeenOnboarding}) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,

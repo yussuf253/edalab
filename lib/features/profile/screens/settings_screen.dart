@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/providers/notification_provider.dart';
 import '../../../core/providers/theme_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -16,8 +17,8 @@ class SettingsScreen extends StatelessWidget {
         title: const Text('Settings'),
         leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), onPressed: () => context.pop()),
       ),
-      body: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
+      body: Consumer2<ThemeProvider, NotificationProvider>(
+        builder: (context, themeProvider, notificationProvider, child) {
           return ListView(
             padding: const EdgeInsets.all(20),
             children: [
@@ -42,10 +43,38 @@ class SettingsScreen extends StatelessWidget {
               // Notifications
               Text('Notifications', style: AppTextStyles.h4),
               const SizedBox(height: 12),
-              _SettingToggle(Icons.notifications_outlined, 'Push Notifications', '', AppColors.warning, true, (_) {}),
-              _SettingToggle(Icons.email_outlined, 'Email Notifications', '', AppColors.doctor, true, (_) {}),
-              _SettingToggle(Icons.campaign_outlined, 'Promotions', '', AppColors.food, false, (_) {}),
-              _SettingToggle(Icons.location_on_outlined, 'Location Alerts', '', AppColors.success, true, (_) {}),
+              _SettingToggle(
+                Icons.notifications_outlined,
+                'Push Notifications',
+                '',
+                AppColors.warning,
+                notificationProvider.preferences.pushEnabled,
+                notificationProvider.setPushEnabled,
+              ),
+              _SettingToggle(
+                Icons.email_outlined,
+                'Email Notifications',
+                '',
+                AppColors.doctor,
+                notificationProvider.preferences.emailEnabled,
+                notificationProvider.setEmailEnabled,
+              ),
+              _SettingToggle(
+                Icons.campaign_outlined,
+                'Promotions',
+                '',
+                AppColors.food,
+                notificationProvider.preferences.promotionsEnabled,
+                notificationProvider.setPromotionsEnabled,
+              ),
+              _SettingToggle(
+                Icons.location_on_outlined,
+                'Location Alerts',
+                '',
+                AppColors.success,
+                notificationProvider.preferences.locationAlertsEnabled,
+                notificationProvider.setLocationAlertsEnabled,
+              ),
               const SizedBox(height: 20),
 
               // Privacy
@@ -168,7 +197,7 @@ class _SettingToggle extends StatelessWidget {
           Switch.adaptive(
             value: value,
             onChanged: onChanged,
-            activeColor: AppColors.primary,
+            activeThumbColor: AppColors.primary,
           ),
         ],
       ),

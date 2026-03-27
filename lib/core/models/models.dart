@@ -11,3 +11,4 @@ export 'hotel_model.dart';
 export 'ride_model.dart';
 export 'laundry_model.dart';
 export 'shopping_store_model.dart';
+export 'app_notification_model.dart';

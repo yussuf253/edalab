@@ -7,6 +7,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -590,6 +591,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
 
                               final addressText =
                                   '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}';
+                              final notifications = context
+                                  .read<NotificationProvider>();
 
                               final order = await ApiClient.post('/orders', {
                                 'userId': auth.user!.id,
@@ -624,6 +627,22 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                   },
                                 ],
                               });
+                              await notifications.addNotification(
+                                    NotificationService.orderPlaced(
+                                      title: 'Home service scheduled',
+                                      body:
+                                          '${serviceOptions[selectedService]} with ${provider.name} is confirmed for ${_times[_selectedTime]}.',
+                                      module: NotificationModule.homeServices,
+                                      route:
+                                          '/home-services/booking/${order['id']}',
+                                      orderId: order['id']?.toString(),
+                                      metadata: {
+                                        'providerName': provider.name,
+                                        'serviceName':
+                                            serviceOptions[selectedService],
+                                      },
+                                    ),
+                                  );
                               if (!context.mounted) return;
                               context.go(
                                 '/checkout/success',

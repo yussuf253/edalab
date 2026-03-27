@@ -504,6 +504,57 @@ Needs:
 - user profile projection
 - subcollections for addresses, payment methods, wishlist, notifications, coupons, rewards
 
+## Recommended notification source-of-truth design
+
+Use the database as the canonical notification store and keep device storage as a cache.
+
+### Canonical record
+
+PostgreSQL table or Firestore document should store:
+
+```json
+{
+  "id": "notif_123",
+  "userId": "firebase_uid",
+  "title": "Order confirmed",
+  "body": "Your food order is now being prepared.",
+  "module": "food",
+  "priority": "high",
+  "route": "/orders",
+  "dedupeKey": "order:ord_123:/orders",
+  "metadata": {
+    "orderId": "ord_123",
+    "restaurantName": "Burger Palace"
+  },
+  "createdAt": "serverTimestamp",
+  "readAt": null
+}
+```
+
+### What should create notifications
+
+- Order status changes
+- Ride lifecycle changes
+- Appointment and booking confirmations
+- Pharmacy and care reminders
+- Promotions and coupon activations
+- Account/security actions
+
+### Client sync model
+
+1. App loads cached notifications first for fast UI.
+2. App fetches `/notifications/{userId}` to refresh from backend.
+3. App merges remote records with local cache using `id` and `dedupeKey`.
+4. App calls `/notifications/{id}/read` when an item is opened.
+5. App registers FCM device tokens so backend can deliver new events immediately.
+
+### Suggested REST endpoints
+
+- `GET /notifications/:userId`
+- `POST /notifications`
+- `PATCH /notifications/:id/read`
+- `POST /notifications/device-tokens`
+
 ## Deployment files added
 
 - `firebase.json`

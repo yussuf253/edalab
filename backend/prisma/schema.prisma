@@ -76,6 +76,39 @@ enum NotificationType {
   SYSTEM
 }
 
+enum NotificationModule {
+  SYSTEM
+  ORDERS
+  FOOD
+  SHOPPING
+  GROCERY
+  PHARMACY
+  RIDE
+  HOTEL
+  DOCTOR
+  HOME_SERVICES
+  LAUNDRY
+  PROMOTIONS
+  ACCOUNT
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
+  MACOS
+  WINDOWS
+  LINUX
+  UNKNOWN
+}
+
 enum ConversationEntityType {
   DOCTOR
   HOME_SERVICE_PROVIDER
@@ -113,6 +146,7 @@ model User {
   paymentMethods PaymentMethod[]
   wishlistItems  WishlistItem[]
   notifications  Notification[]
+  deviceTokens   DeviceToken[]
   conversations  Conversation[]
   orders         Order[]
   appointments   Appointment[]
@@ -223,14 +257,34 @@ model Notification {
   id        String           @id @default(cuid())
   userId    String
   type      NotificationType
+  module    NotificationModule @default(SYSTEM)
+  priority  NotificationPriority @default(NORMAL)
   title     String
   body      String
+  route     String?
+  dedupeKey String?
   data      Json?
+  metadata  Json?
   readAt    DateTime?
   createdAt DateTime         @default(now())
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+  @@index([userId, readAt, createdAt])
+  @@index([userId, dedupeKey])
+}
+
+model DeviceToken {
+  id         String         @id @default(cuid())
+  userId     String
+  token      String         @unique
+  platform   DevicePlatform @default(UNKNOWN)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  lastSeenAt DateTime       @default(now())
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, platform])
 }
 
 model Promotion {

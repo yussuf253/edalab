@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/widgets/notification_bell.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -33,13 +34,12 @@ class ProfileScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      GestureDetector(
-                        onTap: () => context.push('/notifications'),
-                        child: Container(
-                          width: 40, height: 40,
-                          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-                          child: const Icon(Icons.notifications_outlined, color: AppColors.white, size: 22),
-                        ),
+                      const NotificationBell(
+                        size: 40,
+                        backgroundColor: Color(0x33FFFFFF),
+                        iconColor: AppColors.white,
+                        useShadow: false,
+                        compact: true,
                       ),
                       const SizedBox(width: 10),
                       GestureDetector(

@@ -8,6 +8,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -433,6 +434,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     message: 'Please log in to confirm your appointment.',
                   );
                   if (!context.mounted || !allowed) return;
+                  final notifications = context.read<NotificationProvider>();
                   try {
                     final selectedDate = DateTime.utc(
                       2026,
@@ -455,6 +457,29 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                           ? 'Doctor appointment booked via EdaLab Super App'
                           : 'Care service booked via EdaLab Super App',
                     });
+                    await notifications.addNotification(
+                      NotificationService.appointmentBooked(
+                        title: doctor.isDoctorProvider
+                            ? 'Appointment booked'
+                            : 'Care service booked',
+                        body:
+                            '${doctor.name} is scheduled for ${_times[_selectedTime]} AM on Mar ${_dates[_selectedDate].$2}.',
+                        route: '/doctor/appointments',
+                        appointmentId: appointment is Map
+                            ? appointment['id']?.toString()
+                            : null,
+                        metadata: {
+                          'doctorName': doctor.name,
+                          'type': doctor.isDoctorProvider
+                              ? ['video', 'chat', 'in_person'][_selectedType]
+                              : [
+                                  'home_visit',
+                                  'phone_advice',
+                                  'video_support',
+                                ][_selectedType],
+                        },
+                      ),
+                    );
                     if (!context.mounted) return;
                     context.push(
                       '/checkout/success',
