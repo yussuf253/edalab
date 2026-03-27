@@ -63,7 +63,7 @@ class NotificationProvider extends ChangeNotifier {
   Future<void> addNotification(
     AppNotificationModel notification, {
     bool allowDuplicate = false,
-    bool persistRemote = true,
+    bool persistRemote = false,
   }) async {
     if (!_shouldAccept(notification, allowDuplicate: allowDuplicate)) {
       return;

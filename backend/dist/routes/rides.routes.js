@@ -6,6 +6,7 @@ const zod_1 = require("zod");
 const db_1 = require("../db");
 const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
+const notifications_1 = require("../utils/notifications");
 const serializers_1 = require("../utils/serializers");
 const router = (0, express_1.Router)();
 const createRideSchema = zod_1.z.object({
@@ -133,6 +134,12 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
             pickupAddress: true,
             dropoffAddress: true,
         },
+    });
+    await (0, notifications_1.createRideCreatedNotification)({
+        userId: booking.userId,
+        rideId: booking.id,
+        vehicleName: booking.vehicleName,
+        pickupLabel: booking.pickupLabel,
     });
     res.status(201).json(serializeRideBooking(booking));
 }));

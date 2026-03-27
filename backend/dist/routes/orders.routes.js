@@ -6,6 +6,7 @@ const zod_1 = require("zod");
 const db_1 = require("../db");
 const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
+const notifications_1 = require("../utils/notifications");
 const serializers_1 = require("../utils/serializers");
 const router = (0, express_1.Router)();
 const orderItemSchema = zod_1.z.object({
@@ -283,6 +284,15 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
         include: {
             items: true,
         },
+    });
+    const primaryLabel = order.items[0]?.brand ??
+        order.items[0]?.name ??
+        order.moduleType.toLowerCase();
+    await (0, notifications_1.createOrderCreatedNotification)({
+        userId: order.userId,
+        orderId: order.id,
+        moduleType: order.moduleType,
+        moduleName: primaryLabel,
     });
     res.status(201).json({
         id: order.id,

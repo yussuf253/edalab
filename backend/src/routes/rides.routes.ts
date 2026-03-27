@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
+import { createRideCreatedNotification } from '../utils/notifications';
 import { toNumber } from '../utils/serializers';
 
 const router = Router();
@@ -158,6 +159,13 @@ router.post(
         pickupAddress: true,
         dropoffAddress: true,
       },
+    });
+
+    await createRideCreatedNotification({
+      userId: booking.userId,
+      rideId: booking.id,
+      vehicleName: booking.vehicleName,
+      pickupLabel: booking.pickupLabel,
     });
 
     res.status(201).json(serializeRideBooking(booking));

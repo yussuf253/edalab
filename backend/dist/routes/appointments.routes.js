@@ -6,6 +6,7 @@ const zod_1 = require("zod");
 const db_1 = require("../db");
 const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
+const notifications_1 = require("../utils/notifications");
 const router = (0, express_1.Router)();
 const createAppointmentSchema = zod_1.z.object({
     userId: zod_1.z.string(),
@@ -46,6 +47,15 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
             status: client_1.AppointmentStatus.UPCOMING,
             notes: body.notes ?? null,
         },
+        include: {
+            doctor: true,
+        },
+    });
+    await (0, notifications_1.createAppointmentCreatedNotification)({
+        userId: appointment.userId,
+        appointmentId: appointment.id,
+        doctorName: appointment.doctor.name,
+        timeSlot: appointment.timeSlot,
     });
     res.status(201).json({
         id: appointment.id,

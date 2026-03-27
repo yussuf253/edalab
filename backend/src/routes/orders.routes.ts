@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
+import { createOrderCreatedNotification } from '../utils/notifications';
 import { toNumber } from '../utils/serializers';
 
 const router = Router();
@@ -314,6 +315,17 @@ router.post(
         items: true,
       },
     }) as Prisma.OrderGetPayload<{ include: { items: true } }>;
+
+    const primaryLabel =
+      order.items[0]?.brand ??
+      order.items[0]?.name ??
+      order.moduleType.toLowerCase();
+    await createOrderCreatedNotification({
+      userId: order.userId,
+      orderId: order.id,
+      moduleType: order.moduleType,
+      moduleName: primaryLabel,
+    });
 
     res.status(201).json({
       id: order.id,

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
+import { createAppointmentCreatedNotification } from '../utils/notifications';
 
 const router = Router();
 
@@ -57,6 +58,16 @@ router.post(
         status: AppointmentStatus.UPCOMING,
         notes: body.notes ?? null,
       },
+      include: {
+        doctor: true,
+      },
+    });
+
+    await createAppointmentCreatedNotification({
+      userId: appointment.userId,
+      appointmentId: appointment.id,
+      doctorName: appointment.doctor.name,
+      timeSlot: appointment.timeSlot,
     });
 
     res.status(201).json({
