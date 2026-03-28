@@ -100,6 +100,38 @@ function buildAutoReply(entityType, title) {
             };
     }
 }
+async function isDoctorConversationAllowed({ userId, entityId, metadata, }) {
+    const appointmentId = metadata?.appointmentId?.toString();
+    if (!appointmentId) {
+        return {
+            ok: false,
+            reason: 'Doctor chat is only available from an appointment detail.',
+        };
+    }
+    const appointment = await db_1.prisma.appointment.findFirst({
+        where: {
+            id: appointmentId,
+            userId,
+            doctorId: entityId,
+            status: client_1.AppointmentStatus.APPROVED,
+        },
+        select: {
+            id: true,
+            status: true,
+        },
+    });
+    if (!appointment) {
+        return {
+            ok: false,
+            reason: 'Doctor chat is only available for a valid appointment linked to this doctor.',
+        };
+    }
+    return {
+        ok: true,
+        appointmentId: appointment.id,
+        status: appointment.status,
+    };
+}
 router.get('/user/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const userId = (0, http_1.getParam)(req.params.userId, 'userId');
     const conversations = await db_1.prisma.conversation.findMany({
@@ -128,6 +160,16 @@ router.get('/conversations/:conversationId', (0, async_handler_1.asyncHandler)(a
 }));
 router.post('/conversations/start', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const body = startConversationSchema.parse(req.body);
+    if (body.entityType === client_1.ConversationEntityType.DOCTOR) {
+        const validation = await isDoctorConversationAllowed({
+            userId: body.userId,
+            entityId: body.entityId,
+            metadata: body.metadata,
+        });
+        if (!validation.ok) {
+            return res.status(403).json({ error: validation.reason });
+        }
+    }
     const existing = await db_1.prisma.conversation.findUnique({
         where: {
             userId_entityType_entityId: {
@@ -174,6 +216,21 @@ router.post('/conversations/:conversationId/messages', (0, async_handler_1.async
     });
     if (!conversation) {
         return res.status(404).json({ error: 'Conversation not found.' });
+    }
+    if (conversation.entityType === client_1.ConversationEntityType.DOCTOR) {
+        const metadata = conversation.metadata &&
+            typeof conversation.metadata === 'object' &&
+            !Array.isArray(conversation.metadata)
+            ? conversation.metadata
+            : null;
+        const validation = await isDoctorConversationAllowed({
+            userId: conversation.userId,
+            entityId: conversation.entityId,
+            metadata,
+        });
+        if (!validation.ok && body.senderRole === client_1.MessageSenderRole.USER) {
+            return res.status(403).json({ error: validation.reason });
+        }
     }
     const userMessage = await db_1.prisma.message.create({
         data: {

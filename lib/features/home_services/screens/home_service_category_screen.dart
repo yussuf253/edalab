@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
@@ -85,6 +86,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final query = _searchController.text.trim().toLowerCase();
     final category = _category;
     final visibleProviders = _providers.where((provider) {
@@ -99,7 +101,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(widget.categoryLabel ?? 'Professionals'),
+        title: Text(widget.categoryLabel ?? l10n.t('home_category.professionals')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -111,7 +113,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: AppSearchBar(
-                hint: 'Search professionals or services...',
+                hint: l10n.t('home_category.search_hint'),
                 controller: _searchController,
                 onChanged: (_) => setState(() {}),
               ),
@@ -170,10 +172,16 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
               child: Row(
                 children: [
-                  Text('Available Professionals', style: AppTextStyles.h3),
+                  Text(
+                    l10n.t('home_category.available_professionals'),
+                    style: AppTextStyles.h3,
+                  ),
                   const Spacer(),
                   Text(
-                    '${visibleProviders.length} found',
+                    l10n.t(
+                      'home_category.found_count',
+                      params: {'count': visibleProviders.length.toString()},
+                    ),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.grey,
                     ),
@@ -303,7 +311,10 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                                       color: provider.categoryColor,
                                     ),
                                   ),
-                                  Text('/start', style: AppTextStyles.caption),
+                                  Text(
+                                    l10n.t('home_category.start'),
+                                    style: AppTextStyles.caption,
+                                  ),
                                 ],
                               ),
                             ],

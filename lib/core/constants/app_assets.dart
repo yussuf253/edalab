@@ -4,7 +4,6 @@ class AppAssets {
   // Base paths
   static const String _imagesPath = 'assets/images';
   static const String _iconsPath = 'assets/icons';
-  static const String _lottiePath = 'assets/lottie';
 
   // Onboarding
   static const String onboarding1 = '$_imagesPath/onboarding/onboarding_1.png';
@@ -31,4 +30,11 @@ class AppAssets {
   static const String avatar = '$_imagesPath/avatar.png';
   static const String logo = '$_imagesPath/logo.png';
   static const String logoWhite = '$_imagesPath/logo_white.png';
+
+  // Bottom navigation icons
+  static const String navHome = '$_iconsPath/home.png';
+  static const String navMessages = '$_iconsPath/messages.png';
+  static const String navCart = '$_iconsPath/cart.png';
+  static const String navOrders = '$_iconsPath/orders.png';
+  static const String navProfile = '$_iconsPath/profil.png';
 }

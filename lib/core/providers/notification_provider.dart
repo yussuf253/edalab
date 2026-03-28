@@ -19,6 +19,7 @@ class NotificationProvider extends ChangeNotifier {
   bool _isSyncing = false;
   String _scope = 'guest';
   String? _currentUserId;
+  String? _lastSessionSignature;
 
   bool get isLoading => _isLoading;
   bool get isSyncing => _isSyncing;
@@ -45,6 +46,18 @@ class NotificationProvider extends ChangeNotifier {
   }) async {
     final nextUserId = authProvider.user?.id;
     final nextScope = nextUserId == null ? 'guest' : 'user_$nextUserId';
+    final sessionSignature = [
+      nextScope,
+      'cart:${cartProvider.itemCount}',
+      'promo:${cartProvider.promoCode ?? ''}',
+      'addresses:${authProvider.user?.addresses.length ?? 0}',
+    ].join('|');
+
+    if (_lastSessionSignature == sessionSignature) {
+      return;
+    }
+
+    _lastSessionSignature = sessionSignature;
     _currentUserId = nextUserId;
 
     if (_scope != nextScope) {

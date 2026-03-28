@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -12,24 +14,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final hasSeenOnboarding = await AppPreferences.hasSeenOnboarding();
   final authProvider = AuthProvider();
-  await authProvider.initialize();
   final cartProvider = CartProvider();
-  await cartProvider.initialize();
+  final languageProvider = LanguageProvider();
   final notificationProvider = NotificationProvider();
-  await notificationProvider.initialize();
-  await notificationProvider.syncSession(
-    authProvider: authProvider,
-    cartProvider: cartProvider,
-  );
-  PushNotificationService.bindProvider(notificationProvider);
-  await PushNotificationService.initialize();
-  await PushNotificationService.syncInitialMessage();
-  NotificationSyncService.instance.start(notificationProvider);
-  await NotificationSyncService.instance.syncNow(showAlerts: false);
-  final initialToken = PushNotificationService.token;
-  if (initialToken != null && initialToken.isNotEmpty) {
-    await notificationProvider.syncPushToken(initialToken);
-  }
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -54,6 +41,7 @@ Future<void> main() async {
             return provider;
           },
         ),
+        ChangeNotifierProvider.value(value: languageProvider),
         ChangeNotifierProxyProvider2<
           AuthProvider,
           CartProvider,
@@ -82,4 +70,50 @@ Future<void> main() async {
       ),
     ),
   );
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(
+      _bootstrapAppServices(
+        authProvider: authProvider,
+        cartProvider: cartProvider,
+        languageProvider: languageProvider,
+        notificationProvider: notificationProvider,
+      ),
+    );
+  });
+}
+
+Future<void> _bootstrapAppServices({
+  required AuthProvider authProvider,
+  required CartProvider cartProvider,
+  required LanguageProvider languageProvider,
+  required NotificationProvider notificationProvider,
+}) async {
+  await Future.wait([
+    authProvider.initialize(),
+    cartProvider.initialize(),
+    languageProvider.initialize(),
+    notificationProvider.initialize(),
+  ]);
+
+  await notificationProvider.syncSession(
+    authProvider: authProvider,
+    cartProvider: cartProvider,
+  );
+
+  PushNotificationService.bindProvider(notificationProvider);
+  NotificationSyncService.instance.start(notificationProvider);
+
+  unawaited(NotificationSyncService.instance.syncNow(showAlerts: false));
+  unawaited(_initializePush(notificationProvider));
+}
+
+Future<void> _initializePush(NotificationProvider notificationProvider) async {
+  await PushNotificationService.initialize();
+  await PushNotificationService.syncInitialMessage();
+
+  final initialToken = PushNotificationService.token;
+  if (initialToken != null && initialToken.isNotEmpty) {
+    unawaited(notificationProvider.syncPushToken(initialToken));
+  }
 }

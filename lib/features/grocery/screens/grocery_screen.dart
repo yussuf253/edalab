@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -59,6 +60,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
     final cartItemCount = cartProvider.getModuleItemCount('grocery');
     final moduleTotal = cartProvider.getModuleSubtotal('grocery');
@@ -91,7 +93,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Grocery'),
+        title: Text(l10n.t('grocery.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -139,7 +141,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: AppSearchBar(
-                hint: 'Search groceries...',
+                hint: l10n.t('grocery.search_hint'),
                 controller: _searchController,
                 onChanged: (value) => setState(() => _searchQuery = value),
               ),
@@ -165,14 +167,14 @@ class _GroceryScreenState extends State<GroceryScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Fresh & Organic 🌿',
+                            l10n.t('grocery.hero_title'),
                             style: AppTextStyles.h3.copyWith(
                               color: AppColors.white,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Get 40% off on fresh produce',
+                            l10n.t('grocery.hero_subtitle'),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: Colors.white70,
                             ),
@@ -190,7 +192,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        'Shop Now',
+                        l10n.t('grocery.shop_now'),
                         style: AppTextStyles.labelMedium.copyWith(
                           color: AppColors.grocery,
                         ),
@@ -204,7 +206,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text('Categories', style: AppTextStyles.h4),
+              child: Text(l10n.t('grocery.categories'), style: AppTextStyles.h4),
             ),
           ),
           if (_isLoading)
@@ -257,7 +259,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: Text('Popular Items', style: AppTextStyles.h4),
+              child: Text(l10n.t('grocery.popular_items'), style: AppTextStyles.h4),
             ),
           ),
           if (_isLoading)
@@ -316,7 +318,9 @@ class _GroceryScreenState extends State<GroceryScreen> {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    item.isOrganic ? 'Organic pick' : 'Fresh daily',
+                                    item.isOrganic
+                                        ? l10n.t('grocery.organic_pick')
+                                        : l10n.t('grocery.fresh_daily'),
                                     style: AppTextStyles.caption,
                                   ),
                                   const Spacer(),
@@ -335,8 +339,11 @@ class _GroceryScreenState extends State<GroceryScreen> {
                                                 fontSize: 13,
                                               ),
                                             ),
-                                            Text(
-                                              'per ${item.unit}',
+                                          Text(
+                                              l10n.t(
+                                                'grocery.per_unit',
+                                                params: {'unit': item.unit},
+                                              ),
                                               style: AppTextStyles.caption,
                                             ),
                                           ],
@@ -398,7 +405,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
                       child: Text('$cartItemCount', style: AppTextStyles.badge),
                     ),
                     const SizedBox(width: 12),
-                    Text('View Cart', style: AppTextStyles.button),
+                    Text(l10n.t('grocery.view_cart'), style: AppTextStyles.button),
                     const SizedBox(width: 12),
                     Text(
                       '\$${moduleTotal.toStringAsFixed(2)}',

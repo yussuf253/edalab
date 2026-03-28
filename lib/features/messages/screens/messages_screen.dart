@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -65,29 +66,28 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final auth = context.watch<AuthProvider>();
     final isLoggedIn = auth.isLoggedIn && auth.user != null;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Messages')),
+      appBar: AppBar(title: Text(l10n.t('messages.title'))),
       body: _isLoading
           ? const SimpleListShimmer(itemCount: 6)
           : !isLoggedIn
           ? EmptyState(
               icon: Icons.chat_bubble_outline_rounded,
-              title: 'Login to access messages',
-              subtitle:
-                  'Your conversations with doctors, providers, and rides will appear here.',
-              buttonText: 'Login',
+              title: l10n.t('messages.login_title'),
+              subtitle: l10n.t('messages.login_subtitle'),
+              buttonText: l10n.t('messages.login_button'),
               onButtonPressed: () => context.push('/login'),
             )
           : _conversations.isEmpty
-          ? const EmptyState(
+          ? EmptyState(
               icon: Icons.forum_outlined,
-              title: 'No conversations yet',
-              subtitle:
-                  'Start a chat from a doctor, home service provider, or an active ride.',
+              title: l10n.t('messages.empty_title'),
+              subtitle: l10n.t('messages.empty_subtitle'),
             )
           : RefreshIndicator(
               onRefresh: _loadConversations,
@@ -159,7 +159,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                     Expanded(
                                       child: Text(
                                         conversation.lastMessage ??
-                                            'Start the conversation',
+                                            l10n.t('messages.start_conversation'),
                                         style: AppTextStyles.bodySmall.copyWith(
                                           color: AppColors.grey,
                                         ),
@@ -218,13 +218,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
   String _subtitleFor(ConversationModel conversation) {
     switch (conversation.entityType) {
       case 'DOCTOR':
-        return 'Doctor conversation';
+        return context.l10n.t('messages.doctor');
       case 'HOME_SERVICE_PROVIDER':
-        return 'Home service conversation';
+        return context.l10n.t('messages.home_services');
       case 'RIDE':
-        return 'Ride conversation';
+        return context.l10n.t('messages.ride');
       default:
-        return 'Conversation';
+        return context.l10n.t('messages.title');
     }
   }
 

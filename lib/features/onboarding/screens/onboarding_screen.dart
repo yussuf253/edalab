@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:animate_do/animate_do.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/storage/app_preferences.dart';
 import '../../../core/widgets/app_button.dart';
 
@@ -16,30 +17,6 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-
-  final List<_OnboardingData> _pages = [
-    _OnboardingData(
-      icon: Icons.all_inclusive_rounded,
-      title: 'All Services\nIn One App',
-      subtitle: 'Shop, eat, ride, book hotels, consult doctors, and more — all from a single, beautiful app.',
-      gradient: AppColors.primaryGradient,
-      bgColor: const Color(0xFFF0EFFF),
-    ),
-    _OnboardingData(
-      icon: Icons.flash_on_rounded,
-      title: 'Lightning Fast\nDelivery',
-      subtitle: 'Get your orders delivered in minutes. Track every step of the way with real-time updates.',
-      gradient: AppColors.secondaryGradient,
-      bgColor: const Color(0xFFE6FAFF),
-    ),
-    _OnboardingData(
-      icon: Icons.verified_user_rounded,
-      title: 'Trusted &\nSecure',
-      subtitle: 'Your payments and data are always secure. Verified sellers, certified doctors, licensed drivers.',
-      gradient: AppColors.accentGradient,
-      bgColor: const Color(0xFFFFF0F0),
-    ),
-  ];
 
   @override
   void dispose() {
@@ -57,6 +34,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final pages = [
+      _OnboardingData(
+        icon: Icons.all_inclusive_rounded,
+        title: l10n.t('onboarding.page1_title'),
+        subtitle: l10n.t('onboarding.page1_subtitle'),
+        gradient: AppColors.primaryGradient,
+        bgColor: const Color(0xFFF0EFFF),
+      ),
+      _OnboardingData(
+        icon: Icons.flash_on_rounded,
+        title: l10n.t('onboarding.page2_title'),
+        subtitle: l10n.t('onboarding.page2_subtitle'),
+        gradient: AppColors.secondaryGradient,
+        bgColor: const Color(0xFFE6FAFF),
+      ),
+      _OnboardingData(
+        icon: Icons.verified_user_rounded,
+        title: l10n.t('onboarding.page3_title'),
+        subtitle: l10n.t('onboarding.page3_subtitle'),
+        gradient: AppColors.accentGradient,
+        bgColor: const Color(0xFFFFF0F0),
+      ),
+    ];
     return Scaffold(
       backgroundColor: AppColors.white,
       body: SafeArea(
@@ -70,7 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: TextButton(
                   onPressed: _completeOnboarding,
                   child: Text(
-                    'Skip',
+                    l10n.t('onboarding.skip'),
                     style: AppTextStyles.labelLarge.copyWith(
                       color: AppColors.grey,
                     ),
@@ -82,12 +83,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                itemCount: _pages.length,
+                itemCount: pages.length,
                 onPageChanged: (index) {
                   setState(() => _currentPage = index);
                 },
                 itemBuilder: (context, index) {
-                  final page = _pages[index];
+                  final page = pages[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32),
                     child: Column(
@@ -160,7 +161,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
-                      _pages.length,
+                      pages.length,
                       (index) => AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -178,11 +179,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   const SizedBox(height: 32),
                   // Next / Get Started button
                   AppButton(
-                    text: _currentPage == _pages.length - 1
-                        ? 'Get Started'
-                        : 'Next',
+                    text: _currentPage == pages.length - 1
+                        ? l10n.t('onboarding.get_started')
+                        : l10n.t('onboarding.next'),
                     onPressed: () async {
-                      if (_currentPage == _pages.length - 1) {
+                      if (_currentPage == pages.length - 1) {
                         await _completeOnboarding();
                       } else {
                         _pageController.nextPage(

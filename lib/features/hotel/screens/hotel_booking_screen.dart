@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
@@ -49,6 +50,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final auth = context.watch<AuthProvider>();
     final h = _hotel;
     final defaultAddress = auth.user?.addresses
@@ -70,7 +72,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Booking Summary'),
+        title: Text(l10n.t('hotel_booking.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -122,7 +124,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                         children: [
                           Text(h.name, style: AppTextStyles.labelLarge),
                           Text(
-                            'Standard Room • City View',
+                            l10n.t('hotel_booking.standard_room'),
                             style: AppTextStyles.caption,
                           ),
                         ],
@@ -139,46 +141,46 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                 color: AppColors.white,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Column(
-                children: [
-                  _Row('Check-in', DateFormat('MMM d, y').format(checkIn)),
-                  _Row('Check-out', DateFormat('MMM d, y').format(checkOut)),
-                  _Row('Nights', '$nights'),
-                  _Row('Guests', '2 Adults'),
-                  _Row('Room', 'Standard Room'),
+                child: Column(
+                  children: [
+                  _Row(l10n.t('hotel_booking.check_in'), DateFormat('MMM d, y').format(checkIn)),
+                  _Row(l10n.t('hotel_booking.check_out'), DateFormat('MMM d, y').format(checkOut)),
+                  _Row(l10n.t('hotel_booking.nights'), '$nights'),
+                  _Row(l10n.t('hotel_booking.guests'), l10n.t('hotel_booking.two_adults')),
+                  _Row(l10n.t('hotel_booking.room'), l10n.t('hotel_booking.standard_room_only')),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-            Text('Guest Information', style: AppTextStyles.h4),
+            Text(l10n.t('hotel_booking.guest_info'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             TextFormField(
               decoration: InputDecoration(
-                hintText: auth.user?.fullName ?? 'Full Name',
+                hintText: auth.user?.fullName ?? l10n.t('hotel_booking.full_name'),
                 prefixIcon: const Icon(Icons.person_outline_rounded),
               ),
             ),
             const SizedBox(height: 12),
             TextFormField(
               decoration: InputDecoration(
-                hintText: auth.user?.email ?? 'Email',
+                hintText: auth.user?.email ?? l10n.t('hotel_booking.email'),
                 prefixIcon: const Icon(Icons.email_outlined),
               ),
             ),
             const SizedBox(height: 12),
             TextFormField(
-              decoration: const InputDecoration(
-                hintText: 'Phone',
-                prefixIcon: Icon(Icons.phone_outlined),
+              decoration: InputDecoration(
+                hintText: l10n.t('hotel_booking.phone'),
+                prefixIcon: const Icon(Icons.phone_outlined),
               ),
             ),
             const SizedBox(height: 20),
-            Text('Special Requests', style: AppTextStyles.h4),
+            Text(l10n.t('hotel_booking.special_requests'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             TextFormField(
               maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: 'Any special requests...',
+              decoration: InputDecoration(
+                hintText: l10n.t('hotel_booking.special_requests_hint'),
               ),
             ),
             const SizedBox(height: 20),
@@ -192,7 +194,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Saved Address', style: AppTextStyles.h4),
+                    Text(l10n.t('hotel_booking.saved_address'), style: AppTextStyles.h4),
                     const SizedBox(height: 8),
                     Text(
                       '${defaultAddress.label}: ${defaultAddress.address}',
@@ -209,27 +211,30 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                 color: AppColors.hotelBg,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Column(
-                children: [
+                child: Column(
+                  children: [
                   _Row(
-                    'Room Rate ($nights nights)',
+                    l10n.t('hotel_booking.room_rate', params: {'count': '$nights'}),
                     '\$${roomRate.toStringAsFixed(2)}',
                   ),
-                  _Row('Service Fee', '\$${serviceFee.toStringAsFixed(2)}'),
-                  _Row('Tax', '\$${tax.toStringAsFixed(2)}'),
+                  _Row(l10n.t('hotel_booking.service_fee'), '\$${serviceFee.toStringAsFixed(2)}'),
+                  _Row(l10n.t('hotel_booking.tax'), '\$${tax.toStringAsFixed(2)}'),
                   const Divider(height: 20),
-                  _Row('Total', '\$${total.toStringAsFixed(2)}', bold: true),
+                  _Row(l10n.t('hotel_booking.total'), '\$${total.toStringAsFixed(2)}', bold: true),
                 ],
               ),
             ),
             const SizedBox(height: 24),
             AppButton(
-              text: 'Confirm Booking • \$${total.toStringAsFixed(2)}',
+              text: l10n.t(
+                'hotel_booking.confirm',
+                params: {'amount': total.toStringAsFixed(2)},
+              ),
               color: AppColors.hotel,
               onPressed: () async {
                 final allowed = await requireLoggedIn(
                   context,
-                  message: 'Please log in to confirm your hotel booking.',
+                  message: l10n.t('hotel_booking.login_required'),
                 );
                 if (!context.mounted || !allowed) return;
 
@@ -265,8 +270,8 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                     extra: {
                       'orderId': order is Map ? order['id'] : null,
                       'amount': total,
-                      'payment': 'Pay at hotel',
-                      'delivery': 'Booking confirmed',
+                      'payment': l10n.t('hotel_booking.pay_at_hotel'),
+                      'delivery': l10n.t('hotel_booking.booking_confirmed'),
                       'moduleName': h.name,
                       'itemCount': 1,
                       'address': defaultAddress == null
@@ -309,7 +314,13 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(
                     context,
-                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                  ).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        l10n.t('hotel_booking.error', params: {'error': '$e'}),
+                      ),
+                    ),
+                  );
                 }
               },
             ),

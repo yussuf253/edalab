@@ -4,8 +4,9 @@ import 'package:animate_do/animate_do.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../core/widgets/app_button.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/widgets/app_button.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -40,7 +41,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_agreeToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please accept the terms to continue.'),
+          content: Text(context.l10n.t('auth.accept_terms')),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
         ),
@@ -67,7 +68,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(authProvider.errorMessage ?? 'Registration failed. Please try again.'),
+        content: Text(
+          authProvider.errorMessage ?? context.l10n.t('auth.registration_failed'),
+        ),
         backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
       ),
@@ -77,6 +80,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final isLoading = context.watch<AuthProvider>().isLoading;
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -97,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               children: [
                 FadeInDown(
                   child: Text(
-                    'Create\nAccount ✨',
+                    l10n.t('auth.register_title'),
                     style: AppTextStyles.h1.copyWith(fontSize: 28, height: 1.05),
                   ),
                 ),
@@ -105,7 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 FadeInDown(
                   delay: const Duration(milliseconds: 100),
                   child: Text(
-                    'Start your journey with EdaLab',
+                    l10n.t('auth.register_subtitle'),
                     style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
                   ),
                 ),
@@ -114,8 +118,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 FadeInDown(
                   delay: const Duration(milliseconds: 200),
                   child: _buildField(
-                    label: 'Full Name',
-                    hint: 'Enter your full name',
+                    label: l10n.t('auth.full_name'),
+                    hint: l10n.t('auth.full_name_hint'),
                     icon: Icons.person_outline_rounded,
                     controller: _nameController,
                   ),
@@ -125,8 +129,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 FadeInDown(
                   delay: const Duration(milliseconds: 300),
                   child: _buildField(
-                    label: 'Email',
-                    hint: 'Enter your email',
+                    label: l10n.t('auth.email'),
+                    hint: l10n.t('auth.email_hint'),
                     icon: Icons.email_outlined,
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -137,8 +141,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 FadeInDown(
                   delay: const Duration(milliseconds: 400),
                   child: _buildField(
-                    label: 'Phone Number',
-                    hint: 'Enter your phone number',
+                    label: l10n.t('auth.phone_number'),
+                    hint: l10n.t('auth.phone_hint'),
                     icon: Icons.phone_outlined,
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
@@ -151,13 +155,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Password', style: AppTextStyles.labelLarge),
+                      Text(
+                        l10n.t('auth.password'),
+                        style: AppTextStyles.labelLarge,
+                      ),
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          hintText: 'Create a password',
+                          hintText: l10n.t('auth.password_create_hint'),
                           prefixIcon: const Icon(Icons.lock_outlined),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -172,10 +179,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please create a password';
+                            return l10n.t('auth.create_password_required');
                           }
                           if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
+                            return l10n.t('auth.password_length');
                           }
                           return null;
                         },
@@ -207,17 +214,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           text: TextSpan(
                             style: AppTextStyles.bodySmall,
                             children: [
-                              const TextSpan(text: 'I agree to the '),
+                              TextSpan(text: l10n.t('auth.agree_prefix')),
                               TextSpan(
-                                text: 'Terms of Service',
+                                text: l10n.t('auth.terms'),
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const TextSpan(text: ' and '),
+                              TextSpan(text: l10n.t('auth.and')),
                               TextSpan(
-                                text: 'Privacy Policy',
+                                text: l10n.t('auth.privacy'),
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.w600,
@@ -235,7 +242,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 FadeInUp(
                   delay: const Duration(milliseconds: 700),
                   child: AppButton(
-                    text: 'Create Account',
+                    text: l10n.t('auth.create_account'),
                     isLoading: isLoading,
                     onPressed: _handleRegister,
                   ),
@@ -247,7 +254,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: TextButton(
                       onPressed: () => context.go('/'),
                       child: Text(
-                        'Continue as Guest',
+                        l10n.t('common.continue_as_guest'),
                         style: AppTextStyles.labelMedium.copyWith(
                           color: AppColors.primary,
                         ),
@@ -263,13 +270,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Already have an account? ',
+                        l10n.t('auth.already_have_account'),
                         style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
                       ),
                       GestureDetector(
                         onTap: () => context.pop(),
                         child: Text(
-                          'Sign In',
+                          l10n.t('auth.sign_in'),
                           style: AppTextStyles.labelLarge.copyWith(
                             color: AppColors.primary,
                           ),
@@ -307,7 +314,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'This field is required';
+              return context.l10n.t('auth.field_required');
             }
             return null;
           },

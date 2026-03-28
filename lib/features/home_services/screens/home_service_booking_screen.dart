@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -85,6 +86,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final provider = _provider;
     final auth = context.watch<AuthProvider>();
     final addresses = auth.user?.addresses ?? const [];
@@ -95,7 +97,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Book Service'),
+        title: Text(l10n.t('home_service_booking.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -183,7 +185,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          Text('Choose Service', style: AppTextStyles.h4),
+                          Text(l10n.t('home_service_booking.choose_service'), style: AppTextStyles.h4),
                           const SizedBox(height: 12),
                           Wrap(
                             spacing: 10,
@@ -225,7 +227,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                             }),
                           ),
                           const SizedBox(height: 24),
-                          Text('Service Mode', style: AppTextStyles.h4),
+                          Text(l10n.t('home_service_booking.service_mode'), style: AppTextStyles.h4),
                           const SizedBox(height: 12),
                           Row(
                             children: List.generate(
@@ -280,7 +282,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          Text('Select Date', style: AppTextStyles.h4),
+                          Text(l10n.t('home_service_booking.select_date'), style: AppTextStyles.h4),
                           const SizedBox(height: 12),
                           SizedBox(
                             height: 80,
@@ -338,7 +340,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          Text('Select Time', style: AppTextStyles.h4),
+                          Text(l10n.t('home_service_booking.select_time'), style: AppTextStyles.h4),
                           const SizedBox(height: 12),
                           Wrap(
                             spacing: 10,
@@ -378,7 +380,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                             }),
                           ),
                           const SizedBox(height: 24),
-                          Text('Service Address', style: AppTextStyles.h4),
+                          Text(l10n.t('home_service_booking.service_address'), style: AppTextStyles.h4),
                           const SizedBox(height: 12),
                           if (addresses.isEmpty)
                             Container(
@@ -397,12 +399,12 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                   const SizedBox(width: 14),
                                   Expanded(
                                     child: Text(
-                                      'No saved addresses found',
+                                      l10n.t('home_service_booking.no_saved_addresses'),
                                       style: AppTextStyles.bodyMedium,
                                     ),
                                   ),
                                   AppButton(
-                                    text: 'Add',
+                                    text: context.l10n.t('checkout.add'),
                                     width: 84,
                                     isSmall: true,
                                     onPressed: () =>
@@ -493,7 +495,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                                             ),
                                                       ),
                                                       child: Text(
-                                                        'Default',
+                                                        l10n.t('home_service_booking.default'),
                                                         style: AppTextStyles
                                                             .labelSmall
                                                             .copyWith(
@@ -522,13 +524,13 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               }).toList(),
                             ),
                           const SizedBox(height: 24),
-                          Text('Notes (optional)', style: AppTextStyles.h4),
+                          Text(l10n.t('home_service_booking.notes_optional'), style: AppTextStyles.h4),
                           const SizedBox(height: 12),
                           TextFormField(
                             controller: _notesController,
                             maxLines: 3,
-                            decoration: const InputDecoration(
-                              hintText: 'Add any service instructions...',
+                            decoration: InputDecoration(
+                              hintText: l10n.t('home_service_booking.notes_hint'),
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -540,25 +542,25 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                             ),
                             child: Column(
                               children: [
-                                _SummaryRow('Professional', provider.name),
+                                _SummaryRow(l10n.t('home_service_booking.professional'), provider.name),
                                 _SummaryRow(
-                                  'Service',
+                                  l10n.t('home_service_booking.service'),
                                   serviceOptions[selectedService],
                                 ),
                                 _SummaryRow(
-                                  'Date',
+                                  l10n.t('home_service_booking.date'),
                                   '${_dates[_selectedDate].$1}, Mar ${_dates[_selectedDate].$2}, 2026',
                                 ),
-                                _SummaryRow('Time', _times[_selectedTime]),
-                                _SummaryRow('Mode', modeOptions[selectedMode]),
+                                _SummaryRow(l10n.t('home_service_booking.time'), _times[_selectedTime]),
+                                _SummaryRow(l10n.t('home_service_booking.mode'), modeOptions[selectedMode]),
                                 if (selectedAddress != null)
                                   _SummaryRow(
-                                    'Address',
+                                    l10n.t('home_service_booking.address'),
                                     '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
                                   ),
                                 const Divider(height: 20),
                                 _SummaryRow(
-                                  'Fee',
+                                  l10n.t('home_service_booking.fee'),
                                   '\$${provider.startingPrice.toInt()}',
                                   bold: true,
                                 ),
@@ -567,21 +569,20 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                           ),
                           const SizedBox(height: 24),
                           AppButton(
-                            text: 'Confirm Booking',
+                            text: l10n.t('home_service_booking.confirm_booking'),
                             color: AppColors.homeServices,
                             onPressed: () async {
                               final allowed = await requireLoggedIn(
                                 context,
-                                message:
-                                    'Please log in to book a home service.',
+                                message: l10n.t('home_service_booking.login_required'),
                               );
                               if (!context.mounted || !allowed) return;
 
                               if (selectedAddress == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
+                                  SnackBar(
                                     content: Text(
-                                      'Please add or select a saved address.',
+                                      l10n.t('home_service_booking.select_address'),
                                     ),
                                   ),
                                 );
@@ -629,7 +630,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 extra: {
                                   'orderId': order['id'],
                                   'amount': provider.startingPrice,
-                                  'payment': 'Pay on confirmation',
+                                  'payment': l10n.t('home_service_booking.pay_on_confirmation'),
                                   'delivery': modeOptions[selectedMode],
                                   'moduleName': serviceOptions[selectedService],
                                   'itemCount': 1,

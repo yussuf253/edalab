@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/notification_bell.dart';
 
@@ -13,6 +14,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final user = authProvider.user;
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -68,7 +70,10 @@ class ProfileScreen extends StatelessWidget {
                         : const Icon(Icons.person_rounded, color: AppColors.white, size: 40),
                   ),
                   const SizedBox(height: 14),
-                  Text(user?.fullName ?? 'Guest', style: AppTextStyles.h2.copyWith(color: AppColors.white)),
+                  Text(
+                    user?.fullName ?? l10n.t('profile.guest'),
+                    style: AppTextStyles.h2.copyWith(color: AppColors.white),
+                  ),
                   const SizedBox(height: 4),
                   if (user != null)
                     Text(user.email, style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70)),
@@ -77,11 +82,14 @@ class ProfileScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _Stat(user != null ? '12' : '0', 'Orders'),
+                      _Stat(user != null ? '12' : '0', l10n.t('profile.orders')),
                       Container(width: 1, height: 30, color: Colors.white24),
-                      _Stat(user != null ? '\$450' : '\$0', 'Spent'),
+                      _Stat(user != null ? '\$450' : '\$0', l10n.t('profile.spent')),
                       Container(width: 1, height: 30, color: Colors.white24),
-                      _Stat(user != null ? '${user.points}' : '0', 'Rewards'),
+                      _Stat(
+                        user != null ? '${user.points}' : '0',
+                        l10n.t('profile.rewards'),
+                      ),
                     ],
                   ),
                 ],
@@ -95,24 +103,62 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Account', style: AppTextStyles.h4),
+                  Text(l10n.t('profile.account'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
-                  _MenuItem(Icons.person_outline_rounded, 'Edit Profile', AppColors.primary, onTap: () => context.push('/profile/edit')),
-                  _MenuItem(Icons.location_on_outlined, 'Addresses', AppColors.secondary, onTap: () => context.push('/profile/addresses')),
-                  _MenuItem(Icons.credit_card_rounded, 'Payment Methods', AppColors.food, onTap: () => context.push('/profile/payment-methods')),
+                  _MenuItem(
+                    Icons.person_outline_rounded,
+                    l10n.t('profile.edit_profile'),
+                    AppColors.primary,
+                    onTap: () => context.push('/profile/edit'),
+                  ),
+                  _MenuItem(
+                    Icons.location_on_outlined,
+                    l10n.t('profile.addresses'),
+                    AppColors.secondary,
+                    onTap: () => context.push('/profile/addresses'),
+                  ),
+                  _MenuItem(
+                    Icons.credit_card_rounded,
+                    l10n.t('profile.payment_methods'),
+                    AppColors.food,
+                    onTap: () => context.push('/profile/payment-methods'),
+                  ),
                   const SizedBox(height: 20),
-                  
-                  Text('Preferences', style: AppTextStyles.h4),
+
+                  Text(l10n.t('profile.preferences'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
-                  _MenuItem(Icons.notifications_outlined, 'Notifications', AppColors.warning, onTap: () => context.push('/notifications')),
-                  _MenuItem(Icons.settings_outlined, 'Settings', AppColors.dark, onTap: () => context.push('/profile/settings')),
+                  _MenuItem(
+                    Icons.notifications_outlined,
+                    l10n.t('profile.notifications'),
+                    AppColors.warning,
+                    onTap: () => context.push('/notifications'),
+                  ),
+                  _MenuItem(
+                    Icons.settings_outlined,
+                    l10n.t('profile.settings'),
+                    AppColors.dark,
+                    onTap: () => context.push('/profile/settings'),
+                  ),
                   const SizedBox(height: 20),
-                  
-                  Text('Support', style: AppTextStyles.h4),
+
+                  Text(l10n.t('profile.support'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
-                  _MenuItem(Icons.help_outline_rounded, 'Help Center', AppColors.success, onTap: () => context.push('/profile/help')),
-                  _MenuItem(Icons.chat_bubble_outline_rounded, 'Contact Us', AppColors.doctor),
-                  _MenuItem(Icons.privacy_tip_outlined, 'Privacy Policy', AppColors.grey),
+                  _MenuItem(
+                    Icons.help_outline_rounded,
+                    l10n.t('profile.help_center'),
+                    AppColors.success,
+                    onTap: () => context.push('/profile/help'),
+                  ),
+                  _MenuItem(
+                    Icons.chat_bubble_outline_rounded,
+                    l10n.t('profile.contact_us'),
+                    AppColors.doctor,
+                  ),
+                  _MenuItem(
+                    Icons.privacy_tip_outlined,
+                    l10n.t('profile.privacy_policy'),
+                    AppColors.grey,
+                  ),
                   const SizedBox(height: 20),
                   
                   // Logout
@@ -134,7 +180,12 @@ class ProfileScreen extends StatelessWidget {
                           children: [
                             const Icon(Icons.logout_rounded, color: AppColors.accent, size: 22),
                             const SizedBox(width: 10),
-                            Text('Log Out', style: AppTextStyles.labelLarge.copyWith(color: AppColors.accent)),
+                            Text(
+                              l10n.t('profile.log_out'),
+                              style: AppTextStyles.labelLarge.copyWith(
+                                color: AppColors.accent,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -153,7 +204,12 @@ class ProfileScreen extends StatelessWidget {
                           children: [
                             const Icon(Icons.login_rounded, color: AppColors.primary, size: 22),
                             const SizedBox(width: 10),
-                            Text('Log In', style: AppTextStyles.labelLarge.copyWith(color: AppColors.primary)),
+                            Text(
+                              l10n.t('profile.log_in'),
+                              style: AppTextStyles.labelLarge.copyWith(
+                                color: AppColors.primary,
+                              ),
+                            ),
                           ],
                         ),
                       ),

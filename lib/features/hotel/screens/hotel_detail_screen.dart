@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -47,6 +48,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final h = _hotel;
     final type = h.amenities.isNotEmpty ? h.amenities.first : 'Hotel';
 
@@ -162,7 +164,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                           ],
                         ),
                         const SizedBox(height: 24),
-                        Text('About', style: AppTextStyles.h4),
+                        Text(l10n.t('hotel_detail.about'), style: AppTextStyles.h4),
                         const SizedBox(height: 8),
                         Text(
                           h.description,
@@ -172,7 +174,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        Text('Amenities', style: AppTextStyles.h4),
+                        Text(l10n.t('hotel_detail.amenities'), style: AppTextStyles.h4),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 10,
@@ -187,28 +189,28 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                               .toList(),
                         ),
                         const SizedBox(height: 24),
-                        Text('Available Rooms', style: AppTextStyles.h4),
+                        Text(l10n.t('hotel_detail.available_rooms'), style: AppTextStyles.h4),
                         const SizedBox(height: 12),
                         _RoomCard(
-                          'Standard Room',
-                          '1 Bed • City View',
+                          l10n.t('hotel_detail.standard_room'),
+                          l10n.t('hotel_detail.standard_room_desc'),
                           h.pricePerNight.toInt(),
                           true,
                         ),
                         _RoomCard(
-                          'Premium Suite',
-                          '1 King Bed • Balcony',
+                          l10n.t('hotel_detail.premium_suite'),
+                          l10n.t('hotel_detail.premium_suite_desc'),
                           (h.pricePerNight * 1.5).toInt(),
                           true,
                         ),
                         _RoomCard(
-                          'Royal Suite',
-                          '2 Beds • Living Room',
+                          l10n.t('hotel_detail.royal_suite'),
+                          l10n.t('hotel_detail.royal_suite_desc'),
                           (h.pricePerNight * 2.2).toInt(),
                           false,
                         ),
                         const SizedBox(height: 24),
-                        Text('Reviews', style: AppTextStyles.h4),
+                        Text(l10n.t('hotel_detail.reviews'), style: AppTextStyles.h4),
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.all(14),
@@ -237,7 +239,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                                   ),
                                   const SizedBox(width: 10),
                                   Text(
-                                    'John D.',
+                                    l10n.t('hotel_detail.reviewer_name'),
                                     style: AppTextStyles.labelMedium,
                                   ),
                                   const Spacer(),
@@ -253,7 +255,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Amazing hotel with incredible views. The staff was exceptionally friendly and helpful. Will definitely come again!',
+                                l10n.t('hotel_detail.review_text'),
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.dark,
                                   height: 1.5,
@@ -288,7 +290,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Starting from', style: AppTextStyles.caption),
+                  Text(l10n.t('hotel_detail.starting_from'), style: AppTextStyles.caption),
                   Row(
                     children: [
                       Text(
@@ -297,7 +299,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                           color: AppColors.hotel,
                         ),
                       ),
-                      Text('/night', style: AppTextStyles.caption),
+                      Text(l10n.t('hotel.per_night'), style: AppTextStyles.caption),
                     ],
                   ),
                 ],
@@ -305,12 +307,12 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
               const SizedBox(width: 20),
               Expanded(
                 child: AppButton(
-                  text: 'Book Now',
+                  text: l10n.t('hotel_detail.book_now'),
                   color: AppColors.hotel,
                   onPressed: () async {
                     final allowed = await requireLoggedIn(
                       context,
-                      message: 'Please log in to book this hotel.',
+                      message: l10n.t('hotel_detail.login_required'),
                     );
                     if (!context.mounted || !allowed) return;
                     context.push('/hotel/book/${h.id}');
@@ -387,6 +389,7 @@ class _RoomCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -427,10 +430,12 @@ class _RoomCard extends StatelessWidget {
                         color: AppColors.hotel,
                       ),
                     ),
-                    Text('/night', style: AppTextStyles.caption),
+                    Text(l10n.t('hotel.per_night'), style: AppTextStyles.caption),
                     const Spacer(),
                     Text(
-                      available ? 'Available' : 'Sold Out',
+                      available
+                          ? l10n.t('hotel_detail.available')
+                          : l10n.t('hotel_detail.sold_out'),
                       style: AppTextStyles.labelSmall.copyWith(
                         color: available ? AppColors.success : AppColors.accent,
                       ),

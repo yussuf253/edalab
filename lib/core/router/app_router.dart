@@ -27,6 +27,7 @@ import '../../features/food/screens/food_order_tracking_screen.dart';
 import '../../features/doctor/screens/doctor_screen.dart';
 import '../../features/doctor/screens/doctor_professionals_screen.dart';
 import '../../features/doctor/screens/doctor_detail_screen.dart';
+import '../../features/doctor/screens/doctor_appointment_detail_screen.dart';
 import '../../features/doctor/screens/book_appointment_screen.dart';
 import '../../features/doctor/screens/my_appointments_screen.dart';
 import '../../features/hotel/screens/hotel_screen.dart';
@@ -254,6 +255,15 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
       GoRoute(
         path: '/doctor/appointments',
         builder: (context, state) => const MyAppointmentsScreen(),
+      ),
+      GoRoute(
+        path: '/doctor/appointments/:id',
+        builder: (context, state) => DoctorAppointmentDetailScreen(
+          appointmentId: state.pathParameters['id']!,
+          initialAppointment: state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : null,
+        ),
       ),
 
       // Hotel

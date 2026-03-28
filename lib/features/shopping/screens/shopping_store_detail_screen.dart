@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -64,14 +65,17 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
     final wishlistProvider = context.watch<WishlistProvider>();
     final cartItemCount = cartProvider.getModuleItemCount('shopping');
     final moduleTotal = cartProvider.getModuleSubtotal('shopping');
-    final categories = ['All', ..._store.categories];
+    final allCategory = l10n.t('common.all');
+    final categories = [allCategory, ..._store.categories];
     final normalizedQuery = _searchQuery.trim().toLowerCase();
     final products = _products.where((product) {
       final matchesCategory = _selectedCategory == 'All' ||
+          _selectedCategory == allCategory ||
           product.category == _selectedCategory;
       final matchesSearch = normalizedQuery.isEmpty ||
           product.name.toLowerCase().contains(normalizedQuery) ||
@@ -238,7 +242,10 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                             const SizedBox(width: 10),
                             _StoreDetailChip(
                               icon: Icons.inventory_2_outlined,
-                              label: '${_store.productCount} products',
+                              label: l10n.t(
+                                'store_detail.products',
+                                params: {'count': _store.productCount.toString()},
+                              ),
                               color: AppColors.primary,
                             ),
                             const SizedBox(width: 10),
@@ -252,7 +259,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                         ),
                         const SizedBox(height: 16),
                         AppSearchBar(
-                          hint: 'Search in this shop...',
+                          hint: l10n.t('store_detail.search_hint'),
                           onChanged: (value) =>
                               setState(() => _searchQuery = value),
                         ),
@@ -309,7 +316,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
               hasScrollBody: false,
               child: Center(
                 child: Text(
-                  'No products found in this shop.',
+                  l10n.t('store_detail.empty'),
                   style: AppTextStyles.bodyMedium,
                 ),
               ),
@@ -468,7 +475,10 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                       child: Text('$cartItemCount', style: AppTextStyles.badge),
                     ),
                     const SizedBox(width: 12),
-                    Text('View Cart', style: AppTextStyles.button),
+                    Text(
+                      l10n.t('store_detail.view_cart'),
+                      style: AppTextStyles.button,
+                    ),
                     const SizedBox(width: 12),
                     Text(
                       '\$${moduleTotal.toStringAsFixed(2)}',

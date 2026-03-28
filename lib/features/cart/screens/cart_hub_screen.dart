@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
@@ -27,13 +28,14 @@ class _CartHubScreenState extends State<CartHubScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cart = context.watch<CartProvider>();
 
     final sections = [
       _CartModule(
         key: 'shopping',
-        title: 'Shopping',
-        subtitle: 'Fashion, gadgets, and essentials',
+        title: l10n.t('module.shopping'),
+        subtitle: l10n.t('cart.shopping_subtitle'),
         route: '/shopping/cart',
         accent: AppColors.shopping,
         icon: Icons.shopping_bag_rounded,
@@ -42,8 +44,8 @@ class _CartHubScreenState extends State<CartHubScreen> {
       ),
       _CartModule(
         key: 'food',
-        title: 'Food',
-        subtitle: 'Meals, drinks, and restaurant extras',
+        title: l10n.t('module.food'),
+        subtitle: l10n.t('cart.food_subtitle'),
         route: '/food/cart',
         accent: AppColors.food,
         icon: Icons.restaurant_rounded,
@@ -52,8 +54,8 @@ class _CartHubScreenState extends State<CartHubScreen> {
       ),
       _CartModule(
         key: 'grocery',
-        title: 'Grocery',
-        subtitle: 'Fresh picks and pantry staples',
+        title: l10n.t('module.grocery'),
+        subtitle: l10n.t('cart.grocery_subtitle'),
         route: '/grocery/cart',
         accent: AppColors.grocery,
         icon: Icons.local_grocery_store_rounded,
@@ -62,8 +64,8 @@ class _CartHubScreenState extends State<CartHubScreen> {
       ),
       _CartModule(
         key: 'pharmacy',
-        title: 'Pharmacy',
-        subtitle: 'Wellness, care, and refill items',
+        title: l10n.t('module.pharmacy'),
+        subtitle: l10n.t('cart.pharmacy_subtitle'),
         route: '/pharmacy/cart',
         accent: AppColors.pharmacy,
         icon: Icons.medication_rounded,
@@ -78,7 +80,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Cart'), centerTitle: false),
+      appBar: AppBar(title: Text(l10n.t('cart.title')), centerTitle: false),
       body: cart.isHydrating
           ? const CartHubShimmer()
           : CustomScrollView(
@@ -114,11 +116,19 @@ class _CartHubScreenState extends State<CartHubScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '${cart.itemCount} items waiting',
+                                  l10n.t(
+                                    'cart.items_waiting',
+                                    params: {'count': '${cart.itemCount}'},
+                                  ),
                                   style: AppTextStyles.labelLarge,
                                 ),
                                 Text(
-                                  'Estimated subtotal \$${cart.subtotal.toStringAsFixed(2)}',
+                                  l10n.t(
+                                    'cart.estimated_subtotal',
+                                    params: {
+                                      'amount': cart.subtotal.toStringAsFixed(2),
+                                    },
+                                  ),
                                   style: AppTextStyles.bodySmall.copyWith(
                                     color: AppColors.grey,
                                   ),
@@ -155,12 +165,12 @@ class _CartHubScreenState extends State<CartHubScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Your carts are empty',
+                              l10n.t('cart.empty_title'),
                               style: AppTextStyles.h3,
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Add items from shopping, food, grocery, or pharmacy and they will show up here.',
+                              l10n.t('cart.empty_subtitle'),
                               textAlign: TextAlign.center,
                               style: AppTextStyles.bodyMedium.copyWith(
                                 color: AppColors.grey,
@@ -180,7 +190,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: const Text('Browse Services'),
+                              child: Text(l10n.t('cart.browse_services')),
                             ),
                           ],
                         ),
@@ -192,7 +202,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
                       child: Text(
-                        'Active Module Carts',
+                        l10n.t('cart.active_modules'),
                         style: AppTextStyles.h4,
                       ),
                     ),
@@ -218,6 +228,7 @@ class _CartModuleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return GestureDetector(
       onTap: () => context.push(section.route),
       child: Container(
@@ -262,7 +273,13 @@ class _CartModuleTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${section.count} items',
+                  l10n.t(
+                    'cart.items_count',
+                    params: {
+                      'count': '${section.count}',
+                      'suffix': section.count == 1 ? '' : 's',
+                    },
+                  ),
                   style: AppTextStyles.labelMedium.copyWith(
                     color: section.accent,
                   ),

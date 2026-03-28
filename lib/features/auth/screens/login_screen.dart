@@ -4,8 +4,9 @@ import 'package:animate_do/animate_do.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../core/widgets/app_button.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/widgets/app_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -39,7 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
       if (success && mounted) {
         context.go('/');
       } else if (mounted) {
-        final errorMessage = authProvider.errorMessage ?? 'Login failed. Please try again.';
+        final errorMessage =
+            authProvider.errorMessage ?? context.l10n.t('auth.login_failed');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
@@ -53,6 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final isLoading = context.watch<AuthProvider>().isLoading;
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -86,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 FadeInDown(
                   delay: const Duration(milliseconds: 100),
                   child: Text(
-                    'Welcome\nBack! 👋',
+                    l10n.t('auth.login_title'),
                     style: AppTextStyles.h1.copyWith(fontSize: 28, height: 1.05),
                   ),
                 ),
@@ -94,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 FadeInDown(
                   delay: const Duration(milliseconds: 200),
                   child: Text(
-                    'Sign in to continue your journey',
+                    l10n.t('auth.login_subtitle'),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.grey,
                     ),
@@ -107,18 +110,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Email', style: AppTextStyles.labelLarge),
+                      Text(l10n.t('auth.email'), style: AppTextStyles.labelLarge),
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
-                          hintText: 'Enter your email',
-                          prefixIcon: Icon(Icons.email_outlined),
+                        decoration: InputDecoration(
+                          hintText: l10n.t('auth.email_hint'),
+                          prefixIcon: const Icon(Icons.email_outlined),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
+                            return l10n.t('auth.email_required');
                           }
                           return null;
                         },
@@ -133,13 +136,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Password', style: AppTextStyles.labelLarge),
+                      Text(
+                        l10n.t('auth.password'),
+                        style: AppTextStyles.labelLarge,
+                      ),
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          hintText: 'Enter your password',
+                          hintText: l10n.t('auth.password_hint'),
                           prefixIcon: const Icon(Icons.lock_outlined),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -156,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
+                            return l10n.t('auth.password_required');
                           }
                           return null;
                         },
@@ -173,7 +179,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: TextButton(
                       onPressed: () {},
                       child: Text(
-                        'Forgot Password?',
+                        l10n.t('auth.forgot_password'),
                         style: AppTextStyles.labelMedium.copyWith(
                           color: AppColors.primary,
                         ),
@@ -186,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 FadeInDown(
                   delay: const Duration(milliseconds: 500),
                   child: AppButton(
-                    text: 'Sign In',
+                    text: l10n.t('auth.sign_in'),
                     isLoading: isLoading,
                     onPressed: _handleLogin,
                   ),
@@ -198,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: TextButton(
                       onPressed: () => context.go('/'),
                       child: Text(
-                        'Continue as Guest',
+                        l10n.t('common.continue_as_guest'),
                         style: AppTextStyles.labelMedium.copyWith(
                           color: AppColors.primary,
                         ),
@@ -216,7 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
-                          'Or continue with',
+                          l10n.t('auth.or_continue_with'),
                           style: AppTextStyles.bodySmall,
                         ),
                       ),
@@ -256,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Don't have an account? ",
+                        l10n.t('auth.no_account'),
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.grey,
                         ),
@@ -264,7 +270,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       GestureDetector(
                         onTap: () => context.push('/register'),
                         child: Text(
-                          'Sign Up',
+                          l10n.t('auth.sign_up'),
                           style: AppTextStyles.labelLarge.copyWith(
                             color: AppColors.primary,
                           ),

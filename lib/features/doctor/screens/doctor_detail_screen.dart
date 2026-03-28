@@ -5,9 +5,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
@@ -49,6 +49,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
   }
 
   Future<void> _contactProvider() async {
+    final l10n = context.l10n;
     final doctor = _doctor;
     if (doctor == null) return;
     final whatsApp = doctor.contactWhatsApp?.replaceAll(RegExp(r'[^0-9+]'), '');
@@ -64,7 +65,9 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
     if (uri == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No contact number available yet.')),
+        SnackBar(
+          content: Text(l10n.t('doctor_booking.no_contact')),
+        ),
       );
       return;
     }
@@ -72,12 +75,15 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!mounted || launched) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Unable to open the contact action.')),
+      SnackBar(
+        content: Text(l10n.t('doctor_booking.cannot_open_contact')),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final doctor = _doctor;
 
     return Scaffold(
@@ -146,60 +152,68 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '${doctor.specialty} • ${doctor.experience} experience',
+                          '${doctor.specialty} • ${l10n.t('doctor_detail.experience_suffix', params: {'experience': doctor.experience})}',
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: Colors.white70,
                           ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          alignment: WrapAlignment.center,
-                          children: [
-                            _ProfileChip(
-                              label: doctor.professionLabel,
-                              foregroundColor: AppColors.white,
-                              backgroundColor: Colors.white.withValues(
-                                alpha: 0.14,
+                        if (!doctor.usesDirectContactOnly) ...[
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            alignment: WrapAlignment.center,
+                            children: [
+                              _ProfileChip(
+                                label: doctor.professionLabel,
+                                foregroundColor: AppColors.white,
+                                backgroundColor: Colors.white.withValues(
+                                  alpha: 0.14,
+                                ),
                               ),
-                            ),
-                            ...doctor.careModes
-                                .take(2)
-                                .map(
-                                  (mode) => _ProfileChip(
-                                    label: mode,
-                                    foregroundColor: AppColors.white,
-                                    backgroundColor: Colors.white.withValues(
-                                      alpha: 0.14,
+                              ...doctor.careModes
+                                  .take(2)
+                                  .map(
+                                    (mode) => _ProfileChip(
+                                      label: mode,
+                                      foregroundColor: AppColors.white,
+                                      backgroundColor: Colors.white.withValues(
+                                        alpha: 0.14,
+                                      ),
                                     ),
                                   ),
-                                ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _StatCol('${doctor.reviewCount}+', 'Patients'),
-                            Container(
-                              width: 1,
-                              height: 30,
-                              color: Colors.white24,
-                            ),
-                            _StatCol('${doctor.rating}', 'Rating'),
-                            Container(
-                              width: 1,
-                              height: 30,
-                              color: Colors.white24,
-                            ),
-                            _StatCol(
-                              doctor.experience.split(' ').first,
-                              'Experience',
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _StatCol(
+                                '${doctor.reviewCount}+',
+                                l10n.t('doctor_detail.patients'),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 30,
+                                color: Colors.white24,
+                              ),
+                              _StatCol(
+                                '${doctor.rating}',
+                                l10n.t('doctor_detail.rating'),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 30,
+                                color: Colors.white24,
+                              ),
+                              _StatCol(
+                                doctor.experience.split(' ').first,
+                                l10n.t('doctor_detail.experience'),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -208,17 +222,20 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('About', style: AppTextStyles.h4),
+                        Text(l10n.t('doctor_detail.about'), style: AppTextStyles.h4),
                         const SizedBox(height: 8),
                         Text(
-                          doctor.about ?? 'No information available.',
+                          doctor.about ?? l10n.t('doctor_detail.no_info'),
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.grey,
                             height: 1.6,
                           ),
                         ),
                         const SizedBox(height: 20),
-                        Text('Services Offered', style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('doctor_detail.services_offered'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 8,
@@ -234,7 +251,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                         ),
                         if (doctor.languages.isNotEmpty) ...[
                           const SizedBox(height: 20),
-                          Text('Languages', style: AppTextStyles.h4),
+                          Text(l10n.t('doctor_detail.languages'), style: AppTextStyles.h4),
                           const SizedBox(height: 12),
                           Wrap(
                             spacing: 8,
@@ -250,7 +267,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                           ),
                         ],
                         const SizedBox(height: 20),
-                        Text('Care Modes', style: AppTextStyles.h4),
+                        Text(l10n.t('doctor_detail.care_modes'), style: AppTextStyles.h4),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 8,
@@ -265,12 +282,21 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                               .toList(),
                         ),
                         const SizedBox(height: 20),
-                        Text('Working Hours', style: AppTextStyles.h4),
+                        Text(l10n.t('doctor_detail.working_hours'), style: AppTextStyles.h4),
                         const SizedBox(height: 12),
                         ...[
-                          ('Mon - Fri', doctor.workingHours.weekdays),
-                          ('Saturday', doctor.workingHours.saturday),
-                          ('Sunday', doctor.workingHours.sunday),
+                          (
+                            l10n.t('doctor_detail.weekdays'),
+                            doctor.workingHours.weekdays,
+                          ),
+                          (
+                            l10n.t('doctor_detail.saturday'),
+                            doctor.workingHours.saturday,
+                          ),
+                          (
+                            l10n.t('doctor_detail.sunday'),
+                            doctor.workingHours.sunday,
+                          ),
                         ].map(
                           (hours) => Padding(
                             padding: const EdgeInsets.only(bottom: 8),
@@ -279,7 +305,9 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                               children: [
                                 Text(hours.$1, style: AppTextStyles.bodyMedium),
                                 Text(
-                                  hours.$2,
+                                  hours.$2 == 'Closed'
+                                      ? l10n.t('doctor_detail.closed')
+                                      : hours.$2,
                                   style: AppTextStyles.labelMedium.copyWith(
                                     color: hours.$2 == 'Closed'
                                         ? AppColors.accent
@@ -291,7 +319,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        Text('Location', style: AppTextStyles.h4),
+                        Text(l10n.t('doctor_detail.location'), style: AppTextStyles.h4),
                         const SizedBox(height: 12),
                         Container(
                           height: 150,
@@ -332,7 +360,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                         if (doctor.contactPhone != null ||
                             doctor.contactWhatsApp != null) ...[
                           const SizedBox(height: 20),
-                          Text('Direct Contact', style: AppTextStyles.h4),
+                          Text(l10n.t('doctor_detail.direct_contact'), style: AppTextStyles.h4),
                           const SizedBox(height: 12),
                           Container(
                             padding: const EdgeInsets.all(16),
@@ -345,26 +373,27 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                               children: [
                                 _ContactRow(
                                   icon: Icons.call_rounded,
-                                  label: 'Phone',
+                                  label: l10n.t('doctor_detail.phone'),
                                   value:
                                       doctor.contactPhone ??
-                                      'Not available yet',
+                                      l10n.t('doctor_detail.not_available_yet'),
                                 ),
                                 const SizedBox(height: 12),
                                 _ContactRow(
                                   icon: Icons.chat_rounded,
-                                  label: 'WhatsApp',
+                                  label: l10n.t('doctor_detail.whatsapp'),
                                   value:
                                       doctor.contactWhatsApp ??
-                                      'Not available yet',
+                                      l10n.t('doctor_detail.not_available_yet'),
                                 ),
                               ],
                             ),
                           ),
                         ],
-                        if (doctor.reviews.isNotEmpty) ...[
+                        if (!doctor.usesDirectContactOnly &&
+                            doctor.reviews.isNotEmpty) ...[
                           const SizedBox(height: 20),
-                          Text('Patient Reviews', style: AppTextStyles.h4),
+                          Text(l10n.t('doctor_detail.patient_reviews'), style: AppTextStyles.h4),
                           const SizedBox(height: 12),
                           ...doctor.reviews.map(
                             (review) => Container(
@@ -425,7 +454,9 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                             ),
                           ),
                         ],
-                        const SizedBox(height: 90),
+                        SizedBox(
+                          height: doctor.usesDirectContactOnly ? 180 : 90,
+                        ),
                       ],
                     ),
                   ),
@@ -447,76 +478,67 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                 ],
               ),
               child: SafeArea(
-                child: Row(
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (!doctor.usesDirectContactOnly) ...[
+                child: doctor.usesDirectContactOnly
+                    ? Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            doctor.isDoctorProvider
-                                ? 'Consultation Fee'
-                                : 'Service Fee',
-                            style: AppTextStyles.caption,
-                          ),
-                          Text(
-                            '\$${doctor.consultationFee.toInt()}',
-                            style: AppTextStyles.price.copyWith(
-                              color: AppColors.doctor,
-                            ),
-                          ),
-                        ] else
-                          Text(
-                            doctor.professionLabel,
+                            l10n.t('doctor_booking.whatsapp_redirect_title'),
                             style: AppTextStyles.labelLarge.copyWith(
                               color: AppColors.doctor,
                             ),
                           ),
-                      ],
-                    ),
-                    const SizedBox(width: 20),
-                    SizedBox(
-                      width: 112,
-                      child: AppButton(
-                        text: 'Message',
-                        isSmall: true,
-                        isOutlined: true,
-                        color: AppColors.doctor,
-                        onPressed: () => openConversation(
-                          context,
-                          moduleType: 'DOCTOR',
-                          entityType: 'DOCTOR',
-                          entityId: doctor.id,
-                          title: doctor.name,
-                          subtitle: doctor.specialty,
-                          avatarUrl: doctor.imageUrl,
-                          accentColor: '#3498DB',
-                          metadata: {
-                            'doctorId': doctor.id,
-                            'specialty': doctor.specialty,
-                            'professionLabel': doctor.professionLabel,
-                          },
-                        ),
+                          const SizedBox(height: 4),
+                          Text(
+                            l10n.t('doctor_booking.whatsapp_redirect_subtitle'),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.grey,
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          AppButton(
+                            text: l10n.t('doctor_booking.open_whatsapp'),
+                            color: AppColors.doctor,
+                            onPressed: _contactProvider,
+                          ),
+                        ],
+                      )
+                    : Row(
+                        children: [
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                doctor.isDoctorProvider
+                                    ? l10n.t('doctor_booking.consultation_fee')
+                                    : l10n.t('doctor_detail.service_fee'),
+                                style: AppTextStyles.caption,
+                              ),
+                              Text(
+                                '\$${doctor.consultationFee.toInt()}',
+                                style: AppTextStyles.price.copyWith(
+                                  color: AppColors.doctor,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: AppButton(
+                              text: doctor.isDoctorProvider
+                                  ? l10n.t('doctor_booking.book_appointment')
+                                  : l10n.t('doctor_booking.book_care_service'),
+                              color: AppColors.doctor,
+                              onPressed: () {
+                                context.push('/doctor/book/${doctor.id}');
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: AppButton(
-                        text: doctor.primaryActionLabel,
-                        color: AppColors.doctor,
-                        onPressed: () {
-                          if (doctor.usesDirectContactOnly) {
-                            _contactProvider();
-                            return;
-                          }
-
-                          context.push('/doctor/book/${doctor.id}');
-                        },
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
     );

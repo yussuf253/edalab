@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
@@ -77,6 +78,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return PopScope(
       canPop: context.canPop(),
       onPopInvokedWithResult: (didPop, result) {
@@ -87,7 +89,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Home Services'),
+        title: Text(l10n.t('home_services.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -105,7 +107,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: AppSearchBar(
-                hint: 'Search cleaning, plumbing, beauty...',
+                hint: l10n.t('home_services.search_hint'),
                 controller: _searchController,
                 readOnly: true,
                 onTap: () => context.push('/home-services/category/all'),
@@ -134,14 +136,20 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Home services on demand',
+                                l10n.t('home_services.hero_title'),
                                 style: AppTextStyles.h4.copyWith(
                                   color: AppColors.white,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${_providers.length} active professionals across ${_categories.length} service types.',
+                                l10n.t(
+                                  'home_services.hero_stats',
+                                  params: {
+                                    'providers': '${_providers.length}',
+                                    'categories': '${_categories.length}',
+                                  },
+                                ),
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: Colors.white70,
                                 ),
@@ -157,7 +165,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  'Book a Service',
+                                  l10n.t('home_services.book_service'),
                                   style: AppTextStyles.labelMedium.copyWith(
                                     color: AppColors.homeServices,
                                   ),
@@ -192,12 +200,12 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
               child: Row(
                 children: [
-                  Text('Popular Categories', style: AppTextStyles.h3),
+                  Text(l10n.t('home_services.popular_categories'), style: AppTextStyles.h3),
                   const Spacer(),
                   TextButton(
                     onPressed: () =>
                         context.push('/home-services/category/all'),
-                    child: const Text('See All'),
+                    child: Text(l10n.t('home_services.see_all')),
                   ),
                 ],
               ),
@@ -257,7 +265,12 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${category.providerCount} available',
+                                  l10n.t(
+                                    'home_services.available_count',
+                                    params: {
+                                      'count': '${category.providerCount}',
+                                    },
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppTextStyles.bodySmall.copyWith(
@@ -291,10 +304,10 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
               child: Row(
                 children: [
-                  Text('Available Right Now', style: AppTextStyles.h3),
+                  Text(l10n.t('home_services.available_now'), style: AppTextStyles.h3),
                   const Spacer(),
                   Text(
-                    'Fastest response',
+                    l10n.t('home_services.fastest_response'),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.grey,
                     ),
@@ -322,12 +335,12 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
               child: Row(
                 children: [
-                  Text('Top Professionals', style: AppTextStyles.h3),
+                  Text(l10n.t('home_services.top_professionals'), style: AppTextStyles.h3),
                   const Spacer(),
                   TextButton(
                     onPressed: () =>
                         context.push('/home-services/category/all'),
-                    child: const Text('See All'),
+                    child: Text(l10n.t('home_services.see_all')),
                   ),
                 ],
               ),
@@ -361,28 +374,26 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Why people use Home Services',
+                      l10n.t('home_services.why_people_use'),
                       style: AppTextStyles.h4,
                     ),
                     const SizedBox(height: 14),
-                    const _TrustRow(
+                    _TrustRow(
                       icon: Icons.verified_user_rounded,
-                      title: 'Verified professionals',
-                      subtitle:
-                          'Trusted providers with clear reviews and profile details.',
+                      title: l10n.t('home_services.verified_title'),
+                      subtitle: l10n.t('home_services.verified_subtitle'),
                     ),
                     const SizedBox(height: 12),
-                    const _TrustRow(
+                    _TrustRow(
                       icon: Icons.schedule_rounded,
-                      title: 'Easy scheduling',
-                      subtitle: 'Choose the time slot that fits your day.',
+                      title: l10n.t('home_services.scheduling_title'),
+                      subtitle: l10n.t('home_services.scheduling_subtitle'),
                     ),
                     const SizedBox(height: 12),
-                    const _TrustRow(
+                    _TrustRow(
                       icon: Icons.payments_rounded,
-                      title: 'Clear starting prices',
-                      subtitle:
-                          'Know the base fee before you confirm your booking.',
+                      title: l10n.t('home_services.pricing_title'),
+                      subtitle: l10n.t('home_services.pricing_subtitle'),
                     ),
                   ],
                 ),
@@ -457,7 +468,7 @@ class _FeaturedProviderCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
-                            'Open',
+                            context.l10n.t('home_services.open'),
                             style: AppTextStyles.labelSmall.copyWith(
                               color: AppColors.success,
                             ),
@@ -493,7 +504,10 @@ class _FeaturedProviderCard extends StatelessWidget {
                           color: accentColor,
                         ),
                       ),
-                      Text('/start', style: AppTextStyles.caption),
+                      Text(
+                        context.l10n.t('home_services.per_start'),
+                        style: AppTextStyles.caption,
+                      ),
                     ],
                   ),
                 ],

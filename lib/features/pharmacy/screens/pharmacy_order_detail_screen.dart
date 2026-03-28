@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -70,6 +71,7 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final data = _order ?? const <String, dynamic>{};
     final items = (data['items'] as List? ?? const [])
         .map((item) => Map<String, dynamic>.from(item as Map))
@@ -89,7 +91,7 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Pharmacy Order'),
+        title: Text(l10n.t('pharmacy_tracking.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -115,7 +117,7 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
                 children: [
                   _PharmacyHero(
                     title:
-                        data['moduleName']?.toString() ?? 'Pharmacy delivery',
+                        data['moduleName']?.toString() ?? l10n.t('pharmacy_tracking.default_title'),
                     status: _pretty(data['status']?.toString()),
                     medicineCount: medicineCount,
                     total: ((data['total'] as num?)?.toDouble() ?? 0),
@@ -126,13 +128,13 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
                     delivery:
                         data['deliveryEta']?.toString() ??
                         data['deliveryLabel']?.toString() ??
-                        'Preparing medicines',
+                        l10n.t('pharmacy_tracking.preparing_medicines'),
                     payment:
-                        data['paymentLabel']?.toString() ?? 'Payment confirmed',
+                        data['paymentLabel']?.toString() ?? l10n.t('pharmacy_tracking.payment_confirmed'),
                   ),
                   const SizedBox(height: 14),
                   _PharmacySection(
-                    title: 'Medicines',
+                    title: l10n.t('pharmacy_tracking.medicines_title'),
                     child: Column(
                       children: items.isEmpty
                           ? const [
@@ -187,14 +189,14 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Care reminder',
+                                l10n.t('pharmacy_tracking.care_title'),
                                 style: AppTextStyles.labelLarge.copyWith(
                                   color: AppColors.pharmacy,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Check your medicines on delivery and contact support if anything looks different from what you ordered.',
+                                l10n.t('pharmacy_tracking.care_subtitle'),
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.grey,
                                   height: 1.45,
@@ -282,12 +284,21 @@ class _PharmacyHero extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '$medicineCount medicine item${medicineCount == 1 ? '' : 's'} in this order',
+            AppLocalizations.of(context).t(
+              'pharmacy_tracking.medicine_items',
+              params: {
+                'count': '$medicineCount',
+                'suffix': medicineCount == 1 ? '' : 's',
+              },
+            ),
             style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
           ),
           const SizedBox(height: 16),
           Text(
-            '\$${total.toStringAsFixed(2)} total',
+            AppLocalizations.of(context).t(
+              'pharmacy_tracking.total',
+              params: {'amount': total.toStringAsFixed(2)},
+            ),
             style: AppTextStyles.labelLarge.copyWith(color: AppColors.white),
           ),
         ],
@@ -321,19 +332,19 @@ class _FulfillmentCard extends StatelessWidget {
         children: [
           _FulfillmentRow(
             icon: Icons.schedule_rounded,
-            label: 'Placed',
+            label: AppLocalizations.of(context).t('tracking.placed'),
             value: placedAt,
           ),
           const SizedBox(height: 12),
           _FulfillmentRow(
             icon: Icons.delivery_dining_rounded,
-            label: 'Delivery',
+            label: AppLocalizations.of(context).t('tracking.delivery'),
             value: delivery,
           ),
           const SizedBox(height: 12),
           _FulfillmentRow(
             icon: Icons.payments_outlined,
-            label: 'Payment',
+            label: AppLocalizations.of(context).t('checkout.payment_method'),
             value: payment,
           ),
         ],
@@ -486,7 +497,7 @@ class _PharmacyEmpty extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(
-      'No medicines are attached to this order yet.',
+      AppLocalizations.of(context).t('tracking.no_items_title'),
       style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
     );
   }
@@ -500,7 +511,7 @@ class _MissingPharmacyState extends StatelessWidget {
     return Center(
       child: FilledButton(
         onPressed: () => context.go('/pharmacy'),
-        child: const Text('Back to Pharmacy'),
+        child: Text(AppLocalizations.of(context).t('module.pharmacy')),
       ),
     );
   }

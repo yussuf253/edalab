@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
@@ -62,7 +63,9 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Copied $code'),
+        content: Text(
+          context.l10n.t('promotions.copied', params: {'code': code}),
+        ),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -70,6 +73,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final specialOffers = _specialOffers.isEmpty
         ? _fallbackSpecialOffers
         : _specialOffers;
@@ -78,7 +82,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Promotions'), centerTitle: false),
+      appBar: AppBar(title: Text(l10n.t('promotions.title')), centerTitle: false),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -109,7 +113,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Live offers, flash sales, and coupon codes are synced from the backend.',
+                        l10n.t('promotions.synced'),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.grey,
                         ),
@@ -120,7 +124,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
               ),
             ),
           ),
-          _SectionHeaderSliver(title: 'Special Offers'),
+          _SectionHeaderSliver(title: l10n.t('promotions.special_offers')),
           if (_isLoading)
             SliverToBoxAdapter(
               child: SizedBox(
@@ -155,7 +159,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
                 ),
               ),
             ),
-          _SectionHeaderSliver(title: 'Flash Sales'),
+          _SectionHeaderSliver(title: l10n.t('promotions.flash_sales')),
           if (_isLoading)
             SliverList(
               delegate: SliverChildBuilderDelegate(
@@ -182,7 +186,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
                 childCount: flashSales.length,
               ),
             ),
-          _SectionHeaderSliver(title: 'Coupon Codes'),
+          _SectionHeaderSliver(title: l10n.t('promotions.coupon_codes')),
           if (_isLoading)
             SliverList(
               delegate: SliverChildBuilderDelegate(
@@ -242,6 +246,7 @@ class _SpecialOfferCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: 280,
       padding: const EdgeInsets.all(16),
@@ -258,16 +263,16 @@ class _SpecialOfferCard extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(999),
             ),
-            child: Text(deal.discountLabel, style: AppTextStyles.badge),
+            child: Text(_resolvePromoText(deal.discountLabel, l10n), style: AppTextStyles.badge),
           ),
           const Spacer(),
           Text(
-            deal.title,
+            _resolvePromoText(deal.title, l10n),
             style: AppTextStyles.h4.copyWith(color: AppColors.white),
           ),
           const SizedBox(height: 4),
           Text(
-            deal.description,
+            _resolvePromoText(deal.description, l10n),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
@@ -284,6 +289,7 @@ class _DealCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -307,17 +313,17 @@ class _DealCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(deal.title, style: AppTextStyles.labelLarge),
+                Text(_resolvePromoText(deal.title, l10n), style: AppTextStyles.labelLarge),
                 const SizedBox(height: 4),
                 Text(
-                  deal.reason ?? deal.description,
+                  _resolvePromoText(deal.reason ?? deal.description, l10n),
                   style: AppTextStyles.caption,
                 ),
               ],
             ),
           ),
           Text(
-            deal.discountLabel,
+            _resolvePromoText(deal.discountLabel, l10n),
             style: AppTextStyles.labelSmall.copyWith(color: deal.color),
           ),
         ],
@@ -333,6 +339,7 @@ class _CouponCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -356,26 +363,40 @@ class _CouponCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(deal.title, style: AppTextStyles.labelLarge),
+                Text(_resolvePromoText(deal.title, l10n), style: AppTextStyles.labelLarge),
                 const SizedBox(height: 4),
                 Text(
-                  deal.code ?? deal.discountLabel,
+                  deal.code ?? _resolvePromoText(deal.discountLabel, l10n),
                   style: AppTextStyles.h4.copyWith(color: deal.color),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  deal.reason ?? deal.description,
+                  _resolvePromoText(deal.reason ?? deal.description, l10n),
                   style: AppTextStyles.caption,
                 ),
               ],
             ),
           ),
           if (onCopy != null)
-            TextButton(onPressed: onCopy, child: const Text('Copy')),
+            TextButton(
+              onPressed: onCopy,
+              child: Text(AppLocalizations.of(context).t('promotions.copy')),
+            ),
         ],
       ),
     );
   }
+}
+
+String _resolvePromoText(String value, AppLocalizations l10n) {
+  if (value.startsWith('promotions.percent_off|')) {
+    final amount = value.split('|').last;
+    return l10n.t('promotions.percent_off', params: {'value': amount});
+  }
+  if (value.startsWith('promotions.')) {
+    return l10n.t(value);
+  }
+  return value;
 }
 
 class _PromoDeal {
@@ -405,7 +426,7 @@ class _PromoDeal {
       (json['metadata'] as Map?) ?? const {},
     );
     return _PromoDeal(
-      title: json['title']?.toString() ?? 'Offer',
+      title: json['title']?.toString() ?? 'promotions.offer',
       description: json['description']?.toString() ?? '',
       code: json['code']?.toString(),
       reason: metadata['reason']?.toString(),
@@ -421,10 +442,12 @@ class _PromoDeal {
 
   static String _discountLabel(String type, double? value, String? code) {
     if (code != null && code.isNotEmpty) return code;
-    if (type == 'FREE_RIDES') return 'Free Ride';
-    if (type == 'PERCENTAGE' && value != null) return '${value.toInt()}% Off';
+    if (type == 'FREE_RIDES') return 'promotions.free_ride';
+    if (type == 'PERCENTAGE' && value != null) {
+      return 'promotions.percent_off|${value.toInt()}';
+    }
     if (value != null) return value.toStringAsFixed(0);
-    return 'Offer';
+    return 'promotions.offer';
   }
 
   static Color _colorForModule(String? moduleType) {
@@ -472,20 +495,20 @@ class _PromoDeal {
 
 const _fallbackSpecialOffers = [
   _PromoDeal(
-    title: 'First 3 Rides Free',
-    description: 'New user exclusive offer',
+    title: 'promotions.first_3_rides',
+    description: 'promotions.new_user_offer',
     code: null,
     reason: null,
-    discountLabel: 'Free Ride',
+    discountLabel: 'promotions.free_ride',
     color: AppColors.ride,
     icon: Icons.directions_car_rounded,
   ),
   _PromoDeal(
-    title: 'Laundry Weekend',
-    description: '50% off on wash and fold orders',
+    title: 'promotions.laundry_weekend',
+    description: 'promotions.laundry_weekend_desc',
     code: null,
     reason: null,
-    discountLabel: '50% Off',
+    discountLabel: 'promotions.percent_off|50',
     color: AppColors.laundry,
     icon: Icons.local_laundry_service_rounded,
   ),
@@ -493,20 +516,20 @@ const _fallbackSpecialOffers = [
 
 const _fallbackFlashSales = [
   _PromoDeal(
-    title: 'Dinner Rush Flash Sale',
-    description: 'Late-night meals and free delivery boosts after 7 PM.',
+    title: 'promotions.dinner_rush',
+    description: 'promotions.dinner_rush_desc',
     code: null,
-    reason: 'High evening demand',
-    discountLabel: '20% Off',
+    reason: 'promotions.dinner_rush_reason',
+    discountLabel: 'promotions.percent_off|20',
     color: AppColors.food,
     icon: Icons.restaurant_rounded,
   ),
   _PromoDeal(
-    title: 'Fresh Basket Countdown',
-    description: 'Produce and pantry staples are discounted before noon.',
+    title: 'promotions.fresh_basket',
+    description: 'promotions.fresh_basket_desc',
     code: null,
-    reason: 'Morning produce push',
-    discountLabel: '15% Off',
+    reason: 'promotions.fresh_basket_reason',
+    discountLabel: 'promotions.percent_off|15',
     color: AppColors.grocery,
     icon: Icons.local_grocery_store_rounded,
   ),
@@ -514,19 +537,19 @@ const _fallbackFlashSales = [
 
 const _fallbackCoupons = [
   _PromoDeal(
-    title: 'Weekend Escape Package',
-    description: 'Use this when you are ready to confirm a stay booking.',
+    title: 'promotions.weekend_escape',
+    description: 'promotions.weekend_escape_desc',
     code: 'STAY25',
-    reason: 'City-stay promotion',
+    reason: 'promotions.weekend_escape_reason',
     discountLabel: 'STAY25',
     color: AppColors.hotel,
     icon: Icons.hotel_rounded,
   ),
   _PromoDeal(
-    title: 'First Visit Consultation',
-    description: 'Reduced fee for your first online consultation booking.',
+    title: 'promotions.first_visit',
+    description: 'promotions.first_visit_desc',
     code: 'HEALTH10',
-    reason: 'New patient offer',
+    reason: 'promotions.first_visit_reason',
     discountLabel: 'HEALTH10',
     color: AppColors.doctor,
     icon: Icons.medical_services_rounded,

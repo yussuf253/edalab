@@ -10,6 +10,7 @@ class AppPreferences {
   static const _cartPromoCodeKey = 'cart_promo_code';
   static const _cartPromoDiscountKey = 'cart_promo_discount';
   static const _notificationsPrefsKey = 'notifications_preferences';
+  static const _localeCodeKey = 'locale_code';
 
   static Future<bool> hasSeenOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
@@ -118,5 +119,15 @@ class AppPreferences {
   static Future<void> setNotificationsPreferencesJson(String value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_notificationsPrefsKey, value);
+  }
+
+  static Future<String?> getLocaleCode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_localeCodeKey);
+  }
+
+  static Future<void> setLocaleCode(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_localeCodeKey, value);
   }
 }

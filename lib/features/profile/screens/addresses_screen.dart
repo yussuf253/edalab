@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/providers/providers.dart';
 
@@ -24,13 +25,14 @@ class AddressesScreen extends StatelessWidget {
     BuildContext context, {
     AddressModel? address,
   }) async {
+    final l10n = context.l10n;
     final auth = context.read<AuthProvider>();
     if (!auth.isLoggedIn || auth.user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please log in to manage your addresses.'),
+          content: Text(l10n.t('addresses.login_manage')),
           action: SnackBarAction(
-            label: 'Login',
+            label: l10n.t('addresses.login'),
             onPressed: () => context.push('/login'),
           ),
         ),
@@ -50,6 +52,7 @@ class AddressesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final authProvider = context.watch<AuthProvider>();
     final addresses = authProvider.user?.addresses ?? const [];
     final isLoggedIn = authProvider.isLoggedIn && authProvider.user != null;
@@ -57,7 +60,7 @@ class AddressesScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('My Addresses'),
+        title: Text(l10n.t('addresses.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.of(context).pop(),
@@ -85,14 +88,16 @@ class AddressesScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      isLoggedIn ? 'No saved addresses yet' : 'Log in to manage addresses',
+                      isLoggedIn
+                          ? l10n.t('addresses.empty_logged_in_title')
+                          : l10n.t('addresses.empty_logged_out_title'),
                       style: AppTextStyles.h4,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       isLoggedIn
-                          ? 'Add delivery locations to make checkout faster and keep your favorite places handy.'
-                          : 'Save delivery locations after logging in so checkout is faster across the app.',
+                          ? l10n.t('addresses.empty_logged_in_subtitle')
+                          : l10n.t('addresses.empty_logged_out_subtitle'),
                       style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
                       textAlign: TextAlign.center,
                     ),
@@ -150,7 +155,7 @@ class AddressesScreen extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
-                                      'Default',
+                                      l10n.t('addresses.default'),
                                       style: AppTextStyles.labelSmall.copyWith(
                                         color: AppColors.primary,
                                         fontSize: 10,
@@ -178,7 +183,10 @@ class AddressesScreen extends StatelessWidget {
                             if (!context.mounted || success) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(authProvider.errorMessage ?? 'Failed to update default address.'),
+                                content: Text(
+                                  authProvider.errorMessage ??
+                                      l10n.t('addresses.failed_default'),
+                                ),
                               ),
                             );
                             return;
@@ -189,16 +197,28 @@ class AddressesScreen extends StatelessWidget {
                             if (!context.mounted || success) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(authProvider.errorMessage ?? 'Failed to delete address.'),
+                                content: Text(
+                                  authProvider.errorMessage ??
+                                      l10n.t('addresses.failed_delete'),
+                                ),
                               ),
                             );
                           }
                         },
                         itemBuilder: (context) => [
-                          const PopupMenuItem(value: 'edit', child: Text('Edit')),
+                          PopupMenuItem(
+                            value: 'edit',
+                            child: Text(l10n.t('addresses.edit')),
+                          ),
                           if (!address.isDefault)
-                            const PopupMenuItem(value: 'default', child: Text('Set as Default')),
-                          const PopupMenuItem(value: 'delete', child: Text('Delete')),
+                            PopupMenuItem(
+                              value: 'default',
+                              child: Text(l10n.t('addresses.set_default')),
+                            ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text(l10n.t('addresses.delete')),
+                          ),
                         ],
                       ),
                     ],
@@ -210,7 +230,9 @@ class AddressesScreen extends StatelessWidget {
         onPressed: () => _showAddressSheet(context),
         backgroundColor: AppColors.primary,
         label: Text(
-          isLoggedIn ? 'Add Address' : 'Login Required',
+          isLoggedIn
+              ? l10n.t('addresses.add')
+              : l10n.t('addresses.login_required'),
           style: const TextStyle(color: AppColors.white),
         ),
         icon: Icon(
@@ -260,6 +282,7 @@ class _AddressSheetState extends State<_AddressSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return SafeArea(
       top: false,
       child: Align(
@@ -281,40 +304,42 @@ class _AddressSheetState extends State<_AddressSheet> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      widget.address == null ? 'Add Address' : 'Edit Address',
+                      widget.address == null
+                          ? l10n.t('addresses.sheet_add')
+                          : l10n.t('addresses.sheet_edit'),
                       style: AppTextStyles.h4,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _labelController,
-                      decoration: const InputDecoration(
-                        labelText: 'Label',
+                      decoration: InputDecoration(
+                        labelText: l10n.t('addresses.label'),
                         prefixIcon: Icon(Icons.label_outline_rounded),
-                        hintText: 'Home, Work, Mom\'s House',
+                        hintText: l10n.t('addresses.label_hint'),
                       ),
                     ),
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: _addressController,
                       maxLines: 2,
-                      decoration: const InputDecoration(
-                        labelText: 'Street Address',
+                      decoration: InputDecoration(
+                        labelText: l10n.t('addresses.street'),
                         prefixIcon: Icon(Icons.location_on_outlined),
                       ),
                     ),
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: _cityController,
-                      decoration: const InputDecoration(
-                        labelText: 'City',
+                      decoration: InputDecoration(
+                        labelText: l10n.t('addresses.city'),
                         prefixIcon: Icon(Icons.location_city_outlined),
                       ),
                     ),
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: _zipCodeController,
-                      decoration: const InputDecoration(
-                        labelText: 'ZIP Code',
+                      decoration: InputDecoration(
+                        labelText: l10n.t('addresses.zip'),
                         prefixIcon: Icon(Icons.markunread_mailbox_outlined),
                       ),
                     ),
@@ -323,7 +348,7 @@ class _AddressSheetState extends State<_AddressSheet> {
                       value: _isDefault,
                       onChanged: (value) => setState(() => _isDefault = value),
                       contentPadding: EdgeInsets.zero,
-                      title: const Text('Set as default'),
+                      title: Text(l10n.t('addresses.set_default_switch')),
                     ),
                     const SizedBox(height: 16),
                     SizedBox(
@@ -336,7 +361,11 @@ class _AddressSheetState extends State<_AddressSheet> {
                                 height: 20,
                                 child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
                               )
-                            : Text(widget.address == null ? 'Add Address' : 'Save Changes'),
+                            : Text(
+                                widget.address == null
+                                    ? l10n.t('addresses.sheet_add')
+                                    : l10n.t('addresses.save'),
+                              ),
                       ),
                     ),
                   ],
@@ -350,6 +379,7 @@ class _AddressSheetState extends State<_AddressSheet> {
   }
 
   Future<void> _submit() async {
+    final l10n = context.l10n;
     setState(() => _isSubmitting = true);
 
     final auth = context.read<AuthProvider>();
@@ -380,7 +410,7 @@ class _AddressSheetState extends State<_AddressSheet> {
     setState(() => _isSubmitting = false);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(auth.errorMessage ?? 'Failed to save address.'),
+        content: Text(auth.errorMessage ?? l10n.t('addresses.failed_save')),
       ),
     );
   }

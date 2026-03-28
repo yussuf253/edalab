@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 
 class LaundryTrackingScreen extends StatelessWidget {
   final String orderId;
@@ -10,6 +11,7 @@ class LaundryTrackingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return PopScope(
       canPop: context.canPop(),
       onPopInvokedWithResult: (didPop, result) {
@@ -20,7 +22,7 @@ class LaundryTrackingScreen extends StatelessWidget {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Order Tracking'),
+        title: Text(l10n.t('tracking.order_tracking')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -50,9 +52,9 @@ class LaundryTrackingScreen extends StatelessWidget {
                 children: [
                   const Icon(Icons.local_laundry_service_rounded, color: AppColors.white, size: 48),
                   const SizedBox(height: 12),
-                  Text('Cleaning in Progress', style: AppTextStyles.h3.copyWith(color: AppColors.white)),
+                  Text(l10n.t('laundry_tracking.status'), style: AppTextStyles.h3.copyWith(color: AppColors.white)),
                   const SizedBox(height: 4),
-                  Text('Estimated completion: Tomorrow, 6:00 PM', style: AppTextStyles.bodySmall.copyWith(color: Colors.white70)),
+                  Text(l10n.t('laundry_tracking.eta'), style: AppTextStyles.bodySmall.copyWith(color: Colors.white70)),
                 ],
               ),
             ),
@@ -67,11 +69,11 @@ class LaundryTrackingScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _Step('Pickup Confirmed', '10:00 AM', true, true),
-                  _Step('Picked Up', '10:30 AM', true, true),
-                  _Step('Cleaning', '11:00 AM', true, false),
-                  _Step('Ready for Delivery', '', false, false),
-                  _Step('Delivered', '', false, false),
+                  _Step(l10n.t('laundry_tracking.pickup_confirmed'), '10:00 AM', true, true),
+                  _Step(l10n.t('laundry_tracking.picked_up'), '10:30 AM', true, true),
+                  _Step(l10n.t('laundry_tracking.cleaning'), '11:00 AM', true, false),
+                  _Step(l10n.t('laundry_tracking.ready_for_delivery'), '', false, false),
+                  _Step(l10n.t('laundry_tracking.delivered'), '', false, false),
                 ],
               ),
             ),
@@ -84,15 +86,15 @@ class LaundryTrackingScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Order Details', style: AppTextStyles.labelLarge),
+                  Text(l10n.t('laundry_tracking.order_details'), style: AppTextStyles.labelLarge),
                   const SizedBox(height: 12),
-                  _DetailRow('Order #', '1234'),
-                  _DetailRow('Service', 'Wash & Fold'),
-                  _DetailRow('Items', '6 items (3 Shirts, 2 Pants, 1 Dress)'),
-                  _DetailRow('Pickup', 'Tue, Mar 23, 10:30 AM'),
-                  _DetailRow('Delivery', 'Wed, Mar 24, 6:00 PM'),
+                  _DetailRow(l10n.t('laundry_tracking.order_number'), '1234'),
+                  _DetailRow(l10n.t('laundry_tracking.service'), 'Wash & Fold'),
+                  _DetailRow(l10n.t('laundry_tracking.items'), '6 items (3 Shirts, 2 Pants, 1 Dress)'),
+                  _DetailRow(l10n.t('laundry_tracking.pickup'), 'Tue, Mar 23, 10:30 AM'),
+                  _DetailRow(l10n.t('tracking.delivery'), 'Wed, Mar 24, 6:00 PM'),
                   const Divider(height: 20),
-                  _DetailRow('Total', '\$30.00', bold: true),
+                  _DetailRow(l10n.t('laundry_tracking.total'), '\$30.00', bold: true),
                 ],
               ),
             ),
@@ -113,15 +115,15 @@ class LaundryTrackingScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Need Help?', style: AppTextStyles.labelMedium),
-                        Text('Contact our support team', style: AppTextStyles.caption),
+                        Text(l10n.t('laundry_tracking.need_help'), style: AppTextStyles.labelMedium),
+                        Text(l10n.t('laundry_tracking.support'), style: AppTextStyles.caption),
                       ],
                     ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(color: AppColors.laundry, borderRadius: BorderRadius.circular(10)),
-                    child: Text('Contact', style: AppTextStyles.badge.copyWith(fontSize: 12)),
+                    child: Text(l10n.t('laundry_tracking.contact'), style: AppTextStyles.badge.copyWith(fontSize: 12)),
                   ),
                 ],
               ),
@@ -158,7 +160,7 @@ class _Step extends StatelessWidget {
                       ? const Icon(Icons.local_laundry_service_rounded, color: AppColors.white, size: 14)
                       : null,
             ),
-            if (title != 'Delivered')
+            if (title != AppLocalizations.of(context).t('laundry_tracking.delivered'))
               Container(width: 2, height: 32, color: isDone ? AppColors.success : AppColors.extraLightGrey),
           ],
         ),

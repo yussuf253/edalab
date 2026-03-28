@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -51,6 +52,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final ride = _rideData;
     final pickup = ride?['pickup'] as String? ?? '123 Main Street';
     final destination =
@@ -87,7 +89,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Live Map',
+                              l10n.t('tracking.live_map'),
                               style: AppTextStyles.bodyMedium.copyWith(
                                 color: AppColors.mediumGrey,
                               ),
@@ -289,7 +291,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    'Your ride is arriving',
+                                    l10n.t('ride_tracking.arriving'),
                                     style: AppTextStyles.h4,
                                   ),
                                 ),
@@ -456,7 +458,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                           ),
                                           const SizedBox(height: 6),
                                           Text(
-                                            'Message',
+                                            l10n.t('profile.contact_us'),
                                             style: AppTextStyles.labelMedium
                                                 .copyWith(
                                                   color: AppColors.ride,
@@ -486,7 +488,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                         ),
                                         const SizedBox(height: 6),
                                         Text(
-                                          'Call Driver',
+                                          l10n.t('doctor_booking.contact_directly'),
                                           style: AppTextStyles.labelMedium
                                               .copyWith(color: AppColors.white),
                                         ),

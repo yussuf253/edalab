@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
@@ -58,6 +59,7 @@ class _HotelScreenState extends State<HotelScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final hotels = _filteredHotels();
 
     return PopScope(
@@ -70,7 +72,7 @@ class _HotelScreenState extends State<HotelScreen> {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Hotels'),
+        title: Text(l10n.t('hotel.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -88,7 +90,7 @@ class _HotelScreenState extends State<HotelScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: AppSearchBar(
-                hint: 'Search hotels, locations...',
+                hint: l10n.t('hotel.search_hint'),
                 controller: _searchController,
                 onChanged: (value) =>
                     setState(() => _searchQuery = value.trim()),
@@ -114,7 +116,7 @@ class _HotelScreenState extends State<HotelScreen> {
                 children: [
                   Expanded(
                     child: _BookingField(
-                      label: 'Check-in',
+                      label: l10n.t('hotel.check_in'),
                       value: _formatDate(_checkInDate),
                       icon: Icons.calendar_today_rounded,
                       onTap: _selectCheckInDate,
@@ -123,7 +125,7 @@ class _HotelScreenState extends State<HotelScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _BookingField(
-                      label: 'Check-out',
+                      label: l10n.t('hotel.check_out'),
                       value: _formatDate(_checkOutDate),
                       icon: Icons.calendar_today_rounded,
                       onTap: _selectCheckOutDate,
@@ -132,7 +134,7 @@ class _HotelScreenState extends State<HotelScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _BookingField(
-                      label: 'Guests',
+                      label: l10n.t('hotel.guests'),
                       value: '$_guestCount',
                       icon: Icons.person_outline_rounded,
                       onTap: _selectGuests,
@@ -145,7 +147,7 @@ class _HotelScreenState extends State<HotelScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text('Popular Destinations 🌍', style: AppTextStyles.h4),
+              child: Text(l10n.t('hotel.popular_destinations'), style: AppTextStyles.h4),
             ),
           ),
           SliverToBoxAdapter(
@@ -157,27 +159,27 @@ class _HotelScreenState extends State<HotelScreen> {
                 children: [
                   _DestChip(
                     '🏖️',
-                    'Beach',
+                    l10n.t('hotel.beach'),
                     onTap: () => _applyDestination('Beach'),
                   ),
                   _DestChip(
                     '🏔️',
-                    'Mountain',
+                    l10n.t('hotel.mountain'),
                     onTap: () => _applyDestination('Mountain'),
                   ),
                   _DestChip(
                     '🌆',
-                    'City',
+                    l10n.t('hotel.city'),
                     onTap: () => _applyDestination('City'),
                   ),
                   _DestChip(
                     '🏝️',
-                    'Island',
+                    l10n.t('hotel.island'),
                     onTap: () => _applyDestination('Island'),
                   ),
                   _DestChip(
                     '🏜️',
-                    'Desert',
+                    l10n.t('hotel.desert'),
                     onTap: () => _applyDestination('Desert'),
                   ),
                 ],
@@ -189,7 +191,7 @@ class _HotelScreenState extends State<HotelScreen> {
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
               child: Row(
                 children: [
-                  Text('Recommended Hotels', style: AppTextStyles.h4),
+                  Text(l10n.t('hotel.recommended'), style: AppTextStyles.h4),
                   const Spacer(),
                   if (_isLoading)
                     const AppShimmer(
@@ -197,7 +199,7 @@ class _HotelScreenState extends State<HotelScreen> {
                     )
                   else
                     Text(
-                      '${hotels.length} found',
+                      l10n.t('hotel.found_count', params: {'count': '${hotels.length}'}),
                       style: AppTextStyles.caption,
                     ),
                 ],
@@ -226,12 +228,12 @@ class _HotelScreenState extends State<HotelScreen> {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        'No hotels match your search',
+                        l10n.t('hotel.no_hotels'),
                         style: AppTextStyles.h4,
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Try another hotel name or destination.',
+                        l10n.t('hotel.no_hotels_subtitle'),
                         textAlign: TextAlign.center,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.grey,
@@ -370,7 +372,7 @@ class _HotelScreenState extends State<HotelScreen> {
                                       color: AppColors.hotel,
                                     ),
                                   ),
-                                  Text('/night', style: AppTextStyles.caption),
+                                  Text(l10n.t('hotel.per_night'), style: AppTextStyles.caption),
                                 ],
                               ),
                             ],
@@ -474,13 +476,13 @@ class _HotelScreenState extends State<HotelScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Select Guests', style: AppTextStyles.h3),
+                    Text(context.l10n.t('hotel.select_guests'), style: AppTextStyles.h3),
                     const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
                           child: Text(
-                            'Guests',
+                            context.l10n.t('hotel.guests'),
                             style: AppTextStyles.labelLarge,
                           ),
                         ),
@@ -518,7 +520,7 @@ class _HotelScreenState extends State<HotelScreen> {
                           ),
                         ),
                         child: Text(
-                          'Apply',
+                          context.l10n.t('hotel.apply'),
                           style: AppTextStyles.labelMedium.copyWith(
                             color: AppColors.white,
                           ),

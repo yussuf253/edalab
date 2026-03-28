@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -20,7 +21,7 @@ class ShoppingScreen extends StatefulWidget {
 
 class _ShoppingScreenState extends State<ShoppingScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'All';
+  String _selectedCategory = 'all';
   String _searchQuery = '';
   bool _isLoading = true;
   List<ShoppingStoreModel> _stores = ShoppingStoreModel.sampleStores;
@@ -64,18 +65,19 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cartItemCount = context.watch<CartProvider>().getModuleItemCount(
       'shopping',
     );
     final categories = [
-      'All',
+      'all',
       ...{
         for (final store in _stores) ...store.categories,
       },
     ];
     final normalizedQuery = _searchQuery.trim().toLowerCase();
     final stores = _stores.where((store) {
-      final matchesCategory = _selectedCategory == 'All' ||
+      final matchesCategory = _selectedCategory == 'all' ||
           store.categories.contains(_selectedCategory);
       final matchesSearch = normalizedQuery.isEmpty ||
           store.name.toLowerCase().contains(normalizedQuery) ||
@@ -96,7 +98,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Shopping'),
+          title: Text(l10n.t('shopping.title')),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             onPressed: () {
@@ -147,7 +149,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
             child: AppSearchBar(
-              hint: 'Search stores, brands, categories...',
+              hint: l10n.t('shopping.search_hint'),
               controller: _searchController,
               onChanged: (value) => setState(() => _searchQuery = value),
             ),
@@ -174,7 +176,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      category,
+                      category == 'all' ? l10n.t('shopping.all') : category,
                       style: AppTextStyles.labelMedium.copyWith(
                         color: isSelected ? AppColors.white : AppColors.dark,
                       ),
@@ -209,13 +211,13 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Explore shops first',
+                          l10n.t('shopping.hero_title'),
                           style: AppTextStyles.h4.copyWith(
                             color: AppColors.white,
                           ),
                         ),
                         Text(
-                          'Open a store to browse all of its products',
+                          l10n.t('shopping.hero_subtitle'),
                           style: AppTextStyles.bodySmall.copyWith(
                             color: Colors.white70,
                           ),
@@ -236,7 +238,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                 : stores.isEmpty
                 ? Center(
                     child: Text(
-                      'No shops found.',
+                      l10n.t('shopping.no_shops'),
                       style: AppTextStyles.bodyMedium,
                     ),
                   )

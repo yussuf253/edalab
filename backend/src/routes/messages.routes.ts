@@ -1,4 +1,5 @@
 import {
+  AppointmentStatus,
   ConversationEntityType,
   MessageSenderRole,
   ModuleType,
@@ -121,6 +122,51 @@ function buildAutoReply(
   }
 }
 
+async function isDoctorConversationAllowed({
+  userId,
+  entityId,
+  metadata,
+}: {
+  userId: string;
+  entityId: string;
+  metadata?: Record<string, unknown> | null;
+}) {
+  const appointmentId = metadata?.appointmentId?.toString();
+  if (!appointmentId) {
+    return {
+      ok: false,
+      reason: 'Doctor chat is only available from an appointment detail.',
+    };
+  }
+
+  const appointment = await prisma.appointment.findFirst({
+    where: {
+      id: appointmentId,
+      userId,
+      doctorId: entityId,
+      status: AppointmentStatus.APPROVED,
+    },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  if (!appointment) {
+    return {
+      ok: false,
+      reason:
+          'Doctor chat is only available for a valid appointment linked to this doctor.',
+    };
+  }
+
+  return {
+    ok: true,
+    appointmentId: appointment.id,
+    status: appointment.status,
+  };
+}
+
 router.get(
   '/user/:userId',
   asyncHandler(async (req, res) => {
@@ -165,6 +211,19 @@ router.post(
   '/conversations/start',
   asyncHandler(async (req, res) => {
     const body = startConversationSchema.parse(req.body);
+
+    if (body.entityType === ConversationEntityType.DOCTOR) {
+      const validation = await isDoctorConversationAllowed({
+        userId: body.userId,
+        entityId: body.entityId,
+        metadata: body.metadata,
+      });
+
+      if (!validation.ok) {
+        return res.status(403).json({ error: validation.reason });
+      }
+    }
+
     const existing = await prisma.conversation.findUnique({
       where: {
         userId_entityType_entityId: {
@@ -223,6 +282,25 @@ router.post(
 
     if (!conversation) {
       return res.status(404).json({ error: 'Conversation not found.' });
+    }
+
+    if (conversation.entityType === ConversationEntityType.DOCTOR) {
+      const metadata =
+          conversation.metadata &&
+          typeof conversation.metadata === 'object' &&
+          !Array.isArray(conversation.metadata)
+              ? (conversation.metadata as Record<string, unknown>)
+              : null;
+
+      const validation = await isDoctorConversationAllowed({
+        userId: conversation.userId,
+        entityId: conversation.entityId,
+        metadata,
+      });
+
+      if (!validation.ok && body.senderRole === MessageSenderRole.USER) {
+        return res.status(403).json({ error: validation.reason });
+      }
     }
 
     const userMessage = await prisma.message.create({

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -49,12 +50,13 @@ class _CouponsScreenState extends State<CouponsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final user = context.watch<AuthProvider>().user;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Coupons & Rewards'),
+        title: Text(l10n.t('rewards.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -84,7 +86,7 @@ class _CouponsScreenState extends State<CouponsScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'My Rewards',
+                          l10n.t('rewards.my_rewards'),
                           style: AppTextStyles.labelMedium.copyWith(
                             color: Colors.white70,
                           ),
@@ -100,8 +102,8 @@ class _CouponsScreenState extends State<CouponsScreen> {
                           ),
                           child: Text(
                             user != null && user.points >= 3000
-                                ? 'Platinum'
-                                : 'Gold Member',
+                                ? l10n.t('rewards.platinum')
+                                : l10n.t('rewards.gold'),
                             style: AppTextStyles.badge.copyWith(fontSize: 10),
                           ),
                         ),
@@ -122,7 +124,7 @@ class _CouponsScreenState extends State<CouponsScreen> {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 6),
                           child: Text(
-                            'points',
+                            l10n.t('rewards.points'),
                             style: AppTextStyles.bodyMedium.copyWith(
                               color: Colors.white60,
                             ),
@@ -152,7 +154,7 @@ class _CouponsScreenState extends State<CouponsScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-              child: Text('Available Coupons', style: AppTextStyles.h4),
+              child: Text(l10n.t('rewards.available_coupons'), style: AppTextStyles.h4),
             ),
           ),
           if (_isLoading)
@@ -196,7 +198,7 @@ class _CouponsScreenState extends State<CouponsScreen> {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Text(
-                    'No assigned coupons yet.',
+                    l10n.t('rewards.no_coupons'),
                     style: AppTextStyles.bodyMedium,
                   ),
                 ),
@@ -286,7 +288,7 @@ class _CouponsScreenState extends State<CouponsScreen> {
                               const SizedBox(height: 6),
                               Text(
                                 promotion['moduleType']?.toString() ??
-                                    'General',
+                                    l10n.t('rewards.general'),
                                 style: AppTextStyles.caption,
                               ),
                             ],
@@ -304,30 +306,30 @@ class _CouponsScreenState extends State<CouponsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Earn More Points', style: AppTextStyles.h4),
+                  Text(l10n.t('rewards.earn_more'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
                   ...[
                     (
-                      'Order Food',
-                      '+50 pts per order',
+                      l10n.t('rewards.order_food'),
+                      l10n.t('rewards.order_food_points'),
                       Icons.restaurant_rounded,
                       AppColors.food,
                     ),
                     (
-                      'Book a Ride',
-                      '+30 pts per ride',
+                      l10n.t('rewards.book_ride'),
+                      l10n.t('rewards.book_ride_points'),
                       Icons.directions_car_rounded,
                       AppColors.ride,
                     ),
                     (
-                      'Shop Online',
-                      '+100 pts per \$50 spent',
+                      l10n.t('rewards.shop_online'),
+                      l10n.t('rewards.shop_online_points'),
                       Icons.shopping_bag_rounded,
                       AppColors.shopping,
                     ),
                     (
-                      'Refer a Friend',
-                      '+500 pts per referral',
+                      l10n.t('rewards.refer_friend'),
+                      l10n.t('rewards.refer_friend_points'),
                       Icons.group_add_rounded,
                       AppColors.primary,
                     ),
@@ -398,13 +400,17 @@ class _CouponsScreenState extends State<CouponsScreen> {
   }
 
   String _discountLabel(String? type, dynamic value) {
+    final l10n = context.l10n;
     final numeric = (value as num?)?.toDouble();
     if (type == 'PERCENTAGE' && numeric != null) {
-      return '${numeric.toInt()}% Off';
+      return l10n.t(
+        'rewards.percent_off',
+        params: {'value': numeric.toInt().toString()},
+      );
     }
     if (numeric != null) {
       return numeric.toStringAsFixed(0);
     }
-    return 'Offer';
+    return l10n.t('rewards.offer');
   }
 }

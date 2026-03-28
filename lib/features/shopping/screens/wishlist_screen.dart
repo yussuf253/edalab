@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -84,10 +85,11 @@ class _WishlistScreenState extends State<WishlistScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Wishlist'),
+        title: Text(l10n.t('wishlist.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -98,7 +100,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
           : _items.isEmpty
           ? Center(
               child: Text(
-                'Your wishlist is empty.',
+                l10n.t('wishlist.empty'),
                 style: AppTextStyles.bodyMedium,
               ),
             )
@@ -150,7 +152,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                                 Text(
                                   item['price'] != null
                                       ? '\$${(item['price'] as num).toStringAsFixed(2)}'
-                                      : 'Saved',
+                                      : l10n.t('wishlist.saved'),
                                   style: AppTextStyles.priceSmall,
                                 ),
                                 const Spacer(),

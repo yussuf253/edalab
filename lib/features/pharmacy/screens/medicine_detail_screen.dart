@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -51,6 +52,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final medicine = _medicine;
     final cartProvider = context.watch<CartProvider>();
     final cartItemCount = cartProvider.getModuleItemCount('pharmacy');
@@ -161,8 +163,8 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                           color: AppColors.successLight,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(
-                          'In Stock',
+                      child: Text(
+                          l10n.t('medicine_detail.in_stock'),
                           style: AppTextStyles.labelSmall.copyWith(
                             color: AppColors.success,
                           ),
@@ -180,7 +182,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'Prescription Required',
+                            l10n.t('medicine_detail.prescription_required'),
                             style: AppTextStyles.labelSmall.copyWith(
                               color: AppColors.warning,
                             ),
@@ -190,7 +192,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  Text('Description', style: AppTextStyles.h4),
+                  Text(l10n.t('medicine_detail.description'), style: AppTextStyles.h4),
                   const SizedBox(height: 8),
                   Text(
                     medicine.description,
@@ -200,7 +202,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text('Dosage', style: AppTextStyles.h4),
+                  Text(l10n.t('medicine_detail.dosage'), style: AppTextStyles.h4),
                   const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
@@ -222,7 +224,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text('Warnings', style: AppTextStyles.h4),
+                  Text(l10n.t('medicine_detail.warnings'), style: AppTextStyles.h4),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.all(14),
@@ -239,7 +241,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Do not exceed the stated dose. Consult your doctor if symptoms persist.',
+                            l10n.t('medicine_detail.warning_text'),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.dark,
                             ),
@@ -294,7 +296,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'View Cart',
+                          l10n.t('medicine_detail.view_cart'),
                           style: AppTextStyles.button.copyWith(
                             color: AppColors.white,
                           ),
@@ -311,7 +313,10 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                 ),
               )
             : AppButton(
-                text: 'Add to Cart • \$${medicine.price.toStringAsFixed(2)}',
+                text: l10n.t(
+                  'medicine_detail.add_to_cart',
+                  params: {'amount': medicine.price.toStringAsFixed(2)},
+                ),
                 color: AppColors.pharmacy,
                 onPressed: () {
                   cartProvider.addItem(

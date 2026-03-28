@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 
 class FoodOrderTrackingScreen extends StatelessWidget {
   final String orderId;
@@ -10,6 +11,7 @@ class FoodOrderTrackingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final displayOrderId = orderId.startsWith('#') ? orderId : '#$orderId';
     return PopScope(
       canPop: context.canPop(),
@@ -21,7 +23,7 @@ class FoodOrderTrackingScreen extends StatelessWidget {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Order Tracking'),
+        title: Text(l10n.t('tracking.order_tracking')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -51,7 +53,7 @@ class FoodOrderTrackingScreen extends StatelessWidget {
                 children: [
                   const Icon(Icons.delivery_dining_rounded, color: AppColors.white, size: 48),
                   const SizedBox(height: 12),
-                  Text('Estimated Delivery', style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70)),
+                  Text(l10n.t('food_tracking.estimated_delivery'), style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70)),
                   const SizedBox(height: 4),
                   Text('15-20 minutes', style: AppTextStyles.h2.copyWith(color: AppColors.white)),
                   const SizedBox(height: 8),
@@ -70,10 +72,10 @@ class FoodOrderTrackingScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _TimelineStep('Order Confirmed', '10:30 AM', true, true),
-                  _TimelineStep('Preparing', '10:32 AM', true, true),
-                  _TimelineStep('On the way', '10:45 AM', true, false),
-                  _TimelineStep('Delivered', '', false, false),
+                  _TimelineStep(l10n.t('food_tracking.order_confirmed'), '10:30 AM', true, true),
+                  _TimelineStep(l10n.t('food_tracking.preparing'), '10:32 AM', true, true),
+                  _TimelineStep(l10n.t('food_tracking.on_the_way'), '10:45 AM', true, false),
+                  _TimelineStep(l10n.t('food_tracking.delivered'), '', false, false),
                 ],
               ),
             ),
@@ -106,7 +108,7 @@ class FoodOrderTrackingScreen extends StatelessWidget {
                           children: [
                             const Icon(Icons.star_rounded, size: 14, color: AppColors.warning),
                             const SizedBox(width: 4),
-                            Text('4.9 • Your rider', style: AppTextStyles.caption),
+                            Text('4.9 • ${l10n.t('food_tracking.rider')}', style: AppTextStyles.caption),
                           ],
                         ),
                       ],
@@ -144,7 +146,7 @@ class FoodOrderTrackingScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Order Details', style: AppTextStyles.labelLarge),
+                  Text(l10n.t('food_tracking.order_details'), style: AppTextStyles.labelLarge),
                   const SizedBox(height: 12),
                   _OrderRow('1x Classic Cheese Burger', '\$12.99'),
                   _OrderRow('1x BBQ Bacon Burger', '\$15.99'),
@@ -186,7 +188,7 @@ class _TimelineStep extends StatelessWidget {
                       ? const Icon(Icons.delivery_dining_rounded, color: AppColors.white, size: 16)
                       : null,
             ),
-            if (title != 'Delivered')
+            if (title != AppLocalizations.of(context).t('food_tracking.delivered'))
               Container(width: 2, height: 32, color: isDone ? AppColors.success : AppColors.extraLightGrey),
           ],
         ),

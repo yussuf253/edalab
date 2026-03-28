@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -59,6 +60,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
     final cartItemCount = cartProvider.getModuleItemCount('pharmacy');
     final moduleTotal = cartProvider.getModuleSubtotal('pharmacy');
@@ -80,7 +82,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Pharmacy'),
+        title: Text(l10n.t('pharmacy.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -135,7 +137,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: AppSearchBar(
-                hint: 'Search medicines, health products...',
+                hint: l10n.t('pharmacy.search_hint'),
                 controller: _searchController,
                 onChanged: (value) => setState(() => _searchQuery = value),
               ),
@@ -159,14 +161,14 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Upload Prescription 📋',
+                            l10n.t('pharmacy.hero_title'),
                             style: AppTextStyles.h4.copyWith(
                               color: AppColors.white,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Upload and get medicines delivered',
+                            l10n.t('pharmacy.hero_subtitle'),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: Colors.white70,
                             ),
@@ -182,7 +184,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
-                              'Upload Now',
+                              l10n.t('pharmacy.upload_now'),
                               style: AppTextStyles.labelMedium.copyWith(
                                 color: AppColors.pharmacy,
                               ),
@@ -215,35 +217,35 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: const [
+                children: [
                   _CatIcon(
                     Icons.medication_rounded,
-                    'Medicines',
+                    l10n.t('pharmacy.medicines'),
                     AppColors.pharmacy,
                   ),
                   _CatIcon(
                     Icons.sanitizer_rounded,
-                    'Wellness',
+                    l10n.t('pharmacy.wellness'),
                     AppColors.secondary,
                   ),
                   _CatIcon(
                     Icons.healing_rounded,
-                    'First Aid',
+                    l10n.t('pharmacy.first_aid'),
                     AppColors.accent,
                   ),
                   _CatIcon(
                     Icons.baby_changing_station_rounded,
-                    'Baby Care',
+                    l10n.t('pharmacy.baby_care'),
                     AppColors.food,
                   ),
                   _CatIcon(
                     Icons.face_retouching_natural_rounded,
-                    'Skin Care',
+                    l10n.t('pharmacy.skin_care'),
                     AppColors.laundry,
                   ),
                   _CatIcon(
                     Icons.fitness_center_rounded,
-                    'Fitness',
+                    l10n.t('pharmacy.fitness'),
                     AppColors.primary,
                   ),
                 ],
@@ -253,7 +255,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: Text('Popular Medicines', style: AppTextStyles.h4),
+              child: Text(l10n.t('pharmacy.popular_medicines'), style: AppTextStyles.h4),
             ),
           ),
           if (_isLoading)
@@ -343,7 +345,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  'Add',
+                                  l10n.t('pharmacy.add'),
                                   style: AppTextStyles.badge.copyWith(
                                     fontSize: 11,
                                   ),
@@ -403,7 +405,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'View Cart',
+                          l10n.t('pharmacy.view_cart'),
                           style: AppTextStyles.button.copyWith(
                             color: AppColors.white,
                           ),

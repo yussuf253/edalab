@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/auth_gate.dart';
@@ -61,6 +62,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final services = _services;
 
     return PopScope(
@@ -73,7 +75,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Laundry'),
+        title: Text(l10n.t('laundry.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -106,14 +108,14 @@ class _LaundryScreenState extends State<LaundryScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Fresh & Clean 🧺',
+                          l10n.t('laundry.hero_title'),
                           style: AppTextStyles.h3.copyWith(
                             color: AppColors.white,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'First order 50% off! Free pickup & delivery',
+                          l10n.t('laundry.hero_subtitle'),
                           style: AppTextStyles.bodySmall.copyWith(
                             color: Colors.white70,
                           ),
@@ -123,8 +125,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
                           onTap: () async {
                             final allowed = await requireLoggedIn(
                               context,
-                              message:
-                                  'Please log in to place a laundry order.',
+                              message: l10n.t('laundry.login_required'),
                             );
                             if (!context.mounted || !allowed) return;
                             context.push('/laundry/order');
@@ -139,7 +140,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
-                              'Order Now',
+                              l10n.t('laundry.order_now'),
                               style: AppTextStyles.labelMedium.copyWith(
                                 color: AppColors.laundry,
                               ),
@@ -168,7 +169,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
             ),
             const SizedBox(height: 24),
             // Services
-            Text('Our Services', style: AppTextStyles.h4),
+            Text(l10n.t('laundry.our_services'), style: AppTextStyles.h4),
             const SizedBox(height: 14),
             if (_isLoading)
               const InlineSectionListShimmer(itemCount: 4)
@@ -207,7 +208,13 @@ class _LaundryScreenState extends State<LaundryScreen> {
                               Text(s.name, style: AppTextStyles.labelLarge),
                               const SizedBox(height: 2),
                               Text(
-                                'Starting from \$${s.price.toInt()} ${s.unit}',
+                                l10n.t(
+                                  'laundry.starting_from',
+                                  params: {
+                                    'price': '${s.price.toInt()}',
+                                    'unit': s.unit,
+                                  },
+                                ),
                                 style: AppTextStyles.caption,
                               ),
                             ],
@@ -225,31 +232,31 @@ class _LaundryScreenState extends State<LaundryScreen> {
               ),
             const SizedBox(height: 20),
             // How it works
-            Text('How It Works', style: AppTextStyles.h4),
+            Text(l10n.t('laundry.how_it_works'), style: AppTextStyles.h4),
             const SizedBox(height: 14),
             ...[
               (
                 '1',
-                'Schedule Pickup',
-                'Choose your pickup date and time slot',
+                l10n.t('laundry.step1_title'),
+                l10n.t('laundry.step1_subtitle'),
                 Icons.calendar_today_rounded,
               ),
               (
                 '2',
-                'We Collect',
-                'Our rider picks up your clothes',
+                l10n.t('laundry.step2_title'),
+                l10n.t('laundry.step2_subtitle'),
                 Icons.directions_car_rounded,
               ),
               (
                 '3',
-                'Clean & Press',
-                'Professional cleaning and ironing',
+                l10n.t('laundry.step3_title'),
+                l10n.t('laundry.step3_subtitle'),
                 Icons.dry_cleaning_rounded,
               ),
               (
                 '4',
-                'Delivered Back',
-                'Fresh clothes delivered to your door',
+                l10n.t('laundry.step4_title'),
+                l10n.t('laundry.step4_subtitle'),
                 Icons.home_rounded,
               ),
             ].map(

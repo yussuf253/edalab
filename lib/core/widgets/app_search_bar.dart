@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../localization/app_localizations.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_spacing.dart';
 
@@ -26,6 +27,8 @@ class AppSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedHint =
+        hint == 'Search...' ? context.l10n.t('common.search') : hint;
     return GestureDetector(
       onTap: readOnly ? onTap : null,
       child: Container(
@@ -41,7 +44,7 @@ class AppSearchBar extends StatelessWidget {
           autofocus: autofocus,
           onTap: onTap,
           decoration: InputDecoration(
-            hintText: hint,
+            hintText: resolvedHint,
             prefixIcon: prefix ??
                 const Icon(
                   Icons.search_rounded,

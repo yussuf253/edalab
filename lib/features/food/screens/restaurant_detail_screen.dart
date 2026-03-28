@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -60,6 +61,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final restaurant = _restaurant;
     final menu = _resolvedMenu(restaurant);
 
@@ -67,13 +69,16 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
     final foodCartItems = cartProvider.getModuleItems('food');
     final moduleTotal = cartProvider.getModuleSubtotal('food');
     final cartItemCount = cartProvider.getModuleItemCount('food');
+    final allCategory = l10n.t('common.all');
 
-    final categories = ['All', ...menu.map((category) => category.name)];
+    final categories = [allCategory, ...menu.map((category) => category.name)];
     final normalizedQuery = _searchQuery.trim().toLowerCase();
     final visibleCategories = menu
         .where((category) {
           final matchesCategory =
-              _selectedCategory == 'All' || category.name == _selectedCategory;
+              _selectedCategory == 'All' ||
+              _selectedCategory == allCategory ||
+              category.name == _selectedCategory;
           final matchesSearch =
               normalizedQuery.isEmpty ||
               category.items.any(
@@ -230,7 +235,9 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                restaurant.isOpen ? 'Open' : 'Closed',
+                                restaurant.isOpen
+                                    ? l10n.t('restaurant_detail.open')
+                                    : l10n.t('restaurant_detail.closed'),
                                 style: AppTextStyles.labelSmall.copyWith(
                                   color: restaurant.isOpen
                                       ? AppColors.success
@@ -253,7 +260,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                           runSpacing: 8,
                           children:
                               (restaurant.tags.isEmpty
-                                      ? ['Popular']
+                                      ? [l10n.t('restaurant_detail.popular')]
                                       : restaurant.tags)
                                   .map(
                                     (tag) => Container(
@@ -282,14 +289,19 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                             _StatChip(
                               Icons.star_rounded,
                               '${restaurant.rating}',
-                              '${restaurant.reviewCount}+ reviews',
+                              l10n.t(
+                                'restaurant_detail.reviews',
+                                params: {
+                                  'count': restaurant.reviewCount.toString(),
+                                },
+                              ),
                               AppColors.warning,
                             ),
                             const SizedBox(width: 10),
                             _StatChip(
                               Icons.schedule_rounded,
                               restaurant.deliveryTime,
-                              'min delivery',
+                              l10n.t('restaurant_detail.min_delivery'),
                               AppColors.primary,
                             ),
                             const SizedBox(width: 10),
@@ -298,7 +310,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                               restaurant.deliveryFee == 'Free'
                                   ? 'Free'
                                   : restaurant.deliveryFee,
-                              'delivery',
+                              l10n.t('restaurant_detail.delivery'),
                               AppColors.success,
                             ),
                           ],
@@ -322,7 +334,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                                 Icons.search_rounded,
                                 color: AppColors.grey,
                               ),
-                              hintText: 'Search dishes, drinks, sides...',
+                              hintText: l10n.t('restaurant_detail.search_hint'),
                               hintStyle: AppTextStyles.bodyMedium.copyWith(
                                 color: AppColors.mediumGrey,
                               ),
@@ -331,7 +343,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Text('Categories', style: AppTextStyles.h3),
+                        Text(l10n.t('restaurant_detail.categories'), style: AppTextStyles.h3),
                         const SizedBox(height: 8),
                         SizedBox(
                           height: 40,
@@ -397,15 +409,17 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                       const SizedBox(height: 12),
                       Text(
                         menu.isEmpty
-                            ? 'Menu coming soon'
-                            : 'No dishes match your search',
+                            ? l10n.t('restaurant_detail.menu_coming_soon')
+                            : l10n.t('restaurant_detail.no_match'),
                         style: AppTextStyles.h4,
                       ),
                       const SizedBox(height: 6),
                       Text(
                         menu.isEmpty
-                            ? 'This restaurant does not have live menu items yet.'
-                            : 'Try another keyword or switch categories to keep exploring the menu.',
+                            ? l10n.t(
+                                'restaurant_detail.menu_coming_soon_subtitle',
+                              )
+                            : l10n.t('restaurant_detail.no_match_subtitle'),
                         textAlign: TextAlign.center,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.grey,
@@ -432,7 +446,10 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                         Text(entry.key, style: AppTextStyles.h3),
                         const SizedBox(width: 8),
                         Text(
-                          '${entry.value.length} items',
+                          l10n.t(
+                            'restaurant_detail.items_count',
+                            params: {'count': entry.value.length.toString()},
+                          ),
                           style: AppTextStyles.caption,
                         ),
                       ],
@@ -492,7 +509,10 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                       child: Text('$cartItemCount', style: AppTextStyles.badge),
                     ),
                     const SizedBox(width: 12),
-                    Text('View Cart', style: AppTextStyles.button),
+                    Text(
+                      l10n.t('restaurant_detail.view_cart'),
+                      style: AppTextStyles.button,
+                    ),
                     const SizedBox(width: 12),
                     Text(
                       '\$${moduleTotal.toStringAsFixed(2)}',

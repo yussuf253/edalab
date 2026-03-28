@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -122,6 +123,7 @@ class _HomeServiceAppointmentDetailScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final order = _order;
     final provider = _provider;
     final serviceName =
@@ -131,8 +133,8 @@ class _HomeServiceAppointmentDetailScreenState
                   ? Map<String, dynamic>.from(
                       (order!['items'] as List).first as Map,
                     )['name']?.toString() ??
-                    'Home Service'
-                  : 'Home Service');
+                    l10n.t('module.home_services')
+                  : l10n.t('module.home_services'));
     final bookingMode = _metadataValue('bookingMode');
     final scheduledDate = _metadataValue('scheduledDate');
     final timeSlot = _metadataValue('timeSlot');
@@ -148,7 +150,7 @@ class _HomeServiceAppointmentDetailScreenState
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Service Booking'),
+        title: Text(l10n.t('home_service_detail.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -168,7 +170,7 @@ class _HomeServiceAppointmentDetailScreenState
           : order == null
           ? Center(
               child: Text(
-                'Booking details unavailable.',
+                l10n.t('home_service_detail.unavailable'),
                 style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
               ),
             )
@@ -216,7 +218,7 @@ class _HomeServiceAppointmentDetailScreenState
                               Text(
                                 provider?.name ??
                                     order['moduleName']?.toString() ??
-                                    'Service Provider',
+                                    l10n.t('home_service_detail.provider_name'),
                                 style: AppTextStyles.bodyMedium.copyWith(
                                   color: Colors.white70,
                                 ),
@@ -246,35 +248,37 @@ class _HomeServiceAppointmentDetailScreenState
                   ),
                   const SizedBox(height: 20),
                   _DetailCard(
-                    title: 'Booking Summary',
+                    title: l10n.t('home_service_detail.summary'),
                     children: [
-                      _DetailRow('Booking ID', '#${order['id']}'),
+                      _DetailRow(l10n.t('home_service_detail.booking_id'), '#${order['id']}'),
                       _DetailRow(
-                        'Price',
+                        l10n.t('home_service_detail.price'),
                         '\$${((order['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(0)}',
                       ),
                       if (bookingMode.isNotEmpty)
-                        _DetailRow('Mode', bookingMode),
+                        _DetailRow(l10n.t('home_service_detail.mode'), bookingMode),
                       if (scheduledDate.isNotEmpty)
-                        _DetailRow('Date', scheduledDate),
-                      if (timeSlot.isNotEmpty) _DetailRow('Time', timeSlot),
-                      if (address.isNotEmpty) _DetailRow('Address', address),
+                        _DetailRow(l10n.t('home_service_detail.date'), scheduledDate),
+                      if (timeSlot.isNotEmpty)
+                        _DetailRow(l10n.t('home_service_detail.time'), timeSlot),
+                      if (address.isNotEmpty)
+                        _DetailRow(l10n.t('home_service_detail.address'), address),
                     ],
                   ),
                   if (provider != null) ...[
                     const SizedBox(height: 16),
                     _DetailCard(
-                      title: 'Provider',
+                      title: l10n.t('home_service_detail.provider'),
                       children: [
-                        _DetailRow('Name', provider.name),
-                        _DetailRow('Role', provider.title),
+                        _DetailRow(l10n.t('home_service_detail.name'), provider.name),
+                        _DetailRow(l10n.t('home_service_detail.role'), provider.title),
                         if ((provider.contactPhone ?? '').isNotEmpty)
-                          _DetailRow('Phone', provider.contactPhone!),
+                          _DetailRow(l10n.t('home_service_detail.phone'), provider.contactPhone!),
                         _DetailRow(
-                          'Availability',
+                          l10n.t('home_service_detail.availability'),
                           provider.isAvailable
-                              ? 'Available today'
-                              : 'By confirmation',
+                              ? l10n.t('home_service_detail.available_today')
+                              : l10n.t('home_service_detail.by_confirmation'),
                         ),
                       ],
                     ),
@@ -285,7 +289,7 @@ class _HomeServiceAppointmentDetailScreenState
                       children: [
                         Expanded(
                           child: AppButton(
-                            text: 'Message',
+                            text: l10n.t('home_service_detail.message'),
                             isOutlined: true,
                             color: AppColors.homeServices,
                             onPressed: () => openConversation(
@@ -309,7 +313,7 @@ class _HomeServiceAppointmentDetailScreenState
                         const SizedBox(width: 12),
                         Expanded(
                           child: AppButton(
-                            text: 'Call Provider',
+                            text: l10n.t('home_service_detail.call_provider'),
                             color: AppColors.homeServices,
                             onPressed: _callProvider,
                           ),
@@ -318,7 +322,7 @@ class _HomeServiceAppointmentDetailScreenState
                     ),
                   const SizedBox(height: 12),
                   AppButton(
-                    text: 'View All Orders',
+                    text: l10n.t('home_service_detail.view_orders'),
                     isOutlined: true,
                     color: AppColors.homeServices,
                     onPressed: () => context.go('/orders'),

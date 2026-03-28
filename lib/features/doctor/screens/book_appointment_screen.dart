@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -73,6 +74,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   }
 
   Future<void> _contactProvider() async {
+    final l10n = context.l10n;
     final doctor = _doctor;
     if (doctor == null) return;
     final whatsApp = doctor.contactWhatsApp?.replaceAll(RegExp(r'[^0-9+]'), '');
@@ -88,7 +90,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     if (uri == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No contact information available.')),
+        SnackBar(content: Text(l10n.t('doctor_booking.no_contact'))),
       );
       return;
     }
@@ -96,12 +98,13 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!mounted || launched) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Unable to open the contact action.')),
+      SnackBar(content: Text(l10n.t('doctor_booking.cannot_open_contact'))),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final doctor = _doctor;
 
     return Scaffold(
@@ -109,12 +112,12 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
       appBar: AppBar(
         title: Text(
           doctor == null || _isLoading
-              ? 'Loading Profile'
+              ? l10n.t('doctor_booking.loading')
               : doctor.usesDirectContactOnly
-              ? 'Contact Doctor'
+              ? l10n.t('doctor_booking.contact_doctor')
               : doctor.isDoctorProvider
-              ? 'Book Appointment'
-              : 'Book Care Service',
+              ? l10n.t('doctor_booking.book_appointment')
+              : l10n.t('doctor_booking.book_care_service'),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
@@ -187,10 +190,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Direct Doctor Contact', style: AppTextStyles.h4),
+                    Text(l10n.t('doctor_booking.direct_contact'), style: AppTextStyles.h4),
                     const SizedBox(height: 8),
                     Text(
-                      'This doctor is not signed up in the app yet. Contact them directly to agree on consultation time and details.',
+                      l10n.t('doctor_booking.direct_contact_subtitle'),
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.grey,
                         height: 1.5,
@@ -212,18 +215,18 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     const SizedBox(height: 16),
                     _ContactInfoRow(
                       icon: Icons.call_rounded,
-                      label: 'Phone',
-                      value: doctor.contactPhone ?? 'Not available',
+                      label: l10n.t('doctor_booking.phone'),
+                      value: doctor.contactPhone ?? l10n.t('doctor_booking.not_available'),
                     ),
                     const SizedBox(height: 10),
                     _ContactInfoRow(
                       icon: Icons.chat_rounded,
-                      label: 'WhatsApp',
-                      value: doctor.contactWhatsApp ?? 'Not available',
+                      label: l10n.t('doctor_booking.whatsapp'),
+                      value: doctor.contactWhatsApp ?? l10n.t('doctor_booking.not_available'),
                     ),
                     const SizedBox(height: 20),
                     AppButton(
-                      text: 'Contact Directly',
+                      text: l10n.t('doctor_booking.contact_directly'),
                       color: AppColors.doctor,
                       onPressed: _contactProvider,
                     ),
@@ -239,16 +242,16 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 ),
                 child: Column(
                   children: [
-                    _Row('Provider', doctor.name),
-                    _Row('Service', doctor.specialty),
+                    _Row(l10n.t('doctor_booking.provider'), doctor.name),
+                    _Row(l10n.t('doctor_booking.service'), doctor.specialty),
                     _Row(
-                      'Mode',
+                      l10n.t('doctor_booking.mode'),
                       doctor.careModes.isNotEmpty
                           ? doctor.careModes.first
-                          : 'Home Visit',
+                          : l10n.t('doctor_booking.home_visit'),
                     ),
                     _Row(
-                      'Consultation Fee',
+                      l10n.t('doctor_booking.consultation_fee'),
                       '\$${doctor.consultationFee.toInt()}',
                       bold: true,
                     ),
@@ -258,7 +261,9 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
               const SizedBox(height: 20),
             ] else if (!_isLoading && doctor != null) ...[
               Text(
-                doctor.isDoctorProvider ? 'Appointment Type' : 'Service Mode',
+                doctor.isDoctorProvider
+                    ? l10n.t('doctor_booking.appointment_type')
+                    : l10n.t('doctor_booking.service_mode'),
                 style: AppTextStyles.h4,
               ),
               const SizedBox(height: 12),
@@ -268,14 +273,18 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     doctor.isDoctorProvider
                         ? Icons.videocam_rounded
                         : Icons.home_rounded,
-                    doctor.isDoctorProvider ? 'Video Call' : 'Home Visit',
+                    doctor.isDoctorProvider
+                        ? l10n.t('doctor_booking.video_call')
+                        : l10n.t('doctor_booking.home_visit'),
                     _selectedType == 0,
                     () => setState(() => _selectedType = 0),
                   ),
                   const SizedBox(width: 12),
                   _TypeCard(
                     Icons.chat_rounded,
-                    doctor.isDoctorProvider ? 'Chat' : 'Phone Advice',
+                    doctor.isDoctorProvider
+                        ? l10n.t('doctor_booking.chat')
+                        : l10n.t('doctor_booking.phone_advice'),
                     _selectedType == 1,
                     () => setState(() => _selectedType = 1),
                   ),
@@ -284,14 +293,16 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     doctor.isDoctorProvider
                         ? Icons.location_on_rounded
                         : Icons.videocam_rounded,
-                    doctor.isDoctorProvider ? 'In Person' : 'Video Support',
+                    doctor.isDoctorProvider
+                        ? l10n.t('doctor_booking.in_person')
+                        : l10n.t('doctor_booking.video_support'),
                     _selectedType == 2,
                     () => setState(() => _selectedType = 2),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
-              Text('Select Date', style: AppTextStyles.h4),
+              Text(l10n.t('doctor_booking.select_date'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
               SizedBox(
                 height: 80,
@@ -342,7 +353,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text('Select Time', style: AppTextStyles.h4),
+              Text(l10n.t('doctor_booking.select_time'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 10,
@@ -375,12 +386,12 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 }),
               ),
               const SizedBox(height: 24),
-              Text('Notes (optional)', style: AppTextStyles.h4),
+              Text(l10n.t('doctor_booking.notes_optional'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
               TextFormField(
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  hintText: 'Describe your symptoms or reason for visit...',
+                decoration: InputDecoration(
+                  hintText: l10n.t('doctor_booking.notes_hint'),
                 ),
               ),
               const SizedBox(height: 24),
@@ -393,27 +404,35 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 child: Column(
                   children: [
                     _Row(
-                      doctor.isDoctorProvider ? 'Doctor' : 'Professional',
+                      doctor.isDoctorProvider
+                          ? l10n.t('doctor_booking.doctor')
+                          : l10n.t('doctor_booking.professional'),
                       doctor.name,
                     ),
                     _Row(
-                      'Date',
+                      l10n.t('doctor_booking.date'),
                       '${_dates[_selectedDate].$1}, Mar ${_dates[_selectedDate].$2}, 2026',
                     ),
-                    _Row('Time', '${_times[_selectedTime]} AM'),
+                    _Row(l10n.t('doctor_booking.time'), '${_times[_selectedTime]} AM'),
                     _Row(
-                      doctor.isDoctorProvider ? 'Type' : 'Service',
                       doctor.isDoctorProvider
-                          ? ['Video Call', 'Chat', 'In Person'][_selectedType]
+                          ? l10n.t('doctor_booking.type')
+                          : l10n.t('doctor_booking.service'),
+                      doctor.isDoctorProvider
+                          ? [
+                              l10n.t('doctor_booking.video_call'),
+                              l10n.t('doctor_booking.chat'),
+                              l10n.t('doctor_booking.in_person'),
+                            ][_selectedType]
                           : [
-                              'Home Visit',
-                              'Phone Advice',
-                              'Video Support',
+                              l10n.t('doctor_booking.home_visit'),
+                              l10n.t('doctor_booking.phone_advice'),
+                              l10n.t('doctor_booking.video_support'),
                             ][_selectedType],
                     ),
                     const Divider(height: 20),
                     _Row(
-                      'Fee',
+                      l10n.t('doctor_booking.fee'),
                       '\$${doctor.consultationFee.toInt()}',
                       bold: true,
                     ),
@@ -423,14 +442,14 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
               const SizedBox(height: 24),
               AppButton(
                 text: doctor.isDoctorProvider
-                    ? 'Confirm Booking'
-                    : 'Book Care Service',
+                    ? l10n.t('doctor_booking.confirm_booking')
+                    : l10n.t('doctor_booking.book_care_service'),
                 color: AppColors.doctor,
                 onPressed: () async {
                   final auth = context.read<AuthProvider>();
                   final allowed = await requireLoggedIn(
                     context,
-                    message: 'Please log in to confirm your appointment.',
+                    message: l10n.t('doctor_booking.login_required'),
                   );
                   if (!context.mounted || !allowed) return;
                   try {
@@ -461,10 +480,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       extra: {
                         'orderId': appointment is Map ? appointment['id'] : null,
                         'amount': doctor.consultationFee,
-                        'payment': 'Pay on confirmation',
+                        'payment': l10n.t('home_service_booking.pay_on_confirmation'),
                         'delivery': doctor.isDoctorProvider
-                            ? 'Appointment scheduled'
-                            : 'Care service scheduled',
+                            ? l10n.t('doctor_booking.appointment_scheduled')
+                            : l10n.t('doctor_booking.care_service_scheduled'),
                         'moduleName': doctor.isDoctorProvider
                             ? doctor.name
                             : (doctor.services.isNotEmpty
@@ -478,7 +497,12 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Failed to book: $error'),
+                        content: Text(
+                          l10n.t(
+                            'doctor_booking.failed',
+                            params: {'error': '$error'},
+                          ),
+                        ),
                         backgroundColor: AppColors.error,
                       ),
                     );

@@ -3,25 +3,27 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 
 class HelpCenterScreen extends StatelessWidget {
   const HelpCenterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final faqs = [
-      _FAQ('How do I place an order?', 'Simply browse through the available services, select the items or service you want, add them to your cart, and proceed to checkout. You can pay using any of our available payment methods.'),
-      _FAQ('How can I track my order?', 'You can track your order in real-time from the Orders tab. Tap on any active order to see its current status, estimated delivery time, and rider information.'),
-      _FAQ('What payment methods are accepted?', 'We accept Credit/Debit cards, Apple Pay, Google Pay, PayPal, and Cash on Delivery. You can manage your payment methods from your Profile settings.'),
-      _FAQ('How do I cancel an order?', 'You can cancel an order within 5 minutes of placing it. Go to Orders tab, select the order, and tap "Cancel Order". After 5 minutes, contact support for assistance.'),
-      _FAQ('How do refunds work?', 'Refunds are processed within 5-7 business days after cancellation approval. The amount will be credited back to your original payment method.'),
-      _FAQ('How do I earn and use reward points?', 'Earn points with every order across all services. Points can be redeemed for discounts on future orders. Check the Rewards section in your profile for details.'),
+      _FAQ(l10n.t('help.faq1_q'), l10n.t('help.faq1_a')),
+      _FAQ(l10n.t('help.faq2_q'), l10n.t('help.faq2_a')),
+      _FAQ(l10n.t('help.faq3_q'), l10n.t('help.faq3_a')),
+      _FAQ(l10n.t('help.faq4_q'), l10n.t('help.faq4_a')),
+      _FAQ(l10n.t('help.faq5_q'), l10n.t('help.faq5_a')),
+      _FAQ(l10n.t('help.faq6_q'), l10n.t('help.faq6_a')),
     ];
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Help Center'),
+        title: Text(l10n.t('help.title')),
         leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), onPressed: () => context.pop()),
       ),
       body: SingleChildScrollView(
@@ -41,28 +43,28 @@ class HelpCenterScreen extends StatelessWidget {
                 children: [
                   const Icon(Icons.search_rounded, color: AppColors.mediumGrey),
                   const SizedBox(width: 10),
-                  Text('Search for help...', style: AppTextStyles.bodyMedium.copyWith(color: AppColors.mediumGrey)),
+                  Text(l10n.t('help.search_hint'), style: AppTextStyles.bodyMedium.copyWith(color: AppColors.mediumGrey)),
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
             // Quick help
-            Text('Quick Help', style: AppTextStyles.h4),
+            Text(l10n.t('help.quick_help'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             Row(
               children: [
-                _HelpCard(Icons.chat_bubble_rounded, 'Live Chat', AppColors.primary),
+                _HelpCard(Icons.chat_bubble_rounded, l10n.t('help.live_chat'), AppColors.primary),
                 const SizedBox(width: 12),
-                _HelpCard(Icons.email_rounded, 'Email Us', AppColors.secondary),
+                _HelpCard(Icons.email_rounded, l10n.t('help.email_us'), AppColors.secondary),
                 const SizedBox(width: 12),
-                _HelpCard(Icons.phone_rounded, 'Call Us', AppColors.success),
+                _HelpCard(Icons.phone_rounded, l10n.t('help.call_us'), AppColors.success),
               ],
             ),
             const SizedBox(height: 24),
 
             // FAQs
-            Text('Frequently Asked Questions', style: AppTextStyles.h4),
+            Text(l10n.t('help.faq'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             ...faqs.map((f) => Container(
               margin: const EdgeInsets.only(bottom: 10),
@@ -93,14 +95,14 @@ class HelpCenterScreen extends StatelessWidget {
                 children: [
                   const Icon(Icons.headset_mic_rounded, color: AppColors.primary, size: 36),
                   const SizedBox(height: 12),
-                  Text('Still need help?', style: AppTextStyles.h4),
+                  Text(l10n.t('help.still_need_help'), style: AppTextStyles.h4),
                   const SizedBox(height: 4),
-                  Text('Our support team is available 24/7', style: AppTextStyles.bodySmall.copyWith(color: AppColors.grey)),
+                  Text(l10n.t('help.support_available'), style: AppTextStyles.bodySmall.copyWith(color: AppColors.grey)),
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                     decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(10)),
-                    child: Text('Contact Support', style: AppTextStyles.badge.copyWith(fontSize: 13)),
+                    child: Text(l10n.t('help.contact_support'), style: AppTextStyles.badge.copyWith(fontSize: 13)),
                   ),
                 ],
               ),

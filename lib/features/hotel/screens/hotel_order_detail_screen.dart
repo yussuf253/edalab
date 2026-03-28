@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -68,6 +69,7 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final data = _booking ?? const <String, dynamic>{};
     final items = (data['items'] as List? ?? const [])
         .map((item) => Map<String, dynamic>.from(item as Map))
@@ -87,7 +89,7 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Hotel Booking'),
+        title: Text(l10n.t('hotel_tracking.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -112,7 +114,7 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _HotelHero(
-                    hotelName: data['moduleName']?.toString() ?? 'Hotel Booking',
+                    hotelName: data['moduleName']?.toString() ?? l10n.t('hotel_tracking.title'),
                     roomName: firstItem?['name']?.toString() ?? 'Room',
                     status: _pretty(data['status']?.toString()),
                     total: ((data['total'] as num?)?.toDouble() ?? 0),
@@ -136,7 +138,7 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
                       Expanded(
                         child: _HotelStatTile(
                           icon: Icons.people_alt_outlined,
-                          label: 'Guests',
+                          label: l10n.t('hotel_tracking.guests'),
                           value:
                               metadata['guestCount']?.toString() ??
                               metadata['guests']?.toString() ??
@@ -147,7 +149,7 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
                       Expanded(
                         child: _HotelStatTile(
                           icon: Icons.schedule_outlined,
-                          label: 'Booked',
+                          label: l10n.t('hotel_tracking.booked'),
                           value: _formatDate(data['createdAt']?.toString()),
                         ),
                       ),
@@ -155,26 +157,26 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
                   ),
                   const SizedBox(height: 14),
                   _HotelInfoCard(
-                    title: 'Booking Summary',
+                    title: l10n.t('hotel_tracking.summary'),
                     rows: [
                       _HotelRowData(
-                        'Stay',
+                        l10n.t('hotel_tracking.stay'),
                         '${data['moduleName']?.toString() ?? 'Hotel'} • ${firstItem?['name']?.toString() ?? 'Room'}',
                       ),
                       _HotelRowData(
-                        'Subtotal',
+                        l10n.t('hotel_tracking.subtotal'),
                         '\$${((data['subtotal'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
                       ),
                       _HotelRowData(
-                        'Taxes',
+                        l10n.t('hotel_tracking.taxes'),
                         '\$${((data['tax'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
                       ),
                       _HotelRowData(
-                        'Fees',
+                        l10n.t('hotel_tracking.fees'),
                         '\$${((data['deliveryFee'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
                       ),
                       _HotelRowData(
-                        'Total',
+                        l10n.t('hotel_tracking.total'),
                         '\$${((data['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
                       ),
                     ],
@@ -245,7 +247,10 @@ class _HotelHero extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            '\$${total.toStringAsFixed(2)} total stay',
+            AppLocalizations.of(context).t(
+              'hotel_tracking.total_stay',
+              params: {'amount': total.toStringAsFixed(2)},
+            ),
             style: AppTextStyles.labelLarge.copyWith(color: AppColors.white),
           ),
         ],
@@ -281,7 +286,7 @@ class _TimelineCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _StayPoint(
-                  title: 'Check-in',
+                  title: AppLocalizations.of(context).t('hotel_tracking.check_in'),
                   value: _formatDate(checkIn),
                   alignEnd: false,
                 ),
@@ -316,7 +321,7 @@ class _TimelineCard extends StatelessWidget {
               ),
               Expanded(
                 child: _StayPoint(
-                  title: 'Check-out',
+                  title: AppLocalizations.of(context).t('hotel_tracking.check_out'),
                   value: _formatDate(checkOut),
                   alignEnd: true,
                 ),
@@ -332,7 +337,10 @@ class _TimelineCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Text(
-              '$nights night${nights == 1 ? '' : 's'} reserved',
+              AppLocalizations.of(context).t(
+                'hotel_tracking.nights',
+                params: {'count': '$nights'},
+              ),
               style: AppTextStyles.labelMedium.copyWith(color: AppColors.hotel),
               textAlign: TextAlign.center,
             ),
@@ -500,7 +508,7 @@ class _MissingHotelState extends StatelessWidget {
     return Center(
       child: FilledButton(
         onPressed: () => context.go('/hotel'),
-        child: const Text('Back to Hotels'),
+        child: Text(AppLocalizations.of(context).t('hotel_tracking.back')),
       ),
     );
   }

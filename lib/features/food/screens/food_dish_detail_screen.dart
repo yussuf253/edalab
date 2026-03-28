@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -105,6 +106,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
     final item = _item;
     final existingItems = cartProvider.getModuleItems('food');
@@ -121,7 +123,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Dish Details'),
+        title: Text(l10n.t('food_detail.title')),
       ),
       body: _isLoading
           ? const SingleChildScrollView(
@@ -184,7 +186,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: Text(
-                                  'Popular Choice',
+                                  l10n.t('food_detail.popular_choice'),
                                   style: AppTextStyles.labelSmall.copyWith(
                                     color: AppColors.food,
                                   ),
@@ -194,7 +196,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                           ],
                         ),
                         const SizedBox(height: 20),
-                        Text('Description', style: AppTextStyles.h4),
+                        Text(l10n.t('food_detail.description'), style: AppTextStyles.h4),
                         const SizedBox(height: 8),
                         Text(
                           item.description,
@@ -205,7 +207,10 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                         ),
                         if ((item.customizations ?? const []).isNotEmpty) ...[
                           const SizedBox(height: 20),
-                          Text('Customizations', style: AppTextStyles.h4),
+                          Text(
+                            l10n.t('food_detail.customizations'),
+                            style: AppTextStyles.h4,
+                          ),
                           const SizedBox(height: 10),
                           Wrap(
                             spacing: 8,
@@ -236,7 +241,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                         const SizedBox(height: 28),
                         Row(
                           children: [
-                            Text('Quantity', style: AppTextStyles.h4),
+                            Text(l10n.t('food_detail.quantity'), style: AppTextStyles.h4),
                             const Spacer(),
                             Container(
                               decoration: BoxDecoration(
@@ -296,10 +301,22 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
         child: SafeArea(
           child: AppButton(
             text: item == null
-                ? 'Back to Menu'
+                ? l10n.t('food_detail.back_to_menu')
                 : existing == null
-                ? 'Add to Cart • \$${(item.price * quantity).toStringAsFixed(2)}'
-                : 'View Cart • \$${cartProvider.getModuleSubtotal('food').toStringAsFixed(2)}',
+                ? l10n.t(
+                    'food_detail.add_to_cart',
+                    params: {
+                      'amount': (item.price * quantity).toStringAsFixed(2),
+                    },
+                  )
+                : l10n.t(
+                    'food_detail.view_cart',
+                    params: {
+                      'amount': cartProvider
+                          .getModuleSubtotal('food')
+                          .toStringAsFixed(2),
+                    },
+                  ),
             color: AppColors.food,
             onPressed: () {
               if (item == null) {
@@ -346,6 +363,7 @@ class _DishNotFoundState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -358,10 +376,13 @@ class _DishNotFoundState extends StatelessWidget {
               color: AppColors.mediumGrey,
             ),
             const SizedBox(height: 12),
-            Text('Dish not found', style: AppTextStyles.h3),
+            Text(l10n.t('food_detail.not_found_title'), style: AppTextStyles.h3),
             const SizedBox(height: 8),
             Text(
-              'We could not find menu item "$itemId". Please go back and open it again from the restaurant menu.',
+              l10n.t(
+                'food_detail.not_found_subtitle',
+                params: {'itemId': itemId},
+              ),
               textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
             ),

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -70,6 +71,7 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final data = _order ?? const <String, dynamic>{};
     final items = (data['items'] as List? ?? const [])
         .map((item) => Map<String, dynamic>.from(item as Map))
@@ -95,7 +97,7 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Shopping Order'),
+          title: Text(l10n.t('shopping_tracking.title')),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             onPressed: () {
@@ -120,7 +122,7 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _ShoppingHero(
-                      storeName: data['moduleName']?.toString() ?? 'Retail order',
+                      storeName: data['moduleName']?.toString() ?? l10n.t('shopping_tracking.default_title'),
                       status: _pretty(data['status']?.toString()),
                       itemCount: itemCount,
                       total: ((data['total'] as num?)?.toDouble() ?? 0),
@@ -131,7 +133,7 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                         Expanded(
                           child: _InfoTile(
                             icon: Icons.schedule_rounded,
-                            label: 'Placed',
+                            label: l10n.t('tracking.placed'),
                             value: _formatDate(data['createdAt']?.toString()),
                           ),
                         ),
@@ -139,13 +141,13 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                         Expanded(
                           child: _InfoTile(
                             icon: Icons.local_shipping_outlined,
-                            label: 'Delivery',
+                            label: l10n.t('tracking.delivery'),
                             value:
                                 data['deliveryEta']?.toString() ??
                                 data['deliveryLabel']?.toString() ??
                                 firstMetadata['deliveryEta']?.toString() ??
                                 firstMetadata['deliveryLabel']?.toString() ??
-                                'Standard',
+                                l10n.t('checkout.standard'),
                           ),
                         ),
                       ],
@@ -153,7 +155,7 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                     if (address != null && address.isNotEmpty) ...[
                       const SizedBox(height: 14),
                       _SectionCard(
-                        title: 'Delivery Address',
+                        title: l10n.t('tracking.delivery_address'),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -179,14 +181,13 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                     ],
                     const SizedBox(height: 14),
                     _SectionCard(
-                      title: 'Order Items',
+                      title: l10n.t('tracking.order_items'),
                       child: Column(
                         children: items.isEmpty
-                            ? const [
+                            ? [
                                 _EmptyLine(
-                                  title: 'No items available',
-                                  subtitle:
-                                      'This shopping order does not include line items yet.',
+                                  title: l10n.t('tracking.no_items_title'),
+                                  subtitle: l10n.t('tracking.shopping_empty_subtitle'),
                                 ),
                               ]
                             : items
@@ -277,7 +278,13 @@ class _ShoppingHero extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '$itemCount item${itemCount == 1 ? '' : 's'} ready for delivery',
+            AppLocalizations.of(context).t(
+              'shopping_tracking.ready_delivery',
+              params: {
+                'count': '$itemCount',
+                'suffix': itemCount == 1 ? '' : 's',
+              },
+            ),
             style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
           ),
           const SizedBox(height: 16),
@@ -290,7 +297,7 @@ class _ShoppingHero extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  'Total paid',
+                  AppLocalizations.of(context).t('tracking.total_paid'),
                   style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
                 ),
                 const Spacer(),
@@ -517,6 +524,7 @@ class _MissingOrderState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -529,17 +537,17 @@ class _MissingOrderState extends StatelessWidget {
               color: AppColors.grey,
             ),
             const SizedBox(height: 12),
-            Text('Order details unavailable', style: AppTextStyles.h4),
+            Text(l10n.t('shopping_tracking.missing_title'), style: AppTextStyles.h4),
             const SizedBox(height: 8),
             Text(
-              'We could not load the latest shopping order for this screen.',
+              l10n.t('shopping_tracking.missing_subtitle'),
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
             FilledButton(
               onPressed: () => context.go(moduleRoute),
-              child: const Text('Back to Shopping'),
+              child: Text(l10n.t('shopping_tracking.back_to_shopping')),
             ),
           ],
         ),

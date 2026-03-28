@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
@@ -122,6 +123,7 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final query = _searchController.text.trim().toLowerCase();
     final filteredProviders = _providers.where((provider) {
       final matchesCategory = _matchesCategory(provider);
@@ -151,7 +153,7 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: AppSearchBar(
-                hint: 'Search available professionals...',
+                hint: l10n.t('doctor_professionals.search_hint'),
                 controller: _searchController,
                 onChanged: (_) => setState(() {}),
               ),
@@ -164,12 +166,15 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Available Professionals',
+                      l10n.t('doctor_professionals.available_professionals'),
                       style: AppTextStyles.h3,
                     ),
                   ),
                   Text(
-                    '${filteredProviders.length} found',
+                    l10n.t(
+                      'doctor_professionals.found_count',
+                      params: {'count': filteredProviders.length.toString()},
+                    ),
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.grey,
                     ),
@@ -281,8 +286,8 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
                                     ),
                                     Text(
                                       provider.isDoctorProvider
-                                          ? '/consult'
-                                          : '/service',
+                                          ? l10n.t('doctor_professionals.consult')
+                                          : l10n.t('doctor_professionals.service'),
                                       style: AppTextStyles.caption,
                                     ),
                                   ],
@@ -338,6 +343,7 @@ class _ProfessionalsEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -357,10 +363,10 @@ class _ProfessionalsEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text('No professionals found', style: AppTextStyles.h3),
+          Text(l10n.t('doctor_professionals.empty_title'), style: AppTextStyles.h3),
           const SizedBox(height: 8),
           Text(
-            'Try another service or search term.',
+            l10n.t('doctor_professionals.empty_subtitle'),
             textAlign: TextAlign.center,
             style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
           ),

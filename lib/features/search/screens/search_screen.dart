@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
@@ -99,7 +100,7 @@ class _SearchScreenState extends State<SearchScreen> {
               final data = Map<String, dynamic>.from(item as Map);
               return _SearchItem(
                 title: data['name']?.toString() ?? '',
-                subtitle: data['cuisine']?.toString() ?? 'Restaurant',
+                subtitle: data['cuisine']?.toString() ?? context.l10n.t('search.restaurant'),
                 route: '/food/restaurant/${data['id']}',
                 color: AppColors.food,
                 icon: Icons.restaurant_rounded,
@@ -109,7 +110,7 @@ class _SearchScreenState extends State<SearchScreen> {
               final data = Map<String, dynamic>.from(item as Map);
               return _SearchItem(
                 title: data['name']?.toString() ?? '',
-                subtitle: data['specialty']?.toString() ?? 'Doctor',
+                subtitle: data['specialty']?.toString() ?? context.l10n.t('search.doctor'),
                 route: '/doctor/detail/${data['id']}',
                 color: AppColors.doctor,
                 icon: Icons.medical_services_rounded,
@@ -119,7 +120,7 @@ class _SearchScreenState extends State<SearchScreen> {
               final data = Map<String, dynamic>.from(item as Map);
               return _SearchItem(
                 title: data['name']?.toString() ?? '',
-                subtitle: data['category']?.toString() ?? 'Product',
+                subtitle: data['category']?.toString() ?? context.l10n.t('search.product'),
                 route: '/shopping/product/${data['id']}',
                 color: AppColors.shopping,
                 icon: Icons.shopping_bag_rounded,
@@ -129,7 +130,7 @@ class _SearchScreenState extends State<SearchScreen> {
               final data = Map<String, dynamic>.from(item as Map);
               return _SearchItem(
                 title: data['name']?.toString() ?? '',
-                subtitle: data['category']?.toString() ?? 'Medicine',
+                subtitle: data['category']?.toString() ?? context.l10n.t('search.medicine'),
                 route: '/pharmacy/medicine/${data['id']}',
                 color: AppColors.pharmacy,
                 icon: Icons.medication_rounded,
@@ -139,7 +140,7 @@ class _SearchScreenState extends State<SearchScreen> {
               final data = Map<String, dynamic>.from(item as Map);
               return _SearchItem(
                 title: data['name']?.toString() ?? '',
-                subtitle: data['city']?.toString() ?? 'Hotel',
+                subtitle: data['city']?.toString() ?? context.l10n.t('search.hotel'),
                 route: '/hotel/detail/${data['id']}',
                 color: AppColors.hotel,
                 icon: Icons.hotel_rounded,
@@ -173,6 +174,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final showSearchResults = _query.isNotEmpty;
 
     return Scaffold(
@@ -187,7 +189,7 @@ class _SearchScreenState extends State<SearchScreen> {
           autofocus: true,
           onChanged: _onChanged,
           decoration: InputDecoration(
-            hintText: 'Search anything...',
+            hintText: l10n.t('search.title'),
             hintStyle: AppTextStyles.bodyMedium.copyWith(
               color: AppColors.mediumGrey,
             ),
@@ -202,13 +204,13 @@ class _SearchScreenState extends State<SearchScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (showSearchResults) ...[
-              Text('Results', style: AppTextStyles.h4),
+              Text(l10n.t('search.results'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
               if (_isLoading)
                 const InlineSectionListShimmer(itemCount: 6)
               else if (_results.isEmpty)
                 Text(
-                  'No matches found for "$_query".',
+                  l10n.t('search.no_matches', params: {'query': _query}),
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.grey,
                   ),
@@ -263,7 +265,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 ),
             ] else ...[
-              Text('Trending Now', style: AppTextStyles.h4),
+              Text(l10n.t('search.trending'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
@@ -295,29 +297,29 @@ class _SearchScreenState extends State<SearchScreen> {
                 }).toList(),
               ),
               const SizedBox(height: 24),
-              Text('Quick Access', style: AppTextStyles.h4),
+              Text(l10n.t('search.quick_access'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
               ...[
                 (
-                  'Order Food',
+                  l10n.t('search.order_food'),
                   Icons.restaurant_rounded,
                   AppColors.food,
                   '/food',
                 ),
                 (
-                  'Book a Ride',
+                  l10n.t('search.book_ride'),
                   Icons.directions_car_rounded,
                   AppColors.ride,
                   '/ride',
                 ),
                 (
-                  'Find a Doctor',
+                  l10n.t('search.find_doctor'),
                   Icons.medical_services_rounded,
                   AppColors.doctor,
                   '/doctor',
                 ),
                 (
-                  'Shop Online',
+                  l10n.t('search.shop_online'),
                   Icons.shopping_bag_rounded,
                   AppColors.shopping,
                   '/shopping',

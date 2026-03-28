@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
@@ -59,6 +60,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final auth = context.watch<AuthProvider>();
     final services = _services;
     final selectedModel = services[_selectedService];
@@ -84,7 +86,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('New Order'),
+        title: Text(l10n.t('laundry_order.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -96,7 +98,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Service type
-            Text('Service Type', style: AppTextStyles.h4),
+            Text(l10n.t('laundry_order.service_type'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             if (_isLoading)
               const AppShimmer(
@@ -150,7 +152,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
               ),
             const SizedBox(height: 24),
             // Items
-            Text('Items', style: AppTextStyles.h4),
+            Text(l10n.t('laundry_order.items'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             ..._items.entries.map((e) {
               return Container(
@@ -218,7 +220,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             }),
             const SizedBox(height: 20),
             // Pickup date
-            Text('Pickup Date', style: AppTextStyles.h4),
+            Text(l10n.t('laundry_order.pickup_date'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             SizedBox(
               height: 80,
@@ -265,7 +267,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             ),
             const SizedBox(height: 20),
             // Time slot
-            Text('Time Slot', style: AppTextStyles.h4),
+            Text(l10n.t('laundry_order.time_slot'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             Wrap(
               spacing: 10,
@@ -299,7 +301,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             ),
             const SizedBox(height: 24),
             // Address
-            Text('Pickup Address', style: AppTextStyles.h4),
+            Text(l10n.t('laundry_order.pickup_address'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(14),
@@ -319,7 +321,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Home', style: AppTextStyles.labelMedium),
+                        Text(l10n.t('ride.home'), style: AppTextStyles.labelMedium),
                         Text(
                           defaultAddress?.address ??
                               '123 Main Street, Downtown',
@@ -329,7 +331,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                     ),
                   ),
                   Text(
-                    'Change',
+                    l10n.t('laundry_order.change'),
                     style: AppTextStyles.labelSmall.copyWith(
                       color: AppColors.laundry,
                     ),
@@ -347,15 +349,18 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
               ),
               child: Column(
                 children: [
-                  _Row('Service', selectedModel.name),
-                  _Row('Items', '$totalItems items'),
+                  _Row(l10n.t('laundry_order.service'), selectedModel.name),
                   _Row(
-                    'Pickup',
+                    l10n.t('laundry_order.items'),
+                    l10n.t('laundry_order.items_count', params: {'count': '$totalItems'}),
+                  ),
+                  _Row(
+                    l10n.t('laundry_order.pickup'),
                     '${days[_selectedDate]}, Mar ${dates[_selectedDate]} • ${slots[_selectedTime]}',
                   ),
                   const Divider(height: 20),
                   _Row(
-                    'Estimated Total',
+                    l10n.t('laundry_order.estimated_total'),
                     '\$${estTotal.toStringAsFixed(2)}',
                     bold: true,
                   ),
@@ -364,12 +369,12 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             ),
             const SizedBox(height: 24),
             AppButton(
-              text: 'Schedule Pickup',
+              text: l10n.t('laundry_order.schedule_pickup'),
               color: AppColors.laundry,
               onPressed: () async {
                 final allowed = await requireLoggedIn(
                   context,
-                  message: 'Please log in to schedule your laundry pickup.',
+                  message: l10n.t('laundry_order.login_required'),
                 );
                 if (!context.mounted || !allowed) return;
                 try {
@@ -402,7 +407,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Pickup scheduled! 🧺'),
+                      content: Text(l10n.t('laundry_order.success')),
                       backgroundColor: AppColors.success,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
@@ -415,7 +420,13 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(
                     context,
-                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
+                  ).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        l10n.t('laundry_order.error', params: {'error': '$e'}),
+                      ),
+                    ),
+                  );
                 }
               },
             ),

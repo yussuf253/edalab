@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 
 class ShoppingCategoryScreen extends StatelessWidget {
   final String categoryId;
@@ -10,10 +11,11 @@ class ShoppingCategoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Electronics'),
+        title: Text(l10n.t('shopping_category.electronics')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -60,9 +62,15 @@ class ShoppingCategoryScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Product ${index + 1}', style: AppTextStyles.labelMedium),
+                          Text(
+                            l10n.t(
+                              'shopping_category.product',
+                              params: {'index': '${index + 1}'},
+                            ),
+                            style: AppTextStyles.labelMedium,
+                          ),
                           const SizedBox(height: 2),
-                          Text('Brand Name', style: AppTextStyles.caption),
+                          Text(l10n.t('shopping_category.brand'), style: AppTextStyles.caption),
                           const Spacer(),
                           Text('\$${(index + 1) * 99}', style: AppTextStyles.priceSmall),
                         ],

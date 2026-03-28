@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
@@ -118,7 +119,8 @@ class _OrdersScreenState extends State<OrdersScreen>
       return {
         'id': appointment['id'],
         'moduleType': 'DOCTOR',
-        'moduleName': appointment['doctorName']?.toString() ?? 'Appointment',
+        'moduleName':
+            appointment['doctorName']?.toString() ?? 'orders.group_appointments',
         'status': appointment['status']?.toString().toUpperCase() ?? 'UPCOMING',
         'total': appointment['fee'] ?? 0,
         'createdAt':
@@ -135,7 +137,7 @@ class _OrdersScreenState extends State<OrdersScreen>
             'name':
                 appointment['typeLabel']?.toString() ??
                 appointment['type']?.toString() ??
-                'Consultation',
+                'orders.consultation',
             'quantity': 1,
             'metadata': {
               'doctorId': appointment['doctorId'],
@@ -157,7 +159,7 @@ class _OrdersScreenState extends State<OrdersScreen>
         'moduleType': 'RIDE',
         'moduleName': ride['rideCategory'] is Map
             ? Map<String, dynamic>.from(ride['rideCategory'] as Map)['name']
-            : ride['vehicle']?.toString() ?? 'Ride',
+            : ride['vehicle']?.toString() ?? 'orders.ride',
         'status': ride['status']?.toString().toUpperCase() ?? 'REQUESTED',
         'total': ride['total'] ?? 0,
         'createdAt':
@@ -214,10 +216,11 @@ class _OrdersScreenState extends State<OrdersScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     if (_isLoading) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(title: Text('My Orders')),
+        appBar: AppBar(title: Text(l10n.t('orders.title'))),
         body: const OrdersShimmer(),
       );
     }
@@ -225,7 +228,7 @@ class _OrdersScreenState extends State<OrdersScreen>
     if (_error != null) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(title: Text('My Orders')),
+        appBar: AppBar(title: Text(l10n.t('orders.title'))),
         body: Center(
           child: Text(
             _error!,
@@ -277,17 +280,17 @@ class _OrdersScreenState extends State<OrdersScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('My Orders', style: AppTextStyles.h3),
+        title: Text(l10n.t('orders.title'), style: AppTextStyles.h3),
         centerTitle: false,
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.grey,
           indicatorColor: AppColors.primary,
-          tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'Completed'),
-            Tab(text: 'Cancelled'),
+          tabs: [
+            Tab(text: l10n.t('orders.active')),
+            Tab(text: l10n.t('orders.completed')),
+            Tab(text: l10n.t('orders.cancelled')),
           ],
         ),
       ),
@@ -399,25 +402,25 @@ class _OrderList extends StatelessWidget {
   String _getGroupLabel(String mod) {
     switch (mod) {
       case 'DOCTOR':
-        return 'Appointments';
+        return 'orders.group_appointments';
       case 'HOME_SERVICES':
-        return 'Home Services';
+        return 'orders.group_home_services';
       case 'RIDE':
-        return 'Rides';
+        return 'orders.group_rides';
       case 'FOOD':
-        return 'Food Orders';
+        return 'orders.group_food';
       case 'SHOPPING':
-        return 'Shopping Orders';
+        return 'orders.group_shopping';
       case 'GROCERY':
-        return 'Grocery Orders';
+        return 'orders.group_grocery';
       case 'PHARMACY':
-        return 'Pharmacy Orders';
+        return 'orders.group_pharmacy';
       case 'HOTEL':
-        return 'Hotel Bookings';
+        return 'orders.group_hotels';
       case 'LAUNDRY':
-        return 'Laundry Orders';
+        return 'orders.group_laundry';
       default:
-        return 'Other Orders';
+        return 'orders.group_other';
     }
   }
 
@@ -486,21 +489,21 @@ class _OrderList extends StatelessWidget {
         : <String, dynamic>{};
 
     if (module == 'DOCTOR') {
-      return order['moduleName']?.toString() ?? 'Doctor Appointment';
+      return order['moduleName']?.toString() ?? 'orders.doctor_appointment';
     }
     if (module == 'HOME_SERVICES') {
       return metadata['serviceName']?.toString() ??
           firstItem?['name']?.toString() ??
           order['moduleName']?.toString() ??
-          'Home Service';
+          'orders.home_service';
     }
     if (module == 'RIDE') {
-      return order['moduleName']?.toString() ?? 'Ride';
+      return order['moduleName']?.toString() ?? 'orders.ride';
     }
 
     return firstItem?['name']?.toString() ??
         order['moduleName']?.toString() ??
-        'Order';
+        'orders.order';
   }
 
   String _displaySubtitle(Map<String, dynamic> order) {
@@ -514,7 +517,7 @@ class _OrderList extends StatelessWidget {
         : <String, dynamic>{};
 
     if (module == 'DOCTOR') {
-      final type = firstItem?['name']?.toString() ?? 'Consultation';
+      final type = firstItem?['name']?.toString() ?? 'orders.consultation';
       final date = _formatDate(metadata['date']?.toString());
       final time = _formatTime(metadata['timeSlot']?.toString());
       return [type, date, time]
@@ -524,7 +527,7 @@ class _OrderList extends StatelessWidget {
     if (module == 'HOME_SERVICES') {
       final provider = firstItem?['brand']?.toString() ??
           order['moduleName']?.toString() ??
-          'Service Provider';
+          'orders.service_provider';
       final date = _formatDate(metadata['scheduledDate']?.toString());
       return [provider, date]
           .where((part) => part.trim().isNotEmpty)
@@ -536,7 +539,7 @@ class _OrderList extends StatelessWidget {
       if (pickup.isNotEmpty || destination.isNotEmpty) {
         return '$pickup → $destination'.trim();
       }
-      return order['moduleName']?.toString() ?? 'Ride details';
+      return order['moduleName']?.toString() ?? 'orders.ride_details';
     }
 
     final quantity = items.fold<int>(
@@ -544,7 +547,9 @@ class _OrderList extends StatelessWidget {
       (sum, item) => sum + ((item['quantity'] as num?)?.toInt() ?? 0),
     );
     final brand = firstItem?['brand']?.toString() ?? order['moduleName']?.toString() ?? '';
-    final quantityLabel = quantity > 0 ? '$quantity item${quantity == 1 ? '' : 's'}' : '';
+    final quantityLabel = quantity > 0
+        ? 'orders.item_count|$quantity|${quantity == 1 ? '' : 's'}'
+        : '';
     return [brand, quantityLabel]
         .where((part) => part.trim().isNotEmpty)
         .join(' • ');
@@ -555,11 +560,11 @@ class _OrderList extends StatelessWidget {
     final trackingRoute = order['trackingRoute']?.toString();
     if (trackingRoute != null && trackingRoute.isNotEmpty) {
       if (module == 'DOCTOR' || module == 'HOME_SERVICES') {
-        return 'Open';
+        return 'orders.open';
       }
-      return module == 'RIDE' ? 'Track Ride' : 'Track';
+      return module == 'RIDE' ? 'orders.track_ride' : 'orders.track';
     }
-    return 'Details';
+    return 'orders.details';
   }
 
   Map<String, List<Map<String, dynamic>>> _groupOrders(List<dynamic> source) {
@@ -617,12 +622,13 @@ class _OrderList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     if (orders.isEmpty) {
-      return const Center(
+      return Center(
         child: EmptyState(
           icon: Icons.receipt_long_rounded,
-          title: 'No orders',
-          subtitle: 'You have no orders in this status',
+          title: l10n.t('orders.empty_title'),
+          subtitle: l10n.t('orders.empty_subtitle'),
         ),
       );
     }
@@ -632,8 +638,15 @@ class _OrderList extends StatelessWidget {
       return Center(
         child: EmptyState(
           icon: _getIcon(selectedModule),
-          title: 'Nothing here',
-          subtitle: 'No ${selectedModule == 'ALL' ? 'items' : _getGroupLabel(selectedModule).toLowerCase()} in this status',
+          title: l10n.t('orders.empty_filtered_title'),
+          subtitle: l10n.t(
+            'orders.empty_filtered_subtitle',
+            params: {
+              'label': selectedModule == 'ALL'
+                  ? l10n.t('common.everything').toLowerCase()
+                  : l10n.t(_getGroupLabel(selectedModule)).toLowerCase(),
+            },
+          ),
         ),
       );
     }
@@ -664,7 +677,7 @@ class _OrderList extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Text(_getGroupLabel(module), style: AppTextStyles.h4),
+                  Text(l10n.t(_getGroupLabel(module)), style: AppTextStyles.h4),
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -753,7 +766,7 @@ class _OrderList extends StatelessWidget {
                                             ),
                                           ),
                                           child: Text(
-                                            _getGroupLabel(module),
+                                            l10n.t(_getGroupLabel(module)),
                                             style: AppTextStyles.labelSmall
                                                 .copyWith(
                                                   color: _getColor(module),
@@ -773,90 +786,90 @@ class _OrderList extends StatelessWidget {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                _displayTitle(o),
+                                _resolveLabel(_displayTitle(o), l10n),
                                 style: AppTextStyles.labelLarge,
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                _displaySubtitle(o),
+                                _resolveSubtitle(_displaySubtitle(o), l10n),
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.grey,
                                   height: 1.35,
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 10,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.extraLightGrey,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Amount',
-                                          style: AppTextStyles.caption,
+                              Row(
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        l10n.t('orders.amount'),
+                                        style: AppTextStyles.caption,
+                                      ),
+                                      const SizedBox(height: 1),
+                                      Text(
+                                        '\$${amount.toStringAsFixed(2)}',
+                                        style: AppTextStyles.priceSmall.copyWith(
+                                          color: _getColor(module),
                                         ),
-                                        const SizedBox(height: 1),
-                                        Text(
-                                          '\$${amount.toStringAsFixed(2)}',
-                                          style: AppTextStyles.priceSmall
-                                              .copyWith(
-                                                color: _getColor(module),
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                    const Spacer(),
-                                    TextButton(
-                                      onPressed: () {
-                                        if (trackingRoute != null &&
-                                            trackingRoute.isNotEmpty) {
-                                          if (module == 'RIDE' ||
-                                              module == 'HOME_SERVICES' ||
-                                              module == 'SHOPPING' ||
-                                              module == 'HOTEL' ||
-                                              module == 'PHARMACY') {
-                                            context.push(
-                                              trackingRoute,
-                                              extra: o,
-                                            );
-                                            return;
-                                          }
-                                          context.push(trackingRoute);
+                                      ),
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  TextButton(
+                                    onPressed: () {
+                                      if (trackingRoute != null &&
+                                          trackingRoute.isNotEmpty) {
+                                        if (module == 'RIDE' ||
+                                            module == 'HOME_SERVICES' ||
+                                            module == 'SHOPPING' ||
+                                            module == 'HOTEL' ||
+                                            module == 'PHARMACY') {
+                                          context.push(
+                                            trackingRoute,
+                                            extra: o,
+                                          );
                                           return;
                                         }
-                                        if (module == 'DOCTOR') {
-                                          context.push('/doctor/appointments');
-                                          return;
-                                        }
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                  'Detailed tracking will appear here next.',
-                                                ),
-                                              ),
-                                            );
-                                      },
-                                      child: Text(
-                                        _actionLabel(o),
-                                        style: AppTextStyles.labelMedium
-                                            .copyWith(
-                                              color: AppColors.primary,
-                                              fontWeight: FontWeight.w700,
+                                        context.push(trackingRoute);
+                                        return;
+                                      }
+                                      if (module == 'DOCTOR') {
+                                        context.push('/doctor/appointments');
+                                        return;
+                                      }
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            l10n.t(
+                                              'orders.tracking_coming_soon',
                                             ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: AppColors.primarySurface,
+                                      foregroundColor: AppColors.primary,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
-                                  ],
-                                ),
+                                    child: Text(
+                                      _resolveLabel(_actionLabel(o), l10n),
+                                      style: AppTextStyles.labelMedium.copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -888,25 +901,25 @@ class _ModuleFilterBar extends StatelessWidget {
   String _label(String module) {
     switch (module) {
       case 'ALL':
-        return 'All';
+        return 'common.all';
       case 'DOCTOR':
-        return 'Appointments';
+        return 'orders.group_appointments';
       case 'HOME_SERVICES':
-        return 'Home';
+        return 'module.home_services';
       case 'SHOPPING':
-        return 'Shopping';
+        return 'module.shopping';
       case 'FOOD':
-        return 'Food';
+        return 'module.food';
       case 'GROCERY':
-        return 'Grocery';
+        return 'module.grocery';
       case 'PHARMACY':
-        return 'Pharmacy';
+        return 'module.pharmacy';
       case 'HOTEL':
-        return 'Hotels';
+        return 'module.hotel';
       case 'LAUNDRY':
-        return 'Laundry';
+        return 'module.laundry';
       case 'RIDE':
-        return 'Rides';
+        return 'orders.group_rides';
       default:
         return module;
     }
@@ -914,6 +927,7 @@ class _ModuleFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return SizedBox(
       height: 40,
       child: ListView.separated(
@@ -936,7 +950,7 @@ class _ModuleFilterBar extends StatelessWidget {
                     : Border.all(color: AppColors.lightGrey),
               ),
               child: Text(
-                _label(module),
+                l10n.t(_label(module)),
                 style: AppTextStyles.labelMedium.copyWith(
                   color: selected ? AppColors.white : AppColors.dark,
                 ),
@@ -946,5 +960,26 @@ class _ModuleFilterBar extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+extension on _OrderList {
+  String _resolveLabel(String value, AppLocalizations l10n) {
+    if (value.startsWith('orders.') || value.startsWith('module.') || value.startsWith('common.')) {
+      return l10n.t(value);
+    }
+    return value;
+  }
+
+  String _resolveSubtitle(String value, AppLocalizations l10n) {
+    if (!value.contains('|')) return _resolveLabel(value, l10n);
+    final parts = value.split('|');
+    if (parts.length == 3 && parts.first == 'orders.item_count') {
+      return l10n.t(
+        parts.first,
+        params: {'count': parts[1], 'suffix': parts[2]},
+      );
+    }
+    return value;
   }
 }

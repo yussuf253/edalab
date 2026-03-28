@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
@@ -28,10 +29,11 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Shopping Cart'),
+        title: Text(l10n.t('shopping_cart.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -42,7 +44,7 @@ class _CartScreenState extends State<CartScreen> {
               context.read<CartProvider>().clearModuleCart('shopping');
             },
             child: Text(
-              'Clear',
+              l10n.t('cart.clear'),
               style: AppTextStyles.labelMedium.copyWith(
                 color: AppColors.accent,
               ),
@@ -70,12 +72,12 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Your cart is empty',
+                    l10n.t('shopping_cart.empty_title'),
                     style: AppTextStyles.h3.copyWith(color: AppColors.grey),
                   ),
                   const SizedBox(height: 24),
                   AppButton(
-                    text: 'Start Shopping',
+                    text: l10n.t('shopping_cart.start'),
                     width: 200,
                     onPressed: () => context.pop(),
                   ),
@@ -222,39 +224,42 @@ class _CartScreenState extends State<CartScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _summaryRow(
-                        'Subtotal',
+                        l10n.t('cart.subtotal'),
                         '\$${subtotal.toStringAsFixed(2)}',
                       ),
                       _summaryRow(
-                        'Shipping',
+                        l10n.t('cart.shipping'),
                         shipping == 0
-                            ? 'FREE'
+                            ? l10n.t('shopping_cart.free_upper')
                             : '\$${shipping.toStringAsFixed(2)}',
                       ),
-                      _summaryRow('Tax', '\$${tax.toStringAsFixed(2)}'),
+                      _summaryRow(l10n.t('cart.tax'), '\$${tax.toStringAsFixed(2)}'),
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 8),
                         child: Divider(),
                       ),
                       _summaryRow(
-                        'Total',
+                        l10n.t('cart.total'),
                         '\$${total.toStringAsFixed(2)}',
                         isTotal: true,
                       ),
                       const SizedBox(height: 16),
                       AppButton(
-                        text: 'Checkout (\$${total.toStringAsFixed(2)})',
+                        text: l10n.t(
+                          'cart.checkout_amount',
+                          params: {'amount': total.toStringAsFixed(2)},
+                        ),
                         onPressed: () async {
                           final allowed = await requireLoggedIn(
                             context,
-                            message: 'Please log in to continue to checkout.',
+                            message: l10n.t('cart.login_required'),
                           );
                           if (!context.mounted || !allowed) return;
                           context.push(
                             '/checkout',
                             extra: {
                               'moduleType': 'shopping',
-                              'moduleName': 'Shopping Order',
+                              'moduleName': l10n.t('shopping_cart.module_name'),
                               'source': 'shopping_cart',
                             },
                           );

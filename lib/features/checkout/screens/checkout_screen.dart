@@ -4,10 +4,11 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
-import '../../../core/widgets/app_button.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/utils/auth_gate.dart';
+import '../../../core/widgets/app_button.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final Map<String, dynamic>? checkoutData;
@@ -23,23 +24,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   final TextEditingController _promoController = TextEditingController();
 
   static const _deliveryOptions = [
-    ('Standard', '3-5 days', 0.0),
-    ('Express', '1-2 days', 9.99),
-    ('Same Day', 'Today', 14.99),
+    ('checkout.standard', 'checkout.standard_eta', 0.0),
+    ('checkout.express', 'checkout.express_eta', 9.99),
+    ('checkout.same_day', 'checkout.same_day_eta', 14.99),
   ];
 
-  String _moduleLabel(String? moduleType) {
+  String _moduleLabel(BuildContext context, String? moduleType) {
+    final l10n = context.l10n;
     switch (moduleType) {
       case 'food':
-        return 'Food order';
+        return l10n.t('checkout.food_order');
       case 'shopping':
-        return 'Shopping order';
+        return l10n.t('checkout.shopping_order');
       case 'pharmacy':
-        return 'Pharmacy order';
+        return l10n.t('checkout.pharmacy_order');
       case 'grocery':
-        return 'Grocery order';
+        return l10n.t('checkout.grocery_order');
       default:
-        return 'Order';
+        return l10n.t('module.orders');
     }
   }
 
@@ -51,6 +53,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
     final authProvider = context.watch<AuthProvider>();
 
@@ -88,7 +91,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Checkout'),
+        title: Text(l10n.t('checkout.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -134,11 +137,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            moduleName ?? 'Order review',
+                            moduleName ?? l10n.t('checkout.order_review'),
                             style: AppTextStyles.labelLarge,
                           ),
                           Text(
-                            '${moduleItems.fold<int>(0, (sum, item) => sum + item.quantity)} items prepared for checkout',
+                            l10n.t(
+                              'checkout.items_prepared',
+                              params: {
+                                'count':
+                                    '${moduleItems.fold<int>(0, (sum, item) => sum + item.quantity)}',
+                              },
+                            ),
                             style: AppTextStyles.caption,
                           ),
                         ],
@@ -148,7 +157,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ),
             if (moduleItems.isNotEmpty) ...[
-              Text('Items in this order', style: AppTextStyles.h4),
+              Text(l10n.t('checkout.items_in_order'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(14),
@@ -192,7 +201,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       style: AppTextStyles.labelMedium,
                                     ),
                                     Text(
-                                      'Qty ${item.quantity}${item.brand != null ? ' • ${item.brand}' : ''}',
+                                      l10n.t(
+                                        'checkout.qty_brand',
+                                        params: {
+                                          'qty': '${item.quantity}',
+                                          'brand': item.brand == null
+                                              ? ''
+                                              : ' • ${item.brand}',
+                                        },
+                                      ),
                                       style: AppTextStyles.caption,
                                     ),
                                   ],
@@ -212,7 +229,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               const SizedBox(height: 20),
             ],
             // Delivery Address
-            Text('Delivery Address', style: AppTextStyles.h4),
+            Text(l10n.t('checkout.delivery_address'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             if (addresses.isEmpty)
               Container(
@@ -231,12 +248,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
-                        'No addresses found',
+                        l10n.t('checkout.no_addresses'),
                         style: AppTextStyles.bodyMedium,
                       ),
                     ),
                     AppButton(
-                      text: 'Add',
+                      text: l10n.t('checkout.add'),
                       width: 80,
                       isSmall: true,
                       onPressed: () => context.push('/profile/addresses'),
@@ -308,7 +325,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 20),
 
             // Delivery Time
-            Text('Delivery Option', style: AppTextStyles.h4),
+            Text(l10n.t('checkout.delivery_option'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             Row(
               children: _deliveryOptions.asMap().entries.map((entry) {
@@ -322,10 +339,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     child: GestureDetector(
                       onTap: () => setState(() => _selectedDeliveryOption = i),
                       child: _TimeChip(
-                        option.$1,
-                        option.$2,
+                        l10n.t(option.$1),
+                        l10n.t(option.$2),
                         option.$3 == 0
-                            ? 'Free'
+                            ? l10n.t('checkout.free')
                             : '\$${option.$3.toStringAsFixed(2)}',
                         _selectedDeliveryOption == i,
                       ),
@@ -337,7 +354,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 20),
 
             if (instructions != null && instructions.isNotEmpty) ...[
-              Text('Order Notes', style: AppTextStyles.h4),
+              Text(l10n.t('checkout.order_notes'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
               Container(
                 width: double.infinity,
@@ -353,7 +370,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ],
 
             // Payment method
-            Text('Payment Method', style: AppTextStyles.h4),
+            Text(l10n.t('checkout.payment_method'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             ...[
               (
@@ -376,7 +393,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
               (
                 'Cash on Delivery',
-                'Pay when delivered',
+                'checkout.pay_when_delivered',
                 Icons.attach_money_rounded,
                 AppColors.success,
               ),
@@ -412,7 +429,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(p.$1, style: AppTextStyles.labelMedium),
-                            Text(p.$2, style: AppTextStyles.caption),
+                            Text(
+                              p.$2.startsWith('checkout.')
+                                  ? l10n.t(p.$2)
+                                  : p.$2,
+                              style: AppTextStyles.caption,
+                            ),
                           ],
                         ),
                       ),
@@ -443,7 +465,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 20),
 
             // Promo code
-            Text('Promo Code', style: AppTextStyles.h4),
+            Text(l10n.t('checkout.promo_code'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(4),
@@ -457,7 +479,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     child: TextField(
                       controller: _promoController,
                       decoration: InputDecoration(
-                        hintText: 'Enter promo code (e.g. SAVE20)',
+                        hintText: l10n.t('checkout.promo_hint'),
                         hintStyle: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.mediumGrey,
                         ),
@@ -478,8 +500,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           if (appliedCode != null) {
                             context.read<NotificationProvider>().addNotification(
                               NotificationService.promotion(
-                                title: 'Promo applied successfully',
-                                body: '$appliedCode is active on your current basket.',
+                                title: l10n.t('checkout.promo_applied_title'),
+                                body: l10n.t(
+                                  'checkout.promo_applied_body',
+                                  params: {'code': appliedCode},
+                                ),
                                 promoCode: appliedCode,
                                 route: '/checkout',
                               ),
@@ -487,7 +512,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           }
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Promo code applied!'),
+                              content: Text(l10n.t('checkout.promo_code_applied')),
                               backgroundColor: AppColors.success,
                             ),
                           );
@@ -511,7 +536,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        'Apply',
+                        l10n.t('checkout.apply'),
                         style: AppTextStyles.badge.copyWith(fontSize: 12),
                       ),
                     ),
@@ -530,54 +555,59 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
               child: Column(
                 children: [
-                  _SumRow('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
+                  _SumRow(l10n.t('checkout.subtotal'), '\$${subtotal.toStringAsFixed(2)}'),
                   _SumRow(
-                    'Delivery',
+                    l10n.t('checkout.delivery'),
                     shipping <= 0.0
-                        ? 'Free'
+                        ? l10n.t('checkout.free')
                         : '\$${shipping.toStringAsFixed(2)}',
                   ),
-                  _SumRow('Tax', '\$${tax.toStringAsFixed(2)}'),
-                  if (tip > 0) _SumRow('Tip', '\$${tip.toStringAsFixed(2)}'),
+                  _SumRow(l10n.t('checkout.tax'), '\$${tax.toStringAsFixed(2)}'),
+                  if (tip > 0) _SumRow(l10n.t('checkout.tip'), '\$${tip.toStringAsFixed(2)}'),
                   if (discount > 0)
                     _SumRow(
-                      'Discount',
+                      l10n.t('checkout.discount'),
                       '-\$${discount.toStringAsFixed(2)}',
                       isDiscount: true,
                     ),
                   if (cartProvider.promoCode != null)
                     _SumRow(
                       'Promo (${cartProvider.promoCode})',
-                      'Applied',
+                      l10n.t('checkout.promo_applied'),
                       isDiscount: true,
                     ),
                   const Divider(height: 20),
-                  _SumRow('Total', '\$${total.toStringAsFixed(2)}', bold: true),
+                  _SumRow(l10n.t('checkout.total'), '\$${total.toStringAsFixed(2)}', bold: true),
                 ],
               ),
             ),
             const SizedBox(height: 24),
 
             AppButton(
-              text:
-                  'Place ${_moduleLabel(moduleType)} • \$${total.toStringAsFixed(2)}',
+              text: l10n.t(
+                'checkout.place_order',
+                params: {
+                  'module': _moduleLabel(context, moduleType),
+                  'amount': total.toStringAsFixed(2),
+                },
+              ),
               onPressed: () async {
                 final allowed = await requireLoggedIn(
                   context,
-                  message: 'Please log in to place your order.',
+                  message: l10n.t('checkout.login_required'),
                 );
                 if (!context.mounted || !allowed) return;
                 if (moduleItems.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Your cart is empty!'),
+                      content: Text(l10n.t('checkout.cart_empty')),
                       backgroundColor: AppColors.error,
                     ),
                   );
                 } else if (addresses.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Please add a delivery address first.'),
+                      content: Text(l10n.t('checkout.add_address_first')),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -595,10 +625,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             ? null
                             : '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
                         'addressLabel': selectedAddress?.label,
-                        'deliveryLabel':
-                            _deliveryOptions[_selectedDeliveryOption].$1,
-                        'deliveryEta':
-                            _deliveryOptions[_selectedDeliveryOption].$2,
+                        'deliveryLabel': l10n.t(
+                          _deliveryOptions[_selectedDeliveryOption].$1,
+                        ),
+                        'deliveryEta': l10n.t(
+                          _deliveryOptions[_selectedDeliveryOption].$2,
+                        ),
                         'paymentLabel': paymentName,
                       },
                     );
@@ -621,8 +653,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       'orderId': orderId,
                       'amount': total,
                       'payment': paymentName,
-                      'delivery': _deliveryOptions[_selectedDeliveryOption].$1,
-                      'moduleName': moduleName ?? _moduleLabel(moduleType),
+                      'delivery': l10n.t(
+                        _deliveryOptions[_selectedDeliveryOption].$1,
+                      ),
+                      'moduleName': moduleName ?? _moduleLabel(context, moduleType),
                       'address': selectedAddress == null
                           ? null
                           : '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
@@ -637,7 +671,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       'trackingExtra': {
                         'id': orderId,
                         'moduleType': moduleType?.toUpperCase(),
-                        'moduleName': moduleName ?? _moduleLabel(moduleType),
+                        'moduleName': moduleName ?? _moduleLabel(context, moduleType),
                         'status': 'PENDING',
                         'subtotal': subtotal,
                         'tax': tax,

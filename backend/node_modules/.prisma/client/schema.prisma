@@ -35,6 +35,9 @@ enum OrderStatus {
 
 enum AppointmentStatus {
   UPCOMING
+  PENDING
+  APPROVED
+  REJECTED
   COMPLETED
   CANCELLED
   NO_SHOW
@@ -512,7 +515,7 @@ model Appointment {
   appointmentAt   DateTime
   timeSlot        String
   appointmentType String
-  status          AppointmentStatus @default(UPCOMING)
+  status          AppointmentStatus @default(PENDING)
   notes           String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt

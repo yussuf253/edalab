@@ -17,6 +17,21 @@ const createAppointmentSchema = z.object({
   notes: z.string().optional(),
 });
 
+const updateAppointmentStatusSchema = z.object({
+  status: z.enum([
+    'PENDING',
+    'APPROVED',
+    'REJECTED',
+    'COMPLETED',
+    'CANCELLED',
+    'NO_SHOW',
+  ]),
+});
+
+function serializeAppointmentStatus(status: AppointmentStatus) {
+  return status === AppointmentStatus.UPCOMING ? 'pending' : status.toLowerCase();
+}
+
 router.get(
   '/:userId',
   asyncHandler(async (req, res) => {
@@ -34,7 +49,7 @@ router.get(
         date: appointment.appointmentAt,
         timeSlot: appointment.timeSlot,
         type: appointment.appointmentType,
-        status: appointment.status.toLowerCase(),
+        status: serializeAppointmentStatus(appointment.status),
         notes: appointment.notes,
         createdAt: appointment.createdAt,
         updatedAt: appointment.updatedAt,
@@ -55,7 +70,7 @@ router.post(
         appointmentAt: new Date(body.date),
         timeSlot: body.timeSlot,
         appointmentType: body.type,
-        status: AppointmentStatus.UPCOMING,
+        status: AppointmentStatus.PENDING,
         notes: body.notes ?? null,
       },
       include: {
@@ -77,7 +92,33 @@ router.post(
       date: appointment.appointmentAt,
       timeSlot: appointment.timeSlot,
       type: appointment.appointmentType,
-      status: appointment.status.toLowerCase(),
+      status: serializeAppointmentStatus(appointment.status),
+      notes: appointment.notes,
+      createdAt: appointment.createdAt,
+      updatedAt: appointment.updatedAt,
+    });
+  }),
+);
+
+router.patch(
+  '/:appointmentId/status',
+  asyncHandler(async (req, res) => {
+    const appointmentId = getParam(req.params.appointmentId, 'appointmentId');
+    const body = updateAppointmentStatusSchema.parse(req.body);
+
+    const appointment = await prisma.appointment.update({
+      where: { id: appointmentId },
+      data: { status: body.status },
+    });
+
+    res.json({
+      id: appointment.id,
+      userId: appointment.userId,
+      doctorId: appointment.doctorId,
+      date: appointment.appointmentAt,
+      timeSlot: appointment.timeSlot,
+      type: appointment.appointmentType,
+      status: serializeAppointmentStatus(appointment.status),
       notes: appointment.notes,
       createdAt: appointment.createdAt,
       updatedAt: appointment.updatedAt,

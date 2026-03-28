@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -103,6 +104,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final provider = _provider;
 
     return Scaffold(
@@ -174,14 +176,17 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           alignment: WrapAlignment.center,
                           children: [
                             _HeroPill(
-                              label: provider.categoryName ?? 'Home Service',
+                              label: provider.categoryName ??
+                                  l10n.t('home_provider.home_service'),
                             ),
                             if (provider.isVerified)
-                              const _HeroPill(label: 'Verified'),
+                              _HeroPill(label: l10n.t('home_provider.verified')),
                             if (provider.responseTime != null)
                               _HeroPill(label: provider.responseTime!),
                             if (provider.isAvailable)
-                              const _HeroPill(label: 'Available today'),
+                              _HeroPill(
+                                label: l10n.t('home_provider.available_today'),
+                              ),
                           ],
                         ),
                       ],
@@ -199,18 +204,18 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           price: provider.startingPrice,
                         ),
                         const SizedBox(height: 20),
-                        Text('About', style: AppTextStyles.h4),
+                        Text(l10n.t('home_provider.about'), style: AppTextStyles.h4),
                         const SizedBox(height: 8),
                         Text(
                           provider.about ??
-                              'No provider description available.',
+                              l10n.t('home_provider.no_description'),
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.grey,
                             height: 1.6,
                           ),
                         ),
                         const SizedBox(height: 20),
-                        Text('Services', style: AppTextStyles.h4),
+                        Text(l10n.t('home_provider.services'), style: AppTextStyles.h4),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 8,
@@ -226,7 +231,10 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                         ),
                         if (provider.bookingModes.isNotEmpty) ...[
                           const SizedBox(height: 20),
-                          Text('Booking Options', style: AppTextStyles.h4),
+                          Text(
+                            l10n.t('home_provider.booking_options'),
+                            style: AppTextStyles.h4,
+                          ),
                           const SizedBox(height: 12),
                           Wrap(
                             spacing: 8,
@@ -243,7 +251,10 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                         ],
                         if (provider.highlights.isNotEmpty) ...[
                           const SizedBox(height: 20),
-                          Text('Highlights', style: AppTextStyles.h4),
+                          Text(
+                            l10n.t('home_provider.highlights'),
+                            style: AppTextStyles.h4,
+                          ),
                           const SizedBox(height: 12),
                           ...provider.highlights.map(
                             (highlight) => Padding(
@@ -268,7 +279,10 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           ),
                         ],
                         const SizedBox(height: 20),
-                        Text('Availability', style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('home_provider.availability'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.all(16),
@@ -280,32 +294,35 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           child: Column(
                             children: [
                               _AvailabilityRow(
-                                label: 'Weekdays',
+                                label: l10n.t('home_provider.weekdays'),
                                 value:
                                     provider.availability['weekdays']
                                         ?.toString() ??
-                                    'Not set',
+                                    l10n.t('home_provider.not_set'),
                               ),
                               _AvailabilityRow(
-                                label: 'Saturday',
+                                label: l10n.t('home_provider.saturday'),
                                 value:
                                     provider.availability['saturday']
                                         ?.toString() ??
-                                    'Not set',
+                                    l10n.t('home_provider.not_set'),
                               ),
                               _AvailabilityRow(
-                                label: 'Sunday',
+                                label: l10n.t('home_provider.sunday'),
                                 value:
                                     provider.availability['sunday']
                                         ?.toString() ??
-                                    'Not set',
+                                    l10n.t('home_provider.not_set'),
                               ),
                             ],
                           ),
                         ),
                         if (provider.location != null) ...[
                           const SizedBox(height: 20),
-                          Text('Service Area', style: AppTextStyles.h4),
+                          Text(
+                            l10n.t('home_provider.service_area'),
+                            style: AppTextStyles.h4,
+                          ),
                           const SizedBox(height: 8),
                           Text(
                             provider.location!,
@@ -317,7 +334,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                         if (provider.contactPhone != null &&
                             provider.contactPhone!.isNotEmpty) ...[
                           const SizedBox(height: 20),
-                          Text('Contact', style: AppTextStyles.h4),
+                          Text(l10n.t('home_provider.contact'), style: AppTextStyles.h4),
                           const SizedBox(height: 8),
                           Text(
                             provider.contactPhone!,
@@ -364,7 +381,10 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Starting From', style: AppTextStyles.caption),
+                                Text(
+                                  l10n.t('home_provider.starting_from'),
+                                  style: AppTextStyles.caption,
+                                ),
                                 Text(
                                   '\$${provider.startingPrice.toInt()}',
                                   style: AppTextStyles.price.copyWith(
@@ -378,7 +398,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                               child: SizedBox(
                                 width: constraints.maxWidth,
                                 child: AppButton(
-                                  text: 'Book Service',
+                                  text: l10n.t('home_provider.book_service'),
                                   color: AppColors.homeServices,
                                   onPressed: () => context.push(
                                     '/home-services/book/${provider.id}',
@@ -394,7 +414,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                         children: [
                           Expanded(
                             child: AppButton(
-                              text: 'Message',
+                              text: l10n.t('home_provider.message'),
                               isOutlined: true,
                               color: AppColors.homeServices,
                               onPressed: () => openConversation(
@@ -417,7 +437,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: AppButton(
-                              text: 'Book Again',
+                              text: l10n.t('home_provider.book_again'),
                               color: AppColors.homeServices,
                               onPressed: () => context.push(
                                 '/home-services/book/${provider.id}',
@@ -469,6 +489,7 @@ class _StatRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -479,10 +500,13 @@ class _StatRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _StatItem('$rating', 'Rating'),
-          _StatItem('$reviewCount+', 'Reviews'),
-          _StatItem(experience ?? 'Fast', 'Experience'),
-          _StatItem('\$${price.toInt()}', 'Starting'),
+          _StatItem('$rating', l10n.t('home_provider.rating')),
+          _StatItem('$reviewCount+', l10n.t('home_provider.reviews')),
+          _StatItem(
+            experience ?? l10n.t('home_provider.fast'),
+            l10n.t('home_provider.experience'),
+          ),
+          _StatItem('\$${price.toInt()}', l10n.t('home_provider.starting')),
         ],
       ),
     );

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/ride_model.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -19,46 +20,6 @@ class _RideScreenState extends State<RideScreen> {
   String _destination = 'Where to?';
   List<RideCategory> _rideCategories = RideModel.sampleCategories;
   bool _isLoading = true;
-
-  final List<({String title, String address, IconData icon, double distance})>
-  _savedPlaces = [
-    (
-      title: 'Home',
-      address: '123 Main St',
-      icon: Icons.home_rounded,
-      distance: 4.2,
-    ),
-    (
-      title: 'Work',
-      address: '456 Office Ave',
-      icon: Icons.work_rounded,
-      distance: 6.8,
-    ),
-    (
-      title: 'City Mall',
-      address: '789 Shopping Blvd',
-      icon: Icons.shopping_bag_rounded,
-      distance: 5.2,
-    ),
-    (
-      title: 'Central Park',
-      address: '321 Green Lane',
-      icon: Icons.park_rounded,
-      distance: 3.7,
-    ),
-    (
-      title: 'Airport',
-      address: 'International Airport',
-      icon: Icons.flight_rounded,
-      distance: 9.5,
-    ),
-    (
-      title: 'Train Station',
-      address: 'Central Station',
-      icon: Icons.train_rounded,
-      distance: 7.1,
-    ),
-  ];
 
   @override
   void initState() {
@@ -88,6 +49,14 @@ class _RideScreenState extends State<RideScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final savedPlaces = _savedPlaces(context);
+    final currentLocationLabel = _currentLocation == 'Current Location'
+        ? l10n.t('ride.current_location')
+        : _currentLocation;
+    final destinationLabel = _destination == 'Where to?'
+        ? l10n.t('ride.where_to')
+        : _destination;
     return PopScope(
       canPop: context.canPop(),
       onPopInvokedWithResult: (didPop, result) {
@@ -98,7 +67,7 @@ class _RideScreenState extends State<RideScreen> {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Ride'),
+        title: Text(l10n.t('ride.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -134,7 +103,7 @@ class _RideScreenState extends State<RideScreen> {
                           color: AppColors.primary.withValues(alpha: 0.3),
                         ),
                         const SizedBox(height: 8),
-                        Text('Map View', style: AppTextStyles.bodySmall),
+                        Text(l10n.t('ride.map_view'), style: AppTextStyles.bodySmall),
                       ],
                     ),
                   ),
@@ -143,10 +112,10 @@ class _RideScreenState extends State<RideScreen> {
                     right: 12,
                     child: GestureDetector(
                       onTap: () {
-                        setState(() => _currentLocation = 'Current Location');
+                        setState(() => _currentLocation = l10n.t('ride.current_location'));
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Pickup reset to current location.'),
+                          SnackBar(
+                            content: Text(l10n.t('ride.pickup_reset')),
                           ),
                         );
                       },
@@ -202,7 +171,7 @@ class _RideScreenState extends State<RideScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
-                              _currentLocation,
+                              currentLocationLabel,
                               style: AppTextStyles.bodyMedium.copyWith(
                                 color: AppColors.grey,
                               ),
@@ -252,7 +221,7 @@ class _RideScreenState extends State<RideScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Text(
-                              _destination,
+                              destinationLabel,
                               style: AppTextStyles.bodyMedium.copyWith(
                                 color: _destination == 'Where to?'
                                     ? AppColors.mediumGrey
@@ -270,7 +239,7 @@ class _RideScreenState extends State<RideScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            Text('Available Rides', style: AppTextStyles.h4),
+            Text(l10n.t('ride.available_rides'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             if (_isLoading)
               const AppShimmer(
@@ -355,7 +324,13 @@ class _RideScreenState extends State<RideScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${ride.capacity} seats • ${ride.timeToArrive}',
+                                  l10n.t(
+                                    'ride.seats_eta',
+                                    params: {
+                                      'count': '${ride.capacity}',
+                                      'eta': ride.timeToArrive,
+                                    },
+                                  ),
                                   style: AppTextStyles.caption,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -370,7 +345,7 @@ class _RideScreenState extends State<RideScreen> {
                 ),
               ),
             const SizedBox(height: 24),
-            Text('Quick Rides', style: AppTextStyles.h4),
+            Text(l10n.t('ride.quick_rides'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
             LayoutBuilder(
               builder: (context, constraints) {
@@ -383,20 +358,20 @@ class _RideScreenState extends State<RideScreen> {
                       width: cardWidth,
                       child: _QuickRide(
                         Icons.home_rounded,
-                        'Home',
+                        l10n.t('ride.home'),
                         '123 Main St',
                         onTap: () =>
-                            _openRideBooking('Home', '123 Main St', 4.2),
+                            _openRideBooking(l10n.t('ride.home'), '123 Main St', 4.2),
                       ),
                     ),
                     SizedBox(
                       width: cardWidth,
                       child: _QuickRide(
                         Icons.work_rounded,
-                        'Work',
+                        l10n.t('ride.work'),
                         '456 Office Ave',
                         onTap: () =>
-                            _openRideBooking('Work', '456 Office Ave', 6.8),
+                            _openRideBooking(l10n.t('ride.work'), '456 Office Ave', 6.8),
                       ),
                     ),
                   ],
@@ -404,9 +379,9 @@ class _RideScreenState extends State<RideScreen> {
               },
             ),
             const SizedBox(height: 24),
-            Text('Recent Places', style: AppTextStyles.h4),
+            Text(l10n.t('ride.recent_places'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
-            ..._savedPlaces
+            ...savedPlaces
                 .skip(2)
                 .map(
                   (p) => GestureDetector(
@@ -468,14 +443,14 @@ class _RideScreenState extends State<RideScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'First 3 Rides Free! 🎉',
+                        l10n.t('ride.promo_title'),
                         style: AppTextStyles.h4.copyWith(
                           color: AppColors.white,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'New users get first 3 rides completely free',
+                        l10n.t('ride.promo_subtitle'),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: Colors.white70,
                         ),
@@ -485,8 +460,8 @@ class _RideScreenState extends State<RideScreen> {
                   final action = GestureDetector(
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Offer saved to your account.'),
+                        SnackBar(
+                          content: Text(l10n.t('ride.offer_saved')),
                         ),
                       );
                     },
@@ -500,7 +475,7 @@ class _RideScreenState extends State<RideScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        'Claim',
+                        l10n.t('ride.claim'),
                         style: AppTextStyles.labelMedium.copyWith(
                           color: AppColors.primary,
                         ),
@@ -540,6 +515,7 @@ class _RideScreenState extends State<RideScreen> {
   }
 
   Future<void> _selectPlace({required bool isPickup}) async {
+    final savedPlaces = _savedPlaces(context);
     final selected =
         await showModalBottomSheet<
           ({String title, String address, double distance})
@@ -551,7 +527,7 @@ class _RideScreenState extends State<RideScreen> {
             borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           builder: (context) {
-            return _PlacePickerSheet(isPickup: isPickup, places: _savedPlaces);
+            return _PlacePickerSheet(isPickup: isPickup, places: savedPlaces);
           },
         );
 
@@ -577,6 +553,46 @@ class _RideScreenState extends State<RideScreen> {
       },
     );
   }
+
+  List<({String title, String address, IconData icon, double distance})>
+  _savedPlaces(BuildContext context) => [
+    (
+      title: context.l10n.t('ride.home'),
+      address: '123 Main St',
+      icon: Icons.home_rounded,
+      distance: 4.2,
+    ),
+    (
+      title: context.l10n.t('ride.work'),
+      address: '456 Office Ave',
+      icon: Icons.work_rounded,
+      distance: 6.8,
+    ),
+    (
+      title: context.l10n.t('ride.city_mall'),
+      address: '789 Shopping Blvd',
+      icon: Icons.shopping_bag_rounded,
+      distance: 5.2,
+    ),
+    (
+      title: context.l10n.t('ride.central_park'),
+      address: '321 Green Lane',
+      icon: Icons.park_rounded,
+      distance: 3.7,
+    ),
+    (
+      title: context.l10n.t('ride.airport'),
+      address: 'International Airport',
+      icon: Icons.flight_rounded,
+      distance: 9.5,
+    ),
+    (
+      title: context.l10n.t('ride.train_station'),
+      address: 'Central Station',
+      icon: Icons.train_rounded,
+      distance: 7.1,
+    ),
+  ];
 }
 
 class _PlacePickerSheet extends StatefulWidget {
@@ -607,6 +623,7 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final query = _searchController.text.trim().toLowerCase();
     final showTypedDestination =
         !widget.isPickup && _searchController.text.trim().isNotEmpty;
@@ -630,7 +647,9 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.isPickup ? 'Select pickup' : 'Choose destination',
+                widget.isPickup
+                    ? l10n.t('ride.select_pickup')
+                    : l10n.t('ride.choose_destination'),
                 style: AppTextStyles.h3,
               ),
               const SizedBox(height: 16),
@@ -639,8 +658,8 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
                   hintText: widget.isPickup
-                      ? 'Search pickup point...'
-                      : 'Search destination...',
+                      ? l10n.t('ride.search_pickup')
+                      : l10n.t('ride.search_destination'),
                   prefixIcon: const Icon(Icons.search_rounded),
                   filled: true,
                   fillColor: AppColors.extraLightGrey,
@@ -671,7 +690,7 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
                     style: AppTextStyles.labelMedium,
                   ),
                   subtitle: Text(
-                    'Use typed destination',
+                    l10n.t('ride.use_typed_destination'),
                     style: AppTextStyles.caption,
                   ),
                   onTap: () => Navigator.of(context).pop((
@@ -714,7 +733,7 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         child: Text(
-                          'No saved places match your search.',
+                          l10n.t('ride.no_saved_places'),
                           style: AppTextStyles.caption,
                         ),
                       ),

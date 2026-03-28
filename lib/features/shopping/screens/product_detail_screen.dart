@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
@@ -71,6 +72,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
     final wishlistProvider = context.watch<WishlistProvider>();
     final isFavorite = wishlistProvider.isFavorite(_product.id);
@@ -88,6 +90,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
         ),
+        title: Text(l10n.t('product_detail.title')),
         actions: [
           IconButton(icon: const Icon(Icons.share_outlined), onPressed: () {}),
           IconButton(
@@ -105,7 +108,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    isFavorite ? 'Removed from wishlist' : 'Added to wishlist',
+                    isFavorite
+                        ? l10n.t('product_detail.removed_wishlist')
+                        : l10n.t('product_detail.added_wishlist'),
                   ),
                   duration: const Duration(seconds: 1),
                   behavior: SnackBarBehavior.floating,
@@ -194,7 +199,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              '(${_product.reviewCount} reviews)',
+                              l10n.t(
+                                'product_detail.reviews',
+                                params: {'count': _product.reviewCount.toString()},
+                              ),
                               style: AppTextStyles.caption,
                             ),
                             const Spacer(),
@@ -209,7 +217,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  'In Stock',
+                                  l10n.t('product_detail.in_stock'),
                                   style: AppTextStyles.labelSmall.copyWith(
                                     color: AppColors.success,
                                     fontWeight: FontWeight.w700,
@@ -262,7 +270,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                         // Color selection
                         if (_product.colors.isNotEmpty) ...[
-                          Text('Color', style: AppTextStyles.labelLarge),
+                          Text(l10n.t('product_detail.color'), style: AppTextStyles.labelLarge),
                           const SizedBox(height: 12),
                           Row(
                             children: List.generate(_product.colors.length, (
@@ -313,7 +321,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                         // Size selection
                         if (_product.sizes.isNotEmpty) ...[
-                          Text('Size', style: AppTextStyles.labelLarge),
+                          Text(l10n.t('product_detail.size'), style: AppTextStyles.labelLarge),
                           const SizedBox(height: 12),
                           Wrap(
                             spacing: 10,
@@ -352,7 +360,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         // Quantity
                         Row(
                           children: [
-                            Text('Quantity', style: AppTextStyles.labelLarge),
+                            Text(l10n.t('product_detail.quantity'), style: AppTextStyles.labelLarge),
                             const Spacer(),
                             Container(
                               decoration: BoxDecoration(
@@ -391,7 +399,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         const SizedBox(height: 24),
 
                         // Description
-                        Text('Description', style: AppTextStyles.h4),
+                        Text(l10n.t('product_detail.description'), style: AppTextStyles.h4),
                         const SizedBox(height: 8),
                         Text(
                           _product.description,
@@ -404,7 +412,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                         // Features
                         if (_product.features.isNotEmpty) ...[
-                          Text('Features', style: AppTextStyles.h4),
+                          Text(l10n.t('product_detail.features'), style: AppTextStyles.h4),
                           const SizedBox(height: 12),
                           ..._product.features.map(
                             (f) => Padding(
@@ -457,7 +465,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Total Price', style: AppTextStyles.caption),
+                    Text(l10n.t('product_detail.total_price'), style: AppTextStyles.caption),
                     const SizedBox(height: 4),
                     Text(
                       '\$${(_product.price * _quantity).toStringAsFixed(2)}',
@@ -468,7 +476,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               ),
               Expanded(
                 child: AppButton(
-                  text: isInCart ? 'View Cart' : 'Add to Cart',
+                  text: isInCart
+                      ? l10n.t('product_detail.view_cart')
+                      : l10n.t('product_detail.add_to_cart'),
                   icon: isInCart
                       ? Icons.arrow_forward_rounded
                       : Icons.shopping_bag_outlined,

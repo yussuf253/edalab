@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_search_bar.dart';
 
 class ExploreScreen extends StatelessWidget {
@@ -10,59 +11,60 @@ class ExploreScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final services = [
       _ServiceItem(
-        'Food Delivery',
-        '200+ restaurants',
+        l10n.t('explore.food_delivery'),
+        l10n.t('explore.restaurants_count'),
         Icons.restaurant_rounded,
         AppColors.food,
         '/food',
       ),
       _ServiceItem(
-        'Shopping',
-        '500+ products',
+        l10n.t('explore.shopping'),
+        l10n.t('explore.products_count'),
         Icons.shopping_bag_rounded,
         AppColors.shopping,
         '/shopping',
       ),
       _ServiceItem(
-        'Doctor',
-        '100+ specialists',
+        l10n.t('explore.doctor'),
+        l10n.t('explore.specialists_count'),
         Icons.medical_services_rounded,
         AppColors.doctor,
         '/doctor',
       ),
       _ServiceItem(
-        'Hotel',
-        '50+ hotels',
+        l10n.t('explore.hotel'),
+        l10n.t('explore.hotels_count'),
         Icons.hotel_rounded,
         AppColors.hotel,
         '/hotel',
       ),
       _ServiceItem(
-        'Ride',
-        'Anywhere, anytime',
+        l10n.t('explore.ride'),
+        l10n.t('explore.anywhere_anytime'),
         Icons.directions_car_rounded,
         AppColors.ride,
         '/ride',
       ),
       _ServiceItem(
-        'Pharmacy',
-        '1000+ medicines',
+        l10n.t('explore.pharmacy'),
+        l10n.t('explore.medicines_count'),
         Icons.local_pharmacy_rounded,
         AppColors.pharmacy,
         '/pharmacy',
       ),
       _ServiceItem(
-        'Grocery',
-        'Fresh everyday',
+        l10n.t('explore.grocery'),
+        l10n.t('explore.fresh_everyday'),
         Icons.eco_rounded,
         AppColors.grocery,
         '/grocery',
       ),
       _ServiceItem(
-        'Laundry',
-        'Clean & fresh',
+        l10n.t('explore.laundry'),
+        l10n.t('explore.clean_fresh'),
         Icons.local_laundry_service_rounded,
         AppColors.laundry,
         '/laundry',
@@ -72,7 +74,7 @@ class ExploreScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Explore', style: AppTextStyles.h3),
+        title: Text(l10n.t('explore.title'), style: AppTextStyles.h3),
         centerTitle: false,
       ),
       body: CustomScrollView(
@@ -82,7 +84,7 @@ class ExploreScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
               child: AppSearchBar(
-                hint: 'Search services, products, doctors...',
+                hint: l10n.t('explore.search_hint'),
                 readOnly: true,
                 onTap: () => context.push('/search'),
               ),
@@ -92,7 +94,7 @@ class ExploreScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-              child: Text('All Services', style: AppTextStyles.h4),
+              child: Text(l10n.t('explore.all_services'), style: AppTextStyles.h4),
             ),
           ),
           SliverPadding(
@@ -141,7 +143,7 @@ class ExploreScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-              child: Text('Quick Actions', style: AppTextStyles.h4),
+              child: Text(l10n.t('explore.quick_actions'), style: AppTextStyles.h4),
             ),
           ),
           SliverToBoxAdapter(
@@ -151,29 +153,29 @@ class ExploreScreen extends StatelessWidget {
                 children: [
                   _ActionTile(
                     Icons.fastfood_rounded,
-                    'Order Food',
-                    'Hungry? Order from 200+ restaurants',
+                    l10n.t('explore.order_food'),
+                    l10n.t('explore.order_food_subtitle'),
                     AppColors.food,
                     () => context.push('/food'),
                   ),
                   _ActionTile(
                     Icons.directions_car_rounded,
-                    'Book a Ride',
-                    'Get where you need to go',
+                    l10n.t('explore.book_ride'),
+                    l10n.t('explore.book_ride_subtitle'),
                     AppColors.ride,
                     () => context.push('/ride'),
                   ),
                   _ActionTile(
                     Icons.medical_services_rounded,
-                    'Consult Doctor',
-                    'Talk to a specialist now',
+                    l10n.t('explore.consult_doctor'),
+                    l10n.t('explore.consult_doctor_subtitle'),
                     AppColors.doctor,
                     () => context.push('/doctor'),
                   ),
                   _ActionTile(
                     Icons.local_laundry_service_rounded,
-                    'Laundry Pickup',
-                    'Schedule a pickup today',
+                    l10n.t('explore.laundry_pickup'),
+                    l10n.t('explore.laundry_pickup_subtitle'),
                     AppColors.laundry,
                     () => context.push('/laundry'),
                   ),

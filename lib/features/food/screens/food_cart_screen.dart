@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -38,12 +39,13 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
     if (cartProvider.isHydrating) {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Food Cart'),
+          title: Text(l10n.t('food_cart.title')),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             onPressed: () => context.pop(),
@@ -82,7 +84,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Food Cart'),
+        title: Text(l10n.t('food_cart.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -92,7 +94,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
             TextButton(
               onPressed: () => cartProvider.clearModuleCart('food'),
               child: Text(
-                'Clear',
+                l10n.t('cart.clear'),
                 style: AppTextStyles.labelMedium.copyWith(
                   color: AppColors.error,
                 ),
@@ -112,12 +114,12 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Your food cart is empty',
+                    l10n.t('food_cart.empty_title'),
                     style: AppTextStyles.h3.copyWith(color: AppColors.grey),
                   ),
                   const SizedBox(height: 16),
                   AppButton(
-                    text: 'Browse Restaurants',
+                    text: l10n.t('food_cart.browse'),
                     width: 200,
                     color: AppColors.food,
                     onPressed: () => context.go('/food'),
@@ -155,7 +157,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                               style: AppTextStyles.labelLarge,
                             ),
                             Text(
-                              'Estimated: 15-25 min delivery',
+                              l10n.t('food_cart.eta'),
                               style: AppTextStyles.caption,
                             ),
                           ],
@@ -197,8 +199,16 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                 children: [
                                   Text(
                                     freeDeliveryGap > 0
-                                        ? 'Add \$${freeDeliveryGap.toStringAsFixed(2)} more for free delivery'
-                                        : 'You unlocked free delivery on your next food order',
+                                        ? l10n.t(
+                                            'food_cart.free_delivery_more',
+                                            params: {
+                                              'amount': freeDeliveryGap
+                                                  .toStringAsFixed(2),
+                                            },
+                                          )
+                                        : l10n.t(
+                                            'food_cart.free_delivery_unlocked',
+                                          ),
                                     style: AppTextStyles.labelMedium.copyWith(
                                       color: AppColors.food,
                                     ),
@@ -258,7 +268,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                 ),
                                 const SizedBox(width: 10),
                                 Text(
-                                  'Cooking instructions',
+                                  l10n.t('food_cart.instructions'),
                                   style: AppTextStyles.labelLarge.copyWith(
                                     color: AppColors.primary,
                                   ),
@@ -270,8 +280,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                               controller: _instructionsController,
                               maxLines: 3,
                               decoration: InputDecoration(
-                                hintText:
-                                    'No onions, extra spicy, leave at the door...',
+                                hintText: l10n.t('food_cart.instructions_hint'),
                                 hintStyle: AppTextStyles.bodyMedium.copyWith(
                                   color: AppColors.mediumGrey,
                                 ),
@@ -299,7 +308,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Delivery Tip',
+                              l10n.t('food_cart.delivery_tip'),
                               style: AppTextStyles.labelLarge,
                             ),
                             const SizedBox(height: 10),
@@ -307,7 +316,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                               children: [0.0, 1.0, 2.0, 5.0].map((t) {
                                 final isSelected = t == _tip;
                                 final label = t == 0.0
-                                    ? 'None'
+                                    ? l10n.t('food_cart.none')
                                     : '\$${t.toInt()}';
                                 return Expanded(
                                   child: GestureDetector(
@@ -345,7 +354,10 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                       if (recommendedItems.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         Text(
-                          'Add More From $restaurantName',
+                          l10n.t(
+                            'food_cart.add_more_from',
+                            params: {'name': restaurantName},
+                          ),
                           style: AppTextStyles.h4,
                         ),
                         const SizedBox(height: 10),
@@ -391,33 +403,35 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _SummLine(
-                          'Subtotal',
+                          l10n.t('cart.subtotal'),
                           '\$${subtotal.toStringAsFixed(2)}',
                         ),
                         _SummLine(
-                          'Delivery',
+                          l10n.t('cart.delivery'),
                           '\$${deliveryFee.toStringAsFixed(2)}',
                         ),
-                        _SummLine('Tip', '\$${tipAmount.toStringAsFixed(2)}'),
+                        _SummLine(l10n.t('cart.tip'), '\$${tipAmount.toStringAsFixed(2)}'),
                         _SummLine(
-                          'Service fee',
+                          l10n.t('cart.service_fee'),
                           '\$${serviceFee.toStringAsFixed(2)}',
                         ),
                         const Divider(height: 24),
                         _SummLine(
-                          'Total',
+                          l10n.t('cart.total'),
                           '\$${total.toStringAsFixed(2)}',
                           bold: true,
                         ),
                         const SizedBox(height: 16),
                         AppButton(
-                          text:
-                              'Continue to Checkout • \$${total.toStringAsFixed(2)}',
+                          text: l10n.t(
+                            'cart.continue_checkout',
+                            params: {'amount': total.toStringAsFixed(2)},
+                          ),
                           color: AppColors.food,
                           onPressed: () async {
                             final allowed = await requireLoggedIn(
                               context,
-                              message: 'Please log in to continue to checkout.',
+                              message: l10n.t('cart.login_required'),
                             );
                             if (!context.mounted || !allowed) return;
                             context.push(

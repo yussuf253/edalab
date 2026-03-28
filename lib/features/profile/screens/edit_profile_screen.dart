@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_button.dart';
 
@@ -42,13 +43,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final authProvider = context.watch<AuthProvider>();
     final user = authProvider.user;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Edit Profile'),
+        title: Text(l10n.t('profile_edit.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -102,46 +104,46 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(height: 24),
             TextFormField(
               controller: _firstNameController,
-              decoration: const InputDecoration(
-                labelText: 'First Name',
+              decoration: InputDecoration(
+                labelText: l10n.t('profile_edit.first_name'),
                 prefixIcon: Icon(Icons.person_outline_rounded),
               ),
             ),
             const SizedBox(height: 14),
             TextFormField(
               controller: _lastNameController,
-              decoration: const InputDecoration(
-                labelText: 'Last Name',
+              decoration: InputDecoration(
+                labelText: l10n.t('profile_edit.last_name'),
                 prefixIcon: Icon(Icons.person_outline_rounded),
               ),
             ),
             const SizedBox(height: 14),
             TextFormField(
               controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email_outlined),
+              decoration: InputDecoration(
+                labelText: l10n.t('profile_edit.email'),
+                prefixIcon: const Icon(Icons.email_outlined),
               ),
             ),
             const SizedBox(height: 14),
             TextFormField(
               controller: _phoneController,
-              decoration: const InputDecoration(
-                labelText: 'Phone',
+              decoration: InputDecoration(
+                labelText: l10n.t('profile_edit.phone'),
                 prefixIcon: Icon(Icons.phone_outlined),
               ),
             ),
             const SizedBox(height: 14),
             TextFormField(
               controller: _avatarUrlController,
-              decoration: const InputDecoration(
-                labelText: 'Avatar URL',
+              decoration: InputDecoration(
+                labelText: l10n.t('profile_edit.avatar_url'),
                 prefixIcon: Icon(Icons.image_outlined),
               ),
             ),
             const SizedBox(height: 24),
             AppButton(
-              text: 'Save Changes',
+              text: l10n.t('profile_edit.save'),
               isLoading: authProvider.isLoading,
               onPressed: () async {
                 final success = await context.read<AuthProvider>().updateProfile(
@@ -156,12 +158,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                 if (success) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Profile updated successfully.')),
+                    SnackBar(content: Text(l10n.t('profile_edit.updated'))),
                   );
                   context.pop();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(authProvider.errorMessage ?? 'Failed to update profile.')),
+                    SnackBar(
+                      content: Text(
+                        authProvider.errorMessage ?? l10n.t('profile_edit.failed'),
+                      ),
+                    ),
                   );
                 }
               },

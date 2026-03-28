@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final String orderId;
@@ -18,6 +19,7 @@ class OrderDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final data = order ?? const <String, dynamic>{};
     final module = data['moduleType']?.toString().toUpperCase() ?? 'ORDER';
     final items = (data['items'] as List? ?? const [])
@@ -31,7 +33,7 @@ class OrderDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(_screenTitle(module)),
+        title: Text(_screenTitle(module, l10n)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -69,7 +71,7 @@ class OrderDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    _title(data, firstItem),
+                    _title(data, firstItem, l10n),
                     style: AppTextStyles.h3.copyWith(color: AppColors.white),
                   ),
                   const SizedBox(height: 6),
@@ -84,15 +86,24 @@ class OrderDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             _Card(
-              title: 'Summary',
+              title: l10n.t('order_detail.summary'),
               child: Column(
                 children: [
-                  _Row('Status', _pretty(data['status']?.toString() ?? 'Pending')),
-                  _Row('Amount', _money((data['total'] as num?)?.toDouble() ?? 0)),
-                  _Row('Placed', _formatDate(data['createdAt']?.toString())),
+                  _Row(
+                    l10n.t('order_detail.status'),
+                    _pretty(data['status']?.toString() ?? 'Pending'),
+                  ),
+                  _Row(
+                    l10n.t('order_detail.amount'),
+                    _money((data['total'] as num?)?.toDouble() ?? 0),
+                  ),
+                  _Row(
+                    l10n.t('order_detail.placed'),
+                    _formatDate(data['createdAt']?.toString()),
+                  ),
                   if (items.isNotEmpty)
                     _Row(
-                      'Items',
+                      l10n.t('order_detail.items'),
                       '${items.fold<int>(0, (sum, item) => sum + ((item['quantity'] as num?)?.toInt() ?? 0))}',
                     ),
                 ],
@@ -100,9 +111,9 @@ class OrderDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             _Card(
-              title: 'Details',
+              title: l10n.t('order_detail.details'),
               child: Column(
-                children: _detailRows(module, metadata, firstItem),
+                children: _detailRows(module, metadata, firstItem, l10n),
               ),
             ),
           ],
@@ -111,16 +122,16 @@ class OrderDetailScreen extends StatelessWidget {
     );
   }
 
-  String _screenTitle(String module) {
+  String _screenTitle(String module, AppLocalizations l10n) {
     switch (module) {
       case 'HOTEL':
-        return 'Booking Details';
+        return l10n.t('order_detail.booking_details');
       case 'SHOPPING':
-        return 'Order Details';
+        return l10n.t('order_detail.order_details');
       case 'PHARMACY':
-        return 'Pharmacy Order';
+        return l10n.t('order_detail.pharmacy_order');
       default:
-        return 'Order Details';
+        return l10n.t('order_detail.order_details');
     }
   }
 
@@ -150,39 +161,72 @@ class OrderDetailScreen extends StatelessWidget {
     }
   }
 
-  String _title(Map<String, dynamic> data, Map<String, dynamic>? firstItem) {
+  String _title(
+    Map<String, dynamic> data,
+    Map<String, dynamic>? firstItem,
+    AppLocalizations l10n,
+  ) {
     return firstItem?['name']?.toString() ??
         data['moduleName']?.toString() ??
-        'Order';
+        l10n.t('orders.order');
   }
 
   List<Widget> _detailRows(
     String module,
     Map<String, dynamic> metadata,
     Map<String, dynamic>? firstItem,
+    AppLocalizations l10n,
   ) {
     switch (module) {
       case 'HOTEL':
         return [
-          _Row('Room', firstItem?['name']?.toString() ?? 'Room'),
-          _Row('Check-in', _formatDate(metadata['checkInAt']?.toString() ?? metadata['checkIn']?.toString())),
-          _Row('Check-out', _formatDate(metadata['checkOutAt']?.toString() ?? metadata['checkOut']?.toString())),
-          _Row('Guests', metadata['guestCount']?.toString() ?? metadata['guests']?.toString() ?? '1'),
+          _Row(
+            l10n.t('order_detail.room'),
+            firstItem?['name']?.toString() ?? l10n.t('order_detail.room'),
+          ),
+          _Row(
+            l10n.t('order_detail.check_in'),
+            _formatDate(
+              metadata['checkInAt']?.toString() ?? metadata['checkIn']?.toString(),
+            ),
+          ),
+          _Row(
+            l10n.t('order_detail.check_out'),
+            _formatDate(
+              metadata['checkOutAt']?.toString() ?? metadata['checkOut']?.toString(),
+            ),
+          ),
+          _Row(
+            l10n.t('order_detail.guests'),
+            metadata['guestCount']?.toString() ?? metadata['guests']?.toString() ?? '1',
+          ),
         ];
       case 'SHOPPING':
       case 'PHARMACY':
         return [
-          _Row('Product', firstItem?['name']?.toString() ?? 'Item'),
-          _Row('Brand', firstItem?['brand']?.toString() ?? '-'),
-          _Row('Quantity', firstItem?['quantity']?.toString() ?? '1'),
+          _Row(
+            l10n.t('order_detail.product'),
+            firstItem?['name']?.toString() ?? l10n.t('order_detail.item'),
+          ),
+          _Row(
+            l10n.t('order_detail.brand'),
+            firstItem?['brand']?.toString() ?? '-',
+          ),
+          _Row(
+            l10n.t('order_detail.quantity'),
+            firstItem?['quantity']?.toString() ?? '1',
+          ),
           if ((firstItem?['size']?.toString() ?? '').isNotEmpty)
-            _Row('Size', firstItem!['size'].toString()),
+            _Row(l10n.t('order_detail.size'), firstItem!['size'].toString()),
           if ((firstItem?['color']?.toString() ?? '').isNotEmpty)
-            _Row('Color', firstItem!['color'].toString()),
+            _Row(l10n.t('order_detail.color'), firstItem!['color'].toString()),
         ];
       default:
         return [
-          _Row('Item', firstItem?['name']?.toString() ?? 'Order'),
+          _Row(
+            l10n.t('order_detail.item'),
+            firstItem?['name']?.toString() ?? l10n.t('orders.order'),
+          ),
         ];
     }
   }

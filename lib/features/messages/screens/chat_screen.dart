@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -93,11 +94,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final conversation = _conversation;
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text(conversation?.title ?? 'Chat')),
+      appBar: AppBar(
+        title: Text(conversation?.title ?? l10n.t('messages.chat_fallback_title')),
+      ),
       body: _isLoading
           ? const SimpleListShimmer(itemCount: 6)
           : Column(
@@ -230,8 +234,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           controller: _messageController,
                           minLines: 1,
                           maxLines: 4,
-                          decoration: const InputDecoration(
-                            hintText: 'Type your message...',
+                          decoration: InputDecoration(
+                            hintText: l10n.t('messages.type_message'),
                           ),
                         ),
                       ),

@@ -4,6 +4,7 @@ import 'package:animate_do/animate_do.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
@@ -15,6 +16,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -49,7 +51,7 @@ class HomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Good Morning 👋',
+                              '${l10n.t('home.good_morning')} 👋',
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: AppColors.grey,
                               ),
@@ -75,7 +77,7 @@ class HomeScreen extends StatelessWidget {
                   delay: const Duration(milliseconds: 20),
                   duration: const Duration(milliseconds: 240),
                   child: AppSearchBar(
-                    hint: 'Search services, products, restaurants...',
+                    hint: l10n.t('common.search_services'),
                     readOnly: true,
                     onTap: () => context.push('/search'),
                   ),
@@ -104,9 +106,9 @@ class HomeScreen extends StatelessWidget {
                   duration: const Duration(milliseconds: 240),
                   child: Column(
                     children: [
-                      const SectionHeader(
-                        title: 'Services',
-                        actionText: 'See All',
+                      SectionHeader(
+                        title: l10n.t('home.services'),
+                        actionText: l10n.t('common.see_all'),
                       ),
                       const SizedBox(height: 16),
                       _ServicesGrid(),
@@ -126,8 +128,8 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       SectionHeader(
-                        title: 'Special Offers 🔥',
-                        actionText: 'See All',
+                        title: '${l10n.t('home.special_offers')} 🔥',
+                        actionText: l10n.t('common.see_all'),
                         onAction: () => context.push('/promotions'),
                       ),
                       const SizedBox(height: 16),
@@ -148,8 +150,8 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       SectionHeader(
-                        title: 'Popular Restaurants',
-                        actionText: 'See All',
+                        title: l10n.t('home.popular_restaurants'),
+                        actionText: l10n.t('common.see_all'),
                         onAction: () => context.push('/food'),
                       ),
                       const SizedBox(height: 16),
@@ -170,8 +172,8 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       SectionHeader(
-                        title: 'Top Doctors',
-                        actionText: 'See All',
+                        title: l10n.t('home.top_doctors'),
+                        actionText: l10n.t('common.see_all'),
                         onAction: () => context.push('/doctor'),
                       ),
                       const SizedBox(height: 16),
@@ -192,8 +194,8 @@ class HomeScreen extends StatelessWidget {
                   child: Column(
                     children: [
                       SectionHeader(
-                        title: 'Trending Products',
-                        actionText: 'See All',
+                        title: l10n.t('home.trending_products'),
+                        actionText: l10n.t('common.see_all'),
                         onAction: () => context.push('/shopping'),
                       ),
                       const SizedBox(height: 16),
@@ -237,67 +239,68 @@ class _PromoBanner extends StatelessWidget {
 }
 
 class _ServicesGrid extends StatelessWidget {
-  final _services = const [
-    _ServiceItem(
-      assetPath: 'assets/icons/food.png',
-      title: 'Food',
-      color: AppColors.food,
-      bgColor: AppColors.foodBg,
-      route: '/food',
-    ),
-    _ServiceItem(
-      assetPath: 'assets/icons/shopping.png',
-      title: 'Shopping',
-      color: AppColors.shopping,
-      bgColor: AppColors.shoppingBg,
-      route: '/shopping',
-    ),
-    _ServiceItem(
-      assetPath: 'assets/icons/doctor.png',
-      title: 'Doctor',
-      color: AppColors.doctor,
-      bgColor: AppColors.doctorBg,
-      route: '/doctor',
-    ),
-    _ServiceItem(
-      assetPath: 'assets/icons/hotel.png',
-      title: 'Hotel',
-      color: AppColors.hotel,
-      bgColor: AppColors.hotelBg,
-      route: '/hotel',
-    ),
-    _ServiceItem(
-      assetPath: 'assets/icons/car.png',
-      title: 'Ride',
-      color: AppColors.ride,
-      bgColor: AppColors.rideBg,
-      route: '/ride',
-    ),
-    _ServiceItem(
-      assetPath: 'assets/icons/pharmacy.png',
-      title: 'Pharmacy',
-      color: AppColors.pharmacy,
-      bgColor: AppColors.pharmacyBg,
-      route: '/pharmacy',
-    ),
-    _ServiceItem(
-      assetPath: 'assets/icons/repair-service.png',
-      title: 'Services',
-      color: AppColors.homeServices,
-      bgColor: AppColors.homeServicesBg,
-      route: '/home-services',
-    ),
-    _ServiceItem(
-      assetPath: 'assets/icons/laundry.png',
-      title: 'Laundry',
-      color: AppColors.laundry,
-      bgColor: AppColors.laundryBg,
-      route: '/laundry',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final services = [
+      _ServiceItem(
+        assetPath: 'assets/icons/food.png',
+        title: l10n.t('home.food'),
+        color: AppColors.food,
+        bgColor: AppColors.foodBg,
+        route: '/food',
+      ),
+      _ServiceItem(
+        assetPath: 'assets/icons/shopping.png',
+        title: l10n.t('home.shopping'),
+        color: AppColors.shopping,
+        bgColor: AppColors.shoppingBg,
+        route: '/shopping',
+      ),
+      _ServiceItem(
+        assetPath: 'assets/icons/doctor.png',
+        title: l10n.t('home.doctor'),
+        color: AppColors.doctor,
+        bgColor: AppColors.doctorBg,
+        route: '/doctor',
+      ),
+      _ServiceItem(
+        assetPath: 'assets/icons/hotel.png',
+        title: l10n.t('home.hotel'),
+        color: AppColors.hotel,
+        bgColor: AppColors.hotelBg,
+        route: '/hotel',
+      ),
+      _ServiceItem(
+        assetPath: 'assets/icons/car.png',
+        title: l10n.t('home.ride'),
+        color: AppColors.ride,
+        bgColor: AppColors.rideBg,
+        route: '/ride',
+      ),
+      _ServiceItem(
+        assetPath: 'assets/icons/pharmacy.png',
+        title: l10n.t('home.pharmacy'),
+        color: AppColors.pharmacy,
+        bgColor: AppColors.pharmacyBg,
+        route: '/pharmacy',
+      ),
+      _ServiceItem(
+        assetPath: 'assets/icons/repair-service.png',
+        title: l10n.t('home.home_services'),
+        color: AppColors.homeServices,
+        bgColor: AppColors.homeServicesBg,
+        route: '/home-services',
+      ),
+      _ServiceItem(
+        assetPath: 'assets/icons/laundry.png',
+        title: l10n.t('home.laundry'),
+        color: AppColors.laundry,
+        bgColor: AppColors.laundryBg,
+        route: '/laundry',
+      ),
+    ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: GridView.builder(
@@ -309,9 +312,9 @@ class _ServicesGrid extends StatelessWidget {
           crossAxisSpacing: 12,
           childAspectRatio: 0.8,
         ),
-        itemCount: _services.length,
+        itemCount: services.length,
         itemBuilder: (context, index) {
-          final service = _services[index];
+          final service = services[index];
           return GestureDetector(
             onTap: () => context.push(service.route),
             child: Column(

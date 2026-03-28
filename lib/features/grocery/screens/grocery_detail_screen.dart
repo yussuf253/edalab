@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/cart_model.dart';
 import '../../../core/models/grocery_model.dart';
 import '../../../core/network/api_client.dart';
@@ -65,6 +66,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
     final cartItemCount = cartProvider.getModuleItemCount('grocery');
     final moduleTotal = cartProvider.getModuleSubtotal('grocery');
@@ -76,7 +78,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Product Details'),
+        title: Text(l10n.t('grocery_detail.title')),
         actions: [
           Stack(
             alignment: Alignment.center,
@@ -153,7 +155,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                                 borderRadius: BorderRadius.circular(999),
                               ),
                               child: Text(
-                                _item.categoryName ?? 'Grocery',
+                                _item.categoryName ?? l10n.t('module.grocery'),
                                 style: AppTextStyles.labelSmall.copyWith(
                                   color: AppColors.grocery,
                                 ),
@@ -170,7 +172,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: Text(
-                                  'Organic',
+                                  l10n.t('grocery_detail.organic'),
                                   style: AppTextStyles.labelSmall.copyWith(
                                     color: AppColors.success,
                                   ),
@@ -220,29 +222,31 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                               Expanded(
                                 child: _DetailStat(
                                   icon: Icons.local_shipping_outlined,
-                                  label: 'Delivery',
+                                  label: l10n.t('grocery_detail.delivery'),
                                   value: '20-35 min',
                                 ),
                               ),
                               Expanded(
                                 child: _DetailStat(
                                   icon: Icons.inventory_2_outlined,
-                                  label: 'Unit',
+                                  label: l10n.t('grocery_detail.unit'),
                                   value: _item.unit,
                                 ),
                               ),
                               Expanded(
                                 child: _DetailStat(
                                   icon: Icons.eco_outlined,
-                                  label: 'Quality',
-                                  value: _item.isOrganic ? 'Organic' : 'Fresh',
+                                  label: l10n.t('grocery_detail.quality'),
+                                  value: _item.isOrganic
+                                      ? l10n.t('grocery_detail.organic')
+                                      : l10n.t('grocery_detail.fresh'),
                                 ),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 24),
-                        Text('Description', style: AppTextStyles.h4),
+                        Text(l10n.t('grocery_detail.description'), style: AppTextStyles.h4),
                         const SizedBox(height: 8),
                         Text(
                           _item.description,
@@ -252,7 +256,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        Text('Quantity', style: AppTextStyles.labelLarge),
+                        Text(l10n.t('grocery_detail.quantity'), style: AppTextStyles.labelLarge),
                         const SizedBox(height: 12),
                         Container(
                           decoration: BoxDecoration(
@@ -311,7 +315,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Total', style: AppTextStyles.caption),
+                          Text(l10n.t('grocery_detail.total'), style: AppTextStyles.caption),
                           const SizedBox(height: 4),
                           Text(
                             '\$${(_item.price * _quantity).toStringAsFixed(2)}',
@@ -322,7 +326,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                     ),
                     Expanded(
                       child: AppButton(
-                        text: 'Add to Cart',
+                        text: l10n.t('grocery_detail.add_to_cart'),
                         icon: Icons.shopping_bag_outlined,
                         color: AppColors.grocery,
                         onPressed: _addToCart,
@@ -352,7 +356,10 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                       child: Text('$cartItemCount', style: AppTextStyles.badge),
                     ),
                     const SizedBox(width: 12),
-                    Text('View Cart', style: AppTextStyles.button),
+                    Text(
+                      l10n.t('grocery_detail.view_cart'),
+                      style: AppTextStyles.button,
+                    ),
                     const SizedBox(width: 12),
                     Text(
                       '\$${moduleTotal.toStringAsFixed(2)}',

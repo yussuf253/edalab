@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/app_notification_model.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -23,6 +24,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final provider = context.watch<NotificationProvider>();
     final allNotifications = provider.notifications;
     final filteredNotifications = allNotifications.where((notification) {
@@ -43,7 +45,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Notifications'),
+        title: Text(l10n.t('notifications.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -53,7 +55,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             TextButton(
               onPressed: provider.markAllRead,
               child: Text(
-                'Mark all read',
+                l10n.t('notifications.mark_all_read'),
                 style: AppTextStyles.labelSmall.copyWith(
                   color: AppColors.primary,
                 ),
@@ -81,19 +83,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         child: Row(
                           children: [
                             _StatCard(
-                              label: 'Unread',
+                              label: l10n.t('common.unread'),
                               value: '${provider.unreadCount}',
                               color: AppColors.primary,
                             ),
                             const SizedBox(width: 10),
                             _StatCard(
-                              label: 'Total',
+                              label: l10n.t('common.total'),
                               value: '${allNotifications.length}',
                               color: AppColors.doctor,
                             ),
                             const SizedBox(width: 10),
                             _StatCard(
-                              label: 'Modules',
+                              label: l10n.t('common.modules'),
                               value: '${availableModules.length}',
                               color: AppColors.warning,
                             ),
@@ -107,7 +109,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           scrollDirection: Axis.horizontal,
                           children: [
                             _FilterChip(
-                              label: 'All',
+                              label: l10n.t('common.all'),
                               selected: _filter == _NotificationFilter.all,
                               onTap: () {
                                 setState(() => _filter = _NotificationFilter.all);
@@ -115,7 +117,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             ),
                             const SizedBox(width: 8),
                             _FilterChip(
-                              label: 'Unread',
+                              label: l10n.t('common.unread'),
                               selected: _filter == _NotificationFilter.unread,
                               onTap: () {
                                 setState(
@@ -136,7 +138,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           itemBuilder: (context, index) {
                             if (index == 0) {
                               return _ModuleChip(
-                                label: 'Everything',
+                                label: l10n.t('common.everything'),
                                 selected: _selectedModule == null,
                                 color: AppColors.dark,
                                 onTap: () {
@@ -149,7 +151,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               (item) => item.module == module,
                             );
                             return _ModuleChip(
-                              label: sample.moduleLabel,
+                              label: l10n.moduleLabel(module),
                               selected: _selectedModule == module,
                               color: sample.color,
                               onTap: () {
@@ -248,7 +250,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                           Row(
                                             children: [
                                               _Pill(
-                                                label: notification.moduleLabel,
+                                                label: l10n.moduleLabel(
+                                                  notification.module,
+                                                ),
                                                 color: notification.color,
                                               ),
                                               const SizedBox(width: 8),
@@ -274,12 +278,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   String _formatTime(DateTime date) {
+    final l10n = context.l10n;
     final diff = DateTime.now().difference(date);
-    if (diff.inMinutes < 1) return 'Just now';
-    if (diff.inHours < 1) return '${diff.inMinutes} min ago';
-    if (diff.inDays < 1) return '${diff.inHours}h ago';
-    if (diff.inDays == 1) return 'Yesterday';
-    if (diff.inDays < 7) return '${diff.inDays} days ago';
+    if (diff.inMinutes < 1) return l10n.t('common.just_now');
+    if (diff.inHours < 1) {
+      return l10n.t('common.min_ago', params: {'count': '${diff.inMinutes}'});
+    }
+    if (diff.inDays < 1) {
+      return l10n.t('common.hour_ago', params: {'count': '${diff.inHours}'});
+    }
+    if (diff.inDays == 1) return l10n.t('common.yesterday');
+    if (diff.inDays < 7) {
+      return l10n.t('common.days_ago', params: {'count': '${diff.inDays}'});
+    }
     return DateFormat('MMM d').format(date);
   }
 }
@@ -422,6 +433,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -442,10 +454,10 @@ class _EmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            Text('Nothing to show right now', style: AppTextStyles.h4),
+            Text(l10n.t('notifications.empty_title'), style: AppTextStyles.h4),
             const SizedBox(height: 8),
             Text(
-              'When orders, bookings, rides, or account reminders arrive, they will appear here.',
+              l10n.t('notifications.empty_subtitle'),
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
               textAlign: TextAlign.center,
             ),

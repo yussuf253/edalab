@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -15,6 +16,7 @@ class GroceryCategoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
     final cartItemCount = cartProvider.getModuleItemCount('grocery');
     final moduleTotal = cartProvider.getModuleSubtotal('grocery');
@@ -22,7 +24,7 @@ class GroceryCategoryScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Category'),
+        title: Text(l10n.t('grocery_category.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -76,7 +78,7 @@ class GroceryCategoryScreen extends StatelessWidget {
           if (items.isEmpty) {
             return Center(
               child: Text(
-                'No items in this category yet.',
+                l10n.t('grocery_category.empty'),
                 style: AppTextStyles.bodyMedium,
               ),
             );
@@ -168,7 +170,10 @@ class GroceryCategoryScreen extends StatelessWidget {
                                                     ),
                                               ),
                                               Text(
-                                                'per ${item.unit}',
+                                                l10n.t(
+                                                  'grocery_category.per_unit',
+                                                  params: {'unit': item.unit},
+                                                ),
                                                 style: AppTextStyles.caption,
                                               ),
                                             ],
@@ -225,7 +230,10 @@ class GroceryCategoryScreen extends StatelessWidget {
                       child: Text('$cartItemCount', style: AppTextStyles.badge),
                     ),
                     const SizedBox(width: 12),
-                    Text('View Cart', style: AppTextStyles.button),
+                    Text(
+                      l10n.t('grocery_category.view_cart'),
+                      style: AppTextStyles.button,
+                    ),
                     const SizedBox(width: 12),
                     Text(
                       '\$${moduleTotal.toStringAsFixed(2)}',

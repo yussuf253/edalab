@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -69,10 +70,11 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Payment Methods'),
+        title: Text(l10n.t('payment_methods.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -85,7 +87,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Cards', style: AppTextStyles.h4),
+                  Text(l10n.t('payment_methods.cards'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
                   if (_methods.isEmpty)
                     Container(
@@ -95,7 +97,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                        'No saved payment methods yet.',
+                        l10n.t('payment_methods.empty'),
                         style: AppTextStyles.bodyMedium,
                       ),
                     )
@@ -133,9 +135,9 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  method['brand']?.toString() ??
+                                      method['brand']?.toString() ??
                                       method['type']?.toString() ??
-                                      'Payment',
+                                      l10n.t('payment_methods.payment'),
                                   style: AppTextStyles.h4.copyWith(
                                     color: AppColors.white,
                                   ),
@@ -153,7 +155,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
-                                      'Default',
+                                      l10n.t('payment_methods.default'),
                                       style: AppTextStyles.badge.copyWith(
                                         fontSize: 9,
                                       ),
@@ -173,7 +175,10 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                             Row(
                               children: [
                                 Text(
-                                  'Expires $month/$year',
+                                  l10n.t(
+                                    'payment_methods.expires',
+                                    params: {'month': month, 'year': year},
+                                  ),
                                   style: AppTextStyles.labelMedium.copyWith(
                                     color: AppColors.white,
                                   ),
@@ -184,7 +189,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                                     onPressed: () =>
                                         _setDefault(method['id'].toString()),
                                     child: Text(
-                                      'Set default',
+                                      l10n.t('payment_methods.set_default'),
                                       style: AppTextStyles.labelSmall.copyWith(
                                         color: AppColors.white,
                                       ),

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/providers/providers.dart';
@@ -40,6 +41,7 @@ class MyAppointmentsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return PopScope(
       canPop: context.canPop(),
       onPopInvokedWithResult: (didPop, result) {
@@ -50,7 +52,7 @@ class MyAppointmentsScreen extends StatelessWidget {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('My Appointments'),
+        title: Text(l10n.t('appointments.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -70,7 +72,12 @@ class MyAppointmentsScreen extends StatelessWidget {
           }
           if (snapshot.hasError) {
             return Center(
-              child: Text('Error loading appointments: ${snapshot.error}'),
+              child: Text(
+                l10n.t(
+                  'appointments.error',
+                  params: {'error': snapshot.error.toString()},
+                ),
+              ),
             );
           }
 
@@ -80,11 +87,11 @@ class MyAppointmentsScreen extends StatelessWidget {
               (payload['doctors'] as Map<String, DoctorModel>?) ??
               const <String, DoctorModel>{};
           if (appointments.isEmpty) {
-            return const Center(
+            return Center(
               child: EmptyState(
                 icon: Icons.calendar_today_rounded,
-                title: 'No Appointments',
-                subtitle: 'You have no scheduled appointments yet.',
+                title: l10n.t('appointments.empty_title'),
+                subtitle: l10n.t('appointments.empty_subtitle'),
               ),
             );
           }
@@ -97,13 +104,19 @@ class MyAppointmentsScreen extends StatelessWidget {
               final apiAppt = appointments[index];
               final dId = apiAppt['doctorId'];
               final doctor = doctorsById[dId];
-              final String name = doctor?.name ?? 'Doctor $dId';
-              final String specialty = doctor?.specialty ?? 'Specialist';
-              final String status = apiAppt['status'] ?? 'Unknown';
+              final String name = doctor?.name ??
+                  l10n.t(
+                    'appointments.doctor_fallback',
+                    params: {'id': dId.toString()},
+                  );
+              final String specialty =
+                  doctor?.specialty ?? l10n.t('appointments.specialist');
+              final String status =
+                  apiAppt['status'] ?? l10n.t('appointments.unknown');
               final dateObj = DateTime.tryParse(apiAppt['date'] ?? '');
               final dateStr = dateObj != null
                   ? '${dateObj.month}/${dateObj.day}/${dateObj.year}'
-                  : 'Unknown Date';
+                  : l10n.t('appointments.unknown_date');
               final timeStr = apiAppt['timeSlot'] ?? '00:00';
 
               Color statusColor = AppColors.primary;
@@ -114,70 +127,76 @@ class MyAppointmentsScreen extends StatelessWidget {
                 statusColor = AppColors.success;
               }
 
-              return Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: AppSpacing.shadowSm,
+              return GestureDetector(
+                onTap: () => context.push(
+                  '/doctor/appointments/${apiAppt['id']}',
+                  extra: Map<String, dynamic>.from(apiAppt as Map),
                 ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: AppColors.doctorBg,
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: const Icon(
-                            Icons.person_rounded,
-                            color: AppColors.doctor,
-                            size: 26,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(name, style: AppTextStyles.labelLarge),
-                              const SizedBox(height: 2),
-                              Text(specialty, style: AppTextStyles.caption),
-                            ],
-                          ),
-                        ),
-                        StatusBadge(
-                          text: status.toUpperCase(),
-                          color: statusColor,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.extraLightGrey,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: AppSpacing.shadowSm,
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
                         children: [
-                          const Icon(
-                            Icons.calendar_today_rounded,
-                            size: 16,
-                            color: AppColors.primary,
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: AppColors.doctorBg,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(
+                              Icons.person_rounded,
+                              color: AppColors.doctor,
+                              size: 26,
+                            ),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '$dateStr, $timeStr',
-                            style: AppTextStyles.labelMedium,
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(name, style: AppTextStyles.labelLarge),
+                                const SizedBox(height: 2),
+                                Text(specialty, style: AppTextStyles.caption),
+                              ],
+                            ),
+                          ),
+                          StatusBadge(
+                            text: status.toUpperCase(),
+                            color: statusColor,
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.extraLightGrey,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_today_rounded,
+                              size: 16,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '$dateStr, $timeStr',
+                              style: AppTextStyles.labelMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

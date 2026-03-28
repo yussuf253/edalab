@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
@@ -28,12 +29,13 @@ class _GroceryCartScreenState extends State<GroceryCartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
     if (cartProvider.isHydrating) {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Grocery Cart'),
+          title: Text(l10n.t('grocery_cart.title')),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             onPressed: () => context.pop(),
@@ -51,7 +53,7 @@ class _GroceryCartScreenState extends State<GroceryCartScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Grocery Cart'),
+        title: Text(l10n.t('grocery_cart.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -61,7 +63,7 @@ class _GroceryCartScreenState extends State<GroceryCartScreen> {
             TextButton(
               onPressed: () => cartProvider.clearModuleCart('grocery'),
               child: Text(
-                'Clear',
+                l10n.t('cart.clear'),
                 style: AppTextStyles.labelMedium.copyWith(
                   color: AppColors.error,
                 ),
@@ -81,12 +83,12 @@ class _GroceryCartScreenState extends State<GroceryCartScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Your grocery cart is empty',
+                    l10n.t('grocery_cart.empty_title'),
                     style: AppTextStyles.h3.copyWith(color: AppColors.grey),
                   ),
                   const SizedBox(height: 16),
                   AppButton(
-                    text: 'Browse Groceries',
+                    text: l10n.t('grocery_cart.browse'),
                     width: 200,
                     color: AppColors.grocery,
                     onPressed: () => context.pop(),
@@ -138,25 +140,28 @@ class _GroceryCartScreenState extends State<GroceryCartScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _SumRow('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
+                        _SumRow(l10n.t('cart.subtotal'), '\$${subtotal.toStringAsFixed(2)}'),
                         _SumRow(
-                          'Delivery',
+                          l10n.t('cart.delivery'),
                           '\$${deliveryFee.toStringAsFixed(2)}',
                         ),
                         const Divider(height: 20),
                         _SumRow(
-                          'Total',
+                          l10n.t('cart.total'),
                           '\$${total.toStringAsFixed(2)}',
                           bold: true,
                         ),
                         const SizedBox(height: 16),
                         AppButton(
-                          text: 'Checkout • \$${total.toStringAsFixed(2)}',
+                          text: l10n.t(
+                            'cart.checkout_amount',
+                            params: {'amount': total.toStringAsFixed(2)},
+                          ),
                           color: AppColors.grocery,
                           onPressed: () async {
                             final allowed = await requireLoggedIn(
                               context,
-                              message: 'Please log in to continue to checkout.',
+                              message: l10n.t('cart.login_required'),
                             );
                             if (!context.mounted || !allowed) return;
                             context.push('/checkout');

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
@@ -65,6 +66,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final categories = _categories;
     final selectedVehicleIndex = _selectedVehicle >= categories.length
         ? 0
@@ -85,7 +87,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Choose a Ride'),
+        title: Text(l10n.t('ride_booking.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
@@ -113,7 +115,10 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Route: $routeDistance km • 12 min',
+                      l10n.t(
+                        'ride_booking.route_summary',
+                        params: {'distance': routeDistance.toStringAsFixed(1)},
+                      ),
                       style: AppTextStyles.bodySmall,
                     ),
                   ],
@@ -189,7 +194,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text('Choose Vehicle', style: AppTextStyles.h4),
+                  Text(l10n.t('ride_booking.choose_vehicle'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
                   Expanded(
                     child: _isLoading
@@ -242,7 +247,13 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                               style: AppTextStyles.labelLarge,
                                             ),
                                             Text(
-                                              '${cat.timeToArrive} away • ${cat.capacity} seats',
+                                              l10n.t(
+                                                'ride_booking.arrival_seats',
+                                                params: {
+                                                  'eta': cat.timeToArrive,
+                                                  'count': '${cat.capacity}',
+                                                },
+                                              ),
                                               style: AppTextStyles.caption,
                                             ),
                                           ],
@@ -287,7 +298,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                         GestureDetector(
                           onTap: _selectPayment,
                           child: Text(
-                            'Change',
+                            l10n.t('ride_booking.change'),
                             style: AppTextStyles.labelSmall.copyWith(
                               color: AppColors.primary,
                             ),
@@ -299,8 +310,12 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                   const SizedBox(height: 16),
                   SafeArea(
                     child: AppButton(
-                      text:
-                          'Confirm Ride • \$${estimatedRidePrice.toStringAsFixed(2)}',
+                      text: l10n.t(
+                        'ride_booking.confirm',
+                        params: {
+                          'amount': estimatedRidePrice.toStringAsFixed(2),
+                        },
+                      ),
                       color: AppColors.ride,
                       isLoading: _isSubmitting,
                       onPressed: () async {
@@ -309,7 +324,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                         }
                         final allowed = await requireLoggedIn(
                           context,
-                          message: 'Please log in to confirm your ride.',
+                          message: l10n.t('ride_booking.login_required'),
                         );
                         if (!context.mounted || !allowed) return;
                         final auth = context.read<AuthProvider>();
@@ -327,9 +342,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                           setState(() => _isSubmitting = false);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text(
-                                'Ride confirmed! Driver is on the way.',
-                              ),
+                              content: Text(l10n.t('ride_booking.success')),
                               backgroundColor: AppColors.success,
                               behavior: SnackBarBehavior.floating,
                               shape: RoundedRectangleBorder(
@@ -346,7 +359,12 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                           setState(() => _isSubmitting = false);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Failed to confirm ride: $e'),
+                              content: Text(
+                                l10n.t(
+                                  'ride_booking.failed',
+                                  params: {'error': '$e'},
+                                ),
+                              ),
                               backgroundColor: AppColors.error,
                             ),
                           );
@@ -365,6 +383,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
   }
 
   Future<void> _selectPayment() async {
+    final l10n = context.l10n;
     final selected = await showModalBottomSheet<int>(
       context: context,
       backgroundColor: AppColors.white,
@@ -379,7 +398,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Payment Method', style: AppTextStyles.h3),
+                Text(l10n.t('checkout.payment_method'), style: AppTextStyles.h3),
                 const SizedBox(height: 16),
                 ..._payments.asMap().entries.map(
                   (entry) => ListTile(

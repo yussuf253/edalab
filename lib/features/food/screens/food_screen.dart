@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
@@ -19,19 +20,19 @@ class FoodScreen extends StatefulWidget {
 
 class _FoodScreenState extends State<FoodScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedSort = 'Top Rated';
+  String _selectedSort = 'top_rated';
   String _searchQuery = '';
   List<RestaurantModel> _restaurants = RestaurantModel.sampleRestaurants;
   bool _isLoading = true;
 
-  final _sorts = ['Top Rated', 'Fastest', 'Free Delivery'];
+  final _sorts = ['top_rated', 'fastest', 'free_delivery'];
   final _quickCategories = const [
-    ('Pizza', Icons.local_pizza_rounded, AppColors.food),
-    ('Burger', Icons.lunch_dining_rounded, AppColors.shopping),
-    ('Sushi', Icons.set_meal_rounded, AppColors.secondary),
-    ('Chinese', Icons.ramen_dining_rounded, AppColors.primary),
-    ('Indian', Icons.dinner_dining_rounded, AppColors.pharmacy),
-    ('Mexican', Icons.local_fire_department_rounded, AppColors.accent),
+    ('pizza', Icons.local_pizza_rounded, AppColors.food),
+    ('burger', Icons.lunch_dining_rounded, AppColors.shopping),
+    ('sushi', Icons.set_meal_rounded, AppColors.secondary),
+    ('chinese', Icons.ramen_dining_rounded, AppColors.primary),
+    ('indian', Icons.dinner_dining_rounded, AppColors.pharmacy),
+    ('mexican', Icons.local_fire_department_rounded, AppColors.accent),
   ];
 
   @override
@@ -73,6 +74,7 @@ class _FoodScreenState extends State<FoodScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final cartItemCount = context.watch<CartProvider>().getModuleItemCount(
       'food',
     );
@@ -88,7 +90,7 @@ class _FoodScreenState extends State<FoodScreen> {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Food Delivery'),
+        title: Text(l10n.t('food.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -139,12 +141,12 @@ class _FoodScreenState extends State<FoodScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Discover restaurants and dishes',
+                    l10n.t('food.discovery_title'),
                     style: AppTextStyles.h4,
                   ),
                   const SizedBox(height: 12),
                   AppSearchBar(
-                    hint: 'Search restaurants, cuisines, dishes...',
+                    hint: l10n.t('food.search_hint'),
                     controller: _searchController,
                     onChanged: (value) =>
                         setState(() => _searchQuery = value.trim()),
@@ -178,9 +180,10 @@ class _FoodScreenState extends State<FoodScreen> {
                     .map(
                       (category) => _FoodCategory(
                         icon: category.$2,
-                        name: category.$1,
+                        name: l10n.t('food.category_${category.$1}'),
                         color: category.$3,
-                        onTap: () => _pickCuisine(category.$1),
+                        onTap: () =>
+                            _pickCuisine(l10n.t('food.category_${category.$1}')),
                       ),
                     )
                     .toList(),
@@ -212,9 +215,9 @@ class _FoodScreenState extends State<FoodScreen> {
                       child: Row(
                         children: [
                           Icon(
-                            sort == 'Fastest'
+                            sort == 'fastest'
                                 ? Icons.bolt_rounded
-                                : sort == 'Free Delivery'
+                                : sort == 'free_delivery'
                                 ? Icons.delivery_dining_rounded
                                 : Icons.star_rounded,
                             size: 16,
@@ -224,7 +227,7 @@ class _FoodScreenState extends State<FoodScreen> {
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            sort,
+                            _sortLabel(l10n, sort),
                             style: AppTextStyles.labelMedium.copyWith(
                               color: isSelected
                                   ? AppColors.white
@@ -242,7 +245,7 @@ class _FoodScreenState extends State<FoodScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text('Popular Nearby', style: AppTextStyles.h3),
+              child: Text(l10n.t('food.popular_nearby'), style: AppTextStyles.h3),
             ),
           ),
           if (_isLoading)
@@ -266,10 +269,10 @@ class _FoodScreenState extends State<FoodScreen> {
                         color: AppColors.mediumGrey,
                       ),
                       const SizedBox(height: 12),
-                      Text('No restaurants found', style: AppTextStyles.h4),
+                      Text(l10n.t('food.no_restaurants'), style: AppTextStyles.h4),
                       const SizedBox(height: 6),
                       Text(
-                        'Try another cuisine, clear the search, or switch sorting to keep exploring.',
+                        l10n.t('food.no_restaurants_subtitle'),
                         textAlign: TextAlign.center,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.grey,
@@ -340,7 +343,9 @@ class _FoodScreenState extends State<FoodScreen> {
                                       borderRadius: BorderRadius.circular(999),
                                     ),
                                     child: Text(
-                                      restaurant.isOpen ? 'Open' : 'Closed',
+                                      restaurant.isOpen
+                                          ? l10n.t('food.open')
+                                          : l10n.t('food.closed'),
                                       style: AppTextStyles.labelSmall.copyWith(
                                         color: restaurant.isOpen
                                             ? AppColors.success
@@ -423,8 +428,13 @@ class _FoodScreenState extends State<FoodScreen> {
                                   const SizedBox(width: 4),
                                   Text(
                                     restaurant.deliveryFee == 'Free'
-                                        ? 'Free delivery'
-                                        : 'Delivery ${restaurant.deliveryFee}',
+                                        ? l10n.t('food.free_delivery')
+                                        : l10n.t(
+                                            'food.delivery_fee',
+                                            params: {
+                                              'fee': restaurant.deliveryFee,
+                                            },
+                                          ),
                                     style: AppTextStyles.caption.copyWith(
                                       color: restaurant.deliveryFee == 'Free'
                                           ? AppColors.success
@@ -474,13 +484,13 @@ class _FoodScreenState extends State<FoodScreen> {
       return matchesQuery;
     }).toList();
 
-    if (_selectedSort == 'Fastest') {
+    if (_selectedSort == 'fastest') {
       filtered.sort(
         (a, b) => _deliveryMinutes(
           a.deliveryTime,
         ).compareTo(_deliveryMinutes(b.deliveryTime)),
       );
-    } else if (_selectedSort == 'Free Delivery') {
+    } else if (_selectedSort == 'free_delivery') {
       filtered.sort((a, b) {
         final aFree = a.deliveryFee == 'Free' ? 0 : 1;
         final bFree = b.deliveryFee == 'Free' ? 0 : 1;
@@ -491,6 +501,18 @@ class _FoodScreenState extends State<FoodScreen> {
     }
 
     return filtered;
+  }
+
+  String _sortLabel(AppLocalizations l10n, String sort) {
+    switch (sort) {
+      case 'fastest':
+        return l10n.t('food.sort_fastest');
+      case 'free_delivery':
+        return l10n.t('food.sort_free_delivery');
+      case 'top_rated':
+      default:
+        return l10n.t('food.sort_top_rated');
+    }
   }
 
   void _pickCuisine(String cuisine) {

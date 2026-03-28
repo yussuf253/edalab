@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
@@ -11,16 +12,16 @@ import '../../../core/widgets/app_shimmer.dart';
 
 class _CareCategory {
   final String id;
-  final String label;
-  final String subtitle;
+  final String labelKey;
+  final String subtitleKey;
   final IconData icon;
   final Color color;
   final List<String> keywords;
 
   const _CareCategory({
     required this.id,
-    required this.label,
-    required this.subtitle,
+    required this.labelKey,
+    required this.subtitleKey,
     required this.icon,
     required this.color,
     required this.keywords,
@@ -39,64 +40,64 @@ class _DoctorScreenState extends State<DoctorScreen> {
   final List<_CareCategory> _categories = const [
     _CareCategory(
       id: 'all',
-      label: 'All Care',
-      subtitle: 'Doctors and visits',
+      labelKey: 'doctor.all_care',
+      subtitleKey: 'doctor.all_care_subtitle',
       icon: Icons.favorite_border_rounded,
       color: AppColors.doctor,
       keywords: [],
     ),
     _CareCategory(
       id: 'nursing',
-      label: 'Nursing',
-      subtitle: 'Wound care',
+      labelKey: 'doctor.nursing',
+      subtitleKey: 'doctor.nursing_subtitle',
       icon: Icons.medical_services_rounded,
       color: AppColors.primary,
       keywords: ['nursing', 'wound', 'injection', 'elderly'],
     ),
     _CareCategory(
       id: 'physio',
-      label: 'Physiotherapy',
-      subtitle: 'Mobility rehab',
+      labelKey: 'doctor.physio',
+      subtitleKey: 'doctor.physio_subtitle',
       icon: Icons.accessibility_new_rounded,
       color: AppColors.secondary,
       keywords: ['physio', 'therapy', 'rehab', 'kine', 'back pain'],
     ),
     _CareCategory(
       id: 'mental',
-      label: 'Mental Care',
-      subtitle: 'Stress support',
+      labelKey: 'doctor.mental',
+      subtitleKey: 'doctor.mental_subtitle',
       icon: Icons.psychology_rounded,
       color: AppColors.homeServices,
       keywords: ['mental', 'stress', 'counseling', 'emotional'],
     ),
     _CareCategory(
       id: 'child',
-      label: 'Child Care',
-      subtitle: 'Pediatric follow-up',
+      labelKey: 'doctor.child',
+      subtitleKey: 'doctor.child_subtitle',
       icon: Icons.child_care_rounded,
       color: AppColors.shopping,
       keywords: ['pediatric', 'child', 'vaccination'],
     ),
     _CareCategory(
       id: 'specialist',
-      label: 'Specialists',
-      subtitle: 'Heart and skin',
+      labelKey: 'doctor.specialists',
+      subtitleKey: 'doctor.specialists_subtitle',
       icon: Icons.local_hospital_rounded,
       color: AppColors.ride,
       keywords: ['cardio', 'derma', 'neuro', 'ortho', 'specialist'],
     ),
     _CareCategory(
       id: 'elderly',
-      label: 'Elderly Care',
-      subtitle: 'Home monitoring',
+      labelKey: 'doctor.elderly',
+      subtitleKey: 'doctor.elderly_subtitle',
       icon: Icons.elderly_rounded,
       color: AppColors.hotel,
       keywords: ['elderly', 'home nursing', 'monitoring'],
     ),
     _CareCategory(
       id: 'recovery',
-      label: 'Recovery',
-      subtitle: 'Post-op support',
+      labelKey: 'doctor.recovery',
+      subtitleKey: 'doctor.recovery_subtitle',
       icon: Icons.healing_rounded,
       color: AppColors.food,
       keywords: ['rehab', 'recovery', 'wound', 'post', 'pain'],
@@ -165,7 +166,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
     context.push(
       '/doctor/professionals/${category.id}',
       extra: {
-        'label': category.label,
+        'label': context.l10n.t(category.labelKey),
         'keywords': category.keywords,
         'searchQuery': _searchQuery.trim(),
       },
@@ -180,6 +181,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final homeCareCount = _providers
         .where((provider) => provider.isHomeCareProvider)
         .length;
@@ -197,7 +199,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
       child: Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Home Care & Doctors'),
+        title: Text(l10n.t('doctor.title')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () {
@@ -215,7 +217,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: AppSearchBar(
-                hint: 'Search services or professionals...',
+                hint: l10n.t('doctor.search_hint'),
                 controller: _searchController,
                 onChanged: (value) => setState(() => _searchQuery = value),
               ),
@@ -242,7 +244,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Pick a care service, then browse available professionals.',
+                            l10n.t('doctor.hero_title'),
                             style: AppTextStyles.labelLarge.copyWith(
                               color: AppColors.white,
                               height: 1.25,
@@ -250,7 +252,13 @@ class _DoctorScreenState extends State<DoctorScreen> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            '$homeCareCount home care providers • $doctorCount doctors',
+                            l10n.t(
+                              'doctor.hero_counts',
+                              params: {
+                                'homeCount': '$homeCareCount',
+                                'doctorCount': '$doctorCount',
+                              },
+                            ),
                             style: AppTextStyles.caption.copyWith(
                               color: Colors.white70,
                             ),
@@ -280,7 +288,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
-              child: Text('Available Care Services', style: AppTextStyles.h3),
+              child: Text(l10n.t('doctor.available_services'), style: AppTextStyles.h3),
             ),
           ),
           if (_isLoading)
@@ -353,12 +361,18 @@ class _DoctorScreenState extends State<DoctorScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  category.label,
+                                  l10n.t(category.labelKey),
                                   style: AppTextStyles.labelLarge,
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${category.subtitle} • $count available',
+                                  l10n.t(
+                                    'doctor.available_count',
+                                    params: {
+                                      'subtitle': l10n.t(category.subtitleKey),
+                                      'count': '$count',
+                                    },
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppTextStyles.caption.copyWith(
@@ -385,7 +399,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
               child: Text(
-                'Tap a service to open the professionals screen and see contact details.',
+                l10n.t('doctor.tap_service'),
                 style: AppTextStyles.bodySmall.copyWith(
                   color: AppColors.grey,
                   height: 1.4,
@@ -413,7 +427,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
               ),
             ),
             child: Text(
-              'Browse All Professionals',
+              l10n.t('doctor.browse_all'),
               style: AppTextStyles.labelLarge.copyWith(color: AppColors.white),
             ),
           ),
