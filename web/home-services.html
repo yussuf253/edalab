@@ -319,10 +319,20 @@
             }
 
             async init() {
+                this.renderLoadingState();
                 await this.loadData();
                 this.setupHeroSearch();
                 this.renderServices();
                 this.renderProviders();
+            }
+
+            renderLoadingState() {
+                const searchContainer = document.getElementById('search-container');
+                if (searchContainer) {
+                    searchContainer.innerHTML = UIComponents.createSearchSkeleton();
+                }
+                document.getElementById('servicesGrid').innerHTML = UIComponents.createCategorySkeleton(6);
+                document.getElementById('providersGrid').innerHTML = UIComponents.createCardGridSkeleton(6);
             }
 
             setupHeroSearch() {

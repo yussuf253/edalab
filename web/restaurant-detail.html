@@ -4,180 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Details - Edalab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="css/main-styles.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/modules.css">
     <style>
-        .restaurant-hero {
-            height: 280px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .restaurant-hero img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .restaurant-header {
-            padding: 20px;
-            background: white;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 20px;
-        }
-
-        .restaurant-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: #1a1a1a;
-        }
-
-        .restaurant-meta {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            font-size: 13px;
-            color: #666;
-            margin-bottom: 12px;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .rating {
-            background: #f39c12;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 12px;
-        }
-
-        .restaurant-description {
-            font-size: 13px;
-            color: #666;
-            line-height: 1.5;
-            margin-bottom: 16px;
-        }
-
-        .menu-section {
-            background: white;
-            margin-bottom: 20px;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }
-
-        .menu-section-header {
-            padding: 16px 20px;
-            background: #f8f9fa;
-            border-bottom: 1px solid #eee;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .menu-item {
-            padding: 16px 20px;
-            border-bottom: 1px solid #f0f0f0;
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .menu-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .menu-item-image {
-            width: 60px;
-            height: 60px;
-            border-radius: 8px;
-            object-fit: cover;
-            flex-shrink: 0;
-            background: #f0f0f0;
-        }
-
-        .menu-item-content {
-            flex: 1;
-        }
-
-        .menu-item-name {
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 4px;
-            font-size: 14px;
-        }
-
-        .menu-item-description {
-            font-size: 12px;
-            color: #999;
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-
-        .menu-item-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .menu-item-price {
-            font-weight: 700;
-            color: #667eea;
-            font-size: 13px;
-        }
-
-        .add-to-cart-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .add-to-cart-btn:hover {
-            background: #764ba2;
-        }
-
-        .loading-skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin: 20px;
-            color: #1a1a1a;
-        }
-
-        .empty-state {
-            padding: 40px 20px;
-            text-align: center;
-            color: #999;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
+        .restaurant-detail-page {
+            --module-color: var(--food-c);
+            --module-bg: var(--food-bg);
         }
     </style>
 </head>
@@ -186,38 +21,58 @@
         <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
     </nav>
 
-    <!-- Restaurant Hero -->
-    <div class="restaurant-hero">
-        <img id="restaurantImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280' viewBox='0 0 400 280'%3E%3Crect width='400' height='280' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial,sans-serif' font-size='24' fill='%236b7280' text-anchor='middle' dy='.3em'%3ERestaurant%3C/text%3E%3C/svg%3E" alt="Restaurant">
-    </div>
+    <main class="detail-page restaurant-detail-page">
+        <div class="wrap">
+            <div class="detail-breadcrumbs">
+                <a href="edalab-website.html">Home</a>
+                <span>•</span>
+                <a href="food.html">Food</a>
+                <span>•</span>
+                <span id="restaurantBreadcrumb" class="detail-skel-line">Restaurant details</span>
+            </div>
 
-    <!-- Restaurant Header -->
-    <div class="restaurant-header">
-        <h1 class="restaurant-title" id="restaurantName">Loading...</h1>
-        
-        <div class="restaurant-meta">
-            <div class="meta-item">
-                <span class="rating" id="rating">4.5★</span>
-            </div>
-            <div class="meta-item">
-                ⏱️ <span id="deliveryTime">30-40 min</span>
-            </div>
-            <div class="meta-item">
-                📍 <span id="distance">2.5 km</span>
-            </div>
-            <div class="meta-item">
-                💵 <span id="minOrder">$5 min order</span>
+            <section class="detail-surface restaurant-hero-card">
+                <div class="restaurant-hero-layout">
+                    <div class="restaurant-hero-media">
+                        <img id="restaurantImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280' viewBox='0 0 400 280'%3E%3Crect width='400' height='280' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial,sans-serif' font-size='24' fill='%236b7280' text-anchor='middle' dy='.3em'%3ERestaurant%3C/text%3E%3C/svg%3E" alt="Restaurant">
+                    </div>
+                    <div class="restaurant-hero-copy">
+                        <div class="detail-eyebrow detail-skel-pill" id="restaurantCuisine">Restaurant</div>
+                        <h1 class="detail-title detail-skel-line" id="restaurantName">Loading...</h1>
+                        <p class="detail-subtitle detail-skel-line" id="restaurantDescription">Loading restaurant details...</p>
+                        <div class="detail-meta-row">
+                            <div class="detail-chip detail-skel-pill"><strong id="rating">4.5★</strong></div>
+                            <div class="detail-chip detail-skel-pill">⏱ <strong id="deliveryTime">30-40 min</strong></div>
+                            <div class="detail-chip detail-skel-pill">📍 <strong id="distance">2.5 km</strong></div>
+                            <div class="detail-chip detail-skel-pill">💵 <strong id="minOrder">$5 min order</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="restaurant-menu-layout">
+                <section class="restaurant-menu-section">
+                    <div class="restaurant-menu-header">
+                        <div class="detail-section-title">Menu</div>
+                        <h2 class="restaurant-menu-title">What’s cooking today</h2>
+                        <p class="restaurant-menu-subtitle">Browse dishes and add them straight into your food cart.</p>
+                    </div>
+                    <div id="menuContainer"></div>
+                </section>
+
+                <aside class="restaurant-summary-card">
+                    <div class="detail-section-title">Quick Summary</div>
+                    <div class="restaurant-summary-list">
+                        <div class="restaurant-summary-item"><span>Rating</span><strong id="summaryRating">4.5★</strong></div>
+                        <div class="restaurant-summary-item"><span>Delivery</span><strong id="summaryDeliveryTime">30-40 min</strong></div>
+                        <div class="restaurant-summary-item"><span>Distance</span><strong id="summaryDistance">2.5 km</strong></div>
+                        <div class="restaurant-summary-item"><span>Minimum</span><strong id="summaryMinOrder">$5 min order</strong></div>
+                    </div>
+                    <a href="cart.html" class="detail-btn-primary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">Open Cart</a>
+                </aside>
             </div>
         </div>
-
-        <p class="restaurant-description" id="restaurantDescription">Loading restaurant details...</p>
-    </div>
-
-    <!-- Menu Sections -->
-    <div id="menuContainer"></div>
-
-    <!-- Footer with CTA -->
-    <div style="height: 100px;"></div>
+    </main>
 
 
     <script src="js/api-client.js"></script>
@@ -272,6 +127,22 @@
             }
 
             async init() {
+                document.body.classList.add('detail-loading');
+                document.getElementById('menuContainer').innerHTML = `
+                    <div class="restaurant-menu-block">
+                        <div class="restaurant-menu-block-title">Featured</div>
+                        ${Array.from({ length: 3 }, () => `
+                            <div class="restaurant-menu-item" aria-hidden="true">
+                                <div class="module-skeleton-block" style="width:84px;height:84px;border-radius:18px;"></div>
+                                <div class="module-skeleton-group">
+                                    <div class="module-skeleton-block module-skeleton-title"></div>
+                                    <div class="module-skeleton-block module-skeleton-text mid"></div>
+                                    <div class="module-skeleton-block module-skeleton-button" style="width:88px;height:38px;"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
                 await this.loadRestaurantData();
                 this.setupUI();
                 this.updateCartCount();
@@ -316,6 +187,8 @@
                     RESTAURANT_FALLBACK_IMAGE;
 
                 // Update header info
+                document.getElementById('restaurantBreadcrumb').textContent = this.restaurant.name;
+                document.getElementById('restaurantCuisine').textContent = this.restaurant.cuisine || this.restaurant.type || 'Restaurant';
                 document.getElementById('restaurantName').textContent = this.restaurant.name;
                 document.getElementById('restaurantImage').src = restaurantImage;
                 document.getElementById('restaurantDescription').textContent = this.restaurant.description || '';
@@ -323,9 +196,14 @@
                 document.getElementById('deliveryTime').textContent = `${this.restaurant.deliveryTime || '30-40'} min`;
                 document.getElementById('distance').textContent = `${this.restaurant.distance || 2.5} km`;
                 document.getElementById('minOrder').textContent = `$${this.restaurant.minOrder || 5} min order`;
+                document.getElementById('summaryRating').textContent = `${this.restaurant.rating || 4.5}★`;
+                document.getElementById('summaryDeliveryTime').textContent = `${this.restaurant.deliveryTime || '30-40'} min`;
+                document.getElementById('summaryDistance').textContent = `${this.restaurant.distance || 2.5} km`;
+                document.getElementById('summaryMinOrder').textContent = `$${this.restaurant.minOrder || 5} min order`;
 
                 // Render menu sections
                 this.renderMenuSections();
+                document.body.classList.remove('detail-loading');
             }
 
             renderMenuSections() {
@@ -333,28 +211,28 @@
                 container.innerHTML = '';
 
                 if (!this.restaurant.menu || this.restaurant.menu.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🍽️</div><p>No menu items available</p></div>';
+                    container.innerHTML = '<div class="detail-empty"><div class="detail-empty-icon">🍽️</div><p>No menu items available</p></div>';
                     return;
                 }
 
                 this.restaurant.menu.forEach(section => {
                     const sectionEl = document.createElement('div');
-                    sectionEl.className = 'menu-section';
+                    sectionEl.className = 'restaurant-menu-block';
                     
-                    let html = `<div class="menu-section-header">${section.name}</div>`;
+                    let html = `<div class="restaurant-menu-block-title">${section.name}</div>`;
                     
                     if (section.items && section.items.length > 0) {
                         section.items.forEach(item => {
                             const itemImage = item.image || item.imageUrl || (item.images && item.images[0]) || DISH_FALLBACK_IMAGE;
                             html += `
-                                <div class="menu-item" onclick="restaurantDetail.openDishDetail('${item.id}', '${section.name}')">
-                                    <img src="${itemImage}" alt="${item.name}" class="menu-item-image">
-                                    <div class="menu-item-content">
-                                        <div class="menu-item-name">${item.name}</div>
-                                        <div class="menu-item-description">${item.description || ''}</div>
-                                        <div class="menu-item-footer">
-                                            <span class="menu-item-price">$${item.price}</span>
-                                            <button class="add-to-cart-btn" onclick="restaurantDetail.addToCart('${item.id}', '${item.name}', ${item.price}, '${this.restaurant.id}', '${this.restaurant.name}'); event.stopPropagation();">Add</button>
+                                <div class="restaurant-menu-item" onclick="restaurantDetail.openDishDetail('${item.id}', '${section.name}')">
+                                    <img src="${itemImage}" alt="${item.name}" class="restaurant-menu-item-image">
+                                    <div>
+                                        <div class="restaurant-menu-item-name">${item.name}</div>
+                                        <div class="restaurant-menu-item-description">${item.description || ''}</div>
+                                        <div class="restaurant-menu-item-footer">
+                                            <span class="restaurant-menu-item-price">$${item.price}</span>
+                                            <button class="restaurant-menu-item-btn" onclick="restaurantDetail.addToCart('${item.id}', '${item.name}', ${item.price}, '${this.restaurant.id}', '${this.restaurant.name}'); event.stopPropagation();">Add</button>
                                         </div>
                                     </div>
                                 </div>
@@ -397,17 +275,23 @@
 
             showEmptyState(message) {
                 document.getElementById('restaurantName').textContent = 'Restaurant unavailable';
+                document.getElementById('restaurantCuisine').textContent = 'Unavailable';
                 document.getElementById('restaurantDescription').textContent = message;
                 document.getElementById('restaurantImage').src = RESTAURANT_FALLBACK_IMAGE;
+                document.getElementById('summaryRating').textContent = 'Unavailable';
+                document.getElementById('summaryDeliveryTime').textContent = '-';
+                document.getElementById('summaryDistance').textContent = '-';
+                document.getElementById('summaryMinOrder').textContent = '-';
                 document.getElementById('menuContainer').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">❌</div>
+                    <div class="detail-empty">
+                        <div class="detail-empty-icon">❌</div>
                         <p>${message}</p>
                         <div style="margin-top: 16px;">
                             <a href="food.html" style="display: inline-block; padding: 10px 16px; background: #16a34a; color: white; text-decoration: none; border-radius: 10px; font-weight: 700;">Back to Food</a>
                         </div>
                     </div>
                 `;
+                document.body.classList.remove('detail-loading');
             }
         }
 

@@ -112,13 +112,21 @@
       }
 
       async init() {
+        UIComponents.mountUnifiedNavbar({ active: 'food', cartCountId: 'cart-count' });
+        this.renderLoadingState();
         await this.loadRestaurants();
         this.setupSearch();
         this.setupFilters();
         this.renderRestaurants();
         this.updateCartCount();
-        UIComponents.mountUnifiedNavbar({ active: 'food', cartCountId: 'cart-count' });
         stateManager.subscribe('cart', () => this.updateCartCount());
+      }
+
+      renderLoadingState() {
+        document.getElementById('search-container').innerHTML = UIComponents.createSearchSkeleton();
+        document.getElementById('filter-bar').innerHTML = UIComponents.createFilterSkeleton(4);
+        document.getElementById('restaurants-container').innerHTML = UIComponents.createCardGridSkeleton(8);
+        document.getElementById('pagination-container').innerHTML = '';
       }
 
       async loadRestaurants() {

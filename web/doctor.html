@@ -181,10 +181,17 @@
       }
 
       async init() {
+        UIComponents.mountUnifiedNavbar({ active: 'doctor' });
+        this.renderLoadingState();
         await this.loadDoctors();
         this.setupSearch();
         this.renderDoctors();
-        UIComponents.mountUnifiedNavbar({ active: 'doctor' });
+      }
+
+      renderLoadingState() {
+        document.getElementById('search-container').innerHTML = UIComponents.createSearchSkeleton();
+        document.getElementById('doctors-container').innerHTML = UIComponents.createCardGridSkeleton(8);
+        document.getElementById('pagination-container').innerHTML = '';
       }
 
       async loadDoctors() {

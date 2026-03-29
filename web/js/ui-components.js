@@ -4,8 +4,14 @@
  */
 
 const UIComponents = {
+  logoPath: 'assets/logo/logo.png',
+
   getImageSrc(item, fallback = 'https://via.placeholder.com/200x200') {
     return item?.imageUrl || item?.image || item?.images?.[0] || fallback;
+  },
+
+  getLogoMarkup() {
+    return `<img src="${this.logoPath}" alt="eDalab logo">`;
   },
 
   // ═══ PRODUCT CARD ═══
@@ -192,6 +198,77 @@ const UIComponents = {
       `;
     }
     return skeleton;
+  },
+
+  createSearchSkeleton() {
+    return `
+      <div class="module-skeleton-search" aria-hidden="true">
+        <div class="module-skeleton-block module-skeleton-input"></div>
+        <div class="module-skeleton-block module-skeleton-button"></div>
+      </div>
+    `;
+  },
+
+  createFilterSkeleton(count = 3) {
+    return `
+      <div class="module-skeleton-filter-grid" aria-hidden="true">
+        ${Array.from({ length: count }, () => `
+          <div class="module-skeleton-group">
+            <div class="module-skeleton-block module-skeleton-line sm" style="width: 42%;"></div>
+            <div class="module-skeleton-block module-skeleton-input"></div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  },
+
+  createCategorySkeleton(count = 6) {
+    return Array.from({ length: count }, () => `
+      <div class="module-skeleton-category-card" aria-hidden="true">
+        <div class="module-skeleton-block module-skeleton-category-icon"></div>
+        <div class="module-skeleton-block module-skeleton-title"></div>
+        <div class="module-skeleton-block module-skeleton-text short" style="margin-top: 12px;"></div>
+      </div>
+    `).join('');
+  },
+
+  createCardGridSkeleton(count = 6) {
+    return Array.from({ length: count }, () => `
+      <div class="module-skeleton-card" aria-hidden="true">
+        <div class="module-skeleton-block module-skeleton-media"></div>
+        <div class="module-skeleton-block module-skeleton-title"></div>
+        <div class="module-skeleton-block module-skeleton-text mid" style="margin-top: 12px;"></div>
+        <div class="module-skeleton-meta">
+          <div class="module-skeleton-block module-skeleton-line"></div>
+          <div class="module-skeleton-block module-skeleton-line"></div>
+          <div class="module-skeleton-block module-skeleton-line"></div>
+        </div>
+        <div class="module-skeleton-block module-skeleton-cta"></div>
+      </div>
+    `).join('');
+  },
+
+  createChoiceSkeleton(count = 3) {
+    return Array.from({ length: count }, () => `
+      <div class="module-skeleton-choice-card" aria-hidden="true">
+        <div class="module-skeleton-block module-skeleton-category-icon"></div>
+        <div class="module-skeleton-block module-skeleton-title"></div>
+        <div class="module-skeleton-block module-skeleton-text short" style="margin-top: 12px;"></div>
+      </div>
+    `).join('');
+  },
+
+  createListSkeleton(count = 3) {
+    return Array.from({ length: count }, () => `
+      <div class="module-skeleton-list-item" aria-hidden="true">
+        <div class="module-skeleton-list-meta">
+          <div class="module-skeleton-block module-skeleton-title"></div>
+          <div class="module-skeleton-block module-skeleton-text mid"></div>
+          <div class="module-skeleton-block module-skeleton-text short"></div>
+        </div>
+        <div class="module-skeleton-block module-skeleton-button"></div>
+      </div>
+    `).join('');
   },
 
   // ═══ SEARCH BAR ═══
@@ -390,6 +467,11 @@ const UIComponents = {
       if (logoText) {
         logoText.textContent = 'eDalab';
       }
+
+      const logoIcon = document.querySelector('.nav-logo-icon');
+      if (logoIcon) {
+        logoIcon.innerHTML = this.getLogoMarkup();
+      }
     }
 
     const user = stateManager.getUser();
@@ -494,7 +576,7 @@ const UIComponents = {
       <div class="nav-w nav-w-unified">
         <a class="nav-logo" href="edalab-website.html">
           <div class="nav-logo-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+            ${this.getLogoMarkup()}
           </div>
           <span>eDalab</span>
         </a>

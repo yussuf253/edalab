@@ -440,12 +440,22 @@
             }
 
             async init() {
+                this.renderLoadingState();
                 await this.loadRideCategories();
                 this.setupHeroSearch();
                 this.setupRideTypeSelector();
                 this.setupDatePicker();
-                this.loadActiveRides();
+                await this.loadActiveRides();
                 this.updateEstimate();
+            }
+
+            renderLoadingState() {
+                const searchContainer = document.getElementById('search-container');
+                if (searchContainer) {
+                    searchContainer.innerHTML = UIComponents.createSearchSkeleton();
+                }
+                document.getElementById('rideTypeSelector').innerHTML = UIComponents.createChoiceSkeleton(3);
+                document.getElementById('activeRidesContainer').innerHTML = UIComponents.createListSkeleton(2);
             }
 
             setupHeroSearch() {

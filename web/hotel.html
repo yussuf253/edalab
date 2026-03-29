@@ -239,9 +239,15 @@
       }
 
       init() {
+        UIComponents.mountUnifiedNavbar({ active: 'hotel' });
+        this.renderLoadingState();
         this.setupDatePickers();
         this.loadHotels();
-        UIComponents.mountUnifiedNavbar({ active: 'hotel' });
+      }
+
+      renderLoadingState() {
+        document.getElementById('hotels-container').innerHTML = UIComponents.createCardGridSkeleton(8);
+        document.getElementById('pagination-container').innerHTML = '';
       }
 
       setupDatePickers() {
@@ -263,6 +269,8 @@
           this.filteredHotels = [...this.hotels];
         } catch (error) {
           console.error('Error loading hotels:', error);
+        } finally {
+          this.renderHotels();
         }
       }
 

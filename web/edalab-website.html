@@ -14,6 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="css/main-styles.css"/>
+<link rel="stylesheet" href="css/components.css"/>
 <style>
 /* ═══════════════════════════════════════════
    eDalab — Brand: Green #1DB954-style vibrant
@@ -159,7 +160,8 @@ h1.hero-h{font-size:clamp(44px,5.5vw,80px);font-weight:800;margin-bottom:22px;co
 .pb-text .pb-t2{font-size:11px;color:rgba(255,255,255,0.75);margin-top:1px}
 .phone-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 12px;flex:1}
 .phone-icon{display:flex;flex-direction:column;align-items:center;gap:4px}
-.pi-box{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:18px}
+.pi-box{width:40px;height:40px;border-radius:12px;background:var(--g-light);display:flex;align-items:center;justify-content:center;font-size:18px}
+.pi-box img{width:22px;height:22px;object-fit:contain;display:block}
 .pi-label{font-size:9px;color:rgba(255,255,255,0.75);font-weight:600}
 
 /* Floating action cards */
@@ -221,6 +223,7 @@ h2.sec-h{font-size:clamp(32px,4vw,54px);font-weight:800;margin-bottom:10px}
   display:flex;align-items:center;justify-content:center;font-size:30px;
   position:relative;z-index:1;transition:transform .3s;
 }
+.svc-icon-wrap img{width:34px;height:34px;object-fit:contain;display:block}
 .svc-card:hover .svc-icon-wrap{transform:scale(1.1) rotate(-3deg)}
 .svc-name{font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;position:relative;z-index:1;margin-top:2px}
 .svc-count{font-size:12px;color:var(--sub);font-weight:600;position:relative;z-index:1}
@@ -551,14 +554,14 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
           <span style="font-size:32px;margin-left:auto">😊</span>
         </div>
         <div class="phone-grid">
-          <div class="phone-icon"><div class="pi-box">🍔</div><div class="pi-label">Food</div></div>
-          <div class="phone-icon"><div class="pi-box">🛍</div><div class="pi-label">Shopping</div></div>
-          <div class="phone-icon"><div class="pi-box">👨‍⚕️</div><div class="pi-label">Doctor</div></div>
-          <div class="phone-icon"><div class="pi-box">🏨</div><div class="pi-label">Hotel</div></div>
-          <div class="phone-icon"><div class="pi-box">🚕</div><div class="pi-label">Ride</div></div>
-          <div class="phone-icon"><div class="pi-box">💊</div><div class="pi-label">Pharmacy</div></div>
-          <div class="phone-icon"><div class="pi-box">🔧</div><div class="pi-label">Services</div></div>
-          <div class="phone-icon"><div class="pi-box">🧺</div><div class="pi-label">Laundry</div></div>
+          <div class="phone-icon"><div class="pi-box"><img src="assets/icons/food.png" alt="Food"></div><div class="pi-label">Food</div></div>
+          <div class="phone-icon"><div class="pi-box"><img src="assets/icons/shopping.png" alt="Shopping"></div><div class="pi-label">Shopping</div></div>
+          <div class="phone-icon"><div class="pi-box"><img src="assets/icons/doctor.png" alt="Doctor"></div><div class="pi-label">Doctor</div></div>
+          <div class="phone-icon"><div class="pi-box"><img src="assets/icons/hotel.png" alt="Hotel"></div><div class="pi-label">Hotel</div></div>
+          <div class="phone-icon"><div class="pi-box"><img src="assets/icons/car.png" alt="Ride"></div><div class="pi-label">Ride</div></div>
+          <div class="phone-icon"><div class="pi-box"><img src="assets/icons/pharmacy.png" alt="Pharmacy"></div><div class="pi-label">Pharmacy</div></div>
+          <div class="phone-icon"><div class="pi-box"><img src="assets/icons/repair-service.png" alt="Services"></div><div class="pi-label">Services</div></div>
+          <div class="phone-icon"><div class="pi-box"><img src="assets/icons/laundry.png" alt="Laundry"></div><div class="pi-label">Laundry</div></div>
         </div>
       </div>
 
@@ -762,7 +765,7 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
     <div class="ft-grid">
       <div class="ft-brand">
         <div class="ft-logo">
-          <div class="nav-logo-icon"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+          <div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div>
           e<span style="color:var(--g)">Dalab</span>
         </div>
         <p>Djibouti's #1 super-app. One platform for food, health, travel, services & more. Connecting your city, one delivery at a time.</p>
@@ -878,21 +881,22 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
 
 <!-- ══════════ SCRIPTS ══════════ -->
 <script src="js/state-manager.js"></script>
+<script src="js/api-client.js"></script>
 <script src="js/ui-components.js"></script>
 <script>
 /* ── DATA ── */
 const SVCS=[
-  {n:'Food',e:'🍔',c:'var(--food-c)',bg:'var(--food-bg)',cnt:'340+',tag:'',hover:'#FFF5F5'},
-  {n:'Shopping',e:'🛍',c:'var(--shop-c)',bg:'var(--shop-bg)',cnt:'200+',tag:'',hover:'#F8F5FF'},
-  {n:'Doctor',e:'👨‍⚕️',c:'var(--doc-c)',bg:'var(--doc-bg)',cnt:'120+',tag:'Book',hover:'#F0F8FF'},
-  {n:'Hotel',e:'🏨',c:'var(--hotel-c)',bg:'var(--hotel-bg)',cnt:'62+',tag:'',hover:'#FFFCF0'},
-  {n:'Ride',e:'🚕',c:'var(--ride-c)',bg:'var(--ride-bg)',cnt:'Fast',tag:'Live',hover:'#F0FEFF'},
-  {n:'Pharmacy',e:'💊',c:'var(--rx-c)',bg:'var(--rx-bg)',cnt:'85+',tag:'24/7',hover:'#F0FDF6'},
-  {n:'Services',e:'🔧',c:'var(--svc-c)',bg:'var(--svc-bg)',cnt:'300+',tag:'',hover:'#FFF8F2'},
-  {n:'Laundry',e:'🧺',c:'var(--wash-c)',bg:'var(--wash-bg)',cnt:'48+',tag:'Express',hover:'#F5F5FF'},
+  {n:'Food',icon:'assets/icons/food.png',c:'var(--food-c)',bg:'var(--food-bg)',cnt:'340+',tag:'',hover:'#FFF5F5'},
+  {n:'Shopping',icon:'assets/icons/shopping.png',c:'var(--shop-c)',bg:'var(--shop-bg)',cnt:'200+',tag:'',hover:'#F8F5FF'},
+  {n:'Doctor',icon:'assets/icons/doctor.png',c:'var(--doc-c)',bg:'var(--doc-bg)',cnt:'120+',tag:'Book',hover:'#F0F8FF'},
+  {n:'Hotel',icon:'assets/icons/hotel.png',c:'var(--hotel-c)',bg:'var(--hotel-bg)',cnt:'62+',tag:'',hover:'#FFFCF0'},
+  {n:'Ride',icon:'assets/icons/car.png',c:'var(--ride-c)',bg:'var(--ride-bg)',cnt:'Fast',tag:'Live',hover:'#F0FEFF'},
+  {n:'Pharmacy',icon:'assets/icons/pharmacy.png',c:'var(--rx-c)',bg:'var(--rx-bg)',cnt:'85+',tag:'24/7',hover:'#F0FDF6'},
+  {n:'Services',icon:'assets/icons/repair-service.png',c:'var(--svc-c)',bg:'var(--svc-bg)',cnt:'300+',tag:'',hover:'#FFF8F2'},
+  {n:'Laundry',icon:'assets/icons/laundry.png',c:'var(--wash-c)',bg:'var(--wash-bg)',cnt:'48+',tag:'Express',hover:'#F5F5FF'},
 ];
 
-const BIZS=[
+const FALLBACK_BIZS=[
   {id:0,n:'Le Goût de Djibouti',e:'🍽️',sub:'French-Djiboutian Fusion',r:'4.9',rv:'342',t:'20–30 min',d:'DJF 500',open:true,cat:'Food',bg:'linear-gradient(135deg,#FFF0EF,#FFE0DC)',
    menu:[{cat:'Popular',items:[
     {n:'Skudahkharis',d:'Spiced rice with chicken, raisins & fried onion',p:1500,e:'🍛'},
@@ -935,7 +939,9 @@ const BIZS=[
   ]}]},
 ];
 
-const FILTERS=['All','Food','Pharmacy','Hotel','Doctor','Laundry'];
+let BIZS=[...FALLBACK_BIZS];
+let FILTERS=['All'];
+let activeTrendingFilter='All';
 
 const TESTI=[
   {t:'NilaApp changed my life in Djibouti! I ordered meds at 2am and they arrived in 20 minutes. The live tracking is so accurate and reassuring.',n:'Amina Rashid',loc:'Plateau du Serpent',s:5,col:'#EF4444',mod:'💊 Pharmacy'},
@@ -964,8 +970,8 @@ function renderSvcs(){
   document.getElementById('svcs-grid').innerHTML=SVCS.map(s=>`
     <div class="svc-card" style="--svc-hover:${s.hover}" onclick="window.location.href='${moduleLinks[s.n] || '#'}'">
       ${s.tag?`<div class="svc-tag" style="background:${s.bg};color:${s.c}">${s.tag}</div>`:''}
-      <div class="svc-icon-wrap" style="background:${s.bg}">${s.e}</div>
-      <div class="svc-name" style="color:${s.c}">${s.n}</div>
+      <div class="svc-icon-wrap" style="background:var(--g-light)"><img src="${s.icon}" alt="${s.n}"></div>
+      <div class="svc-name" style="color:var(--g)">${s.n}</div>
       <div class="svc-count">${s.cnt} available</div>
     </div>
   `).join('');
@@ -974,15 +980,131 @@ function renderSvcs(){
 /* ── RENDER FILTERS ── */
 function renderFilters(){
   document.getElementById('filter-bar').innerHTML=FILTERS.map((f,i)=>`
-    <button class="fchip ${i===0?'on':''}" onclick="filterBiz('${f}',this)">${f}</button>
+    <button class="fchip ${f===activeTrendingFilter?'on':''}" onclick="filterBiz('${f}',this)">${f}</button>
   `).join('');
+}
+
+function renderTrendingLoading(){
+  document.getElementById('filter-bar').innerHTML=`
+    <div class="module-skeleton-filter-grid" aria-hidden="true" style="display:flex;gap:8px;overflow:hidden">
+      ${Array.from({length:5},()=>'<div class="module-skeleton-block module-skeleton-pill" style="width:92px;flex:0 0 92px"></div>').join('')}
+    </div>
+  `;
+  document.getElementById('biz-grid').innerHTML=UIComponents.createCardGridSkeleton(6);
+}
+
+function updateTrendingFilters(){
+  const categories = Array.from(new Set(BIZS.map((item) => item.cat).filter(Boolean)));
+  FILTERS = ['All', ...categories];
+}
+
+function getTrendingItems(cat='All'){
+  if(cat!=='All'){
+    return BIZS.filter((item)=>item.cat===cat);
+  }
+
+  const grouped = new Map();
+  BIZS.forEach((item) => {
+    if(!item.cat) return;
+    if(!grouped.has(item.cat)) grouped.set(item.cat, []);
+    grouped.get(item.cat).push(item);
+  });
+
+  return Array.from(grouped.values()).flatMap((items) => items.slice(0, 3));
+}
+
+async function loadTrendingData(){
+  try{
+    const [restaurantsRes, doctorsRes, hotelsRes, providersRes] = await Promise.all([
+      apiClient.getRestaurants({ limit: 4, skip: 0 }),
+      apiClient.getDoctors({ limit: 3, skip: 0 }),
+      apiClient.getHotels({ limit: 3, skip: 0 }),
+      apiClient.getHomeServiceProviders('', { limit: 3, skip: 0 }),
+    ]);
+
+    const restaurants = (Array.isArray(restaurantsRes) ? restaurantsRes : (restaurantsRes.data || [])).map((item) => ({
+      id: `food-${item.id}`,
+      sourceId: item.id,
+      n: item.name,
+      e: '🍽️',
+      sub: item.cuisine || item.type || 'Restaurant',
+      r: Number(item.rating || 4.5).toFixed(1),
+      rv: item.reviewCount || 0,
+      t: `${item.deliveryTime || '30-40'} min`,
+      d: item.deliveryFee ? `$${Number(item.deliveryFee).toFixed(2)}` : 'Free',
+      open: item.isOpen !== false,
+      cat: 'Food',
+      bg: 'linear-gradient(135deg,#FFF0EF,#FFE0DC)',
+      route: `restaurant-detail.html?id=${item.id}`,
+    }));
+
+    const doctors = (Array.isArray(doctorsRes) ? doctorsRes : (doctorsRes.data || [])).map((item) => ({
+      id: `doctor-${item.id}`,
+      sourceId: item.id,
+      n: item.name,
+      e: '🏥',
+      sub: `${item.specialty || 'Doctor'}${item.experience ? ` · ${item.experience}` : ''}`,
+      r: Number(item.rating || 4.7).toFixed(1),
+      rv: item.reviewCount || 0,
+      t: 'Book Visit',
+      d: item.consultationFee ? `$${Number(item.consultationFee).toFixed(2)}` : 'Available',
+      open: item.isAvailable !== false,
+      cat: 'Doctor',
+      bg: 'linear-gradient(135deg,#EFF6FF,#DBEAFE)',
+      route: `doctor.html?doctorId=${item.id}`,
+    }));
+
+    const hotels = (Array.isArray(hotelsRes) ? hotelsRes : (hotelsRes.data || [])).map((item) => ({
+      id: `hotel-${item.id}`,
+      sourceId: item.id,
+      n: item.name,
+      e: '🏨',
+      sub: item.location || item.description || 'Hotel',
+      r: Number(item.rating || 4.6).toFixed(1),
+      rv: item.reviewCount || 0,
+      t: 'Book Now',
+      d: item.pricePerNight ? `$${Number(item.pricePerNight).toFixed(2)}/night` : 'View rates',
+      open: true,
+      cat: 'Hotel',
+      bg: 'linear-gradient(135deg,#F5F3FF,#EDE9FE)',
+      route: `hotel.html?hotelId=${item.id}`,
+    }));
+
+    const providers = (Array.isArray(providersRes) ? providersRes : (providersRes.data || [])).map((item) => ({
+      id: `service-${item.id}`,
+      sourceId: item.id,
+      n: item.name,
+      e: '🔧',
+      sub: item.title || item.category?.name || 'Home Service',
+      r: Number(item.rating || 4.5).toFixed(1),
+      rv: item.reviewCount || 0,
+      t: 'Book Now',
+      d: item.startingPrice ? `$${Number(item.startingPrice).toFixed(2)} starting` : 'View details',
+      open: true,
+      cat: 'Services',
+      bg: 'linear-gradient(135deg,#FFF7ED,#FFEDD5)',
+      route: 'home-services.html',
+    }));
+
+    const realItems = [...restaurants, ...doctors, ...hotels, ...providers].filter((item) => item?.n);
+    if (realItems.length) {
+      BIZS = realItems;
+    } else {
+      BIZS = [...FALLBACK_BIZS];
+    }
+  } catch (error) {
+    console.error('Error loading trending data:', error);
+    BIZS = [...FALLBACK_BIZS];
+  }
+
+  updateTrendingFilters();
 }
 
 /* ── RENDER BUSINESSES ── */
 function renderBiz(list){
-  if(!list)list=BIZS;
+  if(!list)list=getTrendingItems(activeTrendingFilter);
   document.getElementById('biz-grid').innerHTML=list.map(b=>`
-    <div class="biz-card" onclick="openBiz(${b.id})">
+    <div class="biz-card" onclick="${b.route ? `window.location.href='${b.route}'` : `openBiz('${b.id}')`}">
       <div class="bc-thumb" style="background:${b.bg}">
         <div class="bc-emo">${b.e}</div>
         <div class="bc-logo">${b.e}</div>
@@ -995,7 +1117,7 @@ function renderBiz(list){
         <div class="bc-meta"><span class="bc-stars">★ ${b.r}</span><span>(${b.rv})</span><span>· ${b.sub}</span></div>
         <div class="bc-foot">
           <div class="bc-inf">⏱ ${b.t} · 🛵 ${b.d}</div>
-          <button class="bc-add" onclick="event.stopPropagation();openBiz(${b.id})">+</button>
+          <button class="bc-add" onclick="event.stopPropagation();${b.route ? `window.location.href='${b.route}'` : `openBiz('${b.id}')`}">${b.route ? '→' : '+'}</button>
         </div>
       </div>
     </div>
@@ -1003,9 +1125,10 @@ function renderBiz(list){
 }
 
 function filterBiz(cat,btn){
+  activeTrendingFilter=cat;
   document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'));
   btn.classList.add('on');
-  renderBiz(cat==='All'?BIZS:BIZS.filter(b=>b.cat===cat));
+  renderBiz(getTrendingItems(cat));
 }
 
 /* ── RENDER TESTIMONIALS ── */
@@ -1033,7 +1156,12 @@ function renderPartners(){
 /* ── OPEN STORE DRAWER ── */
 let cart={},cartTotal=0,activeBiz=null;
 function openBiz(id){
-  activeBiz=BIZS[id];
+  activeBiz=BIZS.find((item) => String(item.id)===String(id)) || BIZS[id];
+  if(!activeBiz)return;
+  if(activeBiz.route && !activeBiz.menu){
+    window.location.href=activeBiz.route;
+    return;
+  }
   cart={};cartTotal=0;
   document.getElementById('d-emo').textContent=activeBiz.e;
   document.getElementById('d-name').textContent=activeBiz.n;
@@ -1066,7 +1194,9 @@ function closeDrawer(){
 
 /* ── CART ── */
 function addCart(bizId,itemIdx){
-  const item=BIZS[bizId].menu[0].items[itemIdx];
+  const biz=BIZS.find((item) => String(item.id)===String(bizId)) || BIZS[bizId];
+  const item=biz?.menu?.[0]?.items?.[itemIdx];
+  if(!item)return;
   if(!cart[item.n])cart[item.n]={...item,qty:0};
   cart[item.n].qty++;cartTotal+=item.p;
   updateCart();popToast('Added: '+item.n,'🛒');
@@ -1131,9 +1261,10 @@ function scrollToBrowse(cat){
   document.getElementById('browse').scrollIntoView({behavior:'smooth'});
   const btn=[...document.querySelectorAll('.fchip')].find(b=>b.textContent===cat||b.textContent==='All');
   if(btn){
+    activeTrendingFilter = cat;
     document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'));
     btn.classList.add('on');
-    renderBiz(cat==='All'||cat==='Food'?BIZS:BIZS.filter(b=>b.cat===cat));
+    renderBiz(getTrendingItems(cat));
   }
 }
 
@@ -1161,7 +1292,11 @@ document.querySelectorAll('.au').forEach(el=>obs.observe(el));
 
 /* ── INIT ── */
 UIComponents.mountUnifiedNavbar({active:'home',logoutRedirect:'edalab-website.html'});
-renderSvcs();renderFilters();renderBiz();renderTesti();renderPartners();
+  renderSvcs();renderTesti();renderPartners();renderTrendingLoading();
+  loadTrendingData().finally(()=>{
+    renderFilters();
+    renderBiz();
+  });
 </script>
 </body>
 </html>

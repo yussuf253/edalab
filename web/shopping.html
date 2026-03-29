@@ -144,13 +144,26 @@
       }
 
       async init() {
+        UIComponents.mountUnifiedNavbar({ active: 'shopping', cartCountId: 'cart-count' });
+        this.renderLoadingState();
         await this.loadProducts();
         this.setupSearch();
         this.setupCategories();
         this.renderProducts();
         this.updateCartCount();
-        UIComponents.mountUnifiedNavbar({ active: 'shopping', cartCountId: 'cart-count' });
         stateManager.subscribe('cart', () => this.updateCartCount());
+      }
+
+      renderLoadingState() {
+        document.getElementById('search-container').innerHTML = UIComponents.createSearchSkeleton();
+        document.getElementById('categories-container').innerHTML = UIComponents.createCategorySkeleton(8);
+        document.getElementById('products-container').innerHTML = UIComponents.createCardGridSkeleton(8);
+        const categorySelect = document.getElementById('category-filter');
+        if (categorySelect) {
+          categorySelect.disabled = true;
+          categorySelect.innerHTML = '<option value="">Loading categories...</option>';
+        }
+        document.getElementById('pagination-container').innerHTML = '';
       }
 
       async loadCategories() {
@@ -203,6 +216,7 @@
 
       populateCategoryFilter() {
         const select = document.getElementById('category-filter');
+        select.disabled = false;
         select.innerHTML = '<option value="">All Categories</option>';
         this.categories.forEach((cat) => {
           const option = document.createElement('option');

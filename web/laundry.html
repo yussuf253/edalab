@@ -499,12 +499,22 @@
             }
 
             async init() {
+                this.renderLoadingState();
                 await this.loadServices();
                 this.setupHeroSearch();
                 this.renderServices();
                 this.setupDatePicker();
                 this.updatePrice();
-                this.loadOrders();
+                await this.loadOrders();
+            }
+
+            renderLoadingState() {
+                const searchContainer = document.getElementById('search-container');
+                if (searchContainer) {
+                    searchContainer.innerHTML = UIComponents.createSearchSkeleton();
+                }
+                document.getElementById('serviceOptions').innerHTML = UIComponents.createChoiceSkeleton(3);
+                document.getElementById('ordersContainer').innerHTML = UIComponents.createListSkeleton(2);
             }
 
             setupHeroSearch() {

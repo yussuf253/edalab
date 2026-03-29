@@ -4,245 +4,118 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dish Details - Edalab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="css/main-styles.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/modules.css">
     <style>
-        .detail-container {
-            max-width: 600px;
-            margin: 0 auto;
+        .food-detail-page {
+            --module-color: var(--food-c);
+            --module-bg: var(--food-bg);
         }
 
-        .dish-image-container {
-            width: 100%;
-            height: 300px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            position: relative;
+        .detail-customization-group + .detail-customization-group {
+            margin-top: 16px;
+        }
+
+        .detail-option-group {
+            border: 1px solid var(--border);
+            border-radius: 18px;
             overflow: hidden;
         }
 
-        .dish-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255,255,255,0.9);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            z-index: 10;
-        }
-
-        .dish-info {
-            padding: 20px;
-            background: white;
-        }
-
-        .dish-header {
+        .detail-option-item {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 16px;
-        }
-
-        .dish-name {
-            font-size: 22px;
-            font-weight: 700;
-            color: #1a1a1a;
-            flex: 1;
-        }
-
-        .dish-price {
-            font-size: 20px;
-            font-weight: 700;
-            color: #667eea;
-        }
-
-        .dish-meta {
-            display: flex;
             gap: 12px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            color: #666;
-        }
-
-        .meta-badge {
-            background: #f0f0f0;
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-
-        .dish-description {
-            font-size: 13px;
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .customization-section {
-            margin-bottom: 24px;
-        }
-
-        .section-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 12px;
-        }
-
-        .option-group {
-            background: #f8f9fa;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 12px;
-        }
-
-        .option-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            font-size: 13px;
-            cursor: pointer;
+            padding: 14px 16px;
+            border-bottom: 1px solid #edf0ed;
+            font-size: 14px;
+            color: var(--text);
         }
 
-        .option-item:last-child {
+        .detail-option-item:last-child {
             border-bottom: none;
-        }
-
-        .option-item input[type="radio"],
-        .option-item input[type="checkbox"] {
-            cursor: pointer;
-        }
-
-        .quantity-selector {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .qty-btn {
-            background: white;
-            border: 1px solid #ddd;
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .qty-btn:hover {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .qty-display {
-            font-size: 14px;
-            font-weight: 600;
-            min-width: 30px;
-            text-align: center;
-        }
-
-        .cart-total {
-            margin-left: auto;
-            font-size: 14px;
-            font-weight: 600;
-            color: #1a1a1a;
-        }
-
-        .add-cart-button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .add-cart-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
-        }
-
-        .add-cart-button:active {
-            transform: translateY(0);
-        }
-
-        .loading-skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
         }
     </style>
 </head>
 <body>
-    <div class="detail-container">
-        <!-- Image Section -->
-        <div class="dish-image-container">
-            <img id="dishImage" class="dish-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial,sans-serif' font-size='24' fill='%236b7280' text-anchor='middle' dy='.3em'%3EDish%3C/text%3E%3C/svg%3E" alt="Dish">
-            <button class="back-button" onclick="window.history.back()">←</button>
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    </nav>
+    <main class="detail-page food-detail-page">
+        <div class="wrap">
+            <div class="detail-breadcrumbs">
+                <a href="edalab-website.html">Home</a>
+                <span>•</span>
+                <a href="food.html">Food</a>
+                <span>•</span>
+                <span id="dishBreadcrumb" class="detail-skel-line">Dish details</span>
+            </div>
+
+            <div class="detail-shell">
+                <section class="detail-surface detail-media-card">
+                    <div class="detail-media-stage">
+                        <img id="dishImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial,sans-serif' font-size='24' fill='%236b7280' text-anchor='middle' dy='.3em'%3EDish%3C/text%3E%3C/svg%3E" alt="Dish">
+                        <button class="detail-float-btn detail-back-btn" onclick="window.history.back()">←</button>
+                        <button class="detail-float-btn detail-wishlist-btn" id="wishlistBtn" onclick="dishDetail.toggleWishlist()">♡</button>
+                    </div>
+                </section>
+
+                <div class="detail-content-stack">
+                    <section class="detail-surface detail-header-card">
+                        <div class="detail-eyebrow detail-skel-pill" id="dishContext">Menu item</div>
+                        <h1 class="detail-title detail-skel-line" id="dishName">Loading...</h1>
+                        <p class="detail-subtitle detail-skel-line" id="dishDescription">Loading dish details...</p>
+
+                        <div class="detail-price-row">
+                            <div class="detail-current-price detail-skel-line" id="dishPrice">$0</div>
+                        </div>
+
+                        <div class="detail-meta-row">
+                            <div class="detail-chip detail-skel-pill"><span id="ratingStars">★★★★★</span> <strong><span id="reviewCount">0</span> reviews</strong></div>
+                            <div class="detail-status-pill detail-skel-pill" id="availability">Available</div>
+                        </div>
+                    </section>
+
+                    <section class="detail-surface detail-section-card">
+                        <div class="detail-section-title">Dish Details</div>
+                        <div class="detail-spec-list">
+                            <div class="detail-spec-row"><span class="detail-spec-label">Calories</span><span class="detail-spec-value" id="dishCalories">0 cal</span></div>
+                            <div class="detail-spec-row"><span class="detail-spec-label">Cook Time</span><span class="detail-spec-value" id="dishCookTime">15 min</span></div>
+                            <div class="detail-spec-row"><span class="detail-spec-label">Rating</span><span class="detail-spec-value" id="dishRating">4.5★</span></div>
+                        </div>
+                    </section>
+
+                    <section class="detail-surface detail-section-card" id="customizationsCard" style="display:none;">
+                        <div class="detail-section-title">Customize Your Order</div>
+                        <div id="customizationsContainer"></div>
+                    </section>
+
+                    <aside class="detail-purchase-card">
+                        <div>
+                            <div class="detail-section-title">Quantity</div>
+                            <div class="detail-qty-bar">
+                                <span class="detail-skel-line">Choose your portion</span>
+                                <div class="detail-qty-controls">
+                                    <button class="detail-qty-btn" id="qtyMinus" onclick="dishDetail.decreaseQuantity()">−</button>
+                                    <div class="detail-qty-value" id="qtyDisplay">1</div>
+                                    <button class="detail-qty-btn" id="qtyPlus" onclick="dishDetail.increaseQuantity()">+</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-actions">
+                            <button class="detail-btn-primary detail-skel-button" id="addCartBtn" onclick="dishDetail.addToCart()">Add to Cart</button>
+                            <button class="detail-btn-secondary detail-skel-button" id="buyNowBtn" onclick="dishDetail.orderNow()">Order Now</button>
+                        </div>
+                    </aside>
+                </div>
+            </div>
         </div>
-
-        <!-- Info Section -->
-        <div class="dish-info">
-            <div class="dish-header">
-                <div class="dish-name" id="dishName">Loading...</div>
-                <div class="dish-price" id="dishPrice">$0</div>
-            </div>
-
-            <div class="dish-meta">
-                <span class="meta-badge" id="dishCalories">0 cal</span>
-                <span class="meta-badge" id="dishCookTime">15 min</span>
-                <span class="meta-badge" id="dishRating">4.5★</span>
-            </div>
-
-            <p class="dish-description" id="dishDescription">Loading dish details...</p>
-
-            <!-- Customization Options -->
-            <div id="customizationsContainer"></div>
-
-            <!-- Quantity Selector -->
-            <div class="quantity-selector">
-                <button class="qty-btn" id="qtyMinus" onclick="dishDetail.decreaseQuantity()">−</button>
-                <div class="qty-display" id="qtyDisplay">1</div>
-                <button class="qty-btn" id="qtyPlus" onclick="dishDetail.increaseQuantity()">+</button>
-                <div class="cart-total" id="cartTotal">$0</div>
-            </div>
-
-            <!-- Add to Cart Button -->
-            <button class="add-cart-button" id="addCartBtn" onclick="dishDetail.addToCart()">
-                Add to Cart
-            </button>
-        </div>
-    </div>
+    </main>
 
     <script src="js/api-client.js"></script>
     <script src="js/state-manager.js"></script>
@@ -283,12 +156,22 @@
                 this.restaurant = null;
                 this.quantity = 1;
                 this.selectedOptions = {};
+                this.isInWishlist = false;
                 this.init();
             }
 
             async init() {
+                document.body.classList.add('detail-loading');
+                document.getElementById('customizationsContainer').innerHTML = `
+                    <div class="module-skeleton-group" aria-hidden="true">
+                        <div class="module-skeleton-block module-skeleton-line lg" style="width:42%;"></div>
+                        <div class="module-skeleton-block module-skeleton-input"></div>
+                        <div class="module-skeleton-block module-skeleton-input"></div>
+                    </div>
+                `;
                 await this.loadData();
                 this.setupUI();
+                this.checkWishlistStatus();
                 this.updateTotal();
             }
 
@@ -324,12 +207,14 @@
 
             setupUI() {
                 if (!this.dish) {
-                    document.querySelector('.dish-info').innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Dish not found</div>';
+                    document.querySelector('.detail-content-stack').innerHTML = '<div class="detail-surface detail-empty"><div class="detail-empty-icon">❌</div><p>Dish not found</p></div>';
+                    document.body.classList.remove('detail-loading');
                     return;
                 }
 
                 // Update basic info
                 document.getElementById('dishName').textContent = this.dish.name;
+                document.getElementById('dishBreadcrumb').textContent = this.dish.name;
                 document.getElementById('dishImage').src =
                     this.dish.image ||
                     this.dish.imageUrl ||
@@ -340,11 +225,19 @@
                 document.getElementById('dishCalories').textContent = `${this.dish.calories || 0} cal`;
                 document.getElementById('dishCookTime').textContent = `${this.dish.cookTime || 15} min`;
                 document.getElementById('dishRating').textContent = `${this.dish.rating || 4.5}★`;
+                document.getElementById('ratingStars').textContent = '★'.repeat(Math.floor(this.dish.rating || 4.5)).padEnd(5, '☆');
+                document.getElementById('reviewCount').textContent = this.dish.reviewCount || this.restaurant?.reviewCount || 0;
+                document.getElementById('dishContext').textContent = `${this.restaurant?.name || 'Restaurant'} · ${this.categoryName}`;
+                document.getElementById('addCartBtn').textContent = `Add to Cart • $${(this.dish.price * this.quantity).toFixed(2)}`;
 
                 // Render customization options if available
                 if (this.dish.customizations && this.dish.customizations.length > 0) {
+                    document.getElementById('customizationsCard').style.display = 'block';
                     this.renderCustomizations();
+                } else {
+                    document.getElementById('customizationsContainer').innerHTML = '';
                 }
+                document.body.classList.remove('detail-loading');
             }
 
             renderCustomizations() {
@@ -355,16 +248,16 @@
                     const isMultiple = customization.type === 'multiple';
                     const sectionId = `custom_${index}`;
                     
-                    let html = `<div class="customization-section">
-                        <div class="section-title">${customization.name}${customization.required ? ' *' : ''}</div>
-                        <div class="option-group">`;
+                    let html = `<div class="detail-customization-group">
+                        <div class="detail-section-title" style="margin-bottom:12px;color:var(--text);letter-spacing:0;text-transform:none;font-size:15px;">${customization.name}${customization.required ? ' *' : ''}</div>
+                        <div class="detail-option-group">`;
 
                     customization.options?.forEach(option => {
                         const inputId = `${sectionId}_${option}`;
                         const inputType = isMultiple ? 'checkbox' : 'radio';
                         
                         html += `
-                            <label class="option-item">
+                            <label class="detail-option-item">
                                 <div style="flex: 1;">
                                     <span>${option}</span>
                                 </div>
@@ -411,7 +304,40 @@
             updateTotal() {
                 const total = this.dish.price * this.quantity;
                 document.getElementById('qtyDisplay').textContent = this.quantity;
-                document.getElementById('cartTotal').textContent = `$${total.toFixed(2)}`;
+                document.getElementById('addCartBtn').textContent = `Add to Cart • $${total.toFixed(2)}`;
+                document.getElementById('buyNowBtn').textContent = `Order Now • $${total.toFixed(2)}`;
+            }
+
+            checkWishlistStatus() {
+                this.isInWishlist = stateManager.isInWishlist(this.dishId);
+                this.updateWishlistBtn();
+            }
+
+            toggleWishlist() {
+                if (!this.dish) return;
+                if (this.isInWishlist) {
+                    stateManager.removeFromWishlist(this.dishId);
+                } else {
+                    stateManager.addToWishlist({
+                        id: this.dishId,
+                        name: this.dish.name,
+                        price: this.dish.price,
+                        image: this.dish.image || this.dish.imageUrl || (this.dish.images && this.dish.images[0]),
+                        moduleType: 'FOOD',
+                        vendorId: this.restaurant?.id,
+                        vendorName: this.restaurant?.name,
+                    });
+                }
+                this.isInWishlist = !this.isInWishlist;
+                this.updateWishlistBtn();
+                UIComponents.showToast(this.isInWishlist ? 'Added to wishlist' : 'Removed from wishlist');
+            }
+
+            updateWishlistBtn() {
+                const btn = document.getElementById('wishlistBtn');
+                if (!btn) return;
+                btn.textContent = this.isInWishlist ? '❤' : '♡';
+                btn.classList.toggle('active', this.isInWishlist);
             }
 
             addToCart() {
@@ -438,8 +364,13 @@
                     window.location.href = 'cart.html';
                 }, 1000);
             }
+
+            orderNow() {
+                this.addToCart();
+            }
         }
 
+        UIComponents.mountUnifiedNavbar({ active: 'food', cartCountId: 'navCartCount' });
         const dishDetail = new DishDetailManager();
     </script>
 </body>
