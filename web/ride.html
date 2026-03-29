@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ride - eDalab</title>
+    <meta name="description" content="Book a ride with eDalab. Fast, safe, and affordable transportation.">
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/modules.css">
+    <style>
+        .ride-hero {
+            background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .ride-hero h1 {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .ride-hero p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .ride-booking-form {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #06B6D4;
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .ride-type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .ride-type-btn {
+            padding: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .ride-type-btn:hover {
+            border-color: #06B6D4;
+            background: #f0f9ff;
+        }
+
+        .ride-type-btn.active {
+            border-color: #06B6D4;
+            background: #06B6D4;
+            color: white;
+        }
+
+        .ride-type-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .ride-type-name {
+            font-size: 13px;
+        }
+
+        .ride-type-price {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .estimate-section {
+            background: #f8f9ff;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .estimate-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .estimate-total {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #ddd;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .book-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .book-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4);
+        }
+
+        .book-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .ride-info {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .ride-info h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .info-icon {
+            font-size: 20px;
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .active-rides {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .active-rides h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .ride-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ride-card-info {
+            flex: 1;
+        }
+
+        .ride-card-from {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .ride-card-to {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .ride-card-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-confirmed {
+            background: #dcfce7;
+            color: #22c55e;
+        }
+
+        .status-active {
+            background: #cffafe;
+            color: #06b6d4;
+        }
+
+        .status-completed {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .ride-card-action {
+            padding: 8px 16px;
+            background: #06B6D4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .ride-card-action:hover {
+            background: #0891B2;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="ride-hero">
+        <div class="wrap">
+            <h1>Book Your Ride 🚗</h1>
+            <p>Fast, safe, and affordable transportation</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
+        <!-- Booking Form -->
+        <div class="ride-booking-form">
+            <h2 style="margin-bottom: 20px;">Book a Ride</h2>
+
+            <!-- Ride Type Selection -->
+            <label style="display: block; margin-bottom: 12px; font-weight: 600;">Select Ride Type</label>
+            <div class="ride-type-selector" id="rideTypeSelector"></div>
+
+            <!-- Pickup Location -->
+            <div class="form-group">
+                <label>Pickup Location</label>
+                <input type="text" id="pickupLocation" placeholder="Enter pickup address" required>
+            </div>
+
+            <!-- Dropoff Location -->
+            <div class="form-group">
+                <label>Dropoff Location</label>
+                <input type="text" id="dropoffLocation" placeholder="Enter destination address" required>
+            </div>
+
+            <!-- Pickup Time -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Pickup Date</label>
+                    <input type="date" id="pickupDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Pickup Time</label>
+                    <input type="time" id="pickupTime" required>
+                </div>
+            </div>
+
+            <!-- Passenger Count -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Passengers</label>
+                    <select id="passengerCount" onchange="rideModule.updateEstimate()">
+                        <option value="1">1 Passenger</option>
+                        <option value="2">2 Passengers</option>
+                        <option value="3">3 Passengers</option>
+                        <option value="4">4 Passengers</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Special Requests</label>
+                    <input type="text" id="specialRequests" placeholder="Luggage, pets, etc.">
+                </div>
+            </div>
+
+            <!-- Estimate Section -->
+            <div class="estimate-section">
+                <div class="estimate-item">
+                    <span>Base Fare</span>
+                    <span id="baseFare">$5.00</span>
+                </div>
+                <div class="estimate-item">
+                    <span>Distance Estimate</span>
+                    <span id="distanceFare">$0.00</span>
+                </div>
+                <div class="estimate-item">
+                    <span>Surge Pricing</span>
+                    <span id="surgeFare">0%</span>
+                </div>
+                <div class="estimate-total">
+                    <span>Estimated Total</span>
+                    <span id="estimatedTotal">$5.00</span>
+                </div>
+            </div>
+
+            <!-- Book Button -->
+            <button class="book-button" id="bookButton" onclick="rideModule.bookRide()">Book Ride Now</button>
+        </div>
+
+        <!-- Info Section -->
+        <div class="ride-info">
+            <h3>Why Choose eDalab Rides?</h3>
+            <div class="info-item">
+                <div class="info-icon">✓</div>
+                <div>Verified drivers with excellent ratings</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon">💰</div>
+                <div>Transparent pricing with no hidden charges</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon">🔒</div>
+                <div>Safe and secure rides with trip tracking</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon">⭐</div>
+                <div>Rate your driver and leave feedback</div>
+            </div>
+        </div>
+
+        <!-- Active Rides -->
+        <div class="active-rides">
+            <h3>Your Active Rides</h3>
+            <div id="activeRidesContainer"></div>
+        </div>
+    </main>
+    <script src="js/api-client.js"></script>
+    <script src="js/state-manager.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script>
+        class RideModule {
+            constructor() {
+                this.selectedRideType = null;
+                this.rideTypes = [];
+                this.init();
+            }
+
+            async init() {
+                await this.loadRideCategories();
+                this.setupRideTypeSelector();
+                this.setupDatePicker();
+                this.loadActiveRides();
+                this.updateEstimate();
+                UIComponents.mountUnifiedNavbar({ active: 'ride' });
+            }
+
+            async loadRideCategories() {
+                try {
+                    const data = await apiClient.getRideCategories();
+                    this.rideTypes = Array.isArray(data) ? data : (data.data || []);
+                } catch (error) {
+                    console.error('Error loading ride categories:', error);
+                    this.rideTypes = [];
+                }
+
+                if (!this.rideTypes.length) {
+                    this.rideTypes = [
+                        { id: 'ride-economy', name: 'Economy', description: 'Standard ride', capacity: 4, basePrice: 5, pricePerMile: 1.5, timeToArrive: '5 min' },
+                        { id: 'ride-comfort', name: 'Comfort', description: 'Premium vehicle', capacity: 4, basePrice: 7, pricePerMile: 2, timeToArrive: '7 min' },
+                        { id: 'ride-xl', name: 'XL', description: 'Up to 6 passengers', capacity: 6, basePrice: 10, pricePerMile: 2.5, timeToArrive: '9 min' }
+                    ];
+                }
+
+                this.selectedRideType = this.rideTypes[0]?.id || null;
+            }
+
+            getRideIcon(rideType) {
+                if ((rideType.capacity || 0) >= 6) return '🚐';
+                if ((rideType.name || '').toLowerCase().includes('comfort')) return '🚙';
+                return '🚗';
+            }
+
+            getSelectedRide() {
+                return this.rideTypes.find((rideType) => rideType.id === this.selectedRideType) || this.rideTypes[0];
+            }
+
+            estimateDistanceKm(pickup, dropoff) {
+                const source = `${pickup || ''}${dropoff || ''}`.trim();
+                if (!source) return 5;
+                const base = Math.max(4, Math.ceil(source.length / 8));
+                return Math.min(base, 25);
+            }
+
+            setupRideTypeSelector() {
+                const container = document.getElementById('rideTypeSelector');
+                container.innerHTML = this.rideTypes.map((rideType) => `
+                        <button class="ride-type-btn ${rideType.id === this.selectedRideType ? 'active' : ''}" 
+                                onclick="rideModule.selectRideType('${rideType.id}')">
+                            <div class="ride-type-icon">${this.getRideIcon(rideType)}</div>
+                            <div class="ride-type-name">${rideType.name}</div>
+                            <div class="ride-type-price">$${Number(rideType.basePrice || 0).toFixed(2)}</div>
+                        </button>
+                    `).join('');
+            }
+
+            selectRideType(type) {
+                this.selectedRideType = type;
+                this.setupRideTypeSelector();
+                this.updateEstimate();
+            }
+
+            setupDatePicker() {
+                const today = new Date();
+                const dateInput = document.getElementById('pickupDate');
+                const dateString = today.toISOString().split('T')[0];
+                dateInput.min = dateString;
+                dateInput.value = dateString;
+
+                const timeInput = document.getElementById('pickupTime');
+                const hours = String(today.getHours()).padStart(2, '0');
+                const minutes = String(today.getMinutes()).padStart(2, '0');
+                timeInput.value = `${hours}:${minutes}`;
+            }
+
+            updateEstimate() {
+                const selectedRide = this.getSelectedRide();
+                if (!selectedRide) return;
+
+                const pickup = document.getElementById('pickupLocation').value.trim();
+                const dropoff = document.getElementById('dropoffLocation').value.trim();
+                const passengerCount = parseInt(document.getElementById('passengerCount').value, 10);
+                const basePrice = Number(selectedRide.basePrice || 0);
+                const pricePerKm = Number(selectedRide.pricePerMile || 0);
+                const distanceKm = this.estimateDistanceKm(pickup, dropoff);
+                const distanceFare = distanceKm * pricePerKm;
+                const extraPassengerFare = Math.max(0, passengerCount - 1) * 0.75;
+                const surgePricing = pickup && dropoff ? 0 : 0;
+
+                const subtotal = basePrice + distanceFare + extraPassengerFare;
+                const surgeAmount = subtotal * surgePricing;
+                const total = subtotal + surgeAmount;
+
+                document.getElementById('baseFare').textContent = `$${basePrice.toFixed(2)}`;
+                document.getElementById('distanceFare').textContent = `$${distanceFare.toFixed(2)} (${distanceKm}km)`;
+                document.getElementById('surgeFare').textContent = surgePricing > 0 ? `+${(surgePricing * 100).toFixed(0)}%` : 'None';
+                document.getElementById('estimatedTotal').textContent = `$${total.toFixed(2)}`;
+            }
+
+            async bookRide() {
+                const pickup = document.getElementById('pickupLocation').value;
+                const dropoff = document.getElementById('dropoffLocation').value;
+                const date = document.getElementById('pickupDate').value;
+                const time = document.getElementById('pickupTime').value;
+                const passengers = document.getElementById('passengerCount').value;
+                const specialRequests = document.getElementById('specialRequests').value;
+
+                if (!pickup || !dropoff || !date || !time) {
+                    UIComponents.showToast('Please fill in all required fields', 'error');
+                    return;
+                }
+
+                const button = document.getElementById('bookButton');
+                button.disabled = true;
+                button.textContent = 'Booking...';
+
+                try {
+                    const selectedRide = this.getSelectedRide();
+                    const estimatedFare = parseFloat(document.getElementById('estimatedTotal').textContent.replace('$', ''));
+                    const user = StateManager.getUser();
+                    let rideData = {
+                        id: `RIDE${Date.now()}`,
+                        module: 'ride',
+                        moduleType: 'RIDE',
+                        rideType: this.selectedRideType,
+                        rideCategoryId: selectedRide?.id,
+                        pickupLocation: pickup,
+                        dropoffLocation: dropoff,
+                        pickupDateTime: `${date}T${time}`,
+                        passengerCount: parseInt(passengers, 10),
+                        specialRequests: specialRequests || '',
+                        estimatedFare,
+                        subtotal: estimatedFare,
+                        tax: 0,
+                        deliveryFee: 0,
+                        discount: 0,
+                        total: estimatedFare,
+                        status: 'confirmed',
+                        createdAt: new Date().toISOString(),
+                        address: { street: dropoff, city: '' },
+                        items: [
+                            {
+                                id: `ride-item-${Date.now()}`,
+                                name: selectedRide?.name || 'Ride',
+                                quantity: 1,
+                                price: estimatedFare,
+                            }
+                        ],
+                        metadata: {
+                            pickup,
+                            dropoff,
+                            passengers: parseInt(passengers, 10),
+                        }
+                    };
+
+                    if (user?.id && selectedRide?.id) {
+                        try {
+                            const backendRide = await apiClient.requestRide({
+                                userId: user.id,
+                                rideCategoryId: selectedRide.id,
+                                pickupLabel: pickup,
+                                dropoffLabel: dropoff,
+                                distanceKm: this.estimateDistanceKm(pickup, dropoff),
+                                estimatedFare,
+                                tax: 0,
+                                total: estimatedFare,
+                                etaLabel: selectedRide.timeToArrive || '5 min',
+                                vehicleName: selectedRide.name,
+                            });
+
+                            rideData = {
+                                ...rideData,
+                                ...backendRide,
+                                id: backendRide.id || rideData.id,
+                                status: String(backendRide.status || rideData.status).toLowerCase(),
+                                metadata: {
+                                    pickup,
+                                    dropoff,
+                                    passengers: parseInt(passengers, 10),
+                                },
+                            };
+                        } catch (error) {
+                            console.error('Error persisting ride to backend:', error);
+                        }
+                    }
+
+                    StateManager.addOrder(rideData);
+                    UIComponents.showToast('Ride booked successfully!', 'success');
+                    document.getElementById('pickupLocation').value = '';
+                    document.getElementById('dropoffLocation').value = '';
+                    document.getElementById('specialRequests').value = '';
+                    
+                    setTimeout(() => {
+                        window.location.href = `tracking.html?rideId=${rideData.id}`;
+                    }, 1000);
+                } catch (error) {
+                    console.error('Error booking ride:', error);
+                    UIComponents.showToast('Failed to book ride', 'error');
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'Book Ride Now';
+                }
+            }
+
+            async loadActiveRides() {
+                try {
+                    const rides = StateManager.getOrders()
+                        .filter((entry) => entry.module === 'ride' || entry.moduleType === 'RIDE')
+                        .slice(0, 5)
+                        .map((ride) => ({
+                            id: ride.id,
+                            from: ride.metadata?.pickup || ride.pickupLocation || 'Pickup',
+                            to: ride.metadata?.dropoff || ride.dropoffLocation || 'Destination',
+                            status: ride.status === 'delivered' ? 'completed' : (ride.status || 'confirmed'),
+                            pickupTime: ride.pickupDateTime || ride.createdAt,
+                            driver: 'eDalab Driver'
+                        }));
+
+                    this.renderActiveRides(rides);
+                } catch (error) {
+                    console.error('Error loading active rides:', error);
+                }
+            }
+
+            renderActiveRides(rides) {
+                const container = document.getElementById('activeRidesContainer');
+                
+                if (!rides || rides.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🚕</div><p>No active rides</p></div>';
+                    return;
+                }
+
+                let html = '';
+                rides.forEach(ride => {
+                    const statusClass = `status-${ride.status}`;
+                    html += `
+                        <div class="ride-card">
+                            <div class="ride-card-info">
+                                <div class="ride-card-from">📍 ${ride.from}</div>
+                                <div class="ride-card-to">📍 ${ride.to}</div>
+                                <span class="ride-card-status ${statusClass}">${ride.status.toUpperCase()}</span>
+                            </div>
+                            <button class="ride-card-action" onclick="window.location.href='tracking.html?rideId=${ride.id}'">
+                                Track
+                            </button>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+        }
+
+        const rideModule = new RideModule();
+    </script>
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Shopping Cart - eDalab</title>
+  <meta name="description" content="Review and checkout your eDalab shopping cart."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main-styles.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <link rel="stylesheet" href="css/modules.css"/>
+  <style>
+    .cart-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .cart-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .cart-items {
+      background: white;
+      border-radius: var(--r-lg);
+      border: 1.5px solid var(--border);
+      padding: 20px;
+    }
+
+    .cart-section-title {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .cart-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+    }
+
+    .cart-empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .cart-empty-text {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .cart-summary {
+      background: white;
+      border-radius: var(--r-lg);
+      border: 1.5px solid var(--border);
+      padding: 20px;
+      position: sticky;
+      top: 90px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .summary-row-total {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-top: 16px;
+      padding-bottom: 16px;
+      border-top: 2px solid var(--border);
+      border-bottom: 2px solid var(--border);
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--g);
+    }
+
+    .checkout-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--g-grad);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 8px;
+    }
+
+    .checkout-btn:hover {
+      transform: scale(1.02);
+      box-shadow: var(--sh-green);
+    }
+
+    .continue-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--g-light);
+      color: var(--g);
+      border: 1.5px solid var(--g);
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .continue-btn:hover {
+      background: var(--g);
+      color: white;
+    }
+
+    .promo-section {
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .promo-input {
+      display: flex;
+      gap: 8px;
+    }
+
+    .promo-input input {
+      flex: 1;
+      padding: 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .promo-input button {
+      padding: 10px 12px;
+      background: var(--g);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .modules-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--border);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .modules-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .module-tab {
+      padding: 10px 16px;
+      background: none;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--muted);
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .module-tab.active {
+      color: var(--g);
+      border-bottom-color: var(--g);
+    }
+
+    .module-tab:hover {
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav id="nav" data-static-unified="true">
+    <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="wrap" style="padding-top: 80px; padding-bottom: 40px;">
+    <h1 style="margin-bottom: 24px;">Your Shopping Cart 🛒</h1>
+
+    <div class="cart-container">
+      <div class="cart-items">
+        <!-- Module Tabs -->
+        <div class="modules-tabs" id="module-tabs"></div>
+
+        <!-- Cart Items -->
+        <div id="cart-items-container">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Summary Sidebar -->
+      <div class="cart-summary">
+        <div class="promo-section">
+          <label style="font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 700;">Promo Code</label>
+          <div class="promo-input">
+            <input type="text" id="promo-code" placeholder="Enter code" />
+            <button onclick="cartModule.applyPromo()">Apply</button>
+          </div>
+        </div>
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="subtotal">$0.00</span>
+        </div>
+        <div class="summary-row">
+          <span>Delivery Fee</span>
+          <span id="delivery-fee">$0.00</span>
+        </div>
+        <div class="summary-row" id="discount-row" style="display: none;">
+          <span>Discount</span>
+          <span id="discount" style="color: #059669;">-$0.00</span>
+        </div>
+
+        <div class="summary-row-total">
+          <span>Total</span>
+          <span id="total">$0.00</span>
+        </div>
+
+        <button class="checkout-btn" onclick="cartModule.checkout()">
+          Proceed to Checkout
+        </button>
+        <button class="continue-btn" onclick="navigateTo('/')">
+          Continue Shopping
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" style="margin-top: 60px;">
+    <div class="wrap">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>About eDalab</h3>
+          <ul>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>For Users</h3>
+          <ul>
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Track Order</a></li>
+            <li><a href="#">Account</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Legal</h3>
+          <ul>
+            <li><a href="#">Terms & Conditions</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 eDalab. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/api-client.js"></script>
+  <script src="js/state-manager.js"></script>
+  <script src="js/ui-components.js"></script>
+  <script>
+    // ═══════════════════════════════════════════
+    // CART MODULE IMPLEMENTATION
+    // ═══════════════════════════════════════════
+
+    class CartModule {
+      constructor() {
+        this.modules = ['shopping', 'food', 'pharmacy', 'hotel', 'ride', 'laundry', 'home-services'];
+        this.currentModule = 'shopping';
+        this.discount = 0;
+        this.init();
+      }
+
+      init() {
+        const firstAvailableModule = this.modules.find(
+          (moduleName) => stateManager.getCart(moduleName).length > 0
+        );
+        if (firstAvailableModule) {
+          this.currentModule = firstAvailableModule;
+        }
+        this.setupModuleTabs();
+        this.renderCart();
+        UIComponents.mountUnifiedNavbar({ active: '' });
+        stateManager.subscribe('cart', () => this.renderCart());
+      }
+
+      setupModuleTabs() {
+        const container = document.getElementById('module-tabs');
+        container.innerHTML = this.modules
+          .filter((m) => stateManager.getCart(m).length > 0)
+          .map(
+            (m) => `
+          <button class="module-tab ${m === this.currentModule ? 'active' : ''}" onclick="cartModule.switchModule('${m}', event)">
+            ${m.charAt(0).toUpperCase() + m.slice(1)} (${stateManager.getCart(m).length})
+          </button>
+        `
+          )
+          .join('');
+
+        if (container.innerHTML === '') {
+          container.style.display = 'none';
+        }
+      }
+
+      switchModule(module, event) {
+        this.currentModule = module;
+        document.querySelectorAll('.module-tab').forEach((tab) => {
+          tab.classList.remove('active');
+        });
+        if (event?.target) {
+          event.target.classList.add('active');
+        }
+        this.renderCart();
+      }
+
+      renderCart() {
+        const items = stateManager.getCart(this.currentModule);
+        const container = document.getElementById('cart-items-container');
+
+        if (items.length === 0) {
+          container.innerHTML = `
+            <div class="cart-empty">
+              <div class="cart-empty-icon">🛒</div>
+              <div class="cart-empty-text">Your cart is empty</div>
+              <button class="continue-btn" onclick="navigateTo('/')">Start Shopping</button>
+            </div>
+          `;
+        } else {
+          container.innerHTML = items
+            .map((item) => UIComponents.createCartItem(item, this.currentModule))
+            .join('');
+        }
+
+        this.updateSummary();
+      }
+
+      updateSummary() {
+        const items = stateManager.getCart(this.currentModule);
+        const subtotal = stateManager.getCartSubtotal(this.currentModule);
+        const deliveryFee = items.length > 0 ? 2.99 : 0;
+        const total = subtotal + deliveryFee - this.discount;
+
+        document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
+        document.getElementById('delivery-fee').textContent = `$${deliveryFee.toFixed(2)}`;
+        document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+
+        if (this.discount > 0) {
+          document.getElementById('discount-row').style.display = 'flex';
+          document.getElementById('discount').textContent = `-$${this.discount.toFixed(2)}`;
+        } else {
+          document.getElementById('discount-row').style.display = 'none';
+        }
+      }
+
+      async applyPromo() {
+        const code = document.getElementById('promo-code').value.trim();
+        if (!code) {
+          UIComponents.showToast('Please enter a promo code', 'info');
+          return;
+        }
+
+        try {
+          const result = await apiClient.redeemPromotion(code);
+          const coupon = Array.isArray(result?.coupons)
+            ? result.coupons.find((entry) => entry.code?.toLowerCase() === code.toLowerCase())
+            : null;
+          this.discount = coupon
+            ? coupon.discountType === 'PERCENTAGE'
+              ? (stateManager.getCartSubtotal(this.currentModule) * Number(coupon.discountValue || 0)) / 100
+              : Number(coupon.discountValue || 0)
+            : 0;
+          stateManager.setDiscount(this.discount);
+          UIComponents.showToast(`Promo code applied! You saved $${this.discount.toFixed(2)}`, 'success');
+          this.updateSummary();
+        } catch (error) {
+          UIComponents.showToast('Invalid promo code', 'error');
+        }
+      }
+
+      async checkout() {
+        const items = stateManager.getCart(this.currentModule);
+        if (items.length === 0) {
+          UIComponents.showToast('Your cart is empty', 'info');
+          return;
+        }
+
+        stateManager.setDiscount(this.discount);
+        window.location.href = `checkout.html?module=${encodeURIComponent(this.currentModule)}`;
+      }
+    }
+
+    const cartModule = new CartModule();
+  </script>
+</body>
+</html>

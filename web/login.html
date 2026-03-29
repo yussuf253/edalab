@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Edalab</title>
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/modules.css">
+    <style>
+        .auth-wrap { max-width: 460px; margin: 90px auto 40px; padding: 20px; }
+        .auth-card { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+        .auth-title { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+        .auth-sub { color: #666; margin-bottom: 24px; font-size: 14px; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+        .input-wrap { position: relative; }
+        .form-input { width: 100%; padding: 12px 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; }
+        .password-input { padding-right: 92px; }
+        .form-input:focus { border-color: #16A34A; box-shadow: 0 0 0 3px rgba(22,163,74,0.12); }
+        .form-input.error { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220,38,38,0.12); }
+        .field-error { display: none; margin-top: 6px; color: #b91c1c; font-size: 12px; font-weight: 700; }
+        .field-error.visible { display: block; }
+        .password-toggle { position: absolute; top: 50%; right: 10px; transform: translateY(-50%); border: none; background: transparent; color: #166534; font-size: 12px; font-weight: 800; cursor: pointer; padding: 6px 8px; }
+        .password-toggle:focus { outline: none; }
+        .auth-btn { width: 100%; padding: 14px; border-radius: 10px; background: linear-gradient(135deg,#16A34A 0%,#22C55E 100%); color: white; font-weight: 800; }
+        .auth-btn[disabled] { opacity: 0.7; cursor: not-allowed; }
+        .auth-error { display: none; margin-bottom: 16px; padding: 12px 14px; border-radius: 10px; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-size: 14px; font-weight: 700; }
+        .auth-links { display: flex; justify-content: flex-end; margin-top: 10px; margin-bottom: 18px; }
+        .auth-links a { color: #16A34A; font-size: 13px; font-weight: 700; }
+        .auth-footer { margin-top: 18px; text-align: center; font-size: 14px; color: #666; }
+        .auth-footer a { color: #16A34A; font-weight: 700; }
+    </style>
+</head>
+<body>
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    </nav>
+
+    <div class="auth-wrap">
+        <div class="auth-card">
+            <div class="auth-title">Welcome back</div>
+            <div class="auth-sub">Sign in to sync your orders, bookings, and profile across the website.</div>
+            <div class="auth-error" id="authError"></div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <div class="input-wrap">
+                    <input class="form-input" id="email" type="email" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <div class="field-error" id="emailError"></div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-wrap">
+                    <input class="form-input password-input" id="password" type="password" placeholder="Your password" autocomplete="current-password">
+                    <button class="password-toggle" id="passwordToggle" type="button">Show</button>
+                </div>
+                <div class="field-error" id="passwordError"></div>
+            </div>
+            <div class="auth-links">
+                <a href="help-center.html">Forgot password?</a>
+            </div>
+            <button class="auth-btn" id="loginButton" onclick="loginPage.submit()">Login</button>
+            <div class="auth-footer">
+                Need an account? <a href="register.html">Create one</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/state-manager.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script>
+        class LoginPage {
+            constructor() {
+                this.emailInput = document.getElementById('email');
+                this.passwordInput = document.getElementById('password');
+                this.errorBox = document.getElementById('authError');
+                this.button = document.getElementById('loginButton');
+                this.passwordToggle = document.getElementById('passwordToggle');
+                this.fieldErrors = {
+                    email: document.getElementById('emailError'),
+                    password: document.getElementById('passwordError'),
+                };
+                [this.emailInput, this.passwordInput].forEach((input) => {
+                    input.addEventListener('input', () => this.clearFieldState(input.id));
+                    input.addEventListener('keydown', (event) => {
+                        if (event.key === 'Enter') {
+                            this.submit();
+                        }
+                    });
+                });
+                this.passwordToggle.addEventListener('click', () => this.togglePasswordVisibility());
+            }
+
+            setLoading(isLoading) {
+                this.button.disabled = isLoading;
+                this.button.textContent = isLoading ? 'Signing in...' : 'Login';
+                this.passwordToggle.disabled = isLoading;
+            }
+
+            showError(message, fieldMessages = {}) {
+                this.errorBox.style.display = 'block';
+                this.errorBox.textContent = message;
+                Object.entries(fieldMessages).forEach(([fieldId, fieldMessage]) => {
+                    const field = document.getElementById(fieldId);
+                    const error = this.fieldErrors[fieldId];
+                    if (field) field.classList.add('error');
+                    if (error && fieldMessage) {
+                        error.textContent = fieldMessage;
+                        error.classList.add('visible');
+                    }
+                });
+            }
+
+            clearError() {
+                this.errorBox.style.display = 'none';
+                this.errorBox.textContent = '';
+                [this.emailInput, this.passwordInput].forEach((input) => this.clearFieldState(input.id));
+            }
+
+            clearFieldState(fieldId) {
+                const field = document.getElementById(fieldId);
+                const error = this.fieldErrors[fieldId];
+                if (field) field.classList.remove('error');
+                if (error) {
+                    error.textContent = '';
+                    error.classList.remove('visible');
+                }
+            }
+
+            togglePasswordVisibility() {
+                const isPassword = this.passwordInput.type === 'password';
+                this.passwordInput.type = isPassword ? 'text' : 'password';
+                this.passwordToggle.textContent = isPassword ? 'Hide' : 'Show';
+            }
+
+            isValidEmail(email) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+            }
+
+            async submit() {
+                this.clearError();
+                const email = this.emailInput.value.trim();
+                const password = this.passwordInput.value;
+                if (!email || !password) {
+                    this.showError('Enter your email and password.', {
+                        email: !email ? 'Email is required.' : '',
+                        password: !password ? 'Password is required.' : '',
+                    });
+                    return;
+                }
+
+                if (!this.isValidEmail(email)) {
+                    this.showError('Enter a valid email address.', {
+                        email: 'Use a valid email like name@example.com.',
+                    });
+                    return;
+                }
+
+                try {
+                    this.setLoading(true);
+                    await apiClient.login(email, password);
+                    UIComponents.showToast('Logged in successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = UIComponents.consumePostAuthRedirect('profile.html');
+                    }, 500);
+                } catch (error) {
+                    const message = error?.message || 'Login failed. Check your credentials.';
+                    const isCredentialError = /invalid email or password/i.test(message);
+                    this.showError(message, isCredentialError ? {
+                        email: 'Double-check your email address.',
+                        password: 'The password does not match this account.',
+                    } : {});
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+        }
+
+        UIComponents.mountUnifiedNavbar({ active: '' });
+        const loginPage = new LoginPage();
+    </script>
+</body>
+</html>

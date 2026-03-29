@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Addresses - Edalab</title>
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/modules.css">
+    <style>
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .page-title { font-size: 24px; font-weight: 700; margin-bottom: 24px; }
+        .address-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .address-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
+        .address-type { font-weight: 700; color: #1a1a1a; }
+        .address-text { font-size: 14px; color: #666; margin-bottom: 12px; line-height: 1.5; }
+        .address-actions { display: flex; gap: 8px; }
+        .btn-small { padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .btn-small:hover { border-color: #667eea; color: #667eea; }
+        .btn-add { width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-bottom: 20px; }
+        .form-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; }
+        .form-input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn-primary { padding: 10px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+        .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title">My Addresses</h1>
+
+        <button class="btn-add" onclick="addresses.toggleForm()">+ Add New Address</button>
+
+        <!-- Add Address Form -->
+        <div id="addressForm" class="form-card" style="display: none;">
+            <h3 style="margin-top: 0;">Add New Address</h3>
+            <div class="form-group">
+                <label class="form-label">Type</label>
+                <select class="form-input" id="addressType">
+                    <option value="home">Home</option>
+                    <option value="work">Work</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Street Address</label>
+                <input type="text" class="form-input" id="addressStreet" placeholder="123 Main Street">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">City</label>
+                    <input type="text" class="form-input" id="addressCity" placeholder="City">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Postal Code</label>
+                    <input type="text" class="form-input" id="addressZip" placeholder="Postal Code">
+                </div>
+            </div>
+            <div class="form-buttons">
+                <button class="btn-primary" onclick="addresses.saveAddress()">Save</button>
+                <button class="btn-primary" style="background: white; color: #667eea; border: 1px solid #667eea;" onclick="addresses.toggleForm()">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Addresses List -->
+        <div id="addressesList"></div>
+    </div>
+
+    <script src="js/api-client.js"></script>
+    <script src="js/state-manager.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script>
+        class AddressesManager {
+            constructor() {
+                this.user = StateManager.getUser();
+                this.init();
+            }
+
+            async init() {
+                if (!UIComponents.requireAuth({
+                    message: 'Please log in to manage your addresses.',
+                    next: 'addresses.html',
+                })) {
+                    return;
+                }
+                await this.loadUserData();
+                this.renderAddresses();
+            }
+
+            async loadUserData() {
+                if (this.user?.id) {
+                    try {
+                        const profile = await apiClient.getUserProfile(this.user.id);
+                        this.user = profile;
+                        StateManager.setUser(profile);
+                    } catch (error) {
+                        console.error('Error loading addresses:', error);
+                    }
+                }
+            }
+
+            renderAddresses() {
+                const container = document.getElementById('addressesList');
+                if (!this.user || !this.user.addresses || this.user.addresses.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📍</div><p>No saved addresses</p></div>';
+                    return;
+                }
+
+                container.innerHTML = this.user.addresses.map((addr, idx) => `
+                    <div class="address-card">
+                        <div class="address-header">
+                            <span class="address-type">${addr.type.charAt(0).toUpperCase() + addr.type.slice(1)}</span>
+                            <div class="address-actions">
+                                <button class="btn-small" onclick="addresses.deleteAddress(${idx})">Delete</button>
+                            </div>
+                        </div>
+                        <div class="address-text">${addr.street}<br>${addr.city} ${addr.zip}</div>
+                    </div>
+                `).join('');
+            }
+
+            toggleForm() {
+                const form = document.getElementById('addressForm');
+                form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            }
+
+            async saveAddress() {
+                const type = document.getElementById('addressType').value;
+                const street = document.getElementById('addressStreet').value.trim();
+                const city = document.getElementById('addressCity').value.trim();
+                const zip = document.getElementById('addressZip').value.trim();
+
+                if (!street || !city || !zip) {
+                    UIComponents.showToast('Please fill in all fields');
+                    return;
+                }
+
+                if (!this.user.addresses) this.user.addresses = [];
+
+                if (this.user.id) {
+                    try {
+                        const updatedUser = await apiClient.addAddress(this.user.id, {
+                            label: type,
+                            address: street,
+                            city,
+                            zipCode: zip,
+                            isDefault: this.user.addresses.length === 0,
+                        });
+                        this.user = updatedUser;
+                    } catch (error) {
+                        console.error('Error saving address:', error);
+                        UIComponents.showToast('Failed to save address');
+                        return;
+                    }
+                } else {
+                    this.user.addresses.push({ type, street, city, zip });
+                }
+                StateManager.setUser(this.user);
+
+                UIComponents.showToast('Address saved!');
+                document.getElementById('addressStreet').value = '';
+                document.getElementById('addressCity').value = '';
+                document.getElementById('addressZip').value = '';
+                this.toggleForm();
+                this.renderAddresses();
+            }
+
+            async deleteAddress(idx) {
+                if (confirm('Delete this address?')) {
+                    const address = this.user.addresses[idx];
+                    if (this.user.id && address?.id) {
+                        try {
+                            const updatedUser = await apiClient.deleteAddress(this.user.id, address.id);
+                            this.user = updatedUser;
+                        } catch (error) {
+                            console.error('Error deleting address:', error);
+                            UIComponents.showToast('Failed to delete address');
+                            return;
+                        }
+                    } else {
+                        this.user.addresses.splice(idx, 1);
+                    }
+                    StateManager.setUser(this.user);
+                    this.renderAddresses();
+                }
+            }
+        }
+
+        UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
+        const addresses = new AddressesManager();
+    </script>
+</body>
+</html>

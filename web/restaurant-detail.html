@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Details - Edalab</title>
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/modules.css">
+    <style>
+        .restaurant-hero {
+            height: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .restaurant-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .restaurant-header {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+        }
+
+        .restaurant-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .restaurant-meta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .rating {
+            background: #f39c12;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .restaurant-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .menu-section {
+            background: white;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .menu-section-header {
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .menu-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .menu-item-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #f0f0f0;
+        }
+
+        .menu-item-content {
+            flex: 1;
+        }
+
+        .menu-item-name {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .menu-item-description {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .menu-item-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-item-price {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 13px;
+        }
+
+        .add-to-cart-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .add-to-cart-btn:hover {
+            background: #764ba2;
+        }
+
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 20px;
+            color: #1a1a1a;
+        }
+
+        .empty-state {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    </nav>
+
+    <!-- Restaurant Hero -->
+    <div class="restaurant-hero">
+        <img id="restaurantImage" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280' viewBox='0 0 400 280'%3E%3Crect width='400' height='280' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial,sans-serif' font-size='24' fill='%236b7280' text-anchor='middle' dy='.3em'%3ERestaurant%3C/text%3E%3C/svg%3E" alt="Restaurant">
+    </div>
+
+    <!-- Restaurant Header -->
+    <div class="restaurant-header">
+        <h1 class="restaurant-title" id="restaurantName">Loading...</h1>
+        
+        <div class="restaurant-meta">
+            <div class="meta-item">
+                <span class="rating" id="rating">4.5★</span>
+            </div>
+            <div class="meta-item">
+                ⏱️ <span id="deliveryTime">30-40 min</span>
+            </div>
+            <div class="meta-item">
+                📍 <span id="distance">2.5 km</span>
+            </div>
+            <div class="meta-item">
+                💵 <span id="minOrder">$5 min order</span>
+            </div>
+        </div>
+
+        <p class="restaurant-description" id="restaurantDescription">Loading restaurant details...</p>
+    </div>
+
+    <!-- Menu Sections -->
+    <div id="menuContainer"></div>
+
+    <!-- Footer with CTA -->
+    <div style="height: 100px;"></div>
+
+
+    <script src="js/api-client.js"></script>
+    <script src="js/state-manager.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script>
+        const RESTAURANT_FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='280' viewBox='0 0 400 280'%3E%3Crect width='400' height='280' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial,sans-serif' font-size='24' fill='%236b7280' text-anchor='middle' dy='.3em'%3ERestaurant%3C/text%3E%3C/svg%3E";
+        const DISH_FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial,sans-serif' font-size='10' fill='%236b7280' text-anchor='middle' dy='.3em'%3EDish%3C/text%3E%3C/svg%3E";
+        const SAMPLE_RESTAURANTS = [
+            {
+                id: 'r1',
+                name: 'Burger Palace',
+                cuisine: 'Burgers, Fast Food',
+                rating: 4.8,
+                reviewCount: 1200,
+                deliveryTime: '15-25',
+                deliveryFee: 0,
+                distance: 1.2,
+                tags: ['Popular', 'Fast Delivery'],
+                menu: [
+                    {
+                        name: 'Popular',
+                        items: [
+                            { id: 'm1', name: 'Classic Cheese Burger', description: 'Juicy beef patty with cheddar, lettuce, tomato', price: 12.99, isPopular: true },
+                            { id: 'm2', name: 'BBQ Bacon Burger', description: 'Smoky BBQ sauce, crispy bacon, onion rings', price: 15.99 },
+                            { id: 'm3', name: 'Veggie Delight', description: 'Plant-based patty, avocado, fresh salad', price: 11.99, isPopular: true }
+                        ]
+                    },
+                    {
+                        name: 'Sides',
+                        items: [
+                            { id: 'm4', name: 'Loaded Fries', description: 'Cheese, jalapenos, sour cream', price: 7.99 },
+                            { id: 'm5', name: 'Onion Rings', description: 'Crispy battered onion rings', price: 5.99 }
+                        ]
+                    },
+                    {
+                        name: 'Drinks',
+                        items: [
+                            { id: 'm7', name: 'Milkshake', description: 'Vanilla, Chocolate, or Strawberry', price: 5.99 },
+                            { id: 'm8', name: 'Fresh Lemonade', description: 'Freshly squeezed with mint', price: 4.49 }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        class RestaurantDetailManager {
+            constructor() {
+                this.restaurantId = new URLSearchParams(window.location.search).get('id');
+                this.restaurant = null;
+                this.init();
+            }
+
+            async init() {
+                await this.loadRestaurantData();
+                this.setupUI();
+                this.updateCartCount();
+            }
+
+            async loadRestaurantData() {
+                try {
+                    try {
+                        const detailResponse = await apiClient.getRestaurantDetail(this.restaurantId);
+                        this.restaurant = Array.isArray(detailResponse)
+                            ? detailResponse.find(r => String(r.id) === String(this.restaurantId))
+                            : detailResponse;
+                    } catch (_detailError) {
+                        const listResponse = await apiClient.getRestaurants({ limit: 100, skip: 0 });
+                        const restaurants = Array.isArray(listResponse) ? listResponse : (listResponse.data || []);
+                        this.restaurant = restaurants.find(r => String(r.id) === String(this.restaurantId));
+                    }
+
+                    if (!this.restaurant) {
+                        this.restaurant = SAMPLE_RESTAURANTS.find(r => String(r.id) === String(this.restaurantId)) || null;
+                    }
+
+                    if (!this.restaurant) {
+                        this.showEmptyState('Restaurant not found');
+                    }
+                } catch (error) {
+                    console.error('Error loading restaurant:', error);
+                    this.restaurant = SAMPLE_RESTAURANTS.find(r => String(r.id) === String(this.restaurantId)) || null;
+                    if (!this.restaurant) {
+                        this.showEmptyState('Failed to load restaurant');
+                    }
+                }
+            }
+
+            setupUI() {
+                if (!this.restaurant) return;
+
+                const restaurantImage =
+                    this.restaurant.image ||
+                    this.restaurant.imageUrl ||
+                    (this.restaurant.images && this.restaurant.images[0]) ||
+                    RESTAURANT_FALLBACK_IMAGE;
+
+                // Update header info
+                document.getElementById('restaurantName').textContent = this.restaurant.name;
+                document.getElementById('restaurantImage').src = restaurantImage;
+                document.getElementById('restaurantDescription').textContent = this.restaurant.description || '';
+                document.getElementById('rating').textContent = `${this.restaurant.rating || 4.5}★`;
+                document.getElementById('deliveryTime').textContent = `${this.restaurant.deliveryTime || '30-40'} min`;
+                document.getElementById('distance').textContent = `${this.restaurant.distance || 2.5} km`;
+                document.getElementById('minOrder').textContent = `$${this.restaurant.minOrder || 5} min order`;
+
+                // Render menu sections
+                this.renderMenuSections();
+            }
+
+            renderMenuSections() {
+                const container = document.getElementById('menuContainer');
+                container.innerHTML = '';
+
+                if (!this.restaurant.menu || this.restaurant.menu.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🍽️</div><p>No menu items available</p></div>';
+                    return;
+                }
+
+                this.restaurant.menu.forEach(section => {
+                    const sectionEl = document.createElement('div');
+                    sectionEl.className = 'menu-section';
+                    
+                    let html = `<div class="menu-section-header">${section.name}</div>`;
+                    
+                    if (section.items && section.items.length > 0) {
+                        section.items.forEach(item => {
+                            const itemImage = item.image || item.imageUrl || (item.images && item.images[0]) || DISH_FALLBACK_IMAGE;
+                            html += `
+                                <div class="menu-item" onclick="restaurantDetail.openDishDetail('${item.id}', '${section.name}')">
+                                    <img src="${itemImage}" alt="${item.name}" class="menu-item-image">
+                                    <div class="menu-item-content">
+                                        <div class="menu-item-name">${item.name}</div>
+                                        <div class="menu-item-description">${item.description || ''}</div>
+                                        <div class="menu-item-footer">
+                                            <span class="menu-item-price">$${item.price}</span>
+                                            <button class="add-to-cart-btn" onclick="restaurantDetail.addToCart('${item.id}', '${item.name}', ${item.price}, '${this.restaurant.id}', '${this.restaurant.name}'); event.stopPropagation();">Add</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    sectionEl.innerHTML = html;
+                    container.appendChild(sectionEl);
+                });
+            }
+
+            addToCart(itemId, itemName, itemPrice, restaurantId, restaurantName) {
+                StateManager.addToCart({
+                    id: itemId,
+                    name: itemName,
+                    price: itemPrice,
+                    quantity: 1,
+                    image: '',
+                    moduleType: 'FOOD',
+                    vendorId: restaurantId,
+                    vendorName: restaurantName
+                });
+                this.updateCartCount();
+                UIComponents.showToast(`${itemName} added to cart!`);
+            }
+
+            openDishDetail(itemId, categoryName) {
+                // Navigate to dish detail page
+                window.location.href = `food-dish-detail.html?id=${itemId}&restaurantId=${this.restaurantId}&categoryName=${categoryName}`;
+            }
+
+            updateCartCount() {
+                const count = StateManager.getCartCount();
+                const badge = document.getElementById('cartCount') || document.getElementById('navCartCount');
+                if (badge) {
+                    badge.textContent = count;
+                }
+            }
+
+            showEmptyState(message) {
+                document.getElementById('restaurantName').textContent = 'Restaurant unavailable';
+                document.getElementById('restaurantDescription').textContent = message;
+                document.getElementById('restaurantImage').src = RESTAURANT_FALLBACK_IMAGE;
+                document.getElementById('menuContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <p>${message}</p>
+                        <div style="margin-top: 16px;">
+                            <a href="food.html" style="display: inline-block; padding: 10px 16px; background: #16a34a; color: white; text-decoration: none; border-radius: 10px; font-weight: 700;">Back to Food</a>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize
+        UIComponents.mountUnifiedNavbar({ active: 'food', offsetBody: true, cartCountId: 'cartCount' });
+        const restaurantDetail = new RestaurantDetailManager();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laundry - eDalab</title>
+    <meta name="description" content="Fast and reliable laundry services. Pickup and delivery available.">
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/modules.css">
+    <style>
+        .laundry-hero {
+            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .laundry-hero h1 {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .laundry-hero p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .laundry-form {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #6366F1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .service-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .service-options {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .service-option {
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .service-option:hover {
+            border-color: #6366F1;
+            background: #f8f9ff;
+        }
+
+        .service-option.active {
+            border-color: #6366F1;
+            background: #6366F1;
+            color: white;
+        }
+
+        .service-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .service-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .service-price {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-item input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .price-estimate {
+            background: #f8f9ff;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border-left: 4px solid #6366F1;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .price-total {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #ddd;
+            font-weight: 700;
+            font-size: 16px;
+            color: #6366F1;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        .submit-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .laundry-info {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .laundry-info h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .info-icon {
+            font-size: 20px;
+            margin-right: 12px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .orders-history {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .orders-history h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .order-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .order-info {
+            flex: 1;
+        }
+
+        .order-date {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .order-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .status-completed {
+            background: #dcfce7;
+            color: #22c55e;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .status-processing {
+            background: #dbeafe;
+            color: #3b82f6;
+        }
+
+        .order-action {
+            padding: 8px 16px;
+            background: #6366F1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .order-action:hover {
+            background: #4f46e5;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="laundry-hero">
+        <div class="wrap">
+            <h1>Laundry Service 🧺</h1>
+            <p>Professional laundry with pickup and delivery</p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
+        <!-- Order Form -->
+        <div class="laundry-form">
+            <h2 style="margin-bottom: 20px;">Place a Laundry Order</h2>
+
+            <!-- Service Type -->
+            <label style="display: block; margin-bottom: 12px; font-weight: 600;">Select Service Type</label>
+            <div class="service-options" id="serviceOptions">
+            </div>
+
+            <!-- Additional Services -->
+            <label style="display: block; margin-bottom: 12px; font-weight: 600;">Additional Services</label>
+            <div class="checkbox-group">
+                <div class="checkbox-item">
+                    <input type="checkbox" id="ironing" onchange="laundryModule.updatePrice()">
+                    <label for="ironing">Ironing (+$5)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="drying" onchange="laundryModule.updatePrice()">
+                    <label for="drying">Machine Dry (+$3)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="folding" onchange="laundryModule.updatePrice()">
+                    <label for="folding">Folding (+$4)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="starch" onchange="laundryModule.updatePrice()">
+                    <label for="starch">Starch (+$2)</label>
+                </div>
+            </div>
+
+            <!-- Pickup Address -->
+            <div class="form-group">
+                <label>Pickup Address</label>
+                <input type="text" id="pickupAddress" placeholder="Enter your address" required>
+            </div>
+
+            <!-- Special Instructions -->
+            <div class="form-group">
+                <label>Special Instructions</label>
+                <textarea id="specialInstructions" placeholder="e.g., Delicate clothes, hand wash only..." rows="3"></textarea>
+            </div>
+
+            <!-- Pickup Schedule -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Pickup Date</label>
+                    <input type="date" id="pickupDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Pickup Time</label>
+                    <select id="pickupTime" required>
+                        <option value="">Select Time</option>
+                        <option value="08:00">08:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="12:00">12:00 PM</option>
+                        <option value="14:00">02:00 PM</option>
+                        <option value="16:00">04:00 PM</option>
+                        <option value="18:00">06:00 PM</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Delivery Date -->
+            <div class="form-group">
+                <label>Expected Delivery</label>
+                <select id="deliveryDate" required>
+                    <option value="">Select Delivery</option>
+                    <option value="same-day">Same Day</option>
+                    <option value="next-day">Next Day</option>
+                    <option value="2-days">2 Days</option>
+                </select>
+            </div>
+
+            <!-- Price Estimate -->
+            <div class="price-estimate">
+                <div class="price-row">
+                    <span id="selectedServiceLabel">Base Service</span>
+                    <span id="baseServicePrice">$15.00</span>
+                </div>
+                <div class="price-row" id="serviceChargesRow" style="display: none;">
+                    <span>Additional Services</span>
+                    <span id="serviceCharges">$0.00</span>
+                </div>
+                <div class="price-row">
+                    <span>Pickup & Delivery</span>
+                    <span>$5.00</span>
+                </div>
+                <div class="price-total">
+                    <span>Total Estimate</span>
+                    <span id="estimatedTotal">$20.00</span>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button class="submit-button" id="submitButton" onclick="laundryModule.submitOrder()">Place Order</button>
+        </div>
+
+        <!-- Info Section -->
+        <div class="laundry-info">
+            <h3>Why Choose Our Laundry Service?</h3>
+            <div class="info-item">
+                <div class="info-icon">🚚</div>
+                <div>Free pickup and delivery in your area</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon">👔</div>
+                <div>Professional cleaning with eco-friendly products</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon">⏰</div>
+                <div>Express service available for urgent orders</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon">🛡️</div>
+                <div>Careful handling of delicate and premium fabrics</div>
+            </div>
+        </div>
+
+        <!-- Orders History -->
+        <div class="orders-history">
+            <h3>Your Laundry Orders</h3>
+            <div id="ordersContainer"></div>
+        </div>
+    </main>
+    <script src="js/api-client.js"></script>
+    <script src="js/state-manager.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script>
+        class LaundryModule {
+            constructor() {
+                this.selectedService = null;
+                this.services = [];
+                this.serviceCharges = 0;
+                this.basePrice = 15;
+                this.deliveryFee = 5;
+                this.init();
+            }
+
+            async init() {
+                await this.loadServices();
+                this.renderServices();
+                this.setupDatePicker();
+                this.updatePrice();
+                this.loadOrders();
+                UIComponents.mountUnifiedNavbar({ active: 'laundry' });
+            }
+
+            async loadServices() {
+                try {
+                    const data = await apiClient.getLaundryServices();
+                    this.services = Array.isArray(data) ? data : (data.data || []);
+                } catch (error) {
+                    console.error('Error loading laundry services:', error);
+                    this.services = [];
+                }
+
+                if (!this.services.length) {
+                    this.services = [
+                        { id: 'express', name: 'Express', description: 'Fast turnaround service', price: 20, unit: 'order' },
+                        { id: 'standard', name: 'Standard', description: 'Regular wash and fold', price: 15, unit: 'order' },
+                        { id: 'economy', name: 'Economy', description: 'Affordable laundry care', price: 10, unit: 'order' }
+                    ];
+                }
+
+                this.selectedService = this.services[0]?.id || null;
+            }
+
+            getServiceIcon(service) {
+                const label = `${service.name} ${service.description || ''}`.toLowerCase();
+                if (label.includes('express')) return '⚡';
+                if (label.includes('dry')) return '👔';
+                if (label.includes('iron')) return '♨️';
+                return '🧺';
+            }
+
+            getSelectedService() {
+                return this.services.find((service) => service.id === this.selectedService) || this.services[0];
+            }
+
+            renderServices() {
+                const container = document.getElementById('serviceOptions');
+                container.innerHTML = this.services.map((service) => `
+                    <div class="service-option ${service.id === this.selectedService ? 'active' : ''}" onclick="laundryModule.selectService('${service.id}', event)">
+                        <div class="service-icon">${this.getServiceIcon(service)}</div>
+                        <div class="service-name">${service.name}</div>
+                        <div class="service-price">$${Number(service.price || 0).toFixed(2)}${service.unit ? ` / ${service.unit}` : ''}</div>
+                    </div>
+                `).join('');
+            }
+
+            selectService(service, event) {
+                this.selectedService = service;
+                document.querySelectorAll('.service-option').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.currentTarget.classList.add('active');
+                this.updatePrice();
+            }
+
+            setupDatePicker() {
+                const today = new Date();
+                const dateInput = document.getElementById('pickupDate');
+                const dateString = today.toISOString().split('T')[0];
+                dateInput.min = dateString;
+                dateInput.value = dateString;
+            }
+
+            updatePrice() {
+                const selectedService = this.getSelectedService();
+                this.serviceCharges = 0;
+                this.basePrice = Number(selectedService?.price || 0);
+
+                // Additional services
+                if (document.getElementById('ironing').checked) this.serviceCharges += 5;
+                if (document.getElementById('drying').checked) this.serviceCharges += 3;
+                if (document.getElementById('folding').checked) this.serviceCharges += 4;
+                if (document.getElementById('starch').checked) this.serviceCharges += 2;
+
+                // Update display
+                const total = this.basePrice + this.serviceCharges + this.deliveryFee;
+                document.getElementById('selectedServiceLabel').textContent = selectedService?.name || 'Base Service';
+                document.getElementById('baseServicePrice').textContent = `$${this.basePrice.toFixed(2)}`;
+                
+                if (this.serviceCharges > 0) {
+                    document.getElementById('serviceChargesRow').style.display = 'flex';
+                    document.getElementById('serviceCharges').textContent = `$${this.serviceCharges.toFixed(2)}`;
+                } else {
+                    document.getElementById('serviceChargesRow').style.display = 'none';
+                }
+
+                document.getElementById('estimatedTotal').textContent = `$${total.toFixed(2)}`;
+            }
+
+            async submitOrder() {
+                const address = document.getElementById('pickupAddress').value;
+                const pickupDate = document.getElementById('pickupDate').value;
+                const pickupTime = document.getElementById('pickupTime').value;
+                const deliveryDate = document.getElementById('deliveryDate').value;
+
+                if (!address || !pickupDate || !pickupTime || !deliveryDate) {
+                    UIComponents.showToast('Please fill in all required fields', 'error');
+                    return;
+                }
+
+                const button = document.getElementById('submitButton');
+                button.disabled = true;
+                button.textContent = 'Placing Order...';
+
+                try {
+                    const selectedService = this.getSelectedService();
+                    const totalPrice = this.basePrice + this.serviceCharges + this.deliveryFee;
+                    const user = StateManager.getUser();
+                    let orderData = {
+                        id: `LAU${Date.now()}`,
+                        module: 'laundry',
+                        moduleType: 'LAUNDRY',
+                        serviceType: this.selectedService,
+                        serviceName: selectedService?.name || 'Laundry Service',
+                        pickupAddress: address,
+                        pickupDateTime: `${pickupDate}T${pickupTime}`,
+                        deliveryDate: deliveryDate,
+                        specialInstructions: document.getElementById('specialInstructions').value,
+                        additionalServices: {
+                            ironing: document.getElementById('ironing').checked,
+                            drying: document.getElementById('drying').checked,
+                            folding: document.getElementById('folding').checked,
+                            starch: document.getElementById('starch').checked
+                        },
+                        items: [
+                            {
+                                id: `laundry-item-${Date.now()}`,
+                                name: selectedService?.name || 'Laundry service',
+                                quantity: 1,
+                                price: totalPrice,
+                            }
+                        ],
+                        subtotal: this.basePrice + this.serviceCharges,
+                        tax: 0,
+                        deliveryFee: this.deliveryFee,
+                        discount: 0,
+                        total: totalPrice,
+                        status: 'processing',
+                        createdAt: new Date().toISOString(),
+                        address: { street: address, city: '' }
+                    };
+
+                    if (user?.id) {
+                        try {
+                            const backendOrder = await apiClient.createOrder({
+                                userId: user.id,
+                                moduleType: 'LAUNDRY',
+                                status: 'PENDING',
+                                subtotal: this.basePrice + this.serviceCharges,
+                                tax: 0,
+                                deliveryFee: this.deliveryFee,
+                                discount: 0,
+                                total: totalPrice,
+                                notes: document.getElementById('specialInstructions').value,
+                                items: [
+                                    {
+                                        id: `laundry-item-${Date.now()}`,
+                                        name: selectedService?.name || 'Laundry service',
+                                        price: totalPrice,
+                                        quantity: 1,
+                                        total: totalPrice,
+                                        metadata: {
+                                            pickupAt: `${pickupDate}T${pickupTime}`,
+                                            deliveryDate,
+                                            address,
+                                            additionalServices: orderData.additionalServices,
+                                        },
+                                    }
+                                ],
+                            });
+
+                            orderData = {
+                                ...orderData,
+                                ...backendOrder,
+                                id: backendOrder.id || orderData.id,
+                                status: String(backendOrder.status || orderData.status).toLowerCase(),
+                            };
+                        } catch (error) {
+                            console.error('Error persisting laundry order to backend:', error);
+                        }
+                    }
+
+                    StateManager.addOrder(orderData);
+
+                    UIComponents.showToast('Laundry order placed successfully!', 'success');
+                    document.getElementById('pickupAddress').value = '';
+                    document.getElementById('specialInstructions').value = '';
+                    document.querySelectorAll('.checkbox-item input').forEach(cb => cb.checked = false);
+                    
+                    setTimeout(() => {
+                        window.location.href = 'orders.html';
+                    }, 800);
+                } catch (error) {
+                    console.error('Error placing order:', error);
+                    UIComponents.showToast('Failed to place order', 'error');
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'Place Order';
+                }
+            }
+
+            async loadOrders() {
+                try {
+                    const orders = StateManager.getOrders()
+                        .filter((entry) => entry.module === 'laundry' || entry.moduleType === 'LAUNDRY')
+                        .map((entry) => ({
+                            id: entry.id,
+                            date: new Date(entry.createdAt).toLocaleDateString(),
+                            status: entry.status || 'processing',
+                            total: `$${Number(entry.total || 0).toFixed(2)}`
+                        }));
+
+                    this.renderOrders(orders);
+                } catch (error) {
+                    console.error('Error loading orders:', error);
+                }
+            }
+
+            renderOrders(orders) {
+                const container = document.getElementById('ordersContainer');
+
+                if (!orders || orders.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🧺</div><p>No orders yet</p></div>';
+                    return;
+                }
+
+                let html = '';
+                orders.forEach(order => {
+                    const statusClass = `status-${order.status}`;
+                    const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+                    html += `
+                        <div class="order-item">
+                            <div class="order-info">
+                                <div class="order-date">Order #${order.id}</div>
+                                <div style="font-size: 13px; color: #666;">Placed on ${order.date}</div>
+                                <span class="order-status ${statusClass}">${statusText}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: 700; color: #6366F1; margin-bottom: 8px;">${order.total}</div>
+                                <button class="order-action" onclick="window.location.href='orders.html'">View Details</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+        }
+
+        const laundryModule = new LaundryModule();
+    </script>
+</body>
+</html>

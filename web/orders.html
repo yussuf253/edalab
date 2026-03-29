@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Edalab</title>
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/modules.css">
+    <style>
+        .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+        .page-title { font-size: 24px; font-weight: 700; margin-bottom: 16px; }
+        .filters { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 8px; }
+        .filter-btn { padding: 8px 16px; background: white; border: 1px solid #ddd; border-radius: 20px; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .filter-btn.active { background: #667eea; color: white; border-color: #667eea; }
+        .order-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); cursor: pointer; transition: all 0.2s; }
+        .order-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+        .order-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
+        .order-id { font-weight: 700; color: #1a1a1a; }
+        .order-status { padding: 4px 8px; background: #e8f5e9; color: #2e7d32; border-radius: 4px; font-size: 12px; font-weight: 600; }
+        .order-status.pending { background: #fff3e0; color: #e65100; }
+        .order-status.cancelled { background: #ffebee; color: #c62828; }
+        .order-details { font-size: 13px; color: #666; margin-bottom: 12px; }
+        .order-items { font-size: 13px; color: #999; margin-bottom: 12px; }
+        .order-footer { display: flex; justify-content: space-between; align-items: center; }
+        .order-total { font-weight: 700; color: #667eea; }
+        .order-actions { display: flex; gap: 8px; }
+        .btn-small { padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #999; }
+        .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    </style>
+</head>
+<body>
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified">
+            <a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a>
+            <div class="nav-links nav-links-unified">
+                <a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a>
+            </div>
+            <div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title">My Orders</h1>
+
+        <!-- Filters -->
+        <div class="filters">
+            <button class="filter-btn active" onclick="orders.filterBy('all')">All Orders</button>
+            <button class="filter-btn" onclick="orders.filterBy('pending')">Pending</button>
+            <button class="filter-btn" onclick="orders.filterBy('confirmed')">Confirmed</button>
+            <button class="filter-btn" onclick="orders.filterBy('delivered')">Delivered</button>
+            <button class="filter-btn" onclick="orders.filterBy('cancelled')">Cancelled</button>
+        </div>
+
+        <!-- Orders List -->
+        <div id="ordersList"></div>
+    </div>
+
+    <script src="js/api-client.js"></script>
+    <script src="js/state-manager.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script>
+        class OrdersManager {
+            constructor() {
+                this.allOrders = [];
+                this.filteredOrders = this.allOrders;
+                this.currentFilter = 'all';
+                this.init();
+            }
+
+            async init() {
+                if (!UIComponents.requireAuth({
+                    message: 'Please log in to view your orders.',
+                    next: 'orders.html',
+                })) {
+                    return;
+                }
+                await this.loadOrders();
+                this.renderOrders();
+            }
+
+            async loadOrders() {
+                const localOrders = StateManager.getOrders();
+                const user = StateManager.getUser();
+                this.allOrders = [...localOrders];
+
+                if (user?.id) {
+                    try {
+                        const history = await apiClient.getOrdersForUser(user.id);
+                        const remoteOrders = (Array.isArray(history) ? history : []).map((entry) => ({
+                            id: entry.id,
+                            module: String(entry.moduleType || '').toLowerCase().replace('_', '-'),
+                            moduleType: entry.moduleType,
+                            status: String(entry.status || 'pending').toLowerCase(),
+                            createdAt: entry.createdAt,
+                            subtotal: entry.subtotal || 0,
+                            tax: entry.tax || 0,
+                            deliveryFee: entry.deliveryFee || 0,
+                            discount: entry.discount || 0,
+                            total: entry.total || 0,
+                            items: entry.items || [],
+                            trackingRoute: entry.trackingRoute || null,
+                        }));
+
+                        const merged = [...remoteOrders, ...localOrders.filter((local) => !remoteOrders.some((remote) => remote.id === local.id))];
+                        this.allOrders = merged;
+                        StateManager.setOrders(merged);
+                    } catch (error) {
+                        console.error('Error loading remote orders:', error);
+                    }
+                }
+
+                this.filteredOrders = this.allOrders;
+            }
+
+            filterBy(status) {
+                this.currentFilter = status;
+                
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+
+                if (status === 'all') {
+                    this.filteredOrders = this.allOrders;
+                } else {
+                    this.filteredOrders = this.allOrders.filter(order => order.status === status);
+                }
+
+                this.renderOrders();
+            }
+
+            renderOrders() {
+                const container = document.getElementById('ordersList');
+                
+                if (this.filteredOrders.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><p>No orders found</p></div>';
+                    return;
+                }
+
+                container.innerHTML = this.filteredOrders.map(order => {
+                    const date = new Date(order.createdAt).toLocaleDateString();
+                    const itemCount = order.items.length;
+                    const itemsText = itemCount === 1 ? '1 item' : `${itemCount} items`;
+                    const statusClass = order.status === 'confirmed' || order.status === 'on-way' || order.status === 'pending' ? 'pending' : order.status;
+                    const trackingHref = this.getTrackingHref(order);
+
+                    return `
+                        <div class="order-card" onclick="window.location.href='${trackingHref}'">
+                            <div class="order-header">
+                                <span class="order-id">${order.id}</span>
+                                <span class="order-status ${statusClass}">${order.status.toUpperCase()}</span>
+                            </div>
+                            <div class="order-details">
+                                ${date} • ${itemsText}
+                            </div>
+                            <div class="order-items">
+                                ${order.items.map(item => item.name).join(', ')}
+                            </div>
+                            <div class="order-footer">
+                                <span class="order-total">$${((order.subtotal || 0) + (order.tax || 0) + (order.deliveryFee || 0) - (order.discount || 0)).toFixed(2)}</span>
+                                <div class="order-actions">
+                                    <button class="btn-small" onclick="orders.viewOrder('${order.id}'); event.stopPropagation();">View</button>
+                                    <button class="btn-small" onclick="orders.trackOrder('${order.id}'); event.stopPropagation();">Track</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            getTrackingHref(order) {
+                if (order.module === 'ride' || order.moduleType === 'RIDE') {
+                    return `tracking.html?rideId=${order.id}`;
+                }
+                return `tracking.html?orderId=${order.id}`;
+            }
+
+            viewOrder(orderId) {
+                const order = this.allOrders.find((entry) => entry.id === orderId);
+                window.location.href = this.getTrackingHref(order || { id: orderId });
+            }
+
+            trackOrder(orderId) {
+                const order = this.allOrders.find((entry) => entry.id === orderId);
+                window.location.href = this.getTrackingHref(order || { id: orderId });
+            }
+        }
+
+        UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
+        const orders = new OrdersManager();
+    </script>
+</body>
+</html>

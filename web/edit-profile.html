@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - Edalab</title>
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/modules.css">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .form-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn-primary {
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            padding: 14px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .section-header {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #667eea;
+        }
+    </style>
+</head>
+<body>
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    </nav>
+
+    <div class="form-container">
+        <!-- Edit Profile Form -->
+        <div class="form-card">
+            <h1 class="form-title">Edit Profile</h1>
+
+            <div class="section-header">Personal Information</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-input" id="firstName" placeholder="John">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" class="form-input" id="lastName" placeholder="Doe">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" class="form-input" id="email" placeholder="john@example.com">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" class="form-input" id="phone" placeholder="+1 (555) 000-0000">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" class="form-input" id="dob">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Bio</label>
+                <textarea class="form-input" id="bio" placeholder="Tell us about yourself" style="resize: vertical; min-height: 80px;"></textarea>
+            </div>
+
+            <div class="form-buttons">
+                <button class="btn-primary" onclick="editProfile.saveChanges()">Save Changes</button>
+                <button class="btn-secondary" onclick="window.location.href='profile.html'">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Change Password Section -->
+        <div class="form-card">
+            <div class="section-header">Change Password</div>
+
+            <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" class="form-input" id="currentPassword" placeholder="••••••••">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" class="form-input" id="newPassword" placeholder="••••••••">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" class="form-input" id="confirmPassword" placeholder="••••••••">
+            </div>
+
+            <button class="btn-primary" style="width: 100%; margin-bottom: 0;" onclick="editProfile.changePassword()">Update Password</button>
+        </div>
+    </div>
+
+    <script src="js/api-client.js"></script>
+    <script src="js/state-manager.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script>
+        class EditProfileManager {
+            constructor() {
+                this.user = null;
+                this.init();
+            }
+
+            async init() {
+                if (!UIComponents.requireAuth({
+                    message: 'Please log in to edit your profile.',
+                    next: 'edit-profile.html',
+                })) {
+                    return;
+                }
+                await this.loadUserData();
+                this.renderForm();
+            }
+
+            async loadUserData() {
+                this.user = StateManager.getUser();
+                if (this.user?.id) {
+                    try {
+                        this.user = await apiClient.getUserProfile(this.user.id);
+                        StateManager.setUser(this.user);
+                    } catch (error) {
+                        console.error('Error loading profile for edit:', error);
+                    }
+                }
+            }
+
+            renderForm() {
+                if (!this.user) {
+                    return;
+                }
+
+                document.getElementById('firstName').value = this.user.firstName || '';
+                document.getElementById('lastName').value = this.user.lastName || '';
+                document.getElementById('email').value = this.user.email || '';
+                document.getElementById('phone').value = this.user.phone || '';
+                document.getElementById('dob').value = this.user.dateOfBirth || '';
+                document.getElementById('bio').value = this.user.bio || '';
+            }
+
+            async saveChanges() {
+                const firstName = document.getElementById('firstName').value.trim();
+                const lastName = document.getElementById('lastName').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const dob = document.getElementById('dob').value;
+                const bio = document.getElementById('bio').value.trim();
+
+                if (!firstName || !email) {
+                    UIComponents.showToast('Please fill in all required fields');
+                    return;
+                }
+
+                // Update user
+                this.user.firstName = firstName;
+                this.user.lastName = lastName;
+                this.user.email = email;
+                this.user.phone = phone;
+                this.user.dateOfBirth = dob;
+                this.user.bio = bio;
+
+                if (this.user.id) {
+                    try {
+                        const updated = await apiClient.updateUserProfile(this.user.id, {
+                            name: `${firstName} ${lastName}`.trim(),
+                            email,
+                            phone,
+                            avatarUrl: this.user.avatarUrl || '',
+                        });
+                        this.user = {
+                            ...this.user,
+                            ...updated,
+                            dateOfBirth: dob,
+                            bio,
+                        };
+                    } catch (error) {
+                        console.error('Error updating profile:', error);
+                    }
+                }
+
+                StateManager.setUser(this.user);
+                UIComponents.showToast('Profile updated successfully!');
+                
+                setTimeout(() => {
+                    window.location.href = 'profile.html';
+                }, 1000);
+            }
+
+            changePassword() {
+                const current = document.getElementById('currentPassword').value;
+                const newPass = document.getElementById('newPassword').value;
+                const confirm = document.getElementById('confirmPassword').value;
+
+                if (!current || !newPass || !confirm) {
+                    UIComponents.showToast('Please fill in all password fields');
+                    return;
+                }
+
+                if (newPass !== confirm) {
+                    UIComponents.showToast('New passwords do not match');
+                    return;
+                }
+
+                if (newPass.length < 6) {
+                    UIComponents.showToast('Password must be at least 6 characters');
+                    return;
+                }
+
+                // In a real app, this would be sent to backend
+                this.user.password = newPass;
+                StateManager.setUser(this.user);
+                
+                UIComponents.showToast('Password changed successfully!');
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            }
+        }
+
+        UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
+        const editProfile = new EditProfileManager();
+    </script>
+</body>
+</html>

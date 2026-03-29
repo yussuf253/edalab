@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Pharmacy - eDalab</title>
+  <meta name="description" content="Buy medicines and health products on eDalab. Fast delivery, prescription support, and expert advice."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main-styles.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <link rel="stylesheet" href="css/modules.css"/>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav id="nav" data-static-unified="true">
+    <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="pharmacy-hero">
+    <div class="wrap">
+      <div class="ph-content">
+        <h1>Health & Wellness at Your Fingertips 💊</h1>
+        <p>Order medicines, health products, and wellness supplements. Fast delivery and trusted quality.</p>
+        <div id="search-container"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
+    <!-- Prescription Upload -->
+    <section style="margin-bottom: 40px; padding: 24px; background: var(--rx-bg); border-radius: var(--r-lg); border-left: 4px solid var(--rx-c);">
+      <h3 style="margin-bottom: 10px; color: var(--rx-c);">Upload Your Prescription 📋</h3>
+      <p style="font-size: 14px; color: var(--sub); margin-bottom: 12px;">Upload your prescription to get medicines delivered</p>
+      <input type="file" id="prescription-upload" accept="image/*,application/pdf" style="display: none;" />
+      <button class="n-solid" onclick="document.getElementById('prescription-upload').click()">Upload Prescription</button>
+    </section>
+
+    <!-- Categories -->
+    <section style="margin-bottom: 40px;">
+      <h2 style="margin-bottom: 16px;">Categories</h2>
+      <div id="categories-container" class="category-grid"></div>
+    </section>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <h2>Browse Medicines & Products</h2>
+      <div id="filter-bar" class="filter-grid">
+        <div class="filter-item">
+          <label>Category</label>
+          <select id="category-filter" onchange="pharmacyModule.applyFilters()">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>Type</label>
+          <select id="type-filter" onchange="pharmacyModule.applyFilters()">
+            <option value="">All Types</option>
+            <option value="medicine">Medicines</option>
+            <option value="wellness">Wellness</option>
+            <option value="supplements">Supplements</option>
+            <option value="firstaid">First Aid</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label>Availability</label>
+          <select id="availability-filter" onchange="pharmacyModule.applyFilters()">
+            <option value="">All</option>
+            <option value="in-stock">In Stock</option>
+            <option value="no-prescription">No Prescription Required</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <section class="pharmacy-section">
+      <div id="medicines-container" class="medicines-grid">
+        <!-- Dynamically populated -->
+      </div>
+    </section>
+
+    <!-- Pagination -->
+    <div id="pagination-container"></div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>eDalab Pharmacy</h3>
+          <ul>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Licensed Pharmacists</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>For Customers</h3>
+          <ul>
+            <li><a href="#">Browse Medicines</a></li>
+            <li><a href="#">Prescription Upload</a></li>
+            <li><a href="#">Health Tips</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>For Pharmacies</h3>
+          <ul>
+            <li><a href="#">Partner with Us</a></li>
+            <li><a href="#">Partner Portal</a></li>
+            <li><a href="#">Resources</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Contact & Support</h3>
+          <p>Email: pharmacy@edalab.dj</p>
+          <p>24/7 Support: +253 21 35 00 00</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 eDalab. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/api-client.js"></script>
+  <script src="js/state-manager.js"></script>
+  <script src="js/ui-components.js"></script>
+  <script>
+    // ═══════════════════════════════════════════
+    // PHARMACY MODULE IMPLEMENTATION
+    // ═══════════════════════════════════════════
+
+    class PharmacyModule {
+      constructor() {
+        this.medicines = [];
+        this.filteredMedicines = [];
+        this.categories = [];
+        this.currentPage = 1;
+        this.itemsPerPage = 12;
+        this.filters = {
+          category: null,
+          type: null,
+          requiresPrescription: null,
+        };
+        this.init();
+      }
+
+      async init() {
+        await this.loadCategories();
+        await this.loadMedicines();
+        this.setupSearch();
+        this.setupCategories();
+        this.setupPrescriptionUpload();
+        this.renderMedicines();
+        this.updateCartCount();
+        UIComponents.mountUnifiedNavbar({ active: 'pharmacy', cartCountId: 'cart-count' });
+        stateManager.subscribe('cart', () => this.updateCartCount());
+      }
+
+      async loadCategories() {
+        this.categories = [];
+      }
+
+      async loadMedicines() {
+        try {
+          const data = await apiClient.getProducts({ moduleType: 'PHARMACY' });
+          // API returns array directly, not wrapped in {data: [...]}
+          this.medicines = Array.isArray(data) ? data : (data.data || []);
+          this.filteredMedicines = [...this.medicines];
+          window.currentProducts = this.medicines;
+          this.extractCategoriesFromMedicines();
+        } catch (error) {
+          console.error('Error loading medicines:', error);
+          UIComponents.showToast('Failed to load medicines', 'error');
+        }
+      }
+
+      extractCategoriesFromMedicines() {
+        const categoryMap = new Map();
+        this.medicines.forEach((medicine) => {
+          const categoryId = medicine.categoryId || medicine.category || 'general';
+          const categoryName = medicine.category || 'General Care';
+          if (!categoryMap.has(categoryId)) {
+            categoryMap.set(categoryId, {
+              id: categoryId,
+              name: categoryName,
+              icon: this.getCategoryIcon(categoryName),
+            });
+          }
+        });
+        this.categories = Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      getCategoryIcon(categoryName) {
+        const label = String(categoryName || '').toLowerCase();
+        if (label.includes('supplement')) return '🥗';
+        if (label.includes('well')) return '🌿';
+        if (label.includes('skin')) return '🧴';
+        if (label.includes('baby')) return '👶';
+        if (label.includes('first')) return '🩹';
+        return '💊';
+      }
+
+      getMedicineType(medicine) {
+        const label = `${medicine.category || ''} ${medicine.tags?.join(' ') || ''}`.toLowerCase();
+        if (label.includes('supplement')) return 'supplements';
+        if (label.includes('well')) return 'wellness';
+        if (label.includes('first')) return 'firstaid';
+        return 'medicine';
+      }
+
+      setupSearch() {
+        const container = document.getElementById('search-container');
+        container.innerHTML = `
+          <div class="search-bar">
+            <input type="text" id="pharmacy-search" class="search-input" placeholder="Search medicines, brands..." />
+            <button class="search-btn" onclick="pharmacyModule.handleSearch()">🔍</button>
+          </div>
+        `;
+
+        document.getElementById('pharmacy-search').addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') this.handleSearch();
+        });
+      }
+
+      handleSearch() {
+        const query = document.getElementById('pharmacy-search').value.toLowerCase();
+        this.filteredMedicines = this.medicines.filter((m) =>
+          m.name.toLowerCase().includes(query) ||
+          (m.brand && m.brand.toLowerCase().includes(query)) ||
+          (m.description && m.description.toLowerCase().includes(query))
+        );
+        this.currentPage = 1;
+        this.renderMedicines();
+      }
+
+      setupCategories() {
+        const container = document.getElementById('categories-container');
+        container.innerHTML = this.categories
+          .map(
+            (cat) => `
+          <div class="category-card" onclick="pharmacyModule.filterByCategory('${cat.id}')">
+            <div class="category-icon">${cat.icon}</div>
+            <div class="category-name">${cat.name}</div>
+          </div>
+        `
+          )
+          .join('');
+
+        // Populate category select
+        const select = document.getElementById('category-filter');
+        select.innerHTML = '<option value="">All Categories</option>';
+        this.categories.forEach((cat) => {
+          const option = document.createElement('option');
+          option.value = cat.id;
+          option.textContent = cat.name;
+          select.appendChild(option);
+        });
+      }
+
+      filterByCategory(categoryId) {
+        document.getElementById('category-filter').value = categoryId;
+        this.applyFilters();
+      }
+
+      setupPrescriptionUpload() {
+        document.getElementById('prescription-upload').addEventListener('change', (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            UIComponents.showToast(`Prescription "${file.name}" uploaded successfully!`, 'success');
+            // In a real app, upload to server
+          }
+        });
+      }
+
+      applyFilters() {
+        const category = document.getElementById('category-filter').value;
+        const type = document.getElementById('type-filter').value;
+        const availability = document.getElementById('availability-filter').value;
+
+        this.filteredMedicines = this.medicines.filter((m) => {
+          if (category && (m.categoryId || m.category) !== category) return false;
+          if (type && this.getMedicineType(m) !== type) return false;
+          if (availability === 'in-stock' && !m.inStock) return false;
+          if (availability === 'no-prescription' && m.requiresPrescription) return false;
+          return true;
+        });
+
+        this.currentPage = 1;
+        this.renderMedicines();
+      }
+
+      renderMedicines() {
+        const container = document.getElementById('medicines-container');
+        const start = (this.currentPage - 1) * this.itemsPerPage;
+        const end = start + this.itemsPerPage;
+        const pageItems = this.filteredMedicines.slice(start, end);
+
+        if (pageItems.length === 0) {
+          container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px;">No medicines found</p>';
+        } else {
+          container.innerHTML = pageItems
+            .map((m) => {
+              let card = UIComponents.createProductCard(m);
+              // Add prescription badge
+              if (m.requiresPrescription) {
+                card = card.replace(
+                  '<div class="pc-content">',
+                  '<div class="pc-badge-discount" style="background: #DC2626;">Rx Required</div><div class="pc-content">'
+                );
+              }
+              return card;
+            })
+            .join('');
+        }
+
+        this.renderPagination();
+      }
+
+      renderPagination() {
+        const container = document.getElementById('pagination-container');
+        const totalPages = Math.ceil(this.filteredMedicines.length / this.itemsPerPage);
+
+        if (totalPages > 1) {
+          container.innerHTML = UIComponents.createPagination(
+            this.currentPage,
+            totalPages,
+            'pharmacyModule.goToPage'
+          );
+        } else {
+          container.innerHTML = '';
+        }
+      }
+
+      goToPage(page) {
+        this.currentPage = page;
+        this.renderMedicines();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      updateCartCount() {
+        const pharmacyCart = stateManager.getCart('pharmacy');
+        const count = pharmacyCart.length;
+        const badge = document.getElementById('cart-count') || document.getElementById('navCartCount');
+        if (badge) {
+          badge.textContent = count > 0 ? count : '';
+        }
+      }
+    }
+
+    const pharmacyModule = new PharmacyModule();
+  </script>
+</body>
+</html>

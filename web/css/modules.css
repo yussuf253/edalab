@@ -1,0 +1,404 @@
+/**
+ * Module-specific Styles
+ * Food, Doctor, Shopping, Hotel, Pharmacy pages
+ */
+
+/* ═══════════════════════════════════════════
+   HERO SECTIONS
+═══════════════════════════════════════════ */
+
+.food-hero,
+.doctor-hero,
+.shopping-hero,
+.hotel-hero,
+.pharmacy-hero {
+  background: linear-gradient(135deg, var(--g-pale) 0%, var(--g-light) 100%);
+  padding: 60px 0;
+  margin-top: 70px;
+}
+
+.food-hero {
+  background: linear-gradient(135deg, var(--food-bg) 0%, var(--food-c) 100%);
+  color: var(--food-c);
+}
+
+.doctor-hero {
+  background: linear-gradient(135deg, var(--doc-bg) 0%, var(--doc-c) 100%);
+  color: var(--doc-c);
+}
+
+.shopping-hero {
+  background: linear-gradient(135deg, var(--shop-bg) 0%, var(--shop-c) 100%);
+  color: var(--shop-c);
+}
+
+.hotel-hero {
+  background: linear-gradient(135deg, var(--hotel-bg) 0%, var(--hotel-c) 100%);
+  color: var(--hotel-c);
+}
+
+.pharmacy-hero {
+  background: linear-gradient(135deg, var(--rx-bg) 0%, var(--rx-c) 100%);
+  color: var(--rx-c);
+}
+
+.food-hero h1,
+.doctor-hero h1,
+.shopping-hero h1,
+.hotel-hero h1,
+.pharmacy-hero h1 {
+  font-size: clamp(32px, 5vw, 52px);
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.food-hero p,
+.doctor-hero p,
+.shopping-hero p,
+.hotel-hero p,
+.pharmacy-hero p {
+  font-size: 16px;
+  color: var(--sub);
+  margin-bottom: 24px;
+  max-width: 600px;
+}
+
+.fh-content,
+.dh-content,
+.sh-content,
+.hh-content,
+.ph-content {
+  padding: 40px 0;
+}
+
+/* ═══════════════════════════════════════════
+   FILTER SECTIONS
+═══════════════════════════════════════════ */
+
+.filter-section {
+  margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid var(--border);
+}
+
+.filter-section h2 {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-item label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.filter-item select {
+  padding: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-item select:hover,
+.filter-item select:focus {
+  border-color: var(--g);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+/* ═══════════════════════════════════════════
+   GRID SECTIONS
+═══════════════════════════════════════════ */
+
+.restaurants-grid,
+.doctors-grid,
+.products-grid,
+.hotels-grid,
+.medicines-grid,
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+@media (max-width: 900px) {
+  .restaurants-grid,
+  .doctors-grid,
+  .products-grid,
+  .hotels-grid,
+  .medicines-grid,
+  .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .restaurants-grid,
+  .doctors-grid,
+  .products-grid,
+  .hotels-grid,
+  .medicines-grid,
+  .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+}
+
+.food-section,
+.doctor-section,
+.shopping-section,
+.hotel-section,
+.pharmacy-section {
+  margin-bottom: 40px;
+}
+
+.food-section h2,
+.doctor-section h2,
+.shopping-section h2,
+.hotel-section h2,
+.pharmacy-section h2 {
+  font-size: 24px;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+
+/* ═══════════════════════════════════════════
+   FORM STYLES
+═══════════════════════════════════════════ */
+
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--g);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+
+.footer {
+  background: var(--text);
+  color: white;
+  padding: 48px 0 24px;
+  margin-top: 80px;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+.footer-section h3 {
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-section li {
+  margin-bottom: 8px;
+}
+
+.footer-section a {
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.2s;
+}
+
+.footer-section a:hover {
+  color: white;
+}
+
+.footer-section p {
+  margin: 8px 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}
+
+/* ═══════════════════════════════════════════
+   MODULE-SPECIFIC HERO COLORS
+═══════════════════════════════════════════ */
+
+.food-hero {
+  --module-color: var(--food-c);
+  --module-bg: var(--food-bg);
+}
+
+.food-hero h1 {
+  color: var(--food-c);
+}
+
+.doctor-hero {
+  --module-color: var(--doc-c);
+  --module-bg: var(--doc-bg);
+}
+
+.doctor-hero h1 {
+  color: var(--doc-c);
+}
+
+.shopping-hero {
+  --module-color: var(--shop-c);
+  --module-bg: var(--shop-bg);
+}
+
+.shopping-hero h1 {
+  color: var(--shop-c);
+}
+
+.hotel-hero {
+  --module-color: var(--hotel-c);
+  --module-bg: var(--hotel-bg);
+}
+
+.hotel-hero h1 {
+  color: var(--hotel-c);
+}
+
+.pharmacy-hero {
+  --module-color: var(--rx-c);
+  --module-bg: var(--rx-bg);
+}
+
+.pharmacy-hero h1 {
+  color: var(--rx-c);
+}
+
+/* ═══════════════════════════════════════════
+   CATEGORY SECTIONS
+═══════════════════════════════════════════ */
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.category-card {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.category-card:hover {
+  border-color: var(--g);
+  transform: translateY(-2px);
+  box-shadow: var(--sh-md);
+}
+
+.category-card.active {
+  background: var(--g-light);
+  border-color: var(--g);
+  color: var(--g);
+}
+
+.category-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.category-name {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.category-count {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .food-hero,
+  .doctor-hero,
+  .shopping-hero,
+  .hotel-hero,
+  .pharmacy-hero {
+    padding: 40px 0;
+  }
+
+  .fh-content,
+  .dh-content,
+  .sh-content,
+  .hh-content,
+  .ph-content {
+    padding: 24px 0;
+  }
+
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-section h2 {
+    font-size: 16px;
+  }
+}

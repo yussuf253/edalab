@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Wishlist - eDalab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/main-styles.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <link rel="stylesheet" href="css/modules.css"/>
+  <style>
+    .wishlist-page { max-width: 1100px; margin: 0 auto; padding: 96px 28px 40px; }
+    .wishlist-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; margin-bottom: 28px; }
+    .wishlist-head h1 { font-size: clamp(32px, 4vw, 48px); margin-bottom: 8px; }
+    .wishlist-head p { color: var(--sub); }
+    .wishlist-actions { display: flex; gap: 10px; }
+    .wishlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; }
+    .wishlist-card { background: #fff; border-radius: 18px; border: 1.5px solid var(--border); box-shadow: var(--sh-sm); overflow: hidden; }
+    .wishlist-image { width: 100%; height: 220px; object-fit: cover; background: #f3f4f6; }
+    .wishlist-body { padding: 16px; }
+    .wishlist-name { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+    .wishlist-desc { color: var(--sub); font-size: 14px; min-height: 42px; margin-bottom: 12px; }
+    .wishlist-price { font-size: 20px; font-weight: 900; margin-bottom: 14px; color: var(--g); }
+    .wishlist-buttons { display: flex; gap: 10px; }
+    .wishlist-buttons button, .wishlist-buttons a { flex: 1; }
+    .wishlist-empty { background: #fff; border: 1.5px dashed var(--border); border-radius: 24px; padding: 64px 24px; text-align: center; color: var(--sub); }
+    .wishlist-empty h2 { margin: 12px 0 8px; font-size: 28px; color: var(--text); }
+    @media (max-width: 640px) {
+      .wishlist-page { padding: 92px 16px 32px; }
+      .wishlist-head { flex-direction: column; align-items: start; }
+      .wishlist-actions { width: 100%; }
+      .wishlist-actions a { flex: 1; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <nav id="nav" data-static-unified="true">
+    <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+  </nav>
+
+  <main class="wishlist-page">
+    <div class="wishlist-head">
+      <div>
+        <h1>Your Wishlist</h1>
+        <p>Save products you love and move them to cart when you are ready.</p>
+      </div>
+      <div class="wishlist-actions">
+        <a href="shopping.html" class="n-ghost">Continue Shopping</a>
+      </div>
+    </div>
+    <div id="wishlistContent"></div>
+  </main>
+
+  <script src="js/api-client.js"></script>
+  <script src="js/state-manager.js"></script>
+  <script src="js/ui-components.js"></script>
+  <script>
+    class WishlistPage {
+      constructor() {
+        UIComponents.mountUnifiedNavbar({ active: '' });
+        this.render();
+        stateManager.subscribe('wishlist', () => this.render());
+      }
+
+      render() {
+        const items = stateManager.getWishlist();
+        const container = document.getElementById('wishlistContent');
+
+        if (!items.length) {
+          container.innerHTML = `
+            <div class="wishlist-empty">
+              <div style="font-size: 52px;">♡</div>
+              <h2>Your wishlist is empty</h2>
+              <p>Browse the modules and save products you want to come back to.</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = `
+          <div class="wishlist-grid">
+            ${items.map((item) => `
+              <div class="wishlist-card">
+                <img class="wishlist-image" src="${UIComponents.getImageSrc(item, "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='220'%3E%3Crect width='320' height='220' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' fill='%239ca3af' font-size='20' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E")}" alt="${item.name}">
+                <div class="wishlist-body">
+                  <div class="wishlist-name">${item.name}</div>
+                  <div class="wishlist-desc">${item.description || 'Saved for later.'}</div>
+                  <div class="wishlist-price">$${Number(item.price || 0).toFixed(2)}</div>
+                  <div class="wishlist-buttons">
+                    <button class="n-solid" onclick="wishlistPage.addToCart('${item.id}')">Add to Cart</button>
+                    <button class="n-ghost" onclick="wishlistPage.remove('${item.id}')">Remove</button>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      addToCart(itemId) {
+        const item = stateManager.getWishlist().find((entry) => entry.id === itemId);
+        if (!item) return;
+        const moduleName = stateManager.resolveCartModule(item, 'shopping');
+        stateManager.addToCart(item, 1, moduleName);
+        UIComponents.showToast('Added to cart!', 'success');
+      }
+
+      remove(itemId) {
+        stateManager.removeFromWishlist(itemId);
+        UIComponents.showToast('Removed from wishlist', 'info');
+      }
+    }
+
+    const wishlistPage = new WishlistPage();
+  </script>
+</body>
+</html>

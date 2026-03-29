@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Center - Edalab</title>
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/modules.css">
+    <style>
+        .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+        .page-title { font-size: 24px; font-weight: 700; margin-bottom: 24px; }
+        .search-box { width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 24px; }
+        .faq-category { margin-bottom: 24px; }
+        .category-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid #667eea; }
+        .faq-item { background: white; border-radius: 8px; margin-bottom: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .faq-question { padding: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+        .faq-question:hover { background: #f8f9fa; }
+        .faq-question-text { font-weight: 600; color: #1a1a1a; }
+        .faq-toggle { font-size: 20px; transition: transform 0.2s; }
+        .faq-item.active .faq-toggle { transform: rotate(180deg); }
+        .faq-answer { display: none; padding: 0 16px 16px 16px; color: #666; line-height: 1.6; }
+        .faq-item.active .faq-answer { display: block; }
+        .contact-card { background: white; border-radius: 12px; padding: 20px; margin-top: 24px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .contact-title { font-weight: 700; margin-bottom: 12px; }
+        .contact-info { font-size: 14px; color: #666; margin-bottom: 16px; }
+        .contact-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-contact { padding: 12px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title">Help Center</h1>
+
+        <input type="text" class="search-box" id="searchBox" placeholder="Search FAQs..." onkeyup="helpCenter.search()">
+
+        <!-- FAQs -->
+        <div id="faqContainer"></div>
+
+        <!-- Contact Support -->
+        <div class="contact-card">
+            <div class="contact-title">Didn't find what you're looking for?</div>
+            <div class="contact-info">Contact our support team. We're here to help!</div>
+            <div class="contact-btns">
+                <button class="btn-contact" onclick="UIComponents.showToast('Opening chat support...')">💬 Chat</button>
+                <button class="btn-contact" onclick="UIComponents.showToast('Calling support...')">📞 Call</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api-client.js"></script>
+    <script src="js/state-manager.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script>
+        class HelpCenterManager {
+            constructor() {
+                this.faqs = [
+                    {
+                        category: 'Orders & Delivery',
+                        items: [
+                            { q: 'How long does delivery take?', a: 'Standard delivery takes 30-40 minutes. Express delivery takes 15-20 minutes.' },
+                            { q: 'Can I change my order after placing it?', a: 'Yes, you can modify your order within 2 minutes of placing it.' },
+                            { q: 'What areas do you deliver to?', a: 'We deliver to all major areas in your city. Check your address during checkout.' }
+                        ]
+                    },
+                    {
+                        category: 'Payment',
+                        items: [
+                            { q: 'What payment methods do you accept?', a: 'We accept credit cards, debit cards, digital wallets, and cash on delivery.' },
+                            { q: 'Is my payment information secure?', a: 'Yes, we use industry-standard encryption to protect your payment data.' },
+                            { q: 'Can I get a refund?', a: 'Refunds are processed within 5-7 business days for cancelled orders.' }
+                        ]
+                    },
+                    {
+                        category: 'Account',
+                        items: [
+                            { q: 'How do I reset my password?', a: 'Go to login page and click "Forgot Password" to reset your password.' },
+                            { q: 'Can I have multiple accounts?', a: 'You can use one account per email address.' },
+                            { q: 'How do I delete my account?', a: 'Contact support to request account deletion.' }
+                        ]
+                    }
+                ];
+                this.init();
+            }
+
+            init() {
+                this.renderFAQs();
+            }
+
+            renderFAQs() {
+                const container = document.getElementById('faqContainer');
+                container.innerHTML = this.faqs.map(category => `
+                    <div class="faq-category">
+                        <div class="category-title">${category.category}</div>
+                        ${category.items.map((item, idx) => `
+                            <div class="faq-item" onclick="helpCenter.toggleFAQ(event)">
+                                <div class="faq-question">
+                                    <span class="faq-question-text">${item.q}</span>
+                                    <span class="faq-toggle">▼</span>
+                                </div>
+                                <div class="faq-answer">${item.a}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `).join('');
+            }
+
+            toggleFAQ(e) {
+                const item = e.currentTarget;
+                item.classList.toggle('active');
+            }
+
+            search() {
+                const query = document.getElementById('searchBox').value.toLowerCase();
+                const items = document.querySelectorAll('.faq-item');
+                items.forEach(item => {
+                    const text = item.querySelector('.faq-question-text').textContent.toLowerCase();
+                    const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+                    item.style.display = text.includes(query) || answer.includes(query) ? 'block' : 'none';
+                });
+            }
+        }
+
+        UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
+        const helpCenter = new HelpCenterManager();
+    </script>
+</body>
+</html>

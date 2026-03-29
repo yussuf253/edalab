@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Tracking - Edalab</title>
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/modules.css">
+    <style>
+        .tracking-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .order-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .order-id {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .order-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        .order-status {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .order-status.preparing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .order-status.on-way {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        .order-status.delivered {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .timeline {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 32px;
+            position: relative;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 17px;
+            top: 50px;
+            width: 2px;
+            height: calc(100% - 50px);
+            background: #eee;
+        }
+
+        .timeline-item.completed::after {
+            background: #27ae60;
+        }
+
+        .timeline-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+
+        .timeline-item.completed .timeline-dot {
+            border-color: #27ae60;
+            background: #27ae60;
+            color: white;
+        }
+
+        .timeline-item.active .timeline-dot {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .timeline-time {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .timeline-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .delivery-info {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .info-section {
+            margin-bottom: 20px;
+        }
+
+        .info-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .driver-info {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .driver-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            flex-shrink: 0;
+        }
+
+        .driver-details {
+            flex: 1;
+        }
+
+        .driver-name {
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .driver-rating {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 8px;
+        }
+
+        .driver-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .address-info {
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .address-label {
+            font-size: 12px;
+            color: #999;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .address-text {
+            font-size: 14px;
+            color: #1a1a1a;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .contact-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .contact-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .contact-btn {
+            padding: 14px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            color: #667eea;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .contact-btn:hover {
+            background: #f8f9ff;
+        }
+
+        .contact-icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .map-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+
+        .status-changed {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    </nav>
+
+    <div class="tracking-container">
+        <!-- Order Header -->
+        <div class="order-header">
+            <div class="order-id">Order Number</div>
+            <div class="order-title" id="orderNumber">-</div>
+            <span class="order-status" id="orderStatus">Preparing</span>
+        </div>
+
+        <!-- Map Placeholder -->
+        <div class="map-container">
+            🗺️ Live Tracking Map (Coming Soon)
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline" id="timelineContainer"></div>
+
+        <!-- Delivery Info -->
+        <div class="delivery-info">
+            <!-- Driver Info -->
+            <div class="info-section" id="driverSection" style="display: none;">
+                <div class="info-title">Delivery Partner</div>
+                <div class="driver-info">
+                    <div class="driver-avatar" id="driverAvatar">👨</div>
+                    <div class="driver-details">
+                        <div class="driver-name" id="driverName">John Smith</div>
+                        <div class="driver-rating" id="driverRating">⭐ 4.8 (250+ deliveries)</div>
+                        <div class="driver-actions">
+                            <button class="action-btn" onclick="showNotification('Calling driver...')">📞 Call</button>
+                            <button class="action-btn" onclick="showNotification('Opening chat...')">💬 Chat</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Info -->
+            <div class="info-section">
+                <div class="info-title">Delivery Address</div>
+                <div class="address-info">
+                    <div class="address-label">Delivery To</div>
+                    <div class="address-text" id="deliveryAddress">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Expected Time -->
+            <div class="info-section">
+                <div class="info-title">Estimated Delivery Time</div>
+                <div class="address-info" style="border-left-color: #f39c12;">
+                    <div class="address-label">Arriving in approximately</div>
+                    <div class="address-text" id="estimatedTime">30-40 minutes</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Support -->
+        <div class="contact-section">
+            <div class="info-title" style="margin-bottom: 16px;">Need Help?</div>
+            <div class="contact-buttons">
+                <button class="contact-btn" onclick="showNotification('Contacting support...')">
+                    <div class="contact-icon">💬</div>
+                    <div style="font-size: 13px;">Chat Support</div>
+                </button>
+                <button class="contact-btn" onclick="showNotification('Calling support...')">
+                    <div class="contact-icon">📞</div>
+                    <div style="font-size: 13px;">Call Support</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api-client.js"></script>
+    <script src="js/state-manager.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script>
+        class TrackingManager {
+            constructor() {
+                const params = new URLSearchParams(window.location.search);
+                this.orderId = params.get('orderId');
+                this.rideId = params.get('rideId');
+                this.order = null;
+                this.init();
+            }
+
+            async init() {
+                await this.loadOrder();
+                this.renderTracking();
+                // Simulate real-time updates
+                setInterval(() => this.updateOrderStatus(), 10000);
+            }
+
+            async loadOrder() {
+                const orders = StateManager.getOrders();
+                const entryId = this.orderId || this.rideId;
+                this.order = orders.find(o => o.id === entryId);
+
+                if (!this.order) {
+                    const user = StateManager.getUser();
+                    if (user?.id) {
+                        try {
+                            const history = await apiClient.getOrdersForUser(user.id);
+                            const remoteOrders = (Array.isArray(history) ? history : []).map((entry) => ({
+                                id: entry.id,
+                                module: String(entry.moduleType || '').toLowerCase().replace('_', '-'),
+                                moduleType: entry.moduleType,
+                                status: String(entry.status || 'pending').toLowerCase(),
+                                createdAt: entry.createdAt,
+                                subtotal: entry.subtotal || 0,
+                                tax: entry.tax || 0,
+                                deliveryFee: entry.deliveryFee || 0,
+                                discount: entry.discount || 0,
+                                total: entry.total || 0,
+                                items: entry.items || [],
+                                address: entry.address ? { street: entry.address, city: '' } : null,
+                                trackingRoute: entry.trackingRoute || null,
+                            }));
+                            StateManager.setOrders(remoteOrders);
+                            this.order = remoteOrders.find((entry) => entry.id === entryId);
+                        } catch (error) {
+                            console.error('Error loading tracking order:', error);
+                        }
+                    }
+                }
+                
+                if (!this.order) {
+                    console.error('Order not found');
+                }
+            }
+
+            renderTracking() {
+                if (!this.order) return;
+
+                // Order number
+                document.getElementById('orderNumber').textContent = this.order.id;
+
+                // Status
+                const statusEl = document.getElementById('orderStatus');
+                let statusText = 'Preparing';
+                let statusClass = 'preparing';
+
+                if (this.order.status === 'on-way' || this.order.status === 'active') {
+                    statusText = 'On the Way';
+                    statusClass = 'on-way';
+                } else if (this.order.status === 'delivered') {
+                    statusText = 'Delivered';
+                    statusClass = 'delivered';
+                } else if (this.order.status === 'confirmed' && this.order.module === 'ride') {
+                    statusText = 'Driver Assigned';
+                }
+
+                statusEl.textContent = statusText;
+                statusEl.className = `order-status ${statusClass}`;
+
+                // Delivery address
+                if (this.order.address) {
+                    const addr = this.order.address;
+                    document.getElementById('deliveryAddress').textContent = 
+                        [addr.street, addr.city, addr.zip].filter(Boolean).join(', ');
+                } else if (this.order.metadata?.dropoff) {
+                    document.getElementById('deliveryAddress').textContent = this.order.metadata.dropoff;
+                }
+
+                // Timeline
+                this.renderTimeline();
+
+                // Show driver info if on way or delivered
+                if (['confirmed', 'on-way', 'delivered', 'active'].includes(this.order.status)) {
+                    document.getElementById('driverSection').style.display = 'block';
+                    if (this.order.module === 'ride') {
+                        document.getElementById('driverName').textContent = 'eDalab Driver';
+                        document.getElementById('driverRating').textContent = '⭐ 4.9 • En route';
+                    }
+                }
+            }
+
+            renderTimeline() {
+                const isRide = this.order.module === 'ride' || this.order.moduleType === 'RIDE';
+                const timeline = isRide ? [
+                    {
+                        title: 'Ride Confirmed',
+                        description: 'Your ride request has been accepted',
+                        time: new Date(this.order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        status: 'completed'
+                    },
+                    {
+                        title: 'Driver Assigned',
+                        description: 'A nearby driver is heading to your pickup point',
+                        time: '---',
+                        status: ['confirmed', 'active', 'on-way', 'delivered'].includes(this.order.status) ? 'completed' : 'pending'
+                    },
+                    {
+                        title: 'Trip in Progress',
+                        description: 'You are on the way to your destination',
+                        time: '---',
+                        status: ['active', 'on-way'].includes(this.order.status) ? 'active' :
+                            (this.order.status === 'delivered' ? 'completed' : 'pending')
+                    },
+                    {
+                        title: 'Trip Completed',
+                        description: 'You have arrived at your destination',
+                        time: '---',
+                        status: this.order.status === 'delivered' ? 'completed' : 'pending'
+                    }
+                ] : [
+                    {
+                        title: 'Order Confirmed',
+                        description: 'Your order has been confirmed and sent to the restaurant',
+                        time: new Date(this.order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        status: 'completed'
+                    },
+                    {
+                        title: 'Order Preparing',
+                        description: 'The restaurant is preparing your order',
+                        time: '---',
+                        status: this.order.status === 'confirmed' ? 'active' : 'completed'
+                    },
+                    {
+                        title: 'Order Picked Up',
+                        description: 'Your order has been picked up for delivery',
+                        time: '---',
+                        status: ['on-way', 'delivered'].includes(this.order.status) ? 
+                            (['on-way', 'delivered'].includes(this.order.status) ? 'completed' : 'pending') : 'pending'
+                    },
+                    {
+                        title: 'Out for Delivery',
+                        description: 'Your order is on the way to you',
+                        time: '---',
+                        status: this.order.status === 'on-way' ? 'active' : 
+                               (this.order.status === 'delivered' ? 'completed' : 'pending')
+                    },
+                    {
+                        title: 'Delivered',
+                        description: 'Your order has been delivered successfully',
+                        time: '---',
+                        status: this.order.status === 'delivered' ? 'completed' : 'pending'
+                    }
+                ];
+
+                const container = document.getElementById('timelineContainer');
+                container.innerHTML = timeline.map((item, idx) => `
+                    <div class="timeline-item ${item.status}">
+                        <div class="timeline-dot">
+                            ${item.status === 'completed' ? '✓' : (item.status === 'active' ? '◉' : '○')}
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">${item.title}</div>
+                            <div class="timeline-time">${item.time}</div>
+                            <div class="timeline-description">${item.description}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            updateOrderStatus() {
+                if (!this.order) return;
+                const statuses = this.order.module === 'ride'
+                    ? ['confirmed', 'active', 'delivered']
+                    : ['confirmed', 'on-way', 'delivered'];
+                const currentIndex = statuses.indexOf(this.order.status);
+                
+                if (currentIndex < statuses.length - 1 && Math.random() > 0.8) {
+                    this.order.status = statuses[currentIndex + 1];
+                    this.renderTracking();
+                }
+            }
+        }
+
+        UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
+        const tracking = new TrackingManager();
+
+        function showNotification(message) {
+            UIComponents.showToast(message);
+        }
+
+    </script>
+</body>
+</html>

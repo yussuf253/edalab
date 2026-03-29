@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Edalab</title>
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/modules.css">
+    <style>
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .page-title { font-size: 24px; font-weight: 700; margin-bottom: 24px; }
+        .settings-section { background: white; border-radius: 12px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .section-header { padding: 16px 20px; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .setting-item { padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-label { font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+        .setting-desc { font-size: 12px; color: #999; }
+        .toggle-switch { width: 50px; height: 28px; background: #ddd; border-radius: 14px; cursor: pointer; position: relative; transition: background 0.2s; }
+        .toggle-switch.active { background: #667eea; }
+        .toggle-slider { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; background: white; border-radius: 50%; transition: left 0.2s; }
+        .toggle-switch.active .toggle-slider { left: 25px; }
+        .select-input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; cursor: pointer; }
+        .btn-danger { width: 100%; padding: 14px; background: #ff6b6b; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 20px; }
+        .danger-zone { background: white; border-radius: 12px; padding: 20px; margin-top: 20px; border: 2px solid #ff6b6b; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .danger-title { font-weight: 700; color: #ff6b6b; margin-bottom: 8px; }
+        .danger-desc { font-size: 13px; color: #666; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title">Settings</h1>
+
+        <!-- Notifications -->
+        <div class="settings-section">
+            <div class="section-header">Notifications</div>
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label">Push Notifications</div>
+                    <div class="setting-desc">Receive order updates and promotions</div>
+                </div>
+                <div class="toggle-switch active" onclick="settings.toggle(this, 'notifications')" id="notificationsToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label">Email Updates</div>
+                    <div class="setting-desc">Receive emails about your orders</div>
+                </div>
+                <div class="toggle-switch" onclick="settings.toggle(this, 'emailUpdates')" id="emailUpdatesToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label">Marketing Emails</div>
+                    <div class="setting-desc">Receive promotional emails and offers</div>
+                </div>
+                <div class="toggle-switch active" onclick="settings.toggle(this, 'marketing')" id="marketingToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preferences -->
+        <div class="settings-section">
+            <div class="section-header">Preferences</div>
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label">Language</div>
+                    <div class="setting-desc">Choose your preferred language</div>
+                </div>
+                <select class="select-input" id="languageSelect" onchange="settings.updateLanguage()">
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                    <option value="ar">العربية</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label">Theme</div>
+                    <div class="setting-desc">Choose light or dark mode</div>
+                </div>
+                <select class="select-input" id="themeSelect" onchange="settings.updateTheme()">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="auto">Auto</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Privacy & Security -->
+        <div class="settings-section">
+            <div class="section-header">Privacy & Security</div>
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label">Two-Factor Authentication</div>
+                    <div class="setting-desc">Add extra security to your account</div>
+                </div>
+                <div class="toggle-switch" onclick="settings.toggle(this, '2fa')" id="2faToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label">Privacy Policy</div>
+                    <div class="setting-desc">Review our privacy policy</div>
+                </div>
+                <a href="#" style="color: #667eea; text-decoration: none;">View ›</a>
+            </div>
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label">Terms of Service</div>
+                    <div class="setting-desc">Review terms and conditions</div>
+                </div>
+                <a href="#" style="color: #667eea; text-decoration: none;">View ›</a>
+            </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="danger-zone">
+            <div class="danger-title">⚠️ Danger Zone</div>
+            <div class="danger-desc">These actions are irreversible. Please proceed with caution.</div>
+            <button class="btn-danger" onclick="settings.deleteAccount()">Delete Account</button>
+        </div>
+    </div>
+
+    <script src="js/api-client.js"></script>
+    <script src="js/state-manager.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script>
+        class SettingsManager {
+            constructor() {
+                this.user = StateManager.getUser();
+                this.init();
+            }
+
+            init() {
+                this.user = UIComponents.requireAuth({
+                    message: 'Please log in to manage your settings.',
+                    next: 'settings.html',
+                });
+                if (!this.user) {
+                    return;
+                }
+                this.loadSettings();
+            }
+
+            loadSettings() {
+                if (!this.user) return;
+                
+                // Load notification settings
+                if (this.user.settings) {
+                    const settings = this.user.settings;
+                    document.getElementById('notificationsToggle').classList.toggle('active', settings.notifications !== false);
+                    document.getElementById('emailUpdatesToggle').classList.toggle('active', settings.emailUpdates !== false);
+                    document.getElementById('marketingToggle').classList.toggle('active', settings.marketing !== false);
+                    document.getElementById('2faToggle').classList.toggle('active', settings.twoFA !== false);
+                    document.getElementById('languageSelect').value = settings.language || 'en';
+                    document.getElementById('themeSelect').value = settings.theme || 'light';
+                }
+            }
+
+            toggle(element, setting) {
+                element.classList.toggle('active');
+                this.saveSettings();
+            }
+
+            updateLanguage() {
+                this.saveSettings();
+                UIComponents.showToast('Language updated');
+            }
+
+            updateTheme() {
+                this.saveSettings();
+                UIComponents.showToast('Theme updated');
+            }
+
+            saveSettings() {
+                if (!this.user) return;
+                
+                if (!this.user.settings) this.user.settings = {};
+                
+                this.user.settings = {
+                    notifications: document.getElementById('notificationsToggle').classList.contains('active'),
+                    emailUpdates: document.getElementById('emailUpdatesToggle').classList.contains('active'),
+                    marketing: document.getElementById('marketingToggle').classList.contains('active'),
+                    twoFA: document.getElementById('2faToggle').classList.contains('active'),
+                    language: document.getElementById('languageSelect').value,
+                    theme: document.getElementById('themeSelect').value
+                };
+                
+                StateManager.setUser(this.user);
+            }
+
+            deleteAccount() {
+                if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                    if (confirm('Type "DELETE" to confirm account deletion')) {
+                        StateManager.logout();
+                        UIComponents.showToast('Account deleted');
+                        window.location.href = 'edalab-website.html';
+                    }
+                }
+            }
+        }
+
+        UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
+        const settings = new SettingsManager();
+    </script>
+</body>
+</html>

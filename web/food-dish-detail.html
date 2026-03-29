@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dish Details - Edalab</title>
+    <link rel="stylesheet" href="css/main-styles.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/modules.css">
+    <style>
+        .detail-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .dish-image-container {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dish-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            z-index: 10;
+        }
+
+        .dish-info {
+            padding: 20px;
+            background: white;
+        }
+
+        .dish-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .dish-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+            flex: 1;
+        }
+
+        .dish-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .dish-meta {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .meta-badge {
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .dish-description {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .customization-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+        }
+
+        .option-group {
+            background: #f8f9fa;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .option-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .option-item:last-child {
+            border-bottom: none;
+        }
+
+        .option-item input[type="radio"],
+        .option-item input[type="checkbox"] {
+            cursor: pointer;
+        }
+
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .qty-btn {
+            background: white;
+            border: 1px solid #ddd;
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .qty-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .qty-display {
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .cart-total {
+            margin-left: auto;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .add-cart-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .add-cart-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .add-cart-button:active {
+            transform: translateY(0);
+        }
+
+        .loading-skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="detail-container">
+        <!-- Image Section -->
+        <div class="dish-image-container">
+            <img id="dishImage" class="dish-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial,sans-serif' font-size='24' fill='%236b7280' text-anchor='middle' dy='.3em'%3EDish%3C/text%3E%3C/svg%3E" alt="Dish">
+            <button class="back-button" onclick="window.history.back()">←</button>
+        </div>
+
+        <!-- Info Section -->
+        <div class="dish-info">
+            <div class="dish-header">
+                <div class="dish-name" id="dishName">Loading...</div>
+                <div class="dish-price" id="dishPrice">$0</div>
+            </div>
+
+            <div class="dish-meta">
+                <span class="meta-badge" id="dishCalories">0 cal</span>
+                <span class="meta-badge" id="dishCookTime">15 min</span>
+                <span class="meta-badge" id="dishRating">4.5★</span>
+            </div>
+
+            <p class="dish-description" id="dishDescription">Loading dish details...</p>
+
+            <!-- Customization Options -->
+            <div id="customizationsContainer"></div>
+
+            <!-- Quantity Selector -->
+            <div class="quantity-selector">
+                <button class="qty-btn" id="qtyMinus" onclick="dishDetail.decreaseQuantity()">−</button>
+                <div class="qty-display" id="qtyDisplay">1</div>
+                <button class="qty-btn" id="qtyPlus" onclick="dishDetail.increaseQuantity()">+</button>
+                <div class="cart-total" id="cartTotal">$0</div>
+            </div>
+
+            <!-- Add to Cart Button -->
+            <button class="add-cart-button" id="addCartBtn" onclick="dishDetail.addToCart()">
+                Add to Cart
+            </button>
+        </div>
+    </div>
+
+    <script src="js/api-client.js"></script>
+    <script src="js/state-manager.js"></script>
+    <script src="js/ui-components.js"></script>
+    <script>
+        const DISH_DETAIL_FALLBACK_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial,sans-serif' font-size='24' fill='%236b7280' text-anchor='middle' dy='.3em'%3EDish%3C/text%3E%3C/svg%3E";
+        const SAMPLE_RESTAURANTS = [
+            {
+                id: 'r1',
+                name: 'Burger Palace',
+                menu: [
+                    {
+                        name: 'Popular',
+                        items: [
+                            { id: 'm1', name: 'Classic Cheese Burger', description: 'Juicy beef patty with cheddar, lettuce, tomato', price: 12.99, isPopular: true },
+                            { id: 'm2', name: 'BBQ Bacon Burger', description: 'Smoky BBQ sauce, crispy bacon, onion rings', price: 15.99 },
+                            { id: 'm3', name: 'Veggie Delight', description: 'Plant-based patty, avocado, fresh salad', price: 11.99, isPopular: true }
+                        ]
+                    },
+                    {
+                        name: 'Sides',
+                        items: [
+                            { id: 'm4', name: 'Loaded Fries', description: 'Cheese, jalapenos, sour cream', price: 7.99 },
+                            { id: 'm5', name: 'Onion Rings', description: 'Crispy battered onion rings', price: 5.99 }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        class DishDetailManager {
+            constructor() {
+                const params = new URLSearchParams(window.location.search);
+                this.dishId = params.get('id');
+                this.restaurantId = params.get('restaurantId');
+                this.categoryName = params.get('categoryName') || 'Menu';
+                this.dish = null;
+                this.restaurant = null;
+                this.quantity = 1;
+                this.selectedOptions = {};
+                this.init();
+            }
+
+            async init() {
+                await this.loadData();
+                this.setupUI();
+                this.updateTotal();
+            }
+
+            async loadData() {
+                try {
+                    try {
+                        const restaurant = await apiClient.getRestaurantDetail(this.restaurantId);
+                        this.restaurant = Array.isArray(restaurant) ? restaurant[0] : restaurant;
+                    } catch (_detailError) {
+                        const listResponse = await apiClient.getRestaurants({ limit: 100, skip: 0 });
+                        const restaurants = Array.isArray(listResponse) ? listResponse : (listResponse.data || []);
+                        this.restaurant = restaurants.find(r => String(r.id) === String(this.restaurantId));
+                    }
+
+                    if (!this.restaurant) {
+                        this.restaurant = SAMPLE_RESTAURANTS.find(r => String(r.id) === String(this.restaurantId)) || null;
+                    }
+
+                    for (const section of this.restaurant?.menu || []) {
+                        const foundDish = section.items?.find(item => String(item.id) === String(this.dishId));
+                        if (foundDish) {
+                            this.dish = foundDish;
+                            if (!this.categoryName || this.categoryName === 'Menu') {
+                                this.categoryName = section.name;
+                            }
+                            break;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading dish:', error);
+                }
+            }
+
+            setupUI() {
+                if (!this.dish) {
+                    document.querySelector('.dish-info').innerHTML = '<div style="padding: 20px; text-align: center; color: #999;">Dish not found</div>';
+                    return;
+                }
+
+                // Update basic info
+                document.getElementById('dishName').textContent = this.dish.name;
+                document.getElementById('dishImage').src =
+                    this.dish.image ||
+                    this.dish.imageUrl ||
+                    (this.dish.images && this.dish.images[0]) ||
+                    DISH_DETAIL_FALLBACK_IMAGE;
+                document.getElementById('dishPrice').textContent = `$${this.dish.price}`;
+                document.getElementById('dishDescription').textContent = this.dish.description || 'A delicious dish';
+                document.getElementById('dishCalories').textContent = `${this.dish.calories || 0} cal`;
+                document.getElementById('dishCookTime').textContent = `${this.dish.cookTime || 15} min`;
+                document.getElementById('dishRating').textContent = `${this.dish.rating || 4.5}★`;
+
+                // Render customization options if available
+                if (this.dish.customizations && this.dish.customizations.length > 0) {
+                    this.renderCustomizations();
+                }
+            }
+
+            renderCustomizations() {
+                const container = document.getElementById('customizationsContainer');
+                container.innerHTML = '';
+
+                this.dish.customizations.forEach((customization, index) => {
+                    const isMultiple = customization.type === 'multiple';
+                    const sectionId = `custom_${index}`;
+                    
+                    let html = `<div class="customization-section">
+                        <div class="section-title">${customization.name}${customization.required ? ' *' : ''}</div>
+                        <div class="option-group">`;
+
+                    customization.options?.forEach(option => {
+                        const inputId = `${sectionId}_${option}`;
+                        const inputType = isMultiple ? 'checkbox' : 'radio';
+                        
+                        html += `
+                            <label class="option-item">
+                                <div style="flex: 1;">
+                                    <span>${option}</span>
+                                </div>
+                                <input type="${inputType}" 
+                                    id="${inputId}" 
+                                    name="${sectionId}" 
+                                    value="${option}"
+                                    onchange="dishDetail.updateSelection('${sectionId}', '${option}', this.checked)">
+                            </label>
+                        `;
+                    });
+
+                    html += '</div></div>';
+                    container.innerHTML += html;
+                });
+            }
+
+            updateSelection(sectionId, option, checked) {
+                if (!this.selectedOptions[sectionId]) {
+                    this.selectedOptions[sectionId] = [];
+                }
+
+                if (checked) {
+                    if (!this.selectedOptions[sectionId].includes(option)) {
+                        this.selectedOptions[sectionId].push(option);
+                    }
+                } else {
+                    this.selectedOptions[sectionId] = this.selectedOptions[sectionId].filter(o => o !== option);
+                }
+            }
+
+            increaseQuantity() {
+                this.quantity++;
+                this.updateTotal();
+            }
+
+            decreaseQuantity() {
+                if (this.quantity > 1) {
+                    this.quantity--;
+                    this.updateTotal();
+                }
+            }
+
+            updateTotal() {
+                const total = this.dish.price * this.quantity;
+                document.getElementById('qtyDisplay').textContent = this.quantity;
+                document.getElementById('cartTotal').textContent = `$${total.toFixed(2)}`;
+            }
+
+            addToCart() {
+                const cartItem = {
+                    id: `${this.dish.id}_${Date.now()}`,
+                    dishId: this.dish.id,
+                    name: this.dish.name,
+                    price: this.dish.price,
+                    quantity: this.quantity,
+                    image: this.dish.image || '',
+                    moduleType: 'FOOD',
+                    vendorId: this.restaurant.id,
+                    vendorName: this.restaurant.name,
+                    categoryName: this.categoryName,
+                    customizations: this.selectedOptions,
+                    notes: ''
+                };
+
+                StateManager.addToCart(cartItem);
+                UIComponents.showToast(`${this.dish.name} × ${this.quantity} added to cart!`);
+                
+                // Redirect to cart after 1 second
+                setTimeout(() => {
+                    window.location.href = 'cart.html';
+                }, 1000);
+            }
+        }
+
+        const dishDetail = new DishDetailManager();
+    </script>
+</body>
+</html>
