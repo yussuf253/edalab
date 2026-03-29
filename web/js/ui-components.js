@@ -522,18 +522,44 @@ const UIComponents = {
     `;
   },
 
+  inferUnifiedNavbarActive() {
+    const currentPage = window.location.pathname.split('/').pop() || 'edalab-website.html';
+    const routeMap = {
+      'edalab-website.html': 'home',
+      'food.html': 'food',
+      'restaurant-detail.html': 'food',
+      'shopping.html': 'shopping',
+      'product-detail.html': 'shopping',
+      'pharmacy.html': 'pharmacy',
+      'doctor.html': 'doctor',
+      'hotel.html': 'hotel',
+      'ride.html': 'ride',
+      'home-services.html': 'services',
+      'laundry.html': 'laundry',
+    };
+
+    return routeMap[currentPage] || '';
+  },
+
+  getUnifiedNavbarOptions(options = {}) {
+    const nav = document.getElementById('nav');
+    const currentPage = window.location.pathname.split('/').pop() || 'edalab-website.html';
+
+    return {
+      active: nav?.dataset.navActive || this.inferUnifiedNavbarActive(),
+      cartCountId: nav?.dataset.cartCountId || 'navCartCount',
+      wishlistCountId: nav?.dataset.wishlistCountId || 'navWishlistCount',
+      offsetBody: nav?.dataset.navOffset === 'true',
+      logoutRedirect: `${currentPage}${window.location.search || ''}`,
+      ...options,
+    };
+  },
+
   mountUnifiedNavbar(options = {}) {
     const nav = document.getElementById('nav');
     if (!nav) return;
 
-    const normalizedOptions = {
-      active: 'home',
-      cartCountId: 'navCartCount',
-      wishlistCountId: 'navWishlistCount',
-      offsetBody: false,
-      logoutRedirect: `${window.location.pathname.split('/').pop() || 'edalab-website.html'}${window.location.search || ''}`,
-      ...options,
-    };
+    const normalizedOptions = this.getUnifiedNavbarOptions(options);
 
     document.body.classList.toggle('has-unified-nav-offset', !!normalizedOptions.offsetBody);
     if (!nav.dataset.staticUnified && !nav.children.length) {
@@ -571,6 +597,13 @@ const UIComponents = {
       stateManager.subscribe('wishlist', () => this.updateUnifiedNavbarBadges(window.__edaUnifiedNavState || normalizedOptions));
       window.__edaUnifiedNavBound = true;
     }
+  },
+
+  bootUnifiedNavbar() {
+    const nav = document.getElementById('nav');
+    if (!nav || window.__edaUnifiedNavBooted) return;
+    window.__edaUnifiedNavBooted = true;
+    this.mountUnifiedNavbar();
   },
 };
 
@@ -613,4 +646,10 @@ function debounce(func, delay) {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func.apply(this, args), delay);
   };
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => UIComponents.bootUnifiedNavbar(), { once: true });
+} else {
+  UIComponents.bootUnifiedNavbar();
 }

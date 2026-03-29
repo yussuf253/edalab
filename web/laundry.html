@@ -11,23 +11,6 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/modules.css">
     <style>
-        .laundry-hero {
-            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
-            color: white;
-            padding: 40px 20px;
-            text-align: center;
-        }
-
-        .laundry-hero h1 {
-            font-size: 32px;
-            margin-bottom: 12px;
-        }
-
-        .laundry-hero p {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
         .laundry-form {
             background: white;
             padding: 24px;
@@ -323,24 +306,26 @@
         <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="laundry-hero">
         <div class="wrap">
-            <h1>Laundry Service 🧺</h1>
-            <p>Professional laundry with pickup and delivery</p>
+            <div class="lh-content">
+                <h1>Laundry Service Made Simple</h1>
+                <p>Professional pickup, cleaning, and delivery with flexible scheduling and transparent estimates.</p>
+                <div id="search-container"></div>
+            </div>
         </div>
     </section>
 
-    <!-- Main Content -->
     <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
-        <!-- Order Form -->
-        <div class="laundry-form">
-            <h2 style="margin-bottom: 20px;">Place a Laundry Order</h2>
-
-            <!-- Service Type -->
-            <label style="display: block; margin-bottom: 12px; font-weight: 600;">Select Service Type</label>
+        <section style="margin-bottom: 40px;">
+            <h2 style="margin-bottom: 16px;">Laundry Services</h2>
             <div class="service-options" id="serviceOptions">
             </div>
+        </section>
+
+        <div class="filter-section">
+            <h2>Place Your Order</h2>
+        <div class="laundry-form">
 
             <!-- Additional Services -->
             <label style="display: block; margin-bottom: 12px; font-weight: 600;">Additional Services</label>
@@ -429,8 +414,9 @@
             <!-- Submit Button -->
             <button class="submit-button" id="submitButton" onclick="laundryModule.submitOrder()">Place Order</button>
         </div>
+        </div>
 
-        <!-- Info Section -->
+        <section class="food-section">
         <div class="laundry-info">
             <h3>Why Choose Our Laundry Service?</h3>
             <div class="info-item">
@@ -450,13 +436,54 @@
                 <div>Careful handling of delicate and premium fabrics</div>
             </div>
         </div>
+        </section>
 
-        <!-- Orders History -->
+        <section class="food-section">
         <div class="orders-history">
             <h3>Your Laundry Orders</h3>
             <div id="ordersContainer"></div>
         </div>
+        </section>
     </main>
+
+    <footer class="footer">
+        <div class="wrap">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>eDalab Laundry</h3>
+                    <ul>
+                        <li><a href="#">Service guide</a></li>
+                        <li><a href="#">Pickup zones</a></li>
+                        <li><a href="#">Fabric care tips</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>For Customers</h3>
+                    <ul>
+                        <li><a href="#">Book laundry</a></li>
+                        <li><a href="#">Track orders</a></li>
+                        <li><a href="#">Help Center</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="#">Wash & fold</a></li>
+                        <li><a href="#">Express cleaning</a></li>
+                        <li><a href="#">Delicate care</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Email: laundry@edalab.dj</p>
+                    <p>Phone: +253 21 35 00 00</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 eDalab. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
     <script src="js/api-client.js"></script>
     <script src="js/state-manager.js"></script>
     <script src="js/ui-components.js"></script>
@@ -473,11 +500,46 @@
 
             async init() {
                 await this.loadServices();
+                this.setupHeroSearch();
                 this.renderServices();
                 this.setupDatePicker();
                 this.updatePrice();
                 this.loadOrders();
-                UIComponents.mountUnifiedNavbar({ active: 'laundry' });
+            }
+
+            setupHeroSearch() {
+                const container = document.getElementById('search-container');
+                if (!container) return;
+                container.innerHTML = `
+                    <div class="search-bar">
+                        <input type="text" id="laundry-hero-search" class="search-input" placeholder="Search a laundry service..." />
+                        <button class="search-btn" onclick="laundryModule.handleHeroSearch()">Find</button>
+                    </div>
+                `;
+                document.getElementById('laundry-hero-search').addEventListener('keypress', (event) => {
+                    if (event.key === 'Enter') this.handleHeroSearch();
+                });
+            }
+
+            handleHeroSearch() {
+                const query = document.getElementById('laundry-hero-search').value.trim().toLowerCase();
+                if (!query) {
+                    document.getElementById('serviceOptions').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
+
+                const match = this.services.find((service) => {
+                    const label = `${service.name} ${service.description || ''}`.toLowerCase();
+                    return label.includes(query);
+                });
+
+                if (match) {
+                    this.selectedService = match.id;
+                    this.renderServices();
+                    this.updatePrice();
+                }
+
+                document.getElementById('serviceOptions').scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
 
             async loadServices() {
@@ -725,6 +787,7 @@
             }
         }
 
+        UIComponents.mountUnifiedNavbar({ active: 'laundry' });
         const laundryModule = new LaundryModule();
     </script>
 </body>

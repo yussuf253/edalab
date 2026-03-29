@@ -11,23 +11,6 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/modules.css">
     <style>
-        .services-hero {
-            background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
-            color: white;
-            padding: 40px 20px;
-            text-align: center;
-        }
-
-        .services-hero h1 {
-            font-size: 32px;
-            margin-bottom: 12px;
-        }
-
-        .services-hero p {
-            font-size: 16px;
-            opacity: 0.9;
-        }
-
         .services-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -221,23 +204,23 @@
         <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
     </nav>
 
-    <!-- Hero Section -->
     <section class="services-hero">
         <div class="wrap">
-            <h1>Home Services 🔧</h1>
-            <p>Professional services for your home and lifestyle</p>
+            <div class="svh-content">
+                <h1>Trusted Home Services, Ready When You Need Them</h1>
+                <p>Browse service categories, compare professionals, and book the right help for your home and daily life.</p>
+                <div id="search-container"></div>
+            </div>
         </div>
     </section>
 
-    <!-- Main Content -->
     <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
-        <!-- Service Categories -->
+
         <section style="margin-bottom: 40px;">
             <h2 style="margin-bottom: 20px;">Choose a Service</h2>
-            <div class="services-grid" id="servicesGrid"></div>
+            <div class="category-grid" id="servicesGrid"></div>
         </section>
 
-        <!-- Filters -->
         <div class="filter-section">
             <div class="filter-item">
                 <label>Service Type</label>
@@ -278,12 +261,50 @@
             </div>
         </div>
 
-        <!-- Service Providers -->
         <section style="margin-bottom: 40px;">
             <h2 style="margin-bottom: 20px;">Available Professionals</h2>
             <div class="providers-grid" id="providersGrid"></div>
         </section>
     </main>
+
+    <footer class="footer">
+        <div class="wrap">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>eDalab Services</h3>
+                    <ul>
+                        <li><a href="#">How booking works</a></li>
+                        <li><a href="#">Partner standards</a></li>
+                        <li><a href="#">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>For Customers</h3>
+                    <ul>
+                        <li><a href="#">Browse categories</a></li>
+                        <li><a href="#">Find professionals</a></li>
+                        <li><a href="#">Help Center</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>For Pros</h3>
+                    <ul>
+                        <li><a href="#">Become a provider</a></li>
+                        <li><a href="#">Provider resources</a></li>
+                        <li><a href="#">Coverage areas</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <p>Email: services@edalab.dj</p>
+                    <p>Phone: +253 21 35 00 00</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 eDalab. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="js/api-client.js"></script>
     <script src="js/state-manager.js"></script>
@@ -299,9 +320,44 @@
 
             async init() {
                 await this.loadData();
+                this.setupHeroSearch();
                 this.renderServices();
                 this.renderProviders();
-                UIComponents.mountUnifiedNavbar({ active: 'services' });
+            }
+
+            setupHeroSearch() {
+                const container = document.getElementById('search-container');
+                if (!container) return;
+                container.innerHTML = `
+                    <div class="search-bar">
+                        <input type="text" id="services-hero-search" class="search-input" placeholder="Search a service or provider..." />
+                        <button class="search-btn" onclick="homeServicesModule.handleHeroSearch()">Search</button>
+                    </div>
+                `;
+                document.getElementById('services-hero-search').addEventListener('keypress', (event) => {
+                    if (event.key === 'Enter') this.handleHeroSearch();
+                });
+            }
+
+            handleHeroSearch() {
+                const query = document.getElementById('services-hero-search').value.trim().toLowerCase();
+                if (!query) {
+                    this.renderProviders();
+                    return;
+                }
+
+                const filtered = this.providers.filter((provider) => {
+                    const haystack = [
+                        provider.name,
+                        provider.title,
+                        provider.category?.name,
+                        provider.category?.slug,
+                    ].join(' ').toLowerCase();
+                    return haystack.includes(query);
+                });
+
+                this.renderProviders(filtered);
+                document.getElementById('providersGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
 
             async loadData() {
@@ -360,7 +416,7 @@
                         ? Math.min(...matchingProviders.map((provider) => Number(provider.startingPrice || 0)))
                         : 0;
                     html += `
-                        <div class="service-category ${this.selectedService === serviceKey ? 'active' : ''}"
+                        <div class="category-card service-category ${this.selectedService === serviceKey ? 'active' : ''}"
                              onclick="homeServicesModule.selectService('${serviceKey}')">
                             <div class="service-icon">${this.getServiceIcon(service)}</div>
                             <div class="service-name">${service.name}</div>
@@ -443,6 +499,7 @@
                 this.renderProviders(filtered);
             }
 
+
             bookService(providerId) {
                 const provider = this.providers.find(p => p.id === providerId);
                 if (provider) {
@@ -523,6 +580,7 @@
             }
         }
 
+        UIComponents.mountUnifiedNavbar({ active: 'services' });
         const homeServicesModule = new HomeServicesModule();
     </script>
 </body>
