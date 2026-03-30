@@ -476,17 +476,52 @@
                 this.selectedPayment = 0;
                 this.selectedDelivery = 0;
                 this.deliveryOptions = [
-                    { name: 'Standard Delivery', time: '30-40 min', price: 0 },
-                    { name: 'Express Delivery', time: '15-20 min', price: 9.99 },
-                    { name: 'Same Day Delivery', time: 'By Evening', price: 14.99 }
+                    { key: 'standardDelivery', time: '30-40 min', price: 0 },
+                    { key: 'expressDelivery', time: '15-20 min', price: 9.99 },
+                    { key: 'sameDayDelivery', time: 'By Evening', price: 14.99 }
                 ];
                 this.paymentMethods = [
-                    { id: 0, name: 'Credit Card', info: '**** **** **** 4242', icon: '💳' },
-                    { id: 1, name: 'Apple Pay', info: 'Apple Pay', icon: '🍎' },
-                    { id: 2, name: 'PayPal', info: 'PayPal Account', icon: '🅿️' },
-                    { id: 3, name: 'Cash on Delivery', info: 'Pay when order arrives', icon: '💵' }
+                    { id: 0, key: 'creditCard', info: '**** **** **** 4242', icon: '💳' },
+                    { id: 1, key: 'applePay', info: 'Apple Pay', icon: '🍎' },
+                    { id: 2, key: 'paypal', info: 'PayPal Account', icon: '🅿️' },
+                    { id: 3, key: 'cashOnDelivery', infoKey: 'payWhenArrives', icon: '💵' }
                 ];
                 this.init();
+            }
+
+            t(key, fallback) {
+                return UIComponents.t(key, fallback);
+            }
+
+            getDeliveryName(option) {
+                const fallbacks = {
+                    standardDelivery: 'Standard Delivery',
+                    expressDelivery: 'Express Delivery',
+                    sameDayDelivery: 'Same Day Delivery',
+                };
+                return this.t(`checkout.${option.key}`, fallbacks[option.key] || option.key);
+            }
+
+            getDeliveryTime(option) {
+                return option.time === 'By Evening'
+                    ? this.t('checkout.byEvening', 'By Evening')
+                    : option.time;
+            }
+
+            getPaymentName(method) {
+                const fallbacks = {
+                    creditCard: 'Credit Card',
+                    applePay: 'Apple Pay',
+                    paypal: 'PayPal',
+                    cashOnDelivery: 'Cash on Delivery',
+                };
+                return this.t(`checkout.${method.key}`, fallbacks[method.key] || method.key);
+            }
+
+            getPaymentInfo(method) {
+                return method.infoKey === 'payWhenArrives'
+                    ? this.t('checkout.payWhenArrives', 'Pay when order arrives')
+                    : method.info;
             }
 
             init() {
@@ -516,7 +551,7 @@
                 const addressList = document.getElementById('addressList');
                 
                 if (!user || !user.addresses || user.addresses.length === 0) {
-                    addressList.innerHTML = '<p style="text-align: center; color: #999;">No saved addresses</p>';
+                    addressList.innerHTML = `<p style="text-align: center; color: #999;">${this.t('checkout.noSavedAddresses', 'No saved addresses')}</p>`;
                     return;
                 }
 
@@ -526,7 +561,7 @@
                             ${idx === this.selectedAddress ? 'checked' : ''}
                             onchange="checkout.selectAddress(${idx})">
                         <div style="flex: 1;">
-                            <div class="address-title">${addr.type.charAt(0).toUpperCase() + addr.type.slice(1)}</div>
+                            <div class="address-title">${this.t(`checkout.addressType${addr.type.charAt(0).toUpperCase() + addr.type.slice(1)}`, addr.type.charAt(0).toUpperCase() + addr.type.slice(1))}</div>
                             <div class="address-text">${addr.street}, ${addr.city} ${addr.zip}</div>
                         </div>
                     </label>
@@ -553,7 +588,7 @@
                 const zip = document.getElementById('addressZip').value;
 
                 if (!street || !city || !zip) {
-                    UIComponents.showToast('Please fill in all address fields');
+                    UIComponents.showToast(this.t('checkout.fillAddressFields', 'Please fill in all address fields'));
                     return;
                 }
 
@@ -573,7 +608,7 @@
                 this.selectedAddress = user.addresses.length - 1;
                 this.hideAddressForm();
                 this.renderAddresses();
-                UIComponents.showToast('Address saved!');
+                UIComponents.showToast(this.t('checkout.addressSaved', 'Address saved!'));
             }
 
             renderDeliveryOptions() {
@@ -585,10 +620,10 @@
                             onchange="checkout.selectDelivery(${idx})">
                         <div style="flex: 1;">
                             <div class="delivery-header">
-                                <span class="delivery-name">${opt.name}</span>
-                                <span class="delivery-price">${opt.price === 0 ? 'FREE' : '$' + opt.price.toFixed(2)}</span>
+                                <span class="delivery-name">${this.getDeliveryName(opt)}</span>
+                                <span class="delivery-price">${opt.price === 0 ? this.t('checkout.free', 'FREE') : '$' + opt.price.toFixed(2)}</span>
                             </div>
-                            <div class="delivery-time">${opt.time}</div>
+                            <div class="delivery-time">${this.getDeliveryTime(opt)}</div>
                         </div>
                     </label>
                 `).join('');
@@ -608,8 +643,8 @@
                             onchange="checkout.selectPayment(${idx})">
                         <span class="payment-icon">${method.icon}</span>
                         <div class="payment-details">
-                            <div class="payment-name">${method.name}</div>
-                            <div class="payment-info">${method.info}</div>
+                            <div class="payment-name">${this.getPaymentName(method)}</div>
+                            <div class="payment-info">${this.getPaymentInfo(method)}</div>
                         </div>
                     </label>
                 `).join('');
@@ -630,7 +665,7 @@
 
                 container.innerHTML = `
                     <div class="summary-section">
-                        <div class="summary-title">Order Items</div>
+                        <div class="summary-title">${this.t('checkout.orderItems', 'Order Items')}</div>
                         ${this.cartItems.map(item => `
                             <div class="order-item">
                                 <span>${item.name} × ${item.quantity}</span>
@@ -640,22 +675,22 @@
                     </div>
 
                     <div class="summary-section">
-                        <div class="summary-title">Pricing</div>
+                        <div class="summary-title">${this.t('checkout.pricing', 'Pricing')}</div>
                         <div class="cost-row">
-                            <span class="cost-label">Subtotal</span>
+                            <span class="cost-label">${this.t('checkout.subtotal', 'Subtotal')}</span>
                             <span class="cost-value">$${subtotal.toFixed(2)}</span>
                         </div>
                         <div class="cost-row">
-                            <span class="cost-label">Delivery</span>
-                            <span class="cost-value">${delivery === 0 ? 'FREE' : '$' + delivery.toFixed(2)}</span>
+                            <span class="cost-label">${this.t('checkout.delivery', 'Delivery')}</span>
+                            <span class="cost-value">${delivery === 0 ? this.t('checkout.free', 'FREE') : '$' + delivery.toFixed(2)}</span>
                         </div>
                         <div class="cost-row">
-                            <span class="cost-label">Tax (8%)</span>
+                            <span class="cost-label">${this.t('checkout.tax', 'Tax')} (8%)</span>
                             <span class="cost-value">$${tax.toFixed(2)}</span>
                         </div>
                         ${discount > 0 ? `
                             <div class="cost-row">
-                                <span class="cost-label">Discount</span>
+                                <span class="cost-label">${this.t('checkout.discount', 'Discount')}</span>
                                 <span class="cost-value discount">-$${discount.toFixed(2)}</span>
                             </div>
                         ` : ''}
@@ -663,13 +698,13 @@
 
                     <div class="summary-section">
                         <div class="cost-row">
-                            <span style="font-size: 16px; font-weight: 700;">Total Amount</span>
+                            <span style="font-size: 16px; font-weight: 700;">${this.t('checkout.totalAmount', 'Total Amount')}</span>
                             <span style="font-size: 20px; font-weight: 700; color: #667eea;">$${total.toFixed(2)}</span>
                         </div>
                     </div>
 
                     <button class="place-order-btn" onclick="checkout.placeOrder()">
-                        Place Order
+                        ${this.t('checkout.placeOrder', 'Place Order')}
                     </button>
                 `;
             }
@@ -677,7 +712,7 @@
             async placeOrder() {
                 const address = this.getSelectedAddress();
                 if (!address) {
-                    UIComponents.showToast('Please select or add a delivery address');
+                    UIComponents.showToast(this.t('checkout.selectAddress', 'Please select or add a delivery address'));
                     return;
                 }
 
@@ -729,9 +764,9 @@
                                 total: item.price * item.quantity,
                                 metadata: {
                                     address: [address.street, address.city, address.zip].filter(Boolean).join(', '),
-                                    deliveryLabel: this.deliveryOptions[this.selectedDelivery].name,
-                                    deliveryEta: this.deliveryOptions[this.selectedDelivery].time,
-                                    paymentLabel: this.paymentMethods[this.selectedPayment].name,
+                                    deliveryLabel: this.getDeliveryName(this.deliveryOptions[this.selectedDelivery]),
+                                    deliveryEta: this.getDeliveryTime(this.deliveryOptions[this.selectedDelivery]),
+                                    paymentLabel: this.getPaymentName(this.paymentMethods[this.selectedPayment]),
                                 },
                             })),
                         });
@@ -772,9 +807,9 @@
                 container.innerHTML = `
                     <div class="empty-cart-message">
                         <div class="empty-cart-icon">🛒</div>
-                        <h2>Your Cart is Empty</h2>
-                        <p>Add some items to your cart before proceeding to checkout</p>
-                        <a href="edalab-website.html" class="continue-shopping-btn">Continue Shopping</a>
+                        <h2>${this.t('checkout.emptyCartTitle', 'Your Cart is Empty')}</h2>
+                        <p>${this.t('checkout.emptyCartDescription', 'Add some items to your cart before proceeding to checkout')}</p>
+                        <a href="edalab-website.html" class="continue-shopping-btn">${this.t('checkout.continueShopping', 'Continue Shopping')}</a>
                     </div>
                 `;
             }
@@ -782,6 +817,17 @@
 
         UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
         const checkout = new CheckoutManager();
+        window.refreshPageLocalizedContent = function() {
+            if (!checkout) return;
+            if (!checkout.cartItems.length) {
+                checkout.showEmptyCart();
+                return;
+            }
+            checkout.renderAddresses();
+            checkout.renderDeliveryOptions();
+            checkout.renderPaymentMethods();
+            checkout.renderOrderSummary();
+        };
     </script>
 </body>
 </html>

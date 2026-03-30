@@ -92,6 +92,17 @@ input,textarea{font-family:'Nunito',sans-serif;border:none;outline:none}
 @media(max-width:640px){.nav-logo span{display:none}.nav-logo-icon{width:72px;height:38px}.nav-auth-slot .n-solid{padding:9px 12px}.nav-quick-actions{gap:6px}.nav-right-unified{gap:6px}}
 @media(max-width:520px){#nav{padding:0 16px}.nav-w-unified{gap:8px}.nav-icon-btn{padding:7px 9px;border-radius:10px}.nav-logo-icon{width:64px;height:34px}.nav-auth-slot .n-solid,.nav-auth-slot .n-ghost{padding:8px 10px;font-size:13px}}
 
+html[dir="rtl"] body{direction:rtl}
+html[dir="rtl"] .nav-w,
+html[dir="rtl"] .nav-right,
+html[dir="rtl"] .nav-quick-actions,
+html[dir="rtl"] .nav-auth-slot{flex-direction:row-reverse}
+html[dir="rtl"] .nav-links-unified{direction:rtl}
+html[dir="rtl"] .nav-logo{flex-direction:row-reverse}
+html[dir="rtl"] .n-solid,
+html[dir="rtl"] .n-ghost,
+html[dir="rtl"] .nav-icon-btn{direction:rtl}
+
 /* ═══ UTILITIES ═══ */
 .au{opacity:0;transform:translateY(20px);animation:au-fade 0.6s ease forwards}
 @keyframes au-fade{to{opacity:1;transform:translateY(0)}}

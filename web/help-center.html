@@ -58,7 +58,66 @@
     <script>
         class HelpCenterManager {
             constructor() {
-                this.faqs = [
+                this.init();
+            }
+
+            getFaqs() {
+                const language = UIComponents.getLanguage();
+                const localized = {
+                    fr: [
+                        {
+                            category: 'Commandes et livraison',
+                            items: [
+                                { q: 'Combien de temps prend la livraison ?', a: 'La livraison standard prend 30 à 40 minutes. La livraison express prend 15 à 20 minutes.' },
+                                { q: 'Puis-je modifier ma commande après l’avoir passée ?', a: 'Oui, vous pouvez modifier votre commande dans les 2 minutes suivant sa validation.' },
+                                { q: 'Dans quelles zones livrez-vous ?', a: 'Nous livrons dans toutes les principales zones de votre ville. Vérifiez votre adresse lors du paiement.' }
+                            ]
+                        },
+                        {
+                            category: 'Paiement',
+                            items: [
+                                { q: 'Quels modes de paiement acceptez-vous ?', a: 'Nous acceptons les cartes bancaires, les portefeuilles numériques et le paiement à la livraison.' },
+                                { q: 'Mes informations de paiement sont-elles sécurisées ?', a: 'Oui, nous utilisons un chiffrement standard de l’industrie pour protéger vos données de paiement.' },
+                                { q: 'Puis-je obtenir un remboursement ?', a: 'Les remboursements sont traités sous 5 à 7 jours ouvrables pour les commandes annulées.' }
+                            ]
+                        },
+                        {
+                            category: 'Compte',
+                            items: [
+                                { q: 'Comment réinitialiser mon mot de passe ?', a: 'Allez sur la page de connexion et cliquez sur « Mot de passe oublié » pour le réinitialiser.' },
+                                { q: 'Puis-je avoir plusieurs comptes ?', a: 'Vous pouvez utiliser un seul compte par adresse e-mail.' },
+                                { q: 'Comment supprimer mon compte ?', a: 'Contactez le support pour demander la suppression du compte.' }
+                            ]
+                        }
+                    ],
+                    ar: [
+                        {
+                            category: 'الطلبات والتوصيل',
+                            items: [
+                                { q: 'كم يستغرق التوصيل؟', a: 'يستغرق التوصيل العادي من 30 إلى 40 دقيقة. أما التوصيل السريع فيستغرق من 15 إلى 20 دقيقة.' },
+                                { q: 'هل يمكنني تعديل طلبي بعد تأكيده؟', a: 'نعم، يمكنك تعديل طلبك خلال دقيقتين من وقت تأكيده.' },
+                                { q: 'ما المناطق التي تقومون بالتوصيل إليها؟', a: 'نقوم بالتوصيل إلى جميع المناطق الرئيسية في مدينتك. تحقق من عنوانك أثناء الدفع.' }
+                            ]
+                        },
+                        {
+                            category: 'الدفع',
+                            items: [
+                                { q: 'ما طرق الدفع المقبولة؟', a: 'نقبل بطاقات الدفع والمحافظ الرقمية والدفع عند الاستلام.' },
+                                { q: 'هل معلومات الدفع الخاصة بي آمنة؟', a: 'نعم، نستخدم تشفيراً بمعايير الصناعة لحماية بيانات الدفع الخاصة بك.' },
+                                { q: 'هل يمكنني استرداد المبلغ؟', a: 'تتم معالجة المبالغ المستردة خلال 5 إلى 7 أيام عمل للطلبات الملغاة.' }
+                            ]
+                        },
+                        {
+                            category: 'الحساب',
+                            items: [
+                                { q: 'كيف أعيد تعيين كلمة المرور؟', a: 'اذهب إلى صفحة تسجيل الدخول واضغط على "هل نسيت كلمة المرور؟" لإعادة تعيينها.' },
+                                { q: 'هل يمكنني امتلاك أكثر من حساب؟', a: 'يمكنك استخدام حساب واحد لكل بريد إلكتروني.' },
+                                { q: 'كيف أحذف حسابي؟', a: 'تواصل مع الدعم لطلب حذف الحساب.' }
+                            ]
+                        }
+                    ],
+                };
+                return localized[language] || [
                     {
                         category: 'Orders & Delivery',
                         items: [
@@ -84,7 +143,6 @@
                         ]
                     }
                 ];
-                this.init();
             }
 
             init() {
@@ -93,7 +151,8 @@
 
             renderFAQs() {
                 const container = document.getElementById('faqContainer');
-                container.innerHTML = this.faqs.map(category => `
+                const faqs = this.getFaqs();
+                container.innerHTML = faqs.map(category => `
                     <div class="faq-category">
                         <div class="category-title">${category.category}</div>
                         ${category.items.map((item, idx) => `
@@ -127,6 +186,13 @@
 
         UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
         const helpCenter = new HelpCenterManager();
+        document.querySelector('.contact-btns .btn-contact:first-of-type')?.setAttribute('onclick', `UIComponents.showToast(UIComponents.t('support.openingChatSupport', 'Opening chat support...'))`);
+        document.querySelector('.contact-btns .btn-contact:last-of-type')?.setAttribute('onclick', `UIComponents.showToast(UIComponents.t('support.callingSupport', 'Calling support...'))`);
+        window.refreshPageLocalizedContent = function() {
+            if (helpCenter) {
+                helpCenter.renderFAQs();
+            }
+        };
     </script>
 </body>
 </html>

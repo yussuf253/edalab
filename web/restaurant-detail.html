@@ -4,11 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurant Details - Edalab</title>
+    <meta name="description" content="Explore restaurant details, menu items, delivery time, and ratings on eDalab.">
+    <meta property="og:title" content="Restaurant Details - Edalab">
+    <meta property="og:description" content="Explore restaurant details, menu items, delivery time, and ratings on eDalab.">
+    <meta property="og:type" content="restaurant">
+    <link rel="canonical" href="https://edalab.dj/restaurant-detail.html">
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="css/main-styles.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/modules.css">
+    <script type="application/ld+json" id="restaurantSchema">{}</script>
     <style>
         .restaurant-detail-page {
             --module-color: var(--food-c);
@@ -126,6 +132,44 @@
                 this.init();
             }
 
+            updateSeo() {
+                if (!this.restaurant) return;
+
+                const cuisine = this.restaurant.cuisine || this.restaurant.type || 'Restaurant';
+                const deliveryTime = `${this.restaurant.deliveryTime || '30-40'} min`;
+                const description = this.restaurant.description || `${this.restaurant.name} on eDalab. ${cuisine}. Delivery in ${deliveryTime}.`;
+                const title = `${this.restaurant.name} - ${cuisine} | eDalab`;
+                const canonicalUrl = `https://edalab.dj/restaurant-detail.html?id=${encodeURIComponent(this.restaurantId)}`;
+                const image = this.restaurant.image || this.restaurant.imageUrl || this.restaurant.images?.[0] || undefined;
+
+                document.title = title;
+                document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+                document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+                document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
+                document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonicalUrl);
+
+                const schema = {
+                    '@context': 'https://schema.org',
+                    '@type': 'Restaurant',
+                    name: this.restaurant.name,
+                    description,
+                    url: canonicalUrl,
+                    image,
+                    servesCuisine: cuisine,
+                    aggregateRating: this.restaurant.rating ? {
+                        '@type': 'AggregateRating',
+                        ratingValue: String(this.restaurant.rating),
+                        reviewCount: String(this.restaurant.reviewCount || 1),
+                    } : undefined,
+                    hasMenu: canonicalUrl,
+                };
+
+                const schemaNode = document.getElementById('restaurantSchema');
+                if (schemaNode) {
+                    schemaNode.textContent = JSON.stringify(schema, null, 2);
+                }
+            }
+
             async init() {
                 document.body.classList.add('detail-loading');
                 document.getElementById('menuContainer').innerHTML = `
@@ -200,6 +244,7 @@
                 document.getElementById('summaryDeliveryTime').textContent = `${this.restaurant.deliveryTime || '30-40'} min`;
                 document.getElementById('summaryDistance').textContent = `${this.restaurant.distance || 2.5} km`;
                 document.getElementById('summaryMinOrder').textContent = `$${this.restaurant.minOrder || 5} min order`;
+                this.updateSeo();
 
                 // Render menu sections
                 this.renderMenuSections();
@@ -211,7 +256,7 @@
                 container.innerHTML = '';
 
                 if (!this.restaurant.menu || this.restaurant.menu.length === 0) {
-                    container.innerHTML = '<div class="detail-empty"><div class="detail-empty-icon">🍽️</div><p>No menu items available</p></div>';
+                    container.innerHTML = `<div class="detail-empty"><div class="detail-empty-icon">🍽️</div><p>${UIComponents.t('detail.noMenuItems', 'No menu items available')}</p></div>`;
                     return;
                 }
 
@@ -232,7 +277,7 @@
                                         <div class="restaurant-menu-item-description">${item.description || ''}</div>
                                         <div class="restaurant-menu-item-footer">
                                             <span class="restaurant-menu-item-price">$${item.price}</span>
-                                            <button class="restaurant-menu-item-btn" onclick="restaurantDetail.addToCart('${item.id}', '${item.name}', ${item.price}, '${this.restaurant.id}', '${this.restaurant.name}'); event.stopPropagation();">Add</button>
+                                            <button class="restaurant-menu-item-btn" onclick="restaurantDetail.addToCart('${item.id}', '${item.name}', ${item.price}, '${this.restaurant.id}', '${this.restaurant.name}'); event.stopPropagation();">${UIComponents.t('detail.add', 'Add')}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -257,7 +302,7 @@
                     vendorName: restaurantName
                 });
                 this.updateCartCount();
-                UIComponents.showToast(`${itemName} added to cart!`);
+                UIComponents.showToast(`${itemName} ${UIComponents.t('detail.addedToCartSuffixSimple', 'added to cart!')}`);
             }
 
             openDishDetail(itemId, categoryName) {
@@ -274,8 +319,8 @@
             }
 
             showEmptyState(message) {
-                document.getElementById('restaurantName').textContent = 'Restaurant unavailable';
-                document.getElementById('restaurantCuisine').textContent = 'Unavailable';
+                document.getElementById('restaurantName').textContent = UIComponents.t('detail.restaurantUnavailable', 'Restaurant unavailable');
+                document.getElementById('restaurantCuisine').textContent = UIComponents.t('detail.unavailable', 'Unavailable');
                 document.getElementById('restaurantDescription').textContent = message;
                 document.getElementById('restaurantImage').src = RESTAURANT_FALLBACK_IMAGE;
                 document.getElementById('summaryRating').textContent = 'Unavailable';
@@ -287,7 +332,7 @@
                         <div class="detail-empty-icon">❌</div>
                         <p>${message}</p>
                         <div style="margin-top: 16px;">
-                            <a href="food.html" style="display: inline-block; padding: 10px 16px; background: #16a34a; color: white; text-decoration: none; border-radius: 10px; font-weight: 700;">Back to Food</a>
+                            <a href="food.html" style="display: inline-block; padding: 10px 16px; background: #16a34a; color: white; text-decoration: none; border-radius: 10px; font-weight: 700;">${UIComponents.t('detail.backToFood', 'Back to Food')}</a>
                         </div>
                     </div>
                 `;

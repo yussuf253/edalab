@@ -4,11 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dish Details - Edalab</title>
+    <meta name="description" content="Explore dish details, price, cook time, and customization options on eDalab.">
+    <meta property="og:title" content="Dish Details - Edalab">
+    <meta property="og:description" content="Explore dish details, price, cook time, and customization options on eDalab.">
+    <meta property="og:type" content="product">
+    <link rel="canonical" href="https://edalab.dj/food-dish-detail.html">
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="css/main-styles.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/modules.css">
+    <script type="application/ld+json" id="dishSchema">{}</script>
     <style>
         .food-detail-page {
             --module-color: var(--food-c);
@@ -160,6 +166,46 @@
                 this.init();
             }
 
+            updateSeo() {
+                if (!this.dish) return;
+
+                const restaurantName = this.restaurant?.name || 'Restaurant';
+                const title = `${this.dish.name} - ${restaurantName} | eDalab`;
+                const description = this.dish.description || `${this.dish.name} from ${restaurantName} on eDalab.`;
+                const canonicalUrl = `https://edalab.dj/food-dish-detail.html?id=${encodeURIComponent(this.dishId)}${this.restaurantId ? `&restaurantId=${encodeURIComponent(this.restaurantId)}` : ''}`;
+                const image = this.dish.image || this.dish.imageUrl || this.dish.images?.[0] || DISH_DETAIL_FALLBACK_IMAGE;
+
+                document.title = title;
+                document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+                document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+                document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
+                document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonicalUrl);
+
+                const schema = {
+                    '@context': 'https://schema.org',
+                    '@type': 'MenuItem',
+                    name: this.dish.name,
+                    description,
+                    image,
+                    offers: {
+                        '@type': 'Offer',
+                        priceCurrency: 'USD',
+                        price: String(this.dish.price || 0),
+                        url: canonicalUrl,
+                        availability: 'https://schema.org/InStock',
+                    },
+                    nutrition: this.dish.calories ? {
+                        '@type': 'NutritionInformation',
+                        calories: `${this.dish.calories} calories`,
+                    } : undefined,
+                };
+
+                const schemaNode = document.getElementById('dishSchema');
+                if (schemaNode) {
+                    schemaNode.textContent = JSON.stringify(schema, null, 2);
+                }
+            }
+
             async init() {
                 document.body.classList.add('detail-loading');
                 document.getElementById('customizationsContainer').innerHTML = `
@@ -221,14 +267,15 @@
                     (this.dish.images && this.dish.images[0]) ||
                     DISH_DETAIL_FALLBACK_IMAGE;
                 document.getElementById('dishPrice').textContent = `$${this.dish.price}`;
-                document.getElementById('dishDescription').textContent = this.dish.description || 'A delicious dish';
+                document.getElementById('dishDescription').textContent = this.dish.description || UIComponents.t('detail.deliciousDish', 'A delicious dish');
                 document.getElementById('dishCalories').textContent = `${this.dish.calories || 0} cal`;
                 document.getElementById('dishCookTime').textContent = `${this.dish.cookTime || 15} min`;
                 document.getElementById('dishRating').textContent = `${this.dish.rating || 4.5}★`;
                 document.getElementById('ratingStars').textContent = '★'.repeat(Math.floor(this.dish.rating || 4.5)).padEnd(5, '☆');
                 document.getElementById('reviewCount').textContent = this.dish.reviewCount || this.restaurant?.reviewCount || 0;
-                document.getElementById('dishContext').textContent = `${this.restaurant?.name || 'Restaurant'} · ${this.categoryName}`;
-                document.getElementById('addCartBtn').textContent = `Add to Cart • $${(this.dish.price * this.quantity).toFixed(2)}`;
+                document.getElementById('dishContext').textContent = `${this.restaurant?.name || UIComponents.t('detail.restaurant', 'Restaurant')} · ${this.categoryName}`;
+                this.updateSeo();
+                document.getElementById('addCartBtn').textContent = `${UIComponents.t('detail.addToCart', 'Add to Cart')} • $${(this.dish.price * this.quantity).toFixed(2)}`;
 
                 // Render customization options if available
                 if (this.dish.customizations && this.dish.customizations.length > 0) {
@@ -304,8 +351,8 @@
             updateTotal() {
                 const total = this.dish.price * this.quantity;
                 document.getElementById('qtyDisplay').textContent = this.quantity;
-                document.getElementById('addCartBtn').textContent = `Add to Cart • $${total.toFixed(2)}`;
-                document.getElementById('buyNowBtn').textContent = `Order Now • $${total.toFixed(2)}`;
+                document.getElementById('addCartBtn').textContent = `${UIComponents.t('detail.addToCart', 'Add to Cart')} • $${total.toFixed(2)}`;
+                document.getElementById('buyNowBtn').textContent = `${UIComponents.t('detail.orderNow', 'Order Now')} • $${total.toFixed(2)}`;
             }
 
             checkWishlistStatus() {
@@ -330,7 +377,7 @@
                 }
                 this.isInWishlist = !this.isInWishlist;
                 this.updateWishlistBtn();
-                UIComponents.showToast(this.isInWishlist ? 'Added to wishlist' : 'Removed from wishlist');
+                UIComponents.showToast(this.isInWishlist ? UIComponents.t('detail.addedToWishlist', 'Added to wishlist') : UIComponents.t('detail.removedFromWishlist', 'Removed from wishlist'));
             }
 
             updateWishlistBtn() {
@@ -357,7 +404,7 @@
                 };
 
                 StateManager.addToCart(cartItem);
-                UIComponents.showToast(`${this.dish.name} × ${this.quantity} added to cart!`);
+                UIComponents.showToast(`${this.dish.name} × ${this.quantity} ${UIComponents.t('detail.addedToCartSuffix', 'added to cart!')}`);
                 
                 // Redirect to cart after 1 second
                 setTimeout(() => {

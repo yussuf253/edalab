@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - Edalab</title>
+    <title data-i18n="auth.createAccountButton">Create Account</title>
     <link rel="stylesheet" href="css/main-styles.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/modules.css">
@@ -33,47 +33,47 @@
 </head>
 <body>
     <nav id="nav" data-static-unified="true">
-        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home" data-i18n="nav.home">Home</a><a href="food.html" class="nav-a" data-nav-link="food" data-i18n="nav.food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping" data-i18n="nav.shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy" data-i18n="nav.pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor" data-i18n="nav.doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel" data-i18n="nav.hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride" data-i18n="nav.ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services" data-i18n="nav.services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry" data-i18n="nav.laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label" data-i18n="nav.wishlist">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label" data-i18n="nav.cart">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
     </nav>
 
     <div class="auth-wrap">
         <div class="auth-card">
-            <div class="auth-title">Create your account</div>
-            <div class="auth-sub">Register once to save your orders, addresses, and payment methods.</div>
+            <div class="auth-title" data-i18n="auth.registerTitle">Create your account</div>
+            <div class="auth-sub" data-i18n="auth.registerSubtitle">Register once to save your orders, addresses, and payment methods.</div>
             <div class="auth-error" id="authError"></div>
             <div class="form-group">
-                <label class="form-label">Full name</label>
+                <label class="form-label" data-i18n="auth.fullName">Full name</label>
                 <div class="input-wrap">
-                    <input class="form-input" id="name" type="text" placeholder="Your full name" autocomplete="name">
+                    <input class="form-input" id="name" type="text" placeholder="Your full name" data-i18n-placeholder="auth.namePlaceholder" autocomplete="name">
                 </div>
                 <div class="field-error" id="nameError"></div>
             </div>
             <div class="form-group">
-                <label class="form-label">Email</label>
+                <label class="form-label" data-i18n="auth.email">Email</label>
                 <div class="input-wrap">
-                    <input class="form-input" id="email" type="email" placeholder="you@example.com" autocomplete="email">
+                    <input class="form-input" id="email" type="email" placeholder="you@example.com" data-i18n-placeholder="auth.emailPlaceholder" autocomplete="email">
                 </div>
                 <div class="field-error" id="emailError"></div>
             </div>
             <div class="form-group">
-                <label class="form-label">Phone</label>
+                <label class="form-label" data-i18n="auth.phone">Phone</label>
                 <div class="input-wrap">
-                    <input class="form-input" id="phone" type="tel" placeholder="+253 77 00 00 00" autocomplete="tel">
+                    <input class="form-input" id="phone" type="tel" placeholder="+253 77 00 00 00" data-i18n-placeholder="auth.phonePlaceholder" autocomplete="tel">
                 </div>
                 <div class="field-error" id="phoneError"></div>
             </div>
             <div class="form-group">
-                <label class="form-label">Password</label>
+                <label class="form-label" data-i18n="auth.password">Password</label>
                 <div class="input-wrap">
-                    <input class="form-input password-input" id="password" type="password" placeholder="At least 6 characters" autocomplete="new-password">
-                    <button class="password-toggle" id="passwordToggle" type="button">Show</button>
+                    <input class="form-input password-input" id="password" type="password" placeholder="At least 6 characters" data-i18n-placeholder="auth.passwordRegisterPlaceholder" autocomplete="new-password">
+                    <button class="password-toggle" id="passwordToggle" type="button" data-i18n="auth.show">Show</button>
                 </div>
                 <div class="field-error" id="passwordError"></div>
-                <div class="field-help">Use at least 6 characters.</div>
+                <div class="field-help" data-i18n="auth.passwordHint">Use at least 6 characters.</div>
             </div>
-            <button class="auth-btn" id="registerButton" onclick="registerPage.submit()">Create account</button>
+            <button class="auth-btn" id="registerButton" onclick="registerPage.submit()" data-i18n="auth.createAccountButton">Create account</button>
             <div class="auth-footer">
-                Already have an account? <a href="login.html">Login</a>
+                <span data-i18n="auth.haveAccount">Already have an account?</span> <a href="login.html" data-i18n="nav.login">Login</a>
             </div>
         </div>
     </div>
@@ -112,7 +112,7 @@
 
             setLoading(isLoading) {
                 this.button.disabled = isLoading;
-                this.button.textContent = isLoading ? 'Creating account...' : 'Create account';
+                this.button.textContent = isLoading ? UIComponents.t('auth.registerLoading', 'Creating account...') : UIComponents.t('auth.createAccountButton', 'Create account');
                 this.passwordToggle.disabled = isLoading;
             }
 
@@ -149,7 +149,9 @@
             togglePasswordVisibility() {
                 const isPassword = this.fields.password.type === 'password';
                 this.fields.password.type = isPassword ? 'text' : 'password';
-                this.passwordToggle.textContent = isPassword ? 'Hide' : 'Show';
+                this.passwordToggle.textContent = isPassword
+                    ? UIComponents.t('auth.hide', 'Hide')
+                    : UIComponents.t('auth.show', 'Show');
             }
 
             isValidEmail(email) {
@@ -163,31 +165,31 @@
                 const phone = this.fields.phone.value.trim();
                 const password = this.fields.password.value;
                 if (!name || !email || !password) {
-                    this.showError('Fill in the required fields.', {
-                        name: !name ? 'Full name is required.' : '',
-                        email: !email ? 'Email is required.' : '',
-                        password: !password ? 'Password is required.' : '',
+                    this.showError(UIComponents.t('auth.error.registerRequired', 'Fill in the required fields.'), {
+                        name: !name ? UIComponents.t('auth.error.nameRequired', 'Full name is required.') : '',
+                        email: !email ? UIComponents.t('auth.error.emailRequired', 'Email is required.') : '',
+                        password: !password ? UIComponents.t('auth.error.passwordRequired', 'Password is required.') : '',
                     });
                     return;
                 }
 
                 if (!this.isValidEmail(email)) {
-                    this.showError('Enter a valid email address.', {
-                        email: 'Use a valid email like name@example.com.',
+                    this.showError(UIComponents.t('auth.error.validEmail', 'Enter a valid email address.'), {
+                        email: UIComponents.t('auth.error.validEmailHint', 'Use a valid email like name@example.com.'),
                     });
                     return;
                 }
 
                 if (password.length < 6) {
-                    this.showError('Password must be at least 6 characters.', {
-                        password: 'Choose a password with at least 6 characters.',
+                    this.showError(UIComponents.t('auth.error.passwordShort', 'Password must be at least 6 characters.'), {
+                        password: UIComponents.t('auth.error.passwordShortHint', 'Choose a password with at least 6 characters.'),
                     });
                     return;
                 }
 
                 if (phone && !/^[+\d][\d\s()-]{6,}$/.test(phone)) {
-                    this.showError('Enter a valid phone number or leave it empty.', {
-                        phone: 'Phone number format looks incomplete.',
+                    this.showError(UIComponents.t('auth.error.validPhone', 'Enter a valid phone number or leave it empty.'), {
+                        phone: UIComponents.t('auth.error.validPhoneHint', 'Phone number format looks incomplete.'),
                     });
                     return;
                 }
@@ -195,15 +197,15 @@
                 try {
                     this.setLoading(true);
                     await apiClient.register({ name, email, phone, password });
-                    UIComponents.showToast('Account created successfully!', 'success');
+                    UIComponents.showToast(UIComponents.t('auth.toast.registerSuccess', 'Account created successfully!'), 'success');
                     setTimeout(() => {
                         window.location.href = UIComponents.consumePostAuthRedirect('profile.html');
                     }, 500);
                 } catch (error) {
-                    const message = error?.message || 'Registration failed. Try another email.';
+                    const message = error?.message || UIComponents.t('auth.error.registerFailed', 'Registration failed. Try another email.');
                     const isEmailConflict = /already exists|email/i.test(message);
                     this.showError(message, isEmailConflict ? {
-                        email: 'This email is already in use.',
+                        email: UIComponents.t('auth.error.emailInUse', 'This email is already in use.'),
                     } : {});
                 } finally {
                     this.setLoading(false);

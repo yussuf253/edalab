@@ -80,7 +80,7 @@
 
             async init() {
                 if (!UIComponents.requireAuth({
-                    message: 'Please log in to manage your payment methods.',
+                    message: UIComponents.t('account.loginRequiredPayments', 'Please log in to manage your payment methods.'),
                     next: 'payments.html',
                 })) {
                     return;
@@ -104,18 +104,18 @@
             renderPayments() {
                 const container = document.getElementById('paymentsList');
                 if (!this.user || !this.user.payments || this.user.payments.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">💳</div><p>No payment methods</p></div>';
+                    container.innerHTML = `<div class="empty-state"><div class="empty-icon">💳</div><p>${UIComponents.t('account.noPaymentMethods', 'No payment methods')}</p></div>`;
                     return;
                 }
 
                 container.innerHTML = this.user.payments.map((card, idx) => `
                     <div class="payment-card">
                         <div class="payment-header">
-                            <span class="payment-name">💳 ${card.brand || card.name || card.type || 'Card'}</span>
-                            <button class="btn-danger" onclick="payments.deletePayment(${idx})">Remove</button>
+                            <span class="payment-name">💳 ${card.brand || card.name || card.type || UIComponents.t('account.card', 'Card')}</span>
+                            <button class="btn-danger" onclick="payments.deletePayment(${idx})">${UIComponents.t('account.remove', 'Remove')}</button>
                         </div>
                         <div class="payment-number">**** **** **** ${card.last4 || (card.number ? card.number.slice(-4) : '0000')}</div>
-                        <div style="font-size: 12px; color: #999;">Expires ${card.expiry || ((card.expiryMonth && card.expiryYear) ? `${String(card.expiryMonth).padStart(2, '0')}/${String(card.expiryYear).slice(-2)}` : '--/--')}</div>
+                        <div style="font-size: 12px; color: #999;">${UIComponents.t('account.expires', 'Expires')} ${card.expiry || ((card.expiryMonth && card.expiryYear) ? `${String(card.expiryMonth).padStart(2, '0')}/${String(card.expiryYear).slice(-2)}` : '--/--')}</div>
                     </div>
                 `).join('');
             }
@@ -132,7 +132,7 @@
                 const cvv = document.getElementById('cardCVV').value.trim();
 
                 if (!name || !number || !expiry || !cvv) {
-                    UIComponents.showToast('Please fill in all fields');
+                    UIComponents.showToast(UIComponents.t('account.fillAllFields', 'Please fill in all fields'));
                     return;
                 }
 
@@ -151,7 +151,7 @@
                         this.user.payments = methods || [];
                     } catch (error) {
                         console.error('Error saving payment method:', error);
-                        UIComponents.showToast('Failed to save payment method');
+                        UIComponents.showToast(UIComponents.t('account.failedSavePayment', 'Failed to save payment method'));
                         return;
                     }
                 } else {
@@ -159,7 +159,7 @@
                 }
                 StateManager.setUser(this.user);
 
-                UIComponents.showToast('Payment method saved!');
+                UIComponents.showToast(UIComponents.t('account.paymentSaved', 'Payment method saved!'));
                 document.getElementById('cardName').value = '';
                 document.getElementById('cardNumber').value = '';
                 document.getElementById('cardExpiry').value = '';
@@ -169,7 +169,7 @@
             }
 
             async deletePayment(idx) {
-                if (confirm('Delete this payment method?')) {
+                if (confirm(UIComponents.t('account.deletePaymentConfirm', 'Delete this payment method?'))) {
                     const payment = this.user.payments[idx];
                     if (this.user.id && payment?.id) {
                         try {
@@ -177,7 +177,7 @@
                             this.user.payments.splice(idx, 1);
                         } catch (error) {
                             console.error('Error deleting payment method:', error);
-                            UIComponents.showToast('Failed to delete payment method');
+                            UIComponents.showToast(UIComponents.t('account.failedDeletePayment', 'Failed to delete payment method'));
                             return;
                         }
                     } else {
@@ -191,6 +191,11 @@
 
         UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
         const payments = new PaymentsManager();
+        window.refreshPageLocalizedContent = function() {
+            if (payments) {
+                payments.renderPayments();
+            }
+        };
     </script>
 </body>
 </html>

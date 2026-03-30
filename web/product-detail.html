@@ -4,11 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Details - Edalab</title>
+    <meta name="description" content="Explore product details, pricing, availability, and specifications on eDalab.">
+    <meta property="og:title" content="Product Details - Edalab">
+    <meta property="og:description" content="Explore product details, pricing, availability, and specifications on eDalab.">
+    <meta property="og:type" content="product">
+    <link rel="canonical" href="https://edalab.dj/product-detail.html">
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="css/main-styles.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/modules.css">
+    <script type="application/ld+json" id="productSchema">{}</script>
     <style>
         .shopping-detail-page {
             --module-color: var(--shop-c);
@@ -100,6 +106,48 @@
                 this.init();
             }
 
+            updateSeo(productImage) {
+                if (!this.product) return;
+
+                const title = `${this.product.name} | eDalab`;
+                const description = this.product.description || `Buy ${this.product.name} on eDalab.`;
+                const canonicalUrl = `https://edalab.dj/product-detail.html?id=${encodeURIComponent(this.productId)}`;
+                const inStock = this.product.inStock !== false;
+
+                document.title = title;
+                document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+                document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+                document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
+                document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonicalUrl);
+
+                const schema = {
+                    '@context': 'https://schema.org',
+                    '@type': 'Product',
+                    name: this.product.name,
+                    description,
+                    image: productImage,
+                    brand: this.product.brand ? { '@type': 'Brand', name: this.product.brand } : undefined,
+                    sku: String(this.product.id || this.productId),
+                    aggregateRating: this.product.rating ? {
+                        '@type': 'AggregateRating',
+                        ratingValue: String(this.product.rating),
+                        reviewCount: String(this.product.reviewCount || 1),
+                    } : undefined,
+                    offers: {
+                        '@type': 'Offer',
+                        url: canonicalUrl,
+                        priceCurrency: 'USD',
+                        price: String(this.product.price || 0),
+                        availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                    },
+                };
+
+                const schemaNode = document.getElementById('productSchema');
+                if (schemaNode) {
+                    schemaNode.textContent = JSON.stringify(schema, null, 2);
+                }
+            }
+
             async init() {
                 document.body.classList.add('detail-loading');
                 await this.loadProduct();
@@ -137,6 +185,7 @@
                 document.getElementById('productBreadcrumb').textContent = this.product.name;
                 document.getElementById('productName').textContent = this.product.name;
                 document.getElementById('description').textContent = this.product.description || 'High-quality product';
+                this.updateSeo(productImage);
 
                 // Pricing
                 const currentPrice = this.product.price;
@@ -241,14 +290,14 @@
                 document.getElementById('qtyDisplay').textContent = this.quantity;
                 if (this.product) {
                     const total = (this.product.price || 0) * this.quantity;
-                    document.getElementById('addCartBtn').textContent = `Add to Cart • $${total.toFixed(2)}`;
-                    document.getElementById('buyNowBtn').textContent = `Buy Now • $${total.toFixed(2)}`;
+                    document.getElementById('addCartBtn').textContent = `${UIComponents.t('detail.addToCart', 'Add to Cart')} • $${total.toFixed(2)}`;
+                    document.getElementById('buyNowBtn').textContent = `${UIComponents.t('detail.buyNow', 'Buy Now')} • $${total.toFixed(2)}`;
                 }
             }
 
             addToCart() {
                 if (!this.product.inStock) {
-                    UIComponents.showToast('This product is out of stock');
+                    UIComponents.showToast(UIComponents.t('detail.outOfStock', 'This product is out of stock'));
                     return;
                 }
 
@@ -262,7 +311,7 @@
                     moduleType: 'SHOPPING'
                 });
                 this.updateCartCount();
-                UIComponents.showToast(`${this.product.name} × ${this.quantity} added to cart!`);
+                UIComponents.showToast(`${this.product.name} × ${this.quantity} ${UIComponents.t('detail.addedToCartSuffix', 'added to cart!')}`);
             }
 
             buyNow() {

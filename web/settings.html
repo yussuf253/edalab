@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - Edalab</title>
+    <title data-i18n="settings.title">Settings</title>
     <link rel="stylesheet" href="css/main-styles.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/modules.css">
@@ -29,19 +29,19 @@
 </head>
 <body>
     <nav id="nav" data-static-unified="true">
-        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home" data-i18n="nav.home">Home</a><a href="food.html" class="nav-a" data-nav-link="food" data-i18n="nav.food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping" data-i18n="nav.shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy" data-i18n="nav.pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor" data-i18n="nav.doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel" data-i18n="nav.hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride" data-i18n="nav.ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services" data-i18n="nav.services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry" data-i18n="nav.laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label" data-i18n="nav.wishlist">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label" data-i18n="nav.cart">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
     </nav>
 
     <div class="container">
-        <h1 class="page-title">Settings</h1>
+        <h1 class="page-title" data-i18n="settings.title">Settings</h1>
 
         <!-- Notifications -->
         <div class="settings-section">
-            <div class="section-header">Notifications</div>
+            <div class="section-header" data-i18n="settings.notifications">Notifications</div>
             <div class="setting-item">
                 <div>
-                    <div class="setting-label">Push Notifications</div>
-                    <div class="setting-desc">Receive order updates and promotions</div>
+                    <div class="setting-label" data-i18n="settings.pushNotifications">Push Notifications</div>
+                    <div class="setting-desc" data-i18n="settings.pushNotificationsDesc">Receive order updates and promotions</div>
                 </div>
                 <div class="toggle-switch active" onclick="settings.toggle(this, 'notifications')" id="notificationsToggle">
                     <div class="toggle-slider"></div>
@@ -49,8 +49,8 @@
             </div>
             <div class="setting-item">
                 <div>
-                    <div class="setting-label">Email Updates</div>
-                    <div class="setting-desc">Receive emails about your orders</div>
+                    <div class="setting-label" data-i18n="settings.emailUpdates">Email Updates</div>
+                    <div class="setting-desc" data-i18n="settings.emailUpdatesDesc">Receive emails about your orders</div>
                 </div>
                 <div class="toggle-switch" onclick="settings.toggle(this, 'emailUpdates')" id="emailUpdatesToggle">
                     <div class="toggle-slider"></div>
@@ -58,8 +58,8 @@
             </div>
             <div class="setting-item">
                 <div>
-                    <div class="setting-label">Marketing Emails</div>
-                    <div class="setting-desc">Receive promotional emails and offers</div>
+                    <div class="setting-label" data-i18n="settings.marketingEmails">Marketing Emails</div>
+                    <div class="setting-desc" data-i18n="settings.marketingEmailsDesc">Receive promotional emails and offers</div>
                 </div>
                 <div class="toggle-switch active" onclick="settings.toggle(this, 'marketing')" id="marketingToggle">
                     <div class="toggle-slider"></div>
@@ -69,11 +69,11 @@
 
         <!-- Preferences -->
         <div class="settings-section">
-            <div class="section-header">Preferences</div>
+            <div class="section-header" data-i18n="settings.preferences">Preferences</div>
             <div class="setting-item">
                 <div>
-                    <div class="setting-label">Language</div>
-                    <div class="setting-desc">Choose your preferred language</div>
+                    <div class="setting-label" data-i18n="settings.language">Language</div>
+                    <div class="setting-desc" data-i18n="settings.languageDesc">Choose your preferred language</div>
                 </div>
                 <select class="select-input" id="languageSelect" onchange="settings.updateLanguage()">
                     <option value="en">English</option>
@@ -83,8 +83,8 @@
             </div>
             <div class="setting-item">
                 <div>
-                    <div class="setting-label">Theme</div>
-                    <div class="setting-desc">Choose light or dark mode</div>
+                    <div class="setting-label" data-i18n="settings.theme">Theme</div>
+                    <div class="setting-desc" data-i18n="settings.themeDesc">Choose light or dark mode</div>
                 </div>
                 <select class="select-input" id="themeSelect" onchange="settings.updateTheme()">
                     <option value="light">Light</option>
@@ -96,11 +96,11 @@
 
         <!-- Privacy & Security -->
         <div class="settings-section">
-            <div class="section-header">Privacy & Security</div>
+            <div class="section-header" data-i18n="settings.privacy">Privacy & Security</div>
             <div class="setting-item">
                 <div>
-                    <div class="setting-label">Two-Factor Authentication</div>
-                    <div class="setting-desc">Add extra security to your account</div>
+                    <div class="setting-label" data-i18n="settings.twoFactor">Two-Factor Authentication</div>
+                    <div class="setting-desc" data-i18n="settings.twoFactorDesc">Add extra security to your account</div>
                 </div>
                 <div class="toggle-switch" onclick="settings.toggle(this, '2fa')" id="2faToggle">
                     <div class="toggle-slider"></div>
@@ -108,25 +108,25 @@
             </div>
             <div class="setting-item">
                 <div>
-                    <div class="setting-label">Privacy Policy</div>
-                    <div class="setting-desc">Review our privacy policy</div>
+                    <div class="setting-label" data-i18n="settings.privacyPolicy">Privacy Policy</div>
+                    <div class="setting-desc" data-i18n="settings.privacyPolicyDesc">Review our privacy policy</div>
                 </div>
-                <a href="#" style="color: #667eea; text-decoration: none;">View ›</a>
+                <a href="#" style="color: #667eea; text-decoration: none;" data-i18n="settings.view">View ›</a>
             </div>
             <div class="setting-item">
                 <div>
-                    <div class="setting-label">Terms of Service</div>
-                    <div class="setting-desc">Review terms and conditions</div>
+                    <div class="setting-label" data-i18n="settings.terms">Terms of Service</div>
+                    <div class="setting-desc" data-i18n="settings.termsDesc">Review terms and conditions</div>
                 </div>
-                <a href="#" style="color: #667eea; text-decoration: none;">View ›</a>
+                <a href="#" style="color: #667eea; text-decoration: none;" data-i18n="settings.view">View ›</a>
             </div>
         </div>
 
         <!-- Danger Zone -->
         <div class="danger-zone">
-            <div class="danger-title">⚠️ Danger Zone</div>
-            <div class="danger-desc">These actions are irreversible. Please proceed with caution.</div>
-            <button class="btn-danger" onclick="settings.deleteAccount()">Delete Account</button>
+            <div class="danger-title">⚠️ <span data-i18n="settings.dangerTitle">Danger Zone</span></div>
+            <div class="danger-desc" data-i18n="settings.dangerDesc">These actions are irreversible. Please proceed with caution.</div>
+            <button class="btn-danger" onclick="settings.deleteAccount()" data-i18n="settings.deleteAccount">Delete Account</button>
         </div>
     </div>
 
@@ -142,7 +142,7 @@
 
             init() {
                 this.user = UIComponents.requireAuth({
-                    message: 'Please log in to manage your settings.',
+                    message: UIComponents.t('settings.authRequired', 'Please log in to manage your settings.'),
                     next: 'settings.html',
                 });
                 if (!this.user) {
@@ -164,6 +164,8 @@
                     document.getElementById('languageSelect').value = settings.language || 'en';
                     document.getElementById('themeSelect').value = settings.theme || 'light';
                 }
+
+                document.getElementById('languageSelect').value = StateManager.getLanguage();
             }
 
             toggle(element, setting) {
@@ -173,12 +175,13 @@
 
             updateLanguage() {
                 this.saveSettings();
-                UIComponents.showToast('Language updated');
+                StateManager.setLanguage(document.getElementById('languageSelect').value);
+                UIComponents.showToast(UIComponents.t('settings.toast.languageUpdated', 'Language updated'));
             }
 
             updateTheme() {
                 this.saveSettings();
-                UIComponents.showToast('Theme updated');
+                UIComponents.showToast(UIComponents.t('settings.toast.themeUpdated', 'Theme updated'));
             }
 
             saveSettings() {
@@ -199,10 +202,10 @@
             }
 
             deleteAccount() {
-                if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-                    if (confirm('Type "DELETE" to confirm account deletion')) {
+                if (confirm(UIComponents.t('settings.deleteConfirm', 'Are you sure you want to delete your account? This action cannot be undone.'))) {
+                    if (confirm(UIComponents.t('settings.deleteTypeConfirm', 'Type "DELETE" to confirm account deletion'))) {
                         StateManager.logout();
-                        UIComponents.showToast('Account deleted');
+                        UIComponents.showToast(UIComponents.t('settings.toast.accountDeleted', 'Account deleted'));
                         window.location.href = 'edalab-website.html';
                     }
                 }

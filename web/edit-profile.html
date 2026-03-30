@@ -196,7 +196,7 @@
 
             async init() {
                 if (!UIComponents.requireAuth({
-                    message: 'Please log in to edit your profile.',
+                    message: UIComponents.t('account.loginRequiredEdit', 'Please log in to edit your profile.'),
                     next: 'edit-profile.html',
                 })) {
                     return;
@@ -239,7 +239,7 @@
                 const bio = document.getElementById('bio').value.trim();
 
                 if (!firstName || !email) {
-                    UIComponents.showToast('Please fill in all required fields');
+                    UIComponents.showToast(UIComponents.t('account.fillRequiredFields', 'Please fill in all required fields'));
                     return;
                 }
 
@@ -271,7 +271,7 @@
                 }
 
                 StateManager.setUser(this.user);
-                UIComponents.showToast('Profile updated successfully!');
+                UIComponents.showToast(UIComponents.t('account.profileUpdated', 'Profile updated successfully!'));
                 
                 setTimeout(() => {
                     window.location.href = 'profile.html';
@@ -284,17 +284,17 @@
                 const confirm = document.getElementById('confirmPassword').value;
 
                 if (!current || !newPass || !confirm) {
-                    UIComponents.showToast('Please fill in all password fields');
+                    UIComponents.showToast(UIComponents.t('account.fillPasswordFields', 'Please fill in all password fields'));
                     return;
                 }
 
                 if (newPass !== confirm) {
-                    UIComponents.showToast('New passwords do not match');
+                    UIComponents.showToast(UIComponents.t('account.passwordsDoNotMatch', 'New passwords do not match'));
                     return;
                 }
 
                 if (newPass.length < 6) {
-                    UIComponents.showToast('Password must be at least 6 characters');
+                    UIComponents.showToast(UIComponents.t('account.passwordMinLength', 'Password must be at least 6 characters'));
                     return;
                 }
 
@@ -302,7 +302,7 @@
                 this.user.password = newPass;
                 StateManager.setUser(this.user);
                 
-                UIComponents.showToast('Password changed successfully!');
+                UIComponents.showToast(UIComponents.t('account.passwordChanged', 'Password changed successfully!'));
                 document.getElementById('currentPassword').value = '';
                 document.getElementById('newPassword').value = '';
                 document.getElementById('confirmPassword').value = '';
@@ -311,6 +311,11 @@
 
         UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
         const editProfile = new EditProfileManager();
+        window.refreshPageLocalizedContent = function() {
+            if (editProfile) {
+                editProfile.renderForm();
+            }
+        };
     </script>
 </body>
 </html>

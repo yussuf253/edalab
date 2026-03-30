@@ -86,7 +86,7 @@
 
             async init() {
                 if (!UIComponents.requireAuth({
-                    message: 'Please log in to manage your addresses.',
+                    message: UIComponents.t('account.loginRequiredAddresses', 'Please log in to manage your addresses.'),
                     next: 'addresses.html',
                 })) {
                     return;
@@ -110,16 +110,16 @@
             renderAddresses() {
                 const container = document.getElementById('addressesList');
                 if (!this.user || !this.user.addresses || this.user.addresses.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📍</div><p>No saved addresses</p></div>';
+                    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📍</div><p>${UIComponents.t('account.noSavedAddresses', 'No saved addresses')}</p></div>`;
                     return;
                 }
 
                 container.innerHTML = this.user.addresses.map((addr, idx) => `
                     <div class="address-card">
                         <div class="address-header">
-                            <span class="address-type">${addr.type.charAt(0).toUpperCase() + addr.type.slice(1)}</span>
+                            <span class="address-type">${UIComponents.t(`account.${addr.type}`, addr.type.charAt(0).toUpperCase() + addr.type.slice(1))}</span>
                             <div class="address-actions">
-                                <button class="btn-small" onclick="addresses.deleteAddress(${idx})">Delete</button>
+                                <button class="btn-small" onclick="addresses.deleteAddress(${idx})">${UIComponents.t('account.delete', 'Delete')}</button>
                             </div>
                         </div>
                         <div class="address-text">${addr.street}<br>${addr.city} ${addr.zip}</div>
@@ -139,7 +139,7 @@
                 const zip = document.getElementById('addressZip').value.trim();
 
                 if (!street || !city || !zip) {
-                    UIComponents.showToast('Please fill in all fields');
+                    UIComponents.showToast(UIComponents.t('account.fillAllFields', 'Please fill in all fields'));
                     return;
                 }
 
@@ -157,7 +157,7 @@
                         this.user = updatedUser;
                     } catch (error) {
                         console.error('Error saving address:', error);
-                        UIComponents.showToast('Failed to save address');
+                        UIComponents.showToast(UIComponents.t('account.failedSaveAddress', 'Failed to save address'));
                         return;
                     }
                 } else {
@@ -165,7 +165,7 @@
                 }
                 StateManager.setUser(this.user);
 
-                UIComponents.showToast('Address saved!');
+                UIComponents.showToast(UIComponents.t('account.addressSaved', 'Address saved!'));
                 document.getElementById('addressStreet').value = '';
                 document.getElementById('addressCity').value = '';
                 document.getElementById('addressZip').value = '';
@@ -174,7 +174,7 @@
             }
 
             async deleteAddress(idx) {
-                if (confirm('Delete this address?')) {
+                if (confirm(UIComponents.t('account.deleteAddressConfirm', 'Delete this address?'))) {
                     const address = this.user.addresses[idx];
                     if (this.user.id && address?.id) {
                         try {
@@ -182,7 +182,7 @@
                             this.user = updatedUser;
                         } catch (error) {
                             console.error('Error deleting address:', error);
-                            UIComponents.showToast('Failed to delete address');
+                            UIComponents.showToast(UIComponents.t('account.failedDeleteAddress', 'Failed to delete address'));
                             return;
                         }
                     } else {
@@ -196,6 +196,11 @@
 
         UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
         const addresses = new AddressesManager();
+        window.refreshPageLocalizedContent = function() {
+            if (addresses) {
+                addresses.renderAddresses();
+            }
+        };
     </script>
 </body>
 </html>

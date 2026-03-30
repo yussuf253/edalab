@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Edalab</title>
+    <title data-i18n="nav.login">Login</title>
     <link rel="stylesheet" href="css/main-styles.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/modules.css">
@@ -34,35 +34,35 @@
 </head>
 <body>
     <nav id="nav" data-static-unified="true">
-        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home" data-i18n="nav.home">Home</a><a href="food.html" class="nav-a" data-nav-link="food" data-i18n="nav.food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping" data-i18n="nav.shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy" data-i18n="nav.pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor" data-i18n="nav.doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel" data-i18n="nav.hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride" data-i18n="nav.ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services" data-i18n="nav.services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry" data-i18n="nav.laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label" data-i18n="nav.wishlist">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label" data-i18n="nav.cart">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
     </nav>
 
     <div class="auth-wrap">
         <div class="auth-card">
-            <div class="auth-title">Welcome back</div>
-            <div class="auth-sub">Sign in to sync your orders, bookings, and profile across the website.</div>
+            <div class="auth-title" data-i18n="auth.loginTitle">Welcome back</div>
+            <div class="auth-sub" data-i18n="auth.loginSubtitle">Sign in to sync your orders, bookings, and profile across the website.</div>
             <div class="auth-error" id="authError"></div>
             <div class="form-group">
-                <label class="form-label">Email</label>
+                <label class="form-label" data-i18n="auth.email">Email</label>
                 <div class="input-wrap">
-                    <input class="form-input" id="email" type="email" placeholder="you@example.com" autocomplete="email">
+                    <input class="form-input" id="email" type="email" placeholder="you@example.com" data-i18n-placeholder="auth.emailPlaceholder" autocomplete="email">
                 </div>
                 <div class="field-error" id="emailError"></div>
             </div>
             <div class="form-group">
-                <label class="form-label">Password</label>
+                <label class="form-label" data-i18n="auth.password">Password</label>
                 <div class="input-wrap">
-                    <input class="form-input password-input" id="password" type="password" placeholder="Your password" autocomplete="current-password">
-                    <button class="password-toggle" id="passwordToggle" type="button">Show</button>
+                    <input class="form-input password-input" id="password" type="password" placeholder="Your password" data-i18n-placeholder="auth.passwordPlaceholder" autocomplete="current-password">
+                    <button class="password-toggle" id="passwordToggle" type="button" data-i18n="auth.show">Show</button>
                 </div>
                 <div class="field-error" id="passwordError"></div>
             </div>
             <div class="auth-links">
-                <a href="help-center.html">Forgot password?</a>
+                <a href="help-center.html" data-i18n="auth.forgotPassword">Forgot password?</a>
             </div>
-            <button class="auth-btn" id="loginButton" onclick="loginPage.submit()">Login</button>
+            <button class="auth-btn" id="loginButton" onclick="loginPage.submit()" data-i18n="auth.loginButton">Login</button>
             <div class="auth-footer">
-                Need an account? <a href="register.html">Create one</a>
+                <span data-i18n="auth.needAccount">Need an account?</span> <a href="register.html" data-i18n="auth.createOne">Create one</a>
             </div>
         </div>
     </div>
@@ -95,7 +95,7 @@
 
             setLoading(isLoading) {
                 this.button.disabled = isLoading;
-                this.button.textContent = isLoading ? 'Signing in...' : 'Login';
+                this.button.textContent = isLoading ? UIComponents.t('auth.loginLoading', 'Signing in...') : UIComponents.t('auth.loginButton', 'Login');
                 this.passwordToggle.disabled = isLoading;
             }
 
@@ -132,7 +132,9 @@
             togglePasswordVisibility() {
                 const isPassword = this.passwordInput.type === 'password';
                 this.passwordInput.type = isPassword ? 'text' : 'password';
-                this.passwordToggle.textContent = isPassword ? 'Hide' : 'Show';
+                this.passwordToggle.textContent = isPassword
+                    ? UIComponents.t('auth.hide', 'Hide')
+                    : UIComponents.t('auth.show', 'Show');
             }
 
             isValidEmail(email) {
@@ -144,16 +146,16 @@
                 const email = this.emailInput.value.trim();
                 const password = this.passwordInput.value;
                 if (!email || !password) {
-                    this.showError('Enter your email and password.', {
-                        email: !email ? 'Email is required.' : '',
-                        password: !password ? 'Password is required.' : '',
+                    this.showError(UIComponents.t('auth.error.loginRequired', 'Enter your email and password.'), {
+                        email: !email ? UIComponents.t('auth.error.emailRequired', 'Email is required.') : '',
+                        password: !password ? UIComponents.t('auth.error.passwordRequired', 'Password is required.') : '',
                     });
                     return;
                 }
 
                 if (!this.isValidEmail(email)) {
-                    this.showError('Enter a valid email address.', {
-                        email: 'Use a valid email like name@example.com.',
+                    this.showError(UIComponents.t('auth.error.validEmail', 'Enter a valid email address.'), {
+                        email: UIComponents.t('auth.error.validEmailHint', 'Use a valid email like name@example.com.'),
                     });
                     return;
                 }
@@ -161,16 +163,16 @@
                 try {
                     this.setLoading(true);
                     await apiClient.login(email, password);
-                    UIComponents.showToast('Logged in successfully!', 'success');
+                    UIComponents.showToast(UIComponents.t('auth.toast.loginSuccess', 'Logged in successfully!'), 'success');
                     setTimeout(() => {
                         window.location.href = UIComponents.consumePostAuthRedirect('profile.html');
                     }, 500);
                 } catch (error) {
-                    const message = error?.message || 'Login failed. Check your credentials.';
+                    const message = error?.message || UIComponents.t('auth.error.loginFailed', 'Login failed. Check your credentials.');
                     const isCredentialError = /invalid email or password/i.test(message);
                     this.showError(message, isCredentialError ? {
-                        email: 'Double-check your email address.',
-                        password: 'The password does not match this account.',
+                        email: UIComponents.t('auth.error.emailCheck', 'Double-check your email address.'),
+                        password: UIComponents.t('auth.error.passwordMismatch', 'The password does not match this account.'),
                     } : {});
                 } finally {
                     this.setLoading(false);

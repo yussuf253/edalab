@@ -71,7 +71,7 @@
 
             async init() {
                 if (!UIComponents.requireAuth({
-                    message: 'Please log in to view your orders.',
+                    message: UIComponents.t('orders.loginRequired', 'Please log in to view your orders.'),
                     next: 'orders.html',
                 })) {
                     return;
@@ -133,14 +133,18 @@
                 const container = document.getElementById('ordersList');
                 
                 if (this.filteredOrders.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><p>No orders found</p></div>';
+                    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><p>${UIComponents.t('orders.empty', 'No orders found')}</p></div>`;
                     return;
                 }
 
                 container.innerHTML = this.filteredOrders.map(order => {
                     const date = new Date(order.createdAt).toLocaleDateString();
                     const itemCount = order.items.length;
-                    const itemsText = itemCount === 1 ? '1 item' : `${itemCount} items`;
+                    const itemLabel = itemCount === 1
+                        ? UIComponents.t('orders.item', 'item')
+                        : UIComponents.t('orders.items', 'items');
+                    const itemsText = `${itemCount} ${itemLabel}`;
+                    const statusLabel = UIComponents.t(`orders.${order.status}`, order.status.toUpperCase());
                     const statusClass = order.status === 'confirmed' || order.status === 'on-way' || order.status === 'pending' ? 'pending' : order.status;
                     const trackingHref = this.getTrackingHref(order);
 
@@ -148,7 +152,7 @@
                         <div class="order-card" onclick="window.location.href='${trackingHref}'">
                             <div class="order-header">
                                 <span class="order-id">${order.id}</span>
-                                <span class="order-status ${statusClass}">${order.status.toUpperCase()}</span>
+                                <span class="order-status ${statusClass}">${statusLabel}</span>
                             </div>
                             <div class="order-details">
                                 ${date} • ${itemsText}
@@ -159,8 +163,8 @@
                             <div class="order-footer">
                                 <span class="order-total">$${((order.subtotal || 0) + (order.tax || 0) + (order.deliveryFee || 0) - (order.discount || 0)).toFixed(2)}</span>
                                 <div class="order-actions">
-                                    <button class="btn-small" onclick="orders.viewOrder('${order.id}'); event.stopPropagation();">View</button>
-                                    <button class="btn-small" onclick="orders.trackOrder('${order.id}'); event.stopPropagation();">Track</button>
+                                    <button class="btn-small" onclick="orders.viewOrder('${order.id}'); event.stopPropagation();">${UIComponents.t('orders.view', 'View')}</button>
+                                    <button class="btn-small" onclick="orders.trackOrder('${order.id}'); event.stopPropagation();">${UIComponents.t('orders.track', 'Track')}</button>
                                 </div>
                             </div>
                         </div>
@@ -188,6 +192,11 @@
 
         UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
         const orders = new OrdersManager();
+        window.refreshPageLocalizedContent = function() {
+            if (orders) {
+                orders.renderOrders();
+            }
+        };
     </script>
 </body>
 </html>

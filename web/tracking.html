@@ -392,6 +392,10 @@
                 this.init();
             }
 
+            t(key, fallback) {
+                return UIComponents.t(key, fallback);
+            }
+
             async init() {
                 await this.loadOrder();
                 this.renderTracking();
@@ -445,17 +449,17 @@
 
                 // Status
                 const statusEl = document.getElementById('orderStatus');
-                let statusText = 'Preparing';
+                let statusText = this.t('tracking.preparing', 'Preparing');
                 let statusClass = 'preparing';
 
                 if (this.order.status === 'on-way' || this.order.status === 'active') {
-                    statusText = 'On the Way';
+                    statusText = this.t('tracking.onTheWay', 'On the Way');
                     statusClass = 'on-way';
                 } else if (this.order.status === 'delivered') {
-                    statusText = 'Delivered';
+                    statusText = this.t('orders.delivered', 'Delivered');
                     statusClass = 'delivered';
                 } else if (this.order.status === 'confirmed' && this.order.module === 'ride') {
-                    statusText = 'Driver Assigned';
+                    statusText = this.t('tracking.driverAssigned', 'Driver Assigned');
                 }
 
                 statusEl.textContent = statusText;
@@ -478,7 +482,7 @@
                     document.getElementById('driverSection').style.display = 'block';
                     if (this.order.module === 'ride') {
                         document.getElementById('driverName').textContent = 'eDalab Driver';
-                        document.getElementById('driverRating').textContent = '⭐ 4.9 • En route';
+                        document.getElementById('driverRating').textContent = `⭐ 4.9 • ${this.t('tracking.onTheWay', 'On the Way')}`;
                     }
                 }
             }
@@ -487,60 +491,60 @@
                 const isRide = this.order.module === 'ride' || this.order.moduleType === 'RIDE';
                 const timeline = isRide ? [
                     {
-                        title: 'Ride Confirmed',
-                        description: 'Your ride request has been accepted',
+                        title: this.t('tracking.rideConfirmed', 'Ride Confirmed'),
+                        description: this.t('tracking.rideConfirmedDesc', 'Your ride request has been accepted'),
                         time: new Date(this.order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                         status: 'completed'
                     },
                     {
-                        title: 'Driver Assigned',
-                        description: 'A nearby driver is heading to your pickup point',
+                        title: this.t('tracking.driverAssigned', 'Driver Assigned'),
+                        description: this.t('tracking.driverAssignedDesc', 'A nearby driver is heading to your pickup point'),
                         time: '---',
                         status: ['confirmed', 'active', 'on-way', 'delivered'].includes(this.order.status) ? 'completed' : 'pending'
                     },
                     {
-                        title: 'Trip in Progress',
-                        description: 'You are on the way to your destination',
+                        title: this.t('tracking.tripInProgress', 'Trip in Progress'),
+                        description: this.t('tracking.tripInProgressDesc', 'You are on the way to your destination'),
                         time: '---',
                         status: ['active', 'on-way'].includes(this.order.status) ? 'active' :
                             (this.order.status === 'delivered' ? 'completed' : 'pending')
                     },
                     {
-                        title: 'Trip Completed',
-                        description: 'You have arrived at your destination',
+                        title: this.t('tracking.tripCompleted', 'Trip Completed'),
+                        description: this.t('tracking.tripCompletedDesc', 'You have arrived at your destination'),
                         time: '---',
                         status: this.order.status === 'delivered' ? 'completed' : 'pending'
                     }
                 ] : [
                     {
-                        title: 'Order Confirmed',
-                        description: 'Your order has been confirmed and sent to the restaurant',
+                        title: this.t('tracking.orderConfirmed', 'Order Confirmed'),
+                        description: this.t('tracking.orderConfirmedDesc', 'Your order has been confirmed and sent to the restaurant'),
                         time: new Date(this.order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                         status: 'completed'
                     },
                     {
-                        title: 'Order Preparing',
-                        description: 'The restaurant is preparing your order',
+                        title: this.t('tracking.orderPreparing', 'Order Preparing'),
+                        description: this.t('tracking.orderPreparingDesc', 'The restaurant is preparing your order'),
                         time: '---',
                         status: this.order.status === 'confirmed' ? 'active' : 'completed'
                     },
                     {
-                        title: 'Order Picked Up',
-                        description: 'Your order has been picked up for delivery',
+                        title: this.t('tracking.orderPickedUp', 'Order Picked Up'),
+                        description: this.t('tracking.orderPickedUpDesc', 'Your order has been picked up for delivery'),
                         time: '---',
                         status: ['on-way', 'delivered'].includes(this.order.status) ? 
                             (['on-way', 'delivered'].includes(this.order.status) ? 'completed' : 'pending') : 'pending'
                     },
                     {
-                        title: 'Out for Delivery',
-                        description: 'Your order is on the way to you',
+                        title: this.t('tracking.outForDelivery', 'Out for Delivery'),
+                        description: this.t('tracking.outForDeliveryDesc', 'Your order is on the way to you'),
                         time: '---',
                         status: this.order.status === 'on-way' ? 'active' : 
                                (this.order.status === 'delivered' ? 'completed' : 'pending')
                     },
                     {
-                        title: 'Delivered',
-                        description: 'Your order has been delivered successfully',
+                        title: this.t('orders.delivered', 'Delivered'),
+                        description: this.t('tracking.deliveredDesc', 'Your order has been delivered successfully'),
                         time: '---',
                         status: this.order.status === 'delivered' ? 'completed' : 'pending'
                     }
@@ -581,6 +585,16 @@
         function showNotification(message) {
             UIComponents.showToast(message);
         }
+
+        document.querySelector('#driverSection .action-btn:nth-of-type(1)')?.setAttribute('onclick', `showNotification(UIComponents.t('tracking.callingDriver', 'Calling driver...'))`);
+        document.querySelector('#driverSection .action-btn:nth-of-type(2)')?.setAttribute('onclick', `showNotification(UIComponents.t('tracking.openingChat', 'Opening chat...'))`);
+        document.querySelector('.contact-buttons .contact-btn:first-of-type')?.setAttribute('onclick', `showNotification(UIComponents.t('tracking.contactingSupport', 'Contacting support...'))`);
+        document.querySelector('.contact-buttons .contact-btn:last-of-type')?.setAttribute('onclick', `showNotification(UIComponents.t('tracking.callingSupport', 'Calling support...'))`);
+        window.refreshPageLocalizedContent = function() {
+            if (tracking) {
+                tracking.renderTracking();
+            }
+        };
 
     </script>
 </body>

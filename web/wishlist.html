@@ -71,8 +71,8 @@
           container.innerHTML = `
             <div class="wishlist-empty">
               <div style="font-size: 52px;">♡</div>
-              <h2>Your wishlist is empty</h2>
-              <p>Browse the modules and save products you want to come back to.</p>
+              <h2>${UIComponents.t('wishlist.emptyTitle', 'Your wishlist is empty')}</h2>
+              <p>${UIComponents.t('wishlist.emptyDescription', 'Browse the modules and save products you want to come back to.')}</p>
             </div>
           `;
           return;
@@ -85,11 +85,11 @@
                 <img class="wishlist-image" src="${UIComponents.getImageSrc(item, "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='220'%3E%3Crect width='320' height='220' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' fill='%239ca3af' font-size='20' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E")}" alt="${item.name}">
                 <div class="wishlist-body">
                   <div class="wishlist-name">${item.name}</div>
-                  <div class="wishlist-desc">${item.description || 'Saved for later.'}</div>
+                  <div class="wishlist-desc">${item.description || UIComponents.t('wishlist.savedForLater', 'Saved for later.')}</div>
                   <div class="wishlist-price">$${Number(item.price || 0).toFixed(2)}</div>
                   <div class="wishlist-buttons">
-                    <button class="n-solid" onclick="wishlistPage.addToCart('${item.id}')">Add to Cart</button>
-                    <button class="n-ghost" onclick="wishlistPage.remove('${item.id}')">Remove</button>
+                    <button class="n-solid" onclick="wishlistPage.addToCart('${item.id}')">${UIComponents.t('wishlist.addToCart', 'Add to Cart')}</button>
+                    <button class="n-ghost" onclick="wishlistPage.remove('${item.id}')">${UIComponents.t('wishlist.remove', 'Remove')}</button>
                   </div>
                 </div>
               </div>
@@ -103,16 +103,21 @@
         if (!item) return;
         const moduleName = stateManager.resolveCartModule(item, 'shopping');
         stateManager.addToCart(item, 1, moduleName);
-        UIComponents.showToast('Added to cart!', 'success');
+        UIComponents.showToast(UIComponents.t('wishlist.addedToCart', 'Added to cart!'), 'success');
       }
 
       remove(itemId) {
         stateManager.removeFromWishlist(itemId);
-        UIComponents.showToast('Removed from wishlist', 'info');
+        UIComponents.showToast(UIComponents.t('wishlist.removed', 'Removed from wishlist'), 'info');
       }
     }
 
     const wishlistPage = new WishlistPage();
+    window.refreshPageLocalizedContent = function() {
+      if (wishlistPage) {
+        wishlistPage.render();
+      }
+    };
   </script>
 </body>
 </html>

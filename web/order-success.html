@@ -365,11 +365,11 @@
                 // Delivery address
                 if (this.order.address) {
                     const addr = this.order.address;
-                    document.getElementById('deliveryAddress').textContent = `${addr.street}, ${addr.city}`;
+                document.getElementById('deliveryAddress').textContent = `${addr.street}, ${addr.city}`;
                 }
 
                 // Payment method
-                const payment = this.order.payment?.name || 'Unknown';
+                const payment = this.order.payment?.name || UIComponents.t('success.unknownPayment', 'Unknown');
                 document.getElementById('paymentMethod').textContent = payment;
 
                 // Order items
@@ -384,7 +384,7 @@
                 const discount = this.order.discount || 0;
                 const total = subtotal + tax + delivery - discount;
 
-                let html = `<div class="items-title">Order Items</div>`;
+                let html = `<div class="items-title">${UIComponents.t('success.orderItems', 'Order Items')}</div>`;
                 
                 this.order.items.forEach(item => {
                     html += `
@@ -399,25 +399,25 @@
                 html += `
                     <div style="border-top: 2px solid #eee; margin-top: 16px; padding-top: 16px;">
                         <div class="order-item" style="margin-bottom: 8px;">
-                            <span class="item-name">Subtotal</span>
+                            <span class="item-name">${UIComponents.t('cart.subtotal', 'Subtotal')}</span>
                             <span class="item-price">$${subtotal.toFixed(2)}</span>
                         </div>
                         <div class="order-item" style="margin-bottom: 8px;">
-                            <span class="item-name">Delivery Fee</span>
-                            <span class="item-price">${delivery === 0 ? 'FREE' : '$' + delivery.toFixed(2)}</span>
+                            <span class="item-name">${UIComponents.t('cart.deliveryFee', 'Delivery Fee')}</span>
+                            <span class="item-price">${delivery === 0 ? UIComponents.t('checkout.free', 'FREE') : '$' + delivery.toFixed(2)}</span>
                         </div>
                         <div class="order-item" style="margin-bottom: 8px;">
-                            <span class="item-name">Tax</span>
+                            <span class="item-name">${UIComponents.t('checkout.tax', 'Tax')}</span>
                             <span class="item-price">$${tax.toFixed(2)}</span>
                         </div>
                         ${discount > 0 ? `
                             <div class="order-item" style="margin-bottom: 8px;">
-                                <span class="item-name">Discount</span>
+                                <span class="item-name">${UIComponents.t('cart.discount', 'Discount')}</span>
                                 <span class="item-price" style="color: #27ae60;">-$${discount.toFixed(2)}</span>
                             </div>
                         ` : ''}
                         <div class="order-item" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #eee;">
-                            <span style="font-weight: 700;">Total Amount</span>
+                            <span style="font-weight: 700;">${UIComponents.t('checkout.totalAmount', 'Total Amount')}</span>
                             <span style="color: #667eea; font-weight: 700; font-size: 16px;">$${total.toFixed(2)}</span>
                         </div>
                     </div>
@@ -429,6 +429,11 @@
 
         UIComponents.mountUnifiedNavbar({ active: '', offsetBody: true });
         const successManager = new OrderSuccessManager();
+        window.refreshPageLocalizedContent = function() {
+            if (successManager) {
+                successManager.renderOrderDetails();
+            }
+        };
 
         function getOrderId() {
             const params = new URLSearchParams(window.location.search);

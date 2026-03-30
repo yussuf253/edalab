@@ -295,6 +295,20 @@
         this.init();
       }
 
+      getModuleLabel(moduleName) {
+        const keyMap = {
+          shopping: 'nav.shopping',
+          food: 'nav.food',
+          pharmacy: 'nav.pharmacy',
+          hotel: 'nav.hotel',
+          ride: 'nav.ride',
+          laundry: 'nav.laundry',
+          'home-services': 'nav.services',
+        };
+        const fallback = moduleName.replace('-', ' ');
+        return UIComponents.t(keyMap[moduleName], fallback.charAt(0).toUpperCase() + fallback.slice(1));
+      }
+
       init() {
         const firstAvailableModule = this.modules.find(
           (moduleName) => stateManager.getCart(moduleName).length > 0
@@ -315,7 +329,7 @@
           .map(
             (m) => `
           <button class="module-tab ${m === this.currentModule ? 'active' : ''}" onclick="cartModule.switchModule('${m}', event)">
-            ${m.charAt(0).toUpperCase() + m.slice(1)} (${stateManager.getCart(m).length})
+            ${this.getModuleLabel(m)} (${stateManager.getCart(m).length})
           </button>
         `
           )
@@ -345,8 +359,8 @@
           container.innerHTML = `
             <div class="cart-empty">
               <div class="cart-empty-icon">🛒</div>
-              <div class="cart-empty-text">Your cart is empty</div>
-              <button class="continue-btn" onclick="navigateTo('/')">Start Shopping</button>
+              <div class="cart-empty-text">${UIComponents.t('cart.empty', 'Your cart is empty')}</div>
+              <button class="continue-btn" onclick="navigateTo('/')">${UIComponents.t('cart.startShopping', 'Start Shopping')}</button>
             </div>
           `;
         } else {
@@ -379,7 +393,7 @@
       async applyPromo() {
         const code = document.getElementById('promo-code').value.trim();
         if (!code) {
-          UIComponents.showToast('Please enter a promo code', 'info');
+          UIComponents.showToast(UIComponents.t('cart.enterPromo', 'Please enter a promo code'), 'info');
           return;
         }
 
@@ -394,17 +408,17 @@
               : Number(coupon.discountValue || 0)
             : 0;
           stateManager.setDiscount(this.discount);
-          UIComponents.showToast(`Promo code applied! You saved $${this.discount.toFixed(2)}`, 'success');
+          UIComponents.showToast(`${UIComponents.t('cart.promoAppliedPrefix', 'Promo code applied! You saved')} $${this.discount.toFixed(2)}`, 'success');
           this.updateSummary();
         } catch (error) {
-          UIComponents.showToast('Invalid promo code', 'error');
+          UIComponents.showToast(UIComponents.t('cart.invalidPromo', 'Invalid promo code'), 'error');
         }
       }
 
       async checkout() {
         const items = stateManager.getCart(this.currentModule);
         if (items.length === 0) {
-          UIComponents.showToast('Your cart is empty', 'info');
+          UIComponents.showToast(UIComponents.t('cart.emptyToast', 'Your cart is empty'), 'info');
           return;
         }
 
@@ -414,6 +428,12 @@
     }
 
     const cartModule = new CartModule();
+    window.refreshPageLocalizedContent = function() {
+      if (cartModule) {
+        cartModule.setupModuleTabs();
+        cartModule.renderCart();
+      }
+    };
   </script>
 </body>
 </html>
