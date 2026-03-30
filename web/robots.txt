@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://edalab.dj/sitemap.xml
+Sitemap: https://edalab.app/sitemap.xml

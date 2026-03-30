@@ -1002,8 +1002,19 @@ body.detail-loading .restaurant-menu-item-btn {
 }
 
 .category-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-icon img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  display: block;
 }
 
 .category-name {

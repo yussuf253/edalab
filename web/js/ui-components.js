@@ -1266,13 +1266,13 @@ const UIComponents = {
           '.hiw-step:nth-of-type(4) .hiw-n': 'Étape 04',
           '.hiw-step:nth-of-type(4) .hiw-t': 'Suivi en direct',
           '.hiw-step:nth-of-type(4) .hiw-d': 'Suivez votre livraison en temps réel, de la préparation jusqu’à votre porte.',
-          '.testi-sec .sec-label': '❤️ Histoires vraies',
+          '.testi-sec .sec-label': 'Histoires vraies',
           '.testi-sec .sec-h': 'Adoré par les Djiboutiens',
           '.testi-sec .sec-p': 'Ce ne sont pas des robots, ce sont vos voisins qui utilisent eDalab chaque jour.',
           '.testi-sec .sec-head > div:last-child > div:last-child': '85 000+ avis',
           '.partners-sec .sec-label': 'Nos partenaires',
           '.partners-sec .sec-h': 'Des entreprises de confiance à travers Djibouti',
-          '.app-tag': '📱 Disponible sur iOS et Android',
+          '.app-tag': 'Disponible sur iOS et Android',
           '.app-sec-left p': 'Suivi en direct, notifications, récompenses, adresses enregistrées et historique des commandes dans votre poche.',
           '.dl-btn:first-child .dl-sub': 'Télécharger sur',
           '.dl-btn:first-child .dl-name': 'App Store',
@@ -1329,13 +1329,13 @@ const UIComponents = {
           '.hiw-step:nth-of-type(4) .hiw-n': 'الخطوة 04',
           '.hiw-step:nth-of-type(4) .hiw-t': 'تتبع مباشر',
           '.hiw-step:nth-of-type(4) .hiw-d': 'تابع طلبك لحظة بلحظة من التحضير حتى باب منزلك.',
-          '.testi-sec .sec-label': '❤️ قصص حقيقية',
+          '.testi-sec .sec-label': 'قصص حقيقية',
           '.testi-sec .sec-h': 'محبوب من الجيبوتيين',
           '.testi-sec .sec-p': 'هؤلاء ليسوا روبوتات، بل جيرانك الذين يستخدمون إيدالاب كل يوم.',
           '.testi-sec .sec-head > div:last-child > div:last-child': '85,000+ تقييم',
           '.partners-sec .sec-label': 'شركاؤنا',
           '.partners-sec .sec-h': 'موثوق به من الشركات في أنحاء جيبوتي',
-          '.app-tag': '📱 متوفر على iOS وAndroid',
+          '.app-tag': 'متوفر على iOS وAndroid',
           '.app-sec-left p': 'تتبع مباشر، إشعارات، مكافآت، عناوين محفوظة، وسجل الطلبات في جيبك.',
           '.dl-btn:first-child .dl-sub': 'حمّل من',
           '.dl-btn:first-child .dl-name': 'App Store',
@@ -1382,7 +1382,7 @@ const UIComponents = {
     'food.html': {
       fr: {
         text: {
-          '.food-hero h1': 'Envie de manger ? Commandez auprès de vos restaurants préférés 🍕',
+          '.food-hero h1': 'Envie de manger ? Commandez auprès de vos restaurants préférés',
           '.food-hero p': 'Livraison rapide, repas frais et offres exclusives. Tout ce dont vos papilles ont envie.',
           '.filter-section h2': 'Filtrer et trier',
           '.food-section h2': 'Restaurants populaires',
@@ -1404,7 +1404,7 @@ const UIComponents = {
       },
       ar: {
         text: {
-          '.food-hero h1': 'هل أنت جائع؟ اطلب من مطاعمك المفضلة 🍕',
+          '.food-hero h1': 'هل أنت جائع؟ اطلب من مطاعمك المفضلة',
           '.food-hero p': 'توصيل سريع، طعام طازج، وعروض حصرية. كل ما تشتهيه.',
           '.filter-section h2': 'تصفية وترتيب',
           '.food-section h2': 'مطاعم مشهورة',
@@ -1427,7 +1427,7 @@ const UIComponents = {
     'shopping.html': {
       fr: {
         text: {
-          '.shopping-hero h1': 'Achetez tout ce que vous aimez 🛍️',
+          '.shopping-hero h1': 'Achetez tout ce que vous aimez',
           '.shopping-hero p': 'Mode, électronique, décoration et plus encore. Tout au même endroit avec livraison rapide.',
           'main > section:first-of-type h2': 'Catégories',
           '.filter-section h2': 'Acheter maintenant',
@@ -1450,7 +1450,7 @@ const UIComponents = {
       },
       ar: {
         text: {
-          '.shopping-hero h1': 'تسوق كل ما تحبه 🛍️',
+          '.shopping-hero h1': 'تسوق كل ما تحبه',
           '.shopping-hero p': 'موضة وإلكترونيات وديكور منزلي وأكثر. كل شيء في مكان واحد مع توصيل سريع.',
           'main > section:first-of-type h2': 'الفئات',
           '.filter-section h2': 'تسوق الآن',
@@ -1475,9 +1475,9 @@ const UIComponents = {
     'pharmacy.html': {
       fr: {
         text: {
-          '.pharmacy-hero h1': 'Santé et bien-être à portée de main 💊',
+          '.pharmacy-hero h1': 'Santé et bien-être à portée de main',
           '.pharmacy-hero p': 'Commandez des médicaments, produits de santé et compléments bien-être. Livraison rapide et qualité fiable.',
-          'main > section:first-of-type h3': 'Téléchargez votre ordonnance 📋',
+          'main > section:first-of-type h3': 'Téléchargez votre ordonnance',
           'main > section:first-of-type p': 'Téléchargez votre ordonnance pour recevoir vos médicaments',
           'main > section:first-of-type button': 'Télécharger l’ordonnance',
           'main > section:nth-of-type(2) h2': 'Catégories',
@@ -1496,9 +1496,9 @@ const UIComponents = {
       },
       ar: {
         text: {
-          '.pharmacy-hero h1': 'الصحة والعافية بين يديك 💊',
+          '.pharmacy-hero h1': 'الصحة والعافية بين يديك',
           '.pharmacy-hero p': 'اطلب الأدوية والمنتجات الصحية ومكملات العافية. توصيل سريع وجودة موثوقة.',
-          'main > section:first-of-type h3': 'ارفع الوصفة الطبية 📋',
+          'main > section:first-of-type h3': 'ارفع الوصفة الطبية',
           'main > section:first-of-type p': 'ارفع وصفتك الطبية ليصلك الدواء',
           'main > section:first-of-type button': 'رفع الوصفة',
           'main > section:nth-of-type(2) h2': 'الفئات',
@@ -1519,7 +1519,7 @@ const UIComponents = {
     'doctor.html': {
       fr: {
         text: {
-          '.doctor-hero h1': 'Votre santé, notre priorité 💊',
+          '.doctor-hero h1': 'Votre santé, notre priorité',
           '.doctor-hero p': 'Consultez des médecins qualifiés, prenez rendez-vous et recevez des conseils médicaux à tout moment.',
           '.filter-section h2': 'Trouver un médecin',
           '.doctor-section h2': 'Meilleurs médecins',
@@ -1554,7 +1554,7 @@ const UIComponents = {
       },
       ar: {
         text: {
-          '.doctor-hero h1': 'صحتك أولويتنا 💊',
+          '.doctor-hero h1': 'صحتك أولويتنا',
           '.doctor-hero p': 'تواصل مع أطباء مؤهلين، واحجز المواعيد، واحصل على نصائح طبية موثوقة في أي وقت.',
           '.filter-section h2': 'ابحث عن طبيب',
           '.doctor-section h2': 'أفضل الأطباء',
@@ -1591,7 +1591,7 @@ const UIComponents = {
     'hotel.html': {
       fr: {
         text: {
-          '.hotel-hero h1': 'Trouvez votre séjour idéal 🏨',
+          '.hotel-hero h1': 'Trouvez votre séjour idéal',
           '.hotel-hero p': 'Chambres confortables, excellents emplacements et prix imbattables. Réservez dès maintenant.',
           'main > div:first-of-type h2': 'Rechercher des hôtels',
           '.date-picker .filter-item:nth-of-type(1) label': 'Date d’arrivée',
@@ -1625,7 +1625,7 @@ const UIComponents = {
       },
       ar: {
         text: {
-          '.hotel-hero h1': 'اعثر على إقامتك المثالية 🏨',
+          '.hotel-hero h1': 'اعثر على إقامتك المثالية',
           '.hotel-hero p': 'غرف مريحة، مواقع رائعة، وأسعار ممتازة. احجز الآن.',
           'main > div:first-of-type h2': 'ابحث عن الفنادق',
           '.date-picker .filter-item:nth-of-type(1) label': 'تاريخ الوصول',
@@ -1940,7 +1940,7 @@ const UIComponents = {
           'title': 'Suivi de commande - Edalab',
           '.order-header .order-id': 'Numéro de commande',
           '#orderStatus': 'Préparation',
-          '.map-container': '🗺️ Carte de suivi en direct (bientôt disponible)',
+          '.map-container': 'Carte de suivi en direct (bientôt disponible)',
           '#driverSection .info-title': 'Partenaire de livraison',
           '.delivery-info .info-section:nth-of-type(2) .info-title': 'Adresse de livraison',
           '.delivery-info .info-section:nth-of-type(2) .address-label': 'Livrer à',
@@ -1956,7 +1956,7 @@ const UIComponents = {
           'title': 'تتبع الطلب - Edalab',
           '.order-header .order-id': 'رقم الطلب',
           '#orderStatus': 'قيد التحضير',
-          '.map-container': '🗺️ خريطة التتبع المباشر (قريباً)',
+          '.map-container': 'خريطة التتبع المباشر (قريباً)',
           '#driverSection .info-title': 'شريك التوصيل',
           '.delivery-info .info-section:nth-of-type(2) .info-title': 'عنوان التوصيل',
           '.delivery-info .info-section:nth-of-type(2) .address-label': 'التوصيل إلى',
@@ -2169,8 +2169,8 @@ const UIComponents = {
           '.page-title': 'Centre d’aide',
           '.contact-title': 'Vous ne trouvez pas ce que vous cherchez ?',
           '.contact-info': 'Contactez notre équipe d’assistance. Nous sommes là pour vous aider !',
-          '.contact-btns .btn-contact:first-of-type': '💬 Chat',
-          '.contact-btns .btn-contact:last-of-type': '📞 Appeler',
+          '.contact-btns .btn-contact:first-of-type': 'Chat',
+          '.contact-btns .btn-contact:last-of-type': 'Appeler',
         },
         placeholder: {
           '#searchBox': 'Rechercher dans la FAQ...',
@@ -2182,8 +2182,8 @@ const UIComponents = {
           '.page-title': 'مركز المساعدة',
           '.contact-title': 'لم تجد ما تبحث عنه؟',
           '.contact-info': 'تواصل مع فريق الدعم لدينا. نحن هنا لمساعدتك!',
-          '.contact-btns .btn-contact:first-of-type': '💬 محادثة',
-          '.contact-btns .btn-contact:last-of-type': '📞 اتصال',
+          '.contact-btns .btn-contact:first-of-type': 'محادثة',
+          '.contact-btns .btn-contact:last-of-type': 'اتصال',
         },
         placeholder: {
           '#searchBox': 'ابحث في الأسئلة الشائعة...',
@@ -2212,7 +2212,7 @@ const UIComponents = {
       fr: {
         text: {
           'title': 'Panier - eDalab',
-          'main > h1': 'Votre panier 🛒',
+          'main > h1': 'Votre panier',
           '.promo-section label': 'Code promo',
           '.promo-input button': 'Appliquer',
           '.summary-row:nth-of-type(1) span:first-child': 'Sous-total',
@@ -2242,7 +2242,7 @@ const UIComponents = {
       ar: {
         text: {
           'title': 'السلة - eDalab',
-          'main > h1': 'سلة التسوق 🛒',
+          'main > h1': 'سلة التسوق',
           '.promo-section label': 'رمز الخصم',
           '.promo-input button': 'تطبيق',
           '.summary-row:nth-of-type(1) span:first-child': 'المجموع الفرعي',
@@ -2537,6 +2537,38 @@ const UIComponents = {
     return `<img src="${this.logoPath}" alt="eDalab logo">`;
   },
 
+  getIconMarkup(name, className = 'ui-icon') {
+    const icons = {
+      search: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+      browse: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h16M4 12h16M4 16.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+      heart: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+      heartFilled: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="currentColor"/></svg>`,
+      cart: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"/><circle cx="18" cy="20" r="1.7" fill="currentColor"/><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+      bag: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l-1 10.2a1.5 1.5 0 0 1-1.5 1.3H9a1.5 1.5 0 0 1-1.5-1.3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 9V7.7a2.5 2.5 0 0 1 5 0V9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+      user: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5 19.5a7.5 7.5 0 0 1 14 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+      logout: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6H7.5A1.5 1.5 0 0 0 6 7.5v9A1.5 1.5 0 0 0 7.5 18H10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M13 8.5 17.5 12 13 15.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 12H9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+      location: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="11" r="2.2" fill="currentColor"/></svg>`,
+      clock: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.8v4.6l3.2 1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+      delivery: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5h10.5v7H3z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13.5 10.5h3.2l2 2.5v1.5h-5.2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7" cy="18" r="1.7" fill="currentColor"/><circle cx="17" cy="18" r="1.7" fill="currentColor"/></svg>`,
+      payment: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10.2h17" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7.5 14.5h3.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+      star: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 4 2.3 4.7 5.2.8-3.7 3.7.9 5.2-4.7-2.5-4.7 2.5.9-5.2L4.5 9.5l5.2-.8Z" fill="currentColor"/></svg>`,
+      verified: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 18.5 6v5.5c0 4.2-2.7 8-6.5 9.5-3.8-1.5-6.5-5.3-6.5-9.5V6Z" fill="currentColor"/><path d="m9.3 12.4 1.8 1.8 3.8-4.1" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+      trash: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 7.5h13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M9 7.5V5.8a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1.7" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7.5 7.5 8.3 18a1.5 1.5 0 0 0 1.5 1.4h4.4a1.5 1.5 0 0 0 1.5-1.4l.8-10.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+      spark: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z" fill="currentColor"/></svg>`,
+      arrowRight: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="m13.5 7.5 4.5 4.5-4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+      mail: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="m5.5 8 6.5 5 6.5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+      support: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 14.5 5 17V6.5A1.5 1.5 0 0 1 6.5 5h11A1.5 1.5 0 0 1 19 6.5v8A1.5 1.5 0 0 1 17.5 16h-8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8.5 9.5h7M8.5 12.5h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
+      phone: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 4.8h2.4l1.2 3.7-1.7 1.8a15.1 15.1 0 0 0 4.6 4.6l1.8-1.7 3.7 1.2v2.4a1.5 1.5 0 0 1-1.5 1.5A13.7 13.7 0 0 1 5.7 6.3 1.5 1.5 0 0 1 7.2 4.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+      apple: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.3 7.3c-.7.9-1.8 1.4-2.9 1.3-.1-1 .3-2.1 1-2.8.7-.8 1.8-1.4 2.8-1.4.1 1-.3 2.1-.9 2.9ZM17.9 17.8c-.6.9-1.1 1.8-2 1.8s-1.2-.5-2.2-.5-1.4.5-2.2.5-1.5-.8-2.2-1.8c-1.4-2-2.5-5.6-1-8.1.7-1.2 1.9-2 3.2-2 .9 0 1.8.6 2.2.6.4 0 1.5-.7 2.5-.6.4 0 1.8.2 2.7 1.6-2.4 1.4-2 4.8.7 5.9-.2.6-.6 1.6-1.7 2.6Z" fill="currentColor"/></svg>`,
+      playStore: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.7 4.8 14.9 14 5.8 19.2c-.8.4-1.8-.1-1.8-1V5.8c0-.9 1-1.4 1.7-1Z" fill="currentColor"/><path d="m14.9 14 3.1-1.8c1-.6 1-2 0-2.6l-3.2-1.8-2.3 2.2Z" fill="currentColor" opacity=".8"/><path d="m12.6 11.8 2.3-2.2L7.4 5.1Z" fill="currentColor" opacity=".55"/><path d="m12.6 12.2-5.2 6.8 7.5-4.5Z" fill="currentColor" opacity=".7"/></svg>`,
+      socialX: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h3.4l4 5.3L17 5h2l-5.5 6.2L19.3 19H16l-4.3-5.7L6.8 19H4.7l5.8-6.5Z" fill="currentColor"/></svg>`,
+      socialLinkedin: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.3 8.5h2.8V18H6.3Zm1.4-3.9a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2ZM11 8.5h2.7v1.3h.1c.4-.8 1.3-1.6 2.9-1.6 3.1 0 3.7 2 3.7 4.7V18h-2.8v-4.5c0-1.1 0-2.5-1.5-2.5s-1.7 1.2-1.7 2.4V18H11Z" fill="currentColor"/></svg>`,
+      socialFacebook: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 20v-6h2.1l.4-2.5h-2.5V9.9c0-.7.2-1.4 1.4-1.4H16V6.3c-.4-.1-1.1-.2-1.9-.2-2 0-3.4 1.2-3.4 3.6v1.8H8.5V14h2.2v6Z" fill="currentColor"/></svg>`,
+      socialInstagram: `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="15" height="15" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="16.6" cy="7.4" r="1.1" fill="currentColor"/></svg>`,
+    };
+    return `<span class="${className}">${icons[name] || icons.spark}</span>`;
+  },
+
   // ═══ PRODUCT CARD ═══
   createProductCard(product, onAddToCart, onAddToWishlist) {
     const isInWishlist = stateManager.isInWishlist(product.id);
@@ -2555,7 +2587,7 @@ const UIComponents = {
             : ''}
           <button class="pc-wishlist-btn ${isInWishlist ? 'active' : ''}" 
                   onclick="UIComponents.handleWishlist('${product.id}', event)">
-            <svg class="icon">${isInWishlist ? '❤️' : '🤍'}</svg>
+            ${this.getIconMarkup(isInWishlist ? 'heartFilled' : 'heart', 'ui-icon ui-icon-sm')}
           </button>
         </div>
         <div class="pc-content">
@@ -2600,9 +2632,9 @@ const UIComponents = {
           <h3 class="rc-name">${restaurant.name}</h3>
           <p class="rc-cuisine">${restaurant.cuisine || restaurant.type || 'Restaurant'}</p>
           <div class="rc-meta">
-            <span class="rc-rating">★ ${restaurant.rating || 4.5}</span>
-            <span class="rc-time">⏱ ${restaurant.deliveryTime || '30-40'} min</span>
-            <span class="rc-fee">🚚 $${restaurant.deliveryFee || 2.50}</span>
+            <span class="rc-rating">${this.getIconMarkup('star', 'ui-icon ui-icon-xs')} ${restaurant.rating || 4.5}</span>
+            <span class="rc-time">${this.getIconMarkup('clock', 'ui-icon ui-icon-xs')} ${restaurant.deliveryTime || '30-40'} min</span>
+            <span class="rc-fee">${this.getIconMarkup('delivery', 'ui-icon ui-icon-xs')} $${restaurant.deliveryFee || 2.50}</span>
           </div>
         </div>
       </div>
@@ -2615,7 +2647,7 @@ const UIComponents = {
       <div class="doctor-card" onclick="navigateTo('/doctor/${doctor.id}')">
         <div class="dc-image">
           <img src="${this.getImageSrc(doctor, 'assets/icons/doctor.png')}" alt="${doctor.name}" />
-          ${doctor.isVerified ? '<span class="dc-verified">✓</span>' : ''}
+          ${doctor.isVerified ? `<span class="dc-verified">${this.getIconMarkup('verified', 'ui-icon ui-icon-xs')}</span>` : ''}
           ${doctor.isAvailable ? '<span class="dc-available">Available</span>' : '<span class="dc-unavailable">Unavailable</span>'}
         </div>
         <div class="dc-content">
@@ -2641,11 +2673,11 @@ const UIComponents = {
       <div class="hotel-card" onclick="navigateTo('/hotel/${hotel.id}')">
         <div class="hc-image">
           <img src="${this.getImageSrc(hotel, 'https://via.placeholder.com/300x200')}" alt="${hotel.name}" />
-          <span class="hc-rating">★ ${hotel.rating}</span>
+          <span class="hc-rating">${this.getIconMarkup('star', 'ui-icon ui-icon-xs')} ${hotel.rating}</span>
         </div>
         <div class="hc-content">
           <h3 class="hc-name">${hotel.name}</h3>
-          <p class="hc-location">📍 ${hotel.location}</p>
+          <p class="hc-location">${this.getIconMarkup('location', 'ui-icon ui-icon-xs')} ${hotel.location}</p>
           <p class="hc-description">${hotel.description || ''}</p>
           <div class="hc-amenities">
             ${(hotel.amenities || [])
@@ -2677,7 +2709,7 @@ const UIComponents = {
         <div class="modal" onclick="event.stopPropagation()">
           <div class="modal-header">
             <h2>${title}</h2>
-            <button class="modal-close" onclick="UIComponents.closeModal('${id}')">✕</button>
+            <button class="modal-close" onclick="UIComponents.closeModal('${id}')">×</button>
           </div>
           <div class="modal-body">
             ${content}
@@ -2745,6 +2777,38 @@ const UIComponents = {
     `;
   },
 
+  createFormSkeleton(config = {}) {
+    const normalized = typeof config === 'number' ? { fields: config } : config;
+    const fields = normalized.fields || 6;
+    const columns = normalized.columns || 2;
+    const includeSummary = normalized.includeSummary || false;
+    const includeButton = normalized.includeButton !== false;
+
+    return `
+      <div class="module-skeleton-card" aria-hidden="true" style="padding: 24px;">
+        <div class="module-skeleton-filter-grid" style="grid-template-columns: repeat(${columns}, minmax(0, 1fr));">
+          ${Array.from({ length: fields }, (_, index) => `
+            <div class="module-skeleton-group" style="${index === 0 && columns > 1 ? `grid-column: span ${columns};` : ''}">
+              <div class="module-skeleton-block module-skeleton-line sm" style="width: 38%;"></div>
+              <div class="module-skeleton-block module-skeleton-input"></div>
+            </div>
+          `).join('')}
+        </div>
+        ${includeSummary ? `
+          <div class="module-skeleton-group" style="margin-top: 18px;">
+            <div class="module-skeleton-block module-skeleton-line lg" style="width: 32%;"></div>
+            <div class="module-skeleton-block module-skeleton-input"></div>
+            <div class="module-skeleton-block module-skeleton-input"></div>
+            <div class="module-skeleton-block module-skeleton-input"></div>
+          </div>
+        ` : ''}
+        ${includeButton ? `
+          <div class="module-skeleton-block module-skeleton-button" style="width: min(220px, 100%); margin-top: 20px;"></div>
+        ` : ''}
+      </div>
+    `;
+  },
+
   createCategorySkeleton(count = 6) {
     return Array.from({ length: count }, () => `
       <div class="module-skeleton-category-card" aria-hidden="true">
@@ -2799,7 +2863,7 @@ const UIComponents = {
     return `
       <div class="search-bar">
         <input type="text" id="${id}" class="search-input" placeholder="${placeholder}" />
-        <button class="search-btn" onclick="${onSearch}">🔍</button>
+        <button class="search-btn" onclick="${onSearch}">${this.getIconMarkup('search', 'ui-icon ui-icon-sm')}</button>
       </div>
     `;
   },
@@ -2862,7 +2926,7 @@ const UIComponents = {
           <button class="quantity-btn" onclick="stateManager.updateCartItemQuantity('${item.id}', ${item.quantity + 1}, '${module}')">+</button>
         </div>
         <div class="cart-item-total">$${(item.price * item.quantity).toFixed(2)}</div>
-        <button class="remove-btn" onclick="stateManager.removeFromCart('${item.id}', '${module}')">🗑</button>
+        <button class="remove-btn" onclick="stateManager.removeFromCart('${item.id}', '${module}')">${this.getIconMarkup('trash', 'ui-icon ui-icon-sm')}</button>
       </div>
     `;
   },
@@ -3003,32 +3067,43 @@ const UIComponents = {
     if (mode === 'profile') {
       container.innerHTML = user?.id
         ? `
-          <button class="n-ghost" data-auth-action="logout">${logoutLabel}</button>
-          <button class="n-solid" data-auth-action="profile">👤 ${profileLabel}</button>
+          <div class="nav-profile-menu">
+            <button class="n-solid nav-profile-trigger" type="button" data-auth-action="profile-menu-toggle" aria-haspopup="menu" aria-expanded="false">
+              ${this.getIconMarkup('user', 'ui-icon ui-icon-sm')} ${profileLabel}
+            </button>
+            <div class="nav-profile-dropdown" data-auth-dropdown>
+              <button class="nav-profile-item" type="button" data-auth-action="profile">
+                ${this.getIconMarkup('user', 'ui-icon ui-icon-sm')} ${profileLabel}
+              </button>
+              <button class="nav-profile-item" type="button" data-auth-action="logout">
+                ${this.getIconMarkup('logout', 'ui-icon ui-icon-sm')} ${logoutLabel}
+              </button>
+            </div>
+          </div>
         `
         : `
           <button class="n-ghost" data-auth-action="login">${loginLabel}</button>
-          <button class="n-solid" data-auth-action="register">✨ ${registerLabel}</button>
+          <button class="n-solid" data-auth-action="register">${this.getIconMarkup('spark', 'ui-icon ui-icon-sm')} ${registerLabel}</button>
         `;
     } else if (mode === 'app') {
       container.innerHTML = user?.id
         ? `
           <button class="n-ghost" data-auth-action="logout">${logoutLabel}</button>
-          <button class="n-solid" data-auth-action="profile">👤 ${profileLabel}</button>
+          <button class="n-solid" data-auth-action="profile">${this.getIconMarkup('user', 'ui-icon ui-icon-sm')} ${profileLabel}</button>
         `
         : `
           <button class="n-ghost" data-auth-action="login">${loginLabel}</button>
-          <button class="n-solid" data-auth-action="register">✨ ${appLabel}</button>
+          <button class="n-solid" data-auth-action="register">${this.getIconMarkup('spark', 'ui-icon ui-icon-sm')} ${appLabel}</button>
         `;
     } else {
       container.innerHTML = user?.id
         ? `
-          <button class="n-ghost" data-auth-action="profile">👤 ${profileLabel}</button>
-          <button class="n-solid" data-auth-action="cart">🛒 ${cartLabel} <span id="${cartCountId}">${existingCount}</span></button>
+          <button class="n-ghost" data-auth-action="profile">${this.getIconMarkup('user', 'ui-icon ui-icon-sm')} ${profileLabel}</button>
+          <button class="n-solid" data-auth-action="cart">${this.getIconMarkup('cart', 'ui-icon ui-icon-sm')} ${cartLabel} <span id="${cartCountId}">${existingCount}</span></button>
         `
         : `
           <button class="n-ghost" data-auth-action="login">${loginLabel}</button>
-          <button class="n-solid" data-auth-action="cart">🛒 ${cartLabel} <span id="${cartCountId}">${existingCount}</span></button>
+          <button class="n-solid" data-auth-action="cart">${this.getIconMarkup('cart', 'ui-icon ui-icon-sm')} ${cartLabel} <span id="${cartCountId}">${existingCount}</span></button>
         `;
     }
 
@@ -3055,6 +3130,34 @@ const UIComponents = {
         window.location.href = logoutRedirect;
       }, 250);
     });
+
+    const dropdownToggle = container.querySelector('[data-auth-action="profile-menu-toggle"]');
+    const dropdown = container.querySelector('[data-auth-dropdown]');
+    if (dropdownToggle && dropdown) {
+      const closeDropdown = () => {
+        dropdown.classList.remove('is-open');
+        dropdownToggle.classList.remove('is-open');
+        dropdownToggle.setAttribute('aria-expanded', 'false');
+      };
+      const openDropdown = () => {
+        dropdown.classList.add('is-open');
+        dropdownToggle.classList.add('is-open');
+        dropdownToggle.setAttribute('aria-expanded', 'true');
+      };
+      dropdownToggle.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (dropdown.classList.contains('is-open')) {
+          closeDropdown();
+        } else {
+          openDropdown();
+        }
+      });
+      dropdown.addEventListener('click', (event) => event.stopPropagation());
+      document.addEventListener('click', closeDropdown);
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') closeDropdown();
+      });
+    }
   },
 
   updateUnifiedNavbarBadges(options = {}) {
@@ -3110,21 +3213,98 @@ const UIComponents = {
         </div>
         <div class="nav-right nav-right-unified">
           <div class="nav-quick-actions">
-            <a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist">
-              <span class="nav-icon-symbol">♡</span>
+            <a href="wishlist.html" class="nav-icon-btn nav-icon-btn-compact" aria-label="Wishlist">
+              <span class="nav-icon-symbol">${this.getIconMarkup('heart', 'ui-icon ui-icon-sm')}</span>
               <span class="nav-icon-label">${this.t('nav.wishlist', 'Wishlist')}</span>
               <span class="nav-badge is-empty" id="${wishlistCountId}" data-nav-badge="wishlist">0</span>
             </a>
-            <a href="cart.html" class="nav-icon-btn" aria-label="Cart">
-              <span class="nav-icon-symbol">🛒</span>
+            <a href="cart.html" class="nav-icon-btn nav-icon-btn-compact" aria-label="Cart">
+              <span class="nav-icon-symbol">${this.getIconMarkup('cart', 'ui-icon ui-icon-sm')}</span>
               <span class="nav-icon-label">${this.t('nav.cart', 'Cart')}</span>
               <span class="nav-badge is-empty" id="${cartCountId}" data-nav-badge="cart">0</span>
             </a>
           </div>
           <div class="nav-auth-slot"></div>
+          <button class="nav-menu-toggle nav-icon-btn-compact" type="button" aria-label="Open menu" aria-expanded="false">
+            ${this.getIconMarkup('browse', 'ui-icon ui-icon-sm')}
+          </button>
+        </div>
+        <div class="nav-mobile-panel" data-nav-mobile-panel>
+          <div class="nav-mobile-links"></div>
         </div>
       </div>
     `;
+  },
+
+  ensureUnifiedNavbarMobile(nav, activeKey = '') {
+    const navWrap = nav.querySelector('.nav-w-unified');
+    if (!navWrap) return;
+
+    let toggle = navWrap.querySelector('.nav-menu-toggle');
+    if (!toggle) {
+      toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'nav-menu-toggle';
+      toggle.classList.add('nav-icon-btn-compact');
+      toggle.setAttribute('aria-label', 'Open menu');
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.innerHTML = this.getIconMarkup('browse', 'ui-icon ui-icon-sm');
+      const rightSection = navWrap.querySelector('.nav-right-unified');
+      if (rightSection) {
+        rightSection.appendChild(toggle);
+      } else {
+        navWrap.appendChild(toggle);
+      }
+    }
+
+    let panel = navWrap.querySelector('[data-nav-mobile-panel]');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.className = 'nav-mobile-panel';
+      panel.setAttribute('data-nav-mobile-panel', '');
+      panel.innerHTML = '<div class="nav-mobile-links"></div>';
+      navWrap.appendChild(panel);
+    }
+
+    const linksHost = panel.querySelector('.nav-mobile-links');
+    if (linksHost) {
+      const links = [...nav.querySelectorAll('.nav-links-unified [data-nav-link]')];
+      linksHost.innerHTML = links.map((link) => `
+        <a href="${link.getAttribute('href') || '#'}" class="nav-mobile-link ${link.dataset.navLink === activeKey ? 'on' : ''}" data-nav-link="${link.dataset.navLink || ''}">
+          <span>${link.textContent.trim()}</span>
+          ${this.getIconMarkup('arrowRight', 'ui-icon ui-icon-sm')}
+        </a>
+      `).join('');
+    }
+
+    if (nav.dataset.mobileBound === 'true') return;
+    nav.dataset.mobileBound = 'true';
+
+    const closePanel = () => {
+      panel.classList.remove('is-open');
+      toggle.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    };
+
+    toggle.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const isOpen = panel.classList.contains('is-open');
+      closePanel();
+      if (!isOpen) {
+        panel.classList.add('is-open');
+        toggle.classList.add('is-open');
+        toggle.setAttribute('aria-expanded', 'true');
+      }
+    });
+
+    panel.addEventListener('click', (event) => event.stopPropagation());
+    document.addEventListener('click', closePanel);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closePanel();
+    });
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 900) closePanel();
+    });
   },
 
   inferUnifiedNavbarActive() {
@@ -3180,6 +3360,13 @@ const UIComponents = {
 
     nav.querySelectorAll('.nav-icon-btn').forEach((button) => {
       const href = button.getAttribute('href') || '';
+      const symbol = button.querySelector('.nav-icon-symbol');
+      if (href.includes('wishlist') && symbol) {
+        symbol.innerHTML = this.getIconMarkup('heart', 'ui-icon ui-icon-sm');
+      }
+      if (href.includes('cart') && symbol) {
+        symbol.innerHTML = this.getIconMarkup('cart', 'ui-icon ui-icon-sm');
+      }
       if (href.includes('wishlist')) {
         button.setAttribute('aria-label', this.t('nav.wishlist', 'Wishlist'));
         const label = button.querySelector('.nav-icon-label');
@@ -3195,6 +3382,8 @@ const UIComponents = {
     nav.querySelectorAll('[data-nav-link]').forEach((link) => {
       link.classList.toggle('on', link.dataset.navLink === normalizedOptions.active);
     });
+
+    this.ensureUnifiedNavbarMobile(nav, normalizedOptions.active);
 
     this.syncAuthNav({
       containerSelector: '#nav .nav-auth-slot',

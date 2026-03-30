@@ -8,11 +8,11 @@
   <meta property="og:title" content="Hotels & Bookings - eDalab"/>
   <meta property="og:description" content="Book hotels, resorts, and accommodations on eDalab. Best prices and instant confirmations."/>
   <meta property="og:type" content="website"/>
-  <link rel="alternate" hreflang="en" href="https://edalab.dj/hotel.html"/>
-  <link rel="alternate" hreflang="fr" href="https://edalab.dj/fr/hotel.html"/>
-  <link rel="alternate" hreflang="ar" href="https://edalab.dj/ar/hotel.html"/>
-  <link rel="alternate" hreflang="x-default" href="https://edalab.dj/hotel.html"/>
-  <link rel="canonical" href="https://edalab.dj/hotel.html"/>
+  <link rel="alternate" hreflang="en" href="https://edalab.app/hotel.html"/>
+  <link rel="alternate" hreflang="fr" href="https://edalab.app/fr/hotel.html"/>
+  <link rel="alternate" hreflang="ar" href="https://edalab.app/ar/hotel.html"/>
+  <link rel="alternate" hreflang="x-default" href="https://edalab.app/hotel.html"/>
+  <link rel="canonical" href="https://edalab.app/hotel.html"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="css/main-styles.css"/>
@@ -24,12 +24,12 @@
     "@type": "CollectionPage",
     "name": "Hotels & Bookings - eDalab",
     "description": "Book hotels, resorts, and accommodations on eDalab. Best prices and instant confirmations.",
-    "url": "https://edalab.dj/hotel.html",
+    "url": "https://edalab.app/hotel.html",
     "inLanguage": "en",
     "isPartOf": {
       "@type": "WebSite",
       "name": "eDalab",
-      "url": "https://edalab.dj/"
+      "url": "https://edalab.app/"
     },
     "mainEntity": {
       "@type": "ItemList",
@@ -72,13 +72,14 @@
       <div class="hh-content">
         <h1>Find Your Perfect Stay 🏨</h1>
         <p>Comfortable rooms, great locations, and unbeatable prices. Book now and explore amazing destinations!</p>
+        <div id="search-container"></div>
       </div>
     </div>
   </section>
 
   <!-- Search & Filter -->
   <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
-    <div style="background: white; border-radius: var(--r-lg); border: 1.5px solid var(--border); padding: 24px; margin-bottom: 40px;">
+    <div id="hotelSearchPanel" style="background: white; border-radius: var(--r-lg); border: 1.5px solid var(--border); padding: 24px; margin-bottom: 40px;">
       <h2 style="margin-bottom: 20px;">Search Hotels</h2>
       <div class="date-picker">
         <div class="filter-item">
@@ -114,6 +115,7 @@
       </div>
       <button class="n-solid" onclick="hotelModule.searchHotels()" style="width: 100%;">Search Hotels</button>
     </div>
+    <div id="hotelSearchSkeleton" style="display: none; margin-bottom: 40px;"></div>
 
     <!-- Filter Section -->
     <div class="filter-section">
@@ -150,6 +152,7 @@
           </select>
         </div>
       </div>
+      <div id="hotelFilterSkeleton" style="display: none;"></div>
     </div>
 
     <!-- Hotels Grid -->
@@ -227,7 +230,7 @@
         </div>
         <div class="footer-section">
           <h3>Contact</h3>
-          <p>Email: travel@edalab.dj</p>
+          <p>Email: hello@edalab.app</p>
           <p>Phone: +253 21 35 00 00</p>
         </div>
       </div>
@@ -283,7 +286,7 @@
           document.querySelector('meta[name="description"]')?.setAttribute('content', 'Book hotels, resorts, and accommodations on eDalab. Best prices and instant confirmations.');
           document.querySelector('meta[property="og:title"]')?.setAttribute('content', 'Hotels & Bookings - eDalab');
           document.querySelector('meta[property="og:description"]')?.setAttribute('content', 'Book hotels, resorts, and accommodations on eDalab. Best prices and instant confirmations.');
-          document.querySelector('link[rel="canonical"]')?.setAttribute('href', 'https://edalab.dj/hotel.html');
+          document.querySelector('link[rel="canonical"]')?.setAttribute('href', 'https://edalab.app/hotel.html');
           document.getElementById('hotelSchemaDynamic').textContent = '{}';
           return;
         }
@@ -291,7 +294,7 @@
         const location = selectedHotel.location || 'Djibouti';
         const description = selectedHotel.description || `${selectedHotel.name} in ${location}. Book on eDalab.`;
         const title = `${selectedHotel.name} - ${location} | eDalab`;
-        const canonicalUrl = `https://edalab.dj/hotel.html?hotelId=${encodeURIComponent(selectedHotel.id)}`;
+        const canonicalUrl = `https://edalab.app/hotel.html?hotelId=${encodeURIComponent(selectedHotel.id)}`;
         const image = selectedHotel.image || selectedHotel.imageUrl || selectedHotel.images?.[0] || undefined;
 
         document.title = title;
@@ -348,8 +351,59 @@
       }
 
       renderLoadingState() {
+        const searchContainer = document.getElementById('search-container');
+        if (searchContainer) {
+          searchContainer.innerHTML = UIComponents.createSearchSkeleton();
+        }
+        const searchPanel = document.getElementById('hotelSearchPanel');
+        const searchSkeleton = document.getElementById('hotelSearchSkeleton');
+        if (searchPanel && searchSkeleton) {
+          searchPanel.style.display = 'none';
+          searchSkeleton.style.display = 'block';
+          searchSkeleton.innerHTML = UIComponents.createFormSkeleton({ fields: 4, columns: 2, includeButton: true });
+        }
+        const filterBar = document.getElementById('filter-bar');
+        const filterSkeleton = document.getElementById('hotelFilterSkeleton');
+        if (filterBar && filterSkeleton) {
+          filterBar.style.display = 'none';
+          filterSkeleton.style.display = 'block';
+          filterSkeleton.innerHTML = UIComponents.createFilterSkeleton(3);
+        }
         document.getElementById('hotels-container').innerHTML = UIComponents.createCardGridSkeleton(8);
         document.getElementById('pagination-container').innerHTML = '';
+      }
+
+      clearLoadingState() {
+        const searchPanel = document.getElementById('hotelSearchPanel');
+        const searchSkeleton = document.getElementById('hotelSearchSkeleton');
+        if (searchPanel && searchSkeleton) {
+          searchPanel.style.display = '';
+          searchSkeleton.style.display = 'none';
+          searchSkeleton.innerHTML = '';
+        }
+
+        const filterBar = document.getElementById('filter-bar');
+        const filterSkeleton = document.getElementById('hotelFilterSkeleton');
+        if (filterBar && filterSkeleton) {
+          filterBar.style.display = '';
+          filterSkeleton.style.display = 'none';
+          filterSkeleton.innerHTML = '';
+        }
+      }
+
+      setupHeroSearch() {
+        const container = document.getElementById('search-container');
+        if (!container) return;
+        container.innerHTML = `
+          <div class="search-bar">
+            <input type="text" id="hotel-hero-search" class="search-input" placeholder="Search a destination or hotel..." />
+            <button class="search-btn" onclick="hotelModule.handleHeroSearch()">Search</button>
+          </div>
+        `;
+
+        document.getElementById('hotel-hero-search').addEventListener('keypress', (event) => {
+          if (event.key === 'Enter') this.handleHeroSearch();
+        });
       }
 
       setupDatePickers() {
@@ -373,8 +427,33 @@
         } catch (error) {
           console.error('Error loading hotels:', error);
         } finally {
+          this.clearLoadingState();
+          this.setupHeroSearch();
           this.renderHotels();
         }
+      }
+
+      handleHeroSearch() {
+        const query = document.getElementById('hotel-hero-search')?.value?.trim().toLowerCase() || '';
+        if (!query) {
+          document.getElementById('hotelSearchPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.getElementById('checkin-date')?.focus();
+          return;
+        }
+
+        this.filteredHotels = this.hotels.filter((hotel) => {
+          const haystack = [
+            hotel.name,
+            hotel.location,
+            hotel.description,
+            ...(hotel.amenities || []),
+          ].filter(Boolean).join(' ').toLowerCase();
+          return haystack.includes(query);
+        });
+
+        this.currentPage = 1;
+        this.renderHotels();
+        document.getElementById('hotels-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
       searchHotels() {

@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ride - eDalab</title>
     <meta name="description" content="Book a ride with eDalab. Fast, safe, and affordable transportation.">
-    <link rel="alternate" hreflang="en" href="https://edalab.dj/ride.html"/>
-    <link rel="alternate" hreflang="fr" href="https://edalab.dj/fr/ride.html"/>
-    <link rel="alternate" hreflang="ar" href="https://edalab.dj/ar/ride.html"/>
-    <link rel="alternate" hreflang="x-default" href="https://edalab.dj/ride.html"/>
-    <link rel="canonical" href="https://edalab.dj/ride.html"/>
+    <link rel="alternate" hreflang="en" href="https://edalab.app/ride.html"/>
+    <link rel="alternate" hreflang="fr" href="https://edalab.app/fr/ride.html"/>
+    <link rel="alternate" hreflang="ar" href="https://edalab.app/ar/ride.html"/>
+    <link rel="alternate" hreflang="x-default" href="https://edalab.app/ride.html"/>
+    <link rel="canonical" href="https://edalab.app/ride.html"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="css/main-styles.css">
@@ -21,12 +21,12 @@
       "@type": "CollectionPage",
       "name": "Ride - eDalab",
       "description": "Book a ride with eDalab. Fast, safe, and affordable transportation.",
-      "url": "https://edalab.dj/ride.html",
+      "url": "https://edalab.app/ride.html",
       "inLanguage": "en",
       "isPartOf": {
         "@type": "WebSite",
         "name": "eDalab",
-        "url": "https://edalab.dj/"
+        "url": "https://edalab.app/"
       },
       "mainEntity": {
         "@type": "ItemList",
@@ -113,8 +113,31 @@
         }
 
         .ride-type-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: rgba(6, 182, 212, 0.12);
+            color: #06B6D4;
+        }
+
+        .ride-type-icon img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .ride-type-icon svg,
+        .info-icon svg,
+        .empty-state-icon svg,
+        .ride-card-line-icon svg {
+            width: 20px;
+            height: 20px;
+            display: block;
         }
 
         .ride-type-name {
@@ -196,11 +219,17 @@
             font-size: 14px;
         }
 
-        .info-icon {
-            font-size: 20px;
-            margin-right: 12px;
+        .info-icon,
+        .empty-state-icon,
+        .ride-card-line-icon {
             width: 24px;
-            text-align: center;
+            height: 24px;
+            margin-right: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #06B6D4;
+            flex-shrink: 0;
         }
 
         .active-rides {
@@ -287,15 +316,18 @@
         }
 
         .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            border-radius: 16px;
+            background: rgba(6, 182, 212, 0.12);
         }
     </style>
 </head>
 <body>
     <!-- Navigation -->
     <nav id="nav" data-static-unified="true">
-        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
     </nav>
 
     <section class="ride-hero">
@@ -316,7 +348,7 @@
 
         <div class="filter-section">
             <h2>Book a Ride</h2>
-            <div class="ride-booking-form">
+            <div id="rideBookingForm" class="ride-booking-form">
 
             <!-- Pickup Location -->
             <div class="form-group">
@@ -382,25 +414,26 @@
             <!-- Book Button -->
             <button class="book-button" id="bookButton" onclick="rideModule.bookRide()">Book Ride Now</button>
         </div>
+        <div id="rideBookingSkeleton" style="display: none;"></div>
         </div>
 
         <section class="food-section">
         <div class="ride-info">
             <h3>Why Choose eDalab Rides?</h3>
             <div class="info-item">
-                <div class="info-icon">✓</div>
+                <div class="info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 18.5 6v5.5c0 4.2-2.7 8-6.5 9.5-3.8-1.5-6.5-5.3-6.5-9.5V6Z" fill="currentColor"></path><path d="m9.3 12.4 1.8 1.8 3.8-4.1" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
                 <div>Verified drivers with excellent ratings</div>
             </div>
             <div class="info-item">
-                <div class="info-icon">💰</div>
+                <div class="info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"></rect><path d="M3.5 10.2h17" fill="none" stroke="currentColor" stroke-width="1.8"></path><path d="M7.5 14.5h3.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></div>
                 <div>Transparent pricing with no hidden charges</div>
             </div>
             <div class="info-item">
-                <div class="info-icon">🔒</div>
+                <div class="info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 18.5 6v5.5c0 4.2-2.7 8-6.5 9.5-3.8-1.5-6.5-5.3-6.5-9.5V6Z" fill="currentColor"></path><path d="m9.3 12.4 1.8 1.8 3.8-4.1" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
                 <div>Safe and secure rides with trip tracking</div>
             </div>
             <div class="info-item">
-                <div class="info-icon">⭐</div>
+                <div class="info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 4 2.3 4.7 5.2.8-3.7 3.7.9 5.2-4.7-2.5-4.7 2.5.9-5.2L4.5 9.5l5.2-.8Z" fill="currentColor"></path></svg></div>
                 <div>Rate your driver and leave feedback</div>
             </div>
         </div>
@@ -443,7 +476,7 @@
                 </div>
                 <div class="footer-section">
                     <h3>Contact</h3>
-                    <p>Email: rides@edalab.dj</p>
+                    <p>Email: hello@edalab.app</p>
                     <p>Phone: +253 21 35 00 00</p>
                 </div>
             </div>
@@ -460,6 +493,7 @@
             constructor() {
                 this.selectedRideType = null;
                 this.rideTypes = [];
+                this.isReady = false;
                 this.init();
             }
 
@@ -468,13 +502,16 @@
             }
 
             async init() {
+                UIComponents.mountUnifiedNavbar({ active: 'ride' });
                 this.renderLoadingState();
                 await this.loadRideCategories();
                 this.setupHeroSearch();
                 this.setupRideTypeSelector();
+                this.clearLoadingState();
                 this.setupDatePicker();
                 await this.loadActiveRides();
                 this.updateEstimate();
+                this.isReady = true;
             }
 
             renderLoadingState() {
@@ -482,8 +519,25 @@
                 if (searchContainer) {
                     searchContainer.innerHTML = UIComponents.createSearchSkeleton();
                 }
+                const bookingForm = document.getElementById('rideBookingForm');
+                const bookingSkeleton = document.getElementById('rideBookingSkeleton');
+                if (bookingForm && bookingSkeleton) {
+                    bookingForm.style.display = 'none';
+                    bookingSkeleton.style.display = 'block';
+                    bookingSkeleton.innerHTML = UIComponents.createFormSkeleton({ fields: 5, columns: 2, includeSummary: true, includeButton: true });
+                }
                 document.getElementById('rideTypeSelector').innerHTML = UIComponents.createChoiceSkeleton(3);
                 document.getElementById('activeRidesContainer').innerHTML = UIComponents.createListSkeleton(2);
+            }
+
+            clearLoadingState() {
+                const bookingForm = document.getElementById('rideBookingForm');
+                const bookingSkeleton = document.getElementById('rideBookingSkeleton');
+                if (bookingForm && bookingSkeleton) {
+                    bookingForm.style.display = '';
+                    bookingSkeleton.style.display = 'none';
+                    bookingSkeleton.innerHTML = '';
+                }
             }
 
             setupHeroSearch() {
@@ -492,7 +546,7 @@
                 container.innerHTML = `
                     <div class="search-bar">
                         <input type="text" id="ride-hero-search" class="search-input" placeholder="${this.t('ride.whereToGo', 'Where do you want to go?')}" />
-                        <button class="search-btn" onclick="rideModule.handleHeroSearch()">${this.t('ride.go', 'Go')}</button>
+                        <button class="search-btn" onclick="rideModule.handleHeroSearch()">${UIComponents.getIconMarkup('search', 'ui-icon ui-icon-sm')}</button>
                     </div>
                 `;
                 document.getElementById('ride-hero-search').addEventListener('keypress', (event) => {
@@ -531,9 +585,7 @@
             }
 
             getRideIcon(rideType) {
-                if ((rideType.capacity || 0) >= 6) return '🚐';
-                if ((rideType.name || '').toLowerCase().includes('comfort')) return '🚙';
-                return '🚗';
+                return 'assets/icons/car.png';
             }
 
             getSelectedRide() {
@@ -552,7 +604,7 @@
                 container.innerHTML = this.rideTypes.map((rideType) => `
                         <button class="ride-type-btn ${rideType.id === this.selectedRideType ? 'active' : ''}" 
                                 onclick="rideModule.selectRideType('${rideType.id}')">
-                            <div class="ride-type-icon">${this.getRideIcon(rideType)}</div>
+                            <div class="ride-type-icon"><img src="${this.getRideIcon(rideType)}" alt="${rideType.name}"></div>
                             <div class="ride-type-name">${rideType.name}</div>
                             <div class="ride-type-price">$${Number(rideType.basePrice || 0).toFixed(2)}</div>
                         </button>
@@ -731,7 +783,7 @@
                 const container = document.getElementById('activeRidesContainer');
                 
                 if (!rides || rides.length === 0) {
-                    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🚕</div><p>${this.t('ride.noActive', 'No active rides')}</p></div>`;
+                    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">${UIComponents.getIconMarkup('delivery', 'ui-icon ui-icon-lg')}</div><p>${this.t('ride.noActive', 'No active rides')}</p></div>`;
                     return;
                 }
 
@@ -741,8 +793,8 @@
                     html += `
                         <div class="ride-card">
                             <div class="ride-card-info">
-                                <div class="ride-card-from">📍 ${ride.from}</div>
-                                <div class="ride-card-to">📍 ${ride.to}</div>
+                                <div class="ride-card-from"><span class="ride-card-line-icon">${UIComponents.getIconMarkup('location', 'ui-icon ui-icon-sm')}</span>${ride.from}</div>
+                                <div class="ride-card-to"><span class="ride-card-line-icon">${UIComponents.getIconMarkup('location', 'ui-icon ui-icon-sm')}</span>${ride.to}</div>
                                 <span class="ride-card-status ${statusClass}">${ride.status.toUpperCase()}</span>
                             </div>
                             <button class="ride-card-action" onclick="window.location.href='tracking.html?rideId=${ride.id}'">
@@ -755,10 +807,9 @@
             }
         }
 
-        UIComponents.mountUnifiedNavbar({ active: 'ride' });
         const rideModule = new RideModule();
         window.refreshPageLocalizedContent = function() {
-            if (rideModule) {
+            if (rideModule && rideModule.isReady) {
                 rideModule.setupHeroSearch();
                 rideModule.setupRideTypeSelector();
                 rideModule.updateEstimate();

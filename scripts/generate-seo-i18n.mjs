@@ -866,7 +866,7 @@ const pageConfigs = [
   },
 ];
 
-const siteOrigin = 'https://edalab.dj';
+const siteOrigin = 'https://edalab.app';
 const buildDate = new Date().toISOString().split('T')[0];
 
 function escapeRegExp(value) {
@@ -946,11 +946,11 @@ function replaceInsideScripts(html, replacements = {}) {
 
 function buildSeoLinks(canonicalEn, canonicalLocalized) {
   return [
-    `<link rel="alternate" hreflang="en" href="https://edalab.dj${canonicalEn}"/>`,
-    `<link rel="alternate" hreflang="fr" href="https://edalab.dj/fr${canonicalEn === '/' ? '/' : canonicalEn}"/>`,
-    `<link rel="alternate" hreflang="ar" href="https://edalab.dj/ar${canonicalEn === '/' ? '/' : canonicalEn}"/>`,
-    `<link rel="alternate" hreflang="x-default" href="https://edalab.dj${canonicalEn}"/>`,
-    `<link rel="canonical" href="https://edalab.dj${canonicalLocalized}"/>`,
+    `<link rel="alternate" hreflang="en" href="https://edalab.app${canonicalEn}"/>`,
+    `<link rel="alternate" hreflang="fr" href="https://edalab.app/fr${canonicalEn === '/' ? '/' : canonicalEn}"/>`,
+    `<link rel="alternate" hreflang="ar" href="https://edalab.app/ar${canonicalEn === '/' ? '/' : canonicalEn}"/>`,
+    `<link rel="alternate" hreflang="x-default" href="https://edalab.app${canonicalEn}"/>`,
+    `<link rel="canonical" href="https://edalab.app${canonicalLocalized}"/>`,
   ].join('\n');
 }
 

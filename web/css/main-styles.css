@@ -46,6 +46,15 @@ input,textarea{font-family:'Nunito',sans-serif;border:none;outline:none}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:var(--g);border-radius:2px}
 
+.ui-icon{display:inline-flex;align-items:center;justify-content:center;width:1em;height:1em;line-height:1;vertical-align:middle;flex-shrink:0}
+.ui-icon svg{width:100%;height:100%;display:block}
+.ui-icon-xs{width:14px;height:14px}
+.ui-icon-sm{width:16px;height:16px}
+.ui-icon-md{width:20px;height:20px}
+.ui-icon-lg{width:24px;height:24px}
+.icon-chip{width:42px;height:42px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;background:#fff;border:1px solid rgba(17,24,39,.08);box-shadow:var(--sh-sm)}
+.icon-chip img,.icon-chip svg{width:20px;height:20px;display:block}
+
 /* ═══ LAYOUT ═══ */
 .wrap{max-width:1260px;margin:0 auto;padding:0 28px}
 @media(max-width:640px){.wrap{padding:0 16px}}
@@ -78,19 +87,38 @@ input,textarea{font-family:'Nunito',sans-serif;border:none;outline:none}
 .nav-links-unified::-webkit-scrollbar{display:none}
 .nav-right-unified{flex-shrink:0;gap:8px}
 .nav-quick-actions{display:flex;align-items:center;gap:8px}
-.nav-icon-btn{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;border:1.5px solid var(--border);background:#fff;color:var(--text);font-size:13px;font-weight:800;box-shadow:var(--sh-sm);transition:all .2s}
+.nav-menu-toggle{display:none;border:1.5px solid var(--border);background:#fff;color:var(--text);box-shadow:var(--sh-sm);align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:800;transition:all .2s}
+.nav-menu-toggle:hover{border-color:var(--g);color:var(--g)}
+.nav-menu-toggle.nav-icon-btn-compact{width:42px;height:42px;padding:0;border-radius:12px}
+.nav-menu-toggle .ui-icon{width:16px;height:16px}
+.nav-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border-radius:12px;border:1.5px solid var(--border);background:#fff;color:var(--text);font-size:13px;font-weight:800;box-shadow:var(--sh-sm);transition:all .2s}
 .nav-icon-btn:hover{border-color:var(--g);color:var(--g);transform:translateY(-1px)}
-.nav-icon-symbol{font-size:16px;line-height:1}
+.nav-icon-symbol{display:inline-flex;align-items:center;justify-content:center;line-height:1;color:currentColor}
 .nav-icon-label{font-size:13px;font-weight:800}
+.nav-icon-btn-compact{width:42px;height:42px;padding:0}
+.nav-icon-btn-compact .nav-icon-label{display:none}
 .nav-badge{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--g-light);color:var(--g);font-size:11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+.nav-icon-btn-compact .nav-badge{position:absolute;top:-5px;right:-5px}
 .nav-badge.is-empty{display:none}
 .nav-auth-slot{display:flex;align-items:center;gap:8px}
+.nav-profile-menu{position:relative}
+.nav-profile-trigger{position:relative}
+.nav-profile-trigger.is-open{border-color:var(--g);color:var(--g)}
+.nav-profile-dropdown{position:absolute;top:calc(100% + 10px);right:0;min-width:190px;padding:8px;background:#fff;border:1.5px solid var(--border);border-radius:16px;box-shadow:var(--sh-md);display:none;z-index:220}
+.nav-profile-dropdown.is-open{display:grid;gap:4px}
+.nav-profile-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:12px;background:transparent;color:var(--text);font-size:14px;font-weight:700;text-align:left}
+.nav-profile-item:hover{background:var(--g-pale);color:var(--g)}
+.nav-mobile-panel{position:absolute;top:calc(100% + 12px);left:16px;right:16px;padding:14px;background:rgba(255,255,255,.98);border:1.5px solid var(--border);border-radius:20px;box-shadow:var(--sh-lg);display:none;z-index:215}
+.nav-mobile-panel.is-open{display:grid;gap:8px}
+.nav-mobile-links{display:grid;gap:6px}
+.nav-mobile-link{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:14px;background:#fff;color:var(--text);font-size:14px;font-weight:700;border:1px solid transparent}
+.nav-mobile-link:hover,.nav-mobile-link.on{background:var(--g-pale);color:var(--g);border-color:rgba(22,163,74,.12)}
 @media(max-width:900px){.nav-links{display:none}}
 @media(max-width:600px){.n-ghost{display:none}}
-@media(max-width:1180px){.nav-icon-label{display:none}.nav-icon-btn{padding:8px 10px}}
-@media(max-width:900px){.nav-links.nav-links-unified{display:flex;max-width:100%;overflow-x:auto}.nav-w-unified{gap:12px}.nav-auth-slot .n-ghost{display:inline-flex;padding:8px 12px}.nav-auth-slot .n-solid{padding:9px 14px}}
+@media(max-width:1180px){.nav-icon-label{display:none}.nav-icon-btn{padding:8px 10px}.nav-icon-btn-compact{padding:0}}
+@media(max-width:900px){.nav-links.nav-links-unified{display:none}.nav-menu-toggle{display:inline-flex}.nav-w-unified{gap:12px}.nav-right-unified{margin-left:auto}.nav-auth-slot .n-ghost{display:inline-flex;padding:8px 12px}.nav-auth-slot .n-solid{padding:9px 14px}}
 @media(max-width:640px){.nav-logo span{display:none}.nav-logo-icon{width:72px;height:38px}.nav-auth-slot .n-solid{padding:9px 12px}.nav-quick-actions{gap:6px}.nav-right-unified{gap:6px}}
-@media(max-width:520px){#nav{padding:0 16px}.nav-w-unified{gap:8px}.nav-icon-btn{padding:7px 9px;border-radius:10px}.nav-logo-icon{width:64px;height:34px}.nav-auth-slot .n-solid,.nav-auth-slot .n-ghost{padding:8px 10px;font-size:13px}}
+@media(max-width:520px){#nav{padding:0 16px}.nav-w-unified{gap:8px}.nav-icon-btn{padding:7px 9px;border-radius:10px}.nav-menu-toggle.nav-icon-btn-compact{width:38px;height:38px;border-radius:10px}.nav-logo-icon{width:64px;height:34px}.nav-auth-slot .n-solid,.nav-auth-slot .n-ghost{padding:8px 10px;font-size:13px}}
 
 html[dir="rtl"] body{direction:rtl}
 html[dir="rtl"] .nav-w,
@@ -102,6 +130,9 @@ html[dir="rtl"] .nav-logo{flex-direction:row-reverse}
 html[dir="rtl"] .n-solid,
 html[dir="rtl"] .n-ghost,
 html[dir="rtl"] .nav-icon-btn{direction:rtl}
+html[dir="rtl"] .nav-profile-dropdown{right:auto;left:0}
+html[dir="rtl"] .nav-profile-item{text-align:right}
+html[dir="rtl"] .nav-mobile-link{direction:rtl}
 
 /* ═══ UTILITIES ═══ */
 .au{opacity:0;transform:translateY(20px);animation:au-fade 0.6s ease forwards}

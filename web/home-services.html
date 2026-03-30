@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Services - eDalab</title>
     <meta name="description" content="Home services including cleaning, maintenance, plumbing, and more. Book trusted professionals.">
-    <link rel="alternate" hreflang="en" href="https://edalab.dj/home-services.html"/>
-    <link rel="alternate" hreflang="fr" href="https://edalab.dj/fr/home-services.html"/>
-    <link rel="alternate" hreflang="ar" href="https://edalab.dj/ar/home-services.html"/>
-    <link rel="alternate" hreflang="x-default" href="https://edalab.dj/home-services.html"/>
-    <link rel="canonical" href="https://edalab.dj/home-services.html"/>
+    <link rel="alternate" hreflang="en" href="https://edalab.app/home-services.html"/>
+    <link rel="alternate" hreflang="fr" href="https://edalab.app/fr/home-services.html"/>
+    <link rel="alternate" hreflang="ar" href="https://edalab.app/ar/home-services.html"/>
+    <link rel="alternate" hreflang="x-default" href="https://edalab.app/home-services.html"/>
+    <link rel="canonical" href="https://edalab.app/home-services.html"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="css/main-styles.css">
@@ -21,12 +21,12 @@
       "@type": "CollectionPage",
       "name": "Home Services - eDalab",
       "description": "Home services including cleaning, maintenance, plumbing, and more. Book trusted professionals.",
-      "url": "https://edalab.dj/home-services.html",
+      "url": "https://edalab.app/home-services.html",
       "inLanguage": "en",
       "isPartOf": {
         "@type": "WebSite",
         "name": "eDalab",
-        "url": "https://edalab.dj/"
+        "url": "https://edalab.app/"
       },
       "mainEntity": {
         "@type": "ItemList",
@@ -65,8 +65,21 @@
         }
 
         .service-icon {
-            font-size: 32px;
-            margin-bottom: 12px;
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: rgba(249, 115, 22, 0.12);
+        }
+
+        .service-icon img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            display: block;
         }
 
         .service-name {
@@ -107,7 +120,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 48px;
+        }
+
+        .provider-image img {
+            width: 54px;
+            height: 54px;
+            object-fit: contain;
+            display: block;
         }
 
         .provider-info {
@@ -137,6 +156,9 @@
 
         .provider-rating .stars {
             color: #f59e0b;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .provider-price {
@@ -225,7 +247,7 @@
 <body>
     <!-- Navigation -->
     <nav id="nav" data-static-unified="true">
-        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
     </nav>
 
     <section class="services-hero">
@@ -246,6 +268,7 @@
         </section>
 
         <div class="filter-section">
+            <div id="servicesFilterBar" class="filter-grid">
             <div class="filter-item">
                 <label>Service Type</label>
                 <select id="serviceFilter" onchange="homeServicesModule.applyFilters()">
@@ -283,6 +306,8 @@
                     <option value="week">This Week</option>
                 </select>
             </div>
+            </div>
+            <div id="servicesFilterSkeleton" style="display: none;"></div>
         </div>
 
         <section style="margin-bottom: 40px;">
@@ -320,7 +345,7 @@
                 </div>
                 <div class="footer-section">
                     <h3>Contact</h3>
-                    <p>Email: services@edalab.dj</p>
+                    <p>Email: hello@edalab.app</p>
                     <p>Phone: +253 21 35 00 00</p>
                 </div>
             </div>
@@ -339,6 +364,7 @@
                 this.selectedService = null;
                 this.services = [];
                 this.providers = [];
+                this.isReady = false;
                 this.init();
             }
 
@@ -347,11 +373,14 @@
             }
 
             async init() {
+                UIComponents.mountUnifiedNavbar({ active: 'services' });
                 this.renderLoadingState();
                 await this.loadData();
                 this.setupHeroSearch();
                 this.renderServices();
                 this.renderProviders();
+                this.clearLoadingState();
+                this.isReady = true;
             }
 
             renderLoadingState() {
@@ -359,8 +388,25 @@
                 if (searchContainer) {
                     searchContainer.innerHTML = UIComponents.createSearchSkeleton();
                 }
+                const filterBar = document.getElementById('servicesFilterBar');
+                const filterSkeleton = document.getElementById('servicesFilterSkeleton');
+                if (filterBar && filterSkeleton) {
+                    filterBar.style.display = 'none';
+                    filterSkeleton.style.display = 'block';
+                    filterSkeleton.innerHTML = UIComponents.createFilterSkeleton(4);
+                }
                 document.getElementById('servicesGrid').innerHTML = UIComponents.createCategorySkeleton(6);
                 document.getElementById('providersGrid').innerHTML = UIComponents.createCardGridSkeleton(6);
+            }
+
+            clearLoadingState() {
+                const filterBar = document.getElementById('servicesFilterBar');
+                const filterSkeleton = document.getElementById('servicesFilterSkeleton');
+                if (filterBar && filterSkeleton) {
+                    filterBar.style.display = '';
+                    filterSkeleton.style.display = 'none';
+                    filterSkeleton.innerHTML = '';
+                }
             }
 
             setupHeroSearch() {
@@ -369,7 +415,7 @@
                 container.innerHTML = `
                     <div class="search-bar">
                         <input type="text" id="services-hero-search" class="search-input" placeholder="${this.t('services.search', 'Search a service or provider...')}" />
-                        <button class="search-btn" onclick="homeServicesModule.handleHeroSearch()">${this.t('services.searchButton', 'Search')}</button>
+                        <button class="search-btn" onclick="homeServicesModule.handleHeroSearch()">${UIComponents.getIconMarkup('search', 'ui-icon ui-icon-sm')}</button>
                     </div>
                 `;
                 document.getElementById('services-hero-search').addEventListener('keypress', (event) => {
@@ -424,13 +470,7 @@
 
             getServiceIcon(service) {
                 const label = `${service.name} ${service.slug || ''}`.toLowerCase();
-                if (label.includes('clean')) return '🧹';
-                if (label.includes('plumb')) return '🚿';
-                if (label.includes('electric')) return '⚡';
-                if (label.includes('paint')) return '🎨';
-                if (label.includes('garden')) return '🌱';
-                if (label.includes('maint')) return '🔨';
-                return '🔧';
+                return 'assets/icons/repair-service.png';
             }
 
             populateServiceFilter() {
@@ -456,7 +496,7 @@
                     html += `
                         <div class="category-card service-category ${this.selectedService === serviceKey ? 'active' : ''}"
                              onclick="homeServicesModule.selectService('${serviceKey}')">
-                            <div class="service-icon">${this.getServiceIcon(service)}</div>
+                            <div class="service-icon"><img src="${this.getServiceIcon(service)}" alt="${service.name}"></div>
                             <div class="service-name">${service.name}</div>
                             <div class="service-price">${startingPrice > 0 ? `${this.t('services.fromPrice', 'From')} $${startingPrice.toFixed(2)}` : `${service.providerCount || matchingProviders.length} ${this.t('services.providersCount', 'providers')}`}</div>
                         </div>
@@ -476,7 +516,7 @@
                 const container = document.getElementById('providersGrid');
                 
                 if (providersToShow.length === 0) {
-                    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔍</div><p>${this.t('services.noProviders', 'No providers found')}</p></div>`;
+                    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">${UIComponents.getIconMarkup('search', 'ui-icon ui-icon-lg')}</div><p>${this.t('services.noProviders', 'No providers found')}</p></div>`;
                     return;
                 }
 
@@ -485,12 +525,12 @@
                     const price = Number(provider.startingPrice || 0);
                     html += `
                         <div class="provider-card">
-                            <div class="provider-image">${this.getServiceIcon(provider.category || { name: provider.title || this.t('services.homeService', 'Home Service'), slug: provider.category?.slug || provider.categoryId })}</div>
+                            <div class="provider-image"><img src="${this.getServiceIcon(provider.category || { name: provider.title || this.t('services.homeService', 'Home Service'), slug: provider.category?.slug || provider.categoryId })}" alt="${provider.name}"></div>
                             <div class="provider-info">
                                 <div class="provider-name">${provider.name}</div>
                                 <div class="provider-service">${provider.title || provider.category?.name || this.t('services.homeService', 'Home Service')}</div>
                                 <div class="provider-rating">
-                                    <span class="stars">★ ${provider.rating}</span>
+                                    <span class="stars">${UIComponents.getIconMarkup('star', 'ui-icon ui-icon-xs')} ${provider.rating}</span>
                                     <span>(${provider.reviewCount})</span>
                                 </div>
                                 <div class="provider-price">${price > 0 ? `$${price.toFixed(2)} ${this.t('services.priceStarting', 'starting')}` : this.t('services.priceOnRequest', 'Price on request')}</div>
@@ -618,10 +658,9 @@
             }
         }
 
-        UIComponents.mountUnifiedNavbar({ active: 'services' });
         const homeServicesModule = new HomeServicesModule();
         window.refreshPageLocalizedContent = function() {
-            if (homeServicesModule) {
+            if (homeServicesModule && homeServicesModule.isReady) {
                 homeServicesModule.setupHeroSearch();
                 homeServicesModule.populateServiceFilter();
                 homeServicesModule.renderServices();

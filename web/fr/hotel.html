@@ -35,23 +35,23 @@
       border-radius: 8px;
     }
   </style>
-<link rel="alternate" hreflang="en" href="https://edalab.dj/hotel.html"/>
-<link rel="alternate" hreflang="fr" href="https://edalab.dj/fr/hotel.html"/>
-<link rel="alternate" hreflang="ar" href="https://edalab.dj/ar/hotel.html"/>
-<link rel="alternate" hreflang="x-default" href="https://edalab.dj/hotel.html"/>
-<link rel="canonical" href="https://edalab.dj/fr/hotel.html"/>
+<link rel="alternate" hreflang="en" href="https://edalab.app/hotel.html"/>
+<link rel="alternate" hreflang="fr" href="https://edalab.app/fr/hotel.html"/>
+<link rel="alternate" hreflang="ar" href="https://edalab.app/ar/hotel.html"/>
+<link rel="alternate" hreflang="x-default" href="https://edalab.app/hotel.html"/>
+<link rel="canonical" href="https://edalab.app/fr/hotel.html"/>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
   "name": "Hôtels & réservations - eDalab",
   "description": "Réservez des hôtels et hébergements sur eDalab avec les meilleurs prix et confirmation instantanée.",
-  "url": "https://edalab.dj/fr/hotel.html",
+  "url": "https://edalab.app/fr/hotel.html",
   "inLanguage": "fr",
   "isPartOf": {
     "@type": "WebSite",
     "name": "eDalab",
-    "url": "https://edalab.dj"
+    "url": "https://edalab.app"
   },
   "mainEntity": {
     "@type": "ItemList",
@@ -228,7 +228,7 @@
         </div>
         <div class="footer-section">
           <h3>Contact</h3>
-          <p>Email: travel@edalab.dj</p>
+          <p>Email: hello@edalab.app</p>
           <p>Phone: +253 21 35 00 00</p>
         </div>
       </div>
@@ -284,7 +284,7 @@
           document.querySelector('meta[name="description"]')?.setAttribute('content', 'Book hotels, resorts, and accommodations on eDalab. Best prices and instant confirmations.');
           document.querySelector('meta[property="og:title"]')?.setAttribute('content', 'Hotels & Bookings - eDalab');
           document.querySelector('meta[property="og:description"]')?.setAttribute('content', 'Book hotels, resorts, and accommodations on eDalab. Best prices and instant confirmations.');
-          document.querySelector('link[rel="canonical"]')?.setAttribute('href', 'https://edalab.dj/hotel.html');
+          document.querySelector('link[rel="canonical"]')?.setAttribute('href', 'https://edalab.app/hotel.html');
           document.getElementById('hotelSchemaDynamic').textContent = '{}';
           return;
         }
@@ -292,7 +292,7 @@
         const location = selectedHotel.location || 'Djibouti';
         const description = selectedHotel.description || `${selectedHotel.name} in ${location}. Book on eDalab.`;
         const title = `${selectedHotel.name} - ${location} | eDalab`;
-        const canonicalUrl = `https://edalab.dj/hotel.html?hotelId=${encodeURIComponent(selectedHotel.id)}`;
+        const canonicalUrl = `https://edalab.app/hotel.html?hotelId=${encodeURIComponent(selectedHotel.id)}`;
         const image = selectedHotel.image || selectedHotel.imageUrl || selectedHotel.images?.[0] || undefined;
 
         document.title = title;

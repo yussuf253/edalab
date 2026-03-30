@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laundry - eDalab</title>
     <meta name="description" content="Fast and reliable laundry services. Pickup and delivery available.">
-    <link rel="alternate" hreflang="en" href="https://edalab.dj/laundry.html"/>
-    <link rel="alternate" hreflang="fr" href="https://edalab.dj/fr/laundry.html"/>
-    <link rel="alternate" hreflang="ar" href="https://edalab.dj/ar/laundry.html"/>
-    <link rel="alternate" hreflang="x-default" href="https://edalab.dj/laundry.html"/>
-    <link rel="canonical" href="https://edalab.dj/laundry.html"/>
+    <link rel="alternate" hreflang="en" href="https://edalab.app/laundry.html"/>
+    <link rel="alternate" hreflang="fr" href="https://edalab.app/fr/laundry.html"/>
+    <link rel="alternate" hreflang="ar" href="https://edalab.app/ar/laundry.html"/>
+    <link rel="alternate" hreflang="x-default" href="https://edalab.app/laundry.html"/>
+    <link rel="canonical" href="https://edalab.app/laundry.html"/>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="css/main-styles.css">
@@ -21,12 +21,12 @@
       "@type": "CollectionPage",
       "name": "Laundry - eDalab",
       "description": "Fast and reliable laundry services. Pickup and delivery available.",
-      "url": "https://edalab.dj/laundry.html",
+      "url": "https://edalab.app/laundry.html",
       "inLanguage": "en",
       "isPartOf": {
         "@type": "WebSite",
         "name": "eDalab",
-        "url": "https://edalab.dj/"
+        "url": "https://edalab.app/"
       },
       "mainEntity": {
         "@type": "ItemList",
@@ -119,8 +119,30 @@
         }
 
         .service-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: rgba(99, 102, 241, 0.12);
+            color: #6366F1;
+        }
+
+        .service-icon img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .service-icon svg,
+        .info-icon svg,
+        .empty-state-icon svg {
+            width: 20px;
+            height: 20px;
+            display: block;
         }
 
         .service-name {
@@ -233,11 +255,16 @@
             font-size: 14px;
         }
 
-        .info-icon {
-            font-size: 20px;
-            margin-right: 12px;
+        .info-icon,
+        .empty-state-icon {
             width: 24px;
-            text-align: center;
+            height: 24px;
+            margin-right: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #6366F1;
+            flex-shrink: 0;
         }
 
         .orders-history {
@@ -319,15 +346,18 @@
         }
 
         .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            border-radius: 16px;
+            background: rgba(99, 102, 241, 0.12);
         }
     </style>
 </head>
 <body>
     <!-- Navigation -->
     <nav id="nav" data-static-unified="true">
-        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
     </nav>
 
     <section class="laundry-hero">
@@ -349,7 +379,7 @@
 
         <div class="filter-section">
             <h2>Place Your Order</h2>
-        <div class="laundry-form">
+        <div id="laundryOrderForm" class="laundry-form">
 
             <!-- Additional Services -->
             <label style="display: block; margin-bottom: 12px; font-weight: 600;">Additional Services</label>
@@ -438,25 +468,26 @@
             <!-- Submit Button -->
             <button class="submit-button" id="submitButton" onclick="laundryModule.submitOrder()">Place Order</button>
         </div>
+        <div id="laundryOrderSkeleton" style="display: none;"></div>
         </div>
 
         <section class="food-section">
         <div class="laundry-info">
             <h3>Why Choose Our Laundry Service?</h3>
             <div class="info-item">
-                <div class="info-icon">🚚</div>
+                <div class="info-icon">${UIComponents.getIconMarkup('delivery', 'ui-icon ui-icon-sm')}</div>
                 <div>Free pickup and delivery in your area</div>
             </div>
             <div class="info-item">
-                <div class="info-icon">👔</div>
+                <div class="info-icon">${UIComponents.getIconMarkup('bag', 'ui-icon ui-icon-sm')}</div>
                 <div>Professional cleaning with eco-friendly products</div>
             </div>
             <div class="info-item">
-                <div class="info-icon">⏰</div>
+                <div class="info-icon">${UIComponents.getIconMarkup('clock', 'ui-icon ui-icon-sm')}</div>
                 <div>Express service available for urgent orders</div>
             </div>
             <div class="info-item">
-                <div class="info-icon">🛡️</div>
+                <div class="info-icon">${UIComponents.getIconMarkup('verified', 'ui-icon ui-icon-sm')}</div>
                 <div>Careful handling of delicate and premium fabrics</div>
             </div>
         </div>
@@ -499,7 +530,7 @@
                 </div>
                 <div class="footer-section">
                     <h3>Contact</h3>
-                    <p>Email: laundry@edalab.dj</p>
+                    <p>Email: hello@edalab.app</p>
                     <p>Phone: +253 21 35 00 00</p>
                 </div>
             </div>
@@ -519,6 +550,7 @@
                 this.serviceCharges = 0;
                 this.basePrice = 15;
                 this.deliveryFee = 5;
+                this.isReady = false;
                 this.init();
             }
 
@@ -527,13 +559,16 @@
             }
 
             async init() {
+                UIComponents.mountUnifiedNavbar({ active: 'laundry' });
                 this.renderLoadingState();
                 await this.loadServices();
                 this.setupHeroSearch();
                 this.renderServices();
+                this.clearLoadingState();
                 this.setupDatePicker();
                 this.updatePrice();
                 await this.loadOrders();
+                this.isReady = true;
             }
 
             renderLoadingState() {
@@ -541,8 +576,25 @@
                 if (searchContainer) {
                     searchContainer.innerHTML = UIComponents.createSearchSkeleton();
                 }
+                const orderForm = document.getElementById('laundryOrderForm');
+                const orderSkeleton = document.getElementById('laundryOrderSkeleton');
+                if (orderForm && orderSkeleton) {
+                    orderForm.style.display = 'none';
+                    orderSkeleton.style.display = 'block';
+                    orderSkeleton.innerHTML = UIComponents.createFormSkeleton({ fields: 5, columns: 2, includeSummary: true, includeButton: true });
+                }
                 document.getElementById('serviceOptions').innerHTML = UIComponents.createChoiceSkeleton(3);
                 document.getElementById('ordersContainer').innerHTML = UIComponents.createListSkeleton(2);
+            }
+
+            clearLoadingState() {
+                const orderForm = document.getElementById('laundryOrderForm');
+                const orderSkeleton = document.getElementById('laundryOrderSkeleton');
+                if (orderForm && orderSkeleton) {
+                    orderForm.style.display = '';
+                    orderSkeleton.style.display = 'none';
+                    orderSkeleton.innerHTML = '';
+                }
             }
 
             setupHeroSearch() {
@@ -551,7 +603,7 @@
                 container.innerHTML = `
                     <div class="search-bar">
                         <input type="text" id="laundry-hero-search" class="search-input" placeholder="${this.t('laundry.searchService', 'Search a laundry service...')}" />
-                        <button class="search-btn" onclick="laundryModule.handleHeroSearch()">${this.t('laundry.find', 'Find')}</button>
+                        <button class="search-btn" onclick="laundryModule.handleHeroSearch()">${UIComponents.getIconMarkup('search', 'ui-icon ui-icon-sm')}</button>
                     </div>
                 `;
                 document.getElementById('laundry-hero-search').addEventListener('keypress', (event) => {
@@ -602,10 +654,7 @@
 
             getServiceIcon(service) {
                 const label = `${service.name} ${service.description || ''}`.toLowerCase();
-                if (label.includes('express')) return '⚡';
-                if (label.includes('dry')) return '👔';
-                if (label.includes('iron')) return '♨️';
-                return '🧺';
+                return 'assets/icons/laundry.png';
             }
 
             getSelectedService() {
@@ -616,7 +665,7 @@
                 const container = document.getElementById('serviceOptions');
                 container.innerHTML = this.services.map((service) => `
                     <div class="service-option ${service.id === this.selectedService ? 'active' : ''}" onclick="laundryModule.selectService('${service.id}', event)">
-                        <div class="service-icon">${this.getServiceIcon(service)}</div>
+                        <div class="service-icon"><img src="${this.getServiceIcon(service)}" alt="${service.name}"></div>
                         <div class="service-name">${service.name}</div>
                         <div class="service-price">$${Number(service.price || 0).toFixed(2)}${service.unit ? ` / ${service.unit}` : ''}</div>
                     </div>
@@ -799,7 +848,7 @@
                 const container = document.getElementById('ordersContainer');
 
                 if (!orders || orders.length === 0) {
-                    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🧺</div><p>${this.t('laundry.noOrders', 'No orders yet')}</p></div>`;
+                    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">${UIComponents.getIconMarkup('bag', 'ui-icon ui-icon-lg')}</div><p>${this.t('laundry.noOrders', 'No orders yet')}</p></div>`;
                     return;
                 }
 
@@ -825,10 +874,9 @@
             }
         }
 
-        UIComponents.mountUnifiedNavbar({ active: 'laundry' });
         const laundryModule = new LaundryModule();
         window.refreshPageLocalizedContent = function() {
-            if (laundryModule) {
+            if (laundryModule && laundryModule.isReady) {
                 laundryModule.setupHeroSearch();
                 laundryModule.renderServices();
                 laundryModule.updatePrice();

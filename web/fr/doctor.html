@@ -14,23 +14,23 @@
   <link rel="stylesheet" href="../css/components.css"/>
   <link rel="stylesheet" href="../css/modules.css"/>
     <script type="application/ld+json" id="doctorSchemaDynamic">{}</script>
-<link rel="alternate" hreflang="en" href="https://edalab.dj/doctor.html"/>
-<link rel="alternate" hreflang="fr" href="https://edalab.dj/fr/doctor.html"/>
-<link rel="alternate" hreflang="ar" href="https://edalab.dj/ar/doctor.html"/>
-<link rel="alternate" hreflang="x-default" href="https://edalab.dj/doctor.html"/>
-<link rel="canonical" href="https://edalab.dj/fr/doctor.html"/>
+<link rel="alternate" hreflang="en" href="https://edalab.app/doctor.html"/>
+<link rel="alternate" hreflang="fr" href="https://edalab.app/fr/doctor.html"/>
+<link rel="alternate" hreflang="ar" href="https://edalab.app/ar/doctor.html"/>
+<link rel="alternate" hreflang="x-default" href="https://edalab.app/doctor.html"/>
+<link rel="canonical" href="https://edalab.app/fr/doctor.html"/>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
   "name": "Médecins & rendez-vous - eDalab",
   "description": "Réservez des rendez-vous médicaux et consultez des professionnels de santé sur eDalab.",
-  "url": "https://edalab.dj/fr/doctor.html",
+  "url": "https://edalab.app/fr/doctor.html",
   "inLanguage": "fr",
   "isPartOf": {
     "@type": "WebSite",
     "name": "eDalab",
-    "url": "https://edalab.dj"
+    "url": "https://edalab.app"
   },
   "mainEntity": {
     "@type": "ItemList",
@@ -175,7 +175,7 @@
         </div>
         <div class="footer-section">
           <h3>Contact et urgence</h3>
-          <p>Email: health@edalab.dj</p>
+          <p>Email: hello@edalab.app</p>
           <p>Assistance 24h/24 et 7j/7: +253 21 35 00 00</p>
         </div>
       </div>
@@ -229,7 +229,7 @@
           document.querySelector('meta[name="description"]')?.setAttribute('content', 'Book doctor appointments, consult with healthcare professionals online, and manage your health on eDalab.');
           document.querySelector('meta[property="og:title"]')?.setAttribute('content', 'Healthcare & Doctor Booking - eDalab');
           document.querySelector('meta[property="og:description"]')?.setAttribute('content', 'Book doctor appointments, consult with healthcare professionals online, and manage your health on eDalab.');
-          document.querySelector('link[rel="canonical"]')?.setAttribute('href', 'https://edalab.dj/doctor.html');
+          document.querySelector('link[rel="canonical"]')?.setAttribute('href', 'https://edalab.app/doctor.html');
           document.getElementById('doctorSchemaDynamic').textContent = '{}';
           return;
         }
@@ -237,8 +237,8 @@
         const specialty = selectedDoctor.specialty || 'Doctor';
         const description = `${selectedDoctor.name} on eDalab. ${specialty}${selectedDoctor.experience ? ` with ${selectedDoctor.experience} experience` : ''}.`;
         const title = `${selectedDoctor.name} - ${specialty} | eDalab`;
-        const canonicalUrl = `https://edalab.dj/doctor.html?doctorId=${encodeURIComponent(selectedDoctor.id)}`;
-        const image = selectedDoctor.image || selectedDoctor.imageUrl || selectedDoctor.images?.[0] || 'https://edalab.dj/assets/icons/doctor.png';
+        const canonicalUrl = `https://edalab.app/doctor.html?doctorId=${encodeURIComponent(selectedDoctor.id)}`;
+        const image = selectedDoctor.image || selectedDoctor.imageUrl || selectedDoctor.images?.[0] || 'https://edalab.app/assets/icons/doctor.png';
 
         document.title = title;
         document.querySelector('meta[name="description"]')?.setAttribute('content', description);
