@@ -33,6 +33,192 @@ const createOrderSchema = zod_1.z.object({
     notes: zod_1.z.string().optional(),
     items: zod_1.z.array(orderItemSchema).default([]),
 });
+const createHotelBookingSchema = zod_1.z
+    .object({
+    userId: zod_1.z.string(),
+    hotelId: zod_1.z.string(),
+    roomType: zod_1.z.string().min(1),
+    guestName: zod_1.z.string().min(1),
+    guestEmail: zod_1.z.string().email(),
+    guestPhone: zod_1.z.string().optional().nullable(),
+    specialRequests: zod_1.z.string().optional().nullable(),
+    checkInAt: zod_1.z.coerce.date(),
+    checkOutAt: zod_1.z.coerce.date(),
+    nights: zod_1.z.coerce.number().int().positive(),
+    guestCount: zod_1.z.coerce.number().int().positive(),
+    subtotal: zod_1.z.coerce.number(),
+    serviceFee: zod_1.z.coerce.number(),
+    tax: zod_1.z.coerce.number(),
+    total: zod_1.z.coerce.number(),
+})
+    .superRefine((value, ctx) => {
+    if (value.checkOutAt <= value.checkInAt) {
+        ctx.addIssue({
+            code: zod_1.z.ZodIssueCode.custom,
+            message: 'Check-out must be after check-in.',
+            path: ['checkOutAt'],
+        });
+    }
+});
+function serializeHotelBooking(booking) {
+    return {
+        id: booking.id,
+        userId: booking.userId,
+        hotelId: booking.hotelId,
+        hotelName: booking.hotel.name,
+        moduleType: client_1.ModuleType.HOTEL,
+        status: booking.status === client_1.HotelBookingStatus.CHECKED_OUT
+            ? 'COMPLETED'
+            : booking.status,
+        roomType: booking.roomType,
+        guestName: booking.guestName,
+        guestEmail: booking.guestEmail,
+        guestPhone: booking.guestPhone,
+        specialRequests: booking.specialRequests,
+        checkInAt: booking.checkInAt,
+        checkOutAt: booking.checkOutAt,
+        nights: booking.nights,
+        guestCount: booking.guestCount,
+        subtotal: (0, serializers_1.toNumber)(booking.subtotal),
+        serviceFee: (0, serializers_1.toNumber)(booking.serviceFee),
+        tax: (0, serializers_1.toNumber)(booking.tax),
+        total: (0, serializers_1.toNumber)(booking.total),
+        createdAt: booking.createdAt,
+        updatedAt: booking.updatedAt,
+        items: [
+            {
+                id: booking.id,
+                name: booking.roomType,
+                quantity: booking.nights,
+                price: (0, serializers_1.toNumber)(booking.subtotal) ?? 0,
+                total: (0, serializers_1.toNumber)(booking.total) ?? 0,
+                metadata: {
+                    hotelId: booking.hotelId,
+                    hotelName: booking.hotel.name,
+                    checkInAt: booking.checkInAt,
+                    checkOutAt: booking.checkOutAt,
+                    guestCount: booking.guestCount,
+                    nights: booking.nights,
+                },
+            },
+        ],
+    };
+}
+function serializeOrderDetail(order) {
+    const firstMetadata = order.items[0]?.metadata && typeof order.items[0].metadata === 'object'
+        ? order.items[0].metadata
+        : null;
+    return {
+        id: order.id,
+        userId: order.userId,
+        moduleType: order.moduleType,
+        moduleName: order.items[0]?.brand ??
+            order.items[0]?.name ??
+            order.moduleType.toLowerCase(),
+        status: order.status,
+        subtotal: (0, serializers_1.toNumber)(order.subtotal),
+        tax: (0, serializers_1.toNumber)(order.tax),
+        deliveryFee: (0, serializers_1.toNumber)(order.deliveryFee),
+        discount: (0, serializers_1.toNumber)(order.discount),
+        total: (0, serializers_1.toNumber)(order.total),
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        address: typeof firstMetadata?.address === 'string' ? firstMetadata.address : null,
+        deliveryLabel: typeof firstMetadata?.deliveryLabel === 'string'
+            ? firstMetadata.deliveryLabel
+            : null,
+        deliveryEta: typeof firstMetadata?.deliveryEta === 'string'
+            ? firstMetadata.deliveryEta
+            : null,
+        notes: order.notes,
+        deliveryAssignee: order.deliveryAssignee
+            ? {
+                userId: order.deliveryAssignee.id,
+                name: `${order.deliveryAssignee.firstName} ${order.deliveryAssignee.lastName}`.trim(),
+                phone: order.deliveryAssignee.phone,
+            }
+            : null,
+        items: order.items.map((item) => ({
+            id: item.id,
+            productId: item.productId,
+            externalRefId: item.externalRefId,
+            name: item.name,
+            brand: item.brand,
+            quantity: item.quantity,
+            price: (0, serializers_1.toNumber)(item.unitPrice),
+            total: (0, serializers_1.toNumber)(item.lineTotal),
+            color: item.color,
+            size: item.size,
+            metadata: item.metadata,
+        })),
+    };
+}
+router.get('/detail/:orderId', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const orderId = (0, http_1.getParam)(req.params.orderId, 'orderId');
+    const order = await db_1.prisma.order.findUnique({
+        where: { id: orderId },
+        include: {
+            items: true,
+            deliveryAssignee: true,
+        },
+    });
+    if (!order) {
+        return res.status(404).json({ error: 'Order not found.' });
+    }
+    res.json(serializeOrderDetail(order));
+}));
+router.get('/hotel-bookings/:bookingId', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const bookingId = (0, http_1.getParam)(req.params.bookingId, 'bookingId');
+    const booking = await db_1.prisma.hotelBooking.findUnique({
+        where: { id: bookingId },
+        include: {
+            hotel: true,
+        },
+    });
+    if (!booking) {
+        return res.status(404).json({ error: 'Hotel booking not found.' });
+    }
+    res.json(serializeHotelBooking(booking));
+}));
+router.post('/hotel-bookings', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const body = createHotelBookingSchema.parse(req.body);
+    const hotel = await db_1.prisma.hotel.findUnique({
+        where: { id: body.hotelId },
+    });
+    if (!hotel) {
+        return res.status(404).json({ error: 'Hotel not found.' });
+    }
+    const booking = await db_1.prisma.hotelBooking.create({
+        data: {
+            userId: body.userId,
+            hotelId: body.hotelId,
+            status: client_1.HotelBookingStatus.CONFIRMED,
+            roomType: body.roomType,
+            guestName: body.guestName.trim(),
+            guestEmail: body.guestEmail.trim().toLowerCase(),
+            guestPhone: body.guestPhone?.trim() || null,
+            specialRequests: body.specialRequests?.trim() || null,
+            checkInAt: body.checkInAt,
+            checkOutAt: body.checkOutAt,
+            nights: body.nights,
+            guestCount: body.guestCount,
+            subtotal: new client_1.Prisma.Decimal(body.subtotal),
+            serviceFee: new client_1.Prisma.Decimal(body.serviceFee),
+            tax: new client_1.Prisma.Decimal(body.tax),
+            total: new client_1.Prisma.Decimal(body.total),
+        },
+        include: {
+            hotel: true,
+        },
+    });
+    await (0, notifications_1.createOrderCreatedNotification)({
+        userId: booking.userId,
+        orderId: booking.id,
+        moduleType: client_1.ModuleType.HOTEL,
+        moduleName: hotel.name,
+    });
+    res.status(201).json(serializeHotelBooking(booking));
+}));
 router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const userId = (0, http_1.getParam)(req.params.userId, 'userId');
     const [orders, appointments, rideBookings, hotelBookings, laundryOrders] = await Promise.all([
@@ -40,6 +226,7 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
             where: { userId },
             include: {
                 items: true,
+                deliveryAssignee: true,
             },
         }),
         db_1.prisma.appointment.findMany({
@@ -100,6 +287,10 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
                 paymentLabel: typeof firstMetadata?.paymentLabel === 'string'
                     ? firstMetadata.paymentLabel
                     : null,
+                deliveryAssigneeName: order.deliveryAssignee?.firstName && order.deliveryAssignee?.lastName
+                    ? `${order.deliveryAssignee.firstName} ${order.deliveryAssignee.lastName}`.trim()
+                    : null,
+                deliveryAssigneePhone: order.deliveryAssignee?.phone ?? null,
                 trackingRoute: order.moduleType === 'FOOD' &&
                     !['COMPLETED', 'CANCELLED', 'REFUNDED'].includes(order.status)
                     ? `/food/tracking/${order.id}`
@@ -203,7 +394,7 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
             total: (0, serializers_1.toNumber)(booking.total),
             createdAt: booking.createdAt,
             updatedAt: booking.updatedAt,
-            trackingRoute: null,
+            trackingRoute: `/hotel/order/${booking.id}`,
             items: [
                 {
                     id: booking.id,

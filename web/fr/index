@@ -1,47 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr" dir="ltr" data-page-language="fr">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title data-i18n="home.title">eDalab — One App For All Your Needs | Food, Doctor, Hotel, Pharmacy in Djibouti</title>
-<meta name="description" content="eDalab is Djibouti's #1 super-app. Order food, book doctors, find pharmacies, ride, shop, hotel stays, laundry & more. Fast delivery, live tracking, one app."/>
+<style>
+html[data-i18n-pending="true"] body{visibility:hidden}
+</style>
+<script>
+(() => {
+  const root = document.documentElement;
+  try {
+    const savedPrefs = JSON.parse(localStorage.getItem('edaLabPreferences') || '{}');
+    const pageLanguage = ['en', 'fr', 'ar'].includes(root.dataset.pageLanguage) ? root.dataset.pageLanguage : null;
+    const savedLanguage = ['en', 'fr', 'ar'].includes(savedPrefs.language) ? savedPrefs.language : null;
+    const resolvedLanguage = savedLanguage || pageLanguage || 'fr';
+    root.lang = resolvedLanguage;
+    root.dir = resolvedLanguage === 'ar' ? 'rtl' : 'ltr';
+    if (savedLanguage && pageLanguage && savedLanguage !== pageLanguage) {
+      root.setAttribute('data-i18n-pending', 'true');
+      window.__edaI18nFailSafe = window.setTimeout(() => {
+        root.removeAttribute('data-i18n-pending');
+      }, 2500);
+    }
+  } catch (error) {
+    root.lang = 'fr';
+    root.dir = 'ltr';
+    root.setAttribute('data-i18n-pending', 'true');
+    window.__edaI18nFailSafe = window.setTimeout(() => {
+      root.removeAttribute('data-i18n-pending');
+    }, 2500);
+  }
+})();
+</script>
+<title>eDalab — Une seule application pour tous vos besoins | Restauration, médecin, hôtel, pharmacie à Djibouti</title>
+<meta name="description" content="eDalab est la super-app n°1 de Djibouti. Commandez des repas, réservez des médecins, trouvez des pharmacies, demandez un trajet, faites du shopping, réservez un hôtel et plus encore."/>
 <meta name="keywords" content="eDalab, Djibouti app, food delivery Djibouti, pharmacie Djibouti, doctor booking Djibouti, hotel Djibouti, laundry Djibouti, ride Djibouti, shopping Djibouti, super app"/>
-<meta property="og:title" content="eDalab — One App For All Your Needs"/>
-<meta property="og:description" content="Djibouti's super-app. Food, Doctor, Hotel, Pharmacy, Ride, Shopping & Laundry."/>
+<meta property="og:title" content="eDalab — Une seule application pour tous vos besoins"/>
+<meta property="og:description" content="La super-app de Djibouti. Restauration, médecin, hôtel, pharmacie, trajets, shopping et blanchisserie."/>
 <meta property="og:type" content="website"/>
 <meta name="robots" content="index,follow"/>
+<link rel="alternate" hreflang="en" href="https://edalab.app/en/"/>
+<link rel="alternate" hreflang="fr" href="https://edalab.app/"/>
+<link rel="alternate" hreflang="ar" href="https://edalab.app/ar/"/>
+<link rel="alternate" hreflang="x-default" href="https://edalab.app/"/>
+<link rel="canonical" href="https://edalab.app/"/>
 <link rel="alternate" hreflang="en" href="https://edalab.app/"/>
 <link rel="alternate" hreflang="fr" href="https://edalab.app/fr/"/>
 <link rel="alternate" hreflang="ar" href="https://edalab.app/ar/"/>
 <link rel="alternate" hreflang="x-default" href="https://edalab.app/"/>
 <link rel="canonical" href="https://edalab.app/"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="css/main-styles.css"/>
-<link rel="stylesheet" href="css/components.css"/>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "eDalab",
-  "url": "https://edalab.app/",
-  "inLanguage": "en",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://edalab.app/?q={search_term_string}",
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "eDalab",
-  "url": "https://edalab.app/",
-  "logo": "https://edalab.app/assets/logo/logo.png"
-}
-</script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="dns-prefetch" href="//edalab.onrender.com"/>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+<noscript><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/></noscript>
+<link rel="stylesheet" href="../css/main-styles.css"/>
+<link rel="stylesheet" href="../css/components.css"/>
 <style>
 /* ═══════════════════════════════════════════
    eDalab — Brand: Green #1DB954-style vibrant
@@ -126,10 +141,13 @@ input,textarea{font-family:'Nunito',sans-serif;border:none;outline:none}
   box-shadow:0 4px 12px rgba(22,163,74,.14);overflow:hidden;flex-shrink:0;
 }
 .heb-av img{width:18px;height:18px;object-fit:contain;display:block}
-.heb-text{font-size:13px;font-weight:700;color:var(--g)}
+.heb-text{font-size:13px;font-weight:700;color:var(--g-deep)}
 
 h1.hero-h{font-size:clamp(44px,5.5vw,80px);font-weight:800;margin-bottom:22px;color:var(--text)}
+html[lang="fr"] h1.hero-h{font-size:clamp(38px,4.9vw,68px)}
 .hero-h .big-word{color:var(--g);display:block;position:relative}
+html[lang="fr"] .hero-h br{display:none}
+html[lang="fr"] .hero-h .big-word{display:inline-block}
 .hero-h .big-word::after{
   content:'';position:absolute;left:0;right:0;bottom:-4px;height:4px;
   background:linear-gradient(90deg,var(--g),#4ADE80);border-radius:2px;
@@ -146,7 +164,7 @@ h1.hero-h{font-size:clamp(44px,5.5vw,80px);font-weight:800;margin-bottom:22px;co
 .hs-location{
   display:flex;align-items:center;gap:6px;padding:0 18px;
   border-right:1.5px solid var(--border);font-size:13px;font-weight:700;
-  color:var(--g);white-space:nowrap;background:#fff;
+  color:var(--g-deep);white-space:nowrap;background:var(--g-pale);
 }
 .hs-input{flex:1;padding:18px 18px;font-size:15px;font-weight:600;color:var(--text);background:#fff}
 .hs-input::placeholder{color:var(--muted);font-weight:500}
@@ -260,7 +278,7 @@ h1.hero-h{font-size:clamp(44px,5.5vw,80px);font-weight:800;margin-bottom:22px;co
 .si-icon img{width:22px;height:22px}
 .si-icon svg{width:22px;height:22px}
 .si-val{font-family:'Bricolage Grotesque',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.04em;line-height:1;color:var(--text)}
-.si-lbl{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+.si-lbl{font-size:12px;color:#4B5563;font-weight:700;margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
 .stat-div{width:1px;height:52px;background:var(--border)}
 @media(max-width:900px){.stats-inner{justify-content:center}.stat-div{display:none}}
 @media(max-width:640px){.stats-row{padding:18px 16px}.stat-it{width:calc(50% - 12px)}.si-val{font-size:22px}.si-lbl{font-size:11px}}
@@ -273,8 +291,8 @@ h2.sec-h{font-size:clamp(32px,4vw,54px);font-weight:800;margin-bottom:10px}
 .sec-p{font-size:17px;color:var(--sub);line-height:1.65;max-width:500px}
 .sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:48px}
 @media(max-width:640px){.sec-head{flex-direction:column;align-items:flex-start}}
-.see-all-btn{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:800;color:var(--g);padding:10px 20px;border-radius:10px;background:var(--g-light);border:1.5px solid rgba(22,163,74,0.15);transition:all .2s;white-space:nowrap}
-.see-all-btn:hover{background:var(--g);color:#fff;border-color:var(--g)}
+.see-all-btn{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:800;color:var(--g-deep);padding:10px 20px;border-radius:10px;background:var(--g-pale);border:1.5px solid rgba(20,83,45,0.18);transition:all .2s;white-space:nowrap}
+.see-all-btn:hover{background:var(--g-dark);color:#fff;border-color:var(--g-dark)}
 
 .svcs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 @media(max-width:900px){.svcs-grid{grid-template-columns:repeat(4,1fr)}}
@@ -296,7 +314,7 @@ h2.sec-h{font-size:clamp(32px,4vw,54px);font-weight:800;margin-bottom:10px}
 }
 .svc-icon-wrap img{width:34px;height:34px;object-fit:contain;display:block}
 .svc-card:hover .svc-icon-wrap{transform:scale(1.1) rotate(-3deg)}
-.svc-name{font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;position:relative;z-index:1;margin-top:2px}
+.svc-name{font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:700;position:relative;z-index:1;margin-top:2px;color:var(--g-deep)}
 .svc-count{font-size:12px;color:var(--sub);font-weight:600;position:relative;z-index:1}
 .svc-tag{
   position:absolute;top:10px;right:10px;
@@ -319,7 +337,7 @@ h2.sec-h{font-size:clamp(32px,4vw,54px);font-weight:800;margin-bottom:10px}
 .hiw-circle svg{width:26px;height:26px;color:var(--g)}
 .hiw-step:hover .hiw-circle{background:var(--g-grad);border-color:var(--g);box-shadow:var(--sh-green);transform:scale(1.08)}
 .hiw-step:hover .hiw-circle svg{color:#fff}
-.hiw-n{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;color:var(--g);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.hiw-n{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;color:var(--g-deep);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
 .hiw-t{font-family:'Bricolage Grotesque',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px}
 .hiw-d{font-size:14px;color:var(--sub);line-height:1.6;font-weight:500}
 
@@ -357,7 +375,7 @@ h2.sec-h{font-size:clamp(32px,4vw,54px);font-weight:800;margin-bottom:10px}
 .bc-body{padding:28px 16px 16px}
 .bc-name{font-family:'Bricolage Grotesque',sans-serif;font-size:17px;font-weight:700;margin-bottom:5px}
 .bc-meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sub);flex-wrap:wrap;font-weight:600}
-.bc-stars{color:#F59E0B;font-weight:800;display:inline-flex;align-items:center;gap:4px}
+.bc-stars{color:#B45309;font-weight:800;display:inline-flex;align-items:center;gap:4px}
 .meta-inline-icon{color:currentColor}
 .bc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1.5px solid var(--border)}
 .bc-inf{font-size:12px;color:var(--sub);font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -380,11 +398,11 @@ h2.sec-h{font-size:clamp(32px,4vw,54px);font-weight:800;margin-bottom:10px}
 .t-stars{display:flex;gap:3px;color:#F59E0B;font-size:16px;margin-bottom:12px}
 .t-text{font-size:15px;color:var(--text);line-height:1.7;font-weight:500;margin-bottom:18px}
 .t-author{display:flex;align-items:center;gap:10px}
-.t-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:800;color:#fff;flex-shrink:0}
+.t-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bricolage Grotesque',sans-serif;font-size:15px;font-weight:800;color:var(--text);background:#E5E7EB;flex-shrink:0}
 .t-name{font-size:14px;font-weight:800}
 .t-loc{font-size:12px;color:var(--sub);font-weight:500;margin-top:1px}
 .t-loc{display:flex;align-items:center;gap:4px}
-.t-module{margin-left:auto;padding:4px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:800;display:inline-flex;align-items:center;gap:6px}
+.t-module{margin-left:auto;padding:4px 10px;border-radius:var(--r-pill);font-size:11px;font-weight:800;display:inline-flex;align-items:center;gap:6px;background:#F3F4F6;color:var(--g-deep);border:1px solid rgba(20,83,45,.12)}
 
 /* ═══ PARTNERS ═══ */
 .partners-sec{padding:64px 0}
@@ -394,7 +412,7 @@ h2.sec-h{font-size:clamp(32px,4vw,54px);font-weight:800;margin-bottom:10px}
 .partner-chip{
   display:flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--r-pill);
   background:#fff;border:1.5px solid var(--border);box-shadow:var(--sh-sm);white-space:nowrap;flex-shrink:0;
-  font-size:14px;font-weight:700;color:var(--sub);
+  font-size:14px;font-weight:700;color:var(--text);
 }
 .module-chip-icon{
   width:28px;height:28px;border-radius:10px;background:var(--g-pale);color:var(--g);flex-shrink:0;
@@ -449,19 +467,21 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
 .ft-grid{display:grid;grid-template-columns:2.2fr 1fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
 @media(max-width:1000px){.ft-grid{grid-template-columns:1fr 1fr 1fr}}
 @media(max-width:640px){.ft-grid{grid-template-columns:1fr 1fr}}
-.ft-brand .ft-logo{display:flex;align-items:center;gap:10px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.04em;margin-bottom:14px}
+.ft-brand .ft-logo{display:inline-flex;align-items:center;gap:4px;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.04em;margin-bottom:14px;white-space:nowrap}
+.ft-brand .ft-logo .nav-logo-icon{width:88px;height:44px}
+.ft-brand .ft-logo span{color:var(--g);display:inline-flex;align-items:center;line-height:1}
 .ft-brand p{font-size:14px;color:var(--sub);line-height:1.7;max-width:240px;font-weight:500}
 .ft-social{display:flex;gap:8px;margin-top:18px}
 .ft-soc{width:36px;height:36px;border-radius:10px;border:1.5px solid var(--border);transition:all .2s;color:var(--sub)}
 .ft-soc:hover{border-color:var(--g);color:var(--g);background:var(--g-light)}
-.ft-col h5{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:16px}
+.ft-col h3{font-family:'Bricolage Grotesque',sans-serif;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#4B5563;margin-bottom:16px}
 .ft-col a{display:block;font-size:14px;color:var(--sub);margin-bottom:9px;font-weight:600;transition:color .2s}
 .ft-col a:hover{color:var(--g)}
 .ft-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:24px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);font-weight:600}
 .ft-links{display:flex;gap:18px}
 .ft-links a{color:var(--muted);font-size:13px;transition:color .2s;font-weight:600}
 .ft-links a:hover{color:var(--g)}
-.ft-badge{display:inline-flex;align-items:center;gap:6px;background:var(--g-light);color:var(--g);padding:4px 12px;border-radius:var(--r-pill);font-size:12px;font-weight:800}
+.ft-badge{display:inline-flex;align-items:center;gap:6px;background:var(--g-light);color:var(--g-deep);padding:4px 12px;border-radius:var(--r-pill);font-size:12px;font-weight:800}
 @media(max-width:820px){.ft-grid{grid-template-columns:1fr 1fr;gap:28px}}
 @media(max-width:640px){footer{padding:44px 16px 24px}.ft-grid{grid-template-columns:1fr;gap:24px}.ft-brand p{max-width:none}.ft-bottom{flex-direction:column;align-items:flex-start}.ft-links{flex-wrap:wrap;gap:12px}}
 .newsletter-row{max-width:1260px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap}
@@ -511,7 +531,7 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
   display:flex;align-items:center;justify-content:center;box-shadow:var(--sh-green);transition:all .2s;flex-shrink:0;
 }
 .dm-add:hover{transform:scale(1.15) rotate(8deg)}
-/* Cart */
+/* Panier */
 .dr-cart{padding:20px;border-left:1px solid var(--border);display:flex;flex-direction:column;background:#fff}
 @media(max-width:720px){.dr-cart{border-left:none;border-top:1px solid var(--border)}}
 .drc-title{font-family:'Bricolage Grotesque',sans-serif;font-size:19px;font-weight:800;letter-spacing:-.02em;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
@@ -592,12 +612,36 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
 #home-pg{transition:opacity .3s}
 .pg-hide{display:none}
 </style>
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "eDalab",
+    "url": "https://edalab.app/",
+    "inLanguage": "fr",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://edalab.app/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "eDalab",
+    "url": "https://edalab.app",
+    "logo": "https://edalab.app/assets/logo/logo.png",
+    "sameAs": []
+  }
+]
+</script>
 </head>
 <body>
 
 <!-- ══════════ NAV ══════════ -->
 <nav id="nav" data-static-unified="true">
-  <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home" data-i18n="nav.home">Home</a><a href="food.html" class="nav-a" data-nav-link="food" data-i18n="nav.food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping" data-i18n="nav.shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy" data-i18n="nav.pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor" data-i18n="nav.doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel" data-i18n="nav.hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride" data-i18n="nav.ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services" data-i18n="nav.services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry" data-i18n="nav.laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label" data-i18n="nav.wishlist">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label" data-i18n="nav.cart">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+  <div class="nav-w nav-w-unified"><a class="nav-logo" href="index"><div class="nav-logo-icon"><img src="../assets/logo/logo.png" alt="eDalab logo" width="300" height="296"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index" class="nav-a" data-nav-link="home" data-i18n="nav.home">Accueil</a><a href="food.html" class="nav-a" data-nav-link="food" data-i18n="nav.food">Restauration</a><a href="shopping.html" class="nav-a" data-nav-link="shopping" data-i18n="nav.shopping">Boutique</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy" data-i18n="nav.pharmacy">Pharmacie</a><a href="doctor.html" class="nav-a" data-nav-link="doctor" data-i18n="nav.doctor">Médecin</a><a href="hotel.html" class="nav-a" data-nav-link="hotel" data-i18n="nav.hotel">Hôtel</a><a href="ride.html" class="nav-a" data-nav-link="ride" data-i18n="nav.ride">Trajet</a><a href="home-services.html" class="nav-a" data-nav-link="services" data-i18n="nav.services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry" data-i18n="nav.laundry">Blanchisserie</a></div><div class="nav-right nav-right-unified"><label class="nav-language-picker" aria-label="Langue"><span class="nav-language-icon"><span class="ui-icon ui-icon-sm"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path d="M3.5 12h17" fill="none" stroke="currentColor" stroke-width="1.8"></path><path d="M12 3.5c2.6 2.4 4.1 5.4 4.1 8.5s-1.5 6.1-4.1 8.5c-2.6-2.4-4.1-5.4-4.1-8.5S9.4 5.9 12 3.5Z" fill="none" stroke="currentColor" stroke-width="1.8"></path></svg></span></span><select class="nav-language-select" data-language-switcher aria-label="Langue"><option value="en">EN</option><option value="fr">FR</option><option value="ar">AR</option></select></label><div class="nav-quick-actions"><a href="../wishlist.html" class="nav-icon-btn" aria-label="Favoris"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label" data-i18n="nav.wishlist">Favoris</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="../cart.html" class="nav-icon-btn" aria-label="Panier"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label" data-i18n="nav.cart">Panier</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
 </nav>
 
 <!-- ══════════ HOME ══════════ -->
@@ -612,55 +656,55 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
   <div class="hero-inner">
     <div class="hero-left au d1">
       <div class="hero-eyebrow">
-        <div class="heb-av"><img src="assets/logo/logo.png" alt="eDalab"></div>
-        <span class="heb-text" data-i18n="home.heroEyebrow">Serving Djibouti, City & Regions</span>
+        <div class="heb-av"><img src="../assets/logo/logo.png" alt="eDalab" width="300" height="296"></div>
+        <span class="heb-text" data-i18n="home.heroEyebrow">Disponible à Djibouti-ville et dans les régions</span>
       </div>
       <h1 class="hero-h" itemprop="name">
-        <span data-i18n="home.heroTitle">One App For</span><br>
-        <span class="big-word" data-i18n="home.heroTitleEmphasis">All Your Needs</span>
+        <span data-i18n="home.heroTitle">Une seule app pour</span><br>
+        <span class="big-word" data-i18n="home.heroTitleEmphasis">tous vos besoins</span>
       </h1>
-      <p class="hero-p" itemprop="description" data-i18n="home.heroDescription">eDalab connects you to everything in your city — food, doctors, pharmacies, hotels, rides, shopping and laundry. Real people, real fast.</p>
+      <p class="hero-p" itemprop="description" data-i18n="home.heroDescription">eDalab vous connecte à tout dans votre ville : restauration, médecins, pharmacies, hôtels, trajets, shopping et blanchisserie. Des personnes réelles, rapidement.</p>
 
       <div class="hero-search">
         <div class="hs-location">
           <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
           Djibouti City
         </div>
-        <input class="hs-input" id="hero-q" type="text" placeholder="Search services, products, restaurants…" data-i18n-placeholder="home.heroSearchPlaceholder" onkeydown="if(event.key==='Enter')doSearch()"/>
-        <button class="hs-btn" onclick="doSearch()" data-i18n="home.heroSearchButton">Search</button>
+        <input class="hs-input" id="hero-q" type="text" placeholder="Rechercher des services, produits, restaurants…" data-i18n-placeholder="home.heroSearchPlaceholder" onkeydown="if(event.key==='Enter')doSearch()"/>
+        <button class="hs-btn" onclick="doSearch()" data-i18n="home.heroSearchButton">Rechercher</button>
       </div>
 
       <div class="hero-pills">
-        <span style="font-size:13px;font-weight:600;color:var(--muted)" data-i18n="home.trendingLabel">Trending:</span>
-        <a class="hero-pill-tag" href="#" onclick="openBiz(0)"><span class="hero-pill-icon"><img src="assets/icons/food.png" alt=""></span><span data-i18n="home.trendPizza">Pizza</span></a>
-        <a class="hero-pill-tag" href="#" onclick="openBiz(1)"><span class="hero-pill-icon"><img src="assets/icons/pharmacy.png" alt=""></span><span data-i18n="home.trendPharmacy">Pharmacy</span></a>
-        <a class="hero-pill-tag" href="#" onclick="openBiz(2)"><span class="hero-pill-icon"><img src="assets/icons/hotel.png" alt=""></span><span data-i18n="home.trendHotels">Hotels</span></a>
-        <a class="hero-pill-tag" href="#" onclick="openBiz(4)"><span class="hero-pill-icon"><img src="assets/icons/laundry.png" alt=""></span><span data-i18n="home.trendLaundry">Laundry</span></a>
-        <a class="hero-pill-tag" href="#" onclick="openBiz(3)"><span class="hero-pill-icon"><img src="assets/icons/doctor.png" alt=""></span><span data-i18n="home.trendDoctor">Doctor</span></a>
+        <span style="font-size:13px;font-weight:600;color:var(--muted)" data-i18n="home.trendingLabel">Tendance :</span>
+        <a class="hero-pill-tag" href="food.html"><span class="hero-pill-icon"><img src="../assets/home/food.png" alt="" width="96" height="96"></span><span data-i18n="home.trendPizza">Pizza</span></a>
+        <a class="hero-pill-tag" href="pharmacy.html"><span class="hero-pill-icon"><img src="../assets/home/pharmacy.png" alt="" width="96" height="96"></span><span data-i18n="home.trendPharmacy">Pharmacie</span></a>
+        <a class="hero-pill-tag" href="hotel.html"><span class="hero-pill-icon"><img src="../assets/home/hotel.png" alt="" width="96" height="96"></span><span data-i18n="home.trendHotels">Hôtels</span></a>
+        <a class="hero-pill-tag" href="laundry.html"><span class="hero-pill-icon"><img src="../assets/home/laundry.png" alt="" width="96" height="96"></span><span data-i18n="home.trendLaundry">Blanchisserie</span></a>
+        <a class="hero-pill-tag" href="doctor.html"><span class="hero-pill-icon"><img src="../assets/home/doctor.png" alt="" width="96" height="96"></span><span data-i18n="home.trendDoctor">Médecin</span></a>
       </div>
     </div>
 
     <div class="hero-visual au d2">
       <div class="hero-showcase-wrap">
-        <img class="hero-showcase-image" src="assets/banner/banner.jpeg" alt="eDalab app preview">
+        <img class="hero-showcase-image" src="../assets/home/banner-640.jpeg" alt="eDalab app preview" width="287" height="640" fetchpriority="high" decoding="async">
         <div class="hero-float-card left-top">
-          <div class="hero-float-icon"><img src="assets/icons/food.png" alt=""></div>
+          <div class="hero-float-icon"><img src="../assets/home/food.png" alt="" width="96" height="96"></div>
           <div>
             <div class="hero-float-title">Live food delivery</div>
             <div class="hero-float-sub">Fresh orders moving now</div>
           </div>
         </div>
         <div class="hero-float-card right-mid">
-          <div class="hero-float-icon"><img src="assets/icons/pharmacy.png" alt=""></div>
+          <div class="hero-float-icon"><img src="../assets/home/pharmacy.png" alt="" width="96" height="96"></div>
           <div>
             <div class="hero-float-title">24/7 pharmacy</div>
             <div class="hero-float-sub">Fast access to essentials</div>
           </div>
         </div>
         <div class="hero-float-card left-bottom">
-          <div class="hero-float-icon"><img src="assets/icons/doctor.png" alt=""></div>
+          <div class="hero-float-icon"><img src="../assets/home/doctor.png" alt="" width="96" height="96"></div>
           <div>
-            <div class="hero-float-title">Doctor bookings</div>
+            <div class="hero-float-title">Médecin bookings</div>
             <div class="hero-float-sub">Appointments in minutes</div>
           </div>
         </div>
@@ -672,17 +716,17 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
 <!-- STATS -->
 <div class="stats-row">
   <div class="stats-inner">
-    <div class="stat-it"><div class="si-icon" style="background:var(--food-bg)"><img src="assets/icons/food.png" alt=""></div><div><div class="si-val">340+</div><div class="si-lbl">Restaurants</div></div></div>
+    <div class="stat-it"><div class="si-icon" style="background:var(--food-bg)"><img src="../assets/home/food.png" alt="" width="96" height="96"></div><div><div class="si-val">340+</div><div class="si-lbl">Restaurants</div></div></div>
     <div class="stat-div"></div>
-    <div class="stat-it"><div class="si-icon" style="background:var(--rx-bg)"><img src="assets/icons/pharmacy.png" alt=""></div><div><div class="si-val">85+</div><div class="si-lbl">Pharmacies</div></div></div>
+    <div class="stat-it"><div class="si-icon" style="background:var(--rx-bg)"><img src="../assets/home/pharmacy.png" alt="" width="96" height="96"></div><div><div class="si-val">85+</div><div class="si-lbl">Pharmacies</div></div></div>
     <div class="stat-div"></div>
-    <div class="stat-it"><div class="si-icon" style="background:var(--hotel-bg)"><img src="assets/icons/hotel.png" alt=""></div><div><div class="si-val">62+</div><div class="si-lbl">Hotels</div></div></div>
+    <div class="stat-it"><div class="si-icon" style="background:var(--hotel-bg)"><img src="../assets/home/hotel.png" alt="" width="96" height="96"></div><div><div class="si-val">62+</div><div class="si-lbl">Hôtels</div></div></div>
     <div class="stat-div"></div>
-    <div class="stat-it"><div class="si-icon" style="background:var(--doc-bg)"><img src="assets/icons/doctor.png" alt=""></div><div><div class="si-val">120+</div><div class="si-lbl">Doctors</div></div></div>
+    <div class="stat-it"><div class="si-icon" style="background:var(--doc-bg)"><img src="../assets/home/doctor.png" alt="" width="96" height="96"></div><div><div class="si-val">120+</div><div class="si-lbl">Médecins</div></div></div>
     <div class="stat-div"></div>
-    <div class="stat-it"><div class="si-icon" style="background:#FEF9C3;color:#CA8A04"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.2 2 6 13h4.8L9.9 22 18 10.4h-4.9z"/></svg></div><div><div class="si-val">18min</div><div class="si-lbl">Avg Delivery</div></div></div>
+    <div class="stat-it"><div class="si-icon" style="background:#FEF9C3;color:#CA8A04"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.2 2 6 13h4.8L9.9 22 18 10.4h-4.9z"/></svg></div><div><div class="si-val">18min</div><div class="si-lbl">Livraison moyenne</div></div></div>
     <div class="stat-div"></div>
-    <div class="stat-it"><div class="si-icon" style="background:var(--g-light);color:var(--g)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z"/></svg></div><div><div class="si-val">85K+</div><div class="si-lbl">Happy Users</div></div></div>
+    <div class="stat-it"><div class="si-icon" style="background:var(--g-light);color:var(--g-deep)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z"/></svg></div><div><div class="si-val">85K+</div><div class="si-lbl">Utilisateurs satisfaits</div></div></div>
   </div>
 </div>
 
@@ -691,11 +735,11 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
   <div class="wrap">
     <div class="sec-head">
       <div>
-        <div class="sec-label" style="background:var(--g-light);color:var(--g)" data-i18n="home.servicesLabel">All Services</div>
-        <h2 class="sec-h" data-i18n="home.servicesTitle">Everything you need, right here</h2>
-        <p class="sec-p" data-i18n="home.servicesDescription">8 modules, one app. From your morning coffee to your doctor's appointment — eDalab has you covered.</p>
+        <div class="sec-label" style="background:var(--g-light);color:var(--g-deep)" data-i18n="home.servicesLabel">Tous les services</div>
+        <h2 class="sec-h" data-i18n="home.servicesTitle">Tout ce qu'il vous faut, ici même</h2>
+        <p class="sec-p" data-i18n="home.servicesDescription">8 modules, une seule app. Du café du matin au rendez-vous médical, eDalab vous accompagne.</p>
       </div>
-      <a class="see-all-btn" href="#" data-i18n="home.viewAllServices">See all services →</a>
+      <a class="see-all-btn" href="#services" data-i18n="home.viewAllServices">Voir tous les services →</a>
     </div>
     <div class="svcs-grid" id="svcs-grid"></div>
   </div>
@@ -705,13 +749,13 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
 <section class="hiw-sec" id="about">
   <div class="wrap">
     <div style="text-align:center;margin-bottom:4px">
-      <div class="sec-label" style="background:var(--g-light);color:var(--g);margin:0 auto 14px" data-i18n="home.howItWorksLabel">How It Works</div>
-      <h2 class="sec-h" data-i18n="home.howItWorksTitle">Order in 4 simple steps</h2>
-      <p class="sec-p" style="margin:12px auto 0" data-i18n="home.howItWorksDescription">No learning curve. Just open the app, find what you need, and get it delivered.</p>
+      <div class="sec-label" style="background:var(--g-light);color:var(--g-deep);margin:0 auto 14px" data-i18n="home.howItWorksLabel">Comment ça marche</div>
+      <h2 class="sec-h" data-i18n="home.howItWorksTitle">Commandez en 4 étapes simples</h2>
+      <p class="sec-p" style="margin:12px auto 0" data-i18n="home.howItWorksDescription">Aucune courbe d'apprentissage. Ouvrez l'app, trouvez ce qu'il vous faut et faites-vous livrer.</p>
     </div>
     <div class="hiw-grid">
       <div class="hiw-connector"></div>
-      <div class="hiw-step"><div class="hiw-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5" stroke-linecap="round"></path></svg></div><div class="hiw-n">Step 01</div><div class="hiw-t">Browse</div><div class="hiw-d">Search across all 8 service categories — filter by distance, rating or price.</div></div>
+      <div class="hiw-step"><div class="hiw-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5" stroke-linecap="round"></path></svg></div><div class="hiw-n">Step 01</div><div class="hiw-t">Browse</div><div class="hiw-d">Rechercher across all 8 service categories — filter by distance, rating or price.</div></div>
       <div class="hiw-step"><div class="hiw-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="20" r="1.7" fill="currentColor" stroke="none"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor" stroke="none"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" stroke-linecap="round" stroke-linejoin="round"></path></svg></div><div class="hiw-n">Step 02</div><div class="hiw-t">Select</div><div class="hiw-d">Pick your items, customize your order, choose delivery or pickup.</div></div>
       <div class="hiw-step"><div class="hiw-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="6" width="17" height="12" rx="2"></rect><path d="M3.5 10.2h17"></path><path d="M7.5 14.5h3.8" stroke-linecap="round"></path></svg></div><div class="hiw-n">Step 03</div><div class="hiw-t">Pay</div><div class="hiw-d">Pay securely online, via mobile money, or cash on delivery.</div></div>
       <div class="hiw-step"><div class="hiw-circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-6-5.2-6-10a6 6 0 1 1 12 0c0 4.8-6 10-6 10Z" stroke-linejoin="round"></path><circle cx="12" cy="11" r="2.2" fill="currentColor" stroke="none"></circle></svg></div><div class="hiw-n">Step 04</div><div class="hiw-t">Track Live</div><div class="hiw-d">Follow your delivery in real time — from prep to your door.</div></div>
@@ -724,10 +768,10 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
   <div class="wrap">
     <div class="sec-head">
       <div>
-        <div class="sec-label" style="background:var(--food-bg);color:var(--food-c)"><span class="featured-label-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z"/></svg></span><span data-i18n="home.featuredLabel">Featured</span></div>
-        <h2 class="sec-h" data-i18n="home.trendingNearYou">Trending near you</h2>
+        <div class="sec-label" style="background:var(--food-bg);color:#9A3412"><span class="featured-label-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z"/></svg></span><span data-i18n="home.featuredLabel">À la une</span></div>
+        <h2 class="sec-h" data-i18n="home.trendingNearYou">Tendance près de chez vous</h2>
       </div>
-      <a class="see-all-btn" href="#" data-i18n="home.viewAll">View all →</a>
+      <a class="see-all-btn" href="#browse" data-i18n="home.viewAll">Voir tout →</a>
     </div>
     <div class="filter-bar" id="filter-bar"></div>
     <div class="cards-grid" id="biz-grid"></div>
@@ -756,7 +800,7 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
 <section class="partners-sec">
   <div class="wrap">
     <div style="text-align:center">
-      <div class="sec-label" style="background:var(--g-light);color:var(--g);margin:0 auto 4px">Our Partners</div>
+      <div class="sec-label" style="background:var(--g-light);color:var(--g-deep);margin:0 auto 4px">Our Partners</div>
       <h2 class="sec-h" style="font-size:clamp(24px,3vw,38px)">Trusted by businesses across Djibouti</h2>
     </div>
   </div>
@@ -784,7 +828,7 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
     </div>
   </div>
   <div class="app-sec-right">
-    <img class="app-banner-image" src="assets/banner/banner.jpeg" alt="eDalab app banner">
+    <img class="app-banner-image" src="../assets/home/banner-360.jpeg" alt="eDalab app banner" width="161" height="360" loading="lazy" decoding="async">
   </div>
 </div>
 
@@ -792,12 +836,12 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
 <div style="background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:48px 28px">
   <div class="newsletter-row">
     <div>
-      <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span data-i18n="home.newsletterTitle">Stay in the loop</span><span class="newsletter-title-icon" style="width:28px;height:28px;border-radius:10px;background:var(--g-light);color:var(--g)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="6" width="17" height="12" rx="2"></rect><path d="m5.5 8 6.5 5 6.5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></h3>
-      <p style="font-size:14px;color:var(--sub);font-weight:500" data-i18n="home.newsletterDescription">New restaurants, exclusive deals & city updates in your inbox.</p>
+      <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span data-i18n="home.newsletterTitle">Restez informé</span><span class="newsletter-title-icon" style="width:28px;height:28px;border-radius:10px;background:var(--g-light);color:var(--g)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="6" width="17" height="12" rx="2"></rect><path d="m5.5 8 6.5 5 6.5-5" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></h3>
+      <p style="font-size:14px;color:var(--sub);font-weight:500" data-i18n="home.newsletterDescription">Nouveaux restaurants, offres exclusives et actualités de la ville dans votre boîte mail.</p>
     </div>
     <div class="newsletter-form">
       <input style="flex:1;padding:14px 18px;font-size:14px;font-weight:600;background:#fff;color:var(--text);border-right:1.5px solid var(--border)" type="email" placeholder="your@email.com" data-i18n-placeholder="home.newsletterPlaceholder"/>
-      <button onclick="popToast('Subscribed!','mail')" style="padding:14px 22px;background:var(--g-grad);color:#fff;font-size:14px;font-weight:800;transition:all .2s;white-space:nowrap" data-i18n="home.newsletterButton">Subscribe →</button>
+      <button onclick="popToast('Subscribed!','mail')" style="padding:14px 22px;background:var(--g-grad);color:#fff;font-size:14px;font-weight:800;transition:all .2s;white-space:nowrap" data-i18n="home.newsletterButton">S'abonner →</button>
     </div>
   </div>
 </div>
@@ -807,10 +851,10 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
   <div class="ft-inner">
     <div class="ft-grid">
       <div class="ft-brand">
-        <div class="ft-logo">
-          <div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div>
-          e<span style="color:var(--g)">Dalab</span>
-        </div>
+        <a class="ft-logo" href="index" aria-label="eDalab home">
+          <div class="nav-logo-icon"><img src="../assets/logo/logo.png" alt="eDalab logo" width="300" height="296"></div>
+          <span>eDalab</span>
+        </a>
         <p>Djibouti's #1 super-app. One platform for food, health, travel, services & more. Connecting your city, one delivery at a time.</p>
         <div class="ft-social">
           <div class="ft-soc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 5h3.4l4 5.3L17 5h2l-5.5 6.2L19.3 19H16l-4.3-5.7L6.8 19H4.7l5.8-6.5Z"/></svg></div><div class="ft-soc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.3 8.5h2.8V18H6.3Zm1.4-3.9a1.6 1.6 0 1 1 0 3.2 1.6 1.6 0 0 1 0-3.2ZM11 8.5h2.7v1.3h.1c.4-.8 1.3-1.6 2.9-1.6 3.1 0 3.7 2 3.7 4.7V18h-2.8v-4.5c0-1.1 0-2.5-1.5-2.5s-1.7 1.2-1.7 2.4V18H11Z"/></svg></div>
@@ -818,36 +862,36 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
         </div>
       </div>
       <div class="ft-col">
-        <h5>Food & Drink</h5>
-        <a href="#">All Restaurants</a><a href="#">Fast Food</a>
-        <a href="#">Cafés & Bakeries</a><a href="#">Djiboutian Cuisine</a>
-        <a href="#">Grocery Delivery</a>
+        <h3>Restauration & Drink</h3>
+        <a href="food.html">Tous les restaurants</a><a href="food.html">Restauration rapide</a>
+        <a href="food.html">Cafés & Bakeries</a><a href="food.html">Djiboutian Cuisine</a>
+        <a href="shopping.html">Grocery Delivery</a>
       </div>
       <div class="ft-col">
-        <h5>Health</h5>
-        <a href="#">Pharmacies 24/7</a><a href="#">Book a Doctor</a>
-        <a href="#">Specialists</a><a href="#">Lab Tests</a>
-        <a href="#">Vaccinations</a>
+        <h3>Health</h3>
+        <a href="pharmacy.html">Pharmacies 24h/24</a><a href="doctor.html">Prendre rendez-vous avec un médecin</a>
+        <a href="doctor.html">Spécialistes</a><a href="pharmacy.html">Analyses médicales</a>
+        <a href="pharmacy.html">Vaccinations</a>
       </div>
       <div class="ft-col">
-        <h5>Travel & Stay</h5>
-        <a href="#">Hotels</a><a href="#">Apartments</a>
-        <a href="#">Ride Service</a><a href="#">Airport Transfer</a>
-        <a href="#">Car Rental</a>
+        <h3>Voyage et séjour</h3>
+        <a href="hotel.html">Hôtels</a><a href="hotel.html">Appartements</a>
+        <a href="ride.html">Service de trajet</a><a href="ride.html">Transfert aéroport</a>
+        <a href="ride.html">Location de voiture</a>
       </div>
       <div class="ft-col">
-        <h5>eDalab</h5>
-        <a href="#">About Us</a><a href="#">List Your Business</a>
-        <a href="#">Become a Rider</a><a href="#">Careers</a>
-        <a href="#">Support</a>
+        <h3>eDalab</h3>
+        <a href="#about">À propos</a><a href="../register.html">Référencez votre entreprise</a>
+        <a href="ride.html">Devenir coursier</a><a href="../register.html">Carrières</a>
+        <a href="../help-center.html">Assistance</a>
       </div>
     </div>
     <div class="ft-bottom">
-      <span>© 2025 eDalab. All rights reserved. <span class="ft-badge">🇩🇯 Made in Djibouti</span></span>
+      <span>© 2025 eDalab. Tous droits réservés. <span class="ft-badge">🇩🇯 Créé à Djibouti</span></span>
       <div class="ft-links">
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
-        <a href="#">Cookies</a>
+        <a href="../settings.html">Politique de confidentialité</a>
+        <a href="../settings.html">Conditions d’utilisation</a>
+        <a href="../settings.html">Cookies</a>
       </div>
     </div>
   </div>
@@ -859,7 +903,7 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
   <div class="drawer">
     <div class="dr-handle"></div>
     <div class="dr-head">
-      <div class="dr-emo" id="d-emo"><span class="drawer-brand-mark"><img src="assets/icons/food.png" alt="Food"></span></div>
+      <div class="dr-emo" id="d-emo"><span class="drawer-brand-mark"><img src="../assets/home/food.png" alt="Food" width="72" height="72"></span></div>
       <div class="dr-info">
         <div class="dr-name" id="d-name">Store Name</div>
         <div class="dr-meta" id="d-meta"></div>
@@ -909,12 +953,12 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
       <div class="ts-row"><span>Grilled Chicken Burger × 2</span><span>DJF 3,400</span></div>
       <div class="ts-row"><span>Large Fries</span><span>DJF 900</span></div>
       <div class="ts-row"><span>Fresh Juice</span><span>DJF 700</span></div>
-      <div class="ts-row"><span>Delivery fee</span><span>DJF 500</span></div>
+      <div class="ts-row"><span>Frais de livraison</span><span>DJF 500</span></div>
       <div class="ts-total"><span>Total</span><span style="color:var(--g)">DJF 5,500</span></div>
     </div>
     <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
-      <button onclick="goHome()" style="flex:1;padding:13px;border-radius:var(--r-md);background:#fff;border:1.5px solid var(--border);font-size:14px;font-weight:700;transition:all .2s">← Order Again</button>
-      <button onclick="popToast('Connecting to support…','support')" style="flex:1;padding:13px;border-radius:var(--r-md);background:var(--g-light);border:1.5px solid rgba(22,163,74,.15);color:var(--g);font-size:14px;font-weight:800;transition:all .2s">Contact Support</button>
+      <button onclick="goHome()" style="flex:1;padding:13px;border-radius:var(--r-md);background:#fff;border:1.5px solid var(--border);font-size:14px;font-weight:700;transition:all .2s">← Commander à nouveau</button>
+      <button onclick="popToast('Connexion à l’assistance…','support')" style="flex:1;padding:13px;border-radius:var(--r-md);background:var(--g-light);border:1.5px solid rgba(22,163,74,.15);color:var(--g);font-size:14px;font-weight:800;transition:all .2s">Contacter l’assistance</button>
     </div>
   </div>
 </div>
@@ -923,31 +967,31 @@ footer{background:#fff;border-top:1px solid var(--border);padding:56px 28px 28px
 <div class="toasts-wrap" id="toasts"></div>
 
 <!-- ══════════ SCRIPTS ══════════ -->
-<script src="js/state-manager.js"></script>
-<script src="js/api-client.js"></script>
-<script src="js/ui-components.js"></script>
+<script src="../js/state-manager.js"></script>
+<script src="../js/api-client.js"></script>
+<script src="../js/ui-components.js"></script>
 <script>
 /* ── DATA ── */
 const SVCS=[
-  {n:'Food',icon:'assets/icons/food.png',c:'var(--food-c)',bg:'var(--food-bg)',cnt:'340+',tag:'',hover:'#FFF5F5'},
-  {n:'Shopping',icon:'assets/icons/shopping.png',c:'var(--shop-c)',bg:'var(--shop-bg)',cnt:'200+',tag:'',hover:'#F8F5FF'},
-  {n:'Doctor',icon:'assets/icons/doctor.png',c:'var(--doc-c)',bg:'var(--doc-bg)',cnt:'120+',tag:'Book',hover:'#F0F8FF'},
-  {n:'Hotel',icon:'assets/icons/hotel.png',c:'var(--hotel-c)',bg:'var(--hotel-bg)',cnt:'62+',tag:'',hover:'#FFFCF0'},
-  {n:'Ride',icon:'assets/icons/car.png',c:'var(--ride-c)',bg:'var(--ride-bg)',cnt:'Fast',tag:'Live',hover:'#F0FEFF'},
-  {n:'Pharmacy',icon:'assets/icons/pharmacy.png',c:'var(--rx-c)',bg:'var(--rx-bg)',cnt:'85+',tag:'24/7',hover:'#F0FDF6'},
-  {n:'Services',icon:'assets/icons/repair-service.png',c:'var(--svc-c)',bg:'var(--svc-bg)',cnt:'300+',tag:'',hover:'#FFF8F2'},
-  {n:'Laundry',icon:'assets/icons/laundry.png',c:'var(--wash-c)',bg:'var(--wash-bg)',cnt:'48+',tag:'Express',hover:'#F5F5FF'},
+  {n:'Food',icon:'assets/home/food.png',c:'var(--food-c)',bg:'var(--food-bg)',cnt:'340+',tag:'',hover:'#FFF5F5'},
+  {n:'Shopping',icon:'assets/home/shopping.png',c:'var(--shop-c)',bg:'var(--shop-bg)',cnt:'200+',tag:'',hover:'#F8F5FF'},
+  {n:'Doctor',icon:'assets/home/doctor.png',c:'var(--doc-c)',bg:'var(--doc-bg)',cnt:'120+',tag:'Book',tagColor:'#1E3A8A',hover:'#F0F8FF'},
+  {n:'Hotel',icon:'assets/home/hotel.png',c:'var(--hotel-c)',bg:'var(--hotel-bg)',cnt:'62+',tag:'',hover:'#FFFCF0'},
+  {n:'Ride',icon:'assets/home/car.png',c:'var(--ride-c)',bg:'var(--ride-bg)',cnt:'Fast',tag:'Live',tagColor:'#155E75',hover:'#F0FEFF'},
+  {n:'Pharmacy',icon:'assets/home/pharmacy.png',c:'var(--rx-c)',bg:'var(--rx-bg)',cnt:'85+',tag:'24/7',tagColor:'#166534',hover:'#F0FDF6'},
+  {n:'Services',icon:'assets/home/repair-service.png',c:'var(--svc-c)',bg:'var(--svc-bg)',cnt:'300+',tag:'',hover:'#FFF8F2'},
+  {n:'Laundry',icon:'assets/home/laundry.png',c:'var(--wash-c)',bg:'var(--wash-bg)',cnt:'48+',tag:'Express',tagColor:'#4338CA',hover:'#F5F5FF'},
 ];
 
 const MODULE_ICON_MAP = {
-  Food: 'assets/icons/food.png',
-  Shopping: 'assets/icons/shopping.png',
-  Doctor: 'assets/icons/doctor.png',
-  Hotel: 'assets/icons/hotel.png',
-  Ride: 'assets/icons/car.png',
-  Pharmacy: 'assets/icons/pharmacy.png',
-  Services: 'assets/icons/repair-service.png',
-  Laundry: 'assets/icons/laundry.png',
+  Food: 'assets/home/food.png',
+  Shopping: 'assets/home/shopping.png',
+  Doctor: 'assets/home/doctor.png',
+  Hotel: 'assets/home/hotel.png',
+  Ride: 'assets/home/car.png',
+  Pharmacy: 'assets/home/pharmacy.png',
+  Services: 'assets/home/repair-service.png',
+  Laundry: 'assets/home/laundry.png',
 };
 
 function getModuleIconPath(moduleName){
@@ -955,7 +999,7 @@ function getModuleIconPath(moduleName){
 }
 
 function getModuleVisualMarkup(moduleName, label, className=''){
-  return `<span class="${className}"><img src="${getModuleIconPath(moduleName)}" alt="${label || moduleName}"></span>`;
+  return `<span class="${className}"><img src="../${getModuleIconPath(moduleName)}" alt="${label || moduleName}" width="72" height="72" loading="lazy" decoding="async"></span>`;
 }
 
 function getInlineIconMarkup(name, className=''){
@@ -980,7 +1024,7 @@ function getDrawerItemMark(item){
 }
 
 const FALLBACK_BIZS=[
-  {id:0,n:'Le Goût de Djibouti',e:getModuleIconPath('Food'),sub:'French-Djiboutian Fusion',r:'4.9',rv:'342',t:'20–30 min',d:'DJF 500',open:true,cat:'Food',bg:'linear-gradient(135deg,#FFF0EF,#FFE0DC)',
+  {id:0,n:'Le Goût de Djibouti',e:getModuleIconPath('Food'),sub:'French-Djiboutian Fusion',r:'4.9',rv:'342',t:'20–30 min',d:'DJF 500',open:true,cat:'Food',bg:'linear-gradient(135deg,#FFF0EF,#FFE0DC)',route:'food.html',
    menu:[{cat:'Popular',items:[
     {n:'Skudahkharis',d:'Spiced rice with chicken, raisins & fried onion',p:1500},
     {n:'Grilled Lentil Soup',d:'Traditional slow-cooked lentils, cumin, lemon',p:850},
@@ -988,33 +1032,33 @@ const FALLBACK_BIZS=[
     {n:'Muufo Flatbread',d:'Wood-fired sourdough, served warm',p:400},
     {n:'Lamb Stew',d:'Slow braised local lamb, aromatic spices',p:2200},
   ]}]},
-  {id:1,n:'PharmaDji 24H',e:getModuleIconPath('Pharmacy'),sub:'Pharmacy · Open 24 hours',r:'4.8',rv:'218',t:'15–25 min',d:'Free',open:true,cat:'Pharmacy',bg:'linear-gradient(135deg,#EDFAF6,#D1FAE5)',
+  {id:1,n:'PharmaDji 24H',e:getModuleIconPath('Pharmacy'),sub:'Pharmacy · Open 24 hours',r:'4.8',rv:'218',t:'15–25 min',d:'Free',open:true,cat:'Pharmacy',bg:'linear-gradient(135deg,#EDFAF6,#D1FAE5)',route:'pharmacy.html',
    menu:[{cat:'Top Products',items:[
     {n:'Paracetamol 500mg',d:'Box of 16 tablets, pain & fever relief',p:300},
     {n:'Vitamin C Complex',d:'Immune support, 60 caps',p:1200},
     {n:'Antiseptic Gel 100ml',d:'Hospital-grade hand sanitizer',p:650},
     {n:'Bandage Kit',d:'First aid assorted bandages',p:800},
   ]}]},
-  {id:2,n:'Hôtel Sherherazade',e:getModuleIconPath('Hotel'),sub:'5-Star · Sea View · Pool',r:'4.7',rv:'510',t:'Book Now',d:'DJF 25K/night',open:true,cat:'Hotel',bg:'linear-gradient(135deg,#F5F3FF,#EDE9FE)',
+  {id:2,n:'Hôtel Sherherazade',e:getModuleIconPath('Hotel'),sub:'5-Star · Sea View · Pool',r:'4.7',rv:'510',t:'Book Now',d:'DJF 25K/night',open:true,cat:'Hotel',bg:'linear-gradient(135deg,#F5F3FF,#EDE9FE)',route:'hotel.html',
    menu:[{cat:'Rooms & Suites',items:[
     {n:'Deluxe Sea View',d:'King bed, balcony, Gulf of Tadjoura view',p:25000},
     {n:'Premier Suite',d:'Living room + bedroom, butler service',p:48000},
     {n:'Spa Package',d:'2hr massage + pool access + breakfast',p:12000},
   ]}]},
-  {id:3,n:'Clinique Al-Baraka',e:getModuleIconPath('Doctor'),sub:'General Practice · Doctor',r:'4.9',rv:'423',t:'Book Visit',d:'DJF 3,000',open:true,cat:'Doctor',bg:'linear-gradient(135deg,#EFF6FF,#DBEAFE)',
+  {id:3,n:'Clinique Al-Baraka',e:getModuleIconPath('Doctor'),sub:'General Practice · Doctor',r:'4.9',rv:'423',t:'Book Visit',d:'DJF 3,000',open:true,cat:'Doctor',bg:'linear-gradient(135deg,#EFF6FF,#DBEAFE)',route:'doctor.html',
    menu:[{cat:'Services',items:[
     {n:'General Consultation',d:'30-minute GP appointment',p:3000},
     {n:'Blood Test Panel',d:'Full health screening, results in 24h',p:8500},
     {n:'Vaccination',d:'Travel, seasonal or routine shots',p:2500},
     {n:'ECG Test',d:'Heart rhythm assessment',p:5000},
   ]}]},
-  {id:4,n:'Lav & Pli Express',e:getModuleIconPath('Laundry'),sub:'Laundry · Express 6h',r:'4.7',rv:'96',t:'Same day',d:'DJF 200',open:false,cat:'Laundry',bg:'linear-gradient(135deg,#EEF2FF,#E0E7FF)',
+  {id:4,n:'Lav & Pli Express',e:getModuleIconPath('Laundry'),sub:'Laundry · Express 6h',r:'4.7',rv:'96',t:'Same day',d:'DJF 200',open:false,cat:'Laundry',bg:'linear-gradient(135deg,#EEF2FF,#E0E7FF)',route:'laundry.html',
    menu:[{cat:'Services',items:[
     {n:'Wash & Fold (5kg)',d:'Express 6-hour turnaround',p:2000},
     {n:'Dry Cleaning',d:'Per piece, suits, dresses, delicates',p:1500},
     {n:'Ironing Service',d:'Per item, same-day delivery',p:400},
   ]}]},
-  {id:5,n:'Burger Palace DJ',e:getModuleIconPath('Food'),sub:'American Fast Food',r:'4.6',rv:'891',t:'15–20 min',d:'DJF 400',open:true,cat:'Food',bg:'linear-gradient(135deg,#FFFBEB,#FEF3C7)',
+  {id:5,n:'Burger Palace DJ',e:getModuleIconPath('Food'),sub:'American Fast Food',r:'4.6',rv:'891',t:'15–20 min',d:'DJF 400',open:true,cat:'Food',bg:'linear-gradient(135deg,#FFFBEB,#FEF3C7)',route:'food.html',
    menu:[{cat:'Burgers',items:[
     {n:'Classic Smash Burger',d:'Double beef patty, American cheese, pickles',p:1800},
     {n:'Crispy Chicken Burger',d:'Fried chicken thigh, coleslaw, sriracha',p:1600},
@@ -1026,14 +1070,31 @@ let BIZS=[...FALLBACK_BIZS];
 let FILTERS=['All'];
 let activeTrendingFilter='All';
 
+function getTrendingRoute(item){
+  if(item?.route) return item.route;
+
+  const categoryRoutes = {
+    Food: 'food.html',
+    Shopping: 'shopping.html',
+    Pharmacy: 'pharmacy.html',
+    Doctor: 'doctor.html',
+    Hotel: 'hotel.html',
+    Ride: 'ride.html',
+    Services: 'home-services.html',
+    Laundry: 'laundry.html',
+  };
+
+  return categoryRoutes[item?.cat] || '';
+}
+
 const testimonialSets = {
   en: [
-    {t:'NilaApp changed my life in Djibouti! I ordered meds at 2am and they arrived in 20 minutes. The live tracking is so accurate and reassuring.',n:'Amina Rashid',loc:'Plateau du Serpent',s:5,col:'#EF4444',mod:'Pharmacy',module:'Pharmacy'},
-    {t:'Booked a hotel and restaurant for our anniversary in one session. Both were perfect. The confirmation was instant and delivery was on time.',n:'Khalid Mohamed',loc:'Balbala',s:5,col:'#6C63FF',mod:'Hotel',module:'Hotel'},
-    {t:'The doctor booking feature is a game changer. Found a specialist, checked availability, confirmed in 2 minutes. No waiting on the phone!',n:'Sara Djama',loc:'Haramous',s:5,col:'#3B82F6',mod:'Doctor',module:'Doctor'},
-    {t:'Best delivery app in Djibouti by far. The variety is incredible — from traditional Djiboutian food to burgers. Always on time, always fresh.',n:'Ibrahim Ali',loc:'PK12',s:5,col:'#F59E0B',mod:'Food',module:'Food'},
-    {t:'My laundry comes back perfectly folded every time. Pickup is easy, tracking works great. My whole family uses eDalab now.',n:'Hawa Youssouf',loc:'Quartier 7',s:5,col:'#8B5CF6',mod:'Laundry',module:'Laundry'},
-    {t:'The ride feature is so convenient. Got picked up in under 5 minutes. Clean car, friendly driver. Will definitely use again.',n:'Omar Hassan',loc:'Ambouli',s:5,col:'#06B6D4',mod:'Ride',module:'Ride'},
+    {t:'eDalab a changé ma vie à Djibouti ! J’ai commandé des médicaments à 2h du matin et ils sont arrivés en 20 minutes. Le suivi en direct est très précis et rassurant.',n:'Amina Rashid',loc:'Plateau du Serpent',s:5,col:'#EF4444',mod:'Pharmacy',module:'Pharmacy'},
+    {t:'J’ai réservé un hôtel et un restaurant pour notre anniversaire en une seule fois. Les deux étaient parfaits. La confirmation a été instantanée et tout est arrivé à l’heure.',n:'Khalid Mohamed',loc:'Balbala',s:5,col:'#6C63FF',mod:'Hotel',module:'Hotel'},
+    {t:'La réservation de médecin change vraiment la donne. J’ai trouvé un spécialiste, vérifié ses disponibilités et confirmé en 2 minutes. Plus besoin d’attendre au téléphone !',n:'Sara Djama',loc:'Haramous',s:5,col:'#3B82F6',mod:'Doctor',module:'Doctor'},
+    {t:'La meilleure application de livraison à Djibouti, de loin. Le choix est incroyable, de la cuisine djiboutienne traditionnelle aux burgers. Toujours à l’heure, toujours frais.',n:'Ibrahim Ali',loc:'PK12',s:5,col:'#F59E0B',mod:'Food',module:'Food'},
+    {t:'Mon linge revient parfaitement plié à chaque fois. Le ramassage est simple, le suivi fonctionne très bien. Toute ma famille utilise eDalab maintenant.',n:'Hawa Youssouf',loc:'Quartier 7',s:5,col:'#8B5CF6',mod:'Laundry',module:'Laundry'},
+    {t:'Le service de trajet est très pratique. J’ai été récupéré en moins de 5 minutes. Voiture propre, chauffeur aimable. Je l’utiliserai encore sans hésiter.',n:'Omar Hassan',loc:'Ambouli',s:5,col:'#06B6D4',mod:'Ride',module:'Ride'},
   ],
   fr: [
     {t:"eDalab a change ma vie a Djibouti ! J'ai commande des medicaments a 2h du matin et ils sont arrives en 20 minutes. Le suivi en direct est tres precis et rassurant.",n:'Amina Rashid',loc:'Plateau du Serpent',s:5,col:'#EF4444',mod:'Pharmacie',module:'Pharmacy'},
@@ -1140,10 +1201,10 @@ function renderSvcs(){
   };
   
   document.getElementById('svcs-grid').innerHTML=SVCS.map(s=>`
-    <div class="svc-card" style="--svc-hover:${s.hover}" onclick="window.location.href='${moduleLinks[s.n] || '#'}'">
-      ${s.tag?`<div class="svc-tag" style="background:${s.bg};color:${s.c}">${s.tag}</div>`:''}
-      <div class="svc-icon-wrap" style="background:var(--g-light)"><img src="${s.icon}" alt="${s.n}"></div>
-      <div class="svc-name" style="color:var(--g)">${getHomeModuleName(s.n)}</div>
+    <div class="svc-card" style="--svc-hover:${s.hover}" onclick="window.location.href="../${moduleLinks[s.n] || "#'}'">
+      ${s.tag?`<div class="svc-tag" style="background:${s.bg};color:${s.tagColor || 'var(--text)'}">${s.tag}</div>`:''}
+      <div class="svc-icon-wrap" style="background:var(--g-light)"><img src="../${s.icon}" alt="${s.n}" width="72" height="72" loading="lazy" decoding="async"></div>
+      <div class="svc-name">${getHomeModuleName(s.n)}</div>
       <div class="svc-count">${s.cnt} ${getHomeAvailableLabel()}</div>
     </div>
   `).join('');
@@ -1272,14 +1333,30 @@ async function loadTrendingData(){
   updateTrendingFilters();
 }
 
+function scheduleTrendingDataLoad(){
+  const run = () => {
+    loadTrendingData().finally(() => {
+      renderFilters();
+      renderBiz();
+    });
+  };
+
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(run, { timeout: 1800 });
+    return;
+  }
+
+  window.setTimeout(run, 300);
+}
+
 /* ── RENDER BUSINESSES ── */
 function renderBiz(list){
   if(!list)list=getTrendingItems(activeTrendingFilter);
   document.getElementById('biz-grid').innerHTML=list.map(b=>`
-    <div class="biz-card" onclick="${b.route ? `window.location.href='${b.route}'` : `openBiz('${b.id}')`}">
+    <div class="biz-card" onclick="${getTrendingRoute(b) ? `window.location.href="../${getTrendingRoute(b)}"` : `openBiz('${b.id}')`}">
       <div class="bc-thumb" style="background:${b.bg}">
-        <div class="bc-emo">${b.e?.includes('assets/') ? `<img src="${b.e}" alt="${b.cat}">` : getInitialsMark(b.n)}</div>
-        <div class="bc-logo">${b.e?.includes('assets/') ? `<img src="${b.e}" alt="${b.cat}">` : getInitialsMark(b.n)}</div>
+        <div class="bc-emo">${b.e?.includes('assets/') ? `<img src="../${b.e}" alt="${b.cat}">` : getInitialsMark(b.n)}</div>
+        <div class="bc-logo">${b.e?.includes('assets/') ? `<img src="../${b.e}" alt="${b.cat}">` : getInitialsMark(b.n)}</div>
         <div class="bc-badges">
           <span class="bc-badge ${b.open?'bc-open':'bc-closed'}">${b.open?'Open now':'Closed'}</span>
         </div>
@@ -1289,7 +1366,7 @@ function renderBiz(list){
         <div class="bc-meta"><span class="bc-stars">${getInlineIconMarkup('star', 'meta-inline-icon')} ${b.r}</span><span>(${b.rv})</span><span>· ${b.sub}</span></div>
         <div class="bc-foot">
           <div class="bc-inf"><span class="bc-inf-part">${getInlineIconMarkup('clock', 'bc-inf-icon')} ${b.t}</span><span class="bc-inf-sep">·</span><span class="bc-inf-part">${getInlineIconMarkup('delivery', 'bc-inf-icon')} ${b.d}</span></div>
-          <button class="bc-add" onclick="event.stopPropagation();${b.route ? `window.location.href='${b.route}'` : `openBiz('${b.id}')`}">${b.route ? getInlineIconMarkup('arrowRight', 'ui-icon ui-icon-sm') : '+'}</button>
+          <button class="bc-add" aria-label="Open ${b.n}" title="Open ${b.n}" onclick="event.stopPropagation();${getTrendingRoute(b) ? `window.location.href="../${getTrendingRoute(b)}"` : `openBiz('${b.id}')`}">${getTrendingRoute(b) ? getInlineIconMarkup('arrowRight', 'ui-icon ui-icon-sm') : '+'}</button>
         </div>
       </div>
     </div>
@@ -1310,9 +1387,9 @@ function renderTesti(){
       <div class="t-stars">${'★'.repeat(t.s)}</div>
       <div class="t-text">"${t.t}"</div>
       <div class="t-author">
-        <div class="t-av" style="background:${t.col}">${t.n.split(' ').map(w=>w[0]).join('')}</div>
+        <div class="t-av" aria-hidden="true">${t.n.split(' ').map(w=>w[0]).join('')}</div>
         <div><div class="t-name">${t.n}</div><div class="t-loc">${getInlineIconMarkup('location', 'meta-inline-icon')} ${t.loc}</div></div>
-        <div class="t-module" style="background:${t.col}15;color:${t.col}">${getModuleVisualMarkup(t.module, t.mod, 'module-chip-icon')}${t.mod}</div>
+        <div class="t-module">${getModuleVisualMarkup(t.module, t.mod, 'module-chip-icon')}${t.mod}</div>
       </div>
     </div>
   `).join('');
@@ -1338,13 +1415,14 @@ let cart={},cartTotal=0,activeBiz=null;
 function openBiz(id){
   activeBiz=BIZS.find((item) => String(item.id)===String(id)) || BIZS[id];
   if(!activeBiz)return;
-  if(activeBiz.route && !activeBiz.menu){
-    window.location.href=activeBiz.route;
+  const targetRoute = getTrendingRoute(activeBiz);
+  if(targetRoute){
+    window.location.href=targetRoute;
     return;
   }
   cart={};cartTotal=0;
   document.getElementById('d-emo').innerHTML=activeBiz.e?.includes('assets/')
-    ? `<span class="drawer-brand-mark"><img src="${activeBiz.e}" alt="${activeBiz.cat}"></span>`
+    ? `<span class="drawer-brand-mark"><img src="../${activeBiz.e}" alt="${activeBiz.cat}"></span>`
     : getInitialsMark(activeBiz.n);
   document.getElementById('d-name').textContent=activeBiz.n;
   document.getElementById('d-meta').innerHTML=`
@@ -1480,12 +1558,12 @@ const obs=new IntersectionObserver(entries=>{
 document.querySelectorAll('.au').forEach(el=>obs.observe(el));
 
 /* ── INIT ── */
-UIComponents.mountUnifiedNavbar({active:'home',logoutRedirect:'edalab-website.html'});
-  renderSvcs();renderTesti();renderPartners();renderTrendingLoading();
-  loadTrendingData().finally(()=>{
-    renderFilters();
-    renderBiz();
-  });
+UIComponents.mountUnifiedNavbar({active:'home',logoutRedirect:'index.html'});
+renderSvcs();
+renderTesti();
+renderPartners();
+renderTrendingLoading();
+scheduleTrendingDataLoad();
 </script>
 </body>
 </html>

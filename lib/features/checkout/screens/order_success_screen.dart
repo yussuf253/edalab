@@ -8,11 +8,20 @@ import '../../../core/widgets/app_button.dart';
 class OrderSuccessScreen extends StatelessWidget {
   final Map<String, dynamic>? orderData;
   const OrderSuccessScreen({super.key, this.orderData});
+  static const _shellRoutes = {
+    '/',
+    '/messages',
+    '/cart',
+    '/orders',
+    '/profile',
+  };
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final rawOrderId = orderData?['orderId'] as String? ?? 'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+    final rawOrderId =
+        orderData?['orderId'] as String? ??
+        'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
     final orderId = rawOrderId.startsWith('#') ? rawOrderId : '#$rawOrderId';
     final amount = (orderData?['amount'] as num?)?.toDouble() ?? 87.19;
     final payment = orderData?['payment'] as String? ?? 'Credit Card';
@@ -57,7 +66,11 @@ class OrderSuccessScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.check_rounded, color: AppColors.white, size: 60),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: AppColors.white,
+                    size: 60,
+                  ),
                 ),
                 const SizedBox(height: 32),
                 Text(l10n.t('order_success.title'), style: AppTextStyles.h2),
@@ -69,7 +82,10 @@ class OrderSuccessScreen extends StatelessWidget {
                       'order_success.subtitle',
                       params: {'moduleName': moduleName},
                     ),
-                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey, height: 1.5),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.grey,
+                      height: 1.5,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -111,7 +127,13 @@ class OrderSuccessScreen extends StatelessWidget {
                 const Spacer(),
                 AppButton(
                   text: l10n.t('order_success.track_order'),
-                  onPressed: () => context.push(trackingRoute, extra: trackingExtra),
+                  onPressed: () {
+                    if (_shellRoutes.contains(trackingRoute)) {
+                      context.go(trackingRoute);
+                    } else {
+                      context.push(trackingRoute, extra: trackingExtra);
+                    }
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextButton(
@@ -143,7 +165,10 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey)),
+          Text(
+            label,
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+          ),
           Text(value, style: AppTextStyles.labelMedium),
         ],
       ),

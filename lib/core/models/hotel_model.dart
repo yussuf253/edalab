@@ -9,6 +9,7 @@ class HotelModel {
   final List<String> amenities;
   final String description;
   final List<String>? imageUrls;
+  final List<HotelRoomOption> roomOptions;
 
   HotelModel({
     required this.id,
@@ -21,6 +22,7 @@ class HotelModel {
     required this.amenities,
     required this.description,
     this.imageUrls,
+    this.roomOptions = const [],
   });
 
   factory HotelModel.fromApi(Map<String, dynamic> json) {
@@ -41,6 +43,15 @@ class HotelModel {
       imageUrls: (json['imageUrls'] as List?)
           ?.map((item) => item.toString())
           .toList(),
+      roomOptions:
+          (json['roomOptions'] as List?)
+              ?.map(
+                (item) => HotelRoomOption.fromApi(
+                  Map<String, dynamic>.from(item as Map),
+                ),
+              )
+              .toList() ??
+          _defaultRoomOptions((json['pricePerNight'] as num?)?.toDouble() ?? 0),
     );
   }
 
@@ -55,6 +66,7 @@ class HotelModel {
       pricePerNight: 299.99,
       amenities: ['Pool', 'Spa', 'Gym', 'Free WiFi', 'Restaurant'],
       description: 'Experience ultimate luxury in the heart of the city.',
+      roomOptions: _defaultRoomOptions(299.99),
     ),
     HotelModel(
       id: 'h2',
@@ -66,6 +78,7 @@ class HotelModel {
       pricePerNight: 195.00,
       amenities: ['Beachfront', 'Pool', 'Bar', 'Free Breakfast'],
       description: 'Relax and unwind at our beautiful beachfront property.',
+      roomOptions: _defaultRoomOptions(195.00),
     ),
     HotelModel(
       id: 'h3',
@@ -77,6 +90,66 @@ class HotelModel {
       pricePerNight: 350.00,
       amenities: ['Ski-in/Ski-out', 'Fireplace', 'Hot Tub', 'Restaurant'],
       description: 'The premier destination for your winter getaway.',
+      roomOptions: _defaultRoomOptions(350.00),
     ),
   ];
+
+  static List<HotelRoomOption> _defaultRoomOptions(double basePrice) {
+    final normalizedBasePrice = (basePrice > 0 ? basePrice : 120).toDouble();
+    return [
+      HotelRoomOption(
+        id: 'standard-room',
+        name: 'Standard Room',
+        description: '1 Bed • City View',
+        pricePerNight: normalizedBasePrice,
+        capacity: 2,
+        available: true,
+      ),
+      HotelRoomOption(
+        id: 'premium-suite',
+        name: 'Premium Suite',
+        description: '1 King Bed • Balcony',
+        pricePerNight: normalizedBasePrice * 1.45,
+        capacity: 2,
+        available: true,
+      ),
+      HotelRoomOption(
+        id: 'family-suite',
+        name: 'Family Suite',
+        description: '2 Beds • Family Stay',
+        pricePerNight: normalizedBasePrice * 1.8,
+        capacity: 4,
+        available: true,
+      ),
+    ];
+  }
+}
+
+class HotelRoomOption {
+  final String id;
+  final String name;
+  final String description;
+  final double pricePerNight;
+  final int capacity;
+  final bool available;
+
+  const HotelRoomOption({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.pricePerNight,
+    required this.capacity,
+    this.available = true,
+  });
+
+  factory HotelRoomOption.fromApi(Map<String, dynamic> json) {
+    return HotelRoomOption(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Room',
+      description: json['description']?.toString() ?? '',
+      pricePerNight: (json['pricePerNight'] as num?)?.toDouble() ?? 0,
+      capacity: (json['capacity'] as num?)?.toInt() ?? 2,
+      available: json['available'] as bool? ?? true,
+    );
+  }
 }

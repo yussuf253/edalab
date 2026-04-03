@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
 class HotelOrderDetailScreen extends StatefulWidget {
@@ -31,36 +29,126 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _booking = widget.booking;
+    _booking = widget.booking == null
+        ? null
+        : _normalizeBooking(widget.booking!);
     _isLoading = widget.booking == null;
     _loadBooking();
   }
 
-  Future<void> _loadBooking() async {
-    final userId = context.read<AuthProvider>().user?.id;
-    if (userId == null || userId.isEmpty) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      return;
+  Map<String, dynamic> _normalizeBooking(Map<String, dynamic> raw) {
+    final normalized = Map<String, dynamic>.from(raw);
+    final normalizedItems = (normalized['items'] as List? ?? const [])
+        .map((item) => Map<String, dynamic>.from(item as Map))
+        .toList();
+
+    if (normalized['moduleName'] == null && normalized['hotelName'] != null) {
+      normalized['moduleName'] = normalized['hotelName'];
+    }
+    if (normalized['deliveryFee'] == null && normalized['serviceFee'] != null) {
+      normalized['deliveryFee'] = normalized['serviceFee'];
+    }
+    if (normalized['roomType'] == null && normalizedItems.isNotEmpty) {
+      normalized['roomType'] = normalizedItems.first['name'];
+    }
+    if (normalizedItems.isEmpty &&
+        (normalized['roomType'] != null || normalized['nights'] != null)) {
+      normalized['items'] = [
+        {
+          'id': normalized['id'],
+          'name': normalized['roomType']?.toString() ?? 'Room',
+          'quantity': (normalized['nights'] as num?)?.toInt() ?? 1,
+          'price': (normalized['subtotal'] as num?)?.toDouble() ?? 0,
+          'total': (normalized['total'] as num?)?.toDouble() ?? 0,
+          'metadata': {
+            'hotelId': normalized['hotelId'],
+            'hotelName':
+                normalized['moduleName']?.toString() ??
+                normalized['hotelName']?.toString(),
+            'checkInAt': normalized['checkInAt'],
+            'checkOutAt': normalized['checkOutAt'],
+            'guestCount': normalized['guestCount'],
+            'nights': normalized['nights'],
+          },
+        },
+      ];
+    } else {
+      normalized['items'] = normalizedItems
+          .map(
+            (item) => {
+              ...item,
+              'metadata': {
+                if (item['metadata'] is Map)
+                  ...Map<String, dynamic>.from(item['metadata'] as Map),
+                'hotelId': normalized['hotelId'],
+                'hotelName':
+                    normalized['moduleName']?.toString() ??
+                    normalized['hotelName']?.toString(),
+                'checkInAt':
+                    (item['metadata'] is Map &&
+                        Map<String, dynamic>.from(
+                              item['metadata'] as Map,
+                            )['checkInAt'] !=
+                            null)
+                    ? Map<String, dynamic>.from(
+                        item['metadata'] as Map,
+                      )['checkInAt']
+                    : normalized['checkInAt'],
+                'checkOutAt':
+                    (item['metadata'] is Map &&
+                        Map<String, dynamic>.from(
+                              item['metadata'] as Map,
+                            )['checkOutAt'] !=
+                            null)
+                    ? Map<String, dynamic>.from(
+                        item['metadata'] as Map,
+                      )['checkOutAt']
+                    : normalized['checkOutAt'],
+                'guestCount':
+                    (item['metadata'] is Map &&
+                        Map<String, dynamic>.from(
+                              item['metadata'] as Map,
+                            )['guestCount'] !=
+                            null)
+                    ? Map<String, dynamic>.from(
+                        item['metadata'] as Map,
+                      )['guestCount']
+                    : normalized['guestCount'],
+                'nights':
+                    (item['metadata'] is Map &&
+                        Map<String, dynamic>.from(
+                              item['metadata'] as Map,
+                            )['nights'] !=
+                            null)
+                    ? Map<String, dynamic>.from(
+                        item['metadata'] as Map,
+                      )['nights']
+                    : normalized['nights'],
+              },
+            },
+          )
+          .toList();
     }
 
+    return normalized;
+  }
+
+  void _applyBookingResponse(Map<String, dynamic> raw) {
+    if (!mounted) return;
+    setState(() {
+      _booking = {...?_booking, ..._normalizeBooking(raw)};
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _loadBooking() async {
     try {
-      final response = await ApiClient.get('/orders/$userId', forceRefresh: true);
-      final orders = response is List ? response : const [];
-      final match = orders.cast<dynamic>().firstWhere(
-        (entry) => (entry as Map)['id']?.toString() == widget.bookingId,
-        orElse: () => null,
+      final response = await ApiClient.get(
+        '/orders/hotel-bookings/${widget.bookingId}',
+        forceRefresh: true,
       );
-      if (!mounted) return;
-      setState(() {
-        if (match != null) {
-          _booking = {
-            ...?_booking,
-            ...Map<String, dynamic>.from(match as Map),
-          };
-        }
-        _isLoading = false;
-      });
+      _applyBookingResponse(Map<String, dynamic>.from(response as Map));
+      return;
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -78,6 +166,26 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
     final metadata = firstItem?['metadata'] is Map
         ? Map<String, dynamic>.from(firstItem!['metadata'] as Map)
         : <String, dynamic>{};
+    final checkIn =
+        metadata['checkInAt']?.toString() ??
+        metadata['checkIn']?.toString() ??
+        data['checkInAt']?.toString() ??
+        data['checkIn']?.toString();
+    final checkOut =
+        metadata['checkOutAt']?.toString() ??
+        metadata['checkOut']?.toString() ??
+        data['checkOutAt']?.toString() ??
+        data['checkOut']?.toString();
+    final guestCount =
+        metadata['guestCount']?.toString() ??
+        metadata['guests']?.toString() ??
+        data['guestCount']?.toString() ??
+        '1';
+    final nights =
+        (firstItem?['quantity'] as num?)?.toInt() ??
+        (metadata['nights'] as num?)?.toInt() ??
+        (data['nights'] as num?)?.toInt() ??
+        1;
 
     return PopScope(
       canPop: context.canPop(),
@@ -87,103 +195,95 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
         }
       },
       child: Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.t('hotel_tracking.title')),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/hotel');
-            }
-          },
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text(l10n.t('hotel_tracking.title')),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/hotel');
+              }
+            },
+          ),
         ),
-      ),
-      body: _isLoading
-          ? const DetailContentShimmer(
-              accentColor: AppColors.hotel,
-              showHero: false,
-            )
-          : _booking == null
-          ? const _MissingHotelState()
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _HotelHero(
-                    hotelName: data['moduleName']?.toString() ?? l10n.t('hotel_tracking.title'),
-                    roomName: firstItem?['name']?.toString() ?? 'Room',
-                    status: _pretty(data['status']?.toString()),
-                    total: ((data['total'] as num?)?.toDouble() ?? 0),
-                  ),
-                  const SizedBox(height: 16),
-                  _TimelineCard(
-                    checkIn:
-                        metadata['checkInAt']?.toString() ??
-                        metadata['checkIn']?.toString(),
-                    checkOut:
-                        metadata['checkOutAt']?.toString() ??
-                        metadata['checkOut']?.toString(),
-                    nights:
-                        (firstItem?['quantity'] as num?)?.toInt() ??
-                        (metadata['nights'] as num?)?.toInt() ??
-                        1,
-                  ),
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _HotelStatTile(
-                          icon: Icons.people_alt_outlined,
-                          label: l10n.t('hotel_tracking.guests'),
-                          value:
-                              metadata['guestCount']?.toString() ??
-                              metadata['guests']?.toString() ??
-                              '1',
+        body: _isLoading
+            ? const DetailContentShimmer(
+                accentColor: AppColors.hotel,
+                showHero: false,
+              )
+            : _booking == null
+            ? const _MissingHotelState()
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _HotelHero(
+                      hotelName:
+                          data['moduleName']?.toString() ??
+                          l10n.t('hotel_tracking.title'),
+                      roomName: firstItem?['name']?.toString() ?? 'Room',
+                      status: _pretty(data['status']?.toString()),
+                      total: ((data['total'] as num?)?.toDouble() ?? 0),
+                    ),
+                    const SizedBox(height: 16),
+                    _TimelineCard(
+                      checkIn: checkIn,
+                      checkOut: checkOut,
+                      nights: nights,
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _HotelStatTile(
+                            icon: Icons.people_alt_outlined,
+                            label: l10n.t('hotel_tracking.guests'),
+                            value: guestCount,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _HotelStatTile(
-                          icon: Icons.schedule_outlined,
-                          label: l10n.t('hotel_tracking.booked'),
-                          value: _formatDate(data['createdAt']?.toString()),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _HotelStatTile(
+                            icon: Icons.schedule_outlined,
+                            label: l10n.t('hotel_tracking.booked'),
+                            value: _formatDate(data['createdAt']?.toString()),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  _HotelInfoCard(
-                    title: l10n.t('hotel_tracking.summary'),
-                    rows: [
-                      _HotelRowData(
-                        l10n.t('hotel_tracking.stay'),
-                        '${data['moduleName']?.toString() ?? 'Hotel'} • ${firstItem?['name']?.toString() ?? 'Room'}',
-                      ),
-                      _HotelRowData(
-                        l10n.t('hotel_tracking.subtotal'),
-                        '\$${((data['subtotal'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
-                      ),
-                      _HotelRowData(
-                        l10n.t('hotel_tracking.taxes'),
-                        '\$${((data['tax'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
-                      ),
-                      _HotelRowData(
-                        l10n.t('hotel_tracking.fees'),
-                        '\$${((data['deliveryFee'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
-                      ),
-                      _HotelRowData(
-                        l10n.t('hotel_tracking.total'),
-                        '\$${((data['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    _HotelInfoCard(
+                      title: l10n.t('hotel_tracking.summary'),
+                      rows: [
+                        _HotelRowData(
+                          l10n.t('hotel_tracking.stay'),
+                          '${data['moduleName']?.toString() ?? 'Hotel'} • ${firstItem?['name']?.toString() ?? 'Room'}',
+                        ),
+                        _HotelRowData(
+                          l10n.t('hotel_tracking.subtotal'),
+                          '\$${((data['subtotal'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                        ),
+                        _HotelRowData(
+                          l10n.t('hotel_tracking.taxes'),
+                          '\$${((data['tax'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                        ),
+                        _HotelRowData(
+                          l10n.t('hotel_tracking.fees'),
+                          '\$${((data['deliveryFee'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                        ),
+                        _HotelRowData(
+                          l10n.t('hotel_tracking.total'),
+                          '\$${((data['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
       ),
     );
   }
@@ -286,7 +386,9 @@ class _TimelineCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _StayPoint(
-                  title: AppLocalizations.of(context).t('hotel_tracking.check_in'),
+                  title: AppLocalizations.of(
+                    context,
+                  ).t('hotel_tracking.check_in'),
                   value: _formatDate(checkIn),
                   alignEnd: false,
                 ),
@@ -321,7 +423,9 @@ class _TimelineCard extends StatelessWidget {
               ),
               Expanded(
                 child: _StayPoint(
-                  title: AppLocalizations.of(context).t('hotel_tracking.check_out'),
+                  title: AppLocalizations.of(
+                    context,
+                  ).t('hotel_tracking.check_out'),
                   value: _formatDate(checkOut),
                   alignEnd: true,
                 ),
@@ -337,10 +441,9 @@ class _TimelineCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Text(
-              AppLocalizations.of(context).t(
-                'hotel_tracking.nights',
-                params: {'count': '$nights'},
-              ),
+              AppLocalizations.of(
+                context,
+              ).t('hotel_tracking.nights', params: {'count': '$nights'}),
               style: AppTextStyles.labelMedium.copyWith(color: AppColors.hotel),
               textAlign: TextAlign.center,
             ),
@@ -365,8 +468,9 @@ class _StayPoint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment:
-          alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: alignEnd
+          ? CrossAxisAlignment.end
+          : CrossAxisAlignment.start,
       children: [
         Text(title, style: AppTextStyles.caption),
         const SizedBox(height: 4),

@@ -9,11 +9,7 @@ class AppLocalizations {
   final Locale locale;
 
   static const fallbackLocale = Locale('en');
-  static const supportedLocales = [
-    Locale('en'),
-    Locale('fr'),
-    Locale('ar'),
-  ];
+  static const supportedLocales = [Locale('en'), Locale('fr'), Locale('ar')];
 
   static const delegate = _AppLocalizationsDelegate();
 
@@ -49,6 +45,8 @@ class AppLocalizations {
 
   String moduleLabel(NotificationModule module) {
     switch (module) {
+      case NotificationModule.messages:
+        return t('module.messages');
       case NotificationModule.orders:
         return t('module.orders');
       case NotificationModule.food:
@@ -182,6 +180,8 @@ class AppLocalizations {
       'messages.start_conversation': 'Start the conversation',
       'messages.doctor': 'Doctor chat',
       'messages.home_services': 'Home services',
+      'messages.shop': 'Merchant chat',
+      'messages.delivery': 'Delivery updates',
       'messages.ride': 'Ride updates',
       'messages.chat_fallback_title': 'Chat',
       'messages.type_message': 'Type your message...',
@@ -285,8 +285,7 @@ class AppLocalizations {
       'appointments.title': 'My Appointments',
       'appointments.error': 'Error loading appointments: {error}',
       'appointments.empty_title': 'No Appointments',
-      'appointments.empty_subtitle':
-          'You have no scheduled appointments yet.',
+      'appointments.empty_subtitle': 'You have no scheduled appointments yet.',
       'appointments.doctor_fallback': 'Doctor {id}',
       'appointments.specialist': 'Specialist',
       'appointments.unknown': 'Unknown',
@@ -599,8 +598,7 @@ class AppLocalizations {
       'checkout.promo_hint': 'Enter promo code (e.g. SAVE20)',
       'checkout.apply': 'Apply',
       'checkout.promo_applied_title': 'Promo applied successfully',
-      'checkout.promo_applied_body':
-          '{code} is active on your current basket.',
+      'checkout.promo_applied_body': '{code} is active on your current basket.',
       'checkout.promo_code_applied': 'Promo code applied!',
       'checkout.subtotal': 'Subtotal',
       'checkout.delivery': 'Delivery',
@@ -1083,6 +1081,7 @@ class AppLocalizations {
       'order_success.back_home': 'Back to Home',
       'order_success.items_count': '{count} item{suffix}',
       'module.orders': 'Orders',
+      'module.messages': 'Messages',
       'module.food': 'Food',
       'module.shopping': 'Shopping',
       'module.grocery': 'Grocery',
@@ -1165,12 +1164,14 @@ class AppLocalizations {
       'auth.no_account': 'Vous n\'avez pas de compte ? ',
       'auth.already_have_account': 'Vous avez deja un compte ? ',
       'auth.login_failed': 'Echec de connexion. Veuillez reessayer.',
-      'auth.registration_failed': 'Echec de l\'inscription. Veuillez reessayer.',
+      'auth.registration_failed':
+          'Echec de l\'inscription. Veuillez reessayer.',
       'auth.accept_terms': 'Veuillez accepter les conditions pour continuer.',
       'auth.email_required': 'Veuillez entrer votre e-mail',
       'auth.password_required': 'Veuillez entrer votre mot de passe',
       'auth.create_password_required': 'Veuillez creer un mot de passe',
-      'auth.password_length': 'Le mot de passe doit contenir au moins 6 caracteres',
+      'auth.password_length':
+          'Le mot de passe doit contenir au moins 6 caracteres',
       'auth.field_required': 'Ce champ est obligatoire',
       'auth.agree_prefix': 'J\'accepte les ',
       'auth.terms': 'Conditions d\'utilisation',
@@ -1200,6 +1201,8 @@ class AppLocalizations {
       'messages.start_conversation': 'Commencer la conversation',
       'messages.doctor': 'Discussion medecin',
       'messages.home_services': 'Services maison',
+      'messages.shop': 'Discussion commercant',
+      'messages.delivery': 'Mises a jour livraison',
       'messages.ride': 'Mises a jour trajet',
       'messages.chat_fallback_title': 'Discussion',
       'messages.type_message': 'Tapez votre message...',
@@ -1241,16 +1244,19 @@ class AppLocalizations {
       'profile_edit.updated': 'Profil mis a jour avec succes.',
       'profile_edit.failed': 'Echec de la mise a jour du profil.',
       'addresses.title': 'Mes adresses',
-      'addresses.login_manage': 'Veuillez vous connecter pour gerer vos adresses.',
+      'addresses.login_manage':
+          'Veuillez vous connecter pour gerer vos adresses.',
       'addresses.login': 'Connexion',
       'addresses.empty_logged_in_title': 'Aucune adresse enregistree',
       'addresses.empty_logged_in_subtitle':
           'Ajoutez des lieux de livraison pour accelerer le paiement.',
-      'addresses.empty_logged_out_title': 'Connectez-vous pour gerer les adresses',
+      'addresses.empty_logged_out_title':
+          'Connectez-vous pour gerer les adresses',
       'addresses.empty_logged_out_subtitle':
           'Enregistrez vos lieux de livraison apres connexion pour un paiement plus rapide.',
       'addresses.default': 'Par defaut',
-      'addresses.failed_default': 'Echec de la mise a jour de l\'adresse par defaut.',
+      'addresses.failed_default':
+          'Echec de la mise a jour de l\'adresse par defaut.',
       'addresses.failed_delete': 'Echec de la suppression de l\'adresse.',
       'addresses.add': 'Ajouter une adresse',
       'addresses.login_required': 'Connexion requise',
@@ -1301,7 +1307,8 @@ class AppLocalizations {
       'search.find_doctor': 'Trouver un medecin',
       'search.shop_online': 'Acheter en ligne',
       'appointments.title': 'Mes rendez-vous',
-      'appointments.error': 'Erreur lors du chargement des rendez-vous: {error}',
+      'appointments.error':
+          'Erreur lors du chargement des rendez-vous: {error}',
       'appointments.empty_title': 'Aucun rendez-vous',
       'appointments.empty_subtitle':
           'Vous n\'avez aucun rendez-vous programme pour le moment.',
@@ -1394,7 +1401,8 @@ class AppLocalizations {
       'home_provider.fast': 'Rapide',
       'home_provider.starting': 'Depart',
       'home_category.professionals': 'Professionnels',
-      'home_category.search_hint': 'Rechercher des professionnels ou services...',
+      'home_category.search_hint':
+          'Rechercher des professionnels ou services...',
       'home_category.available_professionals': 'Professionnels disponibles',
       'home_category.found_count': '{count} trouves',
       'home_category.start': '/depart',
@@ -1471,7 +1479,8 @@ class AppLocalizations {
       'grocery.title': 'Courses',
       'grocery.search_hint': 'Rechercher des produits...',
       'grocery.hero_title': 'Frais et bio 🌿',
-      'grocery.hero_subtitle': 'Profitez de 40% de reduction sur les produits frais',
+      'grocery.hero_subtitle':
+          'Profitez de 40% de reduction sur les produits frais',
       'grocery.shop_now': 'Acheter',
       'grocery.categories': 'Categories',
       'grocery.popular_items': 'Articles populaires',
@@ -1480,7 +1489,8 @@ class AppLocalizations {
       'grocery.per_unit': 'par {unit}',
       'grocery.view_cart': 'Voir le panier',
       'pharmacy.title': 'Pharmacie',
-      'pharmacy.search_hint': 'Rechercher des medicaments, produits de sante...',
+      'pharmacy.search_hint':
+          'Rechercher des medicaments, produits de sante...',
       'pharmacy.hero_title': 'Televerser une ordonnance 📋',
       'pharmacy.hero_subtitle': 'Televersez et faites livrer vos medicaments',
       'pharmacy.upload_now': 'Televerser',
@@ -1533,7 +1543,8 @@ class AppLocalizations {
       'hotel.recommended': 'Hotels recommandes',
       'hotel.found_count': '{count} trouves',
       'hotel.no_hotels': 'Aucun hotel ne correspond',
-      'hotel.no_hotels_subtitle': 'Essayez un autre hotel ou une autre destination.',
+      'hotel.no_hotels_subtitle':
+          'Essayez un autre hotel ou une autre destination.',
       'hotel.per_night': '/nuit',
       'hotel.select_guests': 'Choisir les voyageurs',
       'hotel.apply': 'Appliquer',
@@ -1591,7 +1602,8 @@ class AppLocalizations {
           'Connaissez le tarif de base avant de confirmer.',
       'laundry.title': 'Blanchisserie',
       'laundry.hero_title': 'Frais et propre 🧺',
-      'laundry.hero_subtitle': 'Premiere commande a -50% ! Ramassage et livraison gratuits',
+      'laundry.hero_subtitle':
+          'Premiere commande a -50% ! Ramassage et livraison gratuits',
       'laundry.login_required': 'Veuillez vous connecter pour commander.',
       'laundry.order_now': 'Commander',
       'laundry.our_services': 'Nos services',
@@ -1792,7 +1804,8 @@ class AppLocalizations {
       'medicine_detail.view_cart': 'Voir le panier',
       'medicine_detail.add_to_cart': 'Ajouter au panier • \${amount}',
       'home_service_detail.title': 'Reservation de service',
-      'home_service_detail.unavailable': 'Details de reservation indisponibles.',
+      'home_service_detail.unavailable':
+          'Details de reservation indisponibles.',
       'home_service_detail.provider_name': 'Prestataire de service',
       'home_service_detail.summary': 'Resume de reservation',
       'home_service_detail.booking_id': 'Numero',
@@ -1864,6 +1877,7 @@ class AppLocalizations {
       'order_detail.color': 'Couleur',
       'order_detail.item': 'Article',
       'module.orders': 'Commandes',
+      'module.messages': 'Messages',
       'module.food': 'Repas',
       'module.shopping': 'Shopping',
       'module.grocery': 'Courses',
@@ -1988,6 +2002,8 @@ class AppLocalizations {
       'messages.start_conversation': 'ابدأ المحادثة',
       'messages.doctor': 'محادثة طبيب',
       'messages.home_services': 'الخدمات المنزلية',
+      'messages.shop': 'محادثة المتجر',
+      'messages.delivery': 'تحديثات التوصيل',
       'messages.ride': 'تحديثات المشوار',
       'messages.chat_fallback_title': 'محادثة',
       'messages.type_message': 'اكتب رسالتك...',
@@ -2322,7 +2338,8 @@ class AppLocalizations {
       'doctor.title': 'الرعاية المنزلية والأطباء',
       'doctor.search_hint': 'ابحث عن الخدمات أو المختصين...',
       'doctor.hero_title': 'اختر خدمة رعاية ثم تصفح المختصين المتاحين.',
-      'doctor.hero_counts': '{homeCount} مقدمي رعاية منزلية • {doctorCount} أطباء',
+      'doctor.hero_counts':
+          '{homeCount} مقدمي رعاية منزلية • {doctorCount} أطباء',
       'doctor.available_services': 'خدمات الرعاية المتاحة',
       'doctor.tap_service': 'اضغط على خدمة لفتح شاشة المختصين ورؤية التفاصيل.',
       'doctor.browse_all': 'تصفح جميع المختصين',
@@ -2346,7 +2363,8 @@ class AppLocalizations {
       'home_services.title': 'الخدمات المنزلية',
       'home_services.search_hint': 'ابحث عن التنظيف والسباكة والجمال...',
       'home_services.hero_title': 'خدمات منزلية عند الطلب',
-      'home_services.hero_stats': '{providers} مختصين نشطين عبر {categories} أنواع خدمات.',
+      'home_services.hero_stats':
+          '{providers} مختصين نشطين عبر {categories} أنواع خدمات.',
       'home_services.book_service': 'احجز خدمة',
       'home_services.popular_categories': 'الفئات الشائعة',
       'home_services.available_now': 'متاح الآن',
@@ -2358,7 +2376,8 @@ class AppLocalizations {
       'home_services.per_start': '/بداية',
       'home_services.why_people_use': 'لماذا يستخدم الناس الخدمات المنزلية',
       'home_services.verified_title': 'مختصون موثقون',
-      'home_services.verified_subtitle': 'مزودون موثوقون مع تقييمات واضحة وملفات مفصلة.',
+      'home_services.verified_subtitle':
+          'مزودون موثوقون مع تقييمات واضحة وملفات مفصلة.',
       'home_services.scheduling_title': 'حجز سهل',
       'home_services.scheduling_subtitle': 'اختر الوقت المناسب ليومك.',
       'home_services.pricing_title': 'أسعار بداية واضحة',
@@ -2633,6 +2652,7 @@ class AppLocalizations {
       'order_detail.color': 'اللون',
       'order_detail.item': 'العنصر',
       'module.orders': 'الطلبات',
+      'module.messages': 'الرسائل',
       'module.food': 'الطعام',
       'module.shopping': 'التسوق',
       'module.grocery': 'البقالة',

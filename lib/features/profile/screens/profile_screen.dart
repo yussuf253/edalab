@@ -6,6 +6,8 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/notification_bell.dart';
+import '../../../pro/core/providers/pro_auth_provider.dart';
+import '../../../pro/core/utils/pro_module_helper.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -13,8 +15,10 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
+    final proAuthProvider = context.watch<ProAuthProvider>();
     final user = authProvider.user;
     final l10n = context.l10n;
+    final currentProProfile = proAuthProvider.currentProfile;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -160,7 +164,41 @@ class ProfileScreen extends StatelessWidget {
                     AppColors.grey,
                   ),
                   const SizedBox(height: 20),
-                  
+
+                  Text('Professional', style: AppTextStyles.h4),
+                  const SizedBox(height: 12),
+                  _MenuItem(
+                    currentProProfile != null
+                        ? ProModuleHelper.getProfileIcon(currentProProfile.type)
+                        : Icons.store_mall_directory_outlined,
+                    currentProProfile != null
+                        ? 'Open ${ProModuleHelper.getProfileName(currentProProfile.type)}'
+                        : 'Join as a Professional',
+                    currentProProfile != null
+                        ? ProModuleHelper.getProfileColor(currentProProfile.type)
+                        : AppColors.primary,
+                    onTap: () {
+                      if (user == null) {
+                        context.go('/login');
+                        return;
+                      }
+
+                      context.push(
+                        currentProProfile != null
+                            ? '/pro/dashboard'
+                            : '/pro/signup',
+                      );
+                    },
+                  ),
+                  if (currentProProfile != null)
+                    _MenuItem(
+                      Icons.badge_outlined,
+                      '${currentProProfile.activeModules.length} active business modules',
+                      AppColors.secondary,
+                      onTap: () => context.push('/pro/dashboard'),
+                    ),
+                  const SizedBox(height: 20),
+
                   // Logout
                   if (user != null)
                     GestureDetector(

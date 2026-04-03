@@ -9,6 +9,8 @@ import 'core/router/app_router.dart';
 import 'core/services/notification_sync_service.dart';
 import 'core/services/push_notification_service.dart';
 import 'core/storage/app_preferences.dart';
+import 'pro/core/providers/pro_auth_provider.dart';
+import 'pro/core/services/pro_inbox_sync_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +19,7 @@ Future<void> main() async {
   final cartProvider = CartProvider();
   final languageProvider = LanguageProvider();
   final notificationProvider = NotificationProvider();
+  final proAuthProvider = ProAuthProvider();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -42,6 +45,7 @@ Future<void> main() async {
           },
         ),
         ChangeNotifierProvider.value(value: languageProvider),
+        ChangeNotifierProvider.value(value: proAuthProvider),
         ChangeNotifierProxyProvider2<
           AuthProvider,
           CartProvider,
@@ -56,6 +60,10 @@ Future<void> main() async {
             );
             PushNotificationService.bindProvider(provider);
             NotificationSyncService.instance.updateProvider(provider);
+            ProInboxSyncService.instance.updateProviders(
+              notificationProvider: provider,
+              proAuthProvider: proAuthProvider,
+            );
             final token = PushNotificationService.token;
             if (token != null && token.isNotEmpty) {
               provider.syncPushToken(token);
@@ -78,6 +86,7 @@ Future<void> main() async {
         cartProvider: cartProvider,
         languageProvider: languageProvider,
         notificationProvider: notificationProvider,
+        proAuthProvider: proAuthProvider,
       ),
     );
   });
@@ -88,6 +97,7 @@ Future<void> _bootstrapAppServices({
   required CartProvider cartProvider,
   required LanguageProvider languageProvider,
   required NotificationProvider notificationProvider,
+  required ProAuthProvider proAuthProvider,
 }) async {
   await Future.wait([
     authProvider.initialize(),
@@ -96,6 +106,8 @@ Future<void> _bootstrapAppServices({
     notificationProvider.initialize(),
   ]);
 
+  proAuthProvider.fetchProfile(authProvider.user?.id ?? '');
+
   await notificationProvider.syncSession(
     authProvider: authProvider,
     cartProvider: cartProvider,
@@ -103,6 +115,10 @@ Future<void> _bootstrapAppServices({
 
   PushNotificationService.bindProvider(notificationProvider);
   NotificationSyncService.instance.start(notificationProvider);
+  ProInboxSyncService.instance.start(
+    notificationProvider: notificationProvider,
+    proAuthProvider: proAuthProvider,
+  );
 
   unawaited(NotificationSyncService.instance.syncNow(showAlerts: false));
   unawaited(_initializePush(notificationProvider));

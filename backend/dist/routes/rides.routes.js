@@ -31,6 +31,7 @@ function serializeRideBooking(booking) {
     return {
         id: booking.id,
         userId: booking.userId,
+        driverUserId: booking.driverUserId,
         rideCategoryId: booking.rideCategoryId,
         status: booking.status.toLowerCase(),
         pickup: booking.pickupLabel,
@@ -123,8 +124,8 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
             total: new client_1.Prisma.Decimal(body.total),
             status: client_1.RideStatus.REQUESTED,
             etaLabel: body.etaLabel ?? null,
-            driverName: body.driverName ?? 'Ahmed K.',
-            driverPhone: body.driverPhone ?? '+253 77 123 456',
+            driverName: body.driverName ?? null,
+            driverPhone: body.driverPhone ?? null,
             vehicleName: body.vehicleName,
             trackingData: body.trackingData ?? undefined,
         },

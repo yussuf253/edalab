@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-page-language="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Doctors & Appointments - eDalab</title>
+  <meta name="description" content="Book doctor appointments and consult healthcare professionals on eDalab."/>
+  <meta property="og:title" content="Doctors & Appointments - eDalab"/>
+  <meta property="og:description" content="Book a doctor in Djibouti and get trusted care."/>
+  <meta property="og:type" content="website"/>
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/main-styles.css"/>
+  <link rel="stylesheet" href="../css/components.css"/>
+  <link rel="stylesheet" href="../css/modules.css"/>
+    <script type="application/ld+json" id="doctorSchemaDynamic">{}</script>
+<link rel="alternate" hreflang="en" href="https://edalab.app/en/doctor.html"/>
+<link rel="alternate" hreflang="fr" href="https://edalab.app/doctor.html"/>
+<link rel="alternate" hreflang="ar" href="https://edalab.app/ar/doctor.html"/>
+<link rel="alternate" hreflang="x-default" href="https://edalab.app/doctor.html"/>
+<link rel="canonical" href="https://edalab.app/en/doctor.html"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Doctors & Appointments - eDalab",
+  "description": "Book doctor appointments and consult healthcare professionals on eDalab.",
+  "url": "https://edalab.app/en/doctor.html",
+  "inLanguage": "en",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "eDalab",
+    "url": "https://edalab.app"
+  },
+  "mainEntity": {
+    "@type": "ItemList",
+    "name": "Doctors & Appointments - eDalab",
+    "description": "Book doctor appointments and consult healthcare professionals on eDalab."
+  }
+}
+</script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav id="nav" data-static-unified="true">
+    <div class="nav-w nav-w-unified"><a class="nav-logo" href="index.html"><div class="nav-logo-icon"><img src="../assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="../wishlist.html" class="nav-icon-btn" aria-label="Favoris"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="../cart.html" class="nav-icon-btn" aria-label="Panier"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="doctor-hero">
+    <div class="wrap">
+      <div class="dh-content">
+        <h1 data-i18n="doctor.heroTitle">Your health, our priority</h1>
+        <p data-i18n="doctor.heroDescription">Connect with qualified doctors, book appointments, and get expert medical advice anytime.</p>
+        <div id="search-container"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
+    <!-- Filter & Search Section -->
+    <div class="filter-section">
+      <h2 data-i18n="doctor.findDoctor">Find a Doctor</h2>
+      <div id="filter-bar" class="filter-grid">
+        <div class="filter-item">
+          <label data-i18n="doctor.specialty">Specialty</label>
+          <select id="specialty-filter" onchange="doctorModule.applyFilters()">
+            <option value="" data-i18n="doctor.allSpecialties">All Specialties</option>
+            <option value="General Practice" data-i18n="doctor.specialty.generalPractice">General Practice</option>
+            <option value="Cardiology" data-i18n="doctor.specialty.cardiology">Cardiology</option>
+            <option value="Pediatrics" data-i18n="doctor.specialty.pediatrics">Pediatrics</option>
+            <option value="Dermatology" data-i18n="doctor.specialty.dermatology">Dermatology</option>
+            <option value="Psychiatry" data-i18n="doctor.specialty.psychiatry">Psychiatry</option>
+            <option value="Orthopedics" data-i18n="doctor.specialty.orthopedics">Orthopedics</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label data-i18n="doctor.availability">Availability</label>
+          <select id="availability-filter" onchange="doctorModule.applyFilters()">
+            <option value="" data-i18n="doctor.allAvailability">All</option>
+            <option value="available" data-i18n="doctor.availableNow">Available Now</option>
+            <option value="upcoming" data-i18n="doctor.availableToday">Available Today</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label data-i18n="doctor.rating">Rating</label>
+          <select id="rating-filter" onchange="doctorModule.applyFilters()">
+            <option value="" data-i18n="doctor.allRatings">All</option>
+            <option value="4">4+ Stars</option>
+            <option value="4.5">4.5+ Stars</option>
+            <option value="5">5 Stars</option>
+          </select>
+        </div>
+      </div>
+      <div id="doctorFilterSkeleton" style="display: none;"></div>
+    </div>
+
+    <!-- Doctors Grid -->
+    <section class="doctor-section">
+      <h2 data-i18n="doctor.topDoctors">Top Doctors</h2>
+      <div id="doctors-container" class="doctors-grid">
+        <!-- Dynamically populated -->
+      </div>
+    </section>
+
+    <!-- Pagination -->
+    <div id="pagination-container"></div>
+  </main>
+
+  <!-- Appointment Booking Modal -->
+  <div id="booking-modal-overlay" class="modal-overlay" onclick="UIComponents.closeModal('booking-modal')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 data-i18n="doctor.modalTitle">Book an Appointment</h2>
+        <button class="modal-close" onclick="UIComponents.closeModal('booking-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="booking-form">
+          <div class="form-group">
+            <label data-i18n="doctor.selectDate">Select Date</label>
+            <input type="date" id="appointment-date" required />
+          </div>
+          <div class="form-group">
+            <label data-i18n="doctor.selectTime">Select Time</label>
+            <select id="appointment-time" required>
+              <option value="" data-i18n="doctor.chooseTimeSlot">Choose a time slot</option>
+              <option value="09:00">09:00 AM</option>
+              <option value="10:00">10:00 AM</option>
+              <option value="11:00">11:00 AM</option>
+              <option value="14:00">2:00 PM</option>
+              <option value="15:00">3:00 PM</option>
+              <option value="16:00">4:00 PM</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-i18n="doctor.reasonVisit">Reason for Visit</label>
+            <textarea id="appointment-reason" data-i18n-placeholder="doctor.reasonPlaceholder" placeholder="Describe your symptoms or reason for visit" rows="4"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" onclick="UIComponents.closeModal('booking-modal')" data-i18n="doctor.cancel">Cancel</button>
+        <button class="modal-btn primary" onclick="doctorModule.submitBooking()" data-i18n="doctor.bookAppointment">Book Appointment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 data-i18n="doctor.footerBrand">eDalab Health</h3>
+          <ul>
+            <li><a href="#" data-i18n="doctor.footerAboutUs">About Us</a></li>
+            <li><a href="#" data-i18n="doctor.footerMedicalTeam">Medical Team</a></li>
+            <li><a href="#" data-i18n="doctor.footerBlog">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3 data-i18n="doctor.footerPatients">For Patients</h3>
+          <ul>
+            <li><a href="#" data-i18n="doctor.footerFindDoctors">Find Doctors</a></li>
+            <li><a href="#" data-i18n="doctor.footerAppointments">My Appointments</a></li>
+            <li><a href="#" data-i18n="doctor.footerHealthRecords">Health Records</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3 data-i18n="doctor.footerDoctors">For Doctors</h3>
+          <ul>
+            <li><a href="#" data-i18n="doctor.footerJoinUs">Join Us</a></li>
+            <li><a href="#" data-i18n="doctor.footerPortal">Doctor Portal</a></li>
+            <li><a href="#" data-i18n="doctor.footerResources">Resources</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3 data-i18n="doctor.footerContactEmergency">Contact & Emergency</h3>
+          <p><span data-i18n="common.email">Email</span>: hello@edalab.app</p>
+          <p>24/7 Support: +253 21 35 00 00</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p data-i18n="footer.rights">&copy; 2024 eDalab. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="../js/api-client.js"></script>
+  <script src="../js/state-manager.js"></script>
+  <script src="../js/ui-components.js"></script>
+  <script>
+    // ═══════════════════════════════════════════
+    // DOCTOR MODULE IMPLEMENTATION
+    // ═══════════════════════════════════════════
+
+    class DoctorModule {
+      constructor() {
+        const params = new URLSearchParams(window.location.search);
+        this.doctors = [];
+        this.filteredDoctors = [];
+        this.currentPage = 1;
+        this.itemsPerPage = 12;
+        this.selectedDoctorId = null;
+        this.isReady = false;
+        this.routeDoctorId = params.get('doctorId');
+        this.routeBook = params.get('book') === '1';
+        this.filters = {
+          specialty: null,
+          availability: null,
+          rating: null,
+        };
+        this.init();
+      }
+
+      t(key, fallback) {
+        return UIComponents.t(key, fallback);
+      }
+
+      async init() {
+        UIComponents.mountUnifiedNavbar({ active: 'doctor' });
+        this.renderLoadingState();
+        await this.loadDoctors();
+        this.setupSearch();
+        this.applyRouteState();
+        this.renderDoctors();
+        this.isReady = true;
+      }
+
+      updateDoctorSeo(doctor = null) {
+        const selectedDoctor = doctor || this.doctors.find((entry) => String(entry.id) === String(this.routeDoctorId));
+
+        if (!selectedDoctor) {
+          document.title = 'Healthcare & Doctor Booking - eDalab';
+          document.querySelector('meta[name="description"]')?.setAttribute('content', 'Book doctor appointments, consult with healthcare professionals online, and manage your health on eDalab.');
+          document.querySelector('meta[property="og:title"]')?.setAttribute('content', 'Healthcare & Doctor Booking - eDalab');
+          document.querySelector('meta[property="og:description"]')?.setAttribute('content', 'Book doctor appointments, consult with healthcare professionals online, and manage your health on eDalab.');
+          document.querySelector('link[rel="canonical"]')?.setAttribute('href', 'https://edalab.app/en/doctor.html');
+          document.getElementById('doctorSchemaDynamic').textContent = '{}';
+          return;
+        }
+
+        const specialty = selectedDoctor.specialty || 'Doctor';
+        const description = `${selectedDoctor.name} on eDalab. ${specialty}${selectedDoctor.experience ? ` with ${selectedDoctor.experience} experience` : ''}.`;
+        const title = `${selectedDoctor.name} - ${specialty} | eDalab`;
+        const canonicalUrl = `https://edalab.app/en/doctor.html?doctorId=${encodeURIComponent(selectedDoctor.id)}`;
+        const image = selectedDoctor.image || selectedDoctor.imageUrl || selectedDoctor.images?.[0] || 'https://edalab.app/assets/icons/doctor.png';
+
+        document.title = title;
+        document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+        document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+        document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
+        document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonicalUrl);
+
+        const schema = {
+          '@context': 'https://schema.org',
+          '@type': 'Physician',
+          name: selectedDoctor.name,
+          description,
+          image,
+          medicalSpecialty: specialty,
+          url: canonicalUrl,
+          aggregateRating: selectedDoctor.rating ? {
+            '@type': 'AggregateRating',
+            ratingValue: String(selectedDoctor.rating),
+            reviewCount: String(selectedDoctor.reviewCount || 1),
+          } : undefined,
+        };
+
+        document.getElementById('doctorSchemaDynamic').textContent = JSON.stringify(schema, null, 2);
+      }
+
+      applyRouteState() {
+        if (!this.routeDoctorId) {
+          this.updateDoctorSeo();
+          return;
+        }
+
+        const doctor = this.doctors.find((entry) => String(entry.id) === String(this.routeDoctorId));
+        if (!doctor) {
+          this.updateDoctorSeo();
+          return;
+        }
+
+        this.filteredDoctors = [doctor];
+        this.selectedDoctorId = doctor.id;
+        this.updateDoctorSeo(doctor);
+
+        if (this.routeBook) {
+          requestAnimationFrame(() => this.openBooking(doctor.id));
+        }
+      }
+
+      renderLoadingState() {
+        document.getElementById('search-container').innerHTML = UIComponents.createSearchSkeleton();
+        const filterBar = document.getElementById('filter-bar');
+        const filterSkeleton = document.getElementById('doctorFilterSkeleton');
+        if (filterBar && filterSkeleton) {
+          filterBar.style.display = 'none';
+          filterSkeleton.style.display = 'block';
+          filterSkeleton.innerHTML = UIComponents.createFilterSkeleton(3);
+        }
+        document.getElementById('doctors-container').innerHTML = UIComponents.createCardGridSkeleton(8);
+        document.getElementById('pagination-container').innerHTML = '';
+      }
+
+      clearLoadingState() {
+        const filterBar = document.getElementById('filter-bar');
+        const filterSkeleton = document.getElementById('doctorFilterSkeleton');
+        if (filterBar && filterSkeleton) {
+          filterBar.style.display = '';
+          filterSkeleton.style.display = 'none';
+          filterSkeleton.innerHTML = '';
+        }
+      }
+
+      async loadDoctors() {
+        try {
+          const data = await apiClient.getDoctors({ limit: 100, skip: 0 });
+          // API returns array directly, not wrapped in {data: [...]}
+          this.doctors = Array.isArray(data) ? data : (data.data || []);
+          this.filteredDoctors = [...this.doctors];
+        } catch (error) {
+          console.error('Error loading doctors:', error);
+          UIComponents.showToast(this.t('doctor.failedLoad', 'Failed to load doctors'), 'error');
+        } finally {
+          this.clearLoadingState();
+        }
+      }
+
+      setupSearch() {
+        const container = document.getElementById('search-container');
+        container.innerHTML = `
+          <div class="search-bar">
+            <input type="text" id="doctor-search" class="search-input" placeholder="${this.t('doctor.searchPlaceholder', 'Search doctors, specialties...')}" />
+            <button class="search-btn" onclick="doctorModule.handleSearch()">${UIComponents.getIconMarkup('search', 'ui-icon ui-icon-sm')}</button>
+          </div>
+        `;
+
+        document.getElementById('doctor-search').addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') this.handleSearch();
+        });
+      }
+
+      handleSearch() {
+        const query = document.getElementById('doctor-search').value.toLowerCase();
+        this.filteredDoctors = this.doctors.filter((d) =>
+          d.name.toLowerCase().includes(query) ||
+          d.specialty.toLowerCase().includes(query)
+        );
+        this.currentPage = 1;
+        this.renderDoctors();
+      }
+
+      applyFilters() {
+        const specialty = document.getElementById('specialty-filter').value;
+        const availability = document.getElementById('availability-filter').value;
+        const minRating = document.getElementById('rating-filter').value;
+
+        this.filteredDoctors = this.doctors.filter((d) => {
+          if (specialty && d.specialty !== specialty) return false;
+          if (minRating && d.rating < parseFloat(minRating)) return false;
+          if (availability === 'available' && !d.isAvailable) return false;
+          return true;
+        });
+
+        this.currentPage = 1;
+        this.renderDoctors();
+      }
+
+      renderDoctors() {
+        const container = document.getElementById('doctors-container');
+        const start = (this.currentPage - 1) * this.itemsPerPage;
+        const end = start + this.itemsPerPage;
+        const pageItems = this.filteredDoctors.slice(start, end);
+
+        if (pageItems.length === 0) {
+          container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 40px;">${this.t('doctor.noDoctors', 'No doctors found matching your criteria')}</p>`;
+        } else {
+          container.innerHTML = pageItems.map((d) => {
+            const card = UIComponents.createDoctorCard(d);
+            // Update onclick to open booking modal
+            return card.replace(
+              'onclick="navigateTo',
+              `onclick="doctorModule.openBooking('${d.id}');return false;" data-original="navigateTo`
+            );
+          }).join('');
+        }
+
+        this.renderPagination();
+      }
+
+      openBooking(doctorId) {
+        this.selectedDoctorId = doctorId;
+        const doctor = this.doctors.find(d => d.id === doctorId);
+        if (doctor) {
+          const modal = document.getElementById('booking-modal-overlay');
+          modal.querySelector('.modal h2').textContent = `${this.t('doctor.bookWith', 'Book Appointment with')} ${doctor.name}`;
+          this.updateDoctorSeo(doctor);
+          UIComponents.showModal('booking-modal');
+        }
+      }
+
+      async submitBooking() {
+        if (!this.selectedDoctorId) {
+          UIComponents.showToast(this.t('doctor.selectDoctor', 'Please select a doctor'), 'error');
+          return;
+        }
+
+        const date = document.getElementById('appointment-date').value;
+        const time = document.getElementById('appointment-time').value;
+        const reason = document.getElementById('appointment-reason').value;
+
+        if (!date || !time) {
+          UIComponents.showToast(this.t('doctor.fillRequired', 'Please fill all required fields'), 'error');
+          return;
+        }
+
+        try {
+          const user = StateManager.getUser();
+          let appointmentRecord = {
+            id: `APT${Date.now()}`,
+            module: 'doctor',
+            moduleType: 'DOCTOR',
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+            subtotal: 0,
+            tax: 0,
+            deliveryFee: 0,
+            discount: 0,
+            total: 0,
+            items: [
+              {
+                id: this.selectedDoctorId,
+                name: this.t('doctor.appointmentName', 'Doctor Appointment'),
+                quantity: 1,
+                price: 0,
+              }
+            ],
+            metadata: {
+              doctorId: this.selectedDoctorId,
+              date,
+              time,
+            }
+          };
+
+          if (user?.id) {
+            const appointmentData = {
+              userId: user.id,
+              doctorId: this.selectedDoctorId,
+              date: new Date(`${date}T${time}`).toISOString(),
+              timeSlot: time,
+              type: 'in_person',
+              notes: reason || this.t('doctor.defaultReason', 'General consultation'),
+            };
+
+            const result = await apiClient.createAppointment(appointmentData);
+            appointmentRecord = {
+              ...appointmentRecord,
+              id: result.id || appointmentRecord.id,
+              status: String(result.status || appointmentRecord.status).toLowerCase(),
+              createdAt: result.createdAt || appointmentRecord.createdAt,
+            };
+          }
+
+          StateManager.addOrder(appointmentRecord);
+          UIComponents.showToast(this.t('doctor.bookedSuccess', 'Appointment booked successfully!'), 'success');
+          UIComponents.closeModal('booking-modal');
+          document.getElementById('booking-form').reset();
+        } catch (error) {
+          console.error('Error booking appointment:', error);
+          UIComponents.showToast(this.t('doctor.bookFailed', 'Failed to book appointment'), 'error');
+        }
+      }
+
+      renderPagination() {
+        const container = document.getElementById('pagination-container');
+        const totalPages = Math.ceil(this.filteredDoctors.length / this.itemsPerPage);
+
+        if (totalPages > 1) {
+          container.innerHTML = UIComponents.createPagination(
+            this.currentPage,
+            totalPages,
+            'doctorModule.goToPage'
+          );
+        } else {
+          container.innerHTML = '';
+        }
+      }
+
+      goToPage(page) {
+        this.currentPage = page;
+        this.renderDoctors();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    const doctorModule = new DoctorModule();
+    window.refreshPageLocalizedContent = function() {
+      if (doctorModule && doctorModule.isReady) {
+        doctorModule.setupSearch();
+        doctorModule.renderDoctors();
+      }
+    };
+  </script>
+</body>
+</html>

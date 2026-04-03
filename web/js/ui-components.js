@@ -5,7 +5,7 @@
 
 const UIComponents = {
   logoPath: 'assets/logo/logo.png',
-  defaultLanguage: 'en',
+  defaultLanguage: 'fr',
   translations: {
     en: {
       'nav.home': 'Home',
@@ -23,6 +23,54 @@ const UIComponents = {
       'nav.register': 'Register',
       'nav.profile': 'Profile',
       'nav.logout': 'Logout',
+      'nav.language': 'Language',
+      'common.email': 'Email',
+      'common.phone': 'Phone',
+      'footer.rights': '© 2024 eDalab. All rights reserved.',
+      'hotel.heroTitle': 'Find Your Perfect Stay',
+      'hotel.heroDescription': 'Comfortable rooms, great locations, and unbeatable prices. Book now and explore amazing destinations!',
+      'hotel.searchPanelTitle': 'Search Hotels',
+      'hotel.checkInDate': 'Check-in Date',
+      'hotel.checkOutDate': 'Check-out Date',
+      'hotel.guests': 'Guests',
+      'hotel.roomType': 'Room Type',
+      'hotel.guest.one': '1 Guest',
+      'hotel.guest.two': '2 Guests',
+      'hotel.guest.three': '3 Guests',
+      'hotel.guest.four': '4 Guests',
+      'hotel.guest.fivePlus': '5+ Guests',
+      'hotel.roomType.any': 'Any Type',
+      'hotel.roomType.single': 'Single Room',
+      'hotel.roomType.double': 'Double Room',
+      'hotel.roomType.suite': 'Suite',
+      'hotel.roomType.villa': 'Villa',
+      'hotel.searchButton': 'Search Hotels',
+      'hotel.filterTitle': 'Filter Results',
+      'hotel.priceRange': 'Price Range',
+      'hotel.price.all': 'All Prices',
+      'hotel.starRating': 'Star Rating',
+      'hotel.rating.all': 'All Ratings',
+      'hotel.amenities': 'Amenities',
+      'hotel.amenities.all': 'All Amenities',
+      'hotel.amenities.pool': 'Swimming Pool',
+      'hotel.amenities.gym': 'Fitness Center',
+      'hotel.bookTitle': 'Book Hotel',
+      'hotel.fullName': 'Full Name',
+      'hotel.phoneNumber': 'Phone Number',
+      'hotel.specialRequests': 'Special Requests',
+      'hotel.specialRequestsPlaceholder': 'E.g., Late check-in, high floor, quiet room',
+      'hotel.cancel': 'Cancel',
+      'hotel.confirmBooking': 'Confirm Booking',
+      'hotel.heroSearchPlaceholder': 'Search a destination or hotel...',
+      'hotel.card.from': 'From',
+      'hotel.card.bookNow': 'Book Now',
+      'hotel.noResults': 'No hotels found',
+      'hotel.toast.selectDates': 'Please select check-in and check-out dates',
+      'hotel.toast.invalidDates': 'Check-out date must be after check-in date',
+      'hotel.toast.selectHotel': 'Please select a hotel',
+      'hotel.toast.fillRequired': 'Please fill all required fields',
+      'hotel.toast.bookingConfirmed': 'Hotel booking confirmed!',
+      'hotel.toast.bookingFailed': 'Failed to complete booking',
       'home.title': 'eDalab — One App For All Your Needs | Food, Doctor, Hotel, Pharmacy in Djibouti',
       'home.heroEyebrow': 'Serving Djibouti, City & Regions',
       'home.heroTitle': 'One App For',
@@ -385,6 +433,49 @@ const UIComponents = {
       'ride.noActive': 'No active rides',
       'ride.track': 'Track',
       'ride.none': 'None',
+      'ride.heroTitle': 'Book Your Ride With eDalab',
+      'ride.heroDescription': 'Fast, safe, and affordable transportation with clear pricing and easy trip management.',
+      'ride.typesTitle': 'Ride Types',
+      'ride.bookingTitle': 'Book a Ride',
+      'ride.pickupLocation': 'Pickup Location',
+      'ride.pickupPlaceholder': 'Enter pickup address',
+      'ride.dropoffLocation': 'Dropoff Location',
+      'ride.dropoffPlaceholder': 'Enter destination address',
+      'ride.pickupDate': 'Pickup Date',
+      'ride.pickupTime': 'Pickup Time',
+      'ride.passengers': 'Passengers',
+      'ride.passenger.one': '1 Passenger',
+      'ride.passenger.two': '2 Passengers',
+      'ride.passenger.three': '3 Passengers',
+      'ride.passenger.four': '4 Passengers',
+      'ride.specialRequests': 'Special Requests',
+      'ride.specialRequestsPlaceholder': 'Luggage, pets, etc.',
+      'ride.baseFare': 'Base Fare',
+      'ride.distanceEstimate': 'Distance Estimate',
+      'ride.surgePricing': 'Surge Pricing',
+      'ride.estimatedTotal': 'Estimated Total',
+      'ride.whyChoose': 'Why Choose eDalab Rides?',
+      'ride.benefit.verifiedDrivers': 'Verified drivers with excellent ratings',
+      'ride.benefit.transparentPricing': 'Transparent pricing with no hidden charges',
+      'ride.benefit.safeTrips': 'Safe and secure rides with trip tracking',
+      'ride.benefit.rateDriver': 'Rate your driver and leave feedback',
+      'ride.activeRides': 'Your Active Rides',
+      'ride.footerBrand': 'eDalab Ride',
+      'ride.footerRiders': 'For Riders',
+      'ride.footerDrivers': 'For Drivers',
+      'ride.footerContact': 'Contact',
+      'ride.footerHowItWorks': 'How rides work',
+      'ride.footerSafety': 'Safety',
+      'ride.footerPricing': 'Pricing',
+      'ride.footerBookRide': 'Book a ride',
+      'ride.footerTripHistory': 'Trip history',
+      'ride.footerHelpCenter': 'Help Center',
+      'ride.footerBecomeDriver': 'Become a driver',
+      'ride.footerDriverSupport': 'Driver support',
+      'ride.footerRequirements': 'Requirements',
+      'ride.status.confirmed': 'CONFIRMED',
+      'ride.status.active': 'ACTIVE',
+      'ride.status.completed': 'COMPLETED',
       'laundry.searchService': 'Search a laundry service...',
       'laundry.find': 'Find',
       'laundry.baseService': 'Base Service',
@@ -399,6 +490,49 @@ const UIComponents = {
       'laundry.noOrders': 'No orders yet',
       'laundry.placedOn': 'Placed on',
       'laundry.viewDetails': 'View Details',
+      'laundry.heroTitle': 'Laundry Service Made Simple',
+      'laundry.heroDescription': 'Professional pickup, cleaning, and delivery with flexible scheduling and transparent estimates.',
+      'laundry.servicesTitle': 'Laundry Services',
+      'laundry.orderTitle': 'Place Your Order',
+      'laundry.additionalServicesLabel': 'Additional Services',
+      'laundry.ironing': 'Ironing (+$5)',
+      'laundry.drying': 'Machine Dry (+$3)',
+      'laundry.folding': 'Folding (+$4)',
+      'laundry.starch': 'Starch (+$2)',
+      'laundry.pickupAddress': 'Pickup Address',
+      'laundry.pickupAddressPlaceholder': 'Enter your address',
+      'laundry.specialInstructions': 'Special Instructions',
+      'laundry.specialInstructionsPlaceholder': 'e.g., Delicate clothes, hand wash only...',
+      'laundry.pickupDate': 'Pickup Date',
+      'laundry.pickupTime': 'Pickup Time',
+      'laundry.selectTime': 'Select Time',
+      'laundry.expectedDelivery': 'Expected Delivery',
+      'laundry.selectDelivery': 'Select Delivery',
+      'laundry.delivery.sameDay': 'Same Day',
+      'laundry.delivery.nextDay': 'Next Day',
+      'laundry.delivery.twoDays': '2 Days',
+      'laundry.benefitsTitle': 'Why Choose Our Laundry Service?',
+      'laundry.benefit.pickupDelivery': 'Free pickup and delivery in your area',
+      'laundry.benefit.ecoCleaning': 'Professional cleaning with eco-friendly products',
+      'laundry.benefit.express': 'Express service available for urgent orders',
+      'laundry.benefit.delicateCare': 'Careful handling of delicate and premium fabrics',
+      'laundry.ordersTitle': 'Your Laundry Orders',
+      'laundry.footerBrand': 'eDalab Laundry',
+      'laundry.footerCustomers': 'For Customers',
+      'laundry.footerServices': 'Services',
+      'laundry.footerContact': 'Contact',
+      'laundry.footerGuide': 'Service guide',
+      'laundry.footerPickupZones': 'Pickup zones',
+      'laundry.footerCareTips': 'Fabric care tips',
+      'laundry.footerBookLaundry': 'Book laundry',
+      'laundry.footerTrackOrders': 'Track orders',
+      'laundry.footerHelpCenter': 'Help Center',
+      'laundry.footerWashFold': 'Wash & fold',
+      'laundry.footerExpressCleaning': 'Express cleaning',
+      'laundry.footerDelicateCare': 'Delicate care',
+      'laundry.status.pending': 'Pending',
+      'laundry.status.processing': 'Processing',
+      'laundry.status.completed': 'Completed',
       'services.search': 'Search a service or provider...',
       'services.searchButton': 'Search',
       'services.allServices': 'All Services',
@@ -410,6 +544,33 @@ const UIComponents = {
       'services.priceOnRequest': 'Price on request',
       'services.bookNow': 'Book Now',
       'services.bookedSuccessSuffix': 'booked successfully!',
+      'services.heroTitle': 'Trusted Home Services, Ready When You Need Them',
+      'services.heroDescription': 'Browse service categories, compare professionals, and book the right help for your home and daily life.',
+      'services.chooseService': 'Choose a Service',
+      'services.serviceType': 'Service Type',
+      'services.rating': 'Rating',
+      'services.priceRange': 'Price Range',
+      'services.availability': 'Availability',
+      'services.anyRating': 'Any Rating',
+      'services.allPrices': 'All Prices',
+      'services.anyTime': 'Any Time',
+      'services.today': 'Today',
+      'services.tomorrow': 'Tomorrow',
+      'services.thisWeek': 'This Week',
+      'services.availableProfessionals': 'Available Professionals',
+      'services.footerBrand': 'eDalab Services',
+      'services.footerCustomers': 'For Customers',
+      'services.footerPros': 'For Pros',
+      'services.footerContact': 'Contact',
+      'services.footerHowBookingWorks': 'How booking works',
+      'services.footerPartnerStandards': 'Partner standards',
+      'services.footerSupport': 'Support',
+      'services.footerBrowseCategories': 'Browse categories',
+      'services.footerFindProfessionals': 'Find professionals',
+      'services.footerHelpCenter': 'Help Center',
+      'services.footerBecomeProvider': 'Become a provider',
+      'services.footerProviderResources': 'Provider resources',
+      'services.footerCoverageAreas': 'Coverage areas',
       'doctor.failedLoad': 'Failed to load doctors',
       'doctor.searchPlaceholder': 'Search doctors, specialties...',
       'doctor.noDoctors': 'No doctors found matching your criteria',
@@ -420,6 +581,51 @@ const UIComponents = {
       'doctor.defaultReason': 'General consultation',
       'doctor.bookedSuccess': 'Appointment booked successfully!',
       'doctor.bookFailed': 'Failed to book appointment',
+      'doctor.heroTitle': 'Your Health, Our Priority',
+      'doctor.heroDescription': 'Connect with qualified doctors, book appointments, and get expert medical advice anytime, anywhere.',
+      'doctor.findDoctor': 'Find a Doctor',
+      'doctor.topDoctors': 'Top Doctors',
+      'doctor.specialty': 'Specialty',
+      'doctor.allSpecialties': 'All Specialties',
+      'doctor.specialty.generalPractice': 'General Practice',
+      'doctor.specialty.cardiology': 'Cardiology',
+      'doctor.specialty.pediatrics': 'Pediatrics',
+      'doctor.specialty.dermatology': 'Dermatology',
+      'doctor.specialty.psychiatry': 'Psychiatry',
+      'doctor.specialty.orthopedics': 'Orthopedics',
+      'doctor.availability': 'Availability',
+      'doctor.allAvailability': 'All',
+      'doctor.availableNow': 'Available Now',
+      'doctor.availableToday': 'Available Today',
+      'doctor.rating': 'Rating',
+      'doctor.allRatings': 'All',
+      'doctor.modalTitle': 'Book an Appointment',
+      'doctor.selectDate': 'Select Date',
+      'doctor.selectTime': 'Select Time',
+      'doctor.chooseTimeSlot': 'Choose a time slot',
+      'doctor.reasonVisit': 'Reason for Visit',
+      'doctor.reasonPlaceholder': 'Describe your symptoms or reason for visit',
+      'doctor.cancel': 'Cancel',
+      'doctor.bookAppointment': 'Book Appointment',
+      'doctor.footerBrand': 'eDalab Health',
+      'doctor.footerPatients': 'For Patients',
+      'doctor.footerDoctors': 'For Doctors',
+      'doctor.footerContactEmergency': 'Contact & Emergency',
+      'doctor.footerAboutUs': 'About Us',
+      'doctor.footerMedicalTeam': 'Medical Team',
+      'doctor.footerBlog': 'Blog',
+      'doctor.footerFindDoctors': 'Find Doctors',
+      'doctor.footerAppointments': 'My Appointments',
+      'doctor.footerHealthRecords': 'Health Records',
+      'doctor.footerJoinUs': 'Join Us',
+      'doctor.footerPortal': 'Doctor Portal',
+      'doctor.footerResources': 'Resources',
+      'doctor.available': 'Available',
+      'doctor.unavailable': 'Unavailable',
+      'doctor.experienceSuffix': 'experience',
+      'doctor.reviews': 'reviews',
+      'doctor.consultation': 'Consultation',
+      'doctor.cardBookNow': 'Book Now',
     },
     fr: {
       'nav.home': 'Accueil',
@@ -437,9 +643,57 @@ const UIComponents = {
       'nav.register': 'Inscription',
       'nav.profile': 'Profil',
       'nav.logout': 'Déconnexion',
+      'nav.language': 'Langue',
+      'common.email': 'E-mail',
+      'common.phone': 'Téléphone',
+      'footer.rights': '© 2024 eDalab. Tous droits réservés.',
+      'hotel.heroTitle': 'Trouvez votre séjour idéal',
+      'hotel.heroDescription': 'Chambres confortables, excellents emplacements et prix imbattables. Réservez dès maintenant.',
+      'hotel.searchPanelTitle': 'Rechercher des hôtels',
+      'hotel.checkInDate': 'Date d’arrivée',
+      'hotel.checkOutDate': 'Date de départ',
+      'hotel.guests': 'Voyageurs',
+      'hotel.roomType': 'Type de chambre',
+      'hotel.guest.one': '1 voyageur',
+      'hotel.guest.two': '2 voyageurs',
+      'hotel.guest.three': '3 voyageurs',
+      'hotel.guest.four': '4 voyageurs',
+      'hotel.guest.fivePlus': '5+ voyageurs',
+      'hotel.roomType.any': 'Tout type',
+      'hotel.roomType.single': 'Chambre simple',
+      'hotel.roomType.double': 'Chambre double',
+      'hotel.roomType.suite': 'Suite',
+      'hotel.roomType.villa': 'Villa',
+      'hotel.searchButton': 'Rechercher des hôtels',
+      'hotel.filterTitle': 'Filtrer les résultats',
+      'hotel.priceRange': 'Fourchette de prix',
+      'hotel.price.all': 'Tous les prix',
+      'hotel.starRating': 'Classement par étoiles',
+      'hotel.rating.all': 'Toutes les notes',
+      'hotel.amenities': 'Équipements',
+      'hotel.amenities.all': 'Tous les équipements',
+      'hotel.amenities.pool': 'Piscine',
+      'hotel.amenities.gym': 'Salle de sport',
+      'hotel.bookTitle': 'Réserver un hôtel',
+      'hotel.fullName': 'Nom complet',
+      'hotel.phoneNumber': 'Numéro de téléphone',
+      'hotel.specialRequests': 'Demandes spéciales',
+      'hotel.specialRequestsPlaceholder': 'Ex. arrivée tardive, étage élevé, chambre calme',
+      'hotel.cancel': 'Annuler',
+      'hotel.confirmBooking': 'Confirmer la réservation',
+      'hotel.heroSearchPlaceholder': 'Rechercher une destination ou un hôtel...',
+      'hotel.card.from': 'À partir de',
+      'hotel.card.bookNow': 'Réserver',
+      'hotel.noResults': 'Aucun hôtel trouvé',
+      'hotel.toast.selectDates': 'Veuillez sélectionner les dates d’arrivée et de départ',
+      'hotel.toast.invalidDates': 'La date de départ doit être après la date d’arrivée',
+      'hotel.toast.selectHotel': 'Veuillez sélectionner un hôtel',
+      'hotel.toast.fillRequired': 'Veuillez remplir tous les champs obligatoires',
+      'hotel.toast.bookingConfirmed': 'Réservation de l’hôtel confirmée !',
+      'hotel.toast.bookingFailed': 'Échec de la réservation',
       'home.title': 'eDalab — Une seule application pour tous vos besoins | Restauration, médecin, hôtel, pharmacie à Djibouti',
       'home.heroEyebrow': 'Disponible à Djibouti-ville et dans les régions',
-      'home.heroTitle': 'Une seule application pour',
+      'home.heroTitle': 'Une seule app pour',
       'home.heroTitleEmphasis': 'tous vos besoins',
       'home.heroDescription': 'eDalab vous connecte à tout dans votre ville : restauration, médecins, pharmacies, hôtels, trajets, shopping et blanchisserie. Des personnes réelles, rapidement.',
       'home.heroSearchPlaceholder': 'Rechercher des services, produits, restaurants…',
@@ -799,6 +1053,49 @@ const UIComponents = {
       'ride.noActive': 'Aucun trajet actif',
       'ride.track': 'Suivre',
       'ride.none': 'Aucune',
+      'ride.heroTitle': 'Réservez votre trajet avec eDalab',
+      'ride.heroDescription': 'Transport rapide, sûr et abordable avec des tarifs clairs et une gestion simple du trajet.',
+      'ride.typesTitle': 'Types de trajets',
+      'ride.bookingTitle': 'Réserver un trajet',
+      'ride.pickupLocation': 'Lieu de départ',
+      'ride.pickupPlaceholder': 'Entrez l’adresse de départ',
+      'ride.dropoffLocation': 'Lieu de destination',
+      'ride.dropoffPlaceholder': 'Entrez l’adresse de destination',
+      'ride.pickupDate': 'Date de départ',
+      'ride.pickupTime': 'Heure de départ',
+      'ride.passengers': 'Passagers',
+      'ride.passenger.one': '1 passager',
+      'ride.passenger.two': '2 passagers',
+      'ride.passenger.three': '3 passagers',
+      'ride.passenger.four': '4 passagers',
+      'ride.specialRequests': 'Demandes spéciales',
+      'ride.specialRequestsPlaceholder': 'Bagages, animaux, etc.',
+      'ride.baseFare': 'Tarif de base',
+      'ride.distanceEstimate': 'Estimation de distance',
+      'ride.surgePricing': 'Tarification dynamique',
+      'ride.estimatedTotal': 'Total estimé',
+      'ride.whyChoose': 'Pourquoi choisir eDalab Rides ?',
+      'ride.benefit.verifiedDrivers': 'Chauffeurs vérifiés avec d’excellentes notes',
+      'ride.benefit.transparentPricing': 'Tarifs transparents sans frais cachés',
+      'ride.benefit.safeTrips': 'Trajets sûrs et sécurisés avec suivi du trajet',
+      'ride.benefit.rateDriver': 'Notez votre chauffeur et laissez un avis',
+      'ride.activeRides': 'Vos trajets en cours',
+      'ride.footerBrand': 'eDalab Ride',
+      'ride.footerRiders': 'Pour les passagers',
+      'ride.footerDrivers': 'Pour les chauffeurs',
+      'ride.footerContact': 'Contact',
+      'ride.footerHowItWorks': 'Comment fonctionnent les trajets',
+      'ride.footerSafety': 'Sécurité',
+      'ride.footerPricing': 'Tarifs',
+      'ride.footerBookRide': 'Réserver un trajet',
+      'ride.footerTripHistory': 'Historique des trajets',
+      'ride.footerHelpCenter': 'Centre d’aide',
+      'ride.footerBecomeDriver': 'Devenir chauffeur',
+      'ride.footerDriverSupport': 'Support chauffeurs',
+      'ride.footerRequirements': 'Conditions',
+      'ride.status.confirmed': 'CONFIRMÉ',
+      'ride.status.active': 'EN COURS',
+      'ride.status.completed': 'TERMINÉ',
       'laundry.searchService': 'Rechercher un service de blanchisserie...',
       'laundry.find': 'Trouver',
       'laundry.baseService': 'Service de base',
@@ -813,6 +1110,49 @@ const UIComponents = {
       'laundry.noOrders': 'Aucune commande pour le moment',
       'laundry.placedOn': 'Passée le',
       'laundry.viewDetails': 'Voir les détails',
+      'laundry.heroTitle': 'La blanchisserie simplifiée',
+      'laundry.heroDescription': 'Collecte, nettoyage et livraison professionnels avec des horaires flexibles et des estimations transparentes.',
+      'laundry.servicesTitle': 'Services de blanchisserie',
+      'laundry.orderTitle': 'Passez votre commande',
+      'laundry.additionalServicesLabel': 'Services supplémentaires',
+      'laundry.ironing': 'Repassage (+$5)',
+      'laundry.drying': 'Séchage machine (+$3)',
+      'laundry.folding': 'Pliage (+$4)',
+      'laundry.starch': 'Amidon (+$2)',
+      'laundry.pickupAddress': 'Adresse de collecte',
+      'laundry.pickupAddressPlaceholder': 'Entrez votre adresse',
+      'laundry.specialInstructions': 'Instructions spéciales',
+      'laundry.specialInstructionsPlaceholder': 'ex. vêtements délicats, lavage à la main uniquement...',
+      'laundry.pickupDate': 'Date de collecte',
+      'laundry.pickupTime': 'Heure de collecte',
+      'laundry.selectTime': 'Choisir l’heure',
+      'laundry.expectedDelivery': 'Livraison prévue',
+      'laundry.selectDelivery': 'Choisir la livraison',
+      'laundry.delivery.sameDay': 'Le jour même',
+      'laundry.delivery.nextDay': 'Le lendemain',
+      'laundry.delivery.twoDays': '2 jours',
+      'laundry.benefitsTitle': 'Pourquoi choisir notre blanchisserie ?',
+      'laundry.benefit.pickupDelivery': 'Collecte et livraison gratuites dans votre zone',
+      'laundry.benefit.ecoCleaning': 'Nettoyage professionnel avec des produits écologiques',
+      'laundry.benefit.express': 'Service express disponible pour les commandes urgentes',
+      'laundry.benefit.delicateCare': 'Soin attentif des tissus délicats et premium',
+      'laundry.ordersTitle': 'Vos commandes de blanchisserie',
+      'laundry.footerBrand': 'eDalab Laundry',
+      'laundry.footerCustomers': 'Pour les clients',
+      'laundry.footerServices': 'Services',
+      'laundry.footerContact': 'Contact',
+      'laundry.footerGuide': 'Guide du service',
+      'laundry.footerPickupZones': 'Zones de collecte',
+      'laundry.footerCareTips': 'Conseils d’entretien',
+      'laundry.footerBookLaundry': 'Réserver une blanchisserie',
+      'laundry.footerTrackOrders': 'Suivre les commandes',
+      'laundry.footerHelpCenter': 'Centre d’aide',
+      'laundry.footerWashFold': 'Lavage & pliage',
+      'laundry.footerExpressCleaning': 'Nettoyage express',
+      'laundry.footerDelicateCare': 'Soin délicat',
+      'laundry.status.pending': 'En attente',
+      'laundry.status.processing': 'En cours',
+      'laundry.status.completed': 'Terminée',
       'services.search': 'Rechercher un service ou un prestataire...',
       'services.searchButton': 'Rechercher',
       'services.allServices': 'Tous les services',
@@ -824,6 +1164,33 @@ const UIComponents = {
       'services.priceOnRequest': 'Prix sur demande',
       'services.bookNow': 'Réserver',
       'services.bookedSuccessSuffix': 'réservé avec succès !',
+      'services.heroTitle': 'Des services à domicile fiables, quand vous en avez besoin',
+      'services.heroDescription': 'Parcourez les catégories, comparez les professionnels et réservez la bonne aide pour votre maison et votre quotidien.',
+      'services.chooseService': 'Choisissez un service',
+      'services.serviceType': 'Type de service',
+      'services.rating': 'Note',
+      'services.priceRange': 'Fourchette de prix',
+      'services.availability': 'Disponibilité',
+      'services.anyRating': 'Toutes les notes',
+      'services.allPrices': 'Tous les prix',
+      'services.anyTime': 'N’importe quand',
+      'services.today': 'Aujourd’hui',
+      'services.tomorrow': 'Demain',
+      'services.thisWeek': 'Cette semaine',
+      'services.availableProfessionals': 'Professionnels disponibles',
+      'services.footerBrand': 'eDalab Services',
+      'services.footerCustomers': 'Pour les clients',
+      'services.footerPros': 'Pour les pros',
+      'services.footerContact': 'Contact',
+      'services.footerHowBookingWorks': 'Comment fonctionne la réservation',
+      'services.footerPartnerStandards': 'Normes partenaires',
+      'services.footerSupport': 'Support',
+      'services.footerBrowseCategories': 'Parcourir les catégories',
+      'services.footerFindProfessionals': 'Trouver des professionnels',
+      'services.footerHelpCenter': 'Centre d’aide',
+      'services.footerBecomeProvider': 'Devenir prestataire',
+      'services.footerProviderResources': 'Ressources prestataires',
+      'services.footerCoverageAreas': 'Zones couvertes',
       'doctor.failedLoad': 'Échec du chargement des médecins',
       'doctor.searchPlaceholder': 'Rechercher des médecins ou spécialités...',
       'doctor.noDoctors': 'Aucun médecin ne correspond à vos critères',
@@ -834,6 +1201,51 @@ const UIComponents = {
       'doctor.defaultReason': 'Consultation générale',
       'doctor.bookedSuccess': 'Rendez-vous réservé avec succès !',
       'doctor.bookFailed': 'Échec de la réservation du rendez-vous',
+      'doctor.heroTitle': 'Votre santé, notre priorité',
+      'doctor.heroDescription': 'Consultez des médecins qualifiés, prenez rendez-vous et recevez des conseils médicaux à tout moment.',
+      'doctor.findDoctor': 'Trouver un médecin',
+      'doctor.topDoctors': 'Meilleurs médecins',
+      'doctor.specialty': 'Spécialité',
+      'doctor.allSpecialties': 'Toutes les spécialités',
+      'doctor.specialty.generalPractice': 'Médecine générale',
+      'doctor.specialty.cardiology': 'Cardiologie',
+      'doctor.specialty.pediatrics': 'Pédiatrie',
+      'doctor.specialty.dermatology': 'Dermatologie',
+      'doctor.specialty.psychiatry': 'Psychiatrie',
+      'doctor.specialty.orthopedics': 'Orthopédie',
+      'doctor.availability': 'Disponibilité',
+      'doctor.allAvailability': 'Tous',
+      'doctor.availableNow': 'Disponible maintenant',
+      'doctor.availableToday': 'Disponible aujourd’hui',
+      'doctor.rating': 'Note',
+      'doctor.allRatings': 'Tous',
+      'doctor.modalTitle': 'Prendre rendez-vous',
+      'doctor.selectDate': 'Choisir la date',
+      'doctor.selectTime': 'Choisir l’heure',
+      'doctor.chooseTimeSlot': 'Choisir un créneau',
+      'doctor.reasonVisit': 'Motif de la visite',
+      'doctor.reasonPlaceholder': 'Décrivez vos symptômes ou la raison de votre visite',
+      'doctor.cancel': 'Annuler',
+      'doctor.bookAppointment': 'Réserver',
+      'doctor.footerBrand': 'eDalab Santé',
+      'doctor.footerPatients': 'Pour les patients',
+      'doctor.footerDoctors': 'Pour les médecins',
+      'doctor.footerContactEmergency': 'Contact et urgence',
+      'doctor.footerAboutUs': 'À propos',
+      'doctor.footerMedicalTeam': 'Équipe médicale',
+      'doctor.footerBlog': 'Blog',
+      'doctor.footerFindDoctors': 'Trouver des médecins',
+      'doctor.footerAppointments': 'Mes rendez-vous',
+      'doctor.footerHealthRecords': 'Dossiers médicaux',
+      'doctor.footerJoinUs': 'Rejoignez-nous',
+      'doctor.footerPortal': 'Portail médecin',
+      'doctor.footerResources': 'Ressources',
+      'doctor.available': 'Disponible',
+      'doctor.unavailable': 'Indisponible',
+      'doctor.experienceSuffix': 'd’expérience',
+      'doctor.reviews': 'avis',
+      'doctor.consultation': 'Consultation',
+      'doctor.cardBookNow': 'Réserver',
     },
     ar: {
       'nav.home': 'الرئيسية',
@@ -851,6 +1263,54 @@ const UIComponents = {
       'nav.register': 'إنشاء حساب',
       'nav.profile': 'الملف الشخصي',
       'nav.logout': 'تسجيل الخروج',
+      'nav.language': 'اللغة',
+      'common.email': 'البريد الإلكتروني',
+      'common.phone': 'الهاتف',
+      'footer.rights': '© 2024 eDalab. جميع الحقوق محفوظة.',
+      'hotel.heroTitle': 'اعثر على إقامتك المثالية',
+      'hotel.heroDescription': 'غرف مريحة، مواقع رائعة، وأسعار ممتازة. احجز الآن.',
+      'hotel.searchPanelTitle': 'ابحث عن الفنادق',
+      'hotel.checkInDate': 'تاريخ الوصول',
+      'hotel.checkOutDate': 'تاريخ المغادرة',
+      'hotel.guests': 'الضيوف',
+      'hotel.roomType': 'نوع الغرفة',
+      'hotel.guest.one': 'ضيف واحد',
+      'hotel.guest.two': 'ضيفان',
+      'hotel.guest.three': '3 ضيوف',
+      'hotel.guest.four': '4 ضيوف',
+      'hotel.guest.fivePlus': '5+ ضيوف',
+      'hotel.roomType.any': 'أي نوع',
+      'hotel.roomType.single': 'غرفة مفردة',
+      'hotel.roomType.double': 'غرفة مزدوجة',
+      'hotel.roomType.suite': 'جناح',
+      'hotel.roomType.villa': 'فيلا',
+      'hotel.searchButton': 'ابحث عن الفنادق',
+      'hotel.filterTitle': 'تصفية النتائج',
+      'hotel.priceRange': 'نطاق السعر',
+      'hotel.price.all': 'كل الأسعار',
+      'hotel.starRating': 'تصنيف النجوم',
+      'hotel.rating.all': 'كل التقييمات',
+      'hotel.amenities': 'المرافق',
+      'hotel.amenities.all': 'كل المرافق',
+      'hotel.amenities.pool': 'مسبح',
+      'hotel.amenities.gym': 'مركز لياقة',
+      'hotel.bookTitle': 'احجز الفندق',
+      'hotel.fullName': 'الاسم الكامل',
+      'hotel.phoneNumber': 'رقم الهاتف',
+      'hotel.specialRequests': 'طلبات خاصة',
+      'hotel.specialRequestsPlaceholder': 'مثال: وصول متأخر، طابق مرتفع، غرفة هادئة',
+      'hotel.cancel': 'إلغاء',
+      'hotel.confirmBooking': 'تأكيد الحجز',
+      'hotel.heroSearchPlaceholder': 'ابحث عن وجهة أو فندق...',
+      'hotel.card.from': 'ابتداءً من',
+      'hotel.card.bookNow': 'احجز الآن',
+      'hotel.noResults': 'لم يتم العثور على فنادق',
+      'hotel.toast.selectDates': 'يرجى تحديد تاريخ الوصول والمغادرة',
+      'hotel.toast.invalidDates': 'يجب أن يكون تاريخ المغادرة بعد تاريخ الوصول',
+      'hotel.toast.selectHotel': 'يرجى اختيار فندق',
+      'hotel.toast.fillRequired': 'يرجى ملء جميع الحقول المطلوبة',
+      'hotel.toast.bookingConfirmed': 'تم تأكيد حجز الفندق!',
+      'hotel.toast.bookingFailed': 'تعذر إكمال الحجز',
       'home.title': 'إيدالاب — تطبيق واحد لكل احتياجاتك | طعام، طبيب، فندق، صيدلية في جيبوتي',
       'home.heroEyebrow': 'نخدم مدينة جيبوتي والمناطق',
       'home.heroTitle': 'تطبيق واحد لكل',
@@ -1213,6 +1673,49 @@ const UIComponents = {
       'ride.noActive': 'لا توجد مشاوير نشطة',
       'ride.track': 'تتبع',
       'ride.none': 'لا يوجد',
+      'ride.heroTitle': 'احجز مشوارك مع إيدالاب',
+      'ride.heroDescription': 'تنقل سريع وآمن وبأسعار واضحة مع إدارة سهلة للمشوار.',
+      'ride.typesTitle': 'أنواع المشاوير',
+      'ride.bookingTitle': 'احجز مشواراً',
+      'ride.pickupLocation': 'موقع الانطلاق',
+      'ride.pickupPlaceholder': 'أدخل موقع الانطلاق',
+      'ride.dropoffLocation': 'موقع الوصول',
+      'ride.dropoffPlaceholder': 'أدخل عنوان الوجهة',
+      'ride.pickupDate': 'تاريخ الانطلاق',
+      'ride.pickupTime': 'وقت الانطلاق',
+      'ride.passengers': 'الركاب',
+      'ride.passenger.one': 'راكب واحد',
+      'ride.passenger.two': 'راكبان',
+      'ride.passenger.three': '3 ركاب',
+      'ride.passenger.four': '4 ركاب',
+      'ride.specialRequests': 'طلبات خاصة',
+      'ride.specialRequestsPlaceholder': 'أمتعة، حيوانات أليفة، وغيرها',
+      'ride.baseFare': 'الأجرة الأساسية',
+      'ride.distanceEstimate': 'تقدير المسافة',
+      'ride.surgePricing': 'التسعير المرتفع',
+      'ride.estimatedTotal': 'الإجمالي التقديري',
+      'ride.whyChoose': 'لماذا تختار مشاوير إيدالاب؟',
+      'ride.benefit.verifiedDrivers': 'سائقون موثوقون بتقييمات ممتازة',
+      'ride.benefit.transparentPricing': 'أسعار واضحة بدون رسوم مخفية',
+      'ride.benefit.safeTrips': 'مشاوير آمنة مع تتبع الرحلة',
+      'ride.benefit.rateDriver': 'قيّم السائق واترك ملاحظاتك',
+      'ride.activeRides': 'مشاويرك الحالية',
+      'ride.footerBrand': 'eDalab المشاوير',
+      'ride.footerRiders': 'للركاب',
+      'ride.footerDrivers': 'للسائقين',
+      'ride.footerContact': 'اتصل بنا',
+      'ride.footerHowItWorks': 'كيف تعمل المشاوير',
+      'ride.footerSafety': 'السلامة',
+      'ride.footerPricing': 'الأسعار',
+      'ride.footerBookRide': 'احجز مشواراً',
+      'ride.footerTripHistory': 'سجل الرحلات',
+      'ride.footerHelpCenter': 'مركز المساعدة',
+      'ride.footerBecomeDriver': 'كن سائقاً',
+      'ride.footerDriverSupport': 'دعم السائقين',
+      'ride.footerRequirements': 'المتطلبات',
+      'ride.status.confirmed': 'مؤكد',
+      'ride.status.active': 'نشط',
+      'ride.status.completed': 'مكتمل',
       'laundry.searchService': 'ابحث عن خدمة غسيل...',
       'laundry.find': 'ابحث',
       'laundry.baseService': 'الخدمة الأساسية',
@@ -1227,6 +1730,49 @@ const UIComponents = {
       'laundry.noOrders': 'لا توجد طلبات بعد',
       'laundry.placedOn': 'تم الطلب في',
       'laundry.viewDetails': 'عرض التفاصيل',
+      'laundry.heroTitle': 'خدمة الغسيل بسهولة',
+      'laundry.heroDescription': 'استلام وتنظيف وتوصيل احترافي مع مواعيد مرنة وتقديرات واضحة.',
+      'laundry.servicesTitle': 'خدمات الغسيل',
+      'laundry.orderTitle': 'قدّم طلبك',
+      'laundry.additionalServicesLabel': 'خدمات إضافية',
+      'laundry.ironing': 'كي (+$5)',
+      'laundry.drying': 'تجفيف آلي (+$3)',
+      'laundry.folding': 'طي (+$4)',
+      'laundry.starch': 'نشا (+$2)',
+      'laundry.pickupAddress': 'عنوان الاستلام',
+      'laundry.pickupAddressPlaceholder': 'أدخل عنوانك',
+      'laundry.specialInstructions': 'تعليمات خاصة',
+      'laundry.specialInstructionsPlaceholder': 'مثال: ملابس حساسة، غسيل يدوي فقط...',
+      'laundry.pickupDate': 'تاريخ الاستلام',
+      'laundry.pickupTime': 'وقت الاستلام',
+      'laundry.selectTime': 'اختر الوقت',
+      'laundry.expectedDelivery': 'موعد التوصيل المتوقع',
+      'laundry.selectDelivery': 'اختر التوصيل',
+      'laundry.delivery.sameDay': 'نفس اليوم',
+      'laundry.delivery.nextDay': 'اليوم التالي',
+      'laundry.delivery.twoDays': 'يومان',
+      'laundry.benefitsTitle': 'لماذا تختار خدمة الغسيل لدينا؟',
+      'laundry.benefit.pickupDelivery': 'استلام وتوصيل مجانيان في منطقتك',
+      'laundry.benefit.ecoCleaning': 'تنظيف احترافي بمنتجات صديقة للبيئة',
+      'laundry.benefit.express': 'خدمة سريعة متاحة للطلبات العاجلة',
+      'laundry.benefit.delicateCare': 'عناية خاصة بالأقمشة الحساسة والفاخرة',
+      'laundry.ordersTitle': 'طلبات الغسيل الخاصة بك',
+      'laundry.footerBrand': 'eDalab الغسيل',
+      'laundry.footerCustomers': 'للعملاء',
+      'laundry.footerServices': 'الخدمات',
+      'laundry.footerContact': 'اتصل بنا',
+      'laundry.footerGuide': 'دليل الخدمة',
+      'laundry.footerPickupZones': 'مناطق الاستلام',
+      'laundry.footerCareTips': 'نصائح العناية بالأقمشة',
+      'laundry.footerBookLaundry': 'احجز خدمة الغسيل',
+      'laundry.footerTrackOrders': 'تتبع الطلبات',
+      'laundry.footerHelpCenter': 'مركز المساعدة',
+      'laundry.footerWashFold': 'غسل وطي',
+      'laundry.footerExpressCleaning': 'تنظيف سريع',
+      'laundry.footerDelicateCare': 'عناية خاصة',
+      'laundry.status.pending': 'قيد الانتظار',
+      'laundry.status.processing': 'قيد المعالجة',
+      'laundry.status.completed': 'مكتمل',
       'services.search': 'ابحث عن خدمة أو مقدم خدمة...',
       'services.searchButton': 'بحث',
       'services.allServices': 'كل الخدمات',
@@ -1238,6 +1784,33 @@ const UIComponents = {
       'services.priceOnRequest': 'السعر عند الطلب',
       'services.bookNow': 'احجز الآن',
       'services.bookedSuccessSuffix': 'تم حجزه بنجاح!',
+      'services.heroTitle': 'خدمات منزلية موثوقة عندما تحتاجها',
+      'services.heroDescription': 'تصفح الفئات، وقارن بين المحترفين، واحجز المساعدة المناسبة لمنزلك وحياتك اليومية.',
+      'services.chooseService': 'اختر خدمة',
+      'services.serviceType': 'نوع الخدمة',
+      'services.rating': 'التقييم',
+      'services.priceRange': 'نطاق السعر',
+      'services.availability': 'التوفر',
+      'services.anyRating': 'كل التقييمات',
+      'services.allPrices': 'كل الأسعار',
+      'services.anyTime': 'أي وقت',
+      'services.today': 'اليوم',
+      'services.tomorrow': 'غداً',
+      'services.thisWeek': 'هذا الأسبوع',
+      'services.availableProfessionals': 'المحترفون المتاحون',
+      'services.footerBrand': 'eDalab الخدمات',
+      'services.footerCustomers': 'للعملاء',
+      'services.footerPros': 'للمحترفين',
+      'services.footerContact': 'اتصل بنا',
+      'services.footerHowBookingWorks': 'كيف تعمل الحجوزات',
+      'services.footerPartnerStandards': 'معايير الشركاء',
+      'services.footerSupport': 'الدعم',
+      'services.footerBrowseCategories': 'تصفح الفئات',
+      'services.footerFindProfessionals': 'اعثر على محترفين',
+      'services.footerHelpCenter': 'مركز المساعدة',
+      'services.footerBecomeProvider': 'كن مقدم خدمة',
+      'services.footerProviderResources': 'موارد مقدمي الخدمة',
+      'services.footerCoverageAreas': 'مناطق التغطية',
       'doctor.failedLoad': 'فشل تحميل الأطباء',
       'doctor.searchPlaceholder': 'ابحث عن الأطباء أو التخصصات...',
       'doctor.noDoctors': 'لم يتم العثور على أطباء مطابقين لمعاييرك',
@@ -1248,12 +1821,104 @@ const UIComponents = {
       'doctor.defaultReason': 'استشارة عامة',
       'doctor.bookedSuccess': 'تم حجز الموعد بنجاح!',
       'doctor.bookFailed': 'فشل حجز الموعد',
+      'doctor.heroTitle': 'صحتك أولويتنا',
+      'doctor.heroDescription': 'تواصل مع أطباء مؤهلين، واحجز المواعيد، واحصل على نصائح طبية موثوقة في أي وقت.',
+      'doctor.findDoctor': 'ابحث عن طبيب',
+      'doctor.topDoctors': 'أفضل الأطباء',
+      'doctor.specialty': 'التخصص',
+      'doctor.allSpecialties': 'كل التخصصات',
+      'doctor.specialty.generalPractice': 'طب عام',
+      'doctor.specialty.cardiology': 'أمراض القلب',
+      'doctor.specialty.pediatrics': 'طب الأطفال',
+      'doctor.specialty.dermatology': 'الأمراض الجلدية',
+      'doctor.specialty.psychiatry': 'الطب النفسي',
+      'doctor.specialty.orthopedics': 'العظام',
+      'doctor.availability': 'التوفر',
+      'doctor.allAvailability': 'الكل',
+      'doctor.availableNow': 'متاح الآن',
+      'doctor.availableToday': 'متاح اليوم',
+      'doctor.rating': 'التقييم',
+      'doctor.allRatings': 'الكل',
+      'doctor.modalTitle': 'احجز موعداً',
+      'doctor.selectDate': 'اختر التاريخ',
+      'doctor.selectTime': 'اختر الوقت',
+      'doctor.chooseTimeSlot': 'اختر وقتاً متاحاً',
+      'doctor.reasonVisit': 'سبب الزيارة',
+      'doctor.reasonPlaceholder': 'اشرح الأعراض أو سبب الزيارة',
+      'doctor.cancel': 'إلغاء',
+      'doctor.bookAppointment': 'تأكيد الحجز',
+      'doctor.footerBrand': 'eDalab الصحة',
+      'doctor.footerPatients': 'للمرضى',
+      'doctor.footerDoctors': 'للأطباء',
+      'doctor.footerContactEmergency': 'التواصل والطوارئ',
+      'doctor.footerAboutUs': 'من نحن',
+      'doctor.footerMedicalTeam': 'الفريق الطبي',
+      'doctor.footerBlog': 'المدونة',
+      'doctor.footerFindDoctors': 'ابحث عن أطباء',
+      'doctor.footerAppointments': 'مواعيدي',
+      'doctor.footerHealthRecords': 'السجلات الصحية',
+      'doctor.footerJoinUs': 'انضم إلينا',
+      'doctor.footerPortal': 'بوابة الطبيب',
+      'doctor.footerResources': 'الموارد',
+      'doctor.available': 'متاح',
+      'doctor.unavailable': 'غير متاح',
+      'doctor.experienceSuffix': 'خبرة',
+      'doctor.reviews': 'مراجعات',
+      'doctor.consultation': 'الاستشارة',
+      'doctor.cardBookNow': 'احجز الآن',
     },
   },
   pageTranslations: {
-    'edalab-website.html': {
+    'index.html': {
+      en: {
+        text: {
+          '.stats-inner .stat-it:nth-of-type(1) .si-lbl': 'Restaurants',
+          '.stats-inner .stat-it:nth-of-type(2) .si-lbl': 'Pharmacies',
+          '.stats-inner .stat-it:nth-of-type(3) .si-lbl': 'Hotels',
+          '.stats-inner .stat-it:nth-of-type(4) .si-lbl': 'Doctors',
+          '.stats-inner .stat-it:nth-of-type(5) .si-lbl': 'Avg delivery',
+          '.stats-inner .stat-it:nth-of-type(6) .si-lbl': 'Happy users',
+          '.ft-brand p': "Djibouti's #1 super-app. One platform for food, health, travel, services & more. Connecting your city, one delivery at a time.",
+          '.ft-grid > .ft-col:nth-child(2) h3': 'Food & Drink',
+          '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(1)': 'All restaurants',
+          '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(2)': 'Fast food',
+          '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(3)': 'Cafes & bakeries',
+          '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(4)': 'Djiboutian cuisine',
+          '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(5)': 'Grocery delivery',
+          '.ft-grid > .ft-col:nth-child(3) h3': 'Health',
+          '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(1)': '24/7 pharmacies',
+          '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(2)': 'Book a doctor',
+          '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(3)': 'Specialists',
+          '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(4)': 'Lab tests',
+          '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(5)': 'Vaccinations',
+          '.ft-grid > .ft-col:nth-child(4) h3': 'Travel & Stay',
+          '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(1)': 'Hotels',
+          '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(2)': 'Apartments',
+          '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(3)': 'Ride service',
+          '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(4)': 'Airport transfer',
+          '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(5)': 'Car rental',
+          '.ft-grid > .ft-col:nth-child(5) h3': 'eDalab',
+          '.ft-grid > .ft-col:nth-child(5) a:nth-of-type(1)': 'About us',
+          '.ft-grid > .ft-col:nth-child(5) a:nth-of-type(2)': 'List your business',
+          '.ft-grid > .ft-col:nth-child(5) a:nth-of-type(3)': 'Become a rider',
+          '.ft-grid > .ft-col:nth-child(5) a:nth-of-type(4)': 'Careers',
+          '.ft-grid > .ft-col:nth-child(5) a:nth-of-type(5)': 'Support',
+          '.ft-links a:nth-of-type(1)': 'Privacy Policy',
+          '.ft-links a:nth-of-type(2)': 'Terms of Service',
+          '.ft-links a:nth-of-type(3)': 'Cookies',
+        },
+        html: {
+          '.ft-bottom > span': '© 2025 eDalab. All rights reserved. <span class="ft-badge">🇩🇯 Made in Djibouti</span>',
+        },
+      },
       fr: {
         text: {
+          '.stats-inner .stat-it:nth-of-type(1) .si-lbl': 'Restaurants',
+          '.stats-inner .stat-it:nth-of-type(2) .si-lbl': 'Pharmacies',
+          '.stats-inner .stat-it:nth-of-type(3) .si-lbl': 'Hôtels',
+          '.stats-inner .stat-it:nth-of-type(4) .si-lbl': 'Médecins',
+          '.stats-inner .stat-it:nth-of-type(5) .si-lbl': 'Livraison moyenne',
+          '.stats-inner .stat-it:nth-of-type(6) .si-lbl': 'Utilisateurs satisfaits',
           '.hiw-step:nth-of-type(1) .hiw-n': 'Étape 01',
           '.hiw-step:nth-of-type(1) .hiw-t': 'Parcourez',
           '.hiw-step:nth-of-type(1) .hiw-d': 'Recherchez parmi les 8 catégories de services et filtrez par distance, note ou prix.',
@@ -1279,24 +1944,25 @@ const UIComponents = {
           '.dl-btn:last-child .dl-sub': 'Disponible sur',
           '.dl-btn:last-child .dl-name': 'Google Play',
           '.ft-brand p': 'La super-app n°1 de Djibouti. Une seule plateforme pour la restauration, la santé, le voyage, les services et plus encore.',
-          '.ft-grid > .ft-col:nth-child(2) h5': 'Restauration et boissons',
+          '.ft-grid > .ft-col:nth-child(2) h3': 'Restauration et boissons',
           '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(1)': 'Tous les restaurants',
           '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(2)': 'Restauration rapide',
           '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(3)': 'Cafés et boulangeries',
           '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(4)': 'Cuisine djiboutienne',
           '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(5)': 'Livraison de courses',
-          '.ft-grid > .ft-col:nth-child(3) h5': 'Santé',
+          '.ft-grid > .ft-col:nth-child(3) h3': 'Santé',
           '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(1)': 'Pharmacies 24h/24 et 7j/7',
           '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(2)': 'Prendre rendez-vous avec un médecin',
           '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(3)': 'Spécialistes',
           '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(4)': 'Analyses médicales',
           '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(5)': 'Vaccinations',
-          '.ft-grid > .ft-col:nth-child(4) h5': 'Voyage et séjour',
+          '.ft-grid > .ft-col:nth-child(4) h3': 'Voyage et séjour',
           '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(1)': 'Hôtels',
           '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(2)': 'Appartements',
           '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(3)': 'Service de trajet',
           '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(4)': 'Transfert aéroport',
           '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(5)': 'Location de voiture',
+          '.ft-grid > .ft-col:nth-child(5) h3': 'eDalab',
           '.ft-grid > .ft-col:nth-child(5) a:nth-of-type(1)': 'À propos',
           '.ft-grid > .ft-col:nth-child(5) a:nth-of-type(2)': 'Référencez votre entreprise',
           '.ft-grid > .ft-col:nth-child(5) a:nth-of-type(3)': 'Devenir coursier',
@@ -1317,6 +1983,12 @@ const UIComponents = {
       },
       ar: {
         text: {
+          '.stats-inner .stat-it:nth-of-type(1) .si-lbl': 'مطاعم',
+          '.stats-inner .stat-it:nth-of-type(2) .si-lbl': 'صيدليات',
+          '.stats-inner .stat-it:nth-of-type(3) .si-lbl': 'فنادق',
+          '.stats-inner .stat-it:nth-of-type(4) .si-lbl': 'أطباء',
+          '.stats-inner .stat-it:nth-of-type(5) .si-lbl': 'متوسط التوصيل',
+          '.stats-inner .stat-it:nth-of-type(6) .si-lbl': 'مستخدمون سعداء',
           '.hiw-step:nth-of-type(1) .hiw-n': 'الخطوة 01',
           '.hiw-step:nth-of-type(1) .hiw-t': 'تصفح',
           '.hiw-step:nth-of-type(1) .hiw-d': 'ابحث في 8 فئات خدمات مع التصفية حسب المسافة أو التقييم أو السعر.',
@@ -1342,24 +2014,25 @@ const UIComponents = {
           '.dl-btn:last-child .dl-sub': 'احصل عليه من',
           '.dl-btn:last-child .dl-name': 'Google Play',
           '.ft-brand p': 'التطبيق الشامل رقم 1 في جيبوتي. منصة واحدة للطعام والصحة والسفر والخدمات وأكثر.',
-          '.ft-grid > .ft-col:nth-child(2) h5': 'الطعام والشراب',
+          '.ft-grid > .ft-col:nth-child(2) h3': 'الطعام والشراب',
           '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(1)': 'كل المطاعم',
           '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(2)': 'الوجبات السريعة',
           '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(3)': 'المقاهي والمخابز',
           '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(4)': 'المطبخ الجيبوتي',
           '.ft-grid > .ft-col:nth-child(2) a:nth-of-type(5)': 'توصيل البقالة',
-          '.ft-grid > .ft-col:nth-child(3) h5': 'الصحة',
+          '.ft-grid > .ft-col:nth-child(3) h3': 'الصحة',
           '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(1)': 'صيدليات 24/7',
           '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(2)': 'احجز طبيباً',
           '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(3)': 'الأخصائيون',
           '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(4)': 'التحاليل المخبرية',
           '.ft-grid > .ft-col:nth-child(3) a:nth-of-type(5)': 'التطعيمات',
-          '.ft-grid > .ft-col:nth-child(4) h5': 'السفر والإقامة',
+          '.ft-grid > .ft-col:nth-child(4) h3': 'السفر والإقامة',
           '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(1)': 'فنادق',
           '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(2)': 'الشقق',
           '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(3)': 'خدمة المشاوير',
           '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(4)': 'نقل المطار',
           '.ft-grid > .ft-col:nth-child(4) a:nth-of-type(5)': 'تأجير السيارات',
+          '.ft-grid > .ft-col:nth-child(5) h3': 'إيدالاب',
           '.ft-grid > .ft-col:nth-child(5) a:nth-of-type(1)': 'من نحن',
           '.ft-grid > .ft-col:nth-child(5) a:nth-of-type(2)': 'أضف نشاطك التجاري',
           '.ft-grid > .ft-col:nth-child(5) a:nth-of-type(3)': 'كن مندوب توصيل',
@@ -1380,6 +2053,27 @@ const UIComponents = {
       },
     },
     'food.html': {
+      en: {
+        text: {
+          '.food-hero h1': 'Hungry? Order from your favorite restaurants',
+          '.food-hero p': 'Fast delivery, fresh food, and exclusive deals. Everything your taste buds crave.',
+          '.filter-section h2': 'Filter & Sort',
+          '.food-section h2': 'Popular Restaurants',
+          '.footer-section:nth-of-type(1) h3': 'eDalab Food',
+          '.footer-section:nth-of-type(1) a:nth-of-type(1)': 'About Us',
+          '.footer-section:nth-of-type(1) a:nth-of-type(2)': 'Careers',
+          '.footer-section:nth-of-type(2) h3': 'For Users',
+          '.footer-section:nth-of-type(2) a:nth-of-type(1)': 'Order Food',
+          '.footer-section:nth-of-type(2) a:nth-of-type(2)': 'Offers',
+          '.footer-section:nth-of-type(2) a:nth-of-type(3)': 'Help Center',
+          '.footer-section:nth-of-type(3) h3': 'For Partners',
+          '.footer-section:nth-of-type(4) h3': 'Contact',
+          '.footer-bottom p': '© 2024 eDalab. All rights reserved.',
+        },
+        placeholder: {
+          '#search-container .search-input': 'Search restaurants or dishes...',
+        },
+      },
       fr: {
         text: {
           '.food-hero h1': 'Envie de manger ? Commandez auprès de vos restaurants préférés',
@@ -1425,6 +2119,29 @@ const UIComponents = {
       },
     },
     'shopping.html': {
+      en: {
+        text: {
+          '.shopping-hero h1': 'Shop Everything You Love',
+          '.shopping-hero p': 'Fashion, electronics, home decor, and more. All in one place with fast delivery.',
+          'main > section:first-of-type h2': 'Categories',
+          '.filter-section h2': 'Shop Now',
+          '#category-filter option[value=""]': 'All Categories',
+          '.filter-item:nth-of-type(1) label': 'Category',
+          '.filter-item:nth-of-type(2) label': 'Price Range',
+          '#price-filter option[value=""]': 'All Prices',
+          '.filter-item:nth-of-type(3) label': 'Sort By',
+          '#sort-filter option[value="newest"]': 'Newest',
+          '#sort-filter option[value="price-low"]': 'Price: Low to High',
+          '#sort-filter option[value="price-high"]': 'Price: High to Low',
+          '#sort-filter option[value="rating"]': 'Top Rated',
+          '.footer-section:nth-of-type(1) h3': 'eDalab Shopping',
+          '.footer-section:nth-of-type(2) h3': 'For Shoppers',
+          '.footer-section:nth-of-type(3) h3': 'For Sellers',
+          '.footer-section:nth-of-type(4) h3': 'Contact',
+          '.footer-bottom p': '© 2024 eDalab. All rights reserved.',
+        },
+        placeholder: { '#search-container .search-input': 'Search products...' },
+      },
       fr: {
         text: {
           '.shopping-hero h1': 'Achetez tout ce que vous aimez',
@@ -1473,6 +2190,27 @@ const UIComponents = {
       },
     },
     'pharmacy.html': {
+      en: {
+        text: {
+          '.pharmacy-hero h1': 'Health & Wellness at Your Fingertips',
+          '.pharmacy-hero p': 'Order medicines, health products, and wellness supplements. Fast delivery and trusted quality.',
+          'main > section:first-of-type h3': 'Upload Your Prescription',
+          'main > section:first-of-type p': 'Upload your prescription to get medicines delivered',
+          'main > section:first-of-type button': 'Upload Prescription',
+          'main > section:nth-of-type(2) h2': 'Categories',
+          '.filter-section h2': 'Browse Medicines & Products',
+          '.filter-item:nth-of-type(1) label': 'Category',
+          '#category-filter option[value=""]': 'All Categories',
+          '.filter-item:nth-of-type(2) label': 'Type',
+          '#type-filter option[value=""]': 'All Types',
+          '.filter-item:nth-of-type(3) label': 'Availability',
+          '#availability-filter option[value=""]': 'All',
+          '#availability-filter option[value="in-stock"]': 'In Stock',
+          '#availability-filter option[value="no-prescription"]': 'No Prescription Required',
+          '.footer-bottom p': '© 2024 eDalab. All rights reserved.',
+        },
+        placeholder: { '#search-container .search-input': 'Search medicines, brands...' },
+      },
       fr: {
         text: {
           '.pharmacy-hero h1': 'Santé et bien-être à portée de main',
@@ -1514,342 +2252,6 @@ const UIComponents = {
           '.footer-bottom p': '© 2024 eDalab. جميع الحقوق محفوظة.',
         },
         placeholder: { '#search-container .search-input': 'ابحث عن الأدوية أو العلامات...' },
-      },
-    },
-    'doctor.html': {
-      fr: {
-        text: {
-          '.doctor-hero h1': 'Votre santé, notre priorité',
-          '.doctor-hero p': 'Consultez des médecins qualifiés, prenez rendez-vous et recevez des conseils médicaux à tout moment.',
-          '.filter-section h2': 'Trouver un médecin',
-          '.doctor-section h2': 'Meilleurs médecins',
-          '.filter-item:nth-of-type(1) label': 'Spécialité',
-          '#specialty-filter option[value=""]': 'Toutes les spécialités',
-          '.filter-item:nth-of-type(2) label': 'Disponibilité',
-          '#availability-filter option[value=""]': 'Tous',
-          '#availability-filter option[value="available"]': 'Disponible maintenant',
-          '#availability-filter option[value="upcoming"]': 'Disponible aujourd’hui',
-          '.filter-item:nth-of-type(3) label': 'Note',
-          '#rating-filter option[value=""]': 'Tous',
-          '#rating-filter option[value="4"]': '4+ étoiles',
-          '#rating-filter option[value="4.5"]': '4.5+ étoiles',
-          '#rating-filter option[value="5"]': '5 étoiles',
-          '#booking-modal-overlay .modal-header h2': 'Prendre rendez-vous',
-          '#booking-form .form-group:nth-of-type(1) label': 'Choisir la date',
-          '#booking-form .form-group:nth-of-type(2) label': 'Choisir l’heure',
-          '#appointment-time option[value=""]': 'Choisir un créneau',
-          '#booking-form .form-group:nth-of-type(3) label': 'Motif de la visite',
-          '#booking-modal-overlay .modal-btn.secondary': 'Annuler',
-          '#booking-modal-overlay .modal-btn.primary': 'Réserver',
-          '.footer-section:nth-of-type(1) h3': 'eDalab Santé',
-          '.footer-section:nth-of-type(2) h3': 'Pour les patients',
-          '.footer-section:nth-of-type(3) h3': 'Pour les médecins',
-          '.footer-section:nth-of-type(4) h3': 'Contact et urgence',
-          '.footer-bottom p': '© 2024 eDalab. Tous droits réservés.',
-        },
-        placeholder: {
-          '#doctor-search': 'Rechercher des médecins ou spécialités...',
-          '#appointment-reason': 'Décrivez vos symptômes ou la raison de votre visite',
-        },
-      },
-      ar: {
-        text: {
-          '.doctor-hero h1': 'صحتك أولويتنا',
-          '.doctor-hero p': 'تواصل مع أطباء مؤهلين، واحجز المواعيد، واحصل على نصائح طبية موثوقة في أي وقت.',
-          '.filter-section h2': 'ابحث عن طبيب',
-          '.doctor-section h2': 'أفضل الأطباء',
-          '.filter-item:nth-of-type(1) label': 'التخصص',
-          '#specialty-filter option[value=""]': 'كل التخصصات',
-          '.filter-item:nth-of-type(2) label': 'التوفر',
-          '#availability-filter option[value=""]': 'الكل',
-          '#availability-filter option[value="available"]': 'متاح الآن',
-          '#availability-filter option[value="upcoming"]': 'متاح اليوم',
-          '.filter-item:nth-of-type(3) label': 'التقييم',
-          '#rating-filter option[value=""]': 'الكل',
-          '#rating-filter option[value="4"]': '4+ نجوم',
-          '#rating-filter option[value="4.5"]': '4.5+ نجوم',
-          '#rating-filter option[value="5"]': '5 نجوم',
-          '#booking-modal-overlay .modal-header h2': 'احجز موعداً',
-          '#booking-form .form-group:nth-of-type(1) label': 'اختر التاريخ',
-          '#booking-form .form-group:nth-of-type(2) label': 'اختر الوقت',
-          '#appointment-time option[value=""]': 'اختر وقتاً متاحاً',
-          '#booking-form .form-group:nth-of-type(3) label': 'سبب الزيارة',
-          '#booking-modal-overlay .modal-btn.secondary': 'إلغاء',
-          '#booking-modal-overlay .modal-btn.primary': 'تأكيد الحجز',
-          '.footer-section:nth-of-type(1) h3': 'eDalab الصحة',
-          '.footer-section:nth-of-type(2) h3': 'للمرضى',
-          '.footer-section:nth-of-type(3) h3': 'للأطباء',
-          '.footer-section:nth-of-type(4) h3': 'التواصل والطوارئ',
-          '.footer-bottom p': '© 2024 eDalab. جميع الحقوق محفوظة.',
-        },
-        placeholder: {
-          '#doctor-search': 'ابحث عن الأطباء أو التخصصات...',
-          '#appointment-reason': 'اشرح الأعراض أو سبب الزيارة',
-        },
-      },
-    },
-    'hotel.html': {
-      fr: {
-        text: {
-          '.hotel-hero h1': 'Trouvez votre séjour idéal',
-          '.hotel-hero p': 'Chambres confortables, excellents emplacements et prix imbattables. Réservez dès maintenant.',
-          'main > div:first-of-type h2': 'Rechercher des hôtels',
-          '.date-picker .filter-item:nth-of-type(1) label': 'Date d’arrivée',
-          '.date-picker .filter-item:nth-of-type(2) label': 'Date de départ',
-          '.guests-picker .filter-item:nth-of-type(1) label': 'Voyageurs',
-          '.guests-picker .filter-item:nth-of-type(2) label': 'Type de chambre',
-          '#guests-count option[value="1"]': '1 voyageur',
-          '#guests-count option[value="2"]': '2 voyageurs',
-          '#guests-count option[value="3"]': '3 voyageurs',
-          '#guests-count option[value="4"]': '4 voyageurs',
-          '#guests-count option[value="5"]': '5+ voyageurs',
-          '#room-type option[value=""]': 'Tout type',
-          '#room-type option[value="single"]': 'Chambre simple',
-          '#room-type option[value="double"]': 'Chambre double',
-          '#room-type option[value="suite"]': 'Suite',
-          '#room-type option[value="villa"]': 'Villa',
-          'main > div:first-of-type button': 'Rechercher des hôtels',
-          '.filter-section h2': 'Filtrer les résultats',
-          '.filter-item:nth-of-type(1) label': 'Fourchette de prix',
-          '#price-filter option[value=""]': 'Tous les prix',
-          '.filter-item:nth-of-type(2) label': 'Classement par étoiles',
-          '#rating-filter option[value=""]': 'Toutes les notes',
-          '.filter-item:nth-of-type(3) label': 'Équipements',
-          '#amenities-filter option[value=""]': 'Tous les équipements',
-          '#amenities-filter option[value="pool"]': 'Piscine',
-          '#amenities-filter option[value="gym"]': 'Salle de sport',
-          '#booking-modal-overlay .modal-header h2': 'Réserver un hôtel',
-          '.footer-bottom p': '© 2024 eDalab. Tous droits réservés.',
-        },
-        placeholder: { '#special-requests': 'Ex. arrivée tardive, étage élevé, chambre calme' },
-      },
-      ar: {
-        text: {
-          '.hotel-hero h1': 'اعثر على إقامتك المثالية',
-          '.hotel-hero p': 'غرف مريحة، مواقع رائعة، وأسعار ممتازة. احجز الآن.',
-          'main > div:first-of-type h2': 'ابحث عن الفنادق',
-          '.date-picker .filter-item:nth-of-type(1) label': 'تاريخ الوصول',
-          '.date-picker .filter-item:nth-of-type(2) label': 'تاريخ المغادرة',
-          '.guests-picker .filter-item:nth-of-type(1) label': 'الضيوف',
-          '.guests-picker .filter-item:nth-of-type(2) label': 'نوع الغرفة',
-          '#guests-count option[value="1"]': 'ضيف واحد',
-          '#guests-count option[value="2"]': 'ضيفان',
-          '#guests-count option[value="3"]': '3 ضيوف',
-          '#guests-count option[value="4"]': '4 ضيوف',
-          '#guests-count option[value="5"]': '5+ ضيوف',
-          '#room-type option[value=""]': 'أي نوع',
-          '#room-type option[value="single"]': 'غرفة مفردة',
-          '#room-type option[value="double"]': 'غرفة مزدوجة',
-          '#room-type option[value="suite"]': 'جناح',
-          '#room-type option[value="villa"]': 'فيلا',
-          'main > div:first-of-type button': 'ابحث عن الفنادق',
-          '.filter-section h2': 'تصفية النتائج',
-          '.filter-item:nth-of-type(1) label': 'نطاق السعر',
-          '#price-filter option[value=""]': 'كل الأسعار',
-          '.filter-item:nth-of-type(2) label': 'تصنيف النجوم',
-          '#rating-filter option[value=""]': 'كل التقييمات',
-          '.filter-item:nth-of-type(3) label': 'المرافق',
-          '#amenities-filter option[value=""]': 'كل المرافق',
-          '#amenities-filter option[value="pool"]': 'مسبح',
-          '#amenities-filter option[value="gym"]': 'مركز لياقة',
-          '#booking-modal-overlay .modal-header h2': 'احجز الفندق',
-          '.footer-bottom p': '© 2024 eDalab. جميع الحقوق محفوظة.',
-        },
-        placeholder: { '#special-requests': 'مثال: وصول متأخر، طابق مرتفع، غرفة هادئة' },
-      },
-    },
-    'ride.html': {
-      fr: {
-        text: {
-          '.ride-hero h1, .wrap h1': 'Réservez votre trajet avec eDalab',
-          '.ride-hero p': 'Transport rapide, sûr et abordable avec des tarifs clairs et une gestion simple du trajet.',
-          'main > section:first-of-type h2': 'Types de trajets',
-          '.ride-booking-form h2': 'Réserver un trajet',
-          '.form-group:nth-of-type(1) label': 'Lieu de départ',
-          '.form-group:nth-of-type(2) label': 'Lieu de destination',
-          '.form-row:nth-of-type(1) .form-group:nth-of-type(1) label': 'Date de départ',
-          '.form-row:nth-of-type(1) .form-group:nth-of-type(2) label': 'Heure de départ',
-          '.form-row:nth-of-type(2) .form-group:nth-of-type(1) label': 'Passagers',
-          '.form-row:nth-of-type(2) .form-group:nth-of-type(2) label': 'Demandes spéciales',
-          '#passengerCount option[value="1"]': '1 passager',
-          '#passengerCount option[value="2"]': '2 passagers',
-          '#passengerCount option[value="3"]': '3 passagers',
-          '#passengerCount option[value="4"]': '4 passagers',
-          '.ride-info h3': 'Pourquoi choisir eDalab Rides ?',
-          '.active-rides h3': 'Vos trajets en cours',
-          '#bookButton': 'Réserver maintenant',
-          '.footer-section:nth-of-type(1) h3': 'eDalab Ride',
-          '.footer-section:nth-of-type(2) h3': 'Pour les passagers',
-          '.footer-section:nth-of-type(3) h3': 'Pour les chauffeurs',
-          '.footer-section:nth-of-type(4) h3': 'Contact',
-          '.footer-bottom p': '© 2024 eDalab. Tous droits réservés.',
-        },
-        placeholder: {
-          '#pickupLocation': 'Entrez l’adresse de départ',
-          '#dropoffLocation': 'Entrez l’adresse de destination',
-          '#specialRequests': 'Bagages, animaux, etc.',
-          '#ride-hero-search': 'Où voulez-vous aller ?',
-        },
-      },
-      ar: {
-        text: {
-          '.ride-hero h1, .wrap h1': 'احجز مشوارك مع إيدالاب',
-          '.ride-hero p': 'تنقل سريع وآمن وبأسعار واضحة مع إدارة سهلة للمشوار.',
-          'main > section:first-of-type h2': 'أنواع المشاوير',
-          '.ride-booking-form h2': 'احجز مشواراً',
-          '.form-group:nth-of-type(1) label': 'موقع الانطلاق',
-          '.form-group:nth-of-type(2) label': 'موقع الوصول',
-          '.form-row:nth-of-type(1) .form-group:nth-of-type(1) label': 'تاريخ الانطلاق',
-          '.form-row:nth-of-type(1) .form-group:nth-of-type(2) label': 'وقت الانطلاق',
-          '.form-row:nth-of-type(2) .form-group:nth-of-type(1) label': 'الركاب',
-          '.form-row:nth-of-type(2) .form-group:nth-of-type(2) label': 'طلبات خاصة',
-          '#passengerCount option[value="1"]': 'راكب واحد',
-          '#passengerCount option[value="2"]': 'راكبان',
-          '#passengerCount option[value="3"]': '3 ركاب',
-          '#passengerCount option[value="4"]': '4 ركاب',
-          '.ride-info h3': 'لماذا تختار مشاوير إيدالاب؟',
-          '.active-rides h3': 'مشاويرك الحالية',
-          '#bookButton': 'احجز المشوار الآن',
-          '.footer-section:nth-of-type(1) h3': 'eDalab المشاوير',
-          '.footer-section:nth-of-type(2) h3': 'للركاب',
-          '.footer-section:nth-of-type(3) h3': 'للسائقين',
-          '.footer-section:nth-of-type(4) h3': 'اتصل بنا',
-          '.footer-bottom p': '© 2024 eDalab. جميع الحقوق محفوظة.',
-        },
-        placeholder: {
-          '#pickupLocation': 'أدخل موقع الانطلاق',
-          '#dropoffLocation': 'أدخل الوجهة',
-          '#specialRequests': 'أمتعة، حيوانات أليفة، وغيرها',
-          '#ride-hero-search': 'إلى أين تريد الذهاب؟',
-        },
-      },
-    },
-    'home-services.html': {
-      fr: {
-        text: {
-          '.services-hero h1, .wrap h1': 'Des services à domicile fiables, quand vous en avez besoin',
-          '.services-hero p': 'Parcourez les catégories, comparez les professionnels et réservez la bonne aide pour votre maison et votre quotidien.',
-          'main > section:first-of-type h2': 'Choisissez un service',
-          '.filter-item:nth-of-type(1) label': 'Type de service',
-          '.filter-item:nth-of-type(2) label': 'Note',
-          '.filter-item:nth-of-type(3) label': 'Fourchette de prix',
-          '.filter-item:nth-of-type(4) label': 'Disponibilité',
-          '#ratingFilter option[value=""]': 'Toutes les notes',
-          '#ratingFilter option[value="5"]': '5 étoiles',
-          '#ratingFilter option[value="4"]': '4+ étoiles',
-          '#ratingFilter option[value="3"]': '3+ étoiles',
-          '#priceFilter option[value=""]': 'Tous les prix',
-          '#availabilityFilter option[value=""]': 'N’importe quand',
-          '#availabilityFilter option[value="today"]': 'Aujourd’hui',
-          '#availabilityFilter option[value="tomorrow"]': 'Demain',
-          '#availabilityFilter option[value="week"]': 'Cette semaine',
-          'main > section:nth-of-type(2) h2': 'Professionnels disponibles',
-          '.footer-section:nth-of-type(1) h3': 'eDalab Services',
-          '.footer-section:nth-of-type(2) h3': 'Pour les clients',
-          '.footer-section:nth-of-type(3) h3': 'Pour les pros',
-          '.footer-section:nth-of-type(4) h3': 'Contact',
-          '.footer-bottom p': '© 2024 eDalab. Tous droits réservés.',
-        },
-        placeholder: { '#services-hero-search': 'Rechercher un service ou un prestataire...' },
-      },
-      ar: {
-        text: {
-          '.services-hero h1, .wrap h1': 'خدمات منزلية موثوقة عندما تحتاجها',
-          '.services-hero p': 'تصفح الفئات، وقارن بين المحترفين، واحجز المساعدة المناسبة لمنزلك وحياتك اليومية.',
-          'main > section:first-of-type h2': 'اختر خدمة',
-          '.filter-item:nth-of-type(1) label': 'نوع الخدمة',
-          '.filter-item:nth-of-type(2) label': 'التقييم',
-          '.filter-item:nth-of-type(3) label': 'نطاق السعر',
-          '.filter-item:nth-of-type(4) label': 'التوفر',
-          '#ratingFilter option[value=""]': 'كل التقييمات',
-          '#ratingFilter option[value="5"]': '5 نجوم',
-          '#ratingFilter option[value="4"]': '4+ نجوم',
-          '#ratingFilter option[value="3"]': '3+ نجوم',
-          '#priceFilter option[value=""]': 'كل الأسعار',
-          '#availabilityFilter option[value=""]': 'أي وقت',
-          '#availabilityFilter option[value="today"]': 'اليوم',
-          '#availabilityFilter option[value="tomorrow"]': 'غداً',
-          '#availabilityFilter option[value="week"]': 'هذا الأسبوع',
-          'main > section:nth-of-type(2) h2': 'المحترفون المتاحون',
-          '.footer-section:nth-of-type(1) h3': 'eDalab الخدمات',
-          '.footer-section:nth-of-type(2) h3': 'للعملاء',
-          '.footer-section:nth-of-type(3) h3': 'للمحترفين',
-          '.footer-section:nth-of-type(4) h3': 'اتصل بنا',
-          '.footer-bottom p': '© 2024 eDalab. جميع الحقوق محفوظة.',
-        },
-        placeholder: { '#services-hero-search': 'ابحث عن خدمة أو مقدم خدمة...' },
-      },
-    },
-    'laundry.html': {
-      fr: {
-        text: {
-          '.laundry-hero h1, .wrap h1': 'La blanchisserie simplifiée',
-          'main > section:first-of-type h2': 'Services de blanchisserie',
-          '.laundry-form h2': 'Passez votre commande',
-          '.laundry-hero p': 'Collecte, nettoyage et livraison professionnels avec des horaires flexibles et des estimations transparentes.',
-          '.laundry-form > label': 'Services supplémentaires',
-          '.checkbox-item:nth-of-type(1) label': 'Repassage (+$5)',
-          '.checkbox-item:nth-of-type(2) label': 'Séchage machine (+$3)',
-          '.checkbox-item:nth-of-type(3) label': 'Pliage (+$4)',
-          '.checkbox-item:nth-of-type(4) label': 'Amidon (+$2)',
-          '.form-group:nth-of-type(1) label': 'Adresse de collecte',
-          '.form-group:nth-of-type(2) label': 'Instructions spéciales',
-          '.form-row .form-group:nth-of-type(1) label': 'Date de collecte',
-          '.form-row .form-group:nth-of-type(2) label': 'Heure de collecte',
-          '#pickupTime option[value=""]': 'Choisir l’heure',
-          '#deliveryDate option[value=""]': 'Choisir la livraison',
-          '#serviceChargesRow span:first-child': 'Services supplémentaires',
-          '.price-row:nth-of-type(3) span:first-child': 'Collecte et livraison',
-          '.price-total span:first-child': 'Estimation totale',
-          '.laundry-info h3': 'Pourquoi choisir notre blanchisserie ?',
-          '.active-orders h3, .laundry-orders h3': 'Vos commandes de blanchisserie',
-          '#submitButton': 'Passer la commande',
-          '.footer-section:nth-of-type(1) h3': 'eDalab Laundry',
-          '.footer-section:nth-of-type(2) h3': 'Pour les clients',
-          '.footer-section:nth-of-type(3) h3': 'Services',
-          '.footer-section:nth-of-type(4) h3': 'Contact',
-          '.footer-bottom p': '© 2024 eDalab. Tous droits réservés.',
-        },
-        placeholder: {
-          '#pickupAddress': 'Entrez votre adresse',
-          '#specialInstructions': 'ex. vêtements délicats, lavage à la main uniquement...',
-          '#laundry-hero-search': 'Rechercher un service de blanchisserie...',
-        },
-      },
-      ar: {
-        text: {
-          '.laundry-hero h1, .wrap h1': 'خدمة الغسيل بسهولة',
-          'main > section:first-of-type h2': 'خدمات الغسيل',
-          '.laundry-form h2': 'قدّم طلبك',
-          '.laundry-hero p': 'استلام وتنظيف وتوصيل احترافي مع مواعيد مرنة وتقديرات واضحة.',
-          '.laundry-form > label': 'خدمات إضافية',
-          '.checkbox-item:nth-of-type(1) label': 'كي (+$5)',
-          '.checkbox-item:nth-of-type(2) label': 'تجفيف آلي (+$3)',
-          '.checkbox-item:nth-of-type(3) label': 'طي (+$4)',
-          '.checkbox-item:nth-of-type(4) label': 'نشا (+$2)',
-          '.form-group:nth-of-type(1) label': 'عنوان الاستلام',
-          '.form-group:nth-of-type(2) label': 'تعليمات خاصة',
-          '.form-row .form-group:nth-of-type(1) label': 'تاريخ الاستلام',
-          '.form-row .form-group:nth-of-type(2) label': 'وقت الاستلام',
-          '#pickupTime option[value=""]': 'اختر الوقت',
-          '#deliveryDate option[value=""]': 'اختر التوصيل',
-          '#serviceChargesRow span:first-child': 'خدمات إضافية',
-          '.price-row:nth-of-type(3) span:first-child': 'الاستلام والتوصيل',
-          '.price-total span:first-child': 'التقدير الإجمالي',
-          '.laundry-info h3': 'لماذا تختار خدمة الغسيل لدينا؟',
-          '.active-orders h3, .laundry-orders h3': 'طلبات الغسيل الخاصة بك',
-          '#submitButton': 'تأكيد الطلب',
-          '.footer-section:nth-of-type(1) h3': 'eDalab الغسيل',
-          '.footer-section:nth-of-type(2) h3': 'للعملاء',
-          '.footer-section:nth-of-type(3) h3': 'الخدمات',
-          '.footer-section:nth-of-type(4) h3': 'اتصل بنا',
-          '.footer-bottom p': '© 2024 eDalab. جميع الحقوق محفوظة.',
-        },
-        placeholder: {
-          '#pickupAddress': 'أدخل عنوانك',
-          '#specialInstructions': 'مثال: ملابس حساسة، غسيل يدوي فقط...',
-          '#laundry-hero-search': 'ابحث عن خدمة غسيل...',
-        },
       },
     },
     'checkout.html': {
@@ -2407,7 +2809,7 @@ const UIComponents = {
   },
 
   getCurrentPageName() {
-    return window.location.pathname.split('/').pop() || 'edalab-website.html';
+    return window.location.pathname.split('/').pop() || 'index.html';
   },
 
   applySelectorTextMap(map = {}, root = document) {
@@ -2444,7 +2846,7 @@ const UIComponents = {
       this.applySelectorPlaceholderMap(config.placeholder, root);
     }
 
-    if (page === 'edalab-website.html' && typeof window.refreshHomepageLocalizedContent === 'function') {
+    if (page === 'index.html' && typeof window.refreshHomepageLocalizedContent === 'function') {
       window.refreshHomepageLocalizedContent();
       if (config) {
         this.applySelectorTextMap(config.text, root);
@@ -2468,13 +2870,17 @@ const UIComponents = {
   },
 
   getLanguage() {
+    const selected = stateManager?.getPreference?.('language', null);
+    if (selected && this.translations[selected]) {
+      return selected;
+    }
+
     const forcedLanguage = document?.documentElement?.dataset?.pageLanguage;
     if (forcedLanguage && this.translations[forcedLanguage]) {
       return forcedLanguage;
     }
 
-    const selected = stateManager?.getLanguage?.() || this.defaultLanguage;
-    return this.translations[selected] ? selected : this.defaultLanguage;
+    return this.defaultLanguage;
   },
 
   t(key, fallback = '') {
@@ -2502,6 +2908,11 @@ const UIComponents = {
   applyTranslations(root = document) {
     const language = this.getLanguage();
     this.updateDocumentLanguage(language);
+    if (window.__edaI18nFailSafe) {
+      window.clearTimeout(window.__edaI18nFailSafe);
+      window.__edaI18nFailSafe = null;
+    }
+    document.documentElement.removeAttribute('data-i18n-pending');
 
     root.querySelectorAll('[data-i18n]').forEach((element) => {
       const key = element.dataset.i18n;
@@ -2534,11 +2945,12 @@ const UIComponents = {
   },
 
   getLogoMarkup() {
-    return `<img src="${this.logoPath}" alt="eDalab logo">`;
+    return `<img src="${this.logoPath}" alt="eDalab logo" width="300" height="296" decoding="async">`;
   },
 
   getIconMarkup(name, className = 'ui-icon') {
     const icons = {
+      globe: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.8 12h16.4M12 3.5a13.8 13.8 0 0 1 0 17M12 3.5a13.8 13.8 0 0 0 0 17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
       search: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 16l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
       browse: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5h16M4 12h16M4 16.5h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`,
       heart: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
@@ -2648,19 +3060,19 @@ const UIComponents = {
         <div class="dc-image">
           <img src="${this.getImageSrc(doctor, 'assets/icons/doctor.png')}" alt="${doctor.name}" />
           ${doctor.isVerified ? `<span class="dc-verified">${this.getIconMarkup('verified', 'ui-icon ui-icon-xs')}</span>` : ''}
-          ${doctor.isAvailable ? '<span class="dc-available">Available</span>' : '<span class="dc-unavailable">Unavailable</span>'}
+          ${doctor.isAvailable ? `<span class="dc-available">${this.t('doctor.available', 'Available')}</span>` : `<span class="dc-unavailable">${this.t('doctor.unavailable', 'Unavailable')}</span>`}
         </div>
         <div class="dc-content">
           <h3 class="dc-name">${doctor.name}</h3>
           <p class="dc-specialty">${doctor.specialty}</p>
-          <p class="dc-experience">${doctor.experience} experience</p>
+          <p class="dc-experience">${doctor.experience} ${this.t('doctor.experienceSuffix', 'experience')}</p>
           <div class="dc-rating">
             <span class="dc-stars">★ ${doctor.rating.toFixed(1)}</span>
-            <span class="dc-reviews">(${doctor.reviewCount} reviews)</span>
+            <span class="dc-reviews">(${doctor.reviewCount} ${this.t('doctor.reviews', 'reviews')})</span>
           </div>
-          <div class="dc-fee">Consultation: $${doctor.consultationFee}</div>
+          <div class="dc-fee">${this.t('doctor.consultation', 'Consultation')}: $${doctor.consultationFee}</div>
           <button class="dc-book-btn" onclick="navigateTo('/book-appointment/${doctor.id}'); event.stopPropagation();">
-            Book Now
+            ${this.t('doctor.cardBookNow', 'Book Now')}
           </button>
         </div>
       </div>
@@ -2686,10 +3098,10 @@ const UIComponents = {
               .join('')}
           </div>
           <div class="hc-price">
-            <span class="hc-price-from">From</span>
+            <span class="hc-price-from">${this.t('hotel.card.from', 'From')}</span>
             <span class="hc-price-value">$${hotel.pricePerNight}/night</span>
           </div>
-          <button class="hc-book-btn">Book Now</button>
+          <button class="hc-book-btn">${this.t('hotel.card.bookNow', 'Book Now')}</button>
         </div>
       </div>
     `;
@@ -3032,7 +3444,7 @@ const UIComponents = {
       registerHref = 'register.html',
       profileHref = 'profile.html',
       cartHref = 'cart.html',
-      logoutRedirect = `${window.location.pathname.split('/').pop() || 'edalab-website.html'}${window.location.search || ''}`,
+      logoutRedirect = `${window.location.pathname.split('/').pop() || 'index.html'}${window.location.search || ''}`,
     } = options;
 
     const container = document.querySelector(containerSelector);
@@ -3043,11 +3455,11 @@ const UIComponents = {
       if (logo.tagName !== 'A') {
         const anchor = document.createElement('a');
         anchor.className = logo.className;
-        anchor.href = 'edalab-website.html';
+        anchor.href = 'index.html';
         anchor.innerHTML = logo.innerHTML;
         logo.replaceWith(anchor);
       } else {
-        logo.setAttribute('href', 'edalab-website.html');
+        logo.setAttribute('href', 'index.html');
       }
 
       const logoText = document.querySelector('.nav-logo span');
@@ -3068,8 +3480,8 @@ const UIComponents = {
       container.innerHTML = user?.id
         ? `
           <div class="nav-profile-menu">
-            <button class="n-solid nav-profile-trigger" type="button" data-auth-action="profile-menu-toggle" aria-haspopup="menu" aria-expanded="false">
-              ${this.getIconMarkup('user', 'ui-icon ui-icon-sm')} ${profileLabel}
+            <button class="nav-icon-btn nav-icon-btn-compact nav-profile-trigger" type="button" data-auth-action="profile-menu-toggle" aria-label="${profileLabel}" title="${profileLabel}" aria-haspopup="menu" aria-expanded="false">
+              <span class="nav-icon-symbol">${this.getIconMarkup('user', 'ui-icon ui-icon-sm')}</span>
             </button>
             <div class="nav-profile-dropdown" data-auth-dropdown>
               <button class="nav-profile-item" type="button" data-auth-action="profile">
@@ -3082,7 +3494,6 @@ const UIComponents = {
           </div>
         `
         : `
-          <button class="n-ghost" data-auth-action="login">${loginLabel}</button>
           <button class="n-solid" data-auth-action="register">${this.getIconMarkup('spark', 'ui-icon ui-icon-sm')} ${registerLabel}</button>
         `;
     } else if (mode === 'app') {
@@ -3092,7 +3503,6 @@ const UIComponents = {
           <button class="n-solid" data-auth-action="profile">${this.getIconMarkup('user', 'ui-icon ui-icon-sm')} ${profileLabel}</button>
         `
         : `
-          <button class="n-ghost" data-auth-action="login">${loginLabel}</button>
           <button class="n-solid" data-auth-action="register">${this.getIconMarkup('spark', 'ui-icon ui-icon-sm')} ${appLabel}</button>
         `;
     } else {
@@ -3102,8 +3512,7 @@ const UIComponents = {
           <button class="n-solid" data-auth-action="cart">${this.getIconMarkup('cart', 'ui-icon ui-icon-sm')} ${cartLabel} <span id="${cartCountId}">${existingCount}</span></button>
         `
         : `
-          <button class="n-ghost" data-auth-action="login">${loginLabel}</button>
-          <button class="n-solid" data-auth-action="cart">${this.getIconMarkup('cart', 'ui-icon ui-icon-sm')} ${cartLabel} <span id="${cartCountId}">${existingCount}</span></button>
+          <button class="n-solid" data-auth-action="register">${this.getIconMarkup('spark', 'ui-icon ui-icon-sm')} ${registerLabel}</button>
         `;
     }
 
@@ -3163,31 +3572,47 @@ const UIComponents = {
   updateUnifiedNavbarBadges(options = {}) {
     const {
       cartCountId = 'navCartCount',
-      wishlistCountId = 'navWishlistCount',
     } = options;
     const cartCount = stateManager.getCartCount();
-    const wishlistCount = stateManager.getWishlist().length;
     const cartBadge = document.getElementById(cartCountId) || document.querySelector('[data-nav-badge="cart"]');
-    const wishlistBadge = document.getElementById(wishlistCountId) || document.querySelector('[data-nav-badge="wishlist"]');
 
     if (cartBadge) {
       cartBadge.textContent = cartCount;
       cartBadge.classList.toggle('is-empty', cartCount === 0);
     }
+  },
 
-    if (wishlistBadge) {
-      wishlistBadge.textContent = wishlistCount;
-      wishlistBadge.classList.toggle('is-empty', wishlistCount === 0);
-    }
+  createLanguageSwitcherMarkup() {
+    const currentLanguage = this.getLanguage();
+    return `
+      <label class="nav-language-picker" aria-label="${this.t('nav.language', 'Language')}">
+        <span class="nav-language-icon">${this.getIconMarkup('globe', 'ui-icon ui-icon-sm')}</span>
+        <select class="nav-language-select" data-language-switcher aria-label="${this.t('nav.language', 'Language')}">
+          <option value="en" ${currentLanguage === 'en' ? 'selected' : ''}>EN</option>
+          <option value="fr" ${currentLanguage === 'fr' ? 'selected' : ''}>FR</option>
+          <option value="ar" ${currentLanguage === 'ar' ? 'selected' : ''}>AR</option>
+        </select>
+      </label>
+    `;
+  },
+
+  bindLanguageSwitchers(root = document) {
+    root.querySelectorAll('[data-language-switcher]').forEach((select) => {
+      if (select.dataset.boundLanguageSwitcher === 'true') return;
+      select.dataset.boundLanguageSwitcher = 'true';
+      select.value = this.getLanguage();
+      select.addEventListener('change', (event) => {
+        this.setLanguage(event.target.value);
+      });
+    });
   },
 
   getUnifiedNavbarMarkup(options = {}) {
     const {
       cartCountId = 'navCartCount',
-      wishlistCountId = 'navWishlistCount',
     } = options;
     const links = [
-      { key: 'home', label: this.t('nav.home', 'Home'), href: 'edalab-website.html' },
+      { key: 'home', label: this.t('nav.home', 'Home'), href: 'index.html' },
       { key: 'food', label: this.t('nav.food', 'Food'), href: 'food.html' },
       { key: 'shopping', label: this.t('nav.shopping', 'Shopping'), href: 'shopping.html' },
       { key: 'pharmacy', label: this.t('nav.pharmacy', 'Pharmacy'), href: 'pharmacy.html' },
@@ -3200,7 +3625,7 @@ const UIComponents = {
 
     return `
       <div class="nav-w nav-w-unified">
-        <a class="nav-logo" href="edalab-website.html">
+        <a class="nav-logo" href="index.html">
           <div class="nav-logo-icon">
             ${this.getLogoMarkup()}
           </div>
@@ -3212,12 +3637,8 @@ const UIComponents = {
           `).join('')}
         </div>
         <div class="nav-right nav-right-unified">
+          ${this.createLanguageSwitcherMarkup()}
           <div class="nav-quick-actions">
-            <a href="wishlist.html" class="nav-icon-btn nav-icon-btn-compact" aria-label="Wishlist">
-              <span class="nav-icon-symbol">${this.getIconMarkup('heart', 'ui-icon ui-icon-sm')}</span>
-              <span class="nav-icon-label">${this.t('nav.wishlist', 'Wishlist')}</span>
-              <span class="nav-badge is-empty" id="${wishlistCountId}" data-nav-badge="wishlist">0</span>
-            </a>
             <a href="cart.html" class="nav-icon-btn nav-icon-btn-compact" aria-label="Cart">
               <span class="nav-icon-symbol">${this.getIconMarkup('cart', 'ui-icon ui-icon-sm')}</span>
               <span class="nav-icon-label">${this.t('nav.cart', 'Cart')}</span>
@@ -3269,12 +3690,18 @@ const UIComponents = {
     const linksHost = panel.querySelector('.nav-mobile-links');
     if (linksHost) {
       const links = [...nav.querySelectorAll('.nav-links-unified [data-nav-link]')];
-      linksHost.innerHTML = links.map((link) => `
+      linksHost.innerHTML = `
+        <div class="nav-mobile-language">
+          <span class="nav-mobile-language-label">${this.t('nav.language', 'Language')}</span>
+          ${this.createLanguageSwitcherMarkup()}
+        </div>
+        ${links.map((link) => `
         <a href="${link.getAttribute('href') || '#'}" class="nav-mobile-link ${link.dataset.navLink === activeKey ? 'on' : ''}" data-nav-link="${link.dataset.navLink || ''}">
           <span>${link.textContent.trim()}</span>
           ${this.getIconMarkup('arrowRight', 'ui-icon ui-icon-sm')}
         </a>
-      `).join('');
+      `).join('')}
+      `;
     }
 
     if (nav.dataset.mobileBound === 'true') return;
@@ -3308,9 +3735,9 @@ const UIComponents = {
   },
 
   inferUnifiedNavbarActive() {
-    const currentPage = window.location.pathname.split('/').pop() || 'edalab-website.html';
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     const routeMap = {
-      'edalab-website.html': 'home',
+      'index.html': 'home',
       'food.html': 'food',
       'restaurant-detail.html': 'food',
       'shopping.html': 'shopping',
@@ -3328,12 +3755,11 @@ const UIComponents = {
 
   getUnifiedNavbarOptions(options = {}) {
     const nav = document.getElementById('nav');
-    const currentPage = window.location.pathname.split('/').pop() || 'edalab-website.html';
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
 
     return {
       active: nav?.dataset.navActive || this.inferUnifiedNavbarActive(),
       cartCountId: nav?.dataset.cartCountId || 'navCartCount',
-      wishlistCountId: nav?.dataset.wishlistCountId || 'navWishlistCount',
       offsetBody: nav?.dataset.navOffset === 'true',
       logoutRedirect: `${currentPage}${window.location.search || ''}`,
       ...options,
@@ -3358,19 +3784,16 @@ const UIComponents = {
       }
     });
 
+    const rightSection = nav.querySelector('.nav-right-unified');
+    if (rightSection && !rightSection.querySelector('[data-language-switcher]')) {
+      rightSection.insertAdjacentHTML('afterbegin', this.createLanguageSwitcherMarkup());
+    }
+
     nav.querySelectorAll('.nav-icon-btn').forEach((button) => {
       const href = button.getAttribute('href') || '';
       const symbol = button.querySelector('.nav-icon-symbol');
-      if (href.includes('wishlist') && symbol) {
-        symbol.innerHTML = this.getIconMarkup('heart', 'ui-icon ui-icon-sm');
-      }
       if (href.includes('cart') && symbol) {
         symbol.innerHTML = this.getIconMarkup('cart', 'ui-icon ui-icon-sm');
-      }
-      if (href.includes('wishlist')) {
-        button.setAttribute('aria-label', this.t('nav.wishlist', 'Wishlist'));
-        const label = button.querySelector('.nav-icon-label');
-        if (label) label.textContent = this.t('nav.wishlist', label.textContent.trim());
       }
       if (href.includes('cart')) {
         button.setAttribute('aria-label', this.t('nav.cart', 'Cart'));
@@ -3384,6 +3807,7 @@ const UIComponents = {
     });
 
     this.ensureUnifiedNavbarMobile(nav, normalizedOptions.active);
+    this.bindLanguageSwitchers(nav);
 
     this.syncAuthNav({
       containerSelector: '#nav .nav-auth-slot',
@@ -3413,7 +3837,6 @@ const UIComponents = {
         this.applyTranslations();
       });
       stateManager.subscribe('cart', () => this.updateUnifiedNavbarBadges(window.__edaUnifiedNavState || normalizedOptions));
-      stateManager.subscribe('wishlist', () => this.updateUnifiedNavbarBadges(window.__edaUnifiedNavState || normalizedOptions));
       window.__edaUnifiedNavBound = true;
     }
   },
@@ -3433,11 +3856,11 @@ function navigateTo(path) {
 }
 
 function normalizeWebPath(path) {
-  if (!path) return 'edalab-website.html';
+  if (!path) return 'index.html';
   if (!path.startsWith('/')) return path;
 
   const routePatterns = [
-    [/^\/$/, 'edalab-website.html'],
+    [/^\/$/, 'index.html'],
     [/^\/login$/, 'login.html'],
     [/^\/messages$/, 'profile.html'],
     [/^\/doctor\/appointments$/, 'orders.html'],
@@ -3455,7 +3878,7 @@ function normalizeWebPath(path) {
     }
   }
 
-  return 'edalab-website.html';
+  return 'index.html';
 }
 
 // Debounce helper for search

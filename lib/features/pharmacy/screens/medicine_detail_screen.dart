@@ -7,6 +7,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
@@ -50,6 +51,34 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
     }
   }
 
+  Future<void> _openPharmacyChat() async {
+    final sourceBusiness = _medicine.sourceBusiness?.trim() ?? '';
+    if (sourceBusiness.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pharmacy contact is not available for this item yet.'),
+        ),
+      );
+      return;
+    }
+
+    await openConversation(
+      context,
+      moduleType: 'PHARMACY',
+      entityType: 'SHOP',
+      entityId: sourceBusiness,
+      title: sourceBusiness,
+      subtitle: _medicine.category,
+      accentColor: '#27AE60',
+      metadata: {
+        'merchantName': sourceBusiness,
+        'sourceBusiness': sourceBusiness,
+        'productId': _medicine.id,
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -77,10 +106,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
             children: [
               IconButton(
                 splashRadius: 24,
-                constraints: const BoxConstraints(
-                  minWidth: 52,
-                  minHeight: 52,
-                ),
+                constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
                 padding: const EdgeInsets.all(12),
                 onPressed: () => context.push('/pharmacy/cart'),
                 icon: const Icon(Icons.shopping_bag_outlined, size: 24),
@@ -163,7 +189,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                           color: AppColors.successLight,
                           borderRadius: BorderRadius.circular(6),
                         ),
-                      child: Text(
+                        child: Text(
                           l10n.t('medicine_detail.in_stock'),
                           style: AppTextStyles.labelSmall.copyWith(
                             color: AppColors.success,
@@ -192,7 +218,10 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                     ],
                   ),
                   const SizedBox(height: 24),
-                  Text(l10n.t('medicine_detail.description'), style: AppTextStyles.h4),
+                  Text(
+                    l10n.t('medicine_detail.description'),
+                    style: AppTextStyles.h4,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     medicine.description,
@@ -202,7 +231,10 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text(l10n.t('medicine_detail.dosage'), style: AppTextStyles.h4),
+                  Text(
+                    l10n.t('medicine_detail.dosage'),
+                    style: AppTextStyles.h4,
+                  ),
                   const SizedBox(height: 8),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 6),
@@ -224,7 +256,10 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Text(l10n.t('medicine_detail.warnings'), style: AppTextStyles.h4),
+                  Text(
+                    l10n.t('medicine_detail.warnings'),
+                    style: AppTextStyles.h4,
+                  ),
                   const SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.all(14),

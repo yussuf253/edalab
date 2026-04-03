@@ -8,19 +8,17 @@ import 'core/theme/app_theme.dart';
 import 'core/providers/theme_provider.dart';
 
 class EdaLabApp extends StatelessWidget {
-  const EdaLabApp({
-    required this.router,
-    super.key,
-  });
+  const EdaLabApp({required this.router, this.title = 'EdaLab', super.key});
 
   final GoRouter router;
+  final String title;
 
   @override
   Widget build(BuildContext context) {
     return Consumer2<ThemeProvider, LanguageProvider>(
       builder: (context, themeProvider, languageProvider, child) {
         return MaterialApp.router(
-          title: 'EdaLab',
+          title: title,
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,

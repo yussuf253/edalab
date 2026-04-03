@@ -1,15 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr" dir="ltr" data-page-language="fr">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Healthcare & Doctor Booking - eDalab</title>
-  <meta name="description" content="Book doctor appointments, consult with healthcare professionals online, and manage your health on eDalab."/>
-  <meta property="og:title" content="Healthcare & Doctor Booking - eDalab"/>
-  <meta property="og:description" content="Book doctor appointments, consult with healthcare professionals online, and manage your health on eDalab."/>
+  <style>
+  html[data-i18n-pending="true"] body{visibility:hidden}
+  </style>
+  <script>
+  (() => {
+    const root = document.documentElement;
+    try {
+      const savedPrefs = JSON.parse(localStorage.getItem('edaLabPreferences') || '{}');
+      const pageLanguage = ['en', 'fr', 'ar'].includes(root.dataset.pageLanguage) ? root.dataset.pageLanguage : null;
+      const savedLanguage = ['en', 'fr', 'ar'].includes(savedPrefs.language) ? savedPrefs.language : null;
+      const resolvedLanguage = savedLanguage || pageLanguage || 'fr';
+      root.lang = resolvedLanguage;
+      root.dir = resolvedLanguage === 'ar' ? 'rtl' : 'ltr';
+      if (savedLanguage && pageLanguage && savedLanguage !== pageLanguage) {
+        root.setAttribute('data-i18n-pending', 'true');
+        window.__edaI18nFailSafe = window.setTimeout(() => {
+          root.removeAttribute('data-i18n-pending');
+        }, 2500);
+      }
+    } catch (error) {
+      root.lang = 'fr';
+      root.dir = 'ltr';
+      root.setAttribute('data-i18n-pending', 'true');
+      window.__edaI18nFailSafe = window.setTimeout(() => {
+        root.removeAttribute('data-i18n-pending');
+      }, 2500);
+    }
+  })();
+  </script>
+  <title>Santé et rendez-vous médecin - eDalab</title>
+  <meta name="description" content="Prenez rendez-vous avec des médecins, consultez des professionnels de santé en ligne et gérez votre santé avec eDalab."/>
+  <meta property="og:title" content="Santé et rendez-vous médecin - eDalab"/>
+  <meta property="og:description" content="Prenez rendez-vous avec des médecins, consultez des professionnels de santé en ligne et gérez votre santé avec eDalab."/>
   <meta property="og:type" content="website"/>
-  <link rel="alternate" hreflang="en" href="https://edalab.app/doctor.html"/>
-  <link rel="alternate" hreflang="fr" href="https://edalab.app/fr/doctor.html"/>
+  <link rel="alternate" hreflang="en" href="https://edalab.app/en/doctor.html"/>
+  <link rel="alternate" hreflang="fr" href="https://edalab.app/doctor.html"/>
   <link rel="alternate" hreflang="ar" href="https://edalab.app/ar/doctor.html"/>
   <link rel="alternate" hreflang="x-default" href="https://edalab.app/doctor.html"/>
   <link rel="canonical" href="https://edalab.app/doctor.html"/>
@@ -22,10 +51,10 @@
   {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "Healthcare & Doctor Booking - eDalab",
-    "description": "Book doctor appointments, consult with healthcare professionals online, and manage your health on eDalab.",
+    "name": "Santé et rendez-vous médecin - eDalab",
+    "description": "Prenez rendez-vous avec des médecins, consultez des professionnels de santé en ligne et gérez votre santé avec eDalab.",
     "url": "https://edalab.app/doctor.html",
-    "inLanguage": "en",
+    "inLanguage": "fr",
     "isPartOf": {
       "@type": "WebSite",
       "name": "eDalab",
@@ -33,7 +62,7 @@
     },
     "mainEntity": {
       "@type": "ItemList",
-      "name": "Healthcare & Doctor Booking - eDalab"
+      "name": "Santé et rendez-vous médecin - eDalab"
     }
   }
   </script>
@@ -42,15 +71,15 @@
 <body>
   <!-- Navigation -->
   <nav id="nav" data-static-unified="true">
-    <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    <div class="nav-w nav-w-unified"><a class="nav-logo" href="index.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index.html" class="nav-a" data-nav-link="home">Accueil</a><a href="food.html" class="nav-a" data-nav-link="food">Restauration</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Boutique</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacie</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Médecin</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hôtel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Trajet</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Blanchisserie</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="cart.html" class="nav-icon-btn" aria-label="Panier"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Panier</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
   </nav>
 
   <!-- Hero Section -->
   <section class="doctor-hero">
     <div class="wrap">
       <div class="dh-content">
-        <h1>Your Health, Our Priority</h1>
-        <p>Connect with qualified doctors, book appointments, and get expert medical advice anytime, anywhere.</p>
+        <h1 data-i18n="doctor.heroTitle">Votre santé, notre priorité</h1>
+        <p data-i18n="doctor.heroDescription">Entrez en contact avec des médecins qualifiés, prenez rendez-vous et obtenez des conseils médicaux d’experts à tout moment.</p>
         <div id="search-container"></div>
       </div>
     </div>
@@ -60,32 +89,32 @@
   <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
     <!-- Filter & Search Section -->
     <div class="filter-section">
-      <h2>Find a Doctor</h2>
+      <h2 data-i18n="doctor.findDoctor">Trouver un médecin</h2>
       <div id="filter-bar" class="filter-grid">
         <div class="filter-item">
-          <label>Specialty</label>
+          <label data-i18n="doctor.specialty">Specialty</label>
           <select id="specialty-filter" onchange="doctorModule.applyFilters()">
-            <option value="">All Specialties</option>
-            <option value="General Practice">General Practice</option>
-            <option value="Cardiology">Cardiology</option>
-            <option value="Pediatrics">Pediatrics</option>
-            <option value="Dermatology">Dermatology</option>
-            <option value="Psychiatry">Psychiatry</option>
-            <option value="Orthopedics">Orthopedics</option>
+            <option value="" data-i18n="doctor.allSpecialties">All Specialties</option>
+            <option value="General Practice" data-i18n="doctor.specialty.generalPractice">General Practice</option>
+            <option value="Cardiology" data-i18n="doctor.specialty.cardiology">Cardiology</option>
+            <option value="Pediatrics" data-i18n="doctor.specialty.pediatrics">Pediatrics</option>
+            <option value="Dermatology" data-i18n="doctor.specialty.dermatology">Dermatology</option>
+            <option value="Psychiatry" data-i18n="doctor.specialty.psychiatry">Psychiatry</option>
+            <option value="Orthopedics" data-i18n="doctor.specialty.orthopedics">Orthopedics</option>
           </select>
         </div>
         <div class="filter-item">
-          <label>Availability</label>
+          <label data-i18n="doctor.availability">Availability</label>
           <select id="availability-filter" onchange="doctorModule.applyFilters()">
-            <option value="">All</option>
-            <option value="available">Available Now</option>
-            <option value="upcoming">Available Today</option>
+            <option value="" data-i18n="doctor.allAvailability">All</option>
+            <option value="available" data-i18n="doctor.availableNow">Available Now</option>
+            <option value="upcoming" data-i18n="doctor.availableToday">Available Today</option>
           </select>
         </div>
         <div class="filter-item">
-          <label>Rating</label>
+          <label data-i18n="doctor.rating">Rating</label>
           <select id="rating-filter" onchange="doctorModule.applyFilters()">
-            <option value="">All</option>
+            <option value="" data-i18n="doctor.allRatings">All</option>
             <option value="4">4+ Stars</option>
             <option value="4.5">4.5+ Stars</option>
             <option value="5">5 Stars</option>
@@ -97,7 +126,7 @@
 
     <!-- Doctors Grid -->
     <section class="doctor-section">
-      <h2>Top Doctors</h2>
+      <h2 data-i18n="doctor.topDoctors">Top Doctors</h2>
       <div id="doctors-container" class="doctors-grid">
         <!-- Dynamically populated -->
       </div>
@@ -111,19 +140,19 @@
   <div id="booking-modal-overlay" class="modal-overlay" onclick="UIComponents.closeModal('booking-modal')">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <h2>Book an Appointment</h2>
+        <h2 data-i18n="doctor.modalTitle">Book an Appointment</h2>
         <button class="modal-close" onclick="UIComponents.closeModal('booking-modal')">×</button>
       </div>
       <div class="modal-body">
         <form id="booking-form">
           <div class="form-group">
-            <label>Select Date</label>
+            <label data-i18n="doctor.selectDate">Select Date</label>
             <input type="date" id="appointment-date" required />
           </div>
           <div class="form-group">
-            <label>Select Time</label>
+            <label data-i18n="doctor.selectTime">Select Time</label>
             <select id="appointment-time" required>
-              <option value="">Choose a time slot</option>
+              <option value="" data-i18n="doctor.chooseTimeSlot">Choose a time slot</option>
               <option value="09:00">09:00 AM</option>
               <option value="10:00">10:00 AM</option>
               <option value="11:00">11:00 AM</option>
@@ -133,14 +162,14 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Reason for Visit</label>
-            <textarea id="appointment-reason" placeholder="Describe your symptoms or reason for visit" rows="4"></textarea>
+            <label data-i18n="doctor.reasonVisit">Reason for Visit</label>
+            <textarea id="appointment-reason" data-i18n-placeholder="doctor.reasonPlaceholder" placeholder="Describe your symptoms or reason for visit" rows="4"></textarea>
           </div>
         </form>
       </div>
       <div class="modal-actions">
-        <button class="modal-btn secondary" onclick="UIComponents.closeModal('booking-modal')">Cancel</button>
-        <button class="modal-btn primary" onclick="doctorModule.submitBooking()">Book Appointment</button>
+        <button class="modal-btn secondary" onclick="UIComponents.closeModal('booking-modal')" data-i18n="doctor.cancel">Cancel</button>
+        <button class="modal-btn primary" onclick="doctorModule.submitBooking()" data-i18n="doctor.bookAppointment">Book Appointment</button>
       </div>
     </div>
   </div>
@@ -150,37 +179,37 @@
     <div class="wrap">
       <div class="footer-content">
         <div class="footer-section">
-          <h3>eDalab Health</h3>
+          <h3 data-i18n="doctor.footerBrand">eDalab Health</h3>
           <ul>
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Medical Team</a></li>
-            <li><a href="#">Blog</a></li>
+            <li><a href="#" data-i18n="doctor.footerAboutUs">About Us</a></li>
+            <li><a href="#" data-i18n="doctor.footerMedicalTeam">Medical Team</a></li>
+            <li><a href="#" data-i18n="doctor.footerBlog">Blog</a></li>
           </ul>
         </div>
         <div class="footer-section">
-          <h3>For Patients</h3>
+          <h3 data-i18n="doctor.footerPatients">For Patients</h3>
           <ul>
-            <li><a href="#">Find Doctors</a></li>
-            <li><a href="#">My Appointments</a></li>
-            <li><a href="#">Health Records</a></li>
+            <li><a href="#" data-i18n="doctor.footerFindDoctors">Find Doctors</a></li>
+            <li><a href="#" data-i18n="doctor.footerAppointments">My Appointments</a></li>
+            <li><a href="#" data-i18n="doctor.footerHealthRecords">Health Records</a></li>
           </ul>
         </div>
         <div class="footer-section">
-          <h3>For Doctors</h3>
+          <h3 data-i18n="doctor.footerDoctors">For Doctors</h3>
           <ul>
-            <li><a href="#">Join Us</a></li>
-            <li><a href="#">Doctor Portal</a></li>
-            <li><a href="#">Resources</a></li>
+            <li><a href="#" data-i18n="doctor.footerJoinUs">Join Us</a></li>
+            <li><a href="#" data-i18n="doctor.footerPortal">Doctor Portal</a></li>
+            <li><a href="#" data-i18n="doctor.footerResources">Resources</a></li>
           </ul>
         </div>
         <div class="footer-section">
-          <h3>Contact & Emergency</h3>
-          <p>Email: hello@edalab.app</p>
+          <h3 data-i18n="doctor.footerContactEmergency">Contact & Emergency</h3>
+          <p><span data-i18n="common.email">Email</span>: hello@edalab.app</p>
           <p>24/7 Support: +253 21 35 00 00</p>
         </div>
       </div>
       <div class="footer-bottom">
-        <p>&copy; 2024 eDalab. All rights reserved.</p>
+        <p data-i18n="footer.rights">&copy; 2024 eDalab. All rights reserved.</p>
       </div>
     </div>
   </footer>

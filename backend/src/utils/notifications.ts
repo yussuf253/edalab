@@ -79,6 +79,49 @@ export async function createBackendNotification({
   return notification;
 }
 
+export async function createMessageNotification({
+  userId,
+  conversationId,
+  title,
+  body,
+  route,
+  actorRole,
+  entityType,
+  entityId,
+  moduleType,
+  dedupeKey,
+}: {
+  userId: string;
+  conversationId: string;
+  title: string;
+  body: string;
+  route: string;
+  actorRole: string;
+  entityType: string;
+  entityId: string;
+  moduleType: ModuleType;
+  dedupeKey: string;
+}) {
+  return createBackendNotification({
+    userId,
+    type: NotificationType.SYSTEM,
+    module: NotificationModule.MESSAGES,
+    title,
+    body,
+    route,
+    dedupeKey,
+    metadata: {
+      kind: 'message',
+      conversationId,
+      actorRole,
+      entityType,
+      entityId,
+      moduleType,
+      route,
+    },
+  });
+}
+
 export async function createOrderCreatedNotification({
   userId,
   orderId,

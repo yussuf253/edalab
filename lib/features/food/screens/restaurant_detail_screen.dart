@@ -122,45 +122,6 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 ),
               ),
             ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {},
-                    borderRadius: BorderRadius.circular(24),
-                    child: Ink(
-                      width: 48,
-                      height: 48,
-                      decoration: const BoxDecoration(
-                        color: AppColors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.favorite_border_rounded,
-                        size: 22,
-                        color: AppColors.dark,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: CircleAvatar(
-                  backgroundColor: AppColors.white,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.share_outlined,
-                      size: 20,
-                      color: AppColors.dark,
-                    ),
-                    onPressed: () {},
-                  ),
-                ),
-              ),
-            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(
@@ -208,10 +169,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: _isLoading
-                  ? const DetailContentShimmer(
-                      accentColor: AppColors.food,
-                      showHero: false,
-                    )
+                  ? const _RestaurantDetailShimmer()
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -343,7 +301,10 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        Text(l10n.t('restaurant_detail.categories'), style: AppTextStyles.h3),
+                        Text(
+                          l10n.t('restaurant_detail.categories'),
+                          style: AppTextStyles.h3,
+                        ),
                         const SizedBox(height: 8),
                         SizedBox(
                           height: 40,
@@ -549,6 +510,94 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
 
   List<MenuCategory> _resolvedMenu(RestaurantModel restaurant) {
     return restaurant.menu;
+  }
+}
+
+class _RestaurantDetailShimmer extends StatelessWidget {
+  const _RestaurantDetailShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Row(
+            children: [
+              Expanded(child: ShimmerBlock(width: double.infinity, height: 28)),
+              SizedBox(width: 12),
+              ShimmerBlock(width: 86, height: 30, radius: 999),
+            ],
+          ),
+          SizedBox(height: 12),
+          ShimmerBlock(width: 180, height: 14, radius: 10),
+          SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ShimmerBlock(width: 90, height: 32, radius: 999),
+              ShimmerBlock(width: 110, height: 32, radius: 999),
+              ShimmerBlock(width: 84, height: 32, radius: 999),
+            ],
+          ),
+          SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: ShimmerBlock(
+                  width: double.infinity,
+                  height: 56,
+                  radius: 16,
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: ShimmerBlock(
+                  width: double.infinity,
+                  height: 56,
+                  radius: 16,
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: ShimmerBlock(
+                  width: double.infinity,
+                  height: 56,
+                  radius: 16,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 14),
+          ShimmerBlock(width: double.infinity, height: 56, radius: 16),
+          SizedBox(height: 16),
+          ShimmerBlock(width: 130, height: 20),
+          SizedBox(height: 10),
+          SizedBox(
+            height: 40,
+            child: Row(
+              children: [
+                ShimmerBlock(width: 92, height: 40, radius: 999),
+                SizedBox(width: 8),
+                ShimmerBlock(width: 110, height: 40, radius: 999),
+                SizedBox(width: 8),
+                ShimmerBlock(width: 84, height: 40, radius: 999),
+              ],
+            ),
+          ),
+          SizedBox(height: 18),
+          ShimmerBlock(width: double.infinity, height: 92, radius: 18),
+          SizedBox(height: 12),
+          ShimmerBlock(width: double.infinity, height: 92, radius: 18),
+          SizedBox(height: 12),
+          ShimmerBlock(width: double.infinity, height: 92, radius: 18),
+          SizedBox(height: 12),
+          ShimmerBlock(width: double.infinity, height: 92, radius: 18),
+          SizedBox(height: 24),
+        ],
+      ),
+    );
   }
 }
 

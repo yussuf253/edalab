@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-page-language="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Services - eDalab</title>
+    <meta name="description" content="Book home services like cleaning, maintenance, plumbing, and more with trusted professionals."/>
+<meta property="og:title" content="Home Services - eDalab"/>
+<meta property="og:description" content="Trusted professionals for home services across the city."/>
+                        <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/main-styles.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/modules.css">
+        <style>
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .service-category {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .service-category:hover {
+            border-color: #F97316;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.1);
+            transform: translateY(-4px);
+        }
+
+        .service-category.active {
+            background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            color: white;
+            border-color: #F97316;
+        }
+
+        .service-icon {
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: rgba(249, 115, 22, 0.12);
+        }
+
+        .service-icon img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .service-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .service-price {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .providers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 40px;
+        }
+
+        .provider-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .provider-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .provider-image {
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .provider-image img {
+            width: 54px;
+            height: 54px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .provider-info {
+            padding: 16px;
+        }
+
+        .provider-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .provider-service {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .provider-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .provider-rating .stars {
+            color: #f59e0b;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .provider-price {
+            font-size: 14px;
+            font-weight: 700;
+            color: #F97316;
+            margin-bottom: 12px;
+        }
+
+        .provider-action {
+            width: 100%;
+            padding: 10px;
+            background: #F97316;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .provider-action:hover {
+            background: #EA580C;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .filter-section {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .filter-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-item label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .filter-item select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px;
+        }
+
+        .filter-item select:focus {
+            border-color: #F97316;
+            outline: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+    </style>
+<link rel="alternate" hreflang="en" href="https://edalab.app/en/home-services.html"/>
+<link rel="alternate" hreflang="fr" href="https://edalab.app/home-services.html"/>
+<link rel="alternate" hreflang="ar" href="https://edalab.app/ar/home-services.html"/>
+<link rel="alternate" hreflang="x-default" href="https://edalab.app/home-services.html"/>
+<link rel="canonical" href="https://edalab.app/en/home-services.html"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Home Services - eDalab",
+  "description": "Book home services like cleaning, maintenance, plumbing, and more with trusted professionals.",
+  "url": "https://edalab.app/en/home-services.html",
+  "inLanguage": "en",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "eDalab",
+    "url": "https://edalab.app"
+  },
+  "mainEntity": {
+    "@type": "ItemList",
+    "name": "Home Services - eDalab",
+    "description": "Book home services like cleaning, maintenance, plumbing, and more with trusted professionals."
+  }
+}
+</script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="index.html"><div class="nav-logo-icon"><img src="../assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="../wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="../cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    </nav>
+
+    <section class="services-hero">
+        <div class="wrap">
+            <div class="svh-content">
+                <h1 data-i18n="services.heroTitle">Trusted home services when you need them</h1>
+                <p data-i18n="services.heroDescription">Browse categories, compare professionals, and book the right help for your home and daily life.</p>
+                <div id="search-container"></div>
+            </div>
+        </div>
+    </section>
+
+    <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
+
+        <section style="margin-bottom: 40px;">
+            <h2 style="margin-bottom: 20px;" data-i18n="services.chooseService">Choose a service</h2>
+            <div class="category-grid" id="servicesGrid"></div>
+        </section>
+
+        <div class="filter-section">
+            <div id="servicesFilterBar" class="filter-grid">
+            <div class="filter-item">
+                <label data-i18n="services.serviceType">Service Type</label>
+                <select id="serviceFilter" onchange="homeServicesModule.applyFilters()">
+                    <option value="" data-i18n="services.allServices">All Services</option>
+                    <option value="cleaning">Cleaning</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="plumbing">Plumbing</option>
+                    <option value="electrical">Electrical</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label data-i18n="services.rating">Rating</label>
+                <select id="ratingFilter" onchange="homeServicesModule.applyFilters()">
+                    <option value="" data-i18n="services.anyRating">Any Rating</option>
+                    <option value="5">5 Stars</option>
+                    <option value="4">4+ Stars</option>
+                    <option value="3">3+ Stars</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label data-i18n="services.priceRange">Price Range</label>
+                <select id="priceFilter" onchange="homeServicesModule.applyFilters()">
+                    <option value="" data-i18n="services.allPrices">All Prices</option>
+                    <option value="0-50">$0 - $50</option>
+                    <option value="50-100">$50 - $100</option>
+                    <option value="100+">$100+</option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label data-i18n="services.availability">Availability</label>
+                <select id="availabilityFilter" onchange="homeServicesModule.applyFilters()">
+                    <option value="" data-i18n="services.anyTime">Any Time</option>
+                    <option value="today" data-i18n="services.today">Today</option>
+                    <option value="tomorrow" data-i18n="services.tomorrow">Tomorrow</option>
+                    <option value="week" data-i18n="services.thisWeek">This Week</option>
+                </select>
+            </div>
+            </div>
+            <div id="servicesFilterSkeleton" style="display: none;"></div>
+        </div>
+
+        <section style="margin-bottom: 40px;">
+            <h2 style="margin-bottom: 20px;" data-i18n="services.availableProfessionals">Available Professionals</h2>
+            <div class="providers-grid" id="providersGrid"></div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="wrap">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 data-i18n="services.footerBrand">eDalab Services</h3>
+                    <ul>
+                        <li><a href="#" data-i18n="services.footerHowBookingWorks">How booking works</a></li>
+                        <li><a href="#" data-i18n="services.footerPartnerStandards">Partner standards</a></li>
+                        <li><a href="#" data-i18n="services.footerSupport">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3 data-i18n="services.footerCustomers">For Customers</h3>
+                    <ul>
+                        <li><a href="#" data-i18n="services.footerBrowseCategories">Browse categories</a></li>
+                        <li><a href="#" data-i18n="services.footerFindProfessionals">Find professionals</a></li>
+                        <li><a href="#" data-i18n="services.footerHelpCenter">Help Center</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3 data-i18n="services.footerPros">For Pros</h3>
+                    <ul>
+                        <li><a href="#" data-i18n="services.footerBecomeProvider">Become a provider</a></li>
+                        <li><a href="#" data-i18n="services.footerProviderResources">Provider resources</a></li>
+                        <li><a href="#" data-i18n="services.footerCoverageAreas">Coverage areas</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3 data-i18n="services.footerContact">Contact</h3>
+                    <p><span data-i18n="common.email">Email</span>: hello@edalab.app</p>
+                    <p><span data-i18n="common.phone">Phone</span>: +253 21 35 00 00</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p data-i18n="footer.rights">&copy; 2024 eDalab. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/api-client.js"></script>
+    <script src="../js/state-manager.js"></script>
+    <script src="../js/ui-components.js"></script>
+    <script>
+        class HomeServicesModule {
+            constructor() {
+                this.selectedService = null;
+                this.services = [];
+                this.providers = [];
+                this.isReady = false;
+                this.init();
+            }
+
+            t(key, fallback) {
+                return UIComponents.t(key, fallback);
+            }
+
+            async init() {
+                UIComponents.mountUnifiedNavbar({ active: 'services' });
+                this.renderLoadingState();
+                await this.loadData();
+                this.setupHeroSearch();
+                this.renderServices();
+                this.renderProviders();
+                this.clearLoadingState();
+                this.isReady = true;
+            }
+
+            renderLoadingState() {
+                const searchContainer = document.getElementById('search-container');
+                if (searchContainer) {
+                    searchContainer.innerHTML = UIComponents.createSearchSkeleton();
+                }
+                const filterBar = document.getElementById('servicesFilterBar');
+                const filterSkeleton = document.getElementById('servicesFilterSkeleton');
+                if (filterBar && filterSkeleton) {
+                    filterBar.style.display = 'none';
+                    filterSkeleton.style.display = 'block';
+                    filterSkeleton.innerHTML = UIComponents.createFilterSkeleton(4);
+                }
+                document.getElementById('servicesGrid').innerHTML = UIComponents.createCategorySkeleton(6);
+                document.getElementById('providersGrid').innerHTML = UIComponents.createCardGridSkeleton(6);
+            }
+
+            clearLoadingState() {
+                const filterBar = document.getElementById('servicesFilterBar');
+                const filterSkeleton = document.getElementById('servicesFilterSkeleton');
+                if (filterBar && filterSkeleton) {
+                    filterBar.style.display = '';
+                    filterSkeleton.style.display = 'none';
+                    filterSkeleton.innerHTML = '';
+                }
+            }
+
+            setupHeroSearch() {
+                const container = document.getElementById('search-container');
+                if (!container) return;
+                container.innerHTML = `
+                    <div class="search-bar">
+                        <input type="text" id="services-hero-search" class="search-input" placeholder="${this.t('services.search', 'Search a service or provider...')}" />
+                        <button class="search-btn" onclick="homeServicesModule.handleHeroSearch()">${UIComponents.getIconMarkup('search', 'ui-icon ui-icon-sm')}</button>
+                    </div>
+                `;
+                document.getElementById('services-hero-search').addEventListener('keypress', (event) => {
+                    if (event.key === 'Enter') this.handleHeroSearch();
+                });
+            }
+
+            handleHeroSearch() {
+                const query = document.getElementById('services-hero-search').value.trim().toLowerCase();
+                if (!query) {
+                    this.renderProviders();
+                    return;
+                }
+
+                const filtered = this.providers.filter((provider) => {
+                    const haystack = [
+                        provider.name,
+                        provider.title,
+                        provider.category?.name,
+                        provider.category?.slug,
+                    ].join(' ').toLowerCase();
+                    return haystack.includes(query);
+                });
+
+                this.renderProviders(filtered);
+                document.getElementById('providersGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            async loadData() {
+                try {
+                    const [categories, providers] = await Promise.all([
+                        apiClient.getHomeServiceCategories(),
+                        apiClient.getHomeServiceProviders(),
+                    ]);
+                    this.services = Array.isArray(categories) ? categories : (categories.data || []);
+                    this.providers = Array.isArray(providers) ? providers : (providers.data || []);
+                } catch (error) {
+                    console.error('Error loading home services:', error);
+                    this.services = [];
+                    this.providers = [];
+                }
+
+                if (!this.services.length) {
+                    this.services = [
+                        { id: 'cleaning', slug: 'cleaning', name: 'Cleaning', providerCount: 0 },
+                        { id: 'maintenance', slug: 'maintenance', name: 'Maintenance', providerCount: 0 },
+                    ];
+                }
+
+                this.populateServiceFilter();
+            }
+
+            getServiceIcon(service) {
+                const label = `${service.name} ${service.slug || ''}`.toLowerCase();
+                return 'assets/icons/repair-service.png';
+            }
+
+            populateServiceFilter() {
+                const select = document.getElementById('serviceFilter');
+                select.innerHTML = `<option value="">${this.t('services.allServices', 'All Services')}</option>`;
+                this.services.forEach((service) => {
+                    const option = document.createElement('option');
+                    option.value = service.slug || service.id;
+                    option.textContent = service.name;
+                    select.appendChild(option);
+                });
+            }
+
+            renderServices() {
+                const container = document.getElementById('servicesGrid');
+                let html = '';
+                this.services.forEach(service => {
+                    const serviceKey = service.slug || service.id;
+                    const matchingProviders = this.providers.filter((provider) => (provider.category?.slug || provider.categoryId) === serviceKey);
+                    const startingPrice = matchingProviders.length
+                        ? Math.min(...matchingProviders.map((provider) => Number(provider.startingPrice || 0)))
+                        : 0;
+                    html += `
+                        <div class="category-card service-category ${this.selectedService === serviceKey ? 'active' : ''}"
+                             onclick="homeServicesModule.selectService('${serviceKey}')">
+                            <div class="service-icon"><img src="../${this.getServiceIcon(service)}" alt="${service.name}"></div>
+                            <div class="service-name">${service.name}</div>
+                            <div class="service-price">${startingPrice > 0 ? `${this.t('services.fromPrice', 'From')} $${startingPrice.toFixed(2)}` : `${service.providerCount || matchingProviders.length} ${this.t('services.providersCount', 'providers')}`}</div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+
+            selectService(serviceId) {
+                this.selectedService = this.selectedService === serviceId ? null : serviceId;
+                document.getElementById('serviceFilter').value = this.selectedService || '';
+                this.renderServices();
+                this.applyFilters();
+            }
+
+            renderProviders(providersToShow = this.providers) {
+                const container = document.getElementById('providersGrid');
+                
+                if (providersToShow.length === 0) {
+                    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">${UIComponents.getIconMarkup('search', 'ui-icon ui-icon-lg')}</div><p>${this.t('services.noProviders', 'No providers found')}</p></div>`;
+                    return;
+                }
+
+                let html = '';
+                providersToShow.forEach(provider => {
+                    const price = Number(provider.startingPrice || 0);
+                    html += `
+                        <div class="provider-card">
+                            <div class="provider-image"><img src="../${this.getServiceIcon(provider.category || { name: provider.title || this.t("services.homeService', 'Home Service'), slug: provider.category?.slug || provider.categoryId })}" alt="${provider.name}"></div>
+                            <div class="provider-info">
+                                <div class="provider-name">${provider.name}</div>
+                                <div class="provider-service">${provider.title || provider.category?.name || this.t('services.homeService', 'Home Service')}</div>
+                                <div class="provider-rating">
+                                    <span class="stars">${UIComponents.getIconMarkup('star', 'ui-icon ui-icon-xs')} ${provider.rating}</span>
+                                    <span>(${provider.reviewCount})</span>
+                                </div>
+                                <div class="provider-price">${price > 0 ? `$${price.toFixed(2)} ${this.t('services.priceStarting', 'starting')}` : this.t('services.priceOnRequest', 'Price on request')}</div>
+                                <button class="provider-action" onclick="homeServicesModule.bookService('${provider.id}')">
+                                    ${this.t('services.bookNow', 'Book Now')}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+
+            applyFilters() {
+                let filtered = this.providers;
+                const selectedFromDropdown = document.getElementById('serviceFilter').value;
+                if (selectedFromDropdown) {
+                    this.selectedService = selectedFromDropdown;
+                }
+
+                // Filter by service
+                if (this.selectedService) {
+                    filtered = filtered.filter((provider) => (provider.category?.slug || provider.categoryId) === this.selectedService);
+                }
+
+                // Filter by rating
+                const ratingFilter = document.getElementById('ratingFilter').value;
+                if (ratingFilter) {
+                    filtered = filtered.filter(p => p.rating >= parseFloat(ratingFilter));
+                }
+
+                // Filter by price
+                const priceFilter = document.getElementById('priceFilter').value;
+                if (priceFilter) {
+                    filtered = filtered.filter(p => {
+                        const price = Number(p.startingPrice || 0);
+                        if (priceFilter === '0-50') return price <= 50;
+                        if (priceFilter === '50-100') return price >= 50 && price <= 100;
+                        if (priceFilter === '100+') return price >= 100;
+                        return true;
+                    });
+                }
+
+                this.renderProviders(filtered);
+            }
+
+
+            bookService(providerId) {
+                const provider = this.providers.find(p => p.id === providerId);
+                if (provider) {
+                    const providerPrice = Number(provider.startingPrice || 0);
+                    const user = StateManager.getUser();
+                    let booking = {
+                        id: `HSV${Date.now()}`,
+                        module: 'home-services',
+                        moduleType: 'HOME_SERVICES',
+                        status: 'confirmed',
+                        createdAt: new Date().toISOString(),
+                        subtotal: providerPrice,
+                        tax: 0,
+                        deliveryFee: 0,
+                        discount: 0,
+                        total: providerPrice,
+                        items: [
+                            {
+                                id: `home-service-item-${provider.id}`,
+                                name: provider.title || provider.category?.name || 'Home Service',
+                                quantity: 1,
+                                price: providerPrice,
+                            }
+                        ],
+                        metadata: {
+                            providerName: provider.name,
+                            category: provider.category?.slug || provider.categoryId,
+                        }
+                    };
+
+                    const persistBooking = async () => {
+                        if (!user?.id) return;
+                        try {
+                            const backendOrder = await apiClient.createOrder({
+                                userId: user.id,
+                                moduleType: 'HOME_SERVICES',
+                                status: 'PENDING',
+                                subtotal: providerPrice,
+                                tax: 0,
+                                deliveryFee: 0,
+                                discount: 0,
+                                total: providerPrice,
+                                items: [
+                                    {
+                                        id: `home-service-item-${provider.id}`,
+                                        name: provider.title || provider.category?.name || 'Home Service',
+                                        brand: provider.name,
+                                        price: providerPrice,
+                                        quantity: 1,
+                                        total: providerPrice,
+                                        metadata: {
+                                            providerId: provider.id,
+                                            providerName: provider.name,
+                                            category: provider.category?.slug || provider.categoryId,
+                                        },
+                                    }
+                                ],
+                            });
+
+                            booking = {
+                                ...booking,
+                                ...backendOrder,
+                                id: backendOrder.id || booking.id,
+                                status: String(backendOrder.status || booking.status).toLowerCase(),
+                            };
+                        } catch (error) {
+                            console.error('Error persisting service booking to backend:', error);
+                        }
+                    };
+                    persistBooking().finally(() => {
+                        StateManager.addOrder(booking);
+                        UIComponents.showToast(`${provider.name} ${this.t('services.bookedSuccessSuffix', 'booked successfully!')}`, 'success');
+                        setTimeout(() => {
+                            window.location.href = 'orders.html';
+                        }, 800);
+                    });
+                }
+            }
+        }
+
+        const homeServicesModule = new HomeServicesModule();
+        window.refreshPageLocalizedContent = function() {
+            if (homeServicesModule && homeServicesModule.isReady) {
+                homeServicesModule.setupHeroSearch();
+                homeServicesModule.populateServiceFilter();
+                homeServicesModule.renderServices();
+                homeServicesModule.applyFilters();
+            }
+        };
+    </script>
+</body>
+</html>

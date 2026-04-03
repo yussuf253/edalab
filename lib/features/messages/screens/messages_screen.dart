@@ -159,7 +159,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                     Expanded(
                                       child: Text(
                                         conversation.lastMessage ??
-                                            l10n.t('messages.start_conversation'),
+                                            l10n.t(
+                                              'messages.start_conversation',
+                                            ),
                                         style: AppTextStyles.bodySmall.copyWith(
                                           color: AppColors.grey,
                                         ),
@@ -208,6 +210,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
         return Icons.local_hospital_rounded;
       case 'HOME_SERVICE_PROVIDER':
         return Icons.home_repair_service_rounded;
+      case 'SHOP':
+        return Icons.storefront_rounded;
+      case 'DELIVERY':
+        return Icons.local_shipping_rounded;
       case 'RIDE':
         return Icons.directions_car_rounded;
       default:
@@ -221,6 +227,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
         return context.l10n.t('messages.doctor');
       case 'HOME_SERVICE_PROVIDER':
         return context.l10n.t('messages.home_services');
+      case 'SHOP':
+        return context.l10n.t('messages.shop');
+      case 'DELIVERY':
+        return context.l10n.t('messages.delivery');
       case 'RIDE':
         return context.l10n.t('messages.ride');
       default:

@@ -11,6 +11,8 @@ class AppPreferences {
   static const _cartPromoDiscountKey = 'cart_promo_discount';
   static const _notificationsPrefsKey = 'notifications_preferences';
   static const _localeCodeKey = 'locale_code';
+  static const _proProfileJsonKey = 'pro_profile_json';
+  static const _hasSeenProOnboardingKey = 'has_seen_pro_onboarding';
 
   static Future<bool> hasSeenOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
@@ -103,10 +105,7 @@ class AppPreferences {
     return prefs.getString('notifications_$scope');
   }
 
-  static Future<void> setNotificationsJson(
-    String scope,
-    String value,
-  ) async {
+  static Future<void> setNotificationsJson(String scope, String value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('notifications_$scope', value);
   }
@@ -129,5 +128,30 @@ class AppPreferences {
   static Future<void> setLocaleCode(String value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_localeCodeKey, value);
+  }
+
+  static Future<String?> getProProfileJson() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_proProfileJsonKey);
+  }
+
+  static Future<void> setProProfileJson(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_proProfileJsonKey, value);
+  }
+
+  static Future<void> clearProProfileJson() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_proProfileJsonKey);
+  }
+
+  static Future<bool> hasSeenProOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_hasSeenProOnboardingKey) ?? false;
+  }
+
+  static Future<void> setHasSeenProOnboarding(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_hasSeenProOnboardingKey, value);
   }
 }

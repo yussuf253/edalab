@@ -1,14 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/providers/providers.dart';
+import '../../../core/utils/contact_launcher.dart';
+import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
 class ShoppingOrderDetailScreen extends StatefulWidget {
@@ -29,6 +31,7 @@ class ShoppingOrderDetailScreen extends StatefulWidget {
 class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
   Map<String, dynamic>? _order;
   bool _isLoading = true;
+  Timer? _pollTimer;
 
   @override
   void initState() {
@@ -36,37 +39,62 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
     _order = widget.order;
     _isLoading = widget.order == null;
     _loadOrder();
+    _pollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      _loadOrder(forceRefresh: true);
+    });
   }
 
-  Future<void> _loadOrder() async {
-    final userId = context.read<AuthProvider>().user?.id;
-    if (userId == null || userId.isEmpty) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      return;
-    }
-
+  Future<void> _loadOrder({bool forceRefresh = true}) async {
     try {
-      final response = await ApiClient.get('/orders/$userId', forceRefresh: true);
-      final orders = response is List ? response : const [];
-      final match = orders.cast<dynamic>().firstWhere(
-        (entry) => (entry as Map)['id']?.toString() == widget.orderId,
-        orElse: () => null,
+      final response = await ApiClient.get(
+        '/orders/detail/${widget.orderId}',
+        forceRefresh: forceRefresh,
       );
       if (!mounted) return;
       setState(() {
-        if (match != null) {
-          _order = {
-            ...?_order,
-            ...Map<String, dynamic>.from(match as Map),
-          };
-        }
+        _order = Map<String, dynamic>.from(response as Map);
         _isLoading = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _openCourierChat(Map<String, dynamic>? courier) async {
+    final order = _order;
+    final courierName = courier?['name']?.toString();
+    final moduleName = (order?['moduleName']?.toString() ?? '').trim();
+    if (order == null || courierName == null || courierName.isEmpty) {
+      showContactUnavailableSnackBar(context);
+      return;
+    }
+
+    await openConversation(
+      context,
+      moduleType: order['moduleType']?.toString() ?? 'SHOPPING',
+      entityType: 'DELIVERY',
+      entityId: widget.orderId,
+      title: courierName,
+      subtitle: moduleName.isNotEmpty ? moduleName : 'Shopping delivery',
+      accentColor: '#2ECC71',
+      metadata: {
+        'orderId': widget.orderId,
+        'deliveryUserId': courier?['userId']?.toString(),
+        'deliveryPhone': courier?['phone']?.toString(),
+        'moduleType': order['moduleType']?.toString(),
+      },
+    );
+  }
+
+  Future<void> _callCourier(String? phone) async {
+    await launchPhoneCall(context, phone);
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -86,6 +114,9 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
     );
     final address =
         data['address']?.toString() ?? firstMetadata['address']?.toString();
+    final courier = data['deliveryAssignee'] is Map
+        ? Map<String, dynamic>.from(data['deliveryAssignee'] as Map)
+        : null;
 
     return PopScope(
       canPop: context.canPop(),
@@ -122,7 +153,9 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _ShoppingHero(
-                      storeName: data['moduleName']?.toString() ?? l10n.t('shopping_tracking.default_title'),
+                      storeName:
+                          data['moduleName']?.toString() ??
+                          l10n.t('shopping_tracking.default_title'),
                       status: _pretty(data['status']?.toString()),
                       itemCount: itemCount,
                       total: ((data['total'] as num?)?.toDouble() ?? 0),
@@ -163,7 +196,9 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: AppColors.shopping.withValues(alpha: 0.10),
+                                color: AppColors.shopping.withValues(
+                                  alpha: 0.10,
+                                ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
@@ -173,9 +208,27 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Text(address, style: AppTextStyles.bodyMedium),
+                              child: Text(
+                                address,
+                                style: AppTextStyles.bodyMedium,
+                              ),
                             ),
                           ],
+                        ),
+                      ),
+                    ],
+                    if (courier != null) ...[
+                      const SizedBox(height: 14),
+                      _SectionCard(
+                        title: l10n.t('food_tracking.rider'),
+                        child: _CourierCard(
+                          name:
+                              courier['name']?.toString() ?? 'Assigned courier',
+                          phone: courier['phone']?.toString(),
+                          accentColor: AppColors.shopping,
+                          onChatTap: () => _openCourierChat(courier),
+                          onCallTap: () =>
+                              _callCourier(courier['phone']?.toString()),
                         ),
                       ),
                     ],
@@ -187,7 +240,9 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                             ? [
                                 _EmptyLine(
                                   title: l10n.t('tracking.no_items_title'),
-                                  subtitle: l10n.t('tracking.shopping_empty_subtitle'),
+                                  subtitle: l10n.t(
+                                    'tracking.shopping_empty_subtitle',
+                                  ),
                                 ),
                               ]
                             : items
@@ -196,16 +251,21 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                                       name: item['name']?.toString() ?? 'Item',
                                       brand: item['brand']?.toString(),
                                       quantity:
-                                          (item['quantity'] as num?)?.toInt() ?? 1,
+                                          (item['quantity'] as num?)?.toInt() ??
+                                          1,
                                       price:
-                                          ((item['total'] as num?)?.toDouble() ??
-                                                  (item['price'] as num?)?.toDouble() ??
+                                          ((item['total'] as num?)
+                                                      ?.toDouble() ??
+                                                  (item['price'] as num?)
+                                                      ?.toDouble() ??
                                                   0)
                                               .toStringAsFixed(2),
                                       variant: [
-                                        if ((item['color']?.toString() ?? '').isNotEmpty)
+                                        if ((item['color']?.toString() ?? '')
+                                            .isNotEmpty)
                                           item['color'].toString(),
-                                        if ((item['size']?.toString() ?? '').isNotEmpty)
+                                        if ((item['size']?.toString() ?? '')
+                                            .isNotEmpty)
                                           item['size'].toString(),
                                       ].join(' • '),
                                     ),
@@ -216,6 +276,107 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                   ],
                 ),
               ),
+      ),
+    );
+  }
+}
+
+class _CourierCard extends StatelessWidget {
+  final String name;
+  final String? phone;
+  final Color accentColor;
+  final VoidCallback onChatTap;
+  final VoidCallback onCallTap;
+
+  const _CourierCard({
+    required this.name,
+    required this.phone,
+    required this.accentColor,
+    required this.onChatTap,
+    required this.onCallTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: accentColor.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(Icons.person_rounded, color: accentColor),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, style: AppTextStyles.labelLarge),
+              const SizedBox(height: 4),
+              Text(
+                phone == null || phone!.isEmpty
+                    ? 'Contact details pending'
+                    : phone!,
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.grey),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        _DetailActionIcon(
+          icon: Icons.chat_rounded,
+          color: accentColor,
+          backgroundColor: accentColor.withValues(alpha: 0.10),
+          enabled: true,
+          onTap: onChatTap,
+        ),
+        const SizedBox(width: 8),
+        _DetailActionIcon(
+          icon: Icons.phone_rounded,
+          color: AppColors.success,
+          backgroundColor: AppColors.successLight,
+          enabled: phone != null && phone!.trim().isNotEmpty,
+          onTap: onCallTap,
+        ),
+      ],
+    );
+  }
+}
+
+class _DetailActionIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final Color backgroundColor;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _DetailActionIcon({
+    required this.icon,
+    required this.color,
+    required this.backgroundColor,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: enabled ? 1 : 0.45,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
       ),
     );
   }
@@ -241,7 +402,10 @@ class _ShoppingHero extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.shopping, AppColors.shopping.withValues(alpha: 0.78)],
+          colors: [
+            AppColors.shopping,
+            AppColors.shopping.withValues(alpha: 0.78),
+          ],
         ),
         borderRadius: BorderRadius.circular(24),
       ),
@@ -298,7 +462,9 @@ class _ShoppingHero extends StatelessWidget {
               children: [
                 Text(
                   AppLocalizations.of(context).t('tracking.total_paid'),
-                  style: AppTextStyles.bodySmall.copyWith(color: Colors.white70),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: Colors.white70,
+                  ),
                 ),
                 const Spacer(),
                 Text(
@@ -537,7 +703,10 @@ class _MissingOrderState extends StatelessWidget {
               color: AppColors.grey,
             ),
             const SizedBox(height: 12),
-            Text(l10n.t('shopping_tracking.missing_title'), style: AppTextStyles.h4),
+            Text(
+              l10n.t('shopping_tracking.missing_title'),
+              style: AppTextStyles.h4,
+            ),
             const SizedBox(height: 8),
             Text(
               l10n.t('shopping_tracking.missing_subtitle'),

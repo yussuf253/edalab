@@ -26,8 +26,18 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
   bool _isLoading = true;
   String _selectedCategory = 'All';
   String _searchQuery = '';
-  ShoppingStoreModel _store = ShoppingStoreModel.sampleStores.first;
-  List<ProductModel> _products = ProductModel.sampleProducts;
+  ShoppingStoreModel _store = ShoppingStoreModel(
+    id: '',
+    name: '',
+    tagline: '',
+    imageUrl: '',
+    rating: 0,
+    reviewCount: 0,
+    productCount: 0,
+    minPrice: 0,
+    maxPrice: 0,
+  );
+  List<ProductModel> _products = [];
 
   @override
   void initState() {
@@ -37,14 +47,14 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
 
   Future<void> _loadStore() async {
     try {
-      final response = await ApiClient.get('/catalog/shopping-stores/${widget.storeId}')
-          as Map;
+      final response =
+          await ApiClient.get('/catalog/shopping-stores/${widget.storeId}')
+              as Map;
       final data = Map<String, dynamic>.from(response);
       final products = (data['products'] as List? ?? const [])
           .map(
-            (entry) => ProductModel.fromApi(
-              Map<String, dynamic>.from(entry as Map),
-            ),
+            (entry) =>
+                ProductModel.fromApi(Map<String, dynamic>.from(entry as Map)),
           )
           .toList();
 
@@ -57,6 +67,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() {
+        _store = ShoppingStoreModel.sampleStores.first;
         _products = ProductModel.sampleProducts;
         _isLoading = false;
       });
@@ -74,10 +85,12 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
     final categories = [allCategory, ..._store.categories];
     final normalizedQuery = _searchQuery.trim().toLowerCase();
     final products = _products.where((product) {
-      final matchesCategory = _selectedCategory == 'All' ||
+      final matchesCategory =
+          _selectedCategory == 'All' ||
           _selectedCategory == allCategory ||
           product.category == _selectedCategory;
-      final matchesSearch = normalizedQuery.isEmpty ||
+      final matchesSearch =
+          normalizedQuery.isEmpty ||
           product.name.toLowerCase().contains(normalizedQuery) ||
           product.brand.toLowerCase().contains(normalizedQuery);
       return matchesCategory && matchesSearch;
@@ -171,13 +184,14 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                         ),
                       ),
                     ),
-                    Center(
-                      child: Icon(
-                        _storeIcon(_store.categories),
-                        size: 76,
-                        color: AppColors.shopping.withValues(alpha: 0.35),
+                    if (!_isLoading && _store.categories.isNotEmpty)
+                      Center(
+                        child: Icon(
+                          _storeIcon(_store.categories),
+                          size: 76,
+                          color: AppColors.shopping.withValues(alpha: 0.35),
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -191,10 +205,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: _isLoading
-                  ? const DetailContentShimmer(
-                      accentColor: AppColors.shopping,
-                      showHero: false,
-                    )
+                  ? const _ShoppingStoreDetailShimmer()
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -244,7 +255,9 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                               icon: Icons.inventory_2_outlined,
                               label: l10n.t(
                                 'store_detail.products',
-                                params: {'count': _store.productCount.toString()},
+                                params: {
+                                  'count': _store.productCount.toString(),
+                                },
                               ),
                               color: AppColors.primary,
                             ),
@@ -270,47 +283,46 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
           SliverToBoxAdapter(
             child: SizedBox(
               height: 44,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                itemCount: categories.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  final isSelected = _selectedCategory == category;
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedCategory = category),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected ? AppColors.primary : AppColors.white,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        category,
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: isSelected ? AppColors.white : AppColors.dark,
-                        ),
-                      ),
+              child: _isLoading
+                  ? const _ShoppingStoreCategoryShimmer()
+                  : ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                      itemCount: categories.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        final isSelected = _selectedCategory == category;
+                        return GestureDetector(
+                          onTap: () =>
+                              setState(() => _selectedCategory = category),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              category,
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: isSelected
+                                    ? AppColors.white
+                                    : AppColors.dark,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ),
           if (_isLoading)
-            const SliverPadding(
-              padding: EdgeInsets.fromLTRB(20, 16, 20, 24),
-              sliver: SliverToBoxAdapter(
-                child: InlineSectionGridShimmer(
-                  itemCount: 6,
-                  childAspectRatio: 0.62,
-                ),
-              ),
-            )
+            const _StoreProductsGridShimmer()
           else if (products.isEmpty)
             SliverFillRemaining(
               hasScrollBody: false,
@@ -329,7 +341,8 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                   final product = products[index];
                   final isFavorite = wishlistProvider.isFavorite(product.id);
                   return GestureDetector(
-                    onTap: () => context.push('/shopping/product/${product.id}'),
+                    onTap: () =>
+                        context.push('/shopping/product/${product.id}'),
                     child: Container(
                       decoration: BoxDecoration(
                         color: AppColors.white,
@@ -369,7 +382,9 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                                     child: InkWell(
                                       borderRadius: BorderRadius.circular(999),
                                       onTap: () {
-                                        wishlistProvider.toggleFavorite(product);
+                                        wishlistProvider.toggleFavorite(
+                                          product,
+                                        );
                                       },
                                       child: Padding(
                                         padding: const EdgeInsets.all(8),
@@ -427,7 +442,8 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                                               brand: product.brand,
                                               price: product.price,
                                               moduleType: 'shopping',
-                                              imageUrl: product.images.isNotEmpty
+                                              imageUrl:
+                                                  product.images.isNotEmpty
                                                   ? product.images.first
                                                   : null,
                                             ),
@@ -494,6 +510,179 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
   }
 }
 
+class _ShoppingStoreDetailShimmer extends StatelessWidget {
+  const _ShoppingStoreDetailShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          ShimmerBlock(width: 160, height: 28),
+          SizedBox(height: 10),
+          ShimmerBlock(width: 220, height: 14, radius: 10),
+          SizedBox(height: 8),
+          ShimmerBlock(width: 180, height: 14, radius: 10),
+          SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              ShimmerBlock(width: 88, height: 32, radius: 999),
+              ShimmerBlock(width: 112, height: 32, radius: 999),
+            ],
+          ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: ShimmerBlock(
+                  width: double.infinity,
+                  height: 32,
+                  radius: 999,
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: ShimmerBlock(
+                  width: double.infinity,
+                  height: 32,
+                  radius: 999,
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: ShimmerBlock(
+                  width: double.infinity,
+                  height: 32,
+                  radius: 999,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          ShimmerBlock(width: double.infinity, height: 56, radius: 16),
+        ],
+      ),
+    );
+  }
+}
+
+class _ShoppingStoreCategoryShimmer extends StatelessWidget {
+  const _ShoppingStoreCategoryShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+        itemCount: 4,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final widths = [72.0, 96.0, 86.0, 104.0];
+          return ShimmerBlock(width: widths[index], height: 36, radius: 999);
+        },
+      ),
+    );
+  }
+}
+
+class _StoreProductsGridShimmer extends StatelessWidget {
+  const _StoreProductsGridShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+      sliver: SliverGrid(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) =>
+              const AppShimmer(child: _StoreProductCardShimmer()),
+          childCount: 6,
+        ),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 14,
+          crossAxisSpacing: 14,
+          childAspectRatio: 0.62,
+        ),
+      ),
+    );
+  }
+}
+
+class _StoreProductCardShimmer extends StatelessWidget {
+  const _StoreProductCardShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Expanded(
+            flex: 3,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.extraLightGrey,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: ShimmerBlock(width: 34, height: 34, radius: 999),
+                ),
+                Center(child: ShimmerBlock(width: 44, height: 44, radius: 14)),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(10, 7, 10, 6),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ShimmerBlock(width: double.infinity, height: 14, radius: 10),
+                  SizedBox(height: 6),
+                  ShimmerBlock(width: 72, height: 12, radius: 10),
+                  Spacer(),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ShimmerBlock(
+                          width: double.infinity,
+                          height: 16,
+                          radius: 10,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      ShimmerBlock(width: 34, height: 34, radius: 10),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _StoreDetailChip extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -545,11 +734,7 @@ class _StoreProductActionButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Center(
-            child: Icon(
-              Icons.add_rounded,
-              color: AppColors.white,
-              size: 18,
-            ),
+            child: Icon(Icons.add_rounded, color: AppColors.white, size: 18),
           ),
         ),
       ),

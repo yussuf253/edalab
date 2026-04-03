@@ -1,14 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/providers/providers.dart';
+import '../../../core/utils/contact_launcher.dart';
+import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
 class PharmacyOrderDetailScreen extends StatefulWidget {
@@ -29,6 +31,7 @@ class PharmacyOrderDetailScreen extends StatefulWidget {
 class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
   Map<String, dynamic>? _order;
   bool _isLoading = true;
+  Timer? _pollTimer;
 
   @override
   void initState() {
@@ -36,37 +39,62 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
     _order = widget.order;
     _isLoading = widget.order == null;
     _loadOrder();
+    _pollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      _loadOrder(forceRefresh: true);
+    });
   }
 
-  Future<void> _loadOrder() async {
-    final userId = context.read<AuthProvider>().user?.id;
-    if (userId == null || userId.isEmpty) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      return;
-    }
-
+  Future<void> _loadOrder({bool forceRefresh = true}) async {
     try {
-      final response = await ApiClient.get('/orders/$userId', forceRefresh: true);
-      final orders = response is List ? response : const [];
-      final match = orders.cast<dynamic>().firstWhere(
-        (entry) => (entry as Map)['id']?.toString() == widget.orderId,
-        orElse: () => null,
+      final response = await ApiClient.get(
+        '/orders/detail/${widget.orderId}',
+        forceRefresh: forceRefresh,
       );
       if (!mounted) return;
       setState(() {
-        if (match != null) {
-          _order = {
-            ...?_order,
-            ...Map<String, dynamic>.from(match as Map),
-          };
-        }
+        _order = Map<String, dynamic>.from(response as Map);
         _isLoading = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _openCourierChat(Map<String, dynamic>? courier) async {
+    final order = _order;
+    final courierName = courier?['name']?.toString();
+    final moduleName = (order?['moduleName']?.toString() ?? '').trim();
+    if (order == null || courierName == null || courierName.isEmpty) {
+      showContactUnavailableSnackBar(context);
+      return;
+    }
+
+    await openConversation(
+      context,
+      moduleType: order['moduleType']?.toString() ?? 'PHARMACY',
+      entityType: 'DELIVERY',
+      entityId: widget.orderId,
+      title: courierName,
+      subtitle: moduleName.isNotEmpty ? moduleName : 'Pharmacy delivery',
+      accentColor: '#27AE60',
+      metadata: {
+        'orderId': widget.orderId,
+        'deliveryUserId': courier?['userId']?.toString(),
+        'deliveryPhone': courier?['phone']?.toString(),
+        'moduleType': order['moduleType']?.toString(),
+      },
+    );
+  }
+
+  Future<void> _callCourier(String? phone) async {
+    await launchPhoneCall(context, phone);
+  }
+
+  @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -80,6 +108,9 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
       0,
       (sum, item) => sum + ((item['quantity'] as num?)?.toInt() ?? 0),
     );
+    final courier = data['deliveryAssignee'] is Map
+        ? Map<String, dynamic>.from(data['deliveryAssignee'] as Map)
+        : null;
 
     return PopScope(
       canPop: context.canPop(),
@@ -89,128 +120,246 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
         }
       },
       child: Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.t('pharmacy_tracking.title')),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/pharmacy');
-            }
-          },
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text(l10n.t('pharmacy_tracking.title')),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/pharmacy');
+              }
+            },
+          ),
         ),
-      ),
-      body: _isLoading
-          ? const DetailContentShimmer(
-              accentColor: AppColors.pharmacy,
-              showHero: false,
-            )
-          : _order == null
-          ? const _MissingPharmacyState()
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _PharmacyHero(
-                    title:
-                        data['moduleName']?.toString() ?? l10n.t('pharmacy_tracking.default_title'),
-                    status: _pretty(data['status']?.toString()),
-                    medicineCount: medicineCount,
-                    total: ((data['total'] as num?)?.toDouble() ?? 0),
-                  ),
-                  const SizedBox(height: 16),
-                  _FulfillmentCard(
-                    placedAt: _formatDate(data['createdAt']?.toString()),
-                    delivery:
-                        data['deliveryEta']?.toString() ??
-                        data['deliveryLabel']?.toString() ??
-                        l10n.t('pharmacy_tracking.preparing_medicines'),
-                    payment:
-                        data['paymentLabel']?.toString() ?? l10n.t('pharmacy_tracking.payment_confirmed'),
-                  ),
-                  const SizedBox(height: 14),
-                  _PharmacySection(
-                    title: l10n.t('pharmacy_tracking.medicines_title'),
-                    child: Column(
-                      children: items.isEmpty
-                          ? const [
-                              _PharmacyEmpty(),
-                            ]
-                          : items
-                                .map(
-                                  (item) => _MedicineLine(
-                                    name: item['name']?.toString() ?? 'Medicine',
-                                    brand: item['brand']?.toString(),
-                                    quantity:
-                                        (item['quantity'] as num?)?.toInt() ?? 1,
-                                    total:
-                                        ((item['total'] as num?)?.toDouble() ??
-                                                (item['price'] as num?)?.toDouble() ??
-                                                0)
-                                            .toStringAsFixed(2),
-                                  ),
-                                )
-                                .toList(),
+        body: _isLoading
+            ? const DetailContentShimmer(
+                accentColor: AppColors.pharmacy,
+                showHero: false,
+              )
+            : _order == null
+            ? const _MissingPharmacyState()
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _PharmacyHero(
+                      title:
+                          data['moduleName']?.toString() ??
+                          l10n.t('pharmacy_tracking.default_title'),
+                      status: _pretty(data['status']?.toString()),
+                      medicineCount: medicineCount,
+                      total: ((data['total'] as num?)?.toDouble() ?? 0),
                     ),
-                  ),
-                  const SizedBox(height: 14),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEFFAF4),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: AppColors.pharmacy.withValues(alpha: 0.18),
+                    const SizedBox(height: 16),
+                    _FulfillmentCard(
+                      placedAt: _formatDate(data['createdAt']?.toString()),
+                      delivery:
+                          data['deliveryEta']?.toString() ??
+                          data['deliveryLabel']?.toString() ??
+                          l10n.t('pharmacy_tracking.preparing_medicines'),
+                      payment:
+                          data['paymentLabel']?.toString() ??
+                          l10n.t('pharmacy_tracking.payment_confirmed'),
+                    ),
+                    if (courier != null) ...[
+                      const SizedBox(height: 14),
+                      _PharmacySection(
+                        title: l10n.t('food_tracking.rider'),
+                        child: _CourierRow(
+                          name:
+                              courier['name']?.toString() ?? 'Assigned courier',
+                          phone: courier['phone']?.toString(),
+                          onChatTap: () => _openCourierChat(courier),
+                          onCallTap: () =>
+                              _callCourier(courier['phone']?.toString()),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    _PharmacySection(
+                      title: l10n.t('pharmacy_tracking.medicines_title'),
+                      child: Column(
+                        children: items.isEmpty
+                            ? const [_PharmacyEmpty()]
+                            : items
+                                  .map(
+                                    (item) => _MedicineLine(
+                                      name:
+                                          item['name']?.toString() ??
+                                          'Medicine',
+                                      brand: item['brand']?.toString(),
+                                      quantity:
+                                          (item['quantity'] as num?)?.toInt() ??
+                                          1,
+                                      total:
+                                          ((item['total'] as num?)
+                                                      ?.toDouble() ??
+                                                  (item['price'] as num?)
+                                                      ?.toDouble() ??
+                                                  0)
+                                              .toStringAsFixed(2),
+                                    ),
+                                  )
+                                  .toList(),
                       ),
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.health_and_safety_outlined,
-                            color: AppColors.pharmacy,
-                          ),
+                    const SizedBox(height: 14),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEFFAF4),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: AppColors.pharmacy.withValues(alpha: 0.18),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                l10n.t('pharmacy_tracking.care_title'),
-                                style: AppTextStyles.labelLarge.copyWith(
-                                  color: AppColors.pharmacy,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                l10n.t('pharmacy_tracking.care_subtitle'),
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.grey,
-                                  height: 1.45,
-                                ),
-                              ),
-                            ],
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: AppColors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.health_and_safety_outlined,
+                              color: AppColors.pharmacy,
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.t('pharmacy_tracking.care_title'),
+                                  style: AppTextStyles.labelLarge.copyWith(
+                                    color: AppColors.pharmacy,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  l10n.t('pharmacy_tracking.care_subtitle'),
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.grey,
+                                    height: 1.45,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+      ),
+    );
+  }
+}
+
+class _CourierRow extends StatelessWidget {
+  final String name;
+  final String? phone;
+  final VoidCallback onChatTap;
+  final VoidCallback onCallTap;
+
+  const _CourierRow({
+    required this.name,
+    required this.phone,
+    required this.onChatTap,
+    required this.onCallTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: AppColors.pharmacy.withValues(alpha: 0.10),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(Icons.person_rounded, color: AppColors.pharmacy),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name, style: AppTextStyles.labelLarge),
+              const SizedBox(height: 4),
+              Text(
+                phone == null || phone!.isEmpty
+                    ? 'Contact details pending'
+                    : phone!,
+                style: AppTextStyles.bodySmall.copyWith(color: AppColors.grey),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        _PharmacyActionIcon(
+          icon: Icons.chat_rounded,
+          color: AppColors.pharmacy,
+          backgroundColor: AppColors.pharmacy.withValues(alpha: 0.10),
+          enabled: true,
+          onTap: onChatTap,
+        ),
+        const SizedBox(width: 8),
+        _PharmacyActionIcon(
+          icon: Icons.phone_rounded,
+          color: AppColors.success,
+          backgroundColor: AppColors.successLight,
+          enabled: phone != null && phone!.trim().isNotEmpty,
+          onTap: onCallTap,
+        ),
+      ],
+    );
+  }
+}
+
+class _PharmacyActionIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final Color backgroundColor;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _PharmacyActionIcon({
+    required this.icon,
+    required this.color,
+    required this.backgroundColor,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: enabled ? 1 : 0.45,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
       ),
     );
   }
@@ -263,7 +412,10 @@ class _PharmacyHero extends StatelessWidget {
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.16),
                   borderRadius: BorderRadius.circular(999),
@@ -278,10 +430,7 @@ class _PharmacyHero extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            title,
-            style: AppTextStyles.h3.copyWith(color: AppColors.white),
-          ),
+          Text(title, style: AppTextStyles.h3.copyWith(color: AppColors.white)),
           const SizedBox(height: 6),
           Text(
             AppLocalizations.of(context).t(

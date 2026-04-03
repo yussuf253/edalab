@@ -25,9 +25,16 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _hotel = HotelModel.sampleHotels.firstWhere(
-      (hotel) => hotel.id == widget.hotelId,
-      orElse: () => HotelModel.sampleHotels.first,
+    _hotel = HotelModel(
+      id: '',
+      name: '',
+      address: '',
+      city: '',
+      rating: 0,
+      reviewsCount: 0,
+      pricePerNight: 0,
+      amenities: const [],
+      description: '',
     );
     _loadHotel();
   }
@@ -64,7 +71,11 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
               child: CircleAvatar(
                 backgroundColor: AppColors.white,
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 18,
+                    color: AppColors.dark,
+                  ),
                   onPressed: () => context.pop(),
                 ),
               ),
@@ -93,10 +104,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: _isLoading
-                  ? const DetailContentShimmer(
-                      accentColor: AppColors.hotel,
-                      showHero: false,
-                    )
+                  ? const _HotelDetailShimmer()
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -164,7 +172,10 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                           ],
                         ),
                         const SizedBox(height: 24),
-                        Text(l10n.t('hotel_detail.about'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('hotel_detail.about'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           h.description,
@@ -174,7 +185,10 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        Text(l10n.t('hotel_detail.amenities'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('hotel_detail.amenities'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 10,
@@ -189,28 +203,25 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                               .toList(),
                         ),
                         const SizedBox(height: 24),
-                        Text(l10n.t('hotel_detail.available_rooms'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('hotel_detail.available_rooms'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 12),
-                        _RoomCard(
-                          l10n.t('hotel_detail.standard_room'),
-                          l10n.t('hotel_detail.standard_room_desc'),
-                          h.pricePerNight.toInt(),
-                          true,
-                        ),
-                        _RoomCard(
-                          l10n.t('hotel_detail.premium_suite'),
-                          l10n.t('hotel_detail.premium_suite_desc'),
-                          (h.pricePerNight * 1.5).toInt(),
-                          true,
-                        ),
-                        _RoomCard(
-                          l10n.t('hotel_detail.royal_suite'),
-                          l10n.t('hotel_detail.royal_suite_desc'),
-                          (h.pricePerNight * 2.2).toInt(),
-                          false,
+                        ...h.roomOptions.map(
+                          (room) => _RoomCard(
+                            room.name,
+                            room.description,
+                            room.pricePerNight.toInt(),
+                            room.available,
+                            capacity: room.capacity,
+                          ),
                         ),
                         const SizedBox(height: 24),
-                        Text(l10n.t('hotel_detail.reviews'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('hotel_detail.reviews'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.all(14),
@@ -271,57 +282,179 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
           ),
         ],
       ),
-      bottomSheet: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(l10n.t('hotel_detail.starting_from'), style: AppTextStyles.caption),
-                  Row(
-                    children: [
-                      Text(
-                        '\$${h.pricePerNight.toInt()}',
-                        style: AppTextStyles.price.copyWith(
-                          color: AppColors.hotel,
-                        ),
-                      ),
-                      Text(l10n.t('hotel.per_night'), style: AppTextStyles.caption),
-                    ],
+      bottomSheet: _isLoading
+          ? null
+          : Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, -5),
                   ),
                 ],
               ),
-              const SizedBox(width: 20),
+              child: SafeArea(
+                child: Row(
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.t('hotel_detail.starting_from'),
+                          style: AppTextStyles.caption,
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              '\$${h.pricePerNight.toInt()}',
+                              style: AppTextStyles.price.copyWith(
+                                color: AppColors.hotel,
+                              ),
+                            ),
+                            Text(
+                              l10n.t('hotel.per_night'),
+                              style: AppTextStyles.caption,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: AppButton(
+                        text: l10n.t('hotel_detail.book_now'),
+                        color: AppColors.hotel,
+                        onPressed: () async {
+                          final allowed = await requireLoggedIn(
+                            context,
+                            message: l10n.t('hotel_detail.login_required'),
+                          );
+                          if (!context.mounted || !allowed) return;
+                          context.push('/hotel/book/${h.id}');
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+}
+
+class _HotelDetailShimmer extends StatelessWidget {
+  const _HotelDetailShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Row(
+            children: [
+              Expanded(child: ShimmerBlock(width: double.infinity, height: 28)),
+              SizedBox(width: 12),
+              ShimmerBlock(width: 76, height: 30, radius: 8),
+            ],
+          ),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              ShimmerBlock(width: 16, height: 16, radius: 999),
+              SizedBox(width: 6),
               Expanded(
-                child: AppButton(
-                  text: l10n.t('hotel_detail.book_now'),
-                  color: AppColors.hotel,
-                  onPressed: () async {
-                    final allowed = await requireLoggedIn(
-                      context,
-                      message: l10n.t('hotel_detail.login_required'),
-                    );
-                    if (!context.mounted || !allowed) return;
-                    context.push('/hotel/book/${h.id}');
-                  },
+                child: ShimmerBlock(
+                  width: double.infinity,
+                  height: 14,
+                  radius: 10,
                 ),
               ),
             ],
           ),
-        ),
+          SizedBox(height: 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              ShimmerBlock(width: 60, height: 32, radius: 8),
+              ShimmerBlock(width: 88, height: 32, radius: 8),
+              ShimmerBlock(width: 96, height: 32, radius: 8),
+            ],
+          ),
+          SizedBox(height: 24),
+          ShimmerBlock(width: 74, height: 20),
+          SizedBox(height: 8),
+          ShimmerBlock(width: double.infinity, height: 14, radius: 10),
+          SizedBox(height: 8),
+          ShimmerBlock(width: double.infinity, height: 14, radius: 10),
+          SizedBox(height: 8),
+          ShimmerBlock(width: 220, height: 14, radius: 10),
+          SizedBox(height: 24),
+          ShimmerBlock(width: 96, height: 20),
+          SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              ShimmerBlock(width: 118, height: 40, radius: 10),
+              ShimmerBlock(width: 102, height: 40, radius: 10),
+              ShimmerBlock(width: 126, height: 40, radius: 10),
+            ],
+          ),
+          SizedBox(height: 24),
+          ShimmerBlock(width: 124, height: 20),
+          SizedBox(height: 12),
+          _HotelRoomCardShimmer(),
+          SizedBox(height: 12),
+          _HotelRoomCardShimmer(),
+          SizedBox(height: 12),
+          _HotelRoomCardShimmer(),
+          SizedBox(height: 24),
+          ShimmerBlock(width: 70, height: 20),
+          SizedBox(height: 12),
+          ShimmerBlock(width: double.infinity, height: 116, radius: 14),
+          SizedBox(height: 100),
+        ],
+      ),
+    );
+  }
+}
+
+class _HotelRoomCardShimmer extends StatelessWidget {
+  const _HotelRoomCardShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: const Row(
+        children: [
+          ShimmerBlock(width: 70, height: 70, radius: 12),
+          SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ShimmerBlock(width: 150, height: 18),
+                SizedBox(height: 8),
+                ShimmerBlock(width: 120, height: 12, radius: 10),
+                SizedBox(height: 10),
+                ShimmerBlock(width: 84, height: 16, radius: 10),
+              ],
+            ),
+          ),
+          SizedBox(width: 12),
+          ShimmerBlock(width: 70, height: 28, radius: 999),
+        ],
       ),
     );
   }
@@ -385,7 +518,14 @@ class _RoomCard extends StatelessWidget {
   final String name, desc;
   final int price;
   final bool available;
-  const _RoomCard(this.name, this.desc, this.price, this.available);
+  final int capacity;
+  const _RoomCard(
+    this.name,
+    this.desc,
+    this.price,
+    this.available, {
+    this.capacity = 2,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -422,6 +562,11 @@ class _RoomCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(desc, style: AppTextStyles.caption),
                 const SizedBox(height: 6),
+                Text(
+                  '$capacity guests',
+                  style: AppTextStyles.caption.copyWith(color: AppColors.hotel),
+                ),
+                const SizedBox(height: 6),
                 Row(
                   children: [
                     Text(
@@ -430,7 +575,10 @@ class _RoomCard extends StatelessWidget {
                         color: AppColors.hotel,
                       ),
                     ),
-                    Text(l10n.t('hotel.per_night'), style: AppTextStyles.caption),
+                    Text(
+                      l10n.t('hotel.per_night'),
+                      style: AppTextStyles.caption,
+                    ),
                     const Spacer(),
                     Text(
                       available

@@ -1,4 +1,4 @@
-import { ModuleType } from '@prisma/client';
+import { ModuleType, Prisma } from '@prisma/client';
 import { Router } from 'express';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
@@ -102,6 +102,40 @@ function slugifyStoreName(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+function buildHotelRoomOptions(
+  basePriceRaw: Prisma.Decimal | number | null | undefined,
+) {
+  const basePrice = toNumber(basePriceRaw) ?? 0;
+  const normalizedBasePrice = basePrice > 0 ? basePrice : 120;
+
+  return [
+    {
+      id: 'standard-room',
+      name: 'Standard Room',
+      description: '1 Bed • City View',
+      pricePerNight: Number(normalizedBasePrice.toFixed(2)),
+      capacity: 2,
+      available: true,
+    },
+    {
+      id: 'premium-suite',
+      name: 'Premium Suite',
+      description: '1 King Bed • Balcony',
+      pricePerNight: Number((normalizedBasePrice * 1.45).toFixed(2)),
+      capacity: 2,
+      available: true,
+    },
+    {
+      id: 'family-suite',
+      name: 'Family Suite',
+      description: '2 Beds • Family Stay',
+      pricePerNight: Number((normalizedBasePrice * 1.8).toFixed(2)),
+      capacity: 4,
+      available: true,
+    },
+  ];
 }
 
 function serializeProduct(product: CatalogProductWithCategory) {
@@ -509,6 +543,7 @@ router.get(
         amenities: hotel.amenitiesJson ?? [],
         description: hotel.description,
         imageUrls: hotel.imageUrlsJson ?? [],
+        roomOptions: buildHotelRoomOptions(hotel.pricePerNight),
       })),
     );
   }),
@@ -537,6 +572,7 @@ router.get(
       amenities: hotel.amenitiesJson ?? [],
       description: hotel.description,
       imageUrls: hotel.imageUrlsJson ?? [],
+      roomOptions: buildHotelRoomOptions(hotel.pricePerNight),
     });
   }),
 );

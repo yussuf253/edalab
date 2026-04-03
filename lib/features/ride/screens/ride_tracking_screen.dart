@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
@@ -5,6 +7,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
@@ -22,20 +25,25 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
   Map<String, dynamic>? _rideData;
   bool _isLoading = true;
   String? _error;
+  Timer? _pollTimer;
 
   @override
   void initState() {
     super.initState();
     _rideData = widget.rideData;
     _isLoading = widget.rideData == null;
-    if (_isLoading) {
-      _loadRide();
-    }
+    _loadRide(forceRefresh: _isLoading);
+    _pollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      _loadRide(forceRefresh: true);
+    });
   }
 
-  Future<void> _loadRide() async {
+  Future<void> _loadRide({bool forceRefresh = true}) async {
     try {
-      final response = await ApiClient.get('/rides/${widget.rideId}');
+      final response = await ApiClient.get(
+        '/rides/${widget.rideId}',
+        forceRefresh: forceRefresh,
+      );
       if (!mounted) return;
       setState(() {
         _rideData = Map<String, dynamic>.from(response as Map);
@@ -51,6 +59,48 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
   }
 
   @override
+  void dispose() {
+    _pollTimer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _openDriverChat() async {
+    final ride = _rideData;
+    final driverAssigned =
+        (ride?['driverUserId'] as String?)?.isNotEmpty == true;
+    if (ride == null || !driverAssigned) {
+      showContactUnavailableSnackBar(context);
+      return;
+    }
+
+    final pickup = ride['pickup'] as String? ?? 'Pickup';
+    final destination = ride['destination'] as String? ?? 'Destination';
+    final vehicle = ride['vehicle'] as String? ?? 'Assigned vehicle';
+    final driverName = ride['driverName'] as String? ?? 'Assigned driver';
+
+    await openConversation(
+      context,
+      moduleType: 'RIDE',
+      entityType: 'RIDE',
+      entityId: widget.rideId,
+      title: driverName,
+      subtitle: vehicle,
+      accentColor: '#6C63FF',
+      metadata: {
+        'rideId': widget.rideId,
+        'vehicle': vehicle,
+        'pickup': pickup,
+        'destination': destination,
+        'driverPhone': ride['driverPhone']?.toString(),
+      },
+    );
+  }
+
+  Future<void> _callDriver() async {
+    await launchPhoneCall(context, _rideData?['driverPhone']?.toString());
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final ride = _rideData;
@@ -59,7 +109,11 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
         ride?['destination'] as String? ?? 'City Mall, Downtown';
     final eta = ride?['eta'] as String? ?? '5 min';
     final vehicle = ride?['vehicle'] as String? ?? 'Toyota Camry';
-    final driverName = ride?['driverName'] as String? ?? 'Ahmed K.';
+    final driverName =
+        ride?['driverName'] as String? ?? 'Driver assignment pending';
+    final driverAssigned =
+        (ride?['driverUserId'] as String?)?.isNotEmpty == true;
+    final driverPhone = ride?['driverPhone'] as String?;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -356,13 +410,17 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                             ),
                                             const SizedBox(width: 4),
                                             Text(
-                                              '4.9',
+                                              driverAssigned
+                                                  ? '4.9'
+                                                  : 'Pending',
                                               style: AppTextStyles.labelSmall,
                                             ),
                                             const SizedBox(width: 8),
                                             Expanded(
                                               child: Text(
-                                                '$vehicle • ABC 1234',
+                                                driverAssigned
+                                                    ? '$vehicle • Assigned driver'
+                                                    : '$vehicle • Waiting for a rider',
                                                 style: AppTextStyles.caption,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
@@ -424,26 +482,17 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                               children: [
                                 Expanded(
                                   child: GestureDetector(
-                                    onTap: () => openConversation(
-                                      context,
-                                      moduleType: 'RIDE',
-                                      entityType: 'RIDE',
-                                      entityId: widget.rideId,
-                                      title: driverName,
-                                      subtitle: vehicle,
-                                      accentColor: '#6C63FF',
-                                      metadata: {
-                                        'rideId': widget.rideId,
-                                        'vehicle': vehicle,
-                                        'pickup': pickup,
-                                        'destination': destination,
-                                      },
-                                    ),
+                                    onTap: driverAssigned
+                                        ? _openDriverChat
+                                        : null,
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(
                                         vertical: 14,
                                       ),
                                       decoration: BoxDecoration(
+                                        color: driverAssigned
+                                            ? AppColors.white
+                                            : AppColors.extraLightGrey,
                                         border: Border.all(
                                           color: AppColors.lightGrey,
                                         ),
@@ -471,28 +520,48 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 14,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.ride,
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        const Icon(
-                                          Icons.call_rounded,
-                                          color: AppColors.white,
-                                          size: 20,
+                                  child: GestureDetector(
+                                    onTap:
+                                        driverPhone != null &&
+                                            driverPhone.isNotEmpty
+                                        ? _callDriver
+                                        : null,
+                                    child: Opacity(
+                                      opacity:
+                                          driverPhone != null &&
+                                              driverPhone.isNotEmpty
+                                          ? 1
+                                          : 0.55,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 14,
                                         ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          l10n.t('doctor_booking.contact_directly'),
-                                          style: AppTextStyles.labelMedium
-                                              .copyWith(color: AppColors.white),
+                                        decoration: BoxDecoration(
+                                          color: AppColors.ride,
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
                                         ),
-                                      ],
+                                        child: Column(
+                                          children: [
+                                            const Icon(
+                                              Icons.call_rounded,
+                                              color: AppColors.white,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              l10n.t(
+                                                'doctor_booking.contact_directly',
+                                              ),
+                                              style: AppTextStyles.labelMedium
+                                                  .copyWith(
+                                                    color: AppColors.white,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),

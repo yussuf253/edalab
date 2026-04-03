@@ -108,12 +108,14 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
+    final wishlistProvider = context.watch<WishlistProvider>();
     final item = _item;
     final existingItems = cartProvider.getModuleItems('food');
     final existing = existingItems.cast<CartItem?>().firstWhere(
       (cartItem) => cartItem?.id == widget.itemId,
       orElse: () => null,
     );
+    final isFavorite = wishlistProvider.isFoodFavorite(widget.itemId);
     final quantity = existing?.quantity ?? _quantity;
 
     return Scaffold(
@@ -124,6 +126,45 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(l10n.t('food_detail.title')),
+        actions: item == null
+            ? null
+            : [
+                IconButton(
+                  icon: Icon(
+                    isFavorite
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    color: isFavorite ? AppColors.accent : null,
+                  ),
+                  splashRadius: 24,
+                  constraints: const BoxConstraints(
+                    minWidth: 48,
+                    minHeight: 48,
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  onPressed: () async {
+                    await wishlistProvider.toggleFoodFavorite(
+                      itemId: widget.itemId,
+                      title: item.name,
+                      subtitle: _restaurantName,
+                      price: item.price,
+                      imageUrl: item.imageUrl,
+                    );
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          isFavorite
+                              ? l10n.t('product_detail.removed_wishlist')
+                              : l10n.t('product_detail.added_wishlist'),
+                        ),
+                        duration: const Duration(seconds: 1),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                ),
+              ],
       ),
       body: _isLoading
           ? const SingleChildScrollView(
@@ -196,7 +237,10 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                           ],
                         ),
                         const SizedBox(height: 20),
-                        Text(l10n.t('food_detail.description'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('food_detail.description'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           item.description,
@@ -241,7 +285,10 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                         const SizedBox(height: 28),
                         Row(
                           children: [
-                            Text(l10n.t('food_detail.quantity'), style: AppTextStyles.h4),
+                            Text(
+                              l10n.t('food_detail.quantity'),
+                              style: AppTextStyles.h4,
+                            ),
                             const Spacer(),
                             Container(
                               decoration: BoxDecoration(
@@ -376,7 +423,10 @@ class _DishNotFoundState extends StatelessWidget {
               color: AppColors.mediumGrey,
             ),
             const SizedBox(height: 12),
-            Text(l10n.t('food_detail.not_found_title'), style: AppTextStyles.h3),
+            Text(
+              l10n.t('food_detail.not_found_title'),
+              style: AppTextStyles.h3,
+            ),
             const SizedBox(height: 8),
             Text(
               l10n.t(

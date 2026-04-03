@@ -44,6 +44,7 @@ function inferTypeFromModule(module) {
             return client_1.NotificationType.LAUNDRY;
         case client_1.NotificationModule.PROMOTIONS:
             return client_1.NotificationType.PROMOTION;
+        case client_1.NotificationModule.MESSAGES:
         case client_1.NotificationModule.HOME_SERVICES:
         case client_1.NotificationModule.ACCOUNT:
         case client_1.NotificationModule.SYSTEM:
@@ -78,6 +79,8 @@ function parseModule(raw) {
     switch (normalized) {
         case 'PROMOTION':
             return client_1.NotificationModule.PROMOTIONS;
+        case 'MESSAGE':
+            return client_1.NotificationModule.MESSAGES;
         case 'ACCOUNTS':
             return client_1.NotificationModule.ACCOUNT;
         case 'HOME-SERVICES':

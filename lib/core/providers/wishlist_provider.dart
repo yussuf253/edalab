@@ -4,6 +4,7 @@ import '../network/api_client.dart';
 
 class WishlistProvider extends ChangeNotifier {
   final List<ProductModel> _items = [];
+  final Set<String> _foodFavoriteIds = <String>{};
   String? _userId;
 
   List<ProductModel> get items => List.unmodifiable(_items);
@@ -18,22 +19,22 @@ class WishlistProvider extends ChangeNotifier {
     _userId = userId;
     if (userId == null || userId.isEmpty) {
       _items.clear();
+      _foodFavoriteIds.clear();
       notifyListeners();
       return;
     }
 
     try {
       final response = await ApiClient.get('/users/$userId/wishlist');
-      final items = (response as List)
+      final entries = (response as List)
+          .map((entry) => Map<String, dynamic>.from(entry as Map))
+          .toList();
+      final items = entries
           .where(
             (entry) =>
-                Map<String, dynamic>.from(
-                  entry as Map,
-                )['moduleType'].toString().toUpperCase() ==
-                'SHOPPING',
+                entry['moduleType'].toString().toUpperCase() == 'SHOPPING',
           )
-          .map((entry) {
-            final item = Map<String, dynamic>.from(entry as Map);
+          .map((item) {
             return ProductModel(
               id: item['entityId']?.toString() ?? '',
               name: item['title']?.toString() ?? '',
@@ -46,18 +47,33 @@ class WishlistProvider extends ChangeNotifier {
             );
           })
           .toList();
+      final foodIds = entries
+          .where(
+            (entry) => entry['moduleType'].toString().toUpperCase() == 'FOOD',
+          )
+          .map((entry) => entry['entityId']?.toString() ?? '')
+          .where((id) => id.isNotEmpty)
+          .toSet();
       _items
         ..clear()
         ..addAll(items);
+      _foodFavoriteIds
+        ..clear()
+        ..addAll(foodIds);
       notifyListeners();
     } catch (_) {
       _items.clear();
+      _foodFavoriteIds.clear();
       notifyListeners();
     }
   }
 
   bool isFavorite(String productId) {
     return _items.any((item) => item.id == productId);
+  }
+
+  bool isFoodFavorite(String itemId) {
+    return _foodFavoriteIds.contains(itemId);
   }
 
   Future<void> toggleFavorite(ProductModel product) async {
@@ -81,7 +97,41 @@ class WishlistProvider extends ChangeNotifier {
             'title': product.name,
             'subtitle': product.brand,
             'price': product.price,
-            'imageUrl': product.images.isNotEmpty ? product.images.first : null,
+            'imageUrl': product.images.isNotEmpty ? product.images.first : '',
+          });
+        } catch (_) {}
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<void> toggleFoodFavorite({
+    required String itemId,
+    required String title,
+    required String subtitle,
+    required double price,
+    String? imageUrl,
+  }) async {
+    if (_foodFavoriteIds.contains(itemId)) {
+      _foodFavoriteIds.remove(itemId);
+      if (_userId != null && _userId!.isNotEmpty) {
+        try {
+          await ApiClient.delete(
+            '/users/${_userId!}/wishlist/$itemId?moduleType=food',
+          );
+        } catch (_) {}
+      }
+    } else {
+      _foodFavoriteIds.add(itemId);
+      if (_userId != null && _userId!.isNotEmpty) {
+        try {
+          await ApiClient.post('/users/${_userId!}/wishlist', {
+            'moduleType': 'FOOD',
+            'entityId': itemId,
+            'title': title,
+            'subtitle': subtitle,
+            'price': price,
+            'imageUrl': imageUrl ?? '',
           });
         } catch (_) {}
       }
@@ -103,6 +153,7 @@ class WishlistProvider extends ChangeNotifier {
 
   void clearWishlist() {
     _items.clear();
+    _foodFavoriteIds.clear();
     notifyListeners();
   }
 }

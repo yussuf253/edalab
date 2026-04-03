@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -10,70 +12,245 @@ import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../pro/core/models/pro_profile.dart';
+import '../../../pro/core/providers/pro_auth_provider.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
+  final bool isProView;
 
-  const ChatScreen({super.key, required this.conversationId});
+  const ChatScreen({
+    super.key,
+    required this.conversationId,
+    this.isProView = false,
+  });
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   ConversationModel? _conversation;
   List<ChatMessageModel> _messages = const [];
   bool _isLoading = true;
   bool _isSending = false;
+  bool _isRefreshingConversation = false;
+  Timer? _liveRefreshTimer;
+  NotificationProvider? _notificationProvider;
+  Set<String> _seenNotificationIds = const <String>{};
+
+  String? _actorUserId(BuildContext context) {
+    if (widget.isProView) {
+      return context.read<ProAuthProvider>().currentProfile?.userId;
+    }
+    return context.read<AuthProvider>().user?.id;
+  }
+
+  String _senderRole(BuildContext context) {
+    if (!widget.isProView) return 'USER';
+    final profile = context.read<ProAuthProvider>().currentProfile;
+    if (profile == null) return 'DRIVER';
+    switch (profile.type) {
+      case ProProfileType.delivery:
+      case ProProfileType.rider:
+        return 'DRIVER';
+      case ProProfileType.provider:
+      case ProProfileType.doctor:
+      case ProProfileType.shop:
+        return 'PROVIDER';
+    }
+  }
+
+  Future<void> _refreshProInboxSummary() async {
+    if (!widget.isProView || !mounted) return;
+    await context.read<ProAuthProvider>().refreshInboxSummary();
+  }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadConversation();
+    _startLiveRefresh();
   }
 
-  Future<void> _loadConversation() async {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final provider = context.read<NotificationProvider>();
+    if (identical(_notificationProvider, provider)) {
+      return;
+    }
+
+    _notificationProvider?.removeListener(_handleNotificationsChanged);
+    _notificationProvider = provider;
+    _seenNotificationIds = provider.notifications.map((item) => item.id).toSet();
+    provider.addListener(_handleNotificationsChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant ChatScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.conversationId != widget.conversationId) {
+      _loadConversation();
+      _startLiveRefresh();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _startLiveRefresh();
+      _refreshConversationSilently();
+      return;
+    }
+
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      _liveRefreshTimer?.cancel();
+    }
+  }
+
+  void _startLiveRefresh() {
+    _liveRefreshTimer?.cancel();
+    _liveRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _refreshConversationSilently();
+    });
+  }
+
+  bool _isMessageNotificationForCurrentConversation(
+    AppNotificationModel notification,
+  ) {
+    final conversationId = notification.metadata['conversationId']
+        ?.toString()
+        .trim();
+    if (conversationId == widget.conversationId) {
+      return true;
+    }
+
+    final route = notification.route?.trim() ?? '';
+    return route == '/messages/chat/${widget.conversationId}' ||
+        route == '/pro/messages/chat/${widget.conversationId}';
+  }
+
+  void _handleNotificationsChanged() {
+    final provider = _notificationProvider;
+    if (provider == null) return;
+
+    final notifications = provider.notifications;
+    final currentIds = notifications.map((item) => item.id).toSet();
+    final hasRelevantUpdate = notifications.any(
+      (notification) =>
+          !_seenNotificationIds.contains(notification.id) &&
+          _isMessageNotificationForCurrentConversation(notification),
+    );
+    _seenNotificationIds = currentIds;
+
+    if (hasRelevantUpdate) {
+      _refreshConversationSilently();
+    }
+  }
+
+  void _refreshConversationSilently() {
+    if (!mounted || _isSending) return;
+    unawaited(_loadConversation(showLoader: false));
+  }
+
+  void _scrollToBottom({required bool animated}) {
+    if (!_scrollController.hasClients) return;
+    final target = _scrollController.position.maxScrollExtent;
+    if (animated) {
+      _scrollController.animateTo(
+        target,
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOut,
+      );
+      return;
+    }
+    _scrollController.jumpTo(target);
+  }
+
+  Future<void> _loadConversation({bool showLoader = true}) async {
+    if (_isRefreshingConversation) return;
+    _isRefreshingConversation = true;
+
+    if (showLoader && mounted && _conversation == null) {
+      setState(() => _isLoading = true);
+    }
+
     try {
+      final actorUserId = _actorUserId(context);
       final response = await ApiClient.get(
-        '/messages/conversations/${widget.conversationId}',
+        widget.isProView && actorUserId != null
+            ? '/messages/conversations/${widget.conversationId}?actorUserId=$actorUserId'
+            : '/messages/conversations/${widget.conversationId}',
         forceRefresh: true,
       );
       final data = Map<String, dynamic>.from(response as Map);
+      final nextConversation = ConversationModel.fromApi(data);
+      final nextMessages = (data['messages'] as List? ?? const [])
+          .map(
+            (entry) => ChatMessageModel.fromApi(
+              Map<String, dynamic>.from(entry as Map),
+            ),
+          )
+          .toList();
+      final previousLastMessageId = _messages.isNotEmpty ? _messages.last.id : null;
+      final nextLastMessageId = nextMessages.isNotEmpty ? nextMessages.last.id : null;
+      final shouldMarkRead =
+          actorUserId != null && nextConversation.unreadCount > 0;
+
       if (!mounted) return;
       setState(() {
-        _conversation = ConversationModel.fromApi(data);
-        _messages = (data['messages'] as List? ?? const [])
-            .map(
-              (entry) => ChatMessageModel.fromApi(
-                Map<String, dynamic>.from(entry as Map),
-              ),
-            )
-            .toList();
+        _conversation = nextConversation;
+        _messages = nextMessages;
         _isLoading = false;
       });
-      await ApiClient.patch(
-        '/messages/conversations/${widget.conversationId}/read',
-        {},
-      );
+
+      if (nextLastMessageId != null && nextLastMessageId != previousLastMessageId) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _scrollToBottom(animated: previousLastMessageId != null);
+        });
+      }
+
+      if (shouldMarkRead) {
+        await ApiClient.patch(
+          '/messages/conversations/${widget.conversationId}/read',
+          {'actorUserId': actorUserId},
+        );
+        await _refreshProInboxSummary();
+      }
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
+    } finally {
+      _isRefreshingConversation = false;
     }
   }
 
   Future<void> _sendMessage() async {
     final auth = context.read<AuthProvider>();
     final text = _messageController.text.trim();
-    if (text.isEmpty || auth.user == null) return;
+    final actorUserId = _actorUserId(context);
+    if (text.isEmpty || actorUserId == null) return;
 
     setState(() => _isSending = true);
     try {
+      final senderLabel = widget.isProView
+          ? context.read<ProAuthProvider>().currentProfile?.businessName ??
+                'Pro'
+          : auth.user?.fullName ?? 'User';
       await ApiClient.post(
         '/messages/conversations/${widget.conversationId}/messages',
         {
-          'senderRole': 'USER',
-          'senderLabel': auth.user!.fullName,
+          'actorUserId': actorUserId,
+          'senderRole': _senderRole(context),
+          'senderLabel': senderLabel,
           'body': text,
         },
       );
@@ -88,7 +265,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _liveRefreshTimer?.cancel();
+    _notificationProvider?.removeListener(_handleNotificationsChanged);
     _messageController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -100,7 +281,9 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(conversation?.title ?? l10n.t('messages.chat_fallback_title')),
+        title: Text(
+          conversation?.title ?? l10n.t('messages.chat_fallback_title'),
+        ),
       ),
       body: _isLoading
           ? const SimpleListShimmer(itemCount: 6)
@@ -150,11 +333,14 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 Expanded(
                   child: ListView.builder(
+                    controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
                     itemCount: _messages.length,
                     itemBuilder: (context, index) {
                       final message = _messages[index];
-                      final isMine = message.isMine;
+                      final isMine = widget.isProView
+                          ? message.senderRole != 'USER'
+                          : message.isMine;
                       return Align(
                         alignment: isMine
                             ? Alignment.centerRight
@@ -281,6 +467,10 @@ class _ChatScreenState extends State<ChatScreen> {
         return Icons.local_hospital_rounded;
       case 'HOME_SERVICE_PROVIDER':
         return Icons.home_repair_service_rounded;
+      case 'SHOP':
+        return Icons.storefront_rounded;
+      case 'DELIVERY':
+        return Icons.local_shipping_rounded;
       case 'RIDE':
         return Icons.directions_car_rounded;
       default:

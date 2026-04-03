@@ -41,15 +41,15 @@
     "rewrites": [
       {
         "source": "/",
-        "destination": "/edalab-website.html"
+        "destination": "/index.html"
       },
       {
         "source": "/fr",
-        "destination": "/fr/index.html"
+        "destination": "/fr/index"
       },
       {
         "source": "/ar",
-        "destination": "/ar/index.html"
+        "destination": "/ar/index"
       }
     ]
   },

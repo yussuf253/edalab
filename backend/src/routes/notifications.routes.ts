@@ -52,6 +52,7 @@ function inferTypeFromModule(module: NotificationModule): NotificationType {
       return NotificationType.LAUNDRY;
     case NotificationModule.PROMOTIONS:
       return NotificationType.PROMOTION;
+    case NotificationModule.MESSAGES:
     case NotificationModule.HOME_SERVICES:
     case NotificationModule.ACCOUNT:
     case NotificationModule.SYSTEM:
@@ -88,6 +89,8 @@ function parseModule(raw: unknown): NotificationModule | undefined {
   switch (normalized) {
     case 'PROMOTION':
       return NotificationModule.PROMOTIONS;
+    case 'MESSAGE':
+      return NotificationModule.MESSAGES;
     case 'ACCOUNTS':
       return NotificationModule.ACCOUNT;
     case 'HOME-SERVICES':

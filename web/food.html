@@ -1,12 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr" dir="ltr" data-page-language="fr">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Food Delivery - eDalab</title>
-  <meta name="description" content="Order delicious food from your favorite restaurants on eDalab. Fast delivery, live tracking, and exclusive deals."/>
-  <link rel="alternate" hreflang="en" href="https://edalab.app/food.html"/>
-  <link rel="alternate" hreflang="fr" href="https://edalab.app/fr/food.html"/>
+  <style>
+  html[data-i18n-pending="true"] body{visibility:hidden}
+  </style>
+  <script>
+  (() => {
+    const root = document.documentElement;
+    try {
+      const savedPrefs = JSON.parse(localStorage.getItem('edaLabPreferences') || '{}');
+      const pageLanguage = ['en', 'fr', 'ar'].includes(root.dataset.pageLanguage) ? root.dataset.pageLanguage : null;
+      const savedLanguage = ['en', 'fr', 'ar'].includes(savedPrefs.language) ? savedPrefs.language : null;
+      const resolvedLanguage = savedLanguage || pageLanguage || 'fr';
+      root.lang = resolvedLanguage;
+      root.dir = resolvedLanguage === 'ar' ? 'rtl' : 'ltr';
+      if (savedLanguage && pageLanguage && savedLanguage !== pageLanguage) {
+        root.setAttribute('data-i18n-pending', 'true');
+        window.__edaI18nFailSafe = window.setTimeout(() => {
+          root.removeAttribute('data-i18n-pending');
+        }, 2500);
+      }
+    } catch (error) {
+      root.lang = 'fr';
+      root.dir = 'ltr';
+      root.setAttribute('data-i18n-pending', 'true');
+      window.__edaI18nFailSafe = window.setTimeout(() => {
+        root.removeAttribute('data-i18n-pending');
+      }, 2500);
+    }
+  })();
+  </script>
+  <title>Livraison de repas - eDalab</title>
+  <meta name="description" content="Commandez de délicieux repas auprès de vos restaurants préférés avec eDalab. Livraison rapide, suivi en direct et offres exclusives."/>
+  <link rel="alternate" hreflang="en" href="https://edalab.app/en/food.html"/>
+  <link rel="alternate" hreflang="fr" href="https://edalab.app/food.html"/>
   <link rel="alternate" hreflang="ar" href="https://edalab.app/ar/food.html"/>
   <link rel="alternate" hreflang="x-default" href="https://edalab.app/food.html"/>
   <link rel="canonical" href="https://edalab.app/food.html"/>
@@ -19,10 +48,10 @@
   {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "Food Delivery - eDalab",
-    "description": "Order delicious food from your favorite restaurants on eDalab. Fast delivery, live tracking, and exclusive deals.",
+    "name": "Livraison de repas - eDalab",
+    "description": "Commandez de délicieux repas auprès de vos restaurants préférés avec eDalab. Livraison rapide, suivi en direct et offres exclusives.",
     "url": "https://edalab.app/food.html",
-    "inLanguage": "en",
+    "inLanguage": "fr",
     "isPartOf": {
       "@type": "WebSite",
       "name": "eDalab",
@@ -30,7 +59,7 @@
     },
     "mainEntity": {
       "@type": "ItemList",
-      "name": "Food Delivery - eDalab"
+      "name": "Livraison de repas - eDalab"
     }
   }
   </script>
@@ -38,15 +67,15 @@
 <body>
   <!-- Navigation -->
   <nav id="nav" data-static-unified="true">
-    <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    <div class="nav-w nav-w-unified"><a class="nav-logo" href="index.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index.html" class="nav-a" data-nav-link="home">Accueil</a><a href="food.html" class="nav-a" data-nav-link="food">Restauration</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Boutique</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacie</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Médecin</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hôtel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Trajet</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Blanchisserie</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="cart.html" class="nav-icon-btn" aria-label="Panier"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Panier</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
   </nav>
 
   <!-- Hero Section -->
   <section class="food-hero">
     <div class="wrap">
       <div class="fh-content">
-        <h1>Hungry? Order From Your Favorite Restaurants</h1>
-        <p>Fast delivery, fresh food, and exclusive deals. Everything your taste buds crave!</p>
+        <h1>Envie de manger ? Commandez auprès de vos restaurants préférés</h1>
+        <p>Livraison rapide, plats frais et offres exclusives. Tout ce que vos papilles réclament.</p>
         <div id="search-container"></div>
       </div>
     </div>
@@ -56,13 +85,13 @@
   <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
     <!-- Filter Section -->
     <div class="filter-section">
-      <h2>Filter & Sort</h2>
+      <h2>Filtrer et trier</h2>
       <div id="filter-bar"></div>
     </div>
 
     <!-- Restaurants Grid -->
     <section class="food-section">
-      <h2>Popular Restaurants</h2>
+      <h2>Restaurants populaires</h2>
       <div id="restaurants-container" class="restaurants-grid">
         <!-- Dynamically populated -->
       </div>

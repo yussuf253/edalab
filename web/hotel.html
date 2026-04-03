@@ -1,15 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr" dir="ltr" data-page-language="fr">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Hotels & Bookings - eDalab</title>
-  <meta name="description" content="Book hotels, resorts, and accommodations on eDalab. Best prices and instant confirmations."/>
-  <meta property="og:title" content="Hotels & Bookings - eDalab"/>
-  <meta property="og:description" content="Book hotels, resorts, and accommodations on eDalab. Best prices and instant confirmations."/>
+  <style>
+  html[data-i18n-pending="true"] body{visibility:hidden}
+  </style>
+  <script>
+  (() => {
+    const root = document.documentElement;
+    try {
+      const savedPrefs = JSON.parse(localStorage.getItem('edaLabPreferences') || '{}');
+      const pageLanguage = ['en', 'fr', 'ar'].includes(root.dataset.pageLanguage) ? root.dataset.pageLanguage : null;
+      const savedLanguage = ['en', 'fr', 'ar'].includes(savedPrefs.language) ? savedPrefs.language : null;
+      const resolvedLanguage = savedLanguage || pageLanguage || 'fr';
+      root.lang = resolvedLanguage;
+      root.dir = resolvedLanguage === 'ar' ? 'rtl' : 'ltr';
+      if (savedLanguage && pageLanguage && savedLanguage !== pageLanguage) {
+        root.setAttribute('data-i18n-pending', 'true');
+        window.__edaI18nFailSafe = window.setTimeout(() => {
+          root.removeAttribute('data-i18n-pending');
+        }, 2500);
+      }
+    } catch (error) {
+      root.lang = 'fr';
+      root.dir = 'ltr';
+      root.setAttribute('data-i18n-pending', 'true');
+      window.__edaI18nFailSafe = window.setTimeout(() => {
+        root.removeAttribute('data-i18n-pending');
+      }, 2500);
+    }
+  })();
+  </script>
+  <title>Hôtels et réservations - eDalab</title>
+  <meta name="description" content="Réservez des hôtels, resorts et hébergements avec eDalab. Meilleurs prix et confirmations instantanées."/>
+  <meta property="og:title" content="Hôtels et réservations - eDalab"/>
+  <meta property="og:description" content="Réservez des hôtels, resorts et hébergements avec eDalab. Meilleurs prix et confirmations instantanées."/>
   <meta property="og:type" content="website"/>
-  <link rel="alternate" hreflang="en" href="https://edalab.app/hotel.html"/>
-  <link rel="alternate" hreflang="fr" href="https://edalab.app/fr/hotel.html"/>
+  <link rel="alternate" hreflang="en" href="https://edalab.app/en/hotel.html"/>
+  <link rel="alternate" hreflang="fr" href="https://edalab.app/hotel.html"/>
   <link rel="alternate" hreflang="ar" href="https://edalab.app/ar/hotel.html"/>
   <link rel="alternate" hreflang="x-default" href="https://edalab.app/hotel.html"/>
   <link rel="canonical" href="https://edalab.app/hotel.html"/>
@@ -22,10 +51,10 @@
   {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "Hotels & Bookings - eDalab",
-    "description": "Book hotels, resorts, and accommodations on eDalab. Best prices and instant confirmations.",
+    "name": "Hôtels et réservations - eDalab",
+    "description": "Réservez des hôtels, resorts et hébergements avec eDalab. Meilleurs prix et confirmations instantanées.",
     "url": "https://edalab.app/hotel.html",
-    "inLanguage": "en",
+    "inLanguage": "fr",
     "isPartOf": {
       "@type": "WebSite",
       "name": "eDalab",
@@ -33,7 +62,7 @@
     },
     "mainEntity": {
       "@type": "ItemList",
-      "name": "Hotels & Bookings - eDalab"
+      "name": "Hôtels et réservations - eDalab"
     }
   }
   </script>
@@ -63,15 +92,15 @@
 <body>
   <!-- Navigation -->
   <nav id="nav" data-static-unified="true">
-    <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    <div class="nav-w nav-w-unified"><a class="nav-logo" href="index.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
   </nav>
 
   <!-- Hero Section -->
   <section class="hotel-hero">
     <div class="wrap">
       <div class="hh-content">
-        <h1>Find Your Perfect Stay 🏨</h1>
-        <p>Comfortable rooms, great locations, and unbeatable prices. Book now and explore amazing destinations!</p>
+        <h1 data-i18n="hotel.heroTitle">Trouvez votre séjour idéal</h1>
+        <p data-i18n="hotel.heroDescription">Des chambres confortables, d’excellents emplacements et des prix imbattables. Réservez maintenant et découvrez des destinations incroyables.</p>
         <div id="search-container"></div>
       </div>
     </div>
@@ -80,51 +109,51 @@
   <!-- Search & Filter -->
   <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
     <div id="hotelSearchPanel" style="background: white; border-radius: var(--r-lg); border: 1.5px solid var(--border); padding: 24px; margin-bottom: 40px;">
-      <h2 style="margin-bottom: 20px;">Search Hotels</h2>
+      <h2 style="margin-bottom: 20px;" data-i18n="hotel.searchPanelTitle">Rechercher des hôtels</h2>
       <div class="date-picker">
         <div class="filter-item">
-          <label>Check-in Date</label>
+          <label for="checkin-date" data-i18n="hotel.checkInDate">Check-in Date</label>
           <input type="date" id="checkin-date" class="guests-input" />
         </div>
         <div class="filter-item">
-          <label>Check-out Date</label>
+          <label for="checkout-date" data-i18n="hotel.checkOutDate">Check-out Date</label>
           <input type="date" id="checkout-date" class="guests-input" />
         </div>
       </div>
       <div class="guests-picker">
         <div class="filter-item" style="flex: 1;">
-          <label>Guests</label>
+          <label for="guests-count" data-i18n="hotel.guests">Guests</label>
           <select id="guests-count" class="guests-input">
-            <option value="1">1 Guest</option>
-            <option value="2">2 Guests</option>
-            <option value="3">3 Guests</option>
-            <option value="4">4 Guests</option>
-            <option value="5">5+ Guests</option>
+            <option value="1" data-i18n="hotel.guest.one">1 Guest</option>
+            <option value="2" data-i18n="hotel.guest.two">2 Guests</option>
+            <option value="3" data-i18n="hotel.guest.three">3 Guests</option>
+            <option value="4" data-i18n="hotel.guest.four">4 Guests</option>
+            <option value="5" data-i18n="hotel.guest.fivePlus">5+ Guests</option>
           </select>
         </div>
         <div class="filter-item" style="flex: 1;">
-          <label>Room Type</label>
+          <label for="room-type" data-i18n="hotel.roomType">Room Type</label>
           <select id="room-type" class="guests-input">
-            <option value="">Any Type</option>
-            <option value="single">Single Room</option>
-            <option value="double">Double Room</option>
-            <option value="suite">Suite</option>
-            <option value="villa">Villa</option>
+            <option value="" data-i18n="hotel.roomType.any">Any Type</option>
+            <option value="single" data-i18n="hotel.roomType.single">Single Room</option>
+            <option value="double" data-i18n="hotel.roomType.double">Double Room</option>
+            <option value="suite" data-i18n="hotel.roomType.suite">Suite</option>
+            <option value="villa" data-i18n="hotel.roomType.villa">Villa</option>
           </select>
         </div>
       </div>
-      <button class="n-solid" onclick="hotelModule.searchHotels()" style="width: 100%;">Search Hotels</button>
+      <button class="n-solid" onclick="hotelModule.searchHotels()" style="width: 100%;" data-i18n="hotel.searchButton">Search Hotels</button>
     </div>
     <div id="hotelSearchSkeleton" style="display: none; margin-bottom: 40px;"></div>
 
     <!-- Filter Section -->
     <div class="filter-section">
-      <h2>Filter Results</h2>
+      <h2 data-i18n="hotel.filterTitle">Filter Results</h2>
       <div id="filter-bar" class="filter-grid">
         <div class="filter-item">
-          <label>Price Range</label>
+          <label for="price-filter" data-i18n="hotel.priceRange">Price Range</label>
           <select id="price-filter" onchange="hotelModule.applyFilters()">
-            <option value="">All Prices</option>
+            <option value="" data-i18n="hotel.price.all">All Prices</option>
             <option value="0-100">$0 - $100</option>
             <option value="100-250">$100 - $250</option>
             <option value="250-500">$250 - $500</option>
@@ -132,9 +161,9 @@
           </select>
         </div>
         <div class="filter-item">
-          <label>Star Rating</label>
+          <label for="rating-filter" data-i18n="hotel.starRating">Star Rating</label>
           <select id="rating-filter" onchange="hotelModule.applyFilters()">
-            <option value="">All Ratings</option>
+            <option value="" data-i18n="hotel.rating.all">All Ratings</option>
             <option value="3">3+ Stars</option>
             <option value="4">4+ Stars</option>
             <option value="4.5">4.5+ Stars</option>
@@ -142,12 +171,12 @@
           </select>
         </div>
         <div class="filter-item">
-          <label>Amenities</label>
+          <label for="amenities-filter" data-i18n="hotel.amenities">Amenities</label>
           <select id="amenities-filter" onchange="hotelModule.applyFilters()">
-            <option value="">All Amenities</option>
+            <option value="" data-i18n="hotel.amenities.all">All Amenities</option>
             <option value="wifi">WiFi</option>
-            <option value="pool">Swimming Pool</option>
-            <option value="gym">Fitness Center</option>
+            <option value="pool" data-i18n="hotel.amenities.pool">Swimming Pool</option>
+            <option value="gym" data-i18n="hotel.amenities.gym">Fitness Center</option>
             <option value="restaurant">Restaurant</option>
           </select>
         </div>
@@ -170,32 +199,32 @@
   <div id="booking-modal-overlay" class="modal-overlay" onclick="UIComponents.closeModal('booking-modal')">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
-        <h2>Book Hotel</h2>
+        <h2 data-i18n="hotel.bookTitle">Book Hotel</h2>
         <button class="modal-close" onclick="UIComponents.closeModal('booking-modal')">✕</button>
       </div>
       <div class="modal-body">
         <form id="hotel-booking-form">
           <div class="form-group">
-            <label>Full Name</label>
+            <label for="guest-name" data-i18n="hotel.fullName">Full Name</label>
             <input type="text" id="guest-name" required />
           </div>
           <div class="form-group">
-            <label>Email</label>
+            <label for="guest-email" data-i18n="auth.email">Email</label>
             <input type="email" id="guest-email" required />
           </div>
           <div class="form-group">
-            <label>Phone Number</label>
+            <label for="guest-phone" data-i18n="hotel.phoneNumber">Phone Number</label>
             <input type="tel" id="guest-phone" required />
           </div>
           <div class="form-group">
-            <label>Special Requests</label>
-            <textarea id="special-requests" placeholder="E.g., Late check-in, high floor, quiet room"></textarea>
+            <label for="special-requests" data-i18n="hotel.specialRequests">Special Requests</label>
+            <textarea id="special-requests" data-i18n-placeholder="hotel.specialRequestsPlaceholder" placeholder="E.g., Late check-in, high floor, quiet room"></textarea>
           </div>
         </form>
       </div>
       <div class="modal-actions">
-        <button class="modal-btn secondary" onclick="UIComponents.closeModal('booking-modal')">Cancel</button>
-        <button class="modal-btn primary" onclick="hotelModule.submitBooking()">Confirm Booking</button>
+        <button class="modal-btn secondary" onclick="UIComponents.closeModal('booking-modal')" data-i18n="hotel.cancel">Cancel</button>
+        <button class="modal-btn primary" onclick="hotelModule.submitBooking()" data-i18n="hotel.confirmBooking">Confirm Booking</button>
       </div>
     </div>
   </div>
@@ -205,7 +234,7 @@
     <div class="wrap">
       <div class="footer-content">
         <div class="footer-section">
-          <h3>eDalab Travel</h3>
+            <h3 data-i18n="nav.hotel">Hotel</h3>
           <ul>
             <li><a href="#">About Us</a></li>
             <li><a href="#">Careers</a></li>
@@ -396,8 +425,8 @@
         if (!container) return;
         container.innerHTML = `
           <div class="search-bar">
-            <input type="text" id="hotel-hero-search" class="search-input" placeholder="Search a destination or hotel..." />
-            <button class="search-btn" onclick="hotelModule.handleHeroSearch()">Search</button>
+            <input type="text" id="hotel-hero-search" class="search-input" placeholder="${UIComponents.t('hotel.heroSearchPlaceholder', 'Search a destination or hotel...')}" />
+            <button class="search-btn" onclick="hotelModule.handleHeroSearch()">${UIComponents.getIconMarkup('search', 'ui-icon ui-icon-sm')}</button>
           </div>
         `;
 
@@ -462,12 +491,12 @@
         const guests = document.getElementById('guests-count').value;
 
         if (!checkIn || !checkOut) {
-          UIComponents.showToast('Please select check-in and check-out dates', 'info');
+          UIComponents.showToast(UIComponents.t('hotel.toast.selectDates', 'Please select check-in and check-out dates'), 'info');
           return;
         }
 
         if (new Date(checkIn) >= new Date(checkOut)) {
-          UIComponents.showToast('Check-out date must be after check-in date', 'error');
+          UIComponents.showToast(UIComponents.t('hotel.toast.invalidDates', 'Check-out date must be after check-in date'), 'error');
           return;
         }
 
@@ -509,7 +538,7 @@
         const pageItems = this.filteredHotels.slice(start, end);
 
         if (pageItems.length === 0) {
-          container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px;">No hotels found</p>';
+          container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 40px;">${UIComponents.t('hotel.noResults', 'No hotels found')}</p>`;
         } else {
           container.innerHTML = pageItems
             .map((h) => {
@@ -536,7 +565,7 @@
 
       async submitBooking() {
         if (!this.selectedHotelId) {
-          UIComponents.showToast('Please select a hotel', 'error');
+          UIComponents.showToast(UIComponents.t('hotel.toast.selectHotel', 'Please select a hotel'), 'error');
           return;
         }
 
@@ -545,7 +574,7 @@
         const phone = document.getElementById('guest-phone').value;
 
         if (!name || !email || !phone) {
-          UIComponents.showToast('Please fill all required fields', 'error');
+          UIComponents.showToast(UIComponents.t('hotel.toast.fillRequired', 'Please fill all required fields'), 'error');
           return;
         }
 
@@ -624,7 +653,7 @@
           }
 
           StateManager.addOrder(bookingData);
-          UIComponents.showToast('Hotel booking confirmed!', 'success');
+          UIComponents.showToast(UIComponents.t('hotel.toast.bookingConfirmed', 'Hotel booking confirmed!'), 'success');
           UIComponents.closeModal('booking-modal');
           document.getElementById('hotel-booking-form').reset();
           setTimeout(() => {
@@ -632,7 +661,7 @@
           }, 1500);
         } catch (error) {
           console.error('Error booking hotel:', error);
-          UIComponents.showToast('Failed to complete booking', 'error');
+          UIComponents.showToast(UIComponents.t('hotel.toast.bookingFailed', 'Failed to complete booking'), 'error');
         }
       }
 
@@ -659,6 +688,13 @@
     }
 
     const hotelModule = new HotelModule();
+    window.hotelModule = hotelModule;
+    window.refreshPageLocalizedContent = function() {
+      hotelModule.setupHeroSearch();
+      if (Array.isArray(hotelModule.filteredHotels)) {
+        hotelModule.renderHotels();
+      }
+    };
   </script>
 </body>
 </html>

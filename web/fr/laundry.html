@@ -97,8 +97,30 @@
         }
 
         .service-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: rgba(99, 102, 241, 0.12);
+            color: #6366F1;
+        }
+
+        .service-icon img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .service-icon svg,
+        .info-icon svg,
+        .empty-state-icon svg {
+            width: 20px;
+            height: 20px;
+            display: block;
         }
 
         .service-name {
@@ -211,11 +233,16 @@
             font-size: 14px;
         }
 
-        .info-icon {
-            font-size: 20px;
-            margin-right: 12px;
+        .info-icon,
+        .empty-state-icon {
             width: 24px;
-            text-align: center;
+            height: 24px;
+            margin-right: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #6366F1;
+            flex-shrink: 0;
         }
 
         .orders-history {
@@ -297,22 +324,25 @@
         }
 
         .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            border-radius: 16px;
+            background: rgba(99, 102, 241, 0.12);
         }
     </style>
-<link rel="alternate" hreflang="en" href="https://edalab.app/laundry.html"/>
-<link rel="alternate" hreflang="fr" href="https://edalab.app/fr/laundry.html"/>
+<link rel="alternate" hreflang="en" href="https://edalab.app/en/laundry.html"/>
+<link rel="alternate" hreflang="fr" href="https://edalab.app/laundry.html"/>
 <link rel="alternate" hreflang="ar" href="https://edalab.app/ar/laundry.html"/>
 <link rel="alternate" hreflang="x-default" href="https://edalab.app/laundry.html"/>
-<link rel="canonical" href="https://edalab.app/fr/laundry.html"/>
+<link rel="canonical" href="https://edalab.app/laundry.html"/>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
   "name": "Blanchisserie - eDalab",
   "description": "Service de blanchisserie rapide et fiable avec collecte et livraison.",
-  "url": "https://edalab.app/fr/laundry.html",
+  "url": "https://edalab.app/laundry.html",
   "inLanguage": "fr",
   "isPartOf": {
     "@type": "WebSite",
@@ -330,14 +360,14 @@
 <body>
     <!-- Navigation -->
     <nav id="nav" data-static-unified="true">
-        <div class="nav-w nav-w-unified"><a class="nav-logo" href="index.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index.html" class="nav-a" data-nav-link="home">Accueil</a><a href="food.html" class="nav-a" data-nav-link="food">Restauration</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Boutique</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacie</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Médecin</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hôtel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Trajet</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Blanchisserie</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="../wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Favoris</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="../cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Panier</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="index.html"><div class="nav-logo-icon"><img src="../assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index.html" class="nav-a" data-nav-link="home">Accueil</a><a href="food.html" class="nav-a" data-nav-link="food">Restauration</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Boutique</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacie</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Médecin</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hôtel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Trajet</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Blanchisserie</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="../wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Favoris</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="../cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Panier</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
     </nav>
 
     <section class="laundry-hero">
         <div class="wrap">
             <div class="lh-content">
-                <h1>La blanchisserie simplifiée</h1>
-                <p>Professional pickup, cleaning, and delivery with flexible scheduling and transparent estimates.</p>
+                <h1 data-i18n="laundry.heroTitle">La blanchisserie simplifiée</h1>
+                <p data-i18n="laundry.heroDescription">Ramassage, nettoyage et livraison professionnels avec planification flexible et estimation transparente.</p>
                 <div id="search-container"></div>
             </div>
         </div>
@@ -345,58 +375,58 @@
 
     <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
         <section style="margin-bottom: 40px;">
-            <h2 style="margin-bottom: 16px;">Services de blanchisserie</h2>
+            <h2 style="margin-bottom: 16px;" data-i18n="laundry.servicesTitle">Services de blanchisserie</h2>
             <div class="service-options" id="serviceOptions">
             </div>
         </section>
 
         <div class="filter-section">
-            <h2>Passez votre commande</h2>
-        <div class="laundry-form">
+            <h2 data-i18n="laundry.orderTitle">Passer votre commande</h2>
+        <div id="laundryOrderForm" class="laundry-form">
 
             <!-- Additional Services -->
-            <label style="display: block; margin-bottom: 12px; font-weight: 600;">Additional Services</label>
+            <label style="display: block; margin-bottom: 12px; font-weight: 600;" data-i18n="laundry.additionalServicesLabel">Additional Services</label>
             <div class="checkbox-group">
                 <div class="checkbox-item">
                     <input type="checkbox" id="ironing" onchange="laundryModule.updatePrice()">
-                    <label for="ironing">Ironing (+$5)</label>
+                    <label for="ironing" data-i18n="laundry.ironing">Ironing (+$5)</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="drying" onchange="laundryModule.updatePrice()">
-                    <label for="drying">Machine Dry (+$3)</label>
+                    <label for="drying" data-i18n="laundry.drying">Machine Dry (+$3)</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="folding" onchange="laundryModule.updatePrice()">
-                    <label for="folding">Folding (+$4)</label>
+                    <label for="folding" data-i18n="laundry.folding">Folding (+$4)</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="starch" onchange="laundryModule.updatePrice()">
-                    <label for="starch">Starch (+$2)</label>
+                    <label for="starch" data-i18n="laundry.starch">Starch (+$2)</label>
                 </div>
             </div>
 
             <!-- Pickup Address -->
             <div class="form-group">
-                <label>Pickup Address</label>
-                <input type="text" id="pickupAddress" placeholder="Enter your address" required>
+                <label data-i18n="laundry.pickupAddress">Pickup Address</label>
+                <input type="text" id="pickupAddress" data-i18n-placeholder="laundry.pickupAddressPlaceholder" placeholder="Enter your address" required>
             </div>
 
             <!-- Special Instructions -->
             <div class="form-group">
-                <label>Special Instructions</label>
-                <textarea id="specialInstructions" placeholder="e.g., Delicate clothes, hand wash only..." rows="3"></textarea>
+                <label data-i18n="laundry.specialInstructions">Special Instructions</label>
+                <textarea id="specialInstructions" data-i18n-placeholder="laundry.specialInstructionsPlaceholder" placeholder="e.g., Delicate clothes, hand wash only..." rows="3"></textarea>
             </div>
 
             <!-- Pickup Schedule -->
             <div class="form-row">
                 <div class="form-group">
-                    <label>Pickup Date</label>
+                    <label data-i18n="laundry.pickupDate">Pickup Date</label>
                     <input type="date" id="pickupDate" required>
                 </div>
                 <div class="form-group">
-                    <label>Pickup Time</label>
+                    <label data-i18n="laundry.pickupTime">Pickup Time</label>
                     <select id="pickupTime" required>
-                        <option value="">Select Time</option>
+                        <option value="" data-i18n="laundry.selectTime">Select Time</option>
                         <option value="08:00">08:00 AM</option>
                         <option value="10:00">10:00 AM</option>
                         <option value="12:00">12:00 PM</option>
@@ -409,12 +439,12 @@
 
             <!-- Delivery Date -->
             <div class="form-group">
-                <label>Expected Delivery</label>
+                <label data-i18n="laundry.expectedDelivery">Expected Delivery</label>
                 <select id="deliveryDate" required>
-                    <option value="">Select Delivery</option>
-                    <option value="same-day">Same Day</option>
-                    <option value="next-day">Next Day</option>
-                    <option value="2-days">2 Days</option>
+                    <option value="" data-i18n="laundry.selectDelivery">Select Delivery</option>
+                    <option value="same-day" data-i18n="laundry.delivery.sameDay">Same Day</option>
+                    <option value="next-day" data-i18n="laundry.delivery.nextDay">Next Day</option>
+                    <option value="2-days" data-i18n="laundry.delivery.twoDays">2 Days</option>
                 </select>
             </div>
 
@@ -425,49 +455,50 @@
                     <span id="baseServicePrice">$15.00</span>
                 </div>
                 <div class="price-row" id="serviceChargesRow" style="display: none;">
-                    <span>Additional Services</span>
+                    <span data-i18n="laundry.additionalServices">Additional Services</span>
                     <span id="serviceCharges">$0.00</span>
                 </div>
                 <div class="price-row">
-                    <span>Pickup & Delivery</span>
+                    <span data-i18n="laundry.pickupDelivery">Pickup & Delivery</span>
                     <span>$5.00</span>
                 </div>
                 <div class="price-total">
-                    <span>Total Estimate</span>
+                    <span data-i18n="laundry.totalEstimate">Total Estimate</span>
                     <span id="estimatedTotal">$20.00</span>
                 </div>
             </div>
 
             <!-- Submit Button -->
-            <button class="submit-button" id="submitButton" onclick="laundryModule.submitOrder()">Place Order</button>
+            <button class="submit-button" id="submitButton" onclick="laundryModule.submitOrder()" data-i18n="laundry.placeOrder">Place Order</button>
         </div>
+        <div id="laundryOrderSkeleton" style="display: none;"></div>
         </div>
 
         <section class="food-section">
         <div class="laundry-info">
-            <h3>Why Choose Our Blanchisserie Service?</h3>
+            <h3 data-i18n="laundry.benefitsTitle">Why Choose Our Blanchisserie Service?</h3>
             <div class="info-item">
-                <div class="info-icon">🚚</div>
-                <div>Free pickup and delivery in your area</div>
+                <div class="info-icon"><span class="ui-icon ui-icon-sm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5h10.5v7H3z" fill="none" stroke="currentColor" stroke-width="1.8"></path><path d="M13.5 10.5h3.2l2 2.5v1.5h-5.2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path><circle cx="7" cy="18" r="1.7" fill="currentColor"></circle><circle cx="17" cy="18" r="1.7" fill="currentColor"></circle></svg></span></div>
+                <div data-i18n="laundry.benefit.pickupDelivery">Free pickup and delivery in your area</div>
             </div>
             <div class="info-item">
-                <div class="info-icon">👔</div>
-                <div>Professional cleaning with eco-friendly products</div>
+                <div class="info-icon"><span class="ui-icon ui-icon-sm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l-1 10.2a1.5 1.5 0 0 1-1.5 1.3H9a1.5 1.5 0 0 1-1.5-1.3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path><path d="M9.5 9V7.7a2.5 2.5 0 0 1 5 0V9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></span></div>
+                <div data-i18n="laundry.benefit.ecoCleaning">Professional cleaning with eco-friendly products</div>
             </div>
             <div class="info-item">
-                <div class="info-icon">⏰</div>
-                <div>Express service available for urgent orders</div>
+                <div class="info-icon"><span class="ui-icon ui-icon-sm"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path d="M12 7.8v4.6l3.2 1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+                <div data-i18n="laundry.benefit.express">Express service available for urgent orders</div>
             </div>
             <div class="info-item">
-                <div class="info-icon">🛡️</div>
-                <div>Careful handling of delicate and premium fabrics</div>
+                <div class="info-icon"><span class="ui-icon ui-icon-sm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 18.5 6v5.5c0 4.2-2.7 8-6.5 9.5-3.8-1.5-6.5-5.3-6.5-9.5V6Z" fill="currentColor"></path><path d="m9.3 12.4 1.8 1.8 3.8-4.1" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+                <div data-i18n="laundry.benefit.delicateCare">Careful handling of delicate and premium fabrics</div>
             </div>
         </div>
         </section>
 
         <section class="food-section">
         <div class="orders-history">
-            <h3>Your Blanchisserie Orders</h3>
+            <h3 data-i18n="laundry.ordersTitle">Your Blanchisserie Orders</h3>
             <div id="ordersContainer"></div>
         </div>
         </section>
@@ -477,37 +508,37 @@
         <div class="wrap">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>eDalab Blanchisserie</h3>
+                    <h3 data-i18n="laundry.footerBrand">eDalab Blanchisserie</h3>
                     <ul>
-                        <li><a href="#">Service guide</a></li>
-                        <li><a href="#">Zones de collecte</a></li>
-                        <li><a href="#">Conseils d’entretien des tissus</a></li>
+                        <li><a href="#" data-i18n="laundry.footerGuide">Service guide</a></li>
+                        <li><a href="#" data-i18n="laundry.footerPickupZones">Zones de collecte</a></li>
+                        <li><a href="#" data-i18n="laundry.footerCareTips">Conseils d’entretien des tissus</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>Pour les clients</h3>
+                    <h3 data-i18n="laundry.footerCustomers">Pour les clients</h3>
                     <ul>
-                        <li><a href="#">Réserver une blanchisserie</a></li>
-                        <li><a href="#">Suivre les commandes</a></li>
-                        <li><a href="#">Centre d’aide</a></li>
+                        <li><a href="#" data-i18n="laundry.footerBookLaundry">Réserver une blanchisserie</a></li>
+                        <li><a href="#" data-i18n="laundry.footerTrackOrders">Suivre les commandes</a></li>
+                        <li><a href="#" data-i18n="laundry.footerHelpCenter">Centre d’aide</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>Services</h3>
+                    <h3 data-i18n="laundry.footerServices">Services</h3>
                     <ul>
-                        <li><a href="#">Lavage et pliage</a></li>
-                        <li><a href="#">Nettoyage express</a></li>
-                        <li><a href="#">Delicate care</a></li>
+                        <li><a href="#" data-i18n="laundry.footerWashFold">Lavage et pliage</a></li>
+                        <li><a href="#" data-i18n="laundry.footerExpressCleaning">Nettoyage express</a></li>
+                        <li><a href="#" data-i18n="laundry.footerDelicateCare">Delicate care</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>Contact</h3>
-                    <p>Email: hello@edalab.app</p>
-                    <p>Phone: +253 21 35 00 00</p>
+                    <h3 data-i18n="laundry.footerContact">Contact</h3>
+                    <p><span data-i18n="common.email">Email</span>: hello@edalab.app</p>
+                    <p><span data-i18n="common.phone">Phone</span>: +253 21 35 00 00</p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 eDalab. Tous droits réservés.</p>
+                <p data-i18n="footer.rights">&copy; 2024 eDalab. Tous droits réservés.</p>
             </div>
         </div>
     </footer>
@@ -522,17 +553,25 @@
                 this.serviceCharges = 0;
                 this.basePrice = 15;
                 this.deliveryFee = 5;
+                this.isReady = false;
                 this.init();
             }
 
+            t(key, fallback) {
+                return UIComponents.t(key, fallback);
+            }
+
             async init() {
+                UIComponents.mountUnifiedNavbar({ active: 'laundry' });
                 this.renderLoadingState();
                 await this.loadServices();
                 this.setupHeroSearch();
                 this.renderServices();
+                this.clearLoadingState();
                 this.setupDatePicker();
                 this.updatePrice();
                 await this.loadOrders();
+                this.isReady = true;
             }
 
             renderLoadingState() {
@@ -540,8 +579,25 @@
                 if (searchContainer) {
                     searchContainer.innerHTML = UIComponents.createSearchSkeleton();
                 }
+                const orderForm = document.getElementById('laundryOrderForm');
+                const orderSkeleton = document.getElementById('laundryOrderSkeleton');
+                if (orderForm && orderSkeleton) {
+                    orderForm.style.display = 'none';
+                    orderSkeleton.style.display = 'block';
+                    orderSkeleton.innerHTML = UIComponents.createFormSkeleton({ fields: 5, columns: 2, includeSummary: true, includeButton: true });
+                }
                 document.getElementById('serviceOptions').innerHTML = UIComponents.createChoiceSkeleton(3);
                 document.getElementById('ordersContainer').innerHTML = UIComponents.createListSkeleton(2);
+            }
+
+            clearLoadingState() {
+                const orderForm = document.getElementById('laundryOrderForm');
+                const orderSkeleton = document.getElementById('laundryOrderSkeleton');
+                if (orderForm && orderSkeleton) {
+                    orderForm.style.display = '';
+                    orderSkeleton.style.display = 'none';
+                    orderSkeleton.innerHTML = '';
+                }
             }
 
             setupHeroSearch() {
@@ -549,8 +605,8 @@
                 if (!container) return;
                 container.innerHTML = `
                     <div class="search-bar">
-                        <input type="text" id="laundry-hero-search" class="search-input" placeholder="Search a laundry service..." />
-                        <button class="search-btn" onclick="laundryModule.handleHeroSearch()">Find</button>
+                        <input type="text" id="laundry-hero-search" class="search-input" placeholder="${this.t('laundry.searchService', 'Search a laundry service...')}" />
+                        <button class="search-btn" onclick="laundryModule.handleHeroSearch()">${UIComponents.getIconMarkup('search', 'ui-icon ui-icon-sm')}</button>
                     </div>
                 `;
                 document.getElementById('laundry-hero-search').addEventListener('keypress', (event) => {
@@ -601,10 +657,7 @@
 
             getServiceIcon(service) {
                 const label = `${service.name} ${service.description || ''}`.toLowerCase();
-                if (label.includes('express')) return '⚡';
-                if (label.includes('dry')) return '👔';
-                if (label.includes('iron')) return '♨️';
-                return '🧺';
+                return 'assets/icons/laundry.png';
             }
 
             getSelectedService() {
@@ -615,7 +668,7 @@
                 const container = document.getElementById('serviceOptions');
                 container.innerHTML = this.services.map((service) => `
                     <div class="service-option ${service.id === this.selectedService ? 'active' : ''}" onclick="laundryModule.selectService('${service.id}', event)">
-                        <div class="service-icon">${this.getServiceIcon(service)}</div>
+                        <div class="service-icon"><img src="../${this.getServiceIcon(service)}" alt="${service.name}"></div>
                         <div class="service-name">${service.name}</div>
                         <div class="service-price">$${Number(service.price || 0).toFixed(2)}${service.unit ? ` / ${service.unit}` : ''}</div>
                     </div>
@@ -652,7 +705,7 @@
 
                 // Update display
                 const total = this.basePrice + this.serviceCharges + this.deliveryFee;
-                document.getElementById('selectedServiceLabel').textContent = selectedService?.name || 'Base Service';
+                document.getElementById('selectedServiceLabel').textContent = selectedService?.name || this.t('laundry.baseService', 'Base Service');
                 document.getElementById('baseServicePrice').textContent = `$${this.basePrice.toFixed(2)}`;
                 
                 if (this.serviceCharges > 0) {
@@ -672,13 +725,13 @@
                 const deliveryDate = document.getElementById('deliveryDate').value;
 
                 if (!address || !pickupDate || !pickupTime || !deliveryDate) {
-                    UIComponents.showToast('Please fill in all required fields', 'error');
+                    UIComponents.showToast(this.t('laundry.fillRequired', 'Please fill in all required fields'), 'error');
                     return;
                 }
 
                 const button = document.getElementById('submitButton');
                 button.disabled = true;
-                button.textContent = 'Placing Order...';
+                button.textContent = this.t('laundry.placingOrder', 'Placing Order...');
 
                 try {
                     const selectedService = this.getSelectedService();
@@ -760,7 +813,7 @@
 
                     StateManager.addOrder(orderData);
 
-                    UIComponents.showToast('Laundry order placed successfully!', 'success');
+                    UIComponents.showToast(this.t('laundry.orderSuccess', 'Laundry order placed successfully!'), 'success');
                     document.getElementById('pickupAddress').value = '';
                     document.getElementById('specialInstructions').value = '';
                     document.querySelectorAll('.checkbox-item input').forEach(cb => cb.checked = false);
@@ -770,10 +823,10 @@
                     }, 800);
                 } catch (error) {
                     console.error('Error placing order:', error);
-                    UIComponents.showToast('Failed to place order', 'error');
+                    UIComponents.showToast(this.t('laundry.orderFailed', 'Failed to place order'), 'error');
                 } finally {
                     button.disabled = false;
-                    button.textContent = 'Place Order';
+                    button.textContent = this.t('laundry.placeOrder', 'Place Order');
                 }
             }
 
@@ -798,24 +851,24 @@
                 const container = document.getElementById('ordersContainer');
 
                 if (!orders || orders.length === 0) {
-                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🧺</div><p>No orders yet</p></div>';
+                    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">${UIComponents.getIconMarkup('bag', 'ui-icon ui-icon-lg')}</div><p>${this.t('laundry.noOrders', 'No orders yet')}</p></div>`;
                     return;
                 }
 
                 let html = '';
                 orders.forEach(order => {
                     const statusClass = `status-${order.status}`;
-                    const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+                    const statusText = this.t(`laundry.status.${order.status}`, order.status.charAt(0).toUpperCase() + order.status.slice(1));
                     html += `
                         <div class="order-item">
                             <div class="order-info">
                                 <div class="order-date">Order #${order.id}</div>
-                                <div style="font-size: 13px; color: #666;">Placed on ${order.date}</div>
+                                <div style="font-size: 13px; color: #666;">${this.t('laundry.placedOn', 'Placed on')} ${order.date}</div>
                                 <span class="order-status ${statusClass}">${statusText}</span>
                             </div>
                             <div style="text-align: right;">
                                 <div style="font-weight: 700; color: #6366F1; margin-bottom: 8px;">${order.total}</div>
-                                <button class="order-action" onclick="window.location.href="../orders.html"">View Details</button>
+                                <button class="order-action" onclick="window.location.href="../orders.html"">${this.t('laundry.viewDetails', 'View Details')}</button>
                             </div>
                         </div>
                     `;
@@ -824,8 +877,15 @@
             }
         }
 
-        UIComponents.mountUnifiedNavbar({ active: 'laundry' });
         const laundryModule = new LaundryModule();
+        window.refreshPageLocalizedContent = function() {
+            if (laundryModule && laundryModule.isReady) {
+                laundryModule.setupHeroSearch();
+                laundryModule.renderServices();
+                laundryModule.updatePrice();
+                laundryModule.loadOrders();
+            }
+        };
     </script>
 </body>
 </html>

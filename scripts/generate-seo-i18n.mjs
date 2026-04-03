@@ -5,7 +5,7 @@ const projectRoot = process.cwd();
 const webRoot = path.join(projectRoot, 'web');
 
 const localizedPages = new Set([
-  'edalab-website.html',
+  'index.html',
   'food.html',
   'shopping.html',
   'pharmacy.html',
@@ -175,7 +175,7 @@ const commonReplacements = {
 
 const pageConfigs = [
   {
-    source: 'edalab-website.html',
+    source: 'index.html',
     output: 'index.html',
     canonicalBase: '/',
     kind: 'home',
@@ -212,7 +212,7 @@ const pageConfigs = [
           'Wishlist': 'Favoris',
           'Cart': 'Panier',
           'Serving Djibouti, City & Regions': 'Disponible à Djibouti-ville et dans les régions',
-          'One App For': 'Une seule application pour',
+          'One App For': 'Une seule app pour',
           'All Your Needs': 'tous vos besoins',
           "eDalab connects you to everything in your city — food, doctors, pharmacies, hotels, rides, shopping and laundry. Real people, real fast.": 'eDalab vous connecte à tout dans votre ville : restauration, médecins, pharmacies, hôtels, trajets, shopping et blanchisserie. Des personnes réelles, rapidement.',
           'Search services, products, restaurants…': 'Rechercher des services, produits, restaurants…',
@@ -868,9 +868,130 @@ const pageConfigs = [
 
 const siteOrigin = 'https://edalab.app';
 const buildDate = new Date().toISOString().split('T')[0];
+const supportedLangs = ['en', 'fr', 'ar'];
+
+const englishSeoBySource = {
+  'index.html': {
+    title: 'eDalab — One app for all your needs | Food, doctor, hotel, pharmacy in Djibouti',
+    description: 'eDalab is Djibouti’s #1 super-app. Order food, book doctors, find pharmacies, request a ride, shop, book a hotel, and more.',
+    ogTitle: 'eDalab — One app for all your needs',
+    ogDescription: 'Djibouti’s super-app for food, doctors, hotels, pharmacies, rides, shopping, and laundry.',
+  },
+  'food.html': {
+    title: 'Food Delivery - eDalab',
+    description: 'Order delicious meals from your favorite restaurants on eDalab. Fast delivery, live tracking, and exclusive deals.',
+    ogTitle: 'Food Delivery - eDalab',
+    ogDescription: 'Order food in Djibouti with fast delivery and live tracking.',
+  },
+  'shopping.html': {
+    title: 'Shopping - eDalab',
+    description: 'Shop electronics, fashion, home essentials, and more on eDalab with fast delivery.',
+    ogTitle: 'Shopping - eDalab',
+    ogDescription: 'Fashion, electronics, and home essentials with fast delivery in Djibouti.',
+  },
+  'pharmacy.html': {
+    title: 'Pharmacy - eDalab',
+    description: 'Buy medicines and health products on eDalab with fast delivery and trusted support.',
+    ogTitle: 'Pharmacy - eDalab',
+    ogDescription: 'Medicines and health products delivered fast in Djibouti.',
+  },
+  'doctor.html': {
+    title: 'Doctors & Appointments - eDalab',
+    description: 'Book doctor appointments and consult healthcare professionals on eDalab.',
+    ogTitle: 'Doctors & Appointments - eDalab',
+    ogDescription: 'Book a doctor in Djibouti and get trusted care.',
+  },
+  'hotel.html': {
+    title: 'Hotels & Bookings - eDalab',
+    description: 'Book hotels and stays on eDalab with the best prices and instant confirmation.',
+    ogTitle: 'Hotels & Bookings - eDalab',
+    ogDescription: 'Book your stay in Djibouti with instant confirmation.',
+  },
+  'ride.html': {
+    title: 'Rides - eDalab',
+    description: 'Book a ride with eDalab. Fast, safe, and affordable transportation.',
+    ogTitle: 'Rides - eDalab',
+    ogDescription: 'Book rides in Djibouti quickly and safely.',
+  },
+  'home-services.html': {
+    title: 'Home Services - eDalab',
+    description: 'Book home services like cleaning, maintenance, plumbing, and more with trusted professionals.',
+    ogTitle: 'Home Services - eDalab',
+    ogDescription: 'Trusted professionals for home services across the city.',
+  },
+  'laundry.html': {
+    title: 'Laundry - eDalab',
+    description: 'Fast, reliable laundry service with pickup and delivery.',
+    ogTitle: 'Laundry - eDalab',
+    ogDescription: 'Laundry service with pickup and delivery in Djibouti.',
+  },
+};
+
+const englishSourceOverridesBySource = {
+  'food.html': {
+    'Envie de manger ? Commandez auprès de vos restaurants préférés': 'Hungry? Order from your favorite restaurants',
+    'Livraison rapide, plats frais et offres exclusives. Tout ce que vos papilles réclament.': 'Fast delivery, fresh food, and exclusive deals. Everything your taste buds crave.',
+    'aria-label="Favoris"': 'aria-label="Wishlist"',
+    'aria-label="Panier"': 'aria-label="Cart"',
+  },
+  'shopping.html': {
+    'Achetez tout ce que vous aimez': 'Shop Everything You Love',
+    'Mode, électronique, décoration et bien plus encore. Tout au même endroit avec livraison rapide.': 'Fashion, electronics, home decor, and more. All in one place with fast delivery.',
+  },
+  'pharmacy.html': {
+    'Santé et bien-être à portée de main': 'Health & Wellness at Your Fingertips',
+    'Commandez médicaments, produits de santé et compléments bien-être. Livraison rapide et qualité de confiance.': 'Order medicines, health products, and wellness supplements. Fast delivery and trusted quality.',
+    'Téléchargez votre ordonnance': 'Upload Your Prescription',
+    'Téléchargez votre ordonnance pour vous faire livrer vos médicaments': 'Upload your prescription to get medicines delivered',
+    'Téléchargez votre ordonnance pour recevoir vos médicaments': 'Upload your prescription to get medicines delivered',
+  },
+  'doctor.html': {
+    'Votre santé, notre priorité': 'Your health, our priority',
+    'Entrez en contact avec des médecins qualifiés, prenez rendez-vous et obtenez des conseils médicaux d’experts à tout moment.': 'Connect with qualified doctors, book appointments, and get expert medical advice anytime.',
+  },
+  'hotel.html': {
+    'Trouvez votre séjour idéal': 'Find your perfect stay',
+    'Des chambres confortables, d’excellents emplacements et des prix imbattables. Réservez maintenant et découvrez des destinations incroyables.': 'Comfortable rooms, great locations, and unbeatable prices. Book now and explore amazing destinations.',
+  },
+  'home-services.html': {
+    'Des services à domicile fiables quand vous en avez besoin': 'Trusted home services when you need them',
+    'Parcourez les catégories, comparez les professionnels et réservez l’aide adaptée à votre maison et à votre quotidien.': 'Browse categories, compare professionals, and book the right help for your home and daily life.',
+    'Choisir un service': 'Choose a service',
+  },
+};
 
 function escapeRegExp(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function invertMap(map = {}) {
+  return Object.fromEntries(
+    Object.entries(map).map(([key, value]) => [value, key])
+  );
+}
+
+function getLocalizedPath(lang, canonicalBase) {
+  if (lang === 'fr') {
+    return canonicalBase;
+  }
+  return `/${lang}${canonicalBase === '/' ? '/' : canonicalBase}`;
+}
+
+function getAlternateHref(lang, canonicalBase) {
+  return `${siteOrigin}${getLocalizedPath(lang, canonicalBase)}`;
+}
+
+function buildEnglishCopy(config) {
+  const frCopy = config.translations.fr;
+  const enSeo = englishSeoBySource[config.source];
+  return {
+    ...enSeo,
+    replacements: {
+      ...invertMap(commonReplacements.fr),
+      ...invertMap(frCopy.replacements),
+    },
+    scriptReplacements: invertMap(frCopy.scriptReplacements || {}),
+  };
 }
 
 function prefixRelativeUrls(html) {
@@ -880,13 +1001,10 @@ function prefixRelativeUrls(html) {
 }
 
 function localizeInternalLinks(html, outputFile) {
-  let localized = html.replace(/href="\.\.\/edalab-website\.html"/g, 'href="index.html"');
+  let localized = html.replace(/href="\.\.\/index\.html"/g, 'href="index.html"');
   for (const page of localizedPages) {
-    if (page === 'edalab-website.html') continue;
+    if (page === 'index.html') continue;
     localized = localized.replace(new RegExp(`href="\\.\\.\\/${page.replace('.', '\\.')}"`, 'g'), `href="${page}"`);
-  }
-  if (outputFile === 'index.html') {
-    localized = localized.replace(/href="edalab-website\.html"/g, 'href="index.html"');
   }
   return localized;
 }
@@ -946,22 +1064,20 @@ function replaceInsideScripts(html, replacements = {}) {
 
 function buildSeoLinks(canonicalEn, canonicalLocalized) {
   return [
-    `<link rel="alternate" hreflang="en" href="https://edalab.app${canonicalEn}"/>`,
-    `<link rel="alternate" hreflang="fr" href="https://edalab.app/fr${canonicalEn === '/' ? '/' : canonicalEn}"/>`,
-    `<link rel="alternate" hreflang="ar" href="https://edalab.app/ar${canonicalEn === '/' ? '/' : canonicalEn}"/>`,
-    `<link rel="alternate" hreflang="x-default" href="https://edalab.app${canonicalEn}"/>`,
+    `<link rel="alternate" hreflang="en" href="${getAlternateHref('en', canonicalEn)}"/>`,
+    `<link rel="alternate" hreflang="fr" href="${getAlternateHref('fr', canonicalEn)}"/>`,
+    `<link rel="alternate" hreflang="ar" href="${getAlternateHref('ar', canonicalEn)}"/>`,
+    `<link rel="alternate" hreflang="x-default" href="${getAlternateHref('fr', canonicalEn)}"/>`,
     `<link rel="canonical" href="https://edalab.app${canonicalLocalized}"/>`,
   ].join('\n');
 }
 
 function injectSeoHead(html, lang, canonicalEn, copy) {
-  const canonicalLocalized = lang === 'en'
-    ? canonicalEn
-    : `/${lang}${canonicalEn === '/' ? '/' : canonicalEn}`;
+  const canonicalLocalized = getLocalizedPath(lang, canonicalEn);
 
   let localized = html
-    .replace(/<link rel="alternate" hreflang="[^"]+" href="https:\/\/edalab\.dj[^"]*"\/>\n?/g, '')
-    .replace(/<link rel="canonical" href="https:\/\/edalab\.dj[^"]*"\/>\n?/g, '');
+    .replace(/<link rel="alternate" hreflang="[^"]+" href="https:\/\/edalab\.(?:dj|app)[^"]*"\/>\n?/g, '')
+    .replace(/<link rel="canonical" href="https:\/\/edalab\.(?:dj|app)[^"]*"\/>\n?/g, '');
 
   localized = localized.replace(/<title\b[^>]*>[\s\S]*?<\/title>/i, `<title>${copy.title}</title>`);
 
@@ -994,9 +1110,7 @@ function injectSeoHead(html, lang, canonicalEn, copy) {
 }
 
 function injectStructuredData(html, config, lang, copy) {
-  const localizedPath = lang === 'en'
-    ? config.canonicalBase
-    : `/${lang}${config.canonicalBase === '/' ? '/' : config.canonicalBase}`;
+  const localizedPath = getLocalizedPath(lang, config.canonicalBase);
   const url = `${siteOrigin}${localizedPath}`;
 
   let schema;
@@ -1009,8 +1123,8 @@ function injectStructuredData(html, config, lang, copy) {
         url,
         inLanguage: lang,
         potentialAction: {
-          '@type': 'SearchAction',
-          target: `${siteOrigin}${lang === 'en' ? '/' : `/${lang}/`}?q={search_term_string}`,
+        '@type': 'SearchAction',
+          target: `${siteOrigin}${getLocalizedPath(lang, '/')}?q={search_term_string}`,
           'query-input': 'required name=search_term_string',
         },
       },
@@ -1049,19 +1163,25 @@ function injectStructuredData(html, config, lang, copy) {
 }
 
 function buildLocalizedPage(config, lang) {
-  const copy = config.translations[lang];
+  const copy = lang === 'en' ? buildEnglishCopy(config) : config.translations[lang];
   const replacements = {
-    ...commonReplacements[lang],
+    ...(lang === 'en' ? {} : commonReplacements[lang]),
     ...copy.replacements,
   };
   let html = fs.readFileSync(path.join(webRoot, config.source), 'utf8');
+  const localizedPath = getLocalizedPath(lang, config.canonicalBase);
 
   html = html.replace('<html lang="en">', `<html lang="${lang}" dir="${lang === 'ar' ? 'rtl' : 'ltr'}" data-page-language="${lang}">`);
+  html = html.replace('<html lang="fr" dir="ltr" data-page-language="fr">', `<html lang="${lang}" dir="${lang === 'ar' ? 'rtl' : 'ltr'}" data-page-language="${lang}">`);
   html = html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>\n?/g, '');
   html = prefixRelativeUrls(html);
   html = localizeInternalLinks(html, config.output);
   html = replaceAllTextOutsideScripts(html, replacements);
+  if (lang === 'en' && englishSourceOverridesBySource[config.source]) {
+    html = replaceAllTextOutsideScripts(html, englishSourceOverridesBySource[config.source]);
+  }
   html = replaceInsideScripts(html, copy.scriptReplacements);
+  html = html.replaceAll(`${siteOrigin}${config.canonicalBase}`, `${siteOrigin}${localizedPath}`);
   html = html.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>\n?/g, '');
   html = html
     .replace(/id="nav[^"]*Count"\s+data-nav-badge="wishlist"/g, 'id="navWishlistCount" data-nav-badge="wishlist"')
@@ -1078,9 +1198,9 @@ function generateSitemap() {
   const urls = [];
 
   for (const config of pageConfigs) {
-    urls.push(`${siteOrigin}${config.canonicalBase}`);
-    urls.push(`${siteOrigin}/fr${config.canonicalBase === '/' ? '/' : config.canonicalBase}`);
-    urls.push(`${siteOrigin}/ar${config.canonicalBase === '/' ? '/' : config.canonicalBase}`);
+    urls.push(getAlternateHref('fr', config.canonicalBase));
+    urls.push(getAlternateHref('en', config.canonicalBase));
+    urls.push(getAlternateHref('ar', config.canonicalBase));
   }
 
   const uniqueUrls = [...new Set(urls)];
@@ -1089,21 +1209,19 @@ function generateSitemap() {
 ${uniqueUrls.map((url) => {
   const path = url.replace(siteOrigin, '') || '/';
   const baseMatch = pageConfigs.find((config) => {
-    const localizedFr = `/fr${config.canonicalBase === '/' ? '/' : config.canonicalBase}`;
-    const localizedAr = `/ar${config.canonicalBase === '/' ? '/' : config.canonicalBase}`;
-    return path === config.canonicalBase || path === localizedFr || path === localizedAr;
+    return supportedLangs.some((lang) => path === getLocalizedPath(lang, config.canonicalBase));
   });
   const canonicalBase = baseMatch?.canonicalBase || '/';
-  const enHref = `${siteOrigin}${canonicalBase}`;
-  const frHref = `${siteOrigin}/fr${canonicalBase === '/' ? '/' : canonicalBase}`;
-  const arHref = `${siteOrigin}/ar${canonicalBase === '/' ? '/' : canonicalBase}`;
+  const enHref = getAlternateHref('en', canonicalBase);
+  const frHref = getAlternateHref('fr', canonicalBase);
+  const arHref = getAlternateHref('ar', canonicalBase);
   return `  <url>
     <loc>${url}</loc>
     <lastmod>${buildDate}</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="${enHref}"/>
     <xhtml:link rel="alternate" hreflang="fr" href="${frHref}"/>
     <xhtml:link rel="alternate" hreflang="ar" href="${arHref}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${enHref}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${frHref}"/>
   </url>`;
 }).join('\n')}
 </urlset>
@@ -1123,7 +1241,7 @@ Sitemap: ${siteOrigin}/sitemap.xml
 }
 
 for (const config of pageConfigs) {
-  for (const lang of ['fr', 'ar']) {
+  for (const lang of supportedLangs) {
     buildLocalizedPage(config, lang);
     console.log(`Generated ${lang}/${config.output}`);
   }

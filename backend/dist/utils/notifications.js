@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createBackendNotification = createBackendNotification;
+exports.createMessageNotification = createMessageNotification;
 exports.createOrderCreatedNotification = createOrderCreatedNotification;
 exports.createAppointmentCreatedNotification = createAppointmentCreatedNotification;
 exports.createRideCreatedNotification = createRideCreatedNotification;
@@ -49,6 +50,26 @@ async function createBackendNotification({ userId, type, module, title, body, ro
         },
     });
     return notification;
+}
+async function createMessageNotification({ userId, conversationId, title, body, route, actorRole, entityType, entityId, moduleType, dedupeKey, }) {
+    return createBackendNotification({
+        userId,
+        type: client_1.NotificationType.SYSTEM,
+        module: client_1.NotificationModule.MESSAGES,
+        title,
+        body,
+        route,
+        dedupeKey,
+        metadata: {
+            kind: 'message',
+            conversationId,
+            actorRole,
+            entityType,
+            entityId,
+            moduleType,
+            route,
+        },
+    });
 }
 async function createOrderCreatedNotification({ userId, orderId, moduleType, moduleName, }) {
     const detailName = moduleName?.trim() ?? '';

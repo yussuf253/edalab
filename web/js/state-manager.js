@@ -212,7 +212,7 @@ class StateManager {
   }
 
   getLanguage() {
-    return this.getPreference('language', 'en');
+    return this.getPreference('language', 'fr');
   }
 
   setTheme(theme) {

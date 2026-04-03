@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-page-language="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rides - eDalab</title>
+    <meta name="description" content="Book a ride with eDalab. Fast, safe, and affordable transportation."/>
+<meta property="og:title" content="Rides - eDalab"/>
+<meta property="og:description" content="Book rides in Djibouti quickly and safely."/>
+                        <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="../css/main-styles.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/modules.css">
+        <style>
+        .ride-booking-form {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #06B6D4;
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .ride-type-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .ride-type-btn {
+            padding: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .ride-type-btn:hover {
+            border-color: #06B6D4;
+            background: #f0f9ff;
+        }
+
+        .ride-type-btn.active {
+            border-color: #06B6D4;
+            background: #06B6D4;
+            color: white;
+        }
+
+        .ride-type-icon {
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: rgba(6, 182, 212, 0.12);
+            color: #06B6D4;
+        }
+
+        .ride-type-icon img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .ride-type-icon svg,
+        .info-icon svg,
+        .empty-state-icon svg,
+        .ride-card-line-icon svg {
+            width: 20px;
+            height: 20px;
+            display: block;
+        }
+
+        .ride-type-name {
+            font-size: 13px;
+        }
+
+        .ride-type-price {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .estimate-section {
+            background: #f8f9ff;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .estimate-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .estimate-total {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #ddd;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .book-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .book-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4);
+        }
+
+        .book-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .ride-info {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .ride-info h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .info-icon,
+        .empty-state-icon,
+        .ride-card-line-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #06B6D4;
+            flex-shrink: 0;
+        }
+
+        .active-rides {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .active-rides h3 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #1a1a1a;
+        }
+
+        .ride-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ride-card-info {
+            flex: 1;
+        }
+
+        .ride-card-from {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .ride-card-to {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .ride-card-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-confirmed {
+            background: #dcfce7;
+            color: #22c55e;
+        }
+
+        .status-active {
+            background: #cffafe;
+            color: #06b6d4;
+        }
+
+        .status-completed {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .ride-card-action {
+            padding: 8px 16px;
+            background: #06B6D4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .ride-card-action:hover {
+            background: #0891B2;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 12px;
+            border-radius: 16px;
+            background: rgba(6, 182, 212, 0.12);
+        }
+    </style>
+<link rel="alternate" hreflang="en" href="https://edalab.app/en/ride.html"/>
+<link rel="alternate" hreflang="fr" href="https://edalab.app/ride.html"/>
+<link rel="alternate" hreflang="ar" href="https://edalab.app/ar/ride.html"/>
+<link rel="alternate" hreflang="x-default" href="https://edalab.app/ride.html"/>
+<link rel="canonical" href="https://edalab.app/en/ride.html"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Rides - eDalab",
+  "description": "Book a ride with eDalab. Fast, safe, and affordable transportation.",
+  "url": "https://edalab.app/en/ride.html",
+  "inLanguage": "en",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "eDalab",
+    "url": "https://edalab.app"
+  },
+  "mainEntity": {
+    "@type": "ItemList",
+    "name": "Rides - eDalab",
+    "description": "Book a ride with eDalab. Fast, safe, and affordable transportation."
+  }
+}
+</script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="nav" data-static-unified="true">
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="index.html"><div class="nav-logo-icon"><img src="../assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="../wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="../cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    </nav>
+
+    <section class="ride-hero">
+        <div class="wrap">
+            <div class="rh-content">
+                <h1 data-i18n="ride.heroTitle">Book Your Ride With eDalab</h1>
+                <p data-i18n="ride.heroDescription">Un transport rapide, sûr et abordable avec des prix clairs et une gestion simple de vos trajets.</p>
+                <div id="search-container"></div>
+            </div>
+        </div>
+    </section>
+
+    <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
+        <section style="margin-bottom: 40px;">
+            <h2 style="margin-bottom: 16px;" data-i18n="ride.typesTitle">Types de trajet</h2>
+            <div class="ride-type-selector" id="rideTypeSelector"></div>
+        </section>
+
+        <div class="filter-section">
+            <h2 data-i18n="ride.bookingTitle">Book a ride</h2>
+            <div id="rideBookingForm" class="ride-booking-form">
+
+            <!-- Pickup Location -->
+            <div class="form-group">
+                <label data-i18n="ride.pickupLocation">Pickup Location</label>
+                <input type="text" id="pickupLocation" data-i18n-placeholder="ride.pickupPlaceholder" placeholder="Enter pickup address" required>
+            </div>
+
+            <!-- Dropoff Location -->
+            <div class="form-group">
+                <label data-i18n="ride.dropoffLocation">Dropoff Location</label>
+                <input type="text" id="dropoffLocation" data-i18n-placeholder="ride.dropoffPlaceholder" placeholder="Enter destination address" required>
+            </div>
+
+            <!-- Pickup Time -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-i18n="ride.pickupDate">Pickup Date</label>
+                    <input type="date" id="pickupDate" required>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="ride.pickupTime">Pickup Time</label>
+                    <input type="time" id="pickupTime" required>
+                </div>
+            </div>
+
+            <!-- Passenger Count -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label data-i18n="ride.passengers">Passengers</label>
+                    <select id="passengerCount" onchange="rideModule.updateEstimate()">
+                        <option value="1" data-i18n="ride.passenger.one">1 Passenger</option>
+                        <option value="2" data-i18n="ride.passenger.two">2 Passengers</option>
+                        <option value="3" data-i18n="ride.passenger.three">3 Passengers</option>
+                        <option value="4" data-i18n="ride.passenger.four">4 Passengers</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="ride.specialRequests">Special Requests</label>
+                    <input type="text" id="specialRequests" data-i18n-placeholder="ride.specialRequestsPlaceholder" placeholder="Luggage, pets, etc.">
+                </div>
+            </div>
+
+            <!-- Estimate Section -->
+            <div class="estimate-section">
+                <div class="estimate-item">
+                    <span data-i18n="ride.baseFare">Base Fare</span>
+                    <span id="baseFare">$5.00</span>
+                </div>
+                <div class="estimate-item">
+                    <span data-i18n="ride.distanceEstimate">Distance Estimate</span>
+                    <span id="distanceFare">$0.00</span>
+                </div>
+                <div class="estimate-item">
+                    <span data-i18n="ride.surgePricing">Surge Pricing</span>
+                    <span id="surgeFare">0%</span>
+                </div>
+                <div class="estimate-total">
+                    <span data-i18n="ride.estimatedTotal">Estimated Total</span>
+                    <span id="estimatedTotal">$5.00</span>
+                </div>
+            </div>
+
+            <!-- Book Button -->
+            <button class="book-button" id="bookButton" onclick="rideModule.bookRide()" data-i18n="ride.bookNow">Book Ride Now</button>
+        </div>
+        <div id="rideBookingSkeleton" style="display: none;"></div>
+        </div>
+
+        <section class="food-section">
+        <div class="ride-info">
+            <h3 data-i18n="ride.whyChoose">Why Choose eDalab Rides?</h3>
+            <div class="info-item">
+                <div class="info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 18.5 6v5.5c0 4.2-2.7 8-6.5 9.5-3.8-1.5-6.5-5.3-6.5-9.5V6Z" fill="currentColor"></path><path d="m9.3 12.4 1.8 1.8 3.8-4.1" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+                <div data-i18n="ride.benefit.verifiedDrivers">Verified drivers with excellent ratings</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"></rect><path d="M3.5 10.2h17" fill="none" stroke="currentColor" stroke-width="1.8"></path><path d="M7.5 14.5h3.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></div>
+                <div data-i18n="ride.benefit.transparentPricing">Transparent pricing with no hidden charges</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 18.5 6v5.5c0 4.2-2.7 8-6.5 9.5-3.8-1.5-6.5-5.3-6.5-9.5V6Z" fill="currentColor"></path><path d="m9.3 12.4 1.8 1.8 3.8-4.1" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+                <div data-i18n="ride.benefit.safeTrips">Safe and secure rides with trip tracking</div>
+            </div>
+            <div class="info-item">
+                <div class="info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 4 2.3 4.7 5.2.8-3.7 3.7.9 5.2-4.7-2.5-4.7 2.5.9-5.2L4.5 9.5l5.2-.8Z" fill="currentColor"></path></svg></div>
+                <div data-i18n="ride.benefit.rateDriver">Rate your driver and leave feedback</div>
+            </div>
+        </div>
+        </section>
+
+        <section class="food-section">
+        <div class="active-rides">
+            <h3 data-i18n="ride.activeRides">Your Active Rides</h3>
+            <div id="activeRidesContainer"></div>
+        </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="wrap">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 data-i18n="ride.footerBrand">eDalab Ride</h3>
+                    <ul>
+                        <li><a href="#" data-i18n="ride.footerHowItWorks">How rides work</a></li>
+                        <li><a href="#" data-i18n="ride.footerSafety">Safety</a></li>
+                        <li><a href="#" data-i18n="ride.footerPricing">Pricing</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3 data-i18n="ride.footerRiders">For Riders</h3>
+                    <ul>
+                        <li><a href="#" data-i18n="ride.footerBookRide">Book a ride</a></li>
+                        <li><a href="#" data-i18n="ride.footerTripHistory">Trip history</a></li>
+                        <li><a href="#" data-i18n="ride.footerHelpCenter">Help Center</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3 data-i18n="ride.footerDrivers">For Drivers</h3>
+                    <ul>
+                        <li><a href="#" data-i18n="ride.footerBecomeDriver">Become a driver</a></li>
+                        <li><a href="#" data-i18n="ride.footerDriverSupport">Driver support</a></li>
+                        <li><a href="#" data-i18n="ride.footerRequirements">Requirements</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3 data-i18n="ride.footerContact">Contact</h3>
+                    <p><span data-i18n="common.email">Email</span>: hello@edalab.app</p>
+                    <p><span data-i18n="common.phone">Phone</span>: +253 21 35 00 00</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p data-i18n="footer.rights">&copy; 2024 eDalab. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="../js/api-client.js"></script>
+    <script src="../js/state-manager.js"></script>
+    <script src="../js/ui-components.js"></script>
+    <script>
+        class RideModule {
+            constructor() {
+                this.selectedRideType = null;
+                this.rideTypes = [];
+                this.isReady = false;
+                this.init();
+            }
+
+            t(key, fallback) {
+                return UIComponents.t(key, fallback);
+            }
+
+            async init() {
+                UIComponents.mountUnifiedNavbar({ active: 'ride' });
+                this.renderLoadingState();
+                await this.loadRideCategories();
+                this.setupHeroSearch();
+                this.setupRideTypeSelector();
+                this.clearLoadingState();
+                this.setupDatePicker();
+                await this.loadActiveRides();
+                this.updateEstimate();
+                this.isReady = true;
+            }
+
+            renderLoadingState() {
+                const searchContainer = document.getElementById('search-container');
+                if (searchContainer) {
+                    searchContainer.innerHTML = UIComponents.createSearchSkeleton();
+                }
+                const bookingForm = document.getElementById('rideBookingForm');
+                const bookingSkeleton = document.getElementById('rideBookingSkeleton');
+                if (bookingForm && bookingSkeleton) {
+                    bookingForm.style.display = 'none';
+                    bookingSkeleton.style.display = 'block';
+                    bookingSkeleton.innerHTML = UIComponents.createFormSkeleton({ fields: 5, columns: 2, includeSummary: true, includeButton: true });
+                }
+                document.getElementById('rideTypeSelector').innerHTML = UIComponents.createChoiceSkeleton(3);
+                document.getElementById('activeRidesContainer').innerHTML = UIComponents.createListSkeleton(2);
+            }
+
+            clearLoadingState() {
+                const bookingForm = document.getElementById('rideBookingForm');
+                const bookingSkeleton = document.getElementById('rideBookingSkeleton');
+                if (bookingForm && bookingSkeleton) {
+                    bookingForm.style.display = '';
+                    bookingSkeleton.style.display = 'none';
+                    bookingSkeleton.innerHTML = '';
+                }
+            }
+
+            setupHeroSearch() {
+                const container = document.getElementById('search-container');
+                if (!container) return;
+                container.innerHTML = `
+                    <div class="search-bar">
+                        <input type="text" id="ride-hero-search" class="search-input" placeholder="${this.t('ride.whereToGo', 'Where do you want to go?')}" />
+                        <button class="search-btn" onclick="rideModule.handleHeroSearch()">${UIComponents.getIconMarkup('search', 'ui-icon ui-icon-sm')}</button>
+                    </div>
+                `;
+                document.getElementById('ride-hero-search').addEventListener('keypress', (event) => {
+                    if (event.key === 'Enter') this.handleHeroSearch();
+                });
+            }
+
+            handleHeroSearch() {
+                const query = document.getElementById('ride-hero-search').value.trim();
+                if (query) {
+                    document.getElementById('dropoffLocation').value = query;
+                }
+                document.getElementById('pickupLocation').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                document.getElementById('pickupLocation').focus();
+                this.updateEstimate();
+            }
+
+            async loadRideCategories() {
+                try {
+                    const data = await apiClient.getRideCategories();
+                    this.rideTypes = Array.isArray(data) ? data : (data.data || []);
+                } catch (error) {
+                    console.error('Error loading ride categories:', error);
+                    this.rideTypes = [];
+                }
+
+                if (!this.rideTypes.length) {
+                    this.rideTypes = [
+                        { id: 'ride-economy', name: 'Economy', description: 'Standard ride', capacity: 4, basePrice: 5, pricePerMile: 1.5, timeToArrive: '5 min' },
+                        { id: 'ride-comfort', name: 'Comfort', description: 'Premium vehicle', capacity: 4, basePrice: 7, pricePerMile: 2, timeToArrive: '7 min' },
+                        { id: 'ride-xl', name: 'XL', description: 'Up to 6 passengers', capacity: 6, basePrice: 10, pricePerMile: 2.5, timeToArrive: '9 min' }
+                    ];
+                }
+
+                this.selectedRideType = this.rideTypes[0]?.id || null;
+            }
+
+            getRideIcon(rideType) {
+                return 'assets/icons/car.png';
+            }
+
+            getSelectedRide() {
+                return this.rideTypes.find((rideType) => rideType.id === this.selectedRideType) || this.rideTypes[0];
+            }
+
+            estimateDistanceKm(pickup, dropoff) {
+                const source = `${pickup || ''}${dropoff || ''}`.trim();
+                if (!source) return 5;
+                const base = Math.max(4, Math.ceil(source.length / 8));
+                return Math.min(base, 25);
+            }
+
+            setupRideTypeSelector() {
+                const container = document.getElementById('rideTypeSelector');
+                container.innerHTML = this.rideTypes.map((rideType) => `
+                        <button class="ride-type-btn ${rideType.id === this.selectedRideType ? 'active' : ''}" 
+                                onclick="rideModule.selectRideType('${rideType.id}')">
+                            <div class="ride-type-icon"><img src="../${this.getRideIcon(rideType)}" alt="${rideType.name}"></div>
+                            <div class="ride-type-name">${rideType.name}</div>
+                            <div class="ride-type-price">$${Number(rideType.basePrice || 0).toFixed(2)}</div>
+                        </button>
+                    `).join('');
+            }
+
+            selectRideType(type) {
+                this.selectedRideType = type;
+                this.setupRideTypeSelector();
+                this.updateEstimate();
+            }
+
+            setupDatePicker() {
+                const today = new Date();
+                const dateInput = document.getElementById('pickupDate');
+                const dateString = today.toISOString().split('T')[0];
+                dateInput.min = dateString;
+                dateInput.value = dateString;
+
+                const timeInput = document.getElementById('pickupTime');
+                const hours = String(today.getHours()).padStart(2, '0');
+                const minutes = String(today.getMinutes()).padStart(2, '0');
+                timeInput.value = `${hours}:${minutes}`;
+            }
+
+            updateEstimate() {
+                const selectedRide = this.getSelectedRide();
+                if (!selectedRide) return;
+
+                const pickup = document.getElementById('pickupLocation').value.trim();
+                const dropoff = document.getElementById('dropoffLocation').value.trim();
+                const passengerCount = parseInt(document.getElementById('passengerCount').value, 10);
+                const basePrice = Number(selectedRide.basePrice || 0);
+                const pricePerKm = Number(selectedRide.pricePerMile || 0);
+                const distanceKm = this.estimateDistanceKm(pickup, dropoff);
+                const distanceFare = distanceKm * pricePerKm;
+                const extraPassengerFare = Math.max(0, passengerCount - 1) * 0.75;
+                const surgePricing = pickup && dropoff ? 0 : 0;
+
+                const subtotal = basePrice + distanceFare + extraPassengerFare;
+                const surgeAmount = subtotal * surgePricing;
+                const total = subtotal + surgeAmount;
+
+                document.getElementById('baseFare').textContent = `$${basePrice.toFixed(2)}`;
+                document.getElementById('distanceFare').textContent = `$${distanceFare.toFixed(2)} (${distanceKm}km)`;
+                document.getElementById('surgeFare').textContent = surgePricing > 0 ? `+${(surgePricing * 100).toFixed(0)}%` : this.t('ride.none', 'None');
+                document.getElementById('estimatedTotal').textContent = `$${total.toFixed(2)}`;
+            }
+
+            async bookRide() {
+                const pickup = document.getElementById('pickupLocation').value;
+                const dropoff = document.getElementById('dropoffLocation').value;
+                const date = document.getElementById('pickupDate').value;
+                const time = document.getElementById('pickupTime').value;
+                const passengers = document.getElementById('passengerCount').value;
+                const specialRequests = document.getElementById('specialRequests').value;
+
+                if (!pickup || !dropoff || !date || !time) {
+                    UIComponents.showToast(this.t('ride.fillRequired', 'Please fill in all required fields'), 'error');
+                    return;
+                }
+
+                const button = document.getElementById('bookButton');
+                button.disabled = true;
+                button.textContent = this.t('ride.booking', 'Booking...');
+
+                try {
+                    const selectedRide = this.getSelectedRide();
+                    const estimatedFare = parseFloat(document.getElementById('estimatedTotal').textContent.replace('$', ''));
+                    const user = StateManager.getUser();
+                    let rideData = {
+                        id: `RIDE${Date.now()}`,
+                        module: 'ride',
+                        moduleType: 'RIDE',
+                        rideType: this.selectedRideType,
+                        rideCategoryId: selectedRide?.id,
+                        pickupLocation: pickup,
+                        dropoffLocation: dropoff,
+                        pickupDateTime: `${date}T${time}`,
+                        passengerCount: parseInt(passengers, 10),
+                        specialRequests: specialRequests || '',
+                        estimatedFare,
+                        subtotal: estimatedFare,
+                        tax: 0,
+                        deliveryFee: 0,
+                        discount: 0,
+                        total: estimatedFare,
+                        status: 'confirmed',
+                        createdAt: new Date().toISOString(),
+                        address: { street: dropoff, city: '' },
+                        items: [
+                            {
+                                id: `ride-item-${Date.now()}`,
+                                name: selectedRide?.name || 'Ride',
+                                quantity: 1,
+                                price: estimatedFare,
+                            }
+                        ],
+                        metadata: {
+                            pickup,
+                            dropoff,
+                            passengers: parseInt(passengers, 10),
+                        }
+                    };
+
+                    if (user?.id && selectedRide?.id) {
+                        try {
+                            const backendRide = await apiClient.requestRide({
+                                userId: user.id,
+                                rideCategoryId: selectedRide.id,
+                                pickupLabel: pickup,
+                                dropoffLabel: dropoff,
+                                distanceKm: this.estimateDistanceKm(pickup, dropoff),
+                                estimatedFare,
+                                tax: 0,
+                                total: estimatedFare,
+                                etaLabel: selectedRide.timeToArrive || '5 min',
+                                vehicleName: selectedRide.name,
+                            });
+
+                            rideData = {
+                                ...rideData,
+                                ...backendRide,
+                                id: backendRide.id || rideData.id,
+                                status: String(backendRide.status || rideData.status).toLowerCase(),
+                                metadata: {
+                                    pickup,
+                                    dropoff,
+                                    passengers: parseInt(passengers, 10),
+                                },
+                            };
+                        } catch (error) {
+                            console.error('Error persisting ride to backend:', error);
+                        }
+                    }
+
+                    StateManager.addOrder(rideData);
+                    UIComponents.showToast(this.t('ride.bookedSuccess', 'Ride booked successfully!'), 'success');
+                    document.getElementById('pickupLocation').value = '';
+                    document.getElementById('dropoffLocation').value = '';
+                    document.getElementById('specialRequests').value = '';
+                    
+                    setTimeout(() => {
+                        window.location.href = `tracking.html?rideId=${rideData.id}`;
+                    }, 1000);
+                } catch (error) {
+                    console.error('Error booking ride:', error);
+                    UIComponents.showToast(this.t('ride.bookFailed', 'Failed to book ride'), 'error');
+                } finally {
+                    button.disabled = false;
+                    button.textContent = this.t('ride.bookNow', 'Book Ride Now');
+                }
+            }
+
+            async loadActiveRides() {
+                try {
+                    const rides = StateManager.getOrders()
+                        .filter((entry) => entry.module === 'ride' || entry.moduleType === 'RIDE')
+                        .slice(0, 5)
+                        .map((ride) => ({
+                            id: ride.id,
+                            from: ride.metadata?.pickup || ride.pickupLocation || this.t('ride.pickupFallback', 'Pickup'),
+                            to: ride.metadata?.dropoff || ride.dropoffLocation || this.t('ride.destinationFallback', 'Destination'),
+                            status: ride.status === 'delivered' ? 'completed' : (ride.status || 'confirmed'),
+                            pickupTime: ride.pickupDateTime || ride.createdAt,
+                            driver: 'eDalab Driver'
+                        }));
+
+                    this.renderActiveRides(rides);
+                } catch (error) {
+                    console.error('Error loading active rides:', error);
+                }
+            }
+
+            renderActiveRides(rides) {
+                const container = document.getElementById('activeRidesContainer');
+                
+                if (!rides || rides.length === 0) {
+                    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">${UIComponents.getIconMarkup('delivery', 'ui-icon ui-icon-lg')}</div><p>${this.t('ride.noActive', 'No active rides')}</p></div>`;
+                    return;
+                }
+
+                let html = '';
+                rides.forEach(ride => {
+                    const statusClass = `status-${ride.status}`;
+                    const statusLabel = this.t(`ride.status.${ride.status}`, ride.status.toUpperCase());
+                    html += `
+                        <div class="ride-card">
+                            <div class="ride-card-info">
+                                <div class="ride-card-from"><span class="ride-card-line-icon">${UIComponents.getIconMarkup('location', 'ui-icon ui-icon-sm')}</span>${ride.from}</div>
+                                <div class="ride-card-to"><span class="ride-card-line-icon">${UIComponents.getIconMarkup('location', 'ui-icon ui-icon-sm')}</span>${ride.to}</div>
+                                <span class="ride-card-status ${statusClass}">${statusLabel}</span>
+                            </div>
+                            <button class="ride-card-action" onclick="window.location.href="../tracking.html?rideId=${ride.id}"">
+                                ${this.t('ride.track', 'Track')}
+                            </button>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+            }
+        }
+
+        const rideModule = new RideModule();
+        window.refreshPageLocalizedContent = function() {
+            if (rideModule && rideModule.isReady) {
+                rideModule.setupHeroSearch();
+                rideModule.setupRideTypeSelector();
+                rideModule.updateEstimate();
+                rideModule.loadActiveRides();
+            }
+        };
+    </script>
+</body>
+</html>

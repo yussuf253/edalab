@@ -92,7 +92,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
         title: Text(l10n.t('product_detail.title')),
         actions: [
-          IconButton(icon: const Icon(Icons.share_outlined), onPressed: () {}),
           IconButton(
             icon: Icon(
               isFavorite
@@ -122,7 +121,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ),
       body: SingleChildScrollView(
         child: _isLoading
-            ? const DetailContentShimmer(accentColor: AppColors.shopping)
+            ? const _ProductDetailShimmer()
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -201,7 +200,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             Text(
                               l10n.t(
                                 'product_detail.reviews',
-                                params: {'count': _product.reviewCount.toString()},
+                                params: {
+                                  'count': _product.reviewCount.toString(),
+                                },
                               ),
                               style: AppTextStyles.caption,
                             ),
@@ -270,7 +271,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                         // Color selection
                         if (_product.colors.isNotEmpty) ...[
-                          Text(l10n.t('product_detail.color'), style: AppTextStyles.labelLarge),
+                          Text(
+                            l10n.t('product_detail.color'),
+                            style: AppTextStyles.labelLarge,
+                          ),
                           const SizedBox(height: 12),
                           Row(
                             children: List.generate(_product.colors.length, (
@@ -321,7 +325,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                         // Size selection
                         if (_product.sizes.isNotEmpty) ...[
-                          Text(l10n.t('product_detail.size'), style: AppTextStyles.labelLarge),
+                          Text(
+                            l10n.t('product_detail.size'),
+                            style: AppTextStyles.labelLarge,
+                          ),
                           const SizedBox(height: 12),
                           Wrap(
                             spacing: 10,
@@ -360,7 +367,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         // Quantity
                         Row(
                           children: [
-                            Text(l10n.t('product_detail.quantity'), style: AppTextStyles.labelLarge),
+                            Text(
+                              l10n.t('product_detail.quantity'),
+                              style: AppTextStyles.labelLarge,
+                            ),
                             const Spacer(),
                             Container(
                               decoration: BoxDecoration(
@@ -399,7 +409,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         const SizedBox(height: 24),
 
                         // Description
-                        Text(l10n.t('product_detail.description'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('product_detail.description'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           _product.description,
@@ -412,7 +425,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
                         // Features
                         if (_product.features.isNotEmpty) ...[
-                          Text(l10n.t('product_detail.features'), style: AppTextStyles.h4),
+                          Text(
+                            l10n.t('product_detail.features'),
+                            style: AppTextStyles.h4,
+                          ),
                           const SizedBox(height: 12),
                           ..._product.features.map(
                             (f) => Padding(
@@ -465,7 +481,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.t('product_detail.total_price'), style: AppTextStyles.caption),
+                    Text(
+                      l10n.t('product_detail.total_price'),
+                      style: AppTextStyles.caption,
+                    ),
                     const SizedBox(height: 4),
                     Text(
                       '\$${(_product.price * _quantity).toStringAsFixed(2)}',
@@ -474,7 +493,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ],
                 ),
               ),
-              Expanded(
+              const SizedBox(width: 16),
+              Flexible(
+                fit: FlexFit.loose,
                 child: AppButton(
                   text: isInCart
                       ? l10n.t('product_detail.view_cart')
@@ -482,6 +503,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   icon: isInCart
                       ? Icons.arrow_forward_rounded
                       : Icons.shopping_bag_outlined,
+                  width: 220,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   onPressed: () {
                     if (isInCart) {
                       context.push('/shopping/cart');
@@ -511,6 +534,144 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ProductDetailShimmer extends StatelessWidget {
+  const _ProductDetailShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          height: 320,
+          width: double.infinity,
+          color: AppColors.extraLightGrey,
+          child: const Center(
+            child: AppShimmer(
+              child: ShimmerBlock(width: 100, height: 100, radius: 28),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: AppShimmer(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                ShimmerBlock(width: 84, height: 12, radius: 10),
+                SizedBox(height: 8),
+                ShimmerBlock(width: 220, height: 28),
+                SizedBox(height: 14),
+                Row(
+                  children: [
+                    ShimmerBlock(width: 116, height: 18, radius: 10),
+                    Spacer(),
+                    ShimmerBlock(width: 78, height: 24, radius: 8),
+                  ],
+                ),
+                SizedBox(height: 20),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    ShimmerBlock(width: 96, height: 30),
+                    SizedBox(width: 8),
+                    ShimmerBlock(width: 62, height: 18, radius: 10),
+                    SizedBox(width: 8),
+                    ShimmerBlock(width: 46, height: 22, radius: 8),
+                  ],
+                ),
+                SizedBox(height: 24),
+                Divider(),
+                SizedBox(height: 20),
+                ShimmerBlock(width: 68, height: 18, radius: 10),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    ShimmerBlock(width: 36, height: 36, radius: 999),
+                    SizedBox(width: 12),
+                    ShimmerBlock(width: 36, height: 36, radius: 999),
+                    SizedBox(width: 12),
+                    ShimmerBlock(width: 36, height: 36, radius: 999),
+                  ],
+                ),
+                SizedBox(height: 20),
+                ShimmerBlock(width: 56, height: 18, radius: 10),
+                SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    ShimmerBlock(width: 56, height: 44, radius: 12),
+                    ShimmerBlock(width: 64, height: 44, radius: 12),
+                    ShimmerBlock(width: 60, height: 44, radius: 12),
+                  ],
+                ),
+                SizedBox(height: 20),
+                Row(
+                  children: [
+                    ShimmerBlock(width: 74, height: 18, radius: 10),
+                    Spacer(),
+                    ShimmerBlock(width: 122, height: 44, radius: 12),
+                  ],
+                ),
+                SizedBox(height: 24),
+                ShimmerBlock(width: 102, height: 20),
+                SizedBox(height: 10),
+                ShimmerBlock(width: double.infinity, height: 14, radius: 10),
+                SizedBox(height: 8),
+                ShimmerBlock(width: double.infinity, height: 14, radius: 10),
+                SizedBox(height: 8),
+                ShimmerBlock(width: 220, height: 14, radius: 10),
+                SizedBox(height: 24),
+                ShimmerBlock(width: 82, height: 20),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    ShimmerBlock(width: 20, height: 20, radius: 999),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: ShimmerBlock(
+                        width: double.infinity,
+                        height: 14,
+                        radius: 10,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    ShimmerBlock(width: 20, height: 20, radius: 999),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: ShimmerBlock(
+                        width: double.infinity,
+                        height: 14,
+                        radius: 10,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    ShimmerBlock(width: 20, height: 20, radius: 999),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: ShimmerBlock(width: 180, height: 14, radius: 10),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 100),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

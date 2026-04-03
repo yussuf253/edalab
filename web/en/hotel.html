@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-page-language="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Hotels & Bookings - eDalab</title>
+  <meta name="description" content="Book hotels and stays on eDalab with the best prices and instant confirmation."/>
+  <meta property="og:title" content="Hotels & Bookings - eDalab"/>
+  <meta property="og:description" content="Book your stay in Djibouti with instant confirmation."/>
+  <meta property="og:type" content="website"/>
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/main-styles.css"/>
+  <link rel="stylesheet" href="../css/components.css"/>
+  <link rel="stylesheet" href="../css/modules.css"/>
+    <script type="application/ld+json" id="hotelSchemaDynamic">{}</script>
+  <style>
+    .date-picker {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .guests-picker {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .guests-input {
+      flex: 1;
+      padding: 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+    }
+  </style>
+<link rel="alternate" hreflang="en" href="https://edalab.app/en/hotel.html"/>
+<link rel="alternate" hreflang="fr" href="https://edalab.app/hotel.html"/>
+<link rel="alternate" hreflang="ar" href="https://edalab.app/ar/hotel.html"/>
+<link rel="alternate" hreflang="x-default" href="https://edalab.app/hotel.html"/>
+<link rel="canonical" href="https://edalab.app/en/hotel.html"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "Hotels & Bookings - eDalab",
+  "description": "Book hotels and stays on eDalab with the best prices and instant confirmation.",
+  "url": "https://edalab.app/en/hotel.html",
+  "inLanguage": "en",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "eDalab",
+    "url": "https://edalab.app"
+  },
+  "mainEntity": {
+    "@type": "ItemList",
+    "name": "Hotels & Bookings - eDalab",
+    "description": "Book hotels and stays on eDalab with the best prices and instant confirmation."
+  }
+}
+</script>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav id="nav" data-static-unified="true">
+    <div class="nav-w nav-w-unified"><a class="nav-logo" href="index.html"><div class="nav-logo-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="../wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol">♡</span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="../cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol">🛒</span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hotel-hero">
+    <div class="wrap">
+      <div class="hh-content">
+        <h1 data-i18n="hotel.heroTitle">Find your perfect stay</h1>
+        <p data-i18n="hotel.heroDescription">Comfortable rooms, great locations, and unbeatable prices. Book now and explore amazing destinations.</p>
+        <div id="search-container"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search & Filter -->
+  <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
+    <div id="hotelSearchPanel" style="background: white; border-radius: var(--r-lg); border: 1.5px solid var(--border); padding: 24px; margin-bottom: 40px;">
+      <h2 style="margin-bottom: 20px;" data-i18n="hotel.searchPanelTitle">Search Hotels</h2>
+      <div class="date-picker">
+        <div class="filter-item">
+          <label for="checkin-date" data-i18n="hotel.checkInDate">Check-in Date</label>
+          <input type="date" id="checkin-date" class="guests-input" />
+        </div>
+        <div class="filter-item">
+          <label for="checkout-date" data-i18n="hotel.checkOutDate">Check-out Date</label>
+          <input type="date" id="checkout-date" class="guests-input" />
+        </div>
+      </div>
+      <div class="guests-picker">
+        <div class="filter-item" style="flex: 1;">
+          <label for="guests-count" data-i18n="hotel.guests">Guests</label>
+          <select id="guests-count" class="guests-input">
+            <option value="1" data-i18n="hotel.guest.one">1 Guest</option>
+            <option value="2" data-i18n="hotel.guest.two">2 Guests</option>
+            <option value="3" data-i18n="hotel.guest.three">3 Guests</option>
+            <option value="4" data-i18n="hotel.guest.four">4 Guests</option>
+            <option value="5" data-i18n="hotel.guest.fivePlus">5+ Guests</option>
+          </select>
+        </div>
+        <div class="filter-item" style="flex: 1;">
+          <label for="room-type" data-i18n="hotel.roomType">Room Type</label>
+          <select id="room-type" class="guests-input">
+            <option value="" data-i18n="hotel.roomType.any">Any Type</option>
+            <option value="single" data-i18n="hotel.roomType.single">Single Room</option>
+            <option value="double" data-i18n="hotel.roomType.double">Double Room</option>
+            <option value="suite" data-i18n="hotel.roomType.suite">Suite</option>
+            <option value="villa" data-i18n="hotel.roomType.villa">Villa</option>
+          </select>
+        </div>
+      </div>
+      <button class="n-solid" onclick="hotelModule.searchHotels()" style="width: 100%;" data-i18n="hotel.searchButton">Search Hotels</button>
+    </div>
+    <div id="hotelSearchSkeleton" style="display: none; margin-bottom: 40px;"></div>
+
+    <!-- Filter Section -->
+    <div class="filter-section">
+      <h2 data-i18n="hotel.filterTitle">Filter Results</h2>
+      <div id="filter-bar" class="filter-grid">
+        <div class="filter-item">
+          <label for="price-filter" data-i18n="hotel.priceRange">Price Range</label>
+          <select id="price-filter" onchange="hotelModule.applyFilters()">
+            <option value="" data-i18n="hotel.price.all">All Prices</option>
+            <option value="0-100">$0 - $100</option>
+            <option value="100-250">$100 - $250</option>
+            <option value="250-500">$250 - $500</option>
+            <option value="500+">$500+</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="rating-filter" data-i18n="hotel.starRating">Star Rating</label>
+          <select id="rating-filter" onchange="hotelModule.applyFilters()">
+            <option value="" data-i18n="hotel.rating.all">All Ratings</option>
+            <option value="3">3+ Stars</option>
+            <option value="4">4+ Stars</option>
+            <option value="4.5">4.5+ Stars</option>
+            <option value="5">5 Stars</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="amenities-filter" data-i18n="hotel.amenities">Amenities</label>
+          <select id="amenities-filter" onchange="hotelModule.applyFilters()">
+            <option value="" data-i18n="hotel.amenities.all">All Amenities</option>
+            <option value="wifi">WiFi</option>
+            <option value="pool" data-i18n="hotel.amenities.pool">Swimming Pool</option>
+            <option value="gym" data-i18n="hotel.amenities.gym">Fitness Center</option>
+            <option value="restaurant">Restaurant</option>
+          </select>
+        </div>
+      </div>
+      <div id="hotelFilterSkeleton" style="display: none;"></div>
+    </div>
+
+    <!-- Hotels Grid -->
+    <section class="hotel-section">
+      <div id="hotels-container" class="hotels-grid">
+        <!-- Dynamically populated -->
+      </div>
+    </section>
+
+    <!-- Pagination -->
+    <div id="pagination-container"></div>
+  </main>
+
+  <!-- Booking Modal -->
+  <div id="booking-modal-overlay" class="modal-overlay" onclick="UIComponents.closeModal('booking-modal')">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 data-i18n="hotel.bookTitle">Book Hotel</h2>
+        <button class="modal-close" onclick="UIComponents.closeModal('booking-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="hotel-booking-form">
+          <div class="form-group">
+            <label for="guest-name" data-i18n="hotel.fullName">Full Name</label>
+            <input type="text" id="guest-name" required />
+          </div>
+          <div class="form-group">
+            <label for="guest-email" data-i18n="auth.email">Email</label>
+            <input type="email" id="guest-email" required />
+          </div>
+          <div class="form-group">
+            <label for="guest-phone" data-i18n="hotel.phoneNumber">Phone Number</label>
+            <input type="tel" id="guest-phone" required />
+          </div>
+          <div class="form-group">
+            <label for="special-requests" data-i18n="hotel.specialRequests">Special Requests</label>
+            <textarea id="special-requests" data-i18n-placeholder="hotel.specialRequestsPlaceholder" placeholder="E.g., Late check-in, high floor, quiet room"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" onclick="UIComponents.closeModal('booking-modal')" data-i18n="hotel.cancel">Cancel</button>
+        <button class="modal-btn primary" onclick="hotelModule.submitBooking()" data-i18n="hotel.confirmBooking">Confirm Booking</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-content">
+        <div class="footer-section">
+            <h3 data-i18n="nav.hotel">Hotel</h3>
+          <ul>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Travel Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>For Travelers</h3>
+          <ul>
+            <li><a href="#">Search Hotels</a></li>
+            <li><a href="#">My Bookings</a></li>
+            <li><a href="#">Travel Guides</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>For Hotels</h3>
+          <ul>
+            <li><a href="#">Partner with Us</a></li>
+            <li><a href="#">Hotel Portal</a></li>
+            <li><a href="#">Resources</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Contact</h3>
+          <p>Email: hello@edalab.app</p>
+          <p>Phone: +253 21 35 00 00</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2024 eDalab. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="../js/api-client.js"></script>
+  <script src="../js/state-manager.js"></script>
+  <script src="../js/ui-components.js"></script>
+  <script>
+    // ═══════════════════════════════════════════
+    // HOTEL MODULE IMPLEMENTATION
+    // ═══════════════════════════════════════════
+
+    class HotelModule {
+      constructor() {
+        const params = new URLSearchParams(window.location.search);
+        this.hotels = [];
+        this.filteredHotels = [];
+        this.currentPage = 1;
+        this.itemsPerPage = 12;
+        this.selectedHotelId = null;
+        this.routeHotelId = params.get('hotelId');
+        this.searchParams = {
+          checkIn: null,
+          checkOut: null,
+          guests: 1,
+        };
+        this.filters = {
+          priceRange: null,
+          rating: null,
+          amenities: null,
+        };
+        this.init();
+      }
+
+      init() {
+        UIComponents.mountUnifiedNavbar({ active: 'hotel' });
+        this.renderLoadingState();
+        this.setupDatePickers();
+        this.loadHotels();
+      }
+
+      updateHotelSeo(hotel = null) {
+        const selectedHotel = hotel || this.hotels.find((entry) => String(entry.id) === String(this.routeHotelId));
+
+        if (!selectedHotel) {
+          document.title = 'Hotels & Bookings - eDalab';
+          document.querySelector('meta[name="description"]')?.setAttribute('content', 'Book hotels, resorts, and accommodations on eDalab. Best prices and instant confirmations.');
+          document.querySelector('meta[property="og:title"]')?.setAttribute('content', 'Hotels & Bookings - eDalab');
+          document.querySelector('meta[property="og:description"]')?.setAttribute('content', 'Book hotels, resorts, and accommodations on eDalab. Best prices and instant confirmations.');
+          document.querySelector('link[rel="canonical"]')?.setAttribute('href', 'https://edalab.app/en/hotel.html');
+          document.getElementById('hotelSchemaDynamic').textContent = '{}';
+          return;
+        }
+
+        const location = selectedHotel.location || 'Djibouti';
+        const description = selectedHotel.description || `${selectedHotel.name} in ${location}. Book on eDalab.`;
+        const title = `${selectedHotel.name} - ${location} | eDalab`;
+        const canonicalUrl = `https://edalab.app/en/hotel.html?hotelId=${encodeURIComponent(selectedHotel.id)}`;
+        const image = selectedHotel.image || selectedHotel.imageUrl || selectedHotel.images?.[0] || undefined;
+
+        document.title = title;
+        document.querySelector('meta[name="description"]')?.setAttribute('content', description);
+        document.querySelector('meta[property="og:title"]')?.setAttribute('content', title);
+        document.querySelector('meta[property="og:description"]')?.setAttribute('content', description);
+        document.querySelector('link[rel="canonical"]')?.setAttribute('href', canonicalUrl);
+
+        const schema = {
+          '@context': 'https://schema.org',
+          '@type': 'Hotel',
+          name: selectedHotel.name,
+          description,
+          image,
+          address: selectedHotel.location ? {
+            '@type': 'PostalAddress',
+            addressLocality: selectedHotel.location,
+            addressCountry: 'DJ',
+          } : undefined,
+          url: canonicalUrl,
+          aggregateRating: selectedHotel.rating ? {
+            '@type': 'AggregateRating',
+            ratingValue: String(selectedHotel.rating),
+            reviewCount: String(selectedHotel.reviewCount || 1),
+          } : undefined,
+          priceRange: selectedHotel.pricePerNight ? `$${selectedHotel.pricePerNight}` : undefined,
+          amenityFeature: Array.isArray(selectedHotel.amenities)
+            ? selectedHotel.amenities.map((name) => ({
+                '@type': 'LocationFeatureSpecification',
+                name,
+                value: true,
+              }))
+            : undefined,
+        };
+
+        document.getElementById('hotelSchemaDynamic').textContent = JSON.stringify(schema, null, 2);
+      }
+
+      applyRouteState() {
+        if (!this.routeHotelId) {
+          this.updateHotelSeo();
+          return;
+        }
+
+        const hotel = this.hotels.find((entry) => String(entry.id) === String(this.routeHotelId));
+        if (!hotel) {
+          this.updateHotelSeo();
+          return;
+        }
+
+        this.filteredHotels = [hotel];
+        this.selectedHotelId = hotel.id;
+        this.updateHotelSeo(hotel);
+      }
+
+      renderLoadingState() {
+        const searchContainer = document.getElementById('search-container');
+        if (searchContainer) {
+          searchContainer.innerHTML = UIComponents.createSearchSkeleton();
+        }
+        const searchPanel = document.getElementById('hotelSearchPanel');
+        const searchSkeleton = document.getElementById('hotelSearchSkeleton');
+        if (searchPanel && searchSkeleton) {
+          searchPanel.style.display = 'none';
+          searchSkeleton.style.display = 'block';
+          searchSkeleton.innerHTML = UIComponents.createFormSkeleton({ fields: 4, columns: 2, includeButton: true });
+        }
+        const filterBar = document.getElementById('filter-bar');
+        const filterSkeleton = document.getElementById('hotelFilterSkeleton');
+        if (filterBar && filterSkeleton) {
+          filterBar.style.display = 'none';
+          filterSkeleton.style.display = 'block';
+          filterSkeleton.innerHTML = UIComponents.createFilterSkeleton(3);
+        }
+        document.getElementById('hotels-container').innerHTML = UIComponents.createCardGridSkeleton(8);
+        document.getElementById('pagination-container').innerHTML = '';
+      }
+
+      clearLoadingState() {
+        const searchPanel = document.getElementById('hotelSearchPanel');
+        const searchSkeleton = document.getElementById('hotelSearchSkeleton');
+        if (searchPanel && searchSkeleton) {
+          searchPanel.style.display = '';
+          searchSkeleton.style.display = 'none';
+          searchSkeleton.innerHTML = '';
+        }
+
+        const filterBar = document.getElementById('filter-bar');
+        const filterSkeleton = document.getElementById('hotelFilterSkeleton');
+        if (filterBar && filterSkeleton) {
+          filterBar.style.display = '';
+          filterSkeleton.style.display = 'none';
+          filterSkeleton.innerHTML = '';
+        }
+      }
+
+      setupHeroSearch() {
+        const container = document.getElementById('search-container');
+        if (!container) return;
+        container.innerHTML = `
+          <div class="search-bar">
+            <input type="text" id="hotel-hero-search" class="search-input" placeholder="${UIComponents.t('hotel.heroSearchPlaceholder', 'Search a destination or hotel...')}" />
+            <button class="search-btn" onclick="hotelModule.handleHeroSearch()">${UIComponents.getIconMarkup('search', 'ui-icon ui-icon-sm')}</button>
+          </div>
+        `;
+
+        document.getElementById('hotel-hero-search').addEventListener('keypress', (event) => {
+          if (event.key === 'Enter') this.handleHeroSearch();
+        });
+      }
+
+      setupDatePickers() {
+        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+        document.getElementById('checkin-date').value = today;
+        document.getElementById('checkin-date').min = today;
+
+        document.getElementById('checkout-date').value = tomorrow;
+        document.getElementById('checkout-date').min = tomorrow;
+      }
+
+      async loadHotels() {
+        try {
+          const data = await apiClient.getHotels({ limit: 100, skip: 0 });
+          // API returns array directly, not wrapped in {data: [...]}
+          this.hotels = Array.isArray(data) ? data : (data.data || []);
+          this.filteredHotels = [...this.hotels];
+          this.applyRouteState();
+        } catch (error) {
+          console.error('Error loading hotels:', error);
+        } finally {
+          this.clearLoadingState();
+          this.setupHeroSearch();
+          this.renderHotels();
+        }
+      }
+
+      handleHeroSearch() {
+        const query = document.getElementById('hotel-hero-search')?.value?.trim().toLowerCase() || '';
+        if (!query) {
+          document.getElementById('hotelSearchPanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.getElementById('checkin-date')?.focus();
+          return;
+        }
+
+        this.filteredHotels = this.hotels.filter((hotel) => {
+          const haystack = [
+            hotel.name,
+            hotel.location,
+            hotel.description,
+            ...(hotel.amenities || []),
+          ].filter(Boolean).join(' ').toLowerCase();
+          return haystack.includes(query);
+        });
+
+        this.currentPage = 1;
+        this.renderHotels();
+        document.getElementById('hotels-container')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      searchHotels() {
+        const checkIn = document.getElementById('checkin-date').value;
+        const checkOut = document.getElementById('checkout-date').value;
+        const guests = document.getElementById('guests-count').value;
+
+        if (!checkIn || !checkOut) {
+          UIComponents.showToast(UIComponents.t('hotel.toast.selectDates', 'Please select check-in and check-out dates'), 'info');
+          return;
+        }
+
+        if (new Date(checkIn) >= new Date(checkOut)) {
+          UIComponents.showToast(UIComponents.t('hotel.toast.invalidDates', 'Check-out date must be after check-in date'), 'error');
+          return;
+        }
+
+        this.searchParams = { checkIn, checkOut, guests };
+        this.renderHotels();
+      }
+
+      applyFilters() {
+        const priceRange = document.getElementById('price-filter').value;
+        const rating = document.getElementById('rating-filter').value;
+        const amenities = document.getElementById('amenities-filter').value;
+
+        this.filteredHotels = this.hotels.filter((h) => {
+          if (priceRange) {
+            const [min, max] = this.parsePriceRange(priceRange);
+            if (h.pricePerNight < min || (max && h.pricePerNight > max)) return false;
+          }
+          if (rating && h.rating < parseFloat(rating)) return false;
+          if (amenities && !h.amenities?.includes(amenities)) return false;
+          return true;
+        });
+
+        this.currentPage = 1;
+        this.renderHotels();
+      }
+
+      parsePriceRange(range) {
+        if (range === '0-100') return [0, 100];
+        if (range === '100-250') return [100, 250];
+        if (range === '250-500') return [250, 500];
+        if (range === '500+') return [500, Infinity];
+        return [0, Infinity];
+      }
+
+      renderHotels() {
+        const container = document.getElementById('hotels-container');
+        const start = (this.currentPage - 1) * this.itemsPerPage;
+        const end = start + this.itemsPerPage;
+        const pageItems = this.filteredHotels.slice(start, end);
+
+        if (pageItems.length === 0) {
+          container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 40px;">${UIComponents.t('hotel.noResults', 'No hotels found')}</p>`;
+        } else {
+          container.innerHTML = pageItems
+            .map((h) => {
+              const card = UIComponents.createHotelCard(h);
+              return card.replace(
+                'onclick="navigateTo',
+                `onclick="hotelModule.openBooking('${h.id}'); return false;" data-original="navigateTo`
+              );
+            })
+            .join('');
+        }
+
+        this.renderPagination();
+      }
+
+      openBooking(hotelId) {
+        this.selectedHotelId = hotelId;
+        const hotel = this.hotels.find((h) => h.id === hotelId);
+        if (hotel) {
+          this.updateHotelSeo(hotel);
+          UIComponents.showModal('booking-modal');
+        }
+      }
+
+      async submitBooking() {
+        if (!this.selectedHotelId) {
+          UIComponents.showToast(UIComponents.t('hotel.toast.selectHotel', 'Please select a hotel'), 'error');
+          return;
+        }
+
+        const name = document.getElementById('guest-name').value;
+        const email = document.getElementById('guest-email').value;
+        const phone = document.getElementById('guest-phone').value;
+
+        if (!name || !email || !phone) {
+          UIComponents.showToast(UIComponents.t('hotel.toast.fillRequired', 'Please fill all required fields'), 'error');
+          return;
+        }
+
+        try {
+          const user = StateManager.getUser();
+          let bookingData = {
+            id: `HOT${Date.now()}`,
+            module: 'hotel',
+            moduleType: 'HOTEL',
+            hotelId: this.selectedHotelId,
+            guestName: name,
+            guestEmail: email,
+            guestPhone: phone,
+            checkInDate: this.searchParams.checkIn,
+            checkOutDate: this.searchParams.checkOut,
+            numberOfGuests: this.searchParams.guests,
+            specialRequests: document.getElementById('special-requests').value,
+            status: 'confirmed',
+            subtotal: 0,
+            tax: 0,
+            deliveryFee: 0,
+            discount: 0,
+            total: 0,
+            createdAt: new Date().toISOString(),
+            items: [
+              {
+                id: `hotel-booking-${this.selectedHotelId}`,
+                name: `Hotel stay for ${this.searchParams.guests} guest(s)`,
+                quantity: 1,
+                price: 0,
+              }
+            ],
+          };
+
+          if (user?.id) {
+            try {
+              const backendOrder = await apiClient.createOrder({
+                userId: user.id,
+                moduleType: 'HOTEL',
+                status: 'PENDING',
+                subtotal: 0,
+                tax: 0,
+                deliveryFee: 0,
+                discount: 0,
+                total: 0,
+                notes: bookingData.specialRequests,
+                items: [
+                  {
+                    id: `hotel-booking-${this.selectedHotelId}`,
+                    name: `Hotel stay for ${this.searchParams.guests} guest(s)`,
+                    brand: 'Hotel Booking',
+                    price: 0,
+                    quantity: 1,
+                    total: 0,
+                    metadata: {
+                      hotelId: this.selectedHotelId,
+                      guestName: name,
+                      guestEmail: email,
+                      guestPhone: phone,
+                      checkInDate: this.searchParams.checkIn,
+                      checkOutDate: this.searchParams.checkOut,
+                    },
+                  }
+                ],
+              });
+
+              bookingData = {
+                ...bookingData,
+                ...backendOrder,
+                id: backendOrder.id || bookingData.id,
+                status: String(backendOrder.status || bookingData.status).toLowerCase(),
+              };
+            } catch (error) {
+              console.error('Error persisting hotel booking to backend:', error);
+            }
+          }
+
+          StateManager.addOrder(bookingData);
+          UIComponents.showToast(UIComponents.t('hotel.toast.bookingConfirmed', 'Hotel booking confirmed!'), 'success');
+          UIComponents.closeModal('booking-modal');
+          document.getElementById('hotel-booking-form').reset();
+          setTimeout(() => {
+            navigateTo(`/order-detail/${bookingData.id}`);
+          }, 1500);
+        } catch (error) {
+          console.error('Error booking hotel:', error);
+          UIComponents.showToast(UIComponents.t('hotel.toast.bookingFailed', 'Failed to complete booking'), 'error');
+        }
+      }
+
+      renderPagination() {
+        const container = document.getElementById('pagination-container');
+        const totalPages = Math.ceil(this.filteredHotels.length / this.itemsPerPage);
+
+        if (totalPages > 1) {
+          container.innerHTML = UIComponents.createPagination(
+            this.currentPage,
+            totalPages,
+            'hotelModule.goToPage'
+          );
+        } else {
+          container.innerHTML = '';
+        }
+      }
+
+      goToPage(page) {
+        this.currentPage = page;
+        this.renderHotels();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    const hotelModule = new HotelModule();
+    window.hotelModule = hotelModule;
+    window.refreshPageLocalizedContent = function() {
+      hotelModule.setupHeroSearch();
+      if (Array.isArray(hotelModule.filteredHotels)) {
+        hotelModule.renderHotels();
+      }
+    };
+  </script>
+</body>
+</html>

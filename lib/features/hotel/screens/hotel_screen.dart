@@ -18,11 +18,8 @@ class HotelScreen extends StatefulWidget {
 
 class _HotelScreenState extends State<HotelScreen> {
   final TextEditingController _searchController = TextEditingController();
-  DateTime _checkInDate = DateTime.now().add(const Duration(days: 1));
-  DateTime _checkOutDate = DateTime.now().add(const Duration(days: 4));
-  int _guestCount = 2;
   String _searchQuery = '';
-  List<HotelModel> _hotels = HotelModel.sampleHotels;
+  List<HotelModel> _hotels = [];
   bool _isLoading = true;
 
   @override
@@ -70,322 +67,316 @@ class _HotelScreenState extends State<HotelScreen> {
         }
       },
       child: Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.t('hotel.title')),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/');
-            }
-          },
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text(l10n.t('hotel.title')),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/');
+              }
+            },
+          ),
         ),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-              child: AppSearchBar(
-                hint: l10n.t('hotel.search_hint'),
-                controller: _searchController,
-                onChanged: (value) =>
-                    setState(() => _searchQuery = value.trim()),
-                suffix: _searchQuery.isEmpty
-                    ? null
-                    : IconButton(
-                        icon: const Icon(
-                          Icons.close_rounded,
-                          color: AppColors.mediumGrey,
-                        ),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      ),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _BookingField(
-                      label: l10n.t('hotel.check_in'),
-                      value: _formatDate(_checkInDate),
-                      icon: Icons.calendar_today_rounded,
-                      onTap: _selectCheckInDate,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _BookingField(
-                      label: l10n.t('hotel.check_out'),
-                      value: _formatDate(_checkOutDate),
-                      icon: Icons.calendar_today_rounded,
-                      onTap: _selectCheckOutDate,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _BookingField(
-                      label: l10n.t('hotel.guests'),
-                      value: '$_guestCount',
-                      icon: Icons.person_outline_rounded,
-                      onTap: _selectGuests,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(l10n.t('hotel.popular_destinations'), style: AppTextStyles.h4),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 100,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _DestChip(
-                    '🏖️',
-                    l10n.t('hotel.beach'),
-                    onTap: () => _applyDestination('Beach'),
-                  ),
-                  _DestChip(
-                    '🏔️',
-                    l10n.t('hotel.mountain'),
-                    onTap: () => _applyDestination('Mountain'),
-                  ),
-                  _DestChip(
-                    '🌆',
-                    l10n.t('hotel.city'),
-                    onTap: () => _applyDestination('City'),
-                  ),
-                  _DestChip(
-                    '🏝️',
-                    l10n.t('hotel.island'),
-                    onTap: () => _applyDestination('Island'),
-                  ),
-                  _DestChip(
-                    '🏜️',
-                    l10n.t('hotel.desert'),
-                    onTap: () => _applyDestination('Desert'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              child: Row(
-                children: [
-                  Text(l10n.t('hotel.recommended'), style: AppTextStyles.h4),
-                  const Spacer(),
-                  if (_isLoading)
-                    const AppShimmer(
-                      child: ShimmerBlock(width: 54, height: 14, radius: 10),
-                    )
-                  else
-                    Text(
-                      l10n.t('hotel.found_count', params: {'count': '${hotels.length}'}),
-                      style: AppTextStyles.caption,
-                    ),
-                ],
-              ),
-            ),
-          ),
-          if (_isLoading)
-            const SliverSectionListShimmer(itemCount: 4)
-          else if (hotels.isEmpty)
+        body: CustomScrollView(
+          slivers: [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: AppSpacing.shadowSm,
-                  ),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        Icons.hotel_rounded,
-                        size: 44,
-                        color: AppColors.mediumGrey,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        l10n.t('hotel.no_hotels'),
-                        style: AppTextStyles.h4,
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        l10n.t('hotel.no_hotels_subtitle'),
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.grey,
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: AppSearchBar(
+                  hint: l10n.t('hotel.search_hint'),
+                  controller: _searchController,
+                  onChanged: (value) =>
+                      setState(() => _searchQuery = value.trim()),
+                  suffix: _searchQuery.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: AppColors.mediumGrey,
+                          ),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
                         ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
-            )
-          else
-            SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final h = hotels[index];
-                final type = h.amenities.isNotEmpty
-                    ? h.amenities.first
-                    : 'Hotel';
-                return GestureDetector(
-                  onTap: () => context.push('/hotel/detail/${h.id}'),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  l10n.t('hotel.popular_destinations'),
+                  style: AppTextStyles.h4,
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 100,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    _DestChip(
+                      '🏖️',
+                      l10n.t('hotel.beach'),
+                      onTap: () => _applyDestination(
+                        displayLabel: l10n.t('hotel.beach'),
+                        mappedQuery: 'beach',
+                      ),
+                    ),
+                    _DestChip(
+                      '🏔️',
+                      l10n.t('hotel.mountain'),
+                      onTap: () => _applyDestination(
+                        displayLabel: l10n.t('hotel.mountain'),
+                        mappedQuery: 'mountain',
+                      ),
+                    ),
+                    _DestChip(
+                      '🌆',
+                      l10n.t('hotel.city'),
+                      onTap: () => _applyDestination(
+                        displayLabel: l10n.t('hotel.city'),
+                        mappedQuery: 'city',
+                      ),
+                    ),
+                    _DestChip(
+                      '🏝️',
+                      l10n.t('hotel.island'),
+                      onTap: () => _applyDestination(
+                        displayLabel: l10n.t('hotel.island'),
+                        mappedQuery: 'island',
+                      ),
+                    ),
+                    _DestChip(
+                      '🏜️',
+                      l10n.t('hotel.desert'),
+                      onTap: () => _applyDestination(
+                        displayLabel: l10n.t('hotel.desert'),
+                        mappedQuery: 'desert',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                child: Row(
+                  children: [
+                    Text(l10n.t('hotel.recommended'), style: AppTextStyles.h4),
+                    const Spacer(),
+                    if (_isLoading)
+                      const AppShimmer(
+                        child: ShimmerBlock(width: 54, height: 14, radius: 10),
+                      )
+                    else
+                      Text(
+                        l10n.t(
+                          'hotel.found_count',
+                          params: {'count': '${hotels.length}'},
+                        ),
+                        style: AppTextStyles.caption,
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            if (_isLoading)
+              const _HotelListShimmer(itemCount: 4)
+            else if (hotels.isEmpty)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
                   child: Container(
-                    margin: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: AppColors.white,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: AppSpacing.shadowSm,
                     ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          height: 160,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.hotel.withValues(alpha: 0.3),
-                                AppColors.hotel.withValues(alpha: 0.1),
-                              ],
-                            ),
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
-                          ),
-                          child: Stack(
-                            children: [
-                              Center(
-                                child: Icon(
-                                  Icons.hotel_rounded,
-                                  size: 48,
-                                  color: AppColors.hotel.withValues(alpha: 0.4),
-                                ),
-                              ),
-                              Positioned(
-                                top: 12,
-                                left: 12,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 5,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.hotel,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(type, style: AppTextStyles.badge),
-                                ),
-                              ),
-                              Positioned(
-                                top: 12,
-                                right: 12,
-                                child: Container(
-                                  width: 36,
-                                  height: 36,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.white,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.favorite_border_rounded,
-                                    size: 18,
-                                    color: AppColors.grey,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+                        const Icon(
+                          Icons.hotel_rounded,
+                          size: 44,
+                          color: AppColors.mediumGrey,
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(h.name, style: AppTextStyles.labelLarge),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.location_on_outlined,
-                                    size: 14,
-                                    color: AppColors.grey,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      '${h.city} • ${h.address}',
-                                      style: AppTextStyles.caption,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.star_rounded,
-                                    size: 16,
-                                    color: AppColors.warning,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '${h.rating}',
-                                    style: AppTextStyles.labelSmall.copyWith(
-                                      color: AppColors.dark,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '(${h.reviewsCount})',
-                                    style: AppTextStyles.caption,
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    '\$${h.pricePerNight.toInt()}',
-                                    style: AppTextStyles.priceSmall.copyWith(
-                                      color: AppColors.hotel,
-                                    ),
-                                  ),
-                                  Text(l10n.t('hotel.per_night'), style: AppTextStyles.caption),
-                                ],
-                              ),
-                            ],
+                        const SizedBox(height: 12),
+                        Text(
+                          l10n.t('hotel.no_hotels'),
+                          style: AppTextStyles.h4,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          l10n.t('hotel.no_hotels_subtitle'),
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.grey,
                           ),
                         ),
                       ],
                     ),
                   ),
-                );
-              }, childCount: hotels.length),
-            ),
-        ],
-      ),
+                ),
+              )
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final h = hotels[index];
+                  final type = h.amenities.isNotEmpty
+                      ? h.amenities.first
+                      : 'Hotel';
+                  return GestureDetector(
+                    onTap: () => context.push('/hotel/detail/${h.id}'),
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: AppSpacing.shadowSm,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 160,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.hotel.withValues(alpha: 0.3),
+                                  AppColors.hotel.withValues(alpha: 0.1),
+                                ],
+                              ),
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
+                              ),
+                            ),
+                            child: Stack(
+                              children: [
+                                Center(
+                                  child: Icon(
+                                    Icons.hotel_rounded,
+                                    size: 48,
+                                    color: AppColors.hotel.withValues(
+                                      alpha: 0.4,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 12,
+                                  left: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.hotel,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      type,
+                                      style: AppTextStyles.badge,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 12,
+                                  right: 12,
+                                  child: Container(
+                                    width: 36,
+                                    height: 36,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.favorite_border_rounded,
+                                      size: 18,
+                                      color: AppColors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(h.name, style: AppTextStyles.labelLarge),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.location_on_outlined,
+                                      size: 14,
+                                      color: AppColors.grey,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        '${h.city} • ${h.address}',
+                                        style: AppTextStyles.caption,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.star_rounded,
+                                      size: 16,
+                                      color: AppColors.warning,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${h.rating}',
+                                      style: AppTextStyles.labelSmall.copyWith(
+                                        color: AppColors.dark,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '(${h.reviewsCount})',
+                                      style: AppTextStyles.caption,
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      '\$${h.pricePerNight.toInt()}',
+                                      style: AppTextStyles.priceSmall.copyWith(
+                                        color: AppColors.hotel,
+                                      ),
+                                    ),
+                                    Text(
+                                      l10n.t('hotel.per_night'),
+                                      style: AppTextStyles.caption,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }, childCount: hotels.length),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -397,233 +388,143 @@ class _HotelScreenState extends State<HotelScreen> {
     }
 
     return _hotels.where((hotel) {
+      final destinationTerms = switch (query) {
+        'beach' => ['beach', 'resort', 'pool', 'waterfront', 'seafront'],
+        'mountain' => ['mountain', 'lodge', 'alpine', 'ski'],
+        'city' => ['city', 'central', 'downtown', 'business'],
+        'island' => ['island', 'resort', 'beachfront'],
+        'desert' => ['desert', 'resort', 'oasis'],
+        _ => <String>[],
+      };
+
+      final matchesDestination =
+          destinationTerms.isNotEmpty &&
+          destinationTerms.any(
+            (term) =>
+                hotel.name.toLowerCase().contains(term) ||
+                hotel.city.toLowerCase().contains(term) ||
+                hotel.address.toLowerCase().contains(term) ||
+                hotel.amenities.any(
+                  (amenity) => amenity.toLowerCase().contains(term),
+                ) ||
+                hotel.description.toLowerCase().contains(term),
+          );
+
       return hotel.name.toLowerCase().contains(query) ||
           hotel.city.toLowerCase().contains(query) ||
           hotel.address.toLowerCase().contains(query) ||
+          hotel.description.toLowerCase().contains(query) ||
           hotel.amenities.any(
             (amenity) => amenity.toLowerCase().contains(query),
-          );
+          ) ||
+          matchesDestination;
     }).toList();
   }
 
-  String _formatDate(DateTime date) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[date.month - 1]} ${date.day}';
-  }
-
-  Future<void> _selectCheckInDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _checkInDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-
-    if (picked == null) return;
-
-    setState(() {
-      _checkInDate = picked;
-      if (!_checkOutDate.isAfter(_checkInDate)) {
-        _checkOutDate = _checkInDate.add(const Duration(days: 1));
-      }
-    });
-  }
-
-  Future<void> _selectCheckOutDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _checkOutDate.isAfter(_checkInDate)
-          ? _checkOutDate
-          : _checkInDate.add(const Duration(days: 1)),
-      firstDate: _checkInDate.add(const Duration(days: 1)),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-
-    if (picked == null) return;
-
-    setState(() => _checkOutDate = picked);
-  }
-
-  Future<void> _selectGuests() async {
-    int tempGuests = _guestCount;
-
-    await showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: AppColors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(context.l10n.t('hotel.select_guests'), style: AppTextStyles.h3),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            context.l10n.t('hotel.guests'),
-                            style: AppTextStyles.labelLarge,
-                          ),
-                        ),
-                        _GuestButton(
-                          icon: Icons.remove_rounded,
-                          onTap: tempGuests > 1
-                              ? () => setModalState(() => tempGuests--)
-                              : null,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text('$tempGuests', style: AppTextStyles.h4),
-                        ),
-                        _GuestButton(
-                          icon: Icons.add_rounded,
-                          onTap: tempGuests < 10
-                              ? () => setModalState(() => tempGuests++)
-                              : null,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () {
-                          setState(() => _guestCount = tempGuests);
-                          Navigator.of(context).pop();
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.hotel,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: Text(
-                          context.l10n.t('hotel.apply'),
-                          style: AppTextStyles.labelMedium.copyWith(
-                            color: AppColors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _applyDestination(String destination) {
-    final mappedQuery = switch (destination) {
-      'Beach' => 'miami',
-      'Mountain' => 'aspen',
-      'City' => 'new york',
-      'Island' => 'beach',
-      'Desert' => 'resort',
-      _ => destination.toLowerCase(),
-    };
-
-    _searchController.text = mappedQuery;
+  void _applyDestination({
+    required String displayLabel,
+    required String mappedQuery,
+  }) {
+    _searchController.text = displayLabel;
     setState(() => _searchQuery = mappedQuery);
   }
 }
 
-class _BookingField extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final VoidCallback onTap;
+class _HotelListShimmer extends StatelessWidget {
+  final int itemCount;
 
-  const _BookingField({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.onTap,
-  });
+  const _HotelListShimmer({this.itemCount = 4});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: AppSpacing.shadowSm,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: AppTextStyles.caption),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(icon, size: 16, color: AppColors.hotel),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    value,
-                    style: AppTextStyles.labelLarge,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+    return SliverList(
+      delegate: SliverChildBuilderDelegate((context, index) {
+        return const AppShimmer(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(20, 0, 20, 14),
+            child: _HotelCardShimmer(),
+          ),
+        );
+      }, childCount: itemCount),
     );
   }
 }
 
-class _GuestButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  const _GuestButton({required this.icon, required this.onTap});
+class _HotelCardShimmer extends StatelessWidget {
+  const _HotelCardShimmer();
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: onTap == null ? AppColors.extraLightGrey : AppColors.hotelBg,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: onTap == null ? AppColors.mediumGrey : AppColors.hotel,
-        ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          SizedBox(
+            height: 160,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Color(0xFFF3F6FB),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+                Center(child: ShimmerBlock(width: 48, height: 48, radius: 16)),
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: ShimmerBlock(width: 74, height: 28, radius: 8),
+                ),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: ShimmerBlock(width: 36, height: 36, radius: 999),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ShimmerBlock(width: 170, height: 18),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    ShimmerBlock(width: 14, height: 14, radius: 999),
+                    SizedBox(width: 6),
+                    Expanded(
+                      child: ShimmerBlock(
+                        width: double.infinity,
+                        height: 12,
+                        radius: 10,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    ShimmerBlock(width: 72, height: 14, radius: 10),
+                    SizedBox(width: 10),
+                    ShimmerBlock(width: 58, height: 12, radius: 10),
+                    Spacer(),
+                    ShimmerBlock(width: 80, height: 16, radius: 10),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

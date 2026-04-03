@@ -1,12 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr" dir="ltr" data-page-language="fr">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Pharmacy - eDalab</title>
-  <meta name="description" content="Buy medicines and health products on eDalab. Fast delivery, prescription support, and expert advice."/>
-  <link rel="alternate" hreflang="en" href="https://edalab.app/pharmacy.html"/>
-  <link rel="alternate" hreflang="fr" href="https://edalab.app/fr/pharmacy.html"/>
+  <style>
+  html[data-i18n-pending="true"] body{visibility:hidden}
+  </style>
+  <script>
+  (() => {
+    const root = document.documentElement;
+    try {
+      const savedPrefs = JSON.parse(localStorage.getItem('edaLabPreferences') || '{}');
+      const pageLanguage = ['en', 'fr', 'ar'].includes(root.dataset.pageLanguage) ? root.dataset.pageLanguage : null;
+      const savedLanguage = ['en', 'fr', 'ar'].includes(savedPrefs.language) ? savedPrefs.language : null;
+      const resolvedLanguage = savedLanguage || pageLanguage || 'fr';
+      root.lang = resolvedLanguage;
+      root.dir = resolvedLanguage === 'ar' ? 'rtl' : 'ltr';
+      if (savedLanguage && pageLanguage && savedLanguage !== pageLanguage) {
+        root.setAttribute('data-i18n-pending', 'true');
+        window.__edaI18nFailSafe = window.setTimeout(() => {
+          root.removeAttribute('data-i18n-pending');
+        }, 2500);
+      }
+    } catch (error) {
+      root.lang = 'fr';
+      root.dir = 'ltr';
+      root.setAttribute('data-i18n-pending', 'true');
+      window.__edaI18nFailSafe = window.setTimeout(() => {
+        root.removeAttribute('data-i18n-pending');
+      }, 2500);
+    }
+  })();
+  </script>
+  <title>Pharmacie - eDalab</title>
+  <meta name="description" content="Achetez des médicaments et des produits de santé avec eDalab. Livraison rapide, prise en charge des ordonnances et conseils d’experts."/>
+  <link rel="alternate" hreflang="en" href="https://edalab.app/en/pharmacy.html"/>
+  <link rel="alternate" hreflang="fr" href="https://edalab.app/pharmacy.html"/>
   <link rel="alternate" hreflang="ar" href="https://edalab.app/ar/pharmacy.html"/>
   <link rel="alternate" hreflang="x-default" href="https://edalab.app/pharmacy.html"/>
   <link rel="canonical" href="https://edalab.app/pharmacy.html"/>
@@ -19,10 +48,10 @@
   {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": "Pharmacy - eDalab",
-    "description": "Buy medicines and health products on eDalab. Fast delivery, prescription support, and expert advice.",
+    "name": "Pharmacie - eDalab",
+    "description": "Achetez des médicaments et des produits de santé avec eDalab. Livraison rapide, prise en charge des ordonnances et conseils d’experts.",
     "url": "https://edalab.app/pharmacy.html",
-    "inLanguage": "en",
+    "inLanguage": "fr",
     "isPartOf": {
       "@type": "WebSite",
       "name": "eDalab",
@@ -30,7 +59,7 @@
     },
     "mainEntity": {
       "@type": "ItemList",
-      "name": "Pharmacy - eDalab"
+      "name": "Pharmacie - eDalab"
     }
   }
   </script>
@@ -38,15 +67,15 @@
 <body>
   <!-- Navigation -->
   <nav id="nav" data-static-unified="true">
-    <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+    <div class="nav-w nav-w-unified"><a class="nav-logo" href="index.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index.html" class="nav-a" data-nav-link="home">Accueil</a><a href="food.html" class="nav-a" data-nav-link="food">Restauration</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Boutique</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacie</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Médecin</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hôtel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Trajet</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Blanchisserie</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="cart.html" class="nav-icon-btn" aria-label="Panier"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Panier</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
   </nav>
 
   <!-- Hero Section -->
   <section class="pharmacy-hero">
     <div class="wrap">
       <div class="ph-content">
-        <h1>Health & Wellness at Your Fingertips</h1>
-        <p>Order medicines, health products, and wellness supplements. Fast delivery and trusted quality.</p>
+        <h1>Santé et bien-être à portée de main</h1>
+        <p>Commandez médicaments, produits de santé et compléments bien-être. Livraison rapide et qualité de confiance.</p>
         <div id="search-container"></div>
       </div>
     </div>
@@ -56,21 +85,21 @@
   <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
     <!-- Prescription Upload -->
     <section style="margin-bottom: 40px; padding: 24px; background: var(--rx-bg); border-radius: var(--r-lg); border-left: 4px solid var(--rx-c);">
-      <h3 style="margin-bottom: 10px; color: var(--rx-c);">Upload Your Prescription</h3>
-      <p style="font-size: 14px; color: var(--sub); margin-bottom: 12px;">Upload your prescription to get medicines delivered</p>
+      <h3 style="margin-bottom: 10px; color: var(--rx-c);">Téléchargez votre ordonnance</h3>
+      <p style="font-size: 14px; color: var(--sub); margin-bottom: 12px;">Téléchargez votre ordonnance pour vous faire livrer vos médicaments</p>
       <input type="file" id="prescription-upload" accept="image/*,application/pdf" style="display: none;" />
-      <button class="n-solid" onclick="document.getElementById('prescription-upload').click()">Upload Prescription</button>
+      <button class="n-solid" onclick="document.getElementById('prescription-upload').click()">Télécharger l’ordonnance</button>
     </section>
 
     <!-- Categories -->
     <section style="margin-bottom: 40px;">
-      <h2 style="margin-bottom: 16px;">Categories</h2>
+      <h2 style="margin-bottom: 16px;">Catégories</h2>
       <div id="categories-container" class="category-grid"></div>
     </section>
 
     <!-- Filter Section -->
     <div class="filter-section">
-      <h2>Browse Medicines & Products</h2>
+      <h2>Parcourir les médicaments et produits</h2>
       <div id="filter-bar" class="filter-grid">
         <div class="filter-item">
           <label>Category</label>

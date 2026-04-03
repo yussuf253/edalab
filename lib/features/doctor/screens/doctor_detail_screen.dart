@@ -65,9 +65,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
     if (uri == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.t('doctor_booking.no_contact')),
-        ),
+        SnackBar(content: Text(l10n.t('doctor_booking.no_contact'))),
       );
       return;
     }
@@ -75,9 +73,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!mounted || launched) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.t('doctor_booking.cannot_open_contact')),
-      ),
+      SnackBar(content: Text(l10n.t('doctor_booking.cannot_open_contact'))),
     );
   }
 
@@ -93,20 +89,10 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),
         ),
-        actions: [
-          IconButton(icon: const Icon(Icons.share_outlined), onPressed: () {}),
-          IconButton(
-            icon: const Icon(Icons.favorite_border_rounded),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: _isLoading || doctor == null
-            ? const DetailContentShimmer(
-                accentColor: AppColors.doctor,
-                showHero: false,
-              )
+            ? const _DoctorDetailShimmer()
             : Column(
                 children: [
                   Container(
@@ -222,7 +208,10 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(l10n.t('doctor_detail.about'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('doctor_detail.about'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           doctor.about ?? l10n.t('doctor_detail.no_info'),
@@ -251,7 +240,10 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                         ),
                         if (doctor.languages.isNotEmpty) ...[
                           const SizedBox(height: 20),
-                          Text(l10n.t('doctor_detail.languages'), style: AppTextStyles.h4),
+                          Text(
+                            l10n.t('doctor_detail.languages'),
+                            style: AppTextStyles.h4,
+                          ),
                           const SizedBox(height: 12),
                           Wrap(
                             spacing: 8,
@@ -267,7 +259,10 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                           ),
                         ],
                         const SizedBox(height: 20),
-                        Text(l10n.t('doctor_detail.care_modes'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('doctor_detail.care_modes'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 8,
@@ -282,7 +277,10 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                               .toList(),
                         ),
                         const SizedBox(height: 20),
-                        Text(l10n.t('doctor_detail.working_hours'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('doctor_detail.working_hours'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 12),
                         ...[
                           (
@@ -319,7 +317,10 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        Text(l10n.t('doctor_detail.location'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('doctor_detail.location'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 12),
                         Container(
                           height: 150,
@@ -360,7 +361,10 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                         if (doctor.contactPhone != null ||
                             doctor.contactWhatsApp != null) ...[
                           const SizedBox(height: 20),
-                          Text(l10n.t('doctor_detail.direct_contact'), style: AppTextStyles.h4),
+                          Text(
+                            l10n.t('doctor_detail.direct_contact'),
+                            style: AppTextStyles.h4,
+                          ),
                           const SizedBox(height: 12),
                           Container(
                             padding: const EdgeInsets.all(16),
@@ -393,7 +397,10 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                         if (!doctor.usesDirectContactOnly &&
                             doctor.reviews.isNotEmpty) ...[
                           const SizedBox(height: 20),
-                          Text(l10n.t('doctor_detail.patient_reviews'), style: AppTextStyles.h4),
+                          Text(
+                            l10n.t('doctor_detail.patient_reviews'),
+                            style: AppTextStyles.h4,
+                          ),
                           const SizedBox(height: 12),
                           ...doctor.reviews.map(
                             (review) => Container(
@@ -541,6 +548,141 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                       ),
               ),
             ),
+    );
+  }
+}
+
+class _DoctorDetailShimmer extends StatelessWidget {
+  const _DoctorDetailShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.doctor.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: const Column(
+              children: [
+                ShimmerBlock(width: 90, height: 90, radius: 24),
+                SizedBox(height: 16),
+                ShimmerBlock(width: 180, height: 28),
+                SizedBox(height: 8),
+                ShimmerBlock(width: 220, height: 14, radius: 10),
+                SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    ShimmerBlock(width: 96, height: 32, radius: 999),
+                    ShimmerBlock(width: 84, height: 32, radius: 999),
+                    ShimmerBlock(width: 108, height: 32, radius: 999),
+                  ],
+                ),
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _DoctorStatShimmer(),
+                    SizedBox(width: 12),
+                    _DoctorStatShimmer(),
+                    SizedBox(width: 12),
+                    _DoctorStatShimmer(),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                ShimmerBlock(width: 84, height: 20),
+                SizedBox(height: 10),
+                ShimmerBlock(width: double.infinity, height: 14, radius: 10),
+                SizedBox(height: 8),
+                ShimmerBlock(width: double.infinity, height: 14, radius: 10),
+                SizedBox(height: 8),
+                ShimmerBlock(width: 220, height: 14, radius: 10),
+                SizedBox(height: 20),
+                ShimmerBlock(width: 140, height: 20),
+                SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ShimmerBlock(width: 110, height: 32, radius: 999),
+                    ShimmerBlock(width: 96, height: 32, radius: 999),
+                    ShimmerBlock(width: 122, height: 32, radius: 999),
+                  ],
+                ),
+                SizedBox(height: 20),
+                ShimmerBlock(width: 102, height: 20),
+                SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ShimmerBlock(width: 88, height: 32, radius: 999),
+                    ShimmerBlock(width: 94, height: 32, radius: 999),
+                    ShimmerBlock(width: 112, height: 32, radius: 999),
+                  ],
+                ),
+                SizedBox(height: 20),
+                ShimmerBlock(width: 116, height: 20),
+                SizedBox(height: 12),
+                _DoctorHoursShimmer(),
+                SizedBox(height: 10),
+                _DoctorHoursShimmer(),
+                SizedBox(height: 10),
+                _DoctorHoursShimmer(),
+                SizedBox(height: 20),
+                ShimmerBlock(width: 84, height: 20),
+                SizedBox(height: 12),
+                ShimmerBlock(width: double.infinity, height: 150, radius: 16),
+                SizedBox(height: 110),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DoctorStatShimmer extends StatelessWidget {
+  const _DoctorStatShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        ShimmerBlock(width: 44, height: 18, radius: 10),
+        SizedBox(height: 8),
+        ShimmerBlock(width: 52, height: 12, radius: 10),
+      ],
+    );
+  }
+}
+
+class _DoctorHoursShimmer extends StatelessWidget {
+  const _DoctorHoursShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      children: [
+        ShimmerBlock(width: 92, height: 14, radius: 10),
+        Spacer(),
+        ShimmerBlock(width: 108, height: 14, radius: 10),
+      ],
     );
   }
 }

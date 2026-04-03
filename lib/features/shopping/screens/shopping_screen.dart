@@ -24,7 +24,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
   String _selectedCategory = 'all';
   String _searchQuery = '';
   bool _isLoading = true;
-  List<ShoppingStoreModel> _stores = ShoppingStoreModel.sampleStores;
+  List<ShoppingStoreModel> _stores = [];
 
   @override
   void initState() {
@@ -46,6 +46,12 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
       if (!mounted) return;
       setState(() {
         _stores = stores.isEmpty ? ShoppingStoreModel.sampleStores : stores;
+        if (_selectedCategory != 'all' &&
+            !_stores.any(
+              (store) => store.categories.contains(_selectedCategory),
+            )) {
+          _selectedCategory = 'all';
+        }
         _isLoading = false;
       });
     } catch (_) {
@@ -71,15 +77,15 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
     );
     final categories = [
       'all',
-      ...{
-        for (final store in _stores) ...store.categories,
-      },
+      ...{for (final store in _stores) ...store.categories},
     ];
     final normalizedQuery = _searchQuery.trim().toLowerCase();
     final stores = _stores.where((store) {
-      final matchesCategory = _selectedCategory == 'all' ||
+      final matchesCategory =
+          _selectedCategory == 'all' ||
           store.categories.contains(_selectedCategory);
-      final matchesSearch = normalizedQuery.isEmpty ||
+      final matchesSearch =
+          normalizedQuery.isEmpty ||
           store.name.toLowerCase().contains(normalizedQuery) ||
           store.tagline.toLowerCase().contains(normalizedQuery) ||
           store.categories.any(
@@ -110,148 +116,154 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
             },
           ),
           actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border_rounded),
-            onPressed: () => context.push('/shopping/wishlist'),
-          ),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.shopping_bag_outlined),
-                onPressed: () => context.push('/shopping/cart'),
-              ),
-              if (cartItemCount > 0)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    width: 18,
-                    height: 18,
-                    decoration: const BoxDecoration(
-                      color: AppColors.accent,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$cartItemCount',
-                        style: AppTextStyles.badge.copyWith(fontSize: 10),
+            IconButton(
+              icon: const Icon(Icons.favorite_border_rounded),
+              onPressed: () => context.push('/shopping/wishlist'),
+            ),
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.shopping_bag_outlined),
+                  onPressed: () => context.push('/shopping/cart'),
+                ),
+                if (cartItemCount > 0)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      decoration: const BoxDecoration(
+                        color: AppColors.accent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$cartItemCount',
+                          style: AppTextStyles.badge.copyWith(fontSize: 10),
+                        ),
                       ),
                     ),
                   ),
-                ),
-            ],
-          ),
+              ],
+            ),
           ],
         ),
         body: Column(
           children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-            child: AppSearchBar(
-              hint: l10n.t('shopping.search_hint'),
-              controller: _searchController,
-              onChanged: (value) => setState(() => _searchQuery = value),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+              child: AppSearchBar(
+                hint: l10n.t('shopping.search_hint'),
+                controller: _searchController,
+                onChanged: (value) => setState(() => _searchQuery = value),
+              ),
             ),
-          ),
-          SizedBox(
-            height: 44,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-              itemCount: categories.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final category = categories[index];
-                final isSelected = _selectedCategory == category;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedCategory = category),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
+            SizedBox(
+              height: 44,
+              child: _isLoading
+                  ? const _ShoppingFiltersShimmer()
+                  : ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                      itemCount: categories.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        final isSelected = _selectedCategory == category;
+                        return GestureDetector(
+                          onTap: () =>
+                              setState(() => _selectedCategory = category),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              category == 'all'
+                                  ? l10n.t('shopping.all')
+                                  : category,
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: isSelected
+                                    ? AppColors.white
+                                    : AppColors.dark,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary : AppColors.white,
-                      borderRadius: BorderRadius.circular(20),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Container(
+                height: 96,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.shopping, AppColors.secondaryLight],
+                  ),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.storefront_rounded,
+                      color: AppColors.white,
+                      size: 34,
                     ),
-                    child: Text(
-                      category == 'all' ? l10n.t('shopping.all') : category,
-                      style: AppTextStyles.labelMedium.copyWith(
-                        color: isSelected ? AppColors.white : AppColors.dark,
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.t('shopping.hero_title'),
+                            style: AppTextStyles.h4.copyWith(
+                              color: AppColors.white,
+                            ),
+                          ),
+                          Text(
+                            l10n.t('shopping.hero_subtitle'),
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Container(
-              height: 96,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.shopping, AppColors.secondaryLight],
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(18),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.storefront_rounded,
-                    color: AppColors.white,
-                    size: 34,
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.t('shopping.hero_title'),
-                          style: AppTextStyles.h4.copyWith(
-                            color: AppColors.white,
-                          ),
-                        ),
-                        Text(
-                          l10n.t('shopping.hero_subtitle'),
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ),
             ),
-          ),
-          Expanded(
-            child: _isLoading
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20),
-                    child: InlineSectionListShimmer(itemCount: 4),
-                  )
-                : stores.isEmpty
-                ? Center(
-                    child: Text(
-                      l10n.t('shopping.no_shops'),
-                      style: AppTextStyles.bodyMedium,
+            Expanded(
+              child: _isLoading
+                  ? const _ShoppingStoreListShimmer(itemCount: 4)
+                  : stores.isEmpty
+                  ? Center(
+                      child: Text(
+                        l10n.t('shopping.no_shops'),
+                        style: AppTextStyles.bodyMedium,
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                      itemCount: stores.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 14),
+                      itemBuilder: (context, index) {
+                        final store = stores[index];
+                        return _ShoppingStoreCard(store: store);
+                      },
                     ),
-                  )
-                : ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                    itemCount: stores.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 14),
-                    itemBuilder: (context, index) {
-                      final store = stores[index];
-                      return _ShoppingStoreCard(store: store);
-                    },
-                  ),
-          ),
+            ),
           ],
         ),
       ),
@@ -433,6 +445,129 @@ class _StoreStat extends StatelessWidget {
         const SizedBox(width: 4),
         Text(value, style: AppTextStyles.labelSmall),
       ],
+    );
+  }
+}
+
+class _ShoppingFiltersShimmer extends StatelessWidget {
+  const _ShoppingFiltersShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+        itemCount: 4,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final widths = [68.0, 94.0, 106.0, 88.0];
+          return ShimmerBlock(width: widths[index], height: 36, radius: 999);
+        },
+      ),
+    );
+  }
+}
+
+class _ShoppingStoreListShimmer extends StatelessWidget {
+  final int itemCount;
+
+  const _ShoppingStoreListShimmer({this.itemCount = 4});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppShimmer(
+      child: ListView.separated(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+        itemCount: itemCount,
+        separatorBuilder: (_, _) => const SizedBox(height: 14),
+        itemBuilder: (context, index) {
+          return Container(
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 150,
+                  child: Stack(
+                    children: const [
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Color(0xFFF1F4FA),
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(20),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 16,
+                        left: 16,
+                        child: ShimmerBlock(width: 64, height: 26, radius: 999),
+                      ),
+                      Positioned(
+                        top: 18,
+                        right: 18,
+                        child: ShimmerBlock(width: 72, height: 72, radius: 22),
+                      ),
+                      Positioned(
+                        left: 18,
+                        right: 110,
+                        bottom: 18,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ShimmerBlock(width: 140, height: 24),
+                            SizedBox(height: 8),
+                            ShimmerBlock(
+                              width: double.infinity,
+                              height: 12,
+                              radius: 10,
+                            ),
+                            SizedBox(height: 6),
+                            ShimmerBlock(width: 150, height: 12, radius: 10),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ShimmerBlock(width: 72, height: 28, radius: 999),
+                          ShimmerBlock(width: 84, height: 28, radius: 999),
+                          ShimmerBlock(width: 96, height: 28, radius: 999),
+                        ],
+                      ),
+                      SizedBox(height: 14),
+                      Row(
+                        children: [
+                          ShimmerBlock(width: 56, height: 14, radius: 10),
+                          SizedBox(width: 12),
+                          ShimmerBlock(width: 82, height: 14, radius: 10),
+                          Spacer(),
+                          ShimmerBlock(width: 86, height: 16, radius: 10),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

@@ -1,12 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr" dir="ltr" data-page-language="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ride - eDalab</title>
-    <meta name="description" content="Book a ride with eDalab. Fast, safe, and affordable transportation.">
-    <link rel="alternate" hreflang="en" href="https://edalab.app/ride.html"/>
-    <link rel="alternate" hreflang="fr" href="https://edalab.app/fr/ride.html"/>
+    <style>
+    html[data-i18n-pending="true"] body{visibility:hidden}
+    </style>
+    <script>
+    (() => {
+      const root = document.documentElement;
+      try {
+        const savedPrefs = JSON.parse(localStorage.getItem('edaLabPreferences') || '{}');
+        const pageLanguage = ['en', 'fr', 'ar'].includes(root.dataset.pageLanguage) ? root.dataset.pageLanguage : null;
+        const savedLanguage = ['en', 'fr', 'ar'].includes(savedPrefs.language) ? savedPrefs.language : null;
+        const resolvedLanguage = savedLanguage || pageLanguage || 'fr';
+        root.lang = resolvedLanguage;
+        root.dir = resolvedLanguage === 'ar' ? 'rtl' : 'ltr';
+        if (savedLanguage && pageLanguage && savedLanguage !== pageLanguage) {
+          root.setAttribute('data-i18n-pending', 'true');
+          window.__edaI18nFailSafe = window.setTimeout(() => {
+            root.removeAttribute('data-i18n-pending');
+          }, 2500);
+        }
+      } catch (error) {
+        root.lang = 'fr';
+        root.dir = 'ltr';
+        root.setAttribute('data-i18n-pending', 'true');
+        window.__edaI18nFailSafe = window.setTimeout(() => {
+          root.removeAttribute('data-i18n-pending');
+        }, 2500);
+      }
+    })();
+    </script>
+    <title>Trajet - eDalab</title>
+    <meta name="description" content="Réservez un trajet avec eDalab. Un transport rapide, sûr et abordable.">
+    <link rel="alternate" hreflang="en" href="https://edalab.app/en/ride.html"/>
+    <link rel="alternate" hreflang="fr" href="https://edalab.app/ride.html"/>
     <link rel="alternate" hreflang="ar" href="https://edalab.app/ar/ride.html"/>
     <link rel="alternate" hreflang="x-default" href="https://edalab.app/ride.html"/>
     <link rel="canonical" href="https://edalab.app/ride.html"/>
@@ -19,10 +48,10 @@
     {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      "name": "Ride - eDalab",
-      "description": "Book a ride with eDalab. Fast, safe, and affordable transportation.",
+      "name": "Trajet - eDalab",
+      "description": "Réservez un trajet avec eDalab. Un transport rapide, sûr et abordable.",
       "url": "https://edalab.app/ride.html",
-      "inLanguage": "en",
+      "inLanguage": "fr",
       "isPartOf": {
         "@type": "WebSite",
         "name": "eDalab",
@@ -30,7 +59,7 @@
       },
       "mainEntity": {
         "@type": "ItemList",
-        "name": "Ride - eDalab"
+        "name": "Trajet - eDalab"
       }
     }
     </script>
@@ -327,14 +356,14 @@
 <body>
     <!-- Navigation -->
     <nav id="nav" data-static-unified="true">
-        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="index.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
     </nav>
 
     <section class="ride-hero">
         <div class="wrap">
             <div class="rh-content">
-                <h1>Book Your Ride With eDalab</h1>
-                <p>Fast, safe, and affordable transportation with clear pricing and easy trip management.</p>
+                <h1 data-i18n="ride.heroTitle">Réservez votre trajet avec eDalab</h1>
+                <p data-i18n="ride.heroDescription">Un transport rapide, sûr et abordable avec des prix clairs et une gestion simple de vos trajets.</p>
                 <div id="search-container"></div>
             </div>
         </div>
@@ -342,34 +371,34 @@
 
     <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
         <section style="margin-bottom: 40px;">
-            <h2 style="margin-bottom: 16px;">Ride Types</h2>
+            <h2 style="margin-bottom: 16px;" data-i18n="ride.typesTitle">Types de trajet</h2>
             <div class="ride-type-selector" id="rideTypeSelector"></div>
         </section>
 
         <div class="filter-section">
-            <h2>Book a Ride</h2>
+            <h2 data-i18n="ride.bookingTitle">Réserver un trajet</h2>
             <div id="rideBookingForm" class="ride-booking-form">
 
             <!-- Pickup Location -->
             <div class="form-group">
-                <label>Pickup Location</label>
-                <input type="text" id="pickupLocation" placeholder="Enter pickup address" required>
+                <label data-i18n="ride.pickupLocation">Pickup Location</label>
+                <input type="text" id="pickupLocation" data-i18n-placeholder="ride.pickupPlaceholder" placeholder="Enter pickup address" required>
             </div>
 
             <!-- Dropoff Location -->
             <div class="form-group">
-                <label>Dropoff Location</label>
-                <input type="text" id="dropoffLocation" placeholder="Enter destination address" required>
+                <label data-i18n="ride.dropoffLocation">Dropoff Location</label>
+                <input type="text" id="dropoffLocation" data-i18n-placeholder="ride.dropoffPlaceholder" placeholder="Enter destination address" required>
             </div>
 
             <!-- Pickup Time -->
             <div class="form-row">
                 <div class="form-group">
-                    <label>Pickup Date</label>
+                    <label data-i18n="ride.pickupDate">Pickup Date</label>
                     <input type="date" id="pickupDate" required>
                 </div>
                 <div class="form-group">
-                    <label>Pickup Time</label>
+                    <label data-i18n="ride.pickupTime">Pickup Time</label>
                     <input type="time" id="pickupTime" required>
                 </div>
             </div>
@@ -377,71 +406,71 @@
             <!-- Passenger Count -->
             <div class="form-row">
                 <div class="form-group">
-                    <label>Passengers</label>
+                    <label data-i18n="ride.passengers">Passengers</label>
                     <select id="passengerCount" onchange="rideModule.updateEstimate()">
-                        <option value="1">1 Passenger</option>
-                        <option value="2">2 Passengers</option>
-                        <option value="3">3 Passengers</option>
-                        <option value="4">4 Passengers</option>
+                        <option value="1" data-i18n="ride.passenger.one">1 Passenger</option>
+                        <option value="2" data-i18n="ride.passenger.two">2 Passengers</option>
+                        <option value="3" data-i18n="ride.passenger.three">3 Passengers</option>
+                        <option value="4" data-i18n="ride.passenger.four">4 Passengers</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Special Requests</label>
-                    <input type="text" id="specialRequests" placeholder="Luggage, pets, etc.">
+                    <label data-i18n="ride.specialRequests">Special Requests</label>
+                    <input type="text" id="specialRequests" data-i18n-placeholder="ride.specialRequestsPlaceholder" placeholder="Luggage, pets, etc.">
                 </div>
             </div>
 
             <!-- Estimate Section -->
             <div class="estimate-section">
                 <div class="estimate-item">
-                    <span>Base Fare</span>
+                    <span data-i18n="ride.baseFare">Base Fare</span>
                     <span id="baseFare">$5.00</span>
                 </div>
                 <div class="estimate-item">
-                    <span>Distance Estimate</span>
+                    <span data-i18n="ride.distanceEstimate">Distance Estimate</span>
                     <span id="distanceFare">$0.00</span>
                 </div>
                 <div class="estimate-item">
-                    <span>Surge Pricing</span>
+                    <span data-i18n="ride.surgePricing">Surge Pricing</span>
                     <span id="surgeFare">0%</span>
                 </div>
                 <div class="estimate-total">
-                    <span>Estimated Total</span>
+                    <span data-i18n="ride.estimatedTotal">Estimated Total</span>
                     <span id="estimatedTotal">$5.00</span>
                 </div>
             </div>
 
             <!-- Book Button -->
-            <button class="book-button" id="bookButton" onclick="rideModule.bookRide()">Book Ride Now</button>
+            <button class="book-button" id="bookButton" onclick="rideModule.bookRide()" data-i18n="ride.bookNow">Book Ride Now</button>
         </div>
         <div id="rideBookingSkeleton" style="display: none;"></div>
         </div>
 
         <section class="food-section">
         <div class="ride-info">
-            <h3>Why Choose eDalab Rides?</h3>
+            <h3 data-i18n="ride.whyChoose">Why Choose eDalab Rides?</h3>
             <div class="info-item">
                 <div class="info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 18.5 6v5.5c0 4.2-2.7 8-6.5 9.5-3.8-1.5-6.5-5.3-6.5-9.5V6Z" fill="currentColor"></path><path d="m9.3 12.4 1.8 1.8 3.8-4.1" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
-                <div>Verified drivers with excellent ratings</div>
+                <div data-i18n="ride.benefit.verifiedDrivers">Verified drivers with excellent ratings</div>
             </div>
             <div class="info-item">
                 <div class="info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"></rect><path d="M3.5 10.2h17" fill="none" stroke="currentColor" stroke-width="1.8"></path><path d="M7.5 14.5h3.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></div>
-                <div>Transparent pricing with no hidden charges</div>
+                <div data-i18n="ride.benefit.transparentPricing">Transparent pricing with no hidden charges</div>
             </div>
             <div class="info-item">
                 <div class="info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 18.5 6v5.5c0 4.2-2.7 8-6.5 9.5-3.8-1.5-6.5-5.3-6.5-9.5V6Z" fill="currentColor"></path><path d="m9.3 12.4 1.8 1.8 3.8-4.1" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
-                <div>Safe and secure rides with trip tracking</div>
+                <div data-i18n="ride.benefit.safeTrips">Safe and secure rides with trip tracking</div>
             </div>
             <div class="info-item">
                 <div class="info-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 4 2.3 4.7 5.2.8-3.7 3.7.9 5.2-4.7-2.5-4.7 2.5.9-5.2L4.5 9.5l5.2-.8Z" fill="currentColor"></path></svg></div>
-                <div>Rate your driver and leave feedback</div>
+                <div data-i18n="ride.benefit.rateDriver">Rate your driver and leave feedback</div>
             </div>
         </div>
         </section>
 
         <section class="food-section">
         <div class="active-rides">
-            <h3>Your Active Rides</h3>
+            <h3 data-i18n="ride.activeRides">Your Active Rides</h3>
             <div id="activeRidesContainer"></div>
         </div>
         </section>
@@ -451,37 +480,37 @@
         <div class="wrap">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>eDalab Ride</h3>
+                    <h3 data-i18n="ride.footerBrand">eDalab Ride</h3>
                     <ul>
-                        <li><a href="#">How rides work</a></li>
-                        <li><a href="#">Safety</a></li>
-                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#" data-i18n="ride.footerHowItWorks">How rides work</a></li>
+                        <li><a href="#" data-i18n="ride.footerSafety">Safety</a></li>
+                        <li><a href="#" data-i18n="ride.footerPricing">Pricing</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>For Riders</h3>
+                    <h3 data-i18n="ride.footerRiders">For Riders</h3>
                     <ul>
-                        <li><a href="#">Book a ride</a></li>
-                        <li><a href="#">Trip history</a></li>
-                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#" data-i18n="ride.footerBookRide">Book a ride</a></li>
+                        <li><a href="#" data-i18n="ride.footerTripHistory">Trip history</a></li>
+                        <li><a href="#" data-i18n="ride.footerHelpCenter">Help Center</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>For Drivers</h3>
+                    <h3 data-i18n="ride.footerDrivers">For Drivers</h3>
                     <ul>
-                        <li><a href="#">Become a driver</a></li>
-                        <li><a href="#">Driver support</a></li>
-                        <li><a href="#">Requirements</a></li>
+                        <li><a href="#" data-i18n="ride.footerBecomeDriver">Become a driver</a></li>
+                        <li><a href="#" data-i18n="ride.footerDriverSupport">Driver support</a></li>
+                        <li><a href="#" data-i18n="ride.footerRequirements">Requirements</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>Contact</h3>
-                    <p>Email: hello@edalab.app</p>
-                    <p>Phone: +253 21 35 00 00</p>
+                    <h3 data-i18n="ride.footerContact">Contact</h3>
+                    <p><span data-i18n="common.email">Email</span>: hello@edalab.app</p>
+                    <p><span data-i18n="common.phone">Phone</span>: +253 21 35 00 00</p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 eDalab. All rights reserved.</p>
+                <p data-i18n="footer.rights">&copy; 2024 eDalab. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -790,12 +819,13 @@
                 let html = '';
                 rides.forEach(ride => {
                     const statusClass = `status-${ride.status}`;
+                    const statusLabel = this.t(`ride.status.${ride.status}`, ride.status.toUpperCase());
                     html += `
                         <div class="ride-card">
                             <div class="ride-card-info">
                                 <div class="ride-card-from"><span class="ride-card-line-icon">${UIComponents.getIconMarkup('location', 'ui-icon ui-icon-sm')}</span>${ride.from}</div>
                                 <div class="ride-card-to"><span class="ride-card-line-icon">${UIComponents.getIconMarkup('location', 'ui-icon ui-icon-sm')}</span>${ride.to}</div>
-                                <span class="ride-card-status ${statusClass}">${ride.status.toUpperCase()}</span>
+                                <span class="ride-card-status ${statusClass}">${statusLabel}</span>
                             </div>
                             <button class="ride-card-action" onclick="window.location.href='tracking.html?rideId=${ride.id}'">
                                 ${this.t('ride.track', 'Track')}

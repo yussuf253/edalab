@@ -182,12 +182,6 @@ class _DoctorScreenState extends State<DoctorScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final homeCareCount = _providers
-        .where((provider) => provider.isHomeCareProvider)
-        .length;
-    final doctorCount = _providers
-        .where((provider) => !provider.isHomeCareProvider)
-        .length;
 
     return PopScope(
       canPop: context.canPop(),
@@ -197,242 +191,236 @@ class _DoctorScreenState extends State<DoctorScreen> {
         }
       },
       child: Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.t('doctor.title')),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/');
-            }
-          },
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text(l10n.t('doctor.title')),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/');
+              }
+            },
+          ),
         ),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-              child: AppSearchBar(
-                hint: l10n.t('doctor.search_hint'),
-                controller: _searchController,
-                onChanged: (value) => setState(() => _searchQuery = value),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.doctor, AppColors.secondaryLight],
-                  ),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.t('doctor.hero_title'),
-                            style: AppTextStyles.labelLarge.copyWith(
-                              color: AppColors.white,
-                              height: 1.25,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            l10n.t(
-                              'doctor.hero_counts',
-                              params: {
-                                'homeCount': '$homeCareCount',
-                                'doctorCount': '$doctorCount',
-                              },
-                            ),
-                            style: AppTextStyles.caption.copyWith(
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.16),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Icon(
-                        Icons.health_and_safety_rounded,
-                        color: AppColors.white,
-                        size: 28,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
-              child: Text(l10n.t('doctor.available_services'), style: AppTextStyles.h3),
-            ),
-          ),
-          if (_isLoading)
-            const SliverToBoxAdapter(
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: AppShimmer(
-                  child: Column(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: AppSearchBar(
+                  hint: l10n.t('doctor.search_hint'),
+                  controller: _searchController,
+                  onChanged: (value) => setState(() => _searchQuery = value),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.doctor, AppColors.secondaryLight],
+                    ),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
                     children: [
-                      ShimmerBlock(
-                        width: double.infinity,
-                        height: 54,
-                        radius: 16,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.t('doctor.hero_title'),
+                              style: AppTextStyles.labelLarge.copyWith(
+                                color: AppColors.white,
+                                height: 1.25,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      SizedBox(height: 10),
-                      ShimmerBlock(
-                        width: double.infinity,
-                        height: 54,
-                        radius: 16,
-                      ),
-                      SizedBox(height: 10),
-                      ShimmerBlock(
-                        width: double.infinity,
-                        height: 54,
-                        radius: 16,
+                      const SizedBox(width: 12),
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.16),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(
+                          Icons.health_and_safety_rounded,
+                          color: AppColors.white,
+                          size: 28,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-            )
-          else
-            SliverList.separated(
-              itemCount: _categories.length,
-              itemBuilder: (context, index) {
-                final category = _categories[index];
-                final count = _countForCategory(category);
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                  child: GestureDetector(
-                    onTap: () => _openProfessionals(category),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: AppSpacing.shadowSm,
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: category.color.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              category.icon,
-                              size: 20,
-                              color: category.color,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  l10n.t(category.labelKey),
-                                  style: AppTextStyles.labelLarge,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  l10n.t(
-                                    'doctor.available_count',
-                                    params: {
-                                      'subtitle': l10n.t(category.subtitleKey),
-                                      'count': '$count',
-                                    },
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: AppColors.grey,
-                          ),
-                        ],
-                      ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
+                child: Text(
+                  l10n.t('doctor.available_services'),
+                  style: AppTextStyles.h3,
+                ),
+              ),
+            ),
+            if (_isLoading)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: AppShimmer(
+                    child: Column(
+                      children: [
+                        ShimmerBlock(
+                          width: double.infinity,
+                          height: 54,
+                          radius: 16,
+                        ),
+                        SizedBox(height: 10),
+                        ShimmerBlock(
+                          width: double.infinity,
+                          height: 54,
+                          radius: 16,
+                        ),
+                        SizedBox(height: 10),
+                        ShimmerBlock(
+                          width: double.infinity,
+                          height: 54,
+                          radius: 16,
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
-              separatorBuilder: (_, _) => const SizedBox.shrink(),
+                ),
+              )
+            else
+              SliverList.separated(
+                itemCount: _categories.length,
+                itemBuilder: (context, index) {
+                  final category = _categories[index];
+                  final count = _countForCategory(category);
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                    child: GestureDetector(
+                      onTap: () => _openProfessionals(category),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: AppSpacing.shadowSm,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: category.color.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                category.icon,
+                                size: 20,
+                                color: category.color,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.t(category.labelKey),
+                                    style: AppTextStyles.labelLarge,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    l10n.t(
+                                      'doctor.available_count',
+                                      params: {
+                                        'subtitle': l10n.t(
+                                          category.subtitleKey,
+                                        ),
+                                        'count': '$count',
+                                      },
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: AppColors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              color: AppColors.grey,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                separatorBuilder: (_, _) => const SizedBox.shrink(),
+              ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                child: Text(
+                  l10n.t('doctor.tap_service'),
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.grey,
+                    height: 1.4,
+                  ),
+                ),
+              ),
             ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
+        ),
+        bottomNavigationBar: SafeArea(
+          minimum: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+          child: SizedBox(
+            height: 52,
+            child: ElevatedButton(
+              onPressed: _isLoading
+                  ? null
+                  : () => _openProfessionals(_categories.first),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.doctor,
+                foregroundColor: AppColors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
               child: Text(
-                l10n.t('doctor.tap_service'),
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.grey,
-                  height: 1.4,
+                l10n.t('doctor.browse_all'),
+                style: AppTextStyles.labelLarge.copyWith(
+                  color: AppColors.white,
                 ),
               ),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        ],
-      ),
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-        child: SizedBox(
-          height: 52,
-          child: ElevatedButton(
-            onPressed: _isLoading
-                ? null
-                : () => _openProfessionals(_categories.first),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.doctor,
-              foregroundColor: AppColors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(18),
-              ),
-            ),
-            child: Text(
-              l10n.t('doctor.browse_all'),
-              style: AppTextStyles.labelLarge.copyWith(color: AppColors.white),
-            ),
-          ),
         ),
-      ),
       ),
     );
   }

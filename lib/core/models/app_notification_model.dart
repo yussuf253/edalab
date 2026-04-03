@@ -6,6 +6,7 @@ import '../constants/app_colors.dart';
 
 enum NotificationModule {
   system,
+  messages,
   orders,
   food,
   shopping,
@@ -236,6 +237,8 @@ class AppNotificationModel {
     switch (module) {
       case NotificationModule.orders:
         return '/orders';
+      case NotificationModule.messages:
+        return '/messages';
       case NotificationModule.food:
         return '/food';
       case NotificationModule.shopping:
@@ -275,6 +278,8 @@ extension AppNotificationPresentation on AppNotificationModel {
         return Icons.shopping_bag_rounded;
       case NotificationModule.ride:
         return Icons.directions_car_rounded;
+      case NotificationModule.messages:
+        return Icons.chat_bubble_rounded;
       case NotificationModule.hotel:
         return Icons.hotel_rounded;
       case NotificationModule.doctor:
@@ -304,6 +309,8 @@ extension AppNotificationPresentation on AppNotificationModel {
         return AppColors.pharmacy;
       case NotificationModule.ride:
         return AppColors.ride;
+      case NotificationModule.messages:
+        return AppColors.primary;
       case NotificationModule.hotel:
         return AppColors.hotel;
       case NotificationModule.doctor:
@@ -327,6 +334,8 @@ extension AppNotificationPresentation on AppNotificationModel {
     switch (module) {
       case NotificationModule.orders:
         return 'Orders';
+      case NotificationModule.messages:
+        return 'Messages';
       case NotificationModule.food:
         return 'Food';
       case NotificationModule.shopping:

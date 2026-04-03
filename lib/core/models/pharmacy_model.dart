@@ -10,6 +10,7 @@ class PharmacyModel {
   final String size; // e.g., '30 Tablets'
   final double rating;
   final int reviewsCount;
+  final String? sourceBusiness;
 
   PharmacyModel({
     required this.id,
@@ -23,9 +24,14 @@ class PharmacyModel {
     required this.size,
     required this.rating,
     required this.reviewsCount,
+    this.sourceBusiness,
   });
 
   factory PharmacyModel.fromApi(Map<String, dynamic> json) {
+    final metadata = json['metadata'] is Map
+        ? Map<String, dynamic>.from(json['metadata'] as Map)
+        : const <String, dynamic>{};
+
     return PharmacyModel(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Medicine',
@@ -46,6 +52,9 @@ class PharmacyModel {
           (json['reviewCount'] as num?)?.toInt() ??
           (json['reviewsCount'] as num?)?.toInt() ??
           0,
+      sourceBusiness:
+          metadata['sourceBusiness']?.toString() ??
+          json['shopName']?.toString(),
     );
   }
 

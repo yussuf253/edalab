@@ -1,12 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr" dir="ltr" data-page-language="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laundry - eDalab</title>
-    <meta name="description" content="Fast and reliable laundry services. Pickup and delivery available.">
-    <link rel="alternate" hreflang="en" href="https://edalab.app/laundry.html"/>
-    <link rel="alternate" hreflang="fr" href="https://edalab.app/fr/laundry.html"/>
+    <style>
+    html[data-i18n-pending="true"] body{visibility:hidden}
+    </style>
+    <script>
+    (() => {
+      const root = document.documentElement;
+      try {
+        const savedPrefs = JSON.parse(localStorage.getItem('edaLabPreferences') || '{}');
+        const pageLanguage = ['en', 'fr', 'ar'].includes(root.dataset.pageLanguage) ? root.dataset.pageLanguage : null;
+        const savedLanguage = ['en', 'fr', 'ar'].includes(savedPrefs.language) ? savedPrefs.language : null;
+        const resolvedLanguage = savedLanguage || pageLanguage || 'fr';
+        root.lang = resolvedLanguage;
+        root.dir = resolvedLanguage === 'ar' ? 'rtl' : 'ltr';
+        if (savedLanguage && pageLanguage && savedLanguage !== pageLanguage) {
+          root.setAttribute('data-i18n-pending', 'true');
+          window.__edaI18nFailSafe = window.setTimeout(() => {
+            root.removeAttribute('data-i18n-pending');
+          }, 2500);
+        }
+      } catch (error) {
+        root.lang = 'fr';
+        root.dir = 'ltr';
+        root.setAttribute('data-i18n-pending', 'true');
+        window.__edaI18nFailSafe = window.setTimeout(() => {
+          root.removeAttribute('data-i18n-pending');
+        }, 2500);
+      }
+    })();
+    </script>
+    <title>Blanchisserie - eDalab</title>
+    <meta name="description" content="Services de blanchisserie rapides et fiables. Ramassage et livraison disponibles.">
+    <link rel="alternate" hreflang="en" href="https://edalab.app/en/laundry.html"/>
+    <link rel="alternate" hreflang="fr" href="https://edalab.app/laundry.html"/>
     <link rel="alternate" hreflang="ar" href="https://edalab.app/ar/laundry.html"/>
     <link rel="alternate" hreflang="x-default" href="https://edalab.app/laundry.html"/>
     <link rel="canonical" href="https://edalab.app/laundry.html"/>
@@ -19,10 +48,10 @@
     {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      "name": "Laundry - eDalab",
-      "description": "Fast and reliable laundry services. Pickup and delivery available.",
+      "name": "Blanchisserie - eDalab",
+      "description": "Services de blanchisserie rapides et fiables. Ramassage et livraison disponibles.",
       "url": "https://edalab.app/laundry.html",
-      "inLanguage": "en",
+      "inLanguage": "fr",
       "isPartOf": {
         "@type": "WebSite",
         "name": "eDalab",
@@ -30,7 +59,7 @@
       },
       "mainEntity": {
         "@type": "ItemList",
-        "name": "Laundry - eDalab"
+        "name": "Blanchisserie - eDalab"
       }
     }
     </script>
@@ -357,14 +386,14 @@
 <body>
     <!-- Navigation -->
     <nav id="nav" data-static-unified="true">
-        <div class="nav-w nav-w-unified"><a class="nav-logo" href="edalab-website.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="edalab-website.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="wishlist.html" class="nav-icon-btn" aria-label="Wishlist"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.6 4.9 13.8a4.8 4.8 0 0 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 1 1 6.8 6.8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Wishlist</span><span class="nav-badge is-empty" id="navWishlistCount" data-nav-badge="wishlist">0</span></a><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
+        <div class="nav-w nav-w-unified"><a class="nav-logo" href="index.html"><div class="nav-logo-icon"><img src="assets/logo/logo.png" alt="eDalab logo"></div><span>eDalab</span></a><div class="nav-links nav-links-unified"><a href="index.html" class="nav-a" data-nav-link="home">Home</a><a href="food.html" class="nav-a" data-nav-link="food">Food</a><a href="shopping.html" class="nav-a" data-nav-link="shopping">Shopping</a><a href="pharmacy.html" class="nav-a" data-nav-link="pharmacy">Pharmacy</a><a href="doctor.html" class="nav-a" data-nav-link="doctor">Doctor</a><a href="hotel.html" class="nav-a" data-nav-link="hotel">Hotel</a><a href="ride.html" class="nav-a" data-nav-link="ride">Ride</a><a href="home-services.html" class="nav-a" data-nav-link="services">Services</a><a href="laundry.html" class="nav-a" data-nav-link="laundry">Laundry</a></div><div class="nav-right nav-right-unified"><div class="nav-quick-actions"><a href="cart.html" class="nav-icon-btn" aria-label="Cart"><span class="nav-icon-symbol"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="20" r="1.7" fill="currentColor"></circle><circle cx="18" cy="20" r="1.7" fill="currentColor"></circle><path d="M3 4h2.4l2 9.2a1 1 0 0 0 1 .8h8.8a1 1 0 0 0 1-.7L20.4 7H7.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span><span class="nav-icon-label">Cart</span><span class="nav-badge is-empty" id="navCartCount" data-nav-badge="cart">0</span></a></div><div class="nav-auth-slot"></div></div></div>
     </nav>
 
     <section class="laundry-hero">
         <div class="wrap">
             <div class="lh-content">
-                <h1>Laundry Service Made Simple</h1>
-                <p>Professional pickup, cleaning, and delivery with flexible scheduling and transparent estimates.</p>
+                <h1 data-i18n="laundry.heroTitle">La blanchisserie simplifiée</h1>
+                <p data-i18n="laundry.heroDescription">Ramassage, nettoyage et livraison professionnels avec planification flexible et estimation transparente.</p>
                 <div id="search-container"></div>
             </div>
         </div>
@@ -372,58 +401,58 @@
 
     <main class="wrap" style="padding-top: 40px; padding-bottom: 40px;">
         <section style="margin-bottom: 40px;">
-            <h2 style="margin-bottom: 16px;">Laundry Services</h2>
+            <h2 style="margin-bottom: 16px;" data-i18n="laundry.servicesTitle">Services de blanchisserie</h2>
             <div class="service-options" id="serviceOptions">
             </div>
         </section>
 
         <div class="filter-section">
-            <h2>Place Your Order</h2>
+            <h2 data-i18n="laundry.orderTitle">Passer votre commande</h2>
         <div id="laundryOrderForm" class="laundry-form">
 
             <!-- Additional Services -->
-            <label style="display: block; margin-bottom: 12px; font-weight: 600;">Additional Services</label>
+            <label style="display: block; margin-bottom: 12px; font-weight: 600;" data-i18n="laundry.additionalServicesLabel">Additional Services</label>
             <div class="checkbox-group">
                 <div class="checkbox-item">
                     <input type="checkbox" id="ironing" onchange="laundryModule.updatePrice()">
-                    <label for="ironing">Ironing (+$5)</label>
+                    <label for="ironing" data-i18n="laundry.ironing">Ironing (+$5)</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="drying" onchange="laundryModule.updatePrice()">
-                    <label for="drying">Machine Dry (+$3)</label>
+                    <label for="drying" data-i18n="laundry.drying">Machine Dry (+$3)</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="folding" onchange="laundryModule.updatePrice()">
-                    <label for="folding">Folding (+$4)</label>
+                    <label for="folding" data-i18n="laundry.folding">Folding (+$4)</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="starch" onchange="laundryModule.updatePrice()">
-                    <label for="starch">Starch (+$2)</label>
+                    <label for="starch" data-i18n="laundry.starch">Starch (+$2)</label>
                 </div>
             </div>
 
             <!-- Pickup Address -->
             <div class="form-group">
-                <label>Pickup Address</label>
-                <input type="text" id="pickupAddress" placeholder="Enter your address" required>
+                <label data-i18n="laundry.pickupAddress">Pickup Address</label>
+                <input type="text" id="pickupAddress" data-i18n-placeholder="laundry.pickupAddressPlaceholder" placeholder="Enter your address" required>
             </div>
 
             <!-- Special Instructions -->
             <div class="form-group">
-                <label>Special Instructions</label>
-                <textarea id="specialInstructions" placeholder="e.g., Delicate clothes, hand wash only..." rows="3"></textarea>
+                <label data-i18n="laundry.specialInstructions">Special Instructions</label>
+                <textarea id="specialInstructions" data-i18n-placeholder="laundry.specialInstructionsPlaceholder" placeholder="e.g., Delicate clothes, hand wash only..." rows="3"></textarea>
             </div>
 
             <!-- Pickup Schedule -->
             <div class="form-row">
                 <div class="form-group">
-                    <label>Pickup Date</label>
+                    <label data-i18n="laundry.pickupDate">Pickup Date</label>
                     <input type="date" id="pickupDate" required>
                 </div>
                 <div class="form-group">
-                    <label>Pickup Time</label>
+                    <label data-i18n="laundry.pickupTime">Pickup Time</label>
                     <select id="pickupTime" required>
-                        <option value="">Select Time</option>
+                        <option value="" data-i18n="laundry.selectTime">Select Time</option>
                         <option value="08:00">08:00 AM</option>
                         <option value="10:00">10:00 AM</option>
                         <option value="12:00">12:00 PM</option>
@@ -436,12 +465,12 @@
 
             <!-- Delivery Date -->
             <div class="form-group">
-                <label>Expected Delivery</label>
+                <label data-i18n="laundry.expectedDelivery">Expected Delivery</label>
                 <select id="deliveryDate" required>
-                    <option value="">Select Delivery</option>
-                    <option value="same-day">Same Day</option>
-                    <option value="next-day">Next Day</option>
-                    <option value="2-days">2 Days</option>
+                    <option value="" data-i18n="laundry.selectDelivery">Select Delivery</option>
+                    <option value="same-day" data-i18n="laundry.delivery.sameDay">Same Day</option>
+                    <option value="next-day" data-i18n="laundry.delivery.nextDay">Next Day</option>
+                    <option value="2-days" data-i18n="laundry.delivery.twoDays">2 Days</option>
                 </select>
             </div>
 
@@ -452,50 +481,50 @@
                     <span id="baseServicePrice">$15.00</span>
                 </div>
                 <div class="price-row" id="serviceChargesRow" style="display: none;">
-                    <span>Additional Services</span>
+                    <span data-i18n="laundry.additionalServices">Additional Services</span>
                     <span id="serviceCharges">$0.00</span>
                 </div>
                 <div class="price-row">
-                    <span>Pickup & Delivery</span>
+                    <span data-i18n="laundry.pickupDelivery">Pickup & Delivery</span>
                     <span>$5.00</span>
                 </div>
                 <div class="price-total">
-                    <span>Total Estimate</span>
+                    <span data-i18n="laundry.totalEstimate">Total Estimate</span>
                     <span id="estimatedTotal">$20.00</span>
                 </div>
             </div>
 
             <!-- Submit Button -->
-            <button class="submit-button" id="submitButton" onclick="laundryModule.submitOrder()">Place Order</button>
+            <button class="submit-button" id="submitButton" onclick="laundryModule.submitOrder()" data-i18n="laundry.placeOrder">Place Order</button>
         </div>
         <div id="laundryOrderSkeleton" style="display: none;"></div>
         </div>
 
         <section class="food-section">
         <div class="laundry-info">
-            <h3>Why Choose Our Laundry Service?</h3>
+            <h3 data-i18n="laundry.benefitsTitle">Why Choose Our Laundry Service?</h3>
             <div class="info-item">
-                <div class="info-icon">${UIComponents.getIconMarkup('delivery', 'ui-icon ui-icon-sm')}</div>
-                <div>Free pickup and delivery in your area</div>
+                <div class="info-icon"><span class="ui-icon ui-icon-sm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7.5h10.5v7H3z" fill="none" stroke="currentColor" stroke-width="1.8"></path><path d="M13.5 10.5h3.2l2 2.5v1.5h-5.2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path><circle cx="7" cy="18" r="1.7" fill="currentColor"></circle><circle cx="17" cy="18" r="1.7" fill="currentColor"></circle></svg></span></div>
+                <div data-i18n="laundry.benefit.pickupDelivery">Free pickup and delivery in your area</div>
             </div>
             <div class="info-item">
-                <div class="info-icon">${UIComponents.getIconMarkup('bag', 'ui-icon ui-icon-sm')}</div>
-                <div>Professional cleaning with eco-friendly products</div>
+                <div class="info-icon"><span class="ui-icon ui-icon-sm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 8.5h11l-1 10.2a1.5 1.5 0 0 1-1.5 1.3H9a1.5 1.5 0 0 1-1.5-1.3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path><path d="M9.5 9V7.7a2.5 2.5 0 0 1 5 0V9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></span></div>
+                <div data-i18n="laundry.benefit.ecoCleaning">Professional cleaning with eco-friendly products</div>
             </div>
             <div class="info-item">
-                <div class="info-icon">${UIComponents.getIconMarkup('clock', 'ui-icon ui-icon-sm')}</div>
-                <div>Express service available for urgent orders</div>
+                <div class="info-icon"><span class="ui-icon ui-icon-sm"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.8"></circle><path d="M12 7.8v4.6l3.2 1.8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+                <div data-i18n="laundry.benefit.express">Express service available for urgent orders</div>
             </div>
             <div class="info-item">
-                <div class="info-icon">${UIComponents.getIconMarkup('verified', 'ui-icon ui-icon-sm')}</div>
-                <div>Careful handling of delicate and premium fabrics</div>
+                <div class="info-icon"><span class="ui-icon ui-icon-sm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 18.5 6v5.5c0 4.2-2.7 8-6.5 9.5-3.8-1.5-6.5-5.3-6.5-9.5V6Z" fill="currentColor"></path><path d="m9.3 12.4 1.8 1.8 3.8-4.1" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></span></div>
+                <div data-i18n="laundry.benefit.delicateCare">Careful handling of delicate and premium fabrics</div>
             </div>
         </div>
         </section>
 
         <section class="food-section">
         <div class="orders-history">
-            <h3>Your Laundry Orders</h3>
+            <h3 data-i18n="laundry.ordersTitle">Your Laundry Orders</h3>
             <div id="ordersContainer"></div>
         </div>
         </section>
@@ -505,37 +534,37 @@
         <div class="wrap">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>eDalab Laundry</h3>
+                    <h3 data-i18n="laundry.footerBrand">eDalab Laundry</h3>
                     <ul>
-                        <li><a href="#">Service guide</a></li>
-                        <li><a href="#">Pickup zones</a></li>
-                        <li><a href="#">Fabric care tips</a></li>
+                        <li><a href="#" data-i18n="laundry.footerGuide">Service guide</a></li>
+                        <li><a href="#" data-i18n="laundry.footerPickupZones">Pickup zones</a></li>
+                        <li><a href="#" data-i18n="laundry.footerCareTips">Fabric care tips</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>For Customers</h3>
+                    <h3 data-i18n="laundry.footerCustomers">For Customers</h3>
                     <ul>
-                        <li><a href="#">Book laundry</a></li>
-                        <li><a href="#">Track orders</a></li>
-                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#" data-i18n="laundry.footerBookLaundry">Book laundry</a></li>
+                        <li><a href="#" data-i18n="laundry.footerTrackOrders">Track orders</a></li>
+                        <li><a href="#" data-i18n="laundry.footerHelpCenter">Help Center</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>Services</h3>
+                    <h3 data-i18n="laundry.footerServices">Services</h3>
                     <ul>
-                        <li><a href="#">Wash & fold</a></li>
-                        <li><a href="#">Express cleaning</a></li>
-                        <li><a href="#">Delicate care</a></li>
+                        <li><a href="#" data-i18n="laundry.footerWashFold">Wash & fold</a></li>
+                        <li><a href="#" data-i18n="laundry.footerExpressCleaning">Express cleaning</a></li>
+                        <li><a href="#" data-i18n="laundry.footerDelicateCare">Delicate care</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
-                    <h3>Contact</h3>
-                    <p>Email: hello@edalab.app</p>
-                    <p>Phone: +253 21 35 00 00</p>
+                    <h3 data-i18n="laundry.footerContact">Contact</h3>
+                    <p><span data-i18n="common.email">Email</span>: hello@edalab.app</p>
+                    <p><span data-i18n="common.phone">Phone</span>: +253 21 35 00 00</p>
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 eDalab. All rights reserved.</p>
+                <p data-i18n="footer.rights">&copy; 2024 eDalab. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -855,7 +884,7 @@
                 let html = '';
                 orders.forEach(order => {
                     const statusClass = `status-${order.status}`;
-                    const statusText = order.status.charAt(0).toUpperCase() + order.status.slice(1);
+                    const statusText = this.t(`laundry.status.${order.status}`, order.status.charAt(0).toUpperCase() + order.status.slice(1));
                     html += `
                         <div class="order-item">
                             <div class="order-info">
