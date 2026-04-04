@@ -1,12 +1,21 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/ride_model.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../widgets/ride_route_preview.dart';
 
 class RideScreen extends StatefulWidget {
   const RideScreen({super.key});
@@ -16,15 +25,29 @@ class RideScreen extends StatefulWidget {
 }
 
 class _RideScreenState extends State<RideScreen> {
-  String _currentLocation = 'Current Location';
-  String _destination = 'Where to?';
+  static const _fallbackPickup = _RidePlace(
+    title: 'Current Location',
+    address: 'Place Menelik, Djibouti',
+    icon: Icons.my_location_rounded,
+    distance: 0,
+    latitude: 11.5886,
+    longitude: 43.1457,
+  );
+
+  _RidePlace? _pickupPlace;
+  _RidePlace? _destinationPlace;
   List<RideCategory> _rideCategories = RideModel.sampleCategories;
   bool _isLoading = true;
+  bool _hasLocationPermission = false;
+  bool _isResolvingPickup = true;
 
   @override
   void initState() {
     super.initState();
     _loadRideCategories();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _requestLocationAccess(showFailureSnackBar: false);
+    });
   }
 
   Future<void> _loadRideCategories() async {
@@ -47,16 +70,161 @@ class _RideScreenState extends State<RideScreen> {
     }
   }
 
+  Future<void> _requestLocationAccess({bool showFailureSnackBar = true}) async {
+    try {
+      final servicesEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!servicesEnabled) {
+        if (mounted) {
+          setState(() => _hasLocationPermission = false);
+        }
+        if (!mounted) return;
+        if (showFailureSnackBar) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Turn on location services to use your current pickup point.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        setState(() => _hasLocationPermission = false);
+        if (!mounted) return;
+        if (showFailureSnackBar) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Location permission was not granted. You can still choose a pickup manually.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      setState(() {
+        _hasLocationPermission = true;
+      });
+
+      Position? position;
+      try {
+        position = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.medium,
+            timeLimit: Duration(seconds: 8),
+          ),
+        );
+      } catch (_) {
+        position = await Geolocator.getLastKnownPosition();
+      }
+
+      if (!mounted || position == null) {
+        if (mounted) {
+          setState(() => _isResolvingPickup = false);
+        }
+        if (showFailureSnackBar && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Could not refresh your current location right now.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      final resolvedPosition = position;
+      final resolvedAddress = await _resolveDjiboutiAddress(
+        resolvedPosition.latitude,
+        resolvedPosition.longitude,
+      );
+      setState(() {
+        _pickupPlace = _RidePlace(
+          title: resolvedAddress?.title ?? 'Current Location',
+          address:
+              resolvedAddress?.address ??
+              '${resolvedPosition.latitude.toStringAsFixed(4)}, ${resolvedPosition.longitude.toStringAsFixed(4)}',
+          icon: Icons.my_location_rounded,
+          distance: 0,
+          latitude: resolvedPosition.latitude,
+          longitude: resolvedPosition.longitude,
+        );
+        _isResolvingPickup = false;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _hasLocationPermission = false;
+          _isResolvingPickup = false;
+        });
+      }
+      if (!mounted) return;
+      if (showFailureSnackBar) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Could not access your current location. You can still choose a pickup manually.',
+            ),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final savedPlaces = _savedPlaces(context);
-    final currentLocationLabel = _currentLocation == 'Current Location'
+    final pickupPlace = _pickupPlace;
+    final destinationPlace = _destinationPlace;
+    final currentLocationLabel = pickupPlace == null
+        ? 'Locating pickup...'
+        : pickupPlace.title == 'Current Location'
         ? l10n.t('ride.current_location')
-        : _currentLocation;
-    final destinationLabel = _destination == 'Where to?'
-        ? l10n.t('ride.where_to')
-        : _destination;
+        : pickupPlace.address;
+    final destinationLabel =
+        destinationPlace?.address ?? l10n.t('ride.where_to');
+    final pickupPoint = pickupPlace?.latitude != null && pickupPlace?.longitude != null
+        ? RideMapPoint(
+            label: l10n.t('ride.current_location'),
+            latitude: pickupPlace!.latitude!,
+            longitude: pickupPlace.longitude!,
+            color: AppColors.success,
+            icon: Icons.my_location_rounded,
+          )
+        : null;
+    final destinationPoint =
+        destinationPlace?.latitude != null &&
+            destinationPlace?.longitude != null
+        ? RideMapPoint(
+            label: destinationPlace!.title,
+            latitude: destinationPlace.latitude!,
+            longitude: destinationPlace.longitude!,
+            color: AppColors.accent,
+            icon: Icons.location_on_rounded,
+          )
+        : null;
+    final homeQuickRide = _findPlace(
+      savedPlaces,
+      l10n.t('ride.home'),
+      fallback: savedPlaces.isNotEmpty ? savedPlaces.first : _fallbackPickup,
+    );
+    final workQuickRide = _findPlace(
+      savedPlaces,
+      l10n.t('ride.work'),
+      fallback: savedPlaces.length > 1 ? savedPlaces[1] : _fallbackPickup,
+    );
+
     return PopScope(
       canPop: context.canPop(),
       onPopInvokedWithResult: (didPop, result) {
@@ -65,444 +233,409 @@ class _RideScreenState extends State<RideScreen> {
         }
       },
       child: Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.t('ride.title')),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/');
-            }
-          },
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text(l10n.t('ride.title')),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/');
+              }
+            },
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 250,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppColors.extraLightGrey,
-                borderRadius: BorderRadius.circular(20),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              RideRoutePreview(
+                title: l10n.t('ride.map_view'),
+                pickup: pickupPoint,
+                destination: destinationPoint,
+                showMyLocation: _hasLocationPermission,
+                showTitleChip: false,
+                showLegend: false,
+                emptyLabel: _isResolvingPickup
+                    ? 'Finding your current location...'
+                    : l10n.t('ride.choose_destination'),
+                actionIcon: Icons.my_location_rounded,
+                onActionTap: _requestLocationAccess,
               ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: AppSpacing.shadowSm,
+                ),
+                child: Column(
+                  children: [
+                    Row(
                       children: [
-                        Icon(
-                          Icons.map_rounded,
-                          size: 48,
-                          color: AppColors.primary.withValues(alpha: 0.3),
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: const BoxDecoration(
+                            color: AppColors.success,
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(l10n.t('ride.map_view'), style: AppTextStyles.bodySmall),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _selectPlace(isPickup: true),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.extraLightGrey,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                currentLocationLabel,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.grey,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 5),
+                      child: Column(
+                        children: List.generate(
+                          3,
+                          (_) => Container(
+                            width: 2,
+                            height: 6,
+                            margin: const EdgeInsets.symmetric(vertical: 2),
+                            color: AppColors.lightGrey,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: const BoxDecoration(
+                            color: AppColors.accent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => _selectPlace(isPickup: false),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.extraLightGrey,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                destinationLabel,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: destinationPlace == null
+                                      ? AppColors.mediumGrey
+                                      : AppColors.grey,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(l10n.t('ride.available_rides'), style: AppTextStyles.h4),
+              const SizedBox(height: 12),
+              if (_isLoading)
+                const AppShimmer(
+                  child: SizedBox(
+                    height: 118,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ShimmerBlock(
+                            width: double.infinity,
+                            height: 118,
+                            radius: 18,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: ShimmerBlock(
+                            width: double.infinity,
+                            height: 118,
+                            radius: 18,
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                  Positioned(
-                    bottom: 12,
-                    right: 12,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() => _currentLocation = l10n.t('ride.current_location'));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(l10n.t('ride.pickup_reset')),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: 44,
-                        height: 44,
+                )
+              else
+                SizedBox(
+                  height: 120,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _rideCategories.length,
+                    separatorBuilder: (_, _) => const SizedBox(width: 12),
+                    itemBuilder: (context, index) {
+                      final ride = _rideCategories[index];
+                      return Container(
+                        width: 196,
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: AppSpacing.shadowMd,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: AppSpacing.shadowSm,
                         ),
-                        child: const Icon(
-                          Icons.my_location_rounded,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: AppSpacing.shadowSm,
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: const BoxDecoration(
-                          color: AppColors.success,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => _selectPlace(isPickup: true),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.extraLightGrey,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              currentLocationLabel,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.grey,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 5),
-                    child: Column(
-                      children: List.generate(
-                        3,
-                        (_) => Container(
-                          width: 2,
-                          height: 6,
-                          margin: const EdgeInsets.symmetric(vertical: 2),
-                          color: AppColors.lightGrey,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 12,
-                        height: 12,
-                        decoration: const BoxDecoration(
-                          color: AppColors.accent,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => _selectPlace(isPickup: false),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.extraLightGrey,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              destinationLabel,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: _destination == 'Where to?'
-                                    ? AppColors.mediumGrey
-                                    : AppColors.grey,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(l10n.t('ride.available_rides'), style: AppTextStyles.h4),
-            const SizedBox(height: 12),
-            if (_isLoading)
-              const AppShimmer(
-                child: SizedBox(
-                  height: 118,
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ShimmerBlock(
-                          width: double.infinity,
-                          height: 118,
-                          radius: 18,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: ShimmerBlock(
-                          width: double.infinity,
-                          height: 118,
-                          radius: 18,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            else
-              SizedBox(
-                height: 120,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _rideCategories.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    final ride = _rideCategories[index];
-                    return Container(
-                      width: 196,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: AppSpacing.shadowSm,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: AppColors.rideBg,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  _iconForRideCategory(ride.name),
-                                  color: AppColors.ride,
-                                  size: 22,
-                                ),
-                              ),
-                              const Spacer(),
-                              Text(
-                                '\$${ride.basePrice.toStringAsFixed(0)}+',
-                                style: AppTextStyles.labelMedium.copyWith(
-                                  color: AppColors.ride,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
-                                Text(
-                                  ride.name,
-                                  style: AppTextStyles.labelLarge,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  l10n.t(
-                                    'ride.seats_eta',
-                                    params: {
-                                      'count': '${ride.capacity}',
-                                      'eta': ride.timeToArrive,
-                                    },
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.rideBg,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  style: AppTextStyles.caption,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                  child: Icon(
+                                    _iconForRideCategory(ride.name),
+                                    color: AppColors.ride,
+                                    size: 22,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  '\$${ride.basePrice.toStringAsFixed(0)}+',
+                                  style: AppTextStyles.labelMedium.copyWith(
+                                    color: AppColors.ride,
+                                  ),
                                 ),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            const SizedBox(height: 24),
-            Text(l10n.t('ride.quick_rides'), style: AppTextStyles.h4),
-            const SizedBox(height: 12),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final cardWidth = (constraints.maxWidth - 12) / 2;
-                return Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    SizedBox(
-                      width: cardWidth,
-                      child: _QuickRide(
-                        Icons.home_rounded,
-                        l10n.t('ride.home'),
-                        '123 Main St',
-                        onTap: () =>
-                            _openRideBooking(l10n.t('ride.home'), '123 Main St', 4.2),
-                      ),
-                    ),
-                    SizedBox(
-                      width: cardWidth,
-                      child: _QuickRide(
-                        Icons.work_rounded,
-                        l10n.t('ride.work'),
-                        '456 Office Ave',
-                        onTap: () =>
-                            _openRideBooking(l10n.t('ride.work'), '456 Office Ave', 6.8),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 24),
-            Text(l10n.t('ride.recent_places'), style: AppTextStyles.h4),
-            const SizedBox(height: 12),
-            ...savedPlaces
-                .skip(2)
-                .map(
-                  (p) => GestureDetector(
-                    onTap: () =>
-                        _openRideBooking(p.title, p.address, p.distance),
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: AppColors.rideBg,
-                              borderRadius: BorderRadius.circular(12),
+                            const SizedBox(height: 8),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    ride.name,
+                                    style: AppTextStyles.labelLarge,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    l10n.t(
+                                      'ride.seats_eta',
+                                      params: {
+                                        'count': '${ride.capacity}',
+                                        'eta': ride.timeToArrive,
+                                      },
+                                    ),
+                                    style: AppTextStyles.caption,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
                             ),
-                            child: Icon(
-                              p.icon,
-                              color: AppColors.ride,
-                              size: 22,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(p.title, style: AppTextStyles.labelMedium),
-                                Text(p.address, style: AppTextStyles.caption),
-                              ],
-                            ),
-                          ),
-                          const Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            size: 16,
-                            color: AppColors.mediumGrey,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-            const SizedBox(height: 24),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final isCompact = constraints.maxWidth < 360;
-                  final textBlock = Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.t('ride.promo_title'),
-                        style: AppTextStyles.h4.copyWith(
-                          color: AppColors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        l10n.t('ride.promo_subtitle'),
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
-                  );
-                  final action = GestureDetector(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(l10n.t('ride.offer_saved')),
+                          ],
                         ),
                       );
                     },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        l10n.t('ride.claim'),
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: AppColors.primary,
+                  ),
+                ),
+              const SizedBox(height: 24),
+              Text(l10n.t('ride.quick_rides'), style: AppTextStyles.h4),
+              const SizedBox(height: 12),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final cardWidth = (constraints.maxWidth - 12) / 2;
+                  return Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [
+                      SizedBox(
+                        width: cardWidth,
+                        child: _QuickRide(
+                          homeQuickRide.icon,
+                          homeQuickRide.title,
+                          homeQuickRide.address,
+                          onTap: () => _openRideBooking(homeQuickRide),
                         ),
                       ),
-                    ),
-                  );
-
-                  if (isCompact) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [textBlock, const SizedBox(height: 12), action],
-                    );
-                  }
-
-                  return Row(
-                    children: [
-                      Expanded(child: textBlock),
-                      const SizedBox(width: 12),
-                      action,
+                      SizedBox(
+                        width: cardWidth,
+                        child: _QuickRide(
+                          workQuickRide.icon,
+                          workQuickRide.title,
+                          workQuickRide.address,
+                          onTap: () => _openRideBooking(workQuickRide),
+                        ),
+                      ),
                     ],
                   );
                 },
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+              Text(l10n.t('ride.recent_places'), style: AppTextStyles.h4),
+              const SizedBox(height: 12),
+              ...savedPlaces
+                  .skip(2)
+                  .map(
+                    (place) => GestureDetector(
+                      onTap: () => _openRideBooking(place),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: AppColors.rideBg,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                place.icon,
+                                color: AppColors.ride,
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    place.title,
+                                    style: AppTextStyles.labelMedium,
+                                  ),
+                                  Text(
+                                    place.address,
+                                    style: AppTextStyles.caption,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 16,
+                              color: AppColors.mediumGrey,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: AppColors.primaryGradient,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isCompact = constraints.maxWidth < 360;
+                    final textBlock = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.t('ride.promo_title'),
+                          style: AppTextStyles.h4.copyWith(
+                            color: AppColors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.t('ride.promo_subtitle'),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    );
+                    final action = GestureDetector(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.t('ride.offer_saved'))),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          l10n.t('ride.claim'),
+                          style: AppTextStyles.labelMedium.copyWith(
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    );
+
+                    if (isCompact) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          textBlock,
+                          const SizedBox(height: 12),
+                          action,
+                        ],
+                      );
+                    }
+
+                    return Row(
+                      children: [
+                        Expanded(child: textBlock),
+                        const SizedBox(width: 12),
+                        action,
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -515,92 +648,270 @@ class _RideScreenState extends State<RideScreen> {
   }
 
   Future<void> _selectPlace({required bool isPickup}) async {
-    final savedPlaces = _savedPlaces(context);
-    final selected =
-        await showModalBottomSheet<
-          ({String title, String address, double distance})
-        >(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: AppColors.white,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          builder: (context) {
-            return _PlacePickerSheet(isPickup: isPickup, places: savedPlaces);
-          },
+    final places = isPickup ? _pickupPlaces(context) : _savedPlaces(context);
+    final selected = await showModalBottomSheet<_RidePlace>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return _PlacePickerSheet(
+          isPickup: isPickup,
+          places: places,
+          origin: _pickupPlace ?? _defaultPickupPlace(),
         );
+      },
+    );
 
     if (selected == null) return;
 
     if (isPickup) {
-      setState(() => _currentLocation = selected.address);
+      setState(() => _pickupPlace = selected);
       return;
     }
 
-    setState(() => _destination = selected.address);
-    _openRideBooking(selected.title, selected.address, selected.distance);
+    setState(() => _destinationPlace = selected);
+    _openRideBooking(selected);
   }
 
-  void _openRideBooking(String title, String address, double distance) {
+  void _openRideBooking(_RidePlace destination) {
+    final pickup = _pickupPlace ?? _defaultPickupPlace();
     context.push(
       '/ride/book',
       extra: {
-        'pickup': _currentLocation,
-        'destinationTitle': title,
-        'destination': address,
-        'distance': distance,
+        'pickup': pickup.address,
+        'pickupTitle': pickup.title,
+        'pickupAddressId': pickup.addressId,
+        'pickupPoint': pickup.latitude != null && pickup.longitude != null
+            ? {
+                'label': pickup.title,
+                'latitude': pickup.latitude,
+                'longitude': pickup.longitude,
+              }
+            : null,
+        'destinationTitle': destination.title,
+        'destination': destination.address,
+        'dropoffAddressId': destination.addressId,
+        'destinationPoint':
+            destination.latitude != null && destination.longitude != null
+            ? {
+                'label': destination.title,
+                'latitude': destination.latitude,
+                'longitude': destination.longitude,
+              }
+            : null,
+        'distance': destination.distance,
       },
     );
   }
 
-  List<({String title, String address, IconData icon, double distance})>
-  _savedPlaces(BuildContext context) => [
-    (
-      title: context.l10n.t('ride.home'),
-      address: '123 Main St',
-      icon: Icons.home_rounded,
-      distance: 4.2,
-    ),
-    (
-      title: context.l10n.t('ride.work'),
-      address: '456 Office Ave',
-      icon: Icons.work_rounded,
-      distance: 6.8,
-    ),
-    (
-      title: context.l10n.t('ride.city_mall'),
-      address: '789 Shopping Blvd',
-      icon: Icons.shopping_bag_rounded,
-      distance: 5.2,
-    ),
-    (
-      title: context.l10n.t('ride.central_park'),
-      address: '321 Green Lane',
-      icon: Icons.park_rounded,
-      distance: 3.7,
-    ),
-    (
-      title: context.l10n.t('ride.airport'),
-      address: 'International Airport',
-      icon: Icons.flight_rounded,
-      distance: 9.5,
-    ),
-    (
-      title: context.l10n.t('ride.train_station'),
-      address: 'Central Station',
-      icon: Icons.train_rounded,
-      distance: 7.1,
-    ),
-  ];
+  _RidePlace _defaultPickupPlace() {
+    final addresses = context.read<AuthProvider>().user?.addresses ?? const [];
+    _RidePlace? preferred;
+    for (final address in addresses) {
+      if (address.isDefault &&
+          address.latitude != null &&
+          address.longitude != null) {
+        preferred = _RidePlace(
+          title: address.label,
+          address: address.address,
+          icon: _iconForLabel(address.label),
+          distance: 0,
+          latitude: address.latitude,
+          longitude: address.longitude,
+          addressId: address.id,
+        );
+        break;
+      }
+    }
+    preferred ??= addresses
+        .where(
+          (address) => address.latitude != null && address.longitude != null,
+        )
+        .map(
+          (address) => _RidePlace(
+            title: address.label,
+            address: address.address,
+            icon: _iconForLabel(address.label),
+            distance: 0,
+            latitude: address.latitude,
+            longitude: address.longitude,
+            addressId: address.id,
+          ),
+        )
+        .cast<_RidePlace?>()
+        .firstWhere((address) => address != null, orElse: () => null);
+    if (preferred == null) return _fallbackPickup;
+    return preferred;
+  }
+
+  List<_RidePlace> _savedPlaces(BuildContext context) {
+    final addresses = context.read<AuthProvider>().user?.addresses ?? const [];
+    final userPlaces = addresses
+        .where(
+          (address) => address.latitude != null && address.longitude != null,
+        )
+        .map(
+          (address) => _RidePlace(
+            title: address.label,
+            address: address.address,
+            icon: _iconForLabel(address.label),
+            distance: address.isDefault ? 2.1 : 3.8,
+            latitude: address.latitude,
+            longitude: address.longitude,
+            addressId: address.id,
+          ),
+        )
+        .toList();
+    final fallbackPlaces = [
+      _RidePlace(
+        title: context.l10n.t('ride.home'),
+        address: '123 Main St',
+        icon: Icons.home_rounded,
+        distance: 4.2,
+        latitude: 11.5824,
+        longitude: 43.1488,
+      ),
+      _RidePlace(
+        title: context.l10n.t('ride.work'),
+        address: '456 Office Ave',
+        icon: Icons.work_rounded,
+        distance: 6.8,
+        latitude: 11.5485,
+        longitude: 43.1529,
+      ),
+      _RidePlace(
+        title: context.l10n.t('ride.city_mall'),
+        address: '789 Shopping Blvd',
+        icon: Icons.shopping_bag_rounded,
+        distance: 5.2,
+        latitude: 11.5316,
+        longitude: 43.1434,
+      ),
+      _RidePlace(
+        title: context.l10n.t('ride.central_park'),
+        address: '321 Green Lane',
+        icon: Icons.park_rounded,
+        distance: 3.7,
+        latitude: 11.5776,
+        longitude: 43.1514,
+      ),
+      _RidePlace(
+        title: context.l10n.t('ride.airport'),
+        address: 'International Airport',
+        icon: Icons.flight_rounded,
+        distance: 9.5,
+        latitude: 11.5475,
+        longitude: 43.1596,
+      ),
+      _RidePlace(
+        title: context.l10n.t('ride.train_station'),
+        address: 'Central Station',
+        icon: Icons.train_rounded,
+        distance: 7.1,
+        latitude: 11.5958,
+        longitude: 43.1374,
+      ),
+    ];
+
+    final seen = <String>{};
+    return [
+      ...userPlaces,
+      ...fallbackPlaces,
+    ].where((place) => seen.add(place.address.toLowerCase())).toList();
+  }
+
+  List<_RidePlace> _pickupPlaces(BuildContext context) {
+    final addresses = context.read<AuthProvider>().user?.addresses ?? const [];
+    final currentPickup = _pickupPlace ?? _defaultPickupPlace();
+    final userPlaces = addresses
+        .where(
+          (address) => address.latitude != null && address.longitude != null,
+        )
+        .map(
+          (address) => _RidePlace(
+            title: address.label,
+            address: address.address,
+            icon: _iconForLabel(address.label),
+            distance: address.isDefault ? 2.1 : 3.8,
+            latitude: address.latitude,
+            longitude: address.longitude,
+            addressId: address.id,
+          ),
+        )
+        .toList();
+
+    final seen = <String>{};
+    return [currentPickup, ...userPlaces]
+        .where((place) => seen.add(place.address.toLowerCase()))
+        .toList();
+  }
+
+  _RidePlace _findPlace(
+    List<_RidePlace> places,
+    String title, {
+    required _RidePlace fallback,
+  }) {
+    for (final place in places) {
+      if (place.title.toLowerCase() == title.toLowerCase()) {
+        return place;
+      }
+    }
+    return fallback;
+  }
+
+  IconData _iconForLabel(String label) {
+    final lower = label.toLowerCase();
+    if (lower.contains('home')) return Icons.home_rounded;
+    if (lower.contains('work') || lower.contains('office')) {
+      return Icons.work_rounded;
+    }
+    if (lower.contains('airport')) return Icons.flight_rounded;
+    if (lower.contains('station')) return Icons.train_rounded;
+    return Icons.place_rounded;
+  }
+
+  Future<_RidePlace?> _resolveDjiboutiAddress(
+    double latitude,
+    double longitude,
+  ) async {
+    try {
+      final uri = Uri.https('nominatim.openstreetmap.org', '/reverse', {
+        'lat': latitude.toString(),
+        'lon': longitude.toString(),
+        'format': 'jsonv2',
+        'zoom': '18',
+        'addressdetails': '1',
+      });
+      final response = await http.get(
+        uri,
+        headers: const {
+          'User-Agent': 'eDalab/1.0 (Ride reverse geocoding)',
+          'Accept-Language': 'en',
+        },
+      );
+      if (response.statusCode != 200) return null;
+      final decoded = jsonDecode(response.body);
+      if (decoded is! Map) return null;
+      return _ridePlaceFromNominatim(Map<String, dynamic>.from(decoded));
+    } catch (_) {
+      return null;
+    }
+  }
 }
 
 class _PlacePickerSheet extends StatefulWidget {
   final bool isPickup;
-  final List<({String title, String address, IconData icon, double distance})>
-  places;
+  final List<_RidePlace> places;
+  final _RidePlace origin;
 
-  const _PlacePickerSheet({required this.isPickup, required this.places});
+  const _PlacePickerSheet({
+    required this.isPickup,
+    required this.places,
+    required this.origin,
+  });
 
   @override
   State<_PlacePickerSheet> createState() => _PlacePickerSheetState();
@@ -608,30 +919,179 @@ class _PlacePickerSheet extends StatefulWidget {
 
 class _PlacePickerSheetState extends State<_PlacePickerSheet> {
   late final TextEditingController _searchController;
+  Timer? _searchDebounce;
+  bool _isSearching = false;
+  bool _isLoadingPopular = false;
+  List<_RidePlace> _remotePlaces = const [];
+  List<_RidePlace> _popularPlaces = const [];
 
   @override
   void initState() {
     super.initState();
     _searchController = TextEditingController();
+    if (!widget.isPickup) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        unawaited(_loadPopularDjiboutiPlaces());
+      });
+    }
   }
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() {});
+    _searchDebounce?.cancel();
+    final query = value.trim();
+    if (widget.isPickup) return;
+    if (query.length < 2) {
+      if (query.isEmpty) {
+        setState(() {
+          _remotePlaces = const [];
+          _isSearching = false;
+        });
+        unawaited(_loadPopularDjiboutiPlaces());
+      } else {
+        setState(() {
+          _remotePlaces = const [];
+          _isSearching = false;
+        });
+      }
+      return;
+    }
+
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      unawaited(_searchDjiboutiPlaces(query));
+    });
+  }
+
+  Future<List<_RidePlace>> _fetchDjiboutiPlaces(
+    String query, {
+    int limit = 12,
+  }) async {
+    final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
+      'q': '$query, Djibouti',
+      'format': 'jsonv2',
+      'countrycodes': 'dj',
+      'addressdetails': '1',
+      'limit': '$limit',
+      'viewbox': '42.98,11.72,43.25,11.45',
+      'bounded': '1',
+    });
+    final response = await http.get(
+      uri,
+      headers: const {
+        'User-Agent': 'eDalab/1.0 (Ride destination search)',
+        'Accept-Language': 'en',
+      },
+    );
+    if (response.statusCode != 200) {
+      return const [];
+    }
+
+    final rawItems = jsonDecode(response.body);
+    if (rawItems is! List) return const [];
+
+    return rawItems
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .map(_ridePlaceFromNominatim)
+        .whereType<_RidePlace>()
+        .toList();
+  }
+
+  Future<void> _loadPopularDjiboutiPlaces() async {
+    if (_isLoadingPopular) return;
+    setState(() {
+      _isLoadingPopular = true;
+    });
+
+    try {
+      final popularQueries = <String>[
+        'Place Menelik',
+        'Djibouti-Ambouli International Airport',
+        'Port of Djibouti',
+        'Bawadi Mall',
+        'Kempinski Palace',
+      ];
+
+      final collected = <_RidePlace>[];
+      for (final query in popularQueries) {
+        final results = await _fetchDjiboutiPlaces(query, limit: 3);
+        collected.addAll(results);
+      }
+
+      if (!mounted || _searchController.text.trim().isNotEmpty) return;
+
+      final seen = <String>{};
+      setState(() {
+        _popularPlaces = collected
+            .where((place) => seen.add(place.address.toLowerCase()))
+            .toList();
+        _isLoadingPopular = false;
+      });
+    } catch (_) {
+      if (!mounted || _searchController.text.trim().isNotEmpty) return;
+      setState(() {
+        _popularPlaces = const [];
+        _isLoadingPopular = false;
+      });
+    }
+  }
+
+  Future<void> _searchDjiboutiPlaces(String query) async {
+    final normalizedQuery = query.trim();
+    if (normalizedQuery.length < 2) return;
+
+    setState(() {
+      _isSearching = true;
+    });
+
+    try {
+      final activeQuery = _searchController.text.trim();
+      if (!mounted ||
+          (activeQuery.isNotEmpty && activeQuery != normalizedQuery)) {
+        return;
+      }
+      final places = await _fetchDjiboutiPlaces(normalizedQuery);
+      final seen = <String>{};
+      setState(() {
+        _remotePlaces = places
+            .where((place) => seen.add(place.address.toLowerCase()))
+            .toList();
+        _isSearching = false;
+      });
+    } catch (_) {
+      final activeQuery = _searchController.text.trim();
+      if (!mounted ||
+          (activeQuery.isNotEmpty && activeQuery != normalizedQuery)) {
+        return;
+      }
+      setState(() {
+        _remotePlaces = const [];
+        _isSearching = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final query = _searchController.text.trim().toLowerCase();
-    final showTypedDestination =
-        !widget.isPickup && _searchController.text.trim().isNotEmpty;
-    final filteredPlaces = widget.places.where((place) {
+    final filteredLocalPlaces = widget.places.where((place) {
       if (query.isEmpty) return true;
       return place.title.toLowerCase().contains(query) ||
           place.address.toLowerCase().contains(query);
     }).toList();
+    final filteredPlaces = widget.isPickup
+        ? filteredLocalPlaces
+        : query.isEmpty
+        ? _mergedPlaces(const <_RidePlace>[], _popularPlaces)
+        : (_remotePlaces.isNotEmpty ? _remotePlaces : filteredLocalPlaces);
 
     return SafeArea(
       child: Padding(
@@ -655,7 +1115,7 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
               const SizedBox(height: 16),
               TextField(
                 controller: _searchController,
-                onChanged: (_) => setState(() {}),
+                onChanged: _onSearchChanged,
                 decoration: InputDecoration(
                   hintText: widget.isPickup
                       ? l10n.t('ride.search_pickup')
@@ -670,75 +1130,82 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
                 ),
               ),
               const SizedBox(height: 12),
-              if (showTypedDestination)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: AppColors.rideBg,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.edit_location_alt_rounded,
-                      color: AppColors.ride,
+              if (!widget.isPickup &&
+                  query.isEmpty &&
+                  (_isLoadingPopular || _popularPlaces.isNotEmpty))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    _isLoadingPopular
+                        ? 'Loading popular Djibouti places...'
+                        : 'Popular places in Djibouti',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.mediumGrey,
                     ),
                   ),
-                  title: Text(
-                    _searchController.text.trim(),
-                    style: AppTextStyles.labelMedium,
+                ),
+              if (!widget.isPickup &&
+                  query.isNotEmpty &&
+                  (_isSearching || _remotePlaces.isNotEmpty))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    _isSearching
+                        ? 'Searching places in Djibouti...'
+                        : 'Results from Djibouti places',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.mediumGrey,
+                    ),
                   ),
-                  subtitle: Text(
-                    l10n.t('ride.use_typed_destination'),
-                    style: AppTextStyles.caption,
-                  ),
-                  onTap: () => Navigator.of(context).pop((
-                    title: _searchController.text.trim(),
-                    address: _searchController.text.trim(),
-                    distance: 5.0,
-                  )),
                 ),
               Expanded(
-                child: ListView(
-                  children: [
-                    ...filteredPlaces.map(
-                      (place) => ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            color: AppColors.rideBg,
-                            borderRadius: BorderRadius.circular(12),
+                child: !widget.isPickup && query.isEmpty && _isLoadingPopular
+                    ? _PlacePickerStatus(
+                        icon: Icons.travel_explore_rounded,
+                        message: 'Loading popular Djibouti places...',
+                      )
+                    : filteredPlaces.isEmpty
+                    ? _PlacePickerStatus(
+                        icon: query.isEmpty
+                            ? (widget.isPickup
+                                  ? Icons.my_location_rounded
+                                  : Icons.location_city_rounded)
+                            : Icons.search_off_rounded,
+                        message: widget.isPickup
+                            ? 'No pickup places are available right now.'
+                            : query.isEmpty
+                            ? 'No popular Djibouti places are available right now.'
+                            : query.isNotEmpty || _remotePlaces.isNotEmpty
+                            ? 'No Djibouti places match your search.'
+                            : l10n.t('ride.no_saved_places'),
+                      )
+                    : ListView(
+                        children: [
+                          ...filteredPlaces.map(
+                            (place) => ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  color: AppColors.rideBg,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(place.icon, color: AppColors.ride),
+                              ),
+                              title: Text(
+                                place.title,
+                                style: AppTextStyles.labelMedium,
+                              ),
+                              subtitle: Text(
+                                place.address,
+                                style: AppTextStyles.caption,
+                              ),
+                              onTap: () => Navigator.of(context).pop(place),
+                            ),
                           ),
-                          child: Icon(place.icon, color: AppColors.ride),
-                        ),
-                        title: Text(
-                          place.title,
-                          style: AppTextStyles.labelMedium,
-                        ),
-                        subtitle: Text(
-                          place.address,
-                          style: AppTextStyles.caption,
-                        ),
-                        onTap: () => Navigator.of(context).pop((
-                          title: place.title,
-                          address: place.address,
-                          distance: place.distance,
-                        )),
+                        ],
                       ),
-                    ),
-                    if (filteredPlaces.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Text(
-                          l10n.t('ride.no_saved_places'),
-                          style: AppTextStyles.caption,
-                        ),
-                      ),
-                  ],
-                ),
               ),
             ],
           ),
@@ -746,6 +1213,63 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
       ),
     );
   }
+}
+
+List<_RidePlace> _mergedPlaces(List<_RidePlace> primary, List<_RidePlace> secondary) {
+  final seen = <String>{};
+  return [...primary, ...secondary]
+      .where((place) => seen.add(place.address.toLowerCase()))
+      .toList();
+}
+
+_RidePlace? _ridePlaceFromNominatim(Map<String, dynamic> data) {
+  final latitude = double.tryParse(data['lat']?.toString() ?? '');
+  final longitude = double.tryParse(data['lon']?.toString() ?? '');
+  if (latitude == null || longitude == null) return null;
+
+  final name =
+      (data['name']?.toString().trim().isNotEmpty ?? false)
+      ? data['name'].toString().trim()
+      : ((data['display_name']?.toString().split(',').isNotEmpty ?? false)
+            ? data['display_name'].toString().split(',').first.trim()
+            : '');
+  final displayName = data['display_name']?.toString().trim() ?? '';
+  if (displayName.isEmpty) return null;
+
+  return _RidePlace(
+    title: name.isNotEmpty ? name : 'Destination',
+    address: displayName,
+    icon: _iconForPlaceCategory(
+      data['type']?.toString(),
+      data['class']?.toString(),
+    ),
+    distance: 5.0,
+    latitude: latitude,
+    longitude: longitude,
+  );
+}
+
+IconData _iconForPlaceCategory(String? type, String? category) {
+  final merged = '${type ?? ''} ${category ?? ''}'.toLowerCase();
+  if (merged.contains('airport') || merged.contains('aerodrome')) {
+    return Icons.flight_rounded;
+  }
+  if (merged.contains('hotel') || merged.contains('accommodation')) {
+    return Icons.hotel_rounded;
+  }
+  if (merged.contains('restaurant') || merged.contains('cafe')) {
+    return Icons.restaurant_rounded;
+  }
+  if (merged.contains('hospital') || merged.contains('clinic')) {
+    return Icons.local_hospital_rounded;
+  }
+  if (merged.contains('school') || merged.contains('university')) {
+    return Icons.school_rounded;
+  }
+  if (merged.contains('shop') || merged.contains('mall')) {
+    return Icons.shopping_bag_rounded;
+  }
+  return Icons.place_rounded;
 }
 
 class _QuickRide extends StatelessWidget {
@@ -761,43 +1285,94 @@ class _QuickRide extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: AppSpacing.shadowSm,
         ),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: AppColors.rideBg,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: AppColors.ride, size: 20),
+              child: Icon(icon, color: AppColors.ride),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(name, style: AppTextStyles.labelMedium),
-                  Text(
-                    address,
-                    style: AppTextStyles.caption,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
+            const SizedBox(height: 16),
+            Text(name, style: AppTextStyles.labelLarge),
+            const SizedBox(height: 4),
+            Text(
+              address,
+              style: AppTextStyles.caption,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _PlacePickerStatus extends StatelessWidget {
+  final IconData icon;
+  final String message;
+
+  const _PlacePickerStatus({required this.icon, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: AppColors.rideBg,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Icon(icon, color: AppColors.ride, size: 26),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              message,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.mediumGrey,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RidePlace {
+  final String title;
+  final String address;
+  final IconData icon;
+  final double distance;
+  final double? latitude;
+  final double? longitude;
+  final String? addressId;
+
+  const _RidePlace({
+    required this.title,
+    required this.address,
+    required this.icon,
+    required this.distance,
+    this.latitude,
+    this.longitude,
+    this.addressId,
+  });
 }

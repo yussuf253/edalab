@@ -622,7 +622,7 @@ class AppLocalizations {
       'checkout.pharmacy_order': 'Pharmacy order',
       'checkout.grocery_order': 'Grocery order',
       'ride_booking.title': 'Choose a Ride',
-      'ride_booking.route_summary': 'Route: {distance} km • 12 min',
+      'ride_booking.route_summary': 'Route: {distance} km • {duration}',
       'ride_booking.choose_vehicle': 'Choose Vehicle',
       'ride_booking.arrival_seats': '{eta} away • {count} seats',
       'ride_booking.change': 'Change',

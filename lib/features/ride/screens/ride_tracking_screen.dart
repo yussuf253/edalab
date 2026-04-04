@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -10,6 +11,9 @@ import '../../../core/network/api_client.dart';
 import '../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../services/ride_route_service.dart';
+import '../utils/ride_map_launcher.dart';
+import '../widgets/ride_route_preview.dart';
 
 class RideTrackingScreen extends StatefulWidget {
   final String rideId;
@@ -47,6 +51,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
       if (!mounted) return;
       setState(() {
         _rideData = Map<String, dynamic>.from(response as Map);
+        _error = null;
         _isLoading = false;
       });
     } catch (error) {
@@ -85,7 +90,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
       entityId: widget.rideId,
       title: driverName,
       subtitle: vehicle,
-      accentColor: '#6C63FF',
+      accentColor: '#1D9070',
       metadata: {
         'rideId': widget.rideId,
         'vehicle': vehicle,
@@ -107,13 +112,67 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
     final pickup = ride?['pickup'] as String? ?? '123 Main Street';
     final destination =
         ride?['destination'] as String? ?? 'City Mall, Downtown';
-    final eta = ride?['eta'] as String? ?? '5 min';
     final vehicle = ride?['vehicle'] as String? ?? 'Toyota Camry';
     final driverName =
         ride?['driverName'] as String? ?? 'Driver assignment pending';
     final driverAssigned =
         (ride?['driverUserId'] as String?)?.isNotEmpty == true;
     final driverPhone = ride?['driverPhone'] as String?;
+    final trackingData = ride?['trackingData'] is Map
+        ? Map<String, dynamic>.from(ride!['trackingData'] as Map)
+        : <String, dynamic>{};
+    final eta =
+        trackingData['durationLabel']?.toString() ??
+        ride?['eta'] as String? ??
+        '5 min';
+    final pickupPoint =
+        rideMapPointFromJson(
+          trackingData['pickup'],
+          fallbackLabel: pickup,
+          color: AppColors.success,
+          icon: Icons.my_location_rounded,
+        ) ??
+        const RideMapPoint(
+          label: 'Pickup',
+          latitude: 11.5886,
+          longitude: 43.1457,
+          color: AppColors.success,
+          icon: Icons.my_location_rounded,
+        );
+    final destinationPoint =
+        rideMapPointFromJson(
+          trackingData['destination'],
+          fallbackLabel: destination,
+          color: AppColors.accent,
+          icon: Icons.location_on_rounded,
+        ) ??
+        estimateRideDestinationPoint(
+          origin: pickupPoint,
+          distanceKm:
+              (trackingData['distance'] as num?)?.toDouble() ??
+              (ride?['distanceKm'] as num?)?.toDouble() ??
+              5.2,
+          label: destination,
+        );
+    final driverPoint = driverAssigned
+        ? rideMapPointFromJson(
+                trackingData['driver'],
+                fallbackLabel: driverName,
+                color: AppColors.ride,
+                icon: Icons.directions_car_rounded,
+              ) ??
+              interpolateRideMapPoint(
+                from: pickupPoint,
+                to: destinationPoint,
+                progress: _progressForStatus(ride?['status']?.toString()),
+                label: driverName,
+              )
+        : null;
+    final routeDetails = trackingData['routeDetails'] is Map
+        ? RideRouteDetails.fromJson(
+            Map<String, dynamic>.from(trackingData['routeDetails'] as Map),
+          )
+        : null;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -124,89 +183,22 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
             width: double.infinity,
             child: Stack(
               children: [
-                Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: AppColors.extraLightGrey,
+                RideRoutePreview(
+                  title: l10n.t('tracking.live_map'),
+                  pickup: pickupPoint,
+                  destination: destinationPoint,
+                  driver: driverPoint,
+                  badgeLabel: eta,
+                  routePolyline: routeDetails?.polylinePoints,
+                  actionLabel: 'Open map',
+                  onActionTap: () => openRideRouteInMaps(
+                    context,
+                    pickupLabel: pickup,
+                    destinationLabel: destination,
+                    pickupPoint: pickupPoint,
+                    destinationPoint: destinationPoint,
                   ),
-                  child: Stack(
-                    children: [
-                      Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.map_rounded,
-                              size: 80,
-                              color: AppColors.ride.withValues(alpha: 0.3),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              l10n.t('tracking.live_map'),
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.mediumGrey,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Positioned(
-                        top: 110,
-                        left: 40,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: AppColors.success,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.my_location_rounded,
-                            color: AppColors.white,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 110,
-                        right: 60,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: AppColors.accent,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.location_on_rounded,
-                            color: AppColors.white,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        top: 160,
-                        left: MediaQuery.of(context).size.width * 0.4,
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppColors.ride,
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.ride.withValues(alpha: 0.3),
-                                blurRadius: 12,
-                              ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.directions_car_rounded,
-                            color: AppColors.white,
-                            size: 22,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  height: MediaQuery.of(context).size.height * 0.46,
                 ),
                 Positioned(
                   top: 50,
@@ -231,42 +223,6 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                         Icons.arrow_back_ios_new_rounded,
                         size: 18,
                       ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 50,
-                  right: 20,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.ride,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.ride.withValues(alpha: 0.3),
-                          blurRadius: 12,
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.timer_rounded,
-                          color: AppColors.white,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          eta,
-                          style: AppTextStyles.labelMedium.copyWith(
-                            color: AppColors.white,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
                 ),
@@ -526,41 +482,44 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                             driverPhone.isNotEmpty
                                         ? _callDriver
                                         : null,
-                                    child: Opacity(
-                                      opacity:
-                                          driverPhone != null &&
-                                              driverPhone.isNotEmpty
-                                          ? 1
-                                          : 0.55,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 14,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.ride,
-                                          borderRadius: BorderRadius.circular(
-                                            14,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 14,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color:
+                                            driverPhone != null &&
+                                                driverPhone.isNotEmpty
+                                            ? AppColors.ride
+                                            : AppColors.lightGrey,
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Icon(
+                                            Icons.call_rounded,
+                                            color:
+                                                driverPhone != null &&
+                                                    driverPhone.isNotEmpty
+                                                ? AppColors.white
+                                                : AppColors.mediumGrey,
+                                            size: 20,
                                           ),
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            const Icon(
-                                              Icons.call_rounded,
-                                              color: AppColors.white,
-                                              size: 20,
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            l10n.t(
+                                              'doctor_booking.contact_directly',
                                             ),
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              l10n.t(
-                                                'doctor_booking.contact_directly',
-                                              ),
-                                              style: AppTextStyles.labelMedium
-                                                  .copyWith(
-                                                    color: AppColors.white,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
+                                            style: AppTextStyles.labelMedium
+                                                .copyWith(
+                                                  color:
+                                                      driverPhone != null &&
+                                                          driverPhone.isNotEmpty
+                                                      ? AppColors.white
+                                                      : AppColors.mediumGrey,
+                                                ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
@@ -576,5 +535,22 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
         ],
       ),
     );
+  }
+
+  double _progressForStatus(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'requested':
+        return 0.14;
+      case 'accepted':
+        return 0.28;
+      case 'arriving':
+        return 0.46;
+      case 'in_progress':
+        return 0.7;
+      case 'completed':
+        return 1;
+      default:
+        return 0.22;
+    }
   }
 }
