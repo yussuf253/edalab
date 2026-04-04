@@ -63,7 +63,9 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
       );
     } finally {
       if (mounted) {
@@ -90,7 +92,7 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            '${widget.businessName} Availability',
+            '${widget.businessName} Storefront',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           elevation: 0,
@@ -102,7 +104,10 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
               unselectedLabelColor: Colors.grey,
               indicatorColor: Theme.of(context).colorScheme.primary,
               tabs: tabs
-                  .map((module) => Tab(text: ProModuleHelper.getModuleName(module)))
+                  .map(
+                    (module) =>
+                        Tab(text: ProModuleHelper.getModuleName(module)),
+                  )
                   .toList(),
             ),
           ),
@@ -132,9 +137,14 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                   .map(
                     (module) => _AvailabilityList(
                       module: module,
-                      items: (data[_keyForModule(module)] as List<dynamic>? ?? const [])
-                          .map((entry) => Map<String, dynamic>.from(entry as Map))
-                          .toList(growable: false),
+                      items:
+                          (data[_keyForModule(module)] as List<dynamic>? ??
+                                  const [])
+                              .map(
+                                (entry) =>
+                                    Map<String, dynamic>.from(entry as Map),
+                              )
+                              .toList(growable: false),
                       busyIds: _busyIds,
                       onToggle: (targetId, enabled) => _toggleAvailability(
                         module: _keyForModule(module),
@@ -184,7 +194,10 @@ class _AvailabilityList extends StatelessWidget {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Text('No ${ProModuleHelper.getModuleName(module)} items are bound to this profile yet.'),
+          child: Text(
+            'No ${ProModuleHelper.getModuleName(module)} business is bound to this shop profile yet.',
+            textAlign: TextAlign.center,
+          ),
         ),
       );
     }
@@ -208,10 +221,7 @@ class _AvailabilityList extends StatelessWidget {
               color: color.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              ProModuleHelper.getModuleIcon(module),
-              color: color,
-            ),
+            child: Icon(ProModuleHelper.getModuleIcon(module), color: color),
           ),
           title: Text(
             item['name']?.toString() ?? 'Item',

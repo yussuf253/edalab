@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { requireAuth } from '../middleware/auth';
+import { resolveBindings, syncLaundryOwnership } from './pro.routes';
 import { asyncHandler } from '../utils/async-handler';
 import { signAccessToken } from '../utils/jwt';
 import { hashPassword, verifyPassword } from '../utils/password';
@@ -223,6 +224,10 @@ router.post(
       body.type,
       body.activeModules,
     );
+    const resolvedBindings = await resolveBindings(
+      body.businessName.trim(),
+      activeModules,
+    );
 
     const payload = await prisma.$transaction(async (tx) => {
       const account = await tx.proAccount.findUnique({
@@ -235,6 +240,16 @@ router.post(
       }
 
       if (account.proProfile) {
+        const ownedLaundryServiceIds = await syncLaundryOwnership(
+          account.proProfile.userId,
+          body.type,
+          activeModules,
+          resolvedBindings,
+        );
+        const bindings = {
+          ...resolvedBindings,
+          laundryServiceIds: ownedLaundryServiceIds,
+        };
         const updatedProfile = await tx.proProfile.update({
           where: { id: account.proProfile.id },
           data: {
@@ -242,6 +257,7 @@ router.post(
             activeModules,
             businessName: body.businessName.trim(),
             avatarUrl: body.avatarUrl?.trim() || null,
+            bindings,
           },
         });
 
@@ -268,6 +284,16 @@ router.post(
         legacyUser?.proProfile != null &&
         legacyUser.proProfile.accountId == null
       ) {
+        const ownedLaundryServiceIds = await syncLaundryOwnership(
+          legacyUser.id,
+          body.type,
+          activeModules,
+          resolvedBindings,
+        );
+        const bindings = {
+          ...resolvedBindings,
+          laundryServiceIds: ownedLaundryServiceIds,
+        };
         const linkedProfile = await tx.proProfile.update({
           where: { id: legacyUser.proProfile.id },
           data: {
@@ -276,6 +302,7 @@ router.post(
             activeModules,
             businessName: body.businessName.trim(),
             avatarUrl: body.avatarUrl?.trim() || account.avatarUrl,
+            bindings,
           },
         });
 
@@ -307,6 +334,17 @@ router.post(
         },
       });
 
+      const ownedLaundryServiceIds = await syncLaundryOwnership(
+        internalUser.id,
+        body.type,
+        activeModules,
+        resolvedBindings,
+      );
+      const bindings = {
+        ...resolvedBindings,
+        laundryServiceIds: ownedLaundryServiceIds,
+      };
+
       const profile = await tx.proProfile.create({
         data: {
           accountId: account.id,
@@ -315,6 +353,7 @@ router.post(
           activeModules,
           businessName: body.businessName.trim(),
           avatarUrl: body.avatarUrl?.trim() || account.avatarUrl,
+          bindings,
           isOnline: true,
           isVerified: false,
         },

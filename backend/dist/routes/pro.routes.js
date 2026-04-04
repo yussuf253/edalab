@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.resolveBindings = resolveBindings;
+exports.syncLaundryOwnership = syncLaundryOwnership;
 const client_1 = require("@prisma/client");
 const express_1 = require("express");
 const zod_1 = require("zod");
@@ -425,6 +427,47 @@ async function syncLaundryOwnership(userId, type, activeModules, bindings) {
     });
     return ownedServices.map((service) => service.id);
 }
+async function hydrateProfileBindingsIfMissing(profile) {
+    const bindings = normalizeBindings(profile.bindings);
+    const hasBindings = bindings.shoppingStoreIds.length > 0 ||
+        bindings.restaurantIds.length > 0 ||
+        bindings.restaurantNames.length > 0 ||
+        bindings.pharmacyBusinesses.length > 0 ||
+        bindings.providerIds.length > 0 ||
+        bindings.doctorIds.length > 0 ||
+        bindings.laundryServiceIds.length > 0;
+    if (hasBindings) {
+        return profile;
+    }
+    const resolvedBindings = await resolveBindings(profile.businessName, profile.activeModules);
+    const ownedLaundryServiceIds = await syncLaundryOwnership(profile.userId, profile.type, profile.activeModules, resolvedBindings);
+    return db_1.prisma.proProfile.update({
+        where: { id: profile.id },
+        data: {
+            bindings: {
+                ...resolvedBindings,
+                laundryServiceIds: ownedLaundryServiceIds,
+            },
+        },
+    });
+}
+function emptyShopSummary(module, title, actionLabel, businessName) {
+    return {
+        module,
+        title,
+        subtitle: businessName != null && businessName.trim().length > 0
+            ? `No matching business is currently bound for "${businessName}". Update the pro profile business name to match the real store, restaurant, or pharmacy listing.`
+            : 'No business is currently bound to this module yet.',
+        metrics: [
+            '0 active business units',
+            '0 pending orders',
+            '0 published items',
+            '0 completed today',
+        ],
+        recentItems: [],
+        actionLabel,
+    };
+}
 function deliveryModuleTypeForProfileModule(module) {
     switch (module) {
         case client_1.ProModule.SHOPPING_DELIVERY:
@@ -466,35 +509,32 @@ function orderRecentItems(orders, label) {
         };
     });
 }
-async function buildShoppingSummary(todayStart, bindings) {
-    const orderWhere = bindings.shoppingStoreIds.length === 0
-        ? { moduleType: client_1.ModuleType.SHOPPING }
-        : {
-            moduleType: client_1.ModuleType.SHOPPING,
-            items: {
-                some: {
-                    product: {
-                        shopId: { in: bindings.shoppingStoreIds },
-                    },
+async function buildShoppingSummary(todayStart, bindings, businessName) {
+    if (bindings.shoppingStoreIds.length === 0) {
+        return emptyShopSummary('shopping', 'Shopping Store', 'Review Store Binding', businessName);
+    }
+    const orderWhere = {
+        moduleType: client_1.ModuleType.SHOPPING,
+        items: {
+            some: {
+                product: {
+                    shopId: { in: bindings.shoppingStoreIds },
                 },
             },
-        };
+        },
+    };
     const [productCount, outOfStockCount, pendingOrders, completedToday, recent] = await Promise.all([
         db_1.prisma.product.count({
             where: {
                 moduleType: client_1.ModuleType.SHOPPING,
-                ...(bindings.shoppingStoreIds.length === 0
-                    ? {}
-                    : { shopId: { in: bindings.shoppingStoreIds } }),
+                shopId: { in: bindings.shoppingStoreIds },
             },
         }),
         db_1.prisma.product.count({
             where: {
                 moduleType: client_1.ModuleType.SHOPPING,
                 inStock: false,
-                ...(bindings.shoppingStoreIds.length === 0
-                    ? {}
-                    : { shopId: { in: bindings.shoppingStoreIds } }),
+                shopId: { in: bindings.shoppingStoreIds },
             },
         }),
         db_1.prisma.order.count({
@@ -520,9 +560,7 @@ async function buildShoppingSummary(todayStart, bindings) {
     return {
         module: 'shopping',
         title: 'Shopping Store',
-        subtitle: bindings.shoppingStoreIds.length === 0
-            ? 'Live shopping catalog and order activity across the platform.'
-            : 'Live shopping catalog and order activity for bound stores.',
+        subtitle: 'Live shopping catalog and order activity for your bound stores.',
         metrics: [
             `${productCount} shopping items live`,
             `${pendingOrders} pending shopping orders`,
@@ -533,32 +571,29 @@ async function buildShoppingSummary(todayStart, bindings) {
         actionLabel: 'Review Stock',
     };
 }
-async function buildFoodSummary(todayStart, bindings) {
-    const orderWhere = bindings.restaurantNames.length === 0
-        ? { moduleType: client_1.ModuleType.FOOD }
-        : {
-            moduleType: client_1.ModuleType.FOOD,
-            items: {
-                some: {
-                    brand: { in: bindings.restaurantNames },
-                },
+async function buildFoodSummary(todayStart, bindings, businessName) {
+    if (bindings.restaurantIds.length === 0 || bindings.restaurantNames.length === 0) {
+        return emptyShopSummary('food', 'Food Store', 'Review Restaurant Binding', businessName);
+    }
+    const orderWhere = {
+        moduleType: client_1.ModuleType.FOOD,
+        items: {
+            some: {
+                brand: { in: bindings.restaurantNames },
             },
-        };
+        },
+    };
     const [restaurantCount, menuCount, pendingOrders, completedToday, recent] = await Promise.all([
         db_1.prisma.restaurant.count({
             where: {
                 isOpen: true,
-                ...(bindings.restaurantIds.length === 0
-                    ? {}
-                    : { id: { in: bindings.restaurantIds } }),
+                id: { in: bindings.restaurantIds },
             },
         }),
         db_1.prisma.restaurantMenuItem.count({
             where: {
                 isAvailable: true,
-                ...(bindings.restaurantIds.length === 0
-                    ? {}
-                    : { category: { restaurantId: { in: bindings.restaurantIds } } }),
+                category: { restaurantId: { in: bindings.restaurantIds } },
             },
         }),
         db_1.prisma.order.count({
@@ -584,9 +619,7 @@ async function buildFoodSummary(todayStart, bindings) {
     return {
         module: 'food',
         title: 'Food Store',
-        subtitle: bindings.restaurantIds.length === 0
-            ? 'Restaurant orders and menu operations across the platform.'
-            : 'Restaurant orders and menu operations for bound restaurants.',
+        subtitle: 'Restaurant orders and menu operations for your bound restaurants.',
         metrics: [
             `${restaurantCount} open restaurants`,
             `${menuCount} available dishes`,
@@ -597,7 +630,10 @@ async function buildFoodSummary(todayStart, bindings) {
         actionLabel: 'Open Kitchen Queue',
     };
 }
-async function buildPharmacySummary(todayStart, bindings) {
+async function buildPharmacySummary(todayStart, bindings, businessName) {
+    if (bindings.pharmacyBusinesses.length === 0) {
+        return emptyShopSummary('pharmacy', 'Pharmacy Store', 'Review Pharmacy Binding', businessName);
+    }
     const allProducts = await db_1.prisma.product.findMany({
         where: { moduleType: client_1.ModuleType.PHARMACY },
         select: {
@@ -607,45 +643,35 @@ async function buildPharmacySummary(todayStart, bindings) {
             inStock: true,
         },
     });
-    const filteredProducts = bindings.pharmacyBusinesses.length === 0
-        ? allProducts
-        : allProducts.filter((product) => {
-            const metadata = product.metadata && typeof product.metadata === 'object'
-                ? product.metadata
-                : null;
-            const sourceBusiness = metadata?.sourceBusiness?.toString();
-            return (sourceBusiness != null &&
-                bindings.pharmacyBusinesses.includes(sourceBusiness));
-        });
+    const filteredProducts = allProducts.filter((product) => {
+        const metadata = product.metadata && typeof product.metadata === 'object'
+            ? product.metadata
+            : null;
+        const sourceBusiness = metadata?.sourceBusiness?.toString();
+        return (sourceBusiness != null &&
+            bindings.pharmacyBusinesses.includes(sourceBusiness));
+    });
     const productIds = filteredProducts.map((product) => product.id);
     const [pendingOrders, completedToday, recent] = await Promise.all([
         db_1.prisma.order.count({
             where: {
                 moduleType: client_1.ModuleType.PHARMACY,
-                ...(productIds.length === 0 || bindings.pharmacyBusinesses.length === 0
-                    ? {}
-                    : {
-                        items: {
-                            some: {
-                                productId: { in: productIds },
-                            },
-                        },
-                    }),
+                items: {
+                    some: {
+                        productId: { in: productIds },
+                    },
+                },
                 status: { in: liveOrderStatuses },
             },
         }),
         db_1.prisma.order.count({
             where: {
                 moduleType: client_1.ModuleType.PHARMACY,
-                ...(productIds.length === 0 || bindings.pharmacyBusinesses.length === 0
-                    ? {}
-                    : {
-                        items: {
-                            some: {
-                                productId: { in: productIds },
-                            },
-                        },
-                    }),
+                items: {
+                    some: {
+                        productId: { in: productIds },
+                    },
+                },
                 status: client_1.OrderStatus.COMPLETED,
                 updatedAt: { gte: todayStart },
             },
@@ -653,15 +679,11 @@ async function buildPharmacySummary(todayStart, bindings) {
         db_1.prisma.order.findMany({
             where: {
                 moduleType: client_1.ModuleType.PHARMACY,
-                ...(productIds.length === 0 || bindings.pharmacyBusinesses.length === 0
-                    ? {}
-                    : {
-                        items: {
-                            some: {
-                                productId: { in: productIds },
-                            },
-                        },
-                    }),
+                items: {
+                    some: {
+                        productId: { in: productIds },
+                    },
+                },
             },
             include: { items: true },
             orderBy: { createdAt: 'desc' },
@@ -673,9 +695,7 @@ async function buildPharmacySummary(todayStart, bindings) {
     return {
         module: 'pharmacy',
         title: 'Pharmacy Store',
-        subtitle: bindings.pharmacyBusinesses.length === 0
-            ? 'Medicine catalog and pharmacy order activity across the platform.'
-            : 'Medicine catalog and pharmacy order activity for bound pharmacies.',
+        subtitle: 'Medicine catalog and pharmacy order activity for your bound pharmacies.',
         metrics: [
             `${medicineCount} medicines listed`,
             `${prescriptionItems} prescription-only items`,
@@ -1005,11 +1025,11 @@ async function buildDashboard(profile) {
             const summaries = await Promise.all(profile.activeModules.map((module) => {
                 switch (module) {
                     case client_1.ProModule.SHOPPING:
-                        return buildShoppingSummary(todayStart, bindings);
+                        return buildShoppingSummary(todayStart, bindings, profile.businessName);
                     case client_1.ProModule.FOOD:
-                        return buildFoodSummary(todayStart, bindings);
+                        return buildFoodSummary(todayStart, bindings, profile.businessName);
                     case client_1.ProModule.PHARMACY:
-                        return buildPharmacySummary(todayStart, bindings);
+                        return buildPharmacySummary(todayStart, bindings, profile.businessName);
                     default:
                         return Promise.resolve(null);
                 }
@@ -1021,7 +1041,7 @@ async function buildDashboard(profile) {
             }, 0);
             return {
                 headline: 'Store operations',
-                scopeNote: 'Live store activity is scoped to bound businesses when a match is found, with platform-wide fallback for unmatched modules.',
+                scopeNote: 'This workspace is limited to the store, restaurant, and pharmacy businesses bound to this profile. If a module shows no business, update the business name so it matches the real listing.',
                 stats: [
                     {
                         key: 'modules',
@@ -1311,7 +1331,8 @@ router.post('/:userId/shop-order-status', (0, async_handler_1.asyncHandler)(asyn
     if (!profile || profile.type !== client_1.ProProfileType.SHOP) {
         return res.status(404).json({ error: 'Shop pro profile not found.' });
     }
-    const bindings = normalizeBindings(profile.bindings);
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
     const order = await db_1.prisma.order.findUnique({
         where: { id: body.orderId },
         include: {
@@ -1352,7 +1373,8 @@ router.post('/:userId/provider-order-status', (0, async_handler_1.asyncHandler)(
     if (!profile || profile.type !== client_1.ProProfileType.PROVIDER) {
         return res.status(404).json({ error: 'Provider pro profile not found.' });
     }
-    const bindings = normalizeBindings(profile.bindings);
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
     const order = await db_1.prisma.order.findUnique({
         where: { id: body.orderId },
         include: {
@@ -1418,12 +1440,13 @@ router.get('/:userId/shop-queue', (0, async_handler_1.asyncHandler)(async (req, 
     if (!profile || profile.type !== client_1.ProProfileType.SHOP) {
         return res.status(404).json({ error: 'Shop pro profile not found.' });
     }
-    const bindings = normalizeBindings(profile.bindings);
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
     const [shoppingOrders, foodOrders, pharmacyCandidates] = await Promise.all([
-        db_1.prisma.order.findMany({
-            where: bindings.shoppingStoreIds.length === 0
-                ? { moduleType: client_1.ModuleType.SHOPPING }
-                : {
+        bindings.shoppingStoreIds.length === 0
+            ? Promise.resolve([])
+            : db_1.prisma.order.findMany({
+                where: {
                     moduleType: client_1.ModuleType.SHOPPING,
                     items: {
                         some: {
@@ -1433,26 +1456,26 @@ router.get('/:userId/shop-queue', (0, async_handler_1.asyncHandler)(async (req, 
                         },
                     },
                 },
-            include: {
-                user: {
-                    select: { firstName: true, lastName: true, phone: true },
-                },
-                address: { select: { line1: true } },
-                items: {
-                    include: {
-                        product: {
-                            select: { shopId: true, metadata: true },
+                include: {
+                    user: {
+                        select: { firstName: true, lastName: true, phone: true },
+                    },
+                    address: { select: { line1: true } },
+                    items: {
+                        include: {
+                            product: {
+                                select: { shopId: true, metadata: true },
+                            },
                         },
                     },
                 },
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 100,
-        }),
-        db_1.prisma.order.findMany({
-            where: bindings.restaurantNames.length === 0
-                ? { moduleType: client_1.ModuleType.FOOD }
-                : {
+                orderBy: { createdAt: 'desc' },
+                take: 100,
+            }),
+        bindings.restaurantNames.length === 0
+            ? Promise.resolve([])
+            : db_1.prisma.order.findMany({
+                where: {
                     moduleType: client_1.ModuleType.FOOD,
                     items: {
                         some: {
@@ -1460,22 +1483,22 @@ router.get('/:userId/shop-queue', (0, async_handler_1.asyncHandler)(async (req, 
                         },
                     },
                 },
-            include: {
-                user: {
-                    select: { firstName: true, lastName: true, phone: true },
-                },
-                address: { select: { line1: true } },
-                items: {
-                    include: {
-                        product: {
-                            select: { shopId: true, metadata: true },
+                include: {
+                    user: {
+                        select: { firstName: true, lastName: true, phone: true },
+                    },
+                    address: { select: { line1: true } },
+                    items: {
+                        include: {
+                            product: {
+                                select: { shopId: true, metadata: true },
+                            },
                         },
                     },
                 },
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 100,
-        }),
+                orderBy: { createdAt: 'desc' },
+                take: 100,
+            }),
         db_1.prisma.order.findMany({
             where: { moduleType: client_1.ModuleType.PHARMACY },
             include: {
@@ -1496,7 +1519,7 @@ router.get('/:userId/shop-queue', (0, async_handler_1.asyncHandler)(async (req, 
         }),
     ]);
     const pharmacyOrders = bindings.pharmacyBusinesses.length === 0
-        ? pharmacyCandidates
+        ? []
         : pharmacyCandidates.filter((order) => order.items.some((item) => {
             const metadata = item.product?.metadata &&
                 typeof item.product.metadata === 'object' &&
@@ -1673,30 +1696,31 @@ router.get('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async
     if (!profile || profile.type !== client_1.ProProfileType.SHOP) {
         return res.status(404).json({ error: 'Shop pro profile not found.' });
     }
-    const bindings = normalizeBindings(profile.bindings);
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
     const [stores, restaurants, pharmacyProducts] = await Promise.all([
-        db_1.prisma.shoppingStore.findMany({
-            where: bindings.shoppingStoreIds.length === 0
-                ? undefined
-                : { id: { in: bindings.shoppingStoreIds } },
-            select: {
-                id: true,
-                name: true,
-                isOpen: true,
-            },
-            orderBy: { name: 'asc' },
-        }),
-        db_1.prisma.restaurant.findMany({
-            where: bindings.restaurantIds.length === 0
-                ? undefined
-                : { id: { in: bindings.restaurantIds } },
-            select: {
-                id: true,
-                name: true,
-                isOpen: true,
-            },
-            orderBy: { name: 'asc' },
-        }),
+        bindings.shoppingStoreIds.length === 0
+            ? Promise.resolve([])
+            : db_1.prisma.shoppingStore.findMany({
+                where: { id: { in: bindings.shoppingStoreIds } },
+                select: {
+                    id: true,
+                    name: true,
+                    isOpen: true,
+                },
+                orderBy: { name: 'asc' },
+            }),
+        bindings.restaurantIds.length === 0
+            ? Promise.resolve([])
+            : db_1.prisma.restaurant.findMany({
+                where: { id: { in: bindings.restaurantIds } },
+                select: {
+                    id: true,
+                    name: true,
+                    isOpen: true,
+                },
+                orderBy: { name: 'asc' },
+            }),
         db_1.prisma.product.findMany({
             where: {
                 moduleType: client_1.ModuleType.PHARMACY,
@@ -1711,7 +1735,7 @@ router.get('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async
         }),
     ]);
     const pharmacyItems = bindings.pharmacyBusinesses.length === 0
-        ? pharmacyProducts
+        ? []
         : pharmacyProducts.filter((product) => {
             const metadata = product.metadata &&
                 typeof product.metadata === 'object' &&
@@ -1747,7 +1771,8 @@ router.post('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(asyn
     if (!profile || profile.type !== client_1.ProProfileType.SHOP) {
         return res.status(404).json({ error: 'Shop pro profile not found.' });
     }
-    const bindings = normalizeBindings(profile.bindings);
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
     if (body.module === 'shopping') {
         if (bindings.shoppingStoreIds.length === 0 ||
             !bindings.shoppingStoreIds.includes(body.targetId)) {
@@ -2145,7 +2170,8 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
     if (!profile) {
         return res.status(404).json({ error: 'Pro profile not found.' });
     }
-    res.json(serializeProProfile(profile));
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    res.json(serializeProProfile(hydratedProfile));
 }));
 router.get('/:userId/dashboard', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const userId = (0, http_1.getParam)(req.params.userId, 'userId');
@@ -2155,9 +2181,10 @@ router.get('/:userId/dashboard', (0, async_handler_1.asyncHandler)(async (req, r
     if (!profile) {
         return res.status(404).json({ error: 'Pro profile not found.' });
     }
-    const dashboard = await buildDashboard(profile);
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const dashboard = await buildDashboard(hydratedProfile);
     res.json({
-        profile: serializeProProfile(profile),
+        profile: serializeProProfile(hydratedProfile),
         ...dashboard,
     });
 }));

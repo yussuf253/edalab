@@ -60,35 +60,37 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
         return [
           _OperationAction(
             title: 'Orders Queue',
-            subtitle: 'Manage shopping, food, and pharmacy fulfillment.',
+            subtitle: 'Review the orders coming into your own storefront.',
             icon: Icons.receipt_long_outlined,
             color: AppColors.shopping,
             onTap: () => _open(ProRoutePaths.shopQueue),
           ),
           _OperationAction(
             title: 'Catalog & Availability',
-            subtitle: 'Pause stores, restaurant lanes, and pharmacy inventory.',
+            subtitle:
+                'Control what customers can currently buy from your business.',
             icon: Icons.storefront_outlined,
             color: AppColors.primary,
             onTap: () => _open(ProRoutePaths.shopCatalog),
           ),
           _OperationAction(
             title: 'Shopping Lane',
-            subtitle: 'Focus only on retail orders and store operations.',
+            subtitle: 'Focus only on your retail orders and fulfillment.',
             icon: Icons.shopping_bag_outlined,
             color: AppColors.shopping,
             onTap: () => _open('${ProRoutePaths.shopQueue}?module=shopping'),
           ),
           _OperationAction(
             title: 'Food Lane',
-            subtitle: 'Open the kitchen queue and prep flow.',
+            subtitle: 'Focus only on your kitchen queue and prep flow.',
             icon: Icons.restaurant_menu,
             color: AppColors.food,
             onTap: () => _open('${ProRoutePaths.shopQueue}?module=food'),
           ),
           _OperationAction(
             title: 'Pharmacy Lane',
-            subtitle: 'Handle medicine orders separately from other sales.',
+            subtitle:
+                'Handle your medicine orders separately from other sales.',
             icon: Icons.local_pharmacy_outlined,
             color: AppColors.pharmacy,
             onTap: () => _open('${ProRoutePaths.shopQueue}?module=pharmacy'),
@@ -122,7 +124,8 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             subtitle: 'Open the home services queue directly.',
             icon: Icons.home_repair_service_outlined,
             color: AppColors.homeServices,
-            onTap: () => _open('${ProRoutePaths.providerQueue}?module=services'),
+            onTap: () =>
+                _open('${ProRoutePaths.providerQueue}?module=services'),
           ),
           _OperationAction(
             title: 'Laundry Only',
@@ -189,7 +192,11 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
     return Scaffold(
       drawer: const ProDrawer(),
       appBar: AppBar(
-        title: const Text('Operations'),
+        title: Text(
+          widget.profile.type == ProProfileType.shop
+              ? 'Store Tools'
+              : 'Operations',
+        ),
         backgroundColor: profileColor,
         foregroundColor: Colors.white,
       ),
@@ -227,7 +234,9 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
                 if (data?.moduleSummaries.isNotEmpty == true) ...[
                   const SizedBox(height: 12),
                   Text(
-                    'Module Workstreams',
+                    widget.profile.type == ProProfileType.shop
+                        ? 'Store Modules'
+                        : 'Module Workstreams',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),

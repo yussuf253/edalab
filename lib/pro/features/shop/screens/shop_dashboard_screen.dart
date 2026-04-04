@@ -97,13 +97,17 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Order updated to ${nextStatus.replaceAll('_', ' ')}.')),
+        SnackBar(
+          content: Text('Order updated to ${nextStatus.replaceAll('_', ' ')}.'),
+        ),
       );
       await _refreshDashboard();
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
       );
     } finally {
       if (mounted) {
@@ -111,30 +115,6 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
       }
     }
   }
-
-  List<ProDashboardMetric> get _fallbackStats => const [
-    ProDashboardMetric(
-      key: 'modules',
-      title: 'Live Modules',
-      value: '3',
-      trend: 'Enabled for this profile',
-    ),
-    ProDashboardMetric(
-      key: 'pending',
-      title: 'Pending Orders',
-      value: '26',
-    ),
-    ProDashboardMetric(
-      key: 'entities',
-      title: 'Workstreams',
-      value: '3',
-    ),
-    ProDashboardMetric(
-      key: 'alerts',
-      title: 'Attention Items',
-      value: '5',
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -166,10 +146,12 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
         future: _dashboardFuture,
         builder: (context, snapshot) {
           final data = snapshot.data;
-          final stats = data?.stats.isNotEmpty == true ? data!.stats : _fallbackStats;
-          final moduleSummaries = data?.moduleSummaries ?? const <ProDashboardModuleSummary>[];
+          final stats = data?.stats ?? const <ProDashboardMetric>[];
+          final moduleSummaries =
+              data?.moduleSummaries ?? const <ProDashboardModuleSummary>[];
 
-          if (snapshot.connectionState == ConnectionState.waiting && data == null) {
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              data == null) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -179,10 +161,17 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  data?.headline.isNotEmpty == true ? data!.headline : 'Store Operations',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  data?.headline.isNotEmpty == true
+                      ? data!.headline
+                      : 'Store operations',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Run your own storefront, review live orders, and control what customers can currently buy from your business.',
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 16),
                 Wrap(
@@ -205,70 +194,89 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
                   const SizedBox(height: 16),
                   _ScopeNote(message: data!.scopeNote!),
                 ],
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats[0].title,
-                        value: stats[0].value,
-                        icon: Icons.dashboard_customize_outlined,
-                        color: AppColors.shopping,
-                        trend: stats[0].trend,
-                        isUp: stats[0].isUp,
+                if (stats.length >= 4) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ProStatCard(
+                          title: stats[0].title,
+                          value: stats[0].value,
+                          icon: Icons.storefront_outlined,
+                          color: AppColors.shopping,
+                          trend: stats[0].trend,
+                          isUp: stats[0].isUp,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats[1].title,
-                        value: stats[1].value,
-                        icon: Icons.shopping_bag_outlined,
-                        color: Colors.orange,
-                        trend: stats[1].trend,
-                        isUp: stats[1].isUp,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ProStatCard(
+                          title: stats[1].title,
+                          value: stats[1].value,
+                          icon: Icons.receipt_long_outlined,
+                          color: Colors.orange,
+                          trend: stats[1].trend,
+                          isUp: stats[1].isUp,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats[2].title,
-                        value: stats[2].value,
-                        icon: Icons.storefront_outlined,
-                        color: Colors.blue,
-                        trend: stats[2].trend,
-                        isUp: stats[2].isUp,
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ProStatCard(
+                          title: stats[2].title,
+                          value: stats[2].value,
+                          icon: Icons.inventory_2_outlined,
+                          color: Colors.blue,
+                          trend: stats[2].trend,
+                          isUp: stats[2].isUp,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats[3].title,
-                        value: stats[3].value,
-                        icon: Icons.warning_amber_rounded,
-                        color: Colors.red,
-                        trend: stats[3].trend,
-                        isUp: stats[3].isUp,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ProStatCard(
+                          title: stats[3].title,
+                          value: stats[3].value,
+                          icon: Icons.warning_amber_rounded,
+                          color: Colors.red,
+                          trend: stats[3].trend,
+                          isUp: stats[3].isUp,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 24),
+                _ManagementStrip(
+                  onOpenQueue: () => context.push(ProRoutePaths.shopQueue),
+                  onOpenStorefront: () async {
+                    await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => ShopCatalogScreen(
+                          userId: widget.profile.userId,
+                          businessName: widget.profile.businessName,
+                          modules: activeModules,
+                        ),
+                      ),
+                    );
+                    if (!mounted) return;
+                    await _refreshDashboard();
+                  },
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  'Module Workstreams',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  'Store Modules',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 if (moduleSummaries.isNotEmpty)
                   ...moduleSummaries.map(_buildModuleCard)
                 else
-                  ..._fallbackCards().map(_buildFallbackCard),
+                  const _EmptyStoreState(),
               ],
             ),
           );
@@ -289,7 +297,7 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
           await _refreshDashboard();
         },
         icon: const Icon(Icons.tune),
-        label: const Text('Manage Availability'),
+        label: const Text('Manage Storefront'),
       ),
     );
   }
@@ -310,7 +318,10 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
               children: [
                 CircleAvatar(
                   backgroundColor: color.withValues(alpha: 0.12),
-                  child: Icon(ProModuleHelper.getModuleIcon(module), color: color),
+                  child: Icon(
+                    ProModuleHelper.getModuleIcon(module),
+                    color: color,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -345,54 +356,69 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              ...summary.recentItems.take(2).map(
-                (item) => Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.title,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+              ...summary.recentItems
+                  .take(2)
+                  .map(
+                    (item) => Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(height: 4),
-                      Text(item.subtitle),
-                      const SizedBox(height: 8),
-                      Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              item.status.replaceAll('_', ' '),
-                              style: TextStyle(
-                                color: color,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                          Text(
+                            item.title,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
-                          if (_nextShopStatus(item.status) != null)
-                            ElevatedButton(
-                              onPressed: _busyItemIds.contains(item.id)
-                                  ? null
-                                  : () => _advanceOrderStatus(item),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: color,
-                                foregroundColor: Colors.white,
+                          const SizedBox(height: 4),
+                          Text(item.subtitle),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  item.status.replaceAll('_', ' '),
+                                  style: TextStyle(
+                                    color: color,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
-                              child: Text(
-                                _busyItemIds.contains(item.id)
-                                    ? 'Updating...'
-                                    : _statusActionLabel(item.status),
-                              ),
-                            ),
+                              if (_nextShopStatus(item.status) != null)
+                                ElevatedButton(
+                                  onPressed: _busyItemIds.contains(item.id)
+                                      ? null
+                                      : () => _advanceOrderStatus(item),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: color,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: Text(
+                                    _busyItemIds.contains(item.id)
+                                        ? 'Updating...'
+                                        : _statusActionLabel(item.status),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
+            ],
+            if (summary.recentItems.isEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'No live activity is available for this business unit right now.',
                 ),
               ),
             ],
@@ -411,67 +437,11 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
                     ),
                   );
                 },
-                child: Text(summary.actionLabel),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  List<_FallbackCard> _fallbackCards() {
-    return const [
-      _FallbackCard(
-        title: 'Shopping Store',
-        subtitle: 'Manage retail catalog and customer orders.',
-        metrics: [
-          '124 live items',
-          '8 low-stock products',
-          '14 pending orders',
-        ],
-      ),
-      _FallbackCard(
-        title: 'Food Store',
-        subtitle: 'Handle menu prep, kitchen queue, and delivery timing.',
-        metrics: [
-          '36 menu items',
-          '9 orders in prep',
-          '18 min average prep time',
-        ],
-      ),
-      _FallbackCard(
-        title: 'Pharmacy Store',
-        subtitle: 'Review medicines, fulfillment, and prescription-sensitive orders.',
-        metrics: [
-          '82 listed medicines',
-          '4 prescription reviews',
-          '6 urgent orders',
-        ],
-      ),
-    ];
-  }
-
-  Widget _buildFallbackCard(_FallbackCard card) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              card.title,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 4),
-            Text(card.subtitle),
-            const SizedBox(height: 12),
-            ...card.metrics.map(
-              (metric) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text(metric),
+                child: Text(
+                  summary.recentItems.isEmpty
+                      ? 'Open Queue'
+                      : summary.actionLabel,
+                ),
               ),
             ),
           ],
@@ -510,14 +480,70 @@ class _ScopeNote extends StatelessWidget {
   }
 }
 
-class _FallbackCard {
-  final String title;
-  final String subtitle;
-  final List<String> metrics;
+class _ManagementStrip extends StatelessWidget {
+  final VoidCallback onOpenQueue;
+  final VoidCallback onOpenStorefront;
 
-  const _FallbackCard({
-    required this.title,
-    required this.subtitle,
-    required this.metrics,
+  const _ManagementStrip({
+    required this.onOpenQueue,
+    required this.onOpenStorefront,
   });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: onOpenQueue,
+            icon: const Icon(Icons.receipt_long_outlined),
+            label: const Text('Orders Queue'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: onOpenStorefront,
+            icon: const Icon(Icons.storefront_outlined),
+            label: const Text('Storefront'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EmptyStoreState extends StatelessWidget {
+  const _EmptyStoreState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Icon(
+              Icons.store_mall_directory_outlined,
+              size: 40,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'No store modules are bound to this shop profile yet.',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Once your business name matches a real store, restaurant, or pharmacy listing, this dashboard will show only your own operations.',
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

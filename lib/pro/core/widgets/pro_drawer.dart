@@ -62,7 +62,11 @@ class ProDrawer extends StatelessWidget {
               children: [
                 ListTile(
                   leading: const Icon(Icons.dashboard),
-                  title: const Text('Workspace'),
+                  title: Text(
+                    proProfile.type == ProProfileType.shop
+                        ? 'Store Dashboard'
+                        : 'Workspace',
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     context.go(
@@ -72,7 +76,11 @@ class ProDrawer extends StatelessWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.widgets_outlined),
-                  title: const Text('Operations'),
+                  title: Text(
+                    proProfile.type == ProProfileType.shop
+                        ? 'Store Tools'
+                        : 'Operations',
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     context.push(ProRoutePaths.operations);
@@ -88,7 +96,11 @@ class ProDrawer extends StatelessWidget {
                 ),
                 ListTile(
                   leading: const Icon(Icons.insights_outlined),
-                  title: const Text('Insights'),
+                  title: Text(
+                    proProfile.type == ProProfileType.shop
+                        ? 'Store Insights'
+                        : 'Insights',
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     context.push(ProRoutePaths.insights);
@@ -108,7 +120,9 @@ class ProDrawer extends StatelessWidget {
                     vertical: 8,
                   ),
                   child: Text(
-                    'ACTIVE MODULES',
+                    proProfile.type == ProProfileType.shop
+                        ? 'STORE MODULES'
+                        : 'ACTIVE MODULES',
                     style: Theme.of(context).textTheme.labelSmall,
                   ),
                 ),
