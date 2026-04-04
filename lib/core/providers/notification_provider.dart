@@ -8,9 +8,8 @@ import 'auth_provider.dart';
 import 'cart_provider.dart';
 
 class NotificationProvider extends ChangeNotifier {
-  NotificationProvider({
-    NotificationRepository? repository,
-  }) : _repository = repository ?? const NotificationRepository();
+  NotificationProvider({NotificationRepository? repository})
+    : _repository = repository ?? const NotificationRepository();
 
   final List<AppNotificationModel> _notifications = [];
   final NotificationRepository _repository;
@@ -30,6 +29,7 @@ class NotificationProvider extends ChangeNotifier {
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return List.unmodifiable(items);
   }
+
   int get unreadCount => _notifications.where((item) => !item.isRead).length;
   bool get hasUnread => unreadCount > 0;
 
@@ -74,6 +74,26 @@ class NotificationProvider extends ChangeNotifier {
     );
   }
 
+  Future<void> syncProSession({required String? userId}) async {
+    final nextScope = userId == null ? 'pro_guest' : 'pro_$userId';
+    final sessionSignature = 'pro|$nextScope';
+
+    if (_lastSessionSignature == sessionSignature) {
+      return;
+    }
+
+    _lastSessionSignature = sessionSignature;
+    _currentUserId = userId;
+
+    if (_scope != nextScope) {
+      await _loadScope(nextScope);
+    }
+
+    if (userId != null) {
+      await refreshFromServer(userId);
+    }
+  }
+
   Future<void> addNotification(
     AppNotificationModel notification, {
     bool allowDuplicate = false,
@@ -95,7 +115,9 @@ class NotificationProvider extends ChangeNotifier {
   Future<void> markAsRead(String id) async {
     final index = _notifications.indexWhere((item) => item.id == id);
     if (index < 0 || _notifications[index].isRead) return;
-    _notifications[index] = _notifications[index].copyWith(readAt: DateTime.now());
+    _notifications[index] = _notifications[index].copyWith(
+      readAt: DateTime.now(),
+    );
     await _persist();
     final remoteId = _notifications[index].id;
     if (remoteId.isNotEmpty) {
@@ -157,7 +179,9 @@ class NotificationProvider extends ChangeNotifier {
     _notifications
       ..clear()
       ..addAll(
-        raw == null || raw.isEmpty ? _defaultInbox() : AppNotificationModel.decodeList(raw),
+        raw == null || raw.isEmpty
+            ? _defaultInbox()
+            : AppNotificationModel.decodeList(raw),
       );
     _notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     _isLoading = false;
@@ -186,9 +210,7 @@ class NotificationProvider extends ChangeNotifier {
   Future<void> syncPushToken(String token) async {
     final userId = _currentUserId;
     if (userId == null || token.isEmpty) return;
-    final platform = kIsWeb
-        ? 'web'
-        : defaultTargetPlatform.name.toLowerCase();
+    final platform = kIsWeb ? 'web' : defaultTargetPlatform.name.toLowerCase();
     await _repository.registerPushToken(
       userId: userId,
       token: token,
@@ -210,7 +232,8 @@ class NotificationProvider extends ChangeNotifier {
       await addNotification(
         NotificationService.reminder(
           title: 'Your activity updates live here',
-          body: 'Orders, bookings, rides, promos, and account nudges will appear in one smart inbox.',
+          body:
+              'Orders, bookings, rides, promos, and account nudges will appear in one smart inbox.',
           module: NotificationModule.system,
           route: '/notifications',
           dedupeKey: 'system:inbox:intro',
@@ -222,7 +245,8 @@ class NotificationProvider extends ChangeNotifier {
       await addNotification(
         NotificationService.account(
           title: 'Add a saved address',
-          body: 'Delivery, home services, and laundry will move faster once a default address is added.',
+          body:
+              'Delivery, home services, and laundry will move faster once a default address is added.',
           route: '/profile/addresses',
           dedupeKey: 'account:missing_address:${user.id}',
         ),
@@ -233,7 +257,8 @@ class NotificationProvider extends ChangeNotifier {
       await addNotification(
         NotificationService.reminder(
           title: 'You have $cartItems item${cartItems == 1 ? '' : 's'} waiting',
-          body: 'Your cart is still active. Finish checkout when you are ready and we will keep the order updates here.',
+          body:
+              'Your cart is still active. Finish checkout when you are ready and we will keep the order updates here.',
           module: NotificationModule.orders,
           route: '/cart',
           dedupeKey: 'cart:active:${user.id}:$cartItems',
@@ -242,11 +267,14 @@ class NotificationProvider extends ChangeNotifier {
     }
 
     final promoCode = cartProvider.promoCode;
-    if (_preferences.promotionsEnabled && promoCode != null && promoCode.isNotEmpty) {
+    if (_preferences.promotionsEnabled &&
+        promoCode != null &&
+        promoCode.isNotEmpty) {
       await addNotification(
         NotificationService.promotion(
           title: 'Promo $promoCode is active',
-          body: 'Your discount is already applied. Complete checkout before you lose the current basket state.',
+          body:
+              'Your discount is already applied. Complete checkout before you lose the current basket state.',
           promoCode: promoCode,
           route: '/checkout',
         ),
@@ -283,9 +311,7 @@ class NotificationProvider extends ChangeNotifier {
         .map((item) => item.dedupeKey)
         .whereType<String>()
         .toSet();
-    final mergedById = {
-      for (final item in _notifications) item.id: item,
-    };
+    final mergedById = {for (final item in _notifications) item.id: item};
     final mergedByDedupe = {
       for (final item in _notifications)
         if (item.dedupeKey != null) item.dedupeKey!: item.id,
@@ -337,10 +363,7 @@ class NotificationProvider extends ChangeNotifier {
   ) {
     return remote.copyWith(
       readAt: remote.readAt ?? local.readAt,
-      metadata: {
-        ...local.metadata,
-        ...remote.metadata,
-      },
+      metadata: {...local.metadata, ...remote.metadata},
       dedupeKey: remote.dedupeKey ?? local.dedupeKey,
       route: remote.route ?? local.route,
     );
@@ -350,7 +373,8 @@ class NotificationProvider extends ChangeNotifier {
     return [
       NotificationService.reminder(
         title: 'Welcome to your smart inbox',
-        body: 'We group updates by module so your orders, rides, care bookings, and offers stay easy to scan.',
+        body:
+            'We group updates by module so your orders, rides, care bookings, and offers stay easy to scan.',
         module: NotificationModule.system,
         route: '/notifications',
         dedupeKey: 'system:welcome',
@@ -366,8 +390,6 @@ class NotificationProvider extends ChangeNotifier {
   }
 
   Future<void> _persistPreferences() async {
-    await AppPreferences.setNotificationsPreferencesJson(
-      _preferences.encode(),
-    );
+    await AppPreferences.setNotificationsPreferencesJson(_preferences.encode());
   }
 }

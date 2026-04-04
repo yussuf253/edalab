@@ -22,6 +22,7 @@ class ProAccountScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final proAuth = context.watch<ProAuthProvider>();
     final currentProfile = proAuth.currentProfile ?? profile;
+    final currentAccount = proAuth.currentAccount;
     final profileColor = ProModuleHelper.getProfileColor(currentProfile.type);
 
     return Scaffold(
@@ -119,7 +120,9 @@ class ProAccountScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Linked user account: ${currentProfile.userId}',
+                  currentAccount == null
+                      ? 'Workspace ID: ${currentProfile.id}'
+                      : 'Signed in as ${currentAccount.email}',
                   style: const TextStyle(color: Colors.white70),
                 ),
               ],

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/providers/auth_provider.dart';
 import '../../../../core/storage/app_preferences.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../core/models/pro_profile.dart';
@@ -37,17 +36,8 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    final auth = context.read<AuthProvider>();
     final messenger = ScaffoldMessenger.of(context);
     FocusScope.of(context).unfocus();
-    final userId = auth.user?.id;
-
-    if (userId == null || userId.isEmpty) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Please log in from the user app first')),
-      );
-      return;
-    }
 
     if (_selectedProfileType == null) {
       messenger.showSnackBar(
@@ -68,14 +58,11 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
     });
 
     try {
-      await proAuth.signUpAsPro(
-        userId: userId,
+      await proAuth.completeProfile(
         type: _selectedProfileType!,
         selectedModules: _selectedModules.toList(),
         businessName: _businessNameController.text.trim(),
       );
-
-      await proAuth.fetchProfile(userId);
 
       if (!mounted) return;
 
@@ -90,7 +77,9 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
       await AppPreferences.setHasSeenProOnboarding(true);
       if (!mounted) return;
 
-      context.go(ProRoutePaths.homeForProfileType(proAuth.currentProfile!.type));
+      context.go(
+        ProRoutePaths.homeForProfileType(proAuth.currentProfile!.type),
+      );
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -110,6 +99,30 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
       body: SafeArea(
         child: Consumer<ProAuthProvider>(
           builder: (context, proAuth, _) {
+            if (proAuth.currentAccount == null) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.lock_outline_rounded, size: 40),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Create or sign in to a pro account first before setting up your workspace.',
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      AppButton(
+                        text: 'Go to Pro Sign In',
+                        onPressed: () => context.go(ProRoutePaths.login),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
             return SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Form(
@@ -117,6 +130,33 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (proAuth.currentAccount != null) ...[
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.verified_user_outlined,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Signed in as ${proAuth.currentAccount!.email}. Now choose the pro profile and modules you want to operate.',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
                     if (proAuth.isLoading) ...[
                       const LinearProgressIndicator(),
                       const SizedBox(height: 16),

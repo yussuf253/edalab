@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/providers/auth_provider.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../auth/screens/pro_signup_screen.dart';
@@ -12,45 +11,8 @@ import '../../rider/screens/rider_dashboard_screen.dart';
 import '../../shop/screens/shop_dashboard_screen.dart';
 import 'pro_welcome_screen.dart';
 
-class ProEntryScreen extends StatefulWidget {
+class ProEntryScreen extends StatelessWidget {
   const ProEntryScreen({super.key});
-
-  @override
-  State<ProEntryScreen> createState() => _ProEntryScreenState();
-}
-
-class _ProEntryScreenState extends State<ProEntryScreen> {
-  String? _requestedUserId;
-  String? _resolvedUserId;
-
-  void _ensureProfileLoaded(
-    AuthProvider authProvider,
-    ProAuthProvider proAuthProvider,
-  ) {
-    final userId = authProvider.user?.id;
-
-    if (userId == null || userId.isEmpty) {
-      _requestedUserId = null;
-      _resolvedUserId = null;
-      return;
-    }
-
-    if (proAuthProvider.currentProfile?.userId == userId ||
-        proAuthProvider.isLoading ||
-        _requestedUserId == userId ||
-        _resolvedUserId == userId) {
-      return;
-    }
-
-    _requestedUserId = userId;
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (!mounted) return;
-      await context.read<ProAuthProvider>().fetchProfile(userId);
-      if (!mounted) return;
-      _requestedUserId = null;
-      _resolvedUserId = userId;
-    });
-  }
 
   Widget _buildModuleHome(ProProfile profile) {
     switch (profile.type) {
@@ -67,38 +29,17 @@ class _ProEntryScreenState extends State<ProEntryScreen> {
     }
   }
 
-  bool _isResolvingInitialProfile(
-    AuthProvider authProvider,
-    ProAuthProvider proAuthProvider,
-  ) {
-    final userId = authProvider.user?.id;
-    if (userId == null || userId.isEmpty) {
-      return false;
-    }
-
-    return proAuthProvider.currentProfile == null &&
-        proAuthProvider.isLoading &&
-        _requestedUserId == userId &&
-        _resolvedUserId != userId;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
     final proAuthProvider = context.watch<ProAuthProvider>();
 
-    if (authProvider.isLoading) {
+    if (!proAuthProvider.isInitialized || proAuthProvider.isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (!authProvider.isLoggedIn || authProvider.user == null) {
+    if (!proAuthProvider.isAuthenticated ||
+        proAuthProvider.currentAccount == null) {
       return const ProWelcomeScreen();
-    }
-
-    _ensureProfileLoaded(authProvider, proAuthProvider);
-
-    if (_isResolvingInitialProfile(authProvider, proAuthProvider)) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (proAuthProvider.currentProfile == null) {

@@ -1,11 +1,4 @@
-
-enum ProProfileType {
-  shop,
-  provider,
-  doctor,
-  delivery,
-  rider,
-}
+enum ProProfileType { shop, provider, doctor, delivery, rider }
 
 enum ProModule {
   shopping,
@@ -22,6 +15,7 @@ enum ProModule {
 
 class ProProfile {
   final String id;
+  final String? accountId;
   final String userId;
   final ProProfileType type;
   final List<ProModule> activeModules;
@@ -29,9 +23,10 @@ class ProProfile {
   final String? avatarUrl;
   final bool isOnline;
   final bool isVerified;
-  
+
   const ProProfile({
     required this.id,
+    this.accountId,
     required this.userId,
     required this.type,
     required this.activeModules,
@@ -44,6 +39,7 @@ class ProProfile {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'accountId': accountId,
       'userId': userId,
       'type': type.name,
       'activeModules': activeModules.map((e) => e.name).toList(),
@@ -63,11 +59,9 @@ class ProProfile {
 
     return ProProfile(
       id: json['id'] as String? ?? '',
+      accountId: json['accountId'] as String?,
       userId: json['userId'] as String? ?? '',
-      type: _typeFromRaw(
-        json['type']?.toString(),
-        parsedModules,
-      ),
+      type: _typeFromRaw(json['type']?.toString(), parsedModules),
       activeModules: parsedModules,
       businessName: json['businessName'] as String? ?? '',
       avatarUrl: json['avatarUrl'] as String?,
@@ -78,6 +72,7 @@ class ProProfile {
 
   ProProfile copyWith({
     String? id,
+    String? accountId,
     String? userId,
     ProProfileType? type,
     List<ProModule>? activeModules,
@@ -88,6 +83,7 @@ class ProProfile {
   }) {
     return ProProfile(
       id: id ?? this.id,
+      accountId: accountId ?? this.accountId,
       userId: userId ?? this.userId,
       type: type ?? this.type,
       activeModules: activeModules ?? this.activeModules,
@@ -98,10 +94,7 @@ class ProProfile {
     );
   }
 
-  static ProProfileType _typeFromRaw(
-    String? rawType,
-    List<ProModule> modules,
-  ) {
+  static ProProfileType _typeFromRaw(String? rawType, List<ProModule> modules) {
     switch (rawType) {
       case 'SHOP':
       case 'shop':
@@ -124,7 +117,9 @@ class ProProfile {
             ProModule.pharmacyDelivery,
           }.contains(module),
         );
-        return isDeliveryProfile ? ProProfileType.delivery : ProProfileType.rider;
+        return isDeliveryProfile
+            ? ProProfileType.delivery
+            : ProProfileType.rider;
       default:
         return ProProfileType.shop;
     }

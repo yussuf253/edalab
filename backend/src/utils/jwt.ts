@@ -4,6 +4,7 @@ import { env } from '../config/env';
 type AuthTokenPayload = {
   userId: string;
   email: string;
+  accountType?: 'user' | 'pro';
 };
 
 export function signAccessToken(payload: AuthTokenPayload): string {

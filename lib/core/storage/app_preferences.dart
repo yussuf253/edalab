@@ -6,12 +6,14 @@ class AppPreferences {
   static const _hasSeenOnboardingKey = 'has_seen_onboarding';
   static const _currentUserIdKey = 'current_user_id';
   static const _authTokenKey = 'auth_token';
+  static const _proAuthTokenKey = 'pro_auth_token';
   static const _cartItemsKey = 'cart_items';
   static const _cartPromoCodeKey = 'cart_promo_code';
   static const _cartPromoDiscountKey = 'cart_promo_discount';
   static const _notificationsPrefsKey = 'notifications_preferences';
   static const _localeCodeKey = 'locale_code';
   static const _proProfileJsonKey = 'pro_profile_json';
+  static const _proAccountJsonKey = 'pro_account_json';
   static const _hasSeenProOnboardingKey = 'has_seen_pro_onboarding';
 
   static Future<bool> hasSeenOnboarding() async {
@@ -52,6 +54,21 @@ class AppPreferences {
   static Future<void> clearAuthToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_authTokenKey);
+  }
+
+  static Future<String?> getProAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_proAuthTokenKey);
+  }
+
+  static Future<void> setProAuthToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_proAuthTokenKey, token);
+  }
+
+  static Future<void> clearProAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_proAuthTokenKey);
   }
 
   static Future<String?> getCartItemsJson() async {
@@ -143,6 +160,21 @@ class AppPreferences {
   static Future<void> clearProProfileJson() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_proProfileJsonKey);
+  }
+
+  static Future<String?> getProAccountJson() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_proAccountJsonKey);
+  }
+
+  static Future<void> setProAccountJson(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_proAccountJsonKey, value);
+  }
+
+  static Future<void> clearProAccountJson() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_proAccountJsonKey);
   }
 
   static Future<bool> hasSeenProOnboarding() async {

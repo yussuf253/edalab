@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../features/auth/screens/login_screen.dart';
-import '../../../features/auth/screens/register_screen.dart';
 import '../../../features/messages/screens/chat_screen.dart';
 import '../../features/account/screens/pro_account_screen.dart';
+import '../../features/auth/screens/pro_login_screen.dart';
+import '../../features/auth/screens/pro_register_screen.dart';
+import '../../features/auth/screens/pro_signup_screen.dart';
 import '../../features/delivery/screens/delivery_dashboard_screen.dart';
 import '../../features/delivery/screens/delivery_queue_screen.dart';
 import '../../features/doctor/screens/doctor_appointments_queue_screen.dart';
@@ -65,7 +66,9 @@ Widget _currentHome(BuildContext context) {
 GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
   return GoRouter(
     navigatorKey: _proNavigatorKey,
-    initialLocation: hasSeenOnboarding ? ProRoutePaths.entry : ProRoutePaths.onboarding,
+    initialLocation: hasSeenOnboarding
+        ? ProRoutePaths.entry
+        : ProRoutePaths.onboarding,
     routes: [
       GoRoute(
         path: ProRoutePaths.onboarding,
@@ -77,15 +80,15 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
       ),
       GoRoute(
         path: ProRoutePaths.login,
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) => const ProLoginScreen(),
       ),
       GoRoute(
         path: ProRoutePaths.register,
-        builder: (context, state) => const RegisterScreen(),
+        builder: (context, state) => const ProRegisterScreen(),
       ),
       GoRoute(
         path: ProRoutePaths.signup,
-        builder: (context, state) => const ProEntryScreen(),
+        builder: (context, state) => const ProSignupScreen(),
       ),
       GoRoute(
         path: ProRoutePaths.dashboard,
@@ -93,23 +96,31 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
       ),
       GoRoute(
         path: ProRoutePaths.operations,
-        builder: (context, state) =>
-            _withProfile(context, (profile) => ProOperationsScreen(profile: profile)),
+        builder: (context, state) => _withProfile(
+          context,
+          (profile) => ProOperationsScreen(profile: profile),
+        ),
       ),
       GoRoute(
         path: ProRoutePaths.inbox,
-        builder: (context, state) =>
-            _withProfile(context, (profile) => ProMessagesScreen(profile: profile)),
+        builder: (context, state) => _withProfile(
+          context,
+          (profile) => ProMessagesScreen(profile: profile),
+        ),
       ),
       GoRoute(
         path: ProRoutePaths.insights,
-        builder: (context, state) =>
-            _withProfile(context, (profile) => ProInsightsScreen(profile: profile)),
+        builder: (context, state) => _withProfile(
+          context,
+          (profile) => ProInsightsScreen(profile: profile),
+        ),
       ),
       GoRoute(
         path: ProRoutePaths.account,
-        builder: (context, state) =>
-            _withProfile(context, (profile) => ProAccountScreen(profile: profile)),
+        builder: (context, state) => _withProfile(
+          context,
+          (profile) => ProAccountScreen(profile: profile),
+        ),
       ),
       GoRoute(
         path: ProRoutePaths.shopHome,

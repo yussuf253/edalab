@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../storage/app_preferences.dart';
 
+enum ApiSessionScope { user, pro }
+
 class ApiClient {
   static const _defaultPort = '5050';
   static const Duration _defaultCacheDuration = Duration(minutes: 5);
@@ -21,6 +23,7 @@ class ApiClient {
   static final Map<String, _CachedResponse> _getCache = {};
   static final Map<String, Future<dynamic>> _pendingGets = {};
   static String? _token;
+  static ApiSessionScope _sessionScope = ApiSessionScope.user;
 
   static String get baseUrl {
     if (_configuredBaseUrl.isNotEmpty) {
@@ -30,14 +33,30 @@ class ApiClient {
     }
     if (kIsWeb) return 'http://localhost:$_defaultPort/api';
     if (Platform.isAndroid) {
-      final host = _configuredHost == '127.0.0.1' ? '10.0.2.2' : _configuredHost;
+      final host = _configuredHost == '127.0.0.1'
+          ? '10.0.2.2'
+          : _configuredHost;
       return 'http://$host:$_defaultPort/api';
     }
     return 'http://$_configuredHost:$_defaultPort/api';
   }
 
-  static Future<void> initialize() async {
-    _token = await AppPreferences.getAuthToken();
+  static Future<void> initialize({
+    ApiSessionScope scope = ApiSessionScope.user,
+  }) async {
+    _sessionScope = scope;
+    _token = await _readPersistedToken();
+  }
+
+  static Future<void> configureSessionScope(ApiSessionScope scope) async {
+    if (_sessionScope == scope) {
+      _token = await _readPersistedToken();
+      return;
+    }
+
+    _sessionScope = scope;
+    _token = await _readPersistedToken();
+    clearCache();
   }
 
   static Future<void> setToken(String? token) async {
@@ -47,23 +66,48 @@ class ApiClient {
       clearCache();
     }
     if (token == null || token.isEmpty) {
-      await AppPreferences.clearAuthToken();
+      await _clearPersistedToken();
       return;
     }
-    await AppPreferences.setAuthToken(token);
+    await _writePersistedToken(token);
   }
 
   static Future<Map<String, String>> _headers() async {
-    final headers = <String, String>{
-      'Content-Type': 'application/json',
-    };
+    final headers = <String, String>{'Content-Type': 'application/json'};
 
-    final token = _token ?? await AppPreferences.getAuthToken();
+    final token = _token ?? await _readPersistedToken();
     if (token != null && token.isNotEmpty) {
       headers['Authorization'] = 'Bearer $token';
     }
 
     return headers;
+  }
+
+  static Future<String?> _readPersistedToken() {
+    switch (_sessionScope) {
+      case ApiSessionScope.user:
+        return AppPreferences.getAuthToken();
+      case ApiSessionScope.pro:
+        return AppPreferences.getProAuthToken();
+    }
+  }
+
+  static Future<void> _writePersistedToken(String token) {
+    switch (_sessionScope) {
+      case ApiSessionScope.user:
+        return AppPreferences.setAuthToken(token);
+      case ApiSessionScope.pro:
+        return AppPreferences.setProAuthToken(token);
+    }
+  }
+
+  static Future<void> _clearPersistedToken() {
+    switch (_sessionScope) {
+      case ApiSessionScope.user:
+        return AppPreferences.clearAuthToken();
+      case ApiSessionScope.pro:
+        return AppPreferences.clearProAuthToken();
+    }
   }
 
   static String get _connectionHint {
@@ -92,7 +136,8 @@ class ApiClient {
     );
   }
 
-  static String _cacheKey(String endpoint) => '$baseUrl|$endpoint|${_token ?? ''}';
+  static String _cacheKey(String endpoint) =>
+      '$baseUrl|$endpoint|${_token ?? ''}';
 
   static dynamic _decodeBody(String body) => json.decode(body);
 
@@ -115,7 +160,11 @@ class ApiClient {
     }
 
     final matchingKeys = _getCache.keys
-        .where((key) => key.contains('|$endpointPrefix|') || key.contains('|$endpointPrefix?'))
+        .where(
+          (key) =>
+              key.contains('|$endpointPrefix|') ||
+              key.contains('|$endpointPrefix?'),
+        )
         .toList();
     for (final key in matchingKeys) {
       _getCache.remove(key);
@@ -154,10 +203,7 @@ class ApiClient {
     late http.Response response;
     try {
       response = await _httpClient
-          .get(
-            Uri.parse('$baseUrl$endpoint'),
-            headers: await _headers(),
-          )
+          .get(Uri.parse('$baseUrl$endpoint'), headers: await _headers())
           .timeout(_requestTimeout);
     } on TimeoutException catch (error) {
       throw _connectionException(error);
@@ -175,13 +221,19 @@ class ApiClient {
       final body = response.body.trim();
       if (body.isNotEmpty) {
         final errorDecoded = json.decode(body);
-        throw Exception(errorDecoded['error'] ?? 'Failed to load data: ${response.statusCode}');
+        throw Exception(
+          errorDecoded['error'] ??
+              'Failed to load data: ${response.statusCode}',
+        );
       }
       throw Exception('Failed to load data: ${response.statusCode}');
     }
   }
 
-  static Future<dynamic> post(String endpoint, Map<String, dynamic> data) async {
+  static Future<dynamic> post(
+    String endpoint,
+    Map<String, dynamic> data,
+  ) async {
     late http.Response response;
     try {
       response = await _httpClient
@@ -202,11 +254,16 @@ class ApiClient {
       return json.decode(response.body);
     } else {
       final errorDecoded = json.decode(response.body);
-      throw Exception(errorDecoded['error'] ?? 'Failed to post data: ${response.statusCode}');
+      throw Exception(
+        errorDecoded['error'] ?? 'Failed to post data: ${response.statusCode}',
+      );
     }
   }
 
-  static Future<dynamic> patch(String endpoint, Map<String, dynamic> data) async {
+  static Future<dynamic> patch(
+    String endpoint,
+    Map<String, dynamic> data,
+  ) async {
     late http.Response response;
     try {
       response = await _httpClient
@@ -227,7 +284,9 @@ class ApiClient {
       return json.decode(response.body);
     } else {
       final errorDecoded = json.decode(response.body);
-      throw Exception(errorDecoded['error'] ?? 'Failed to patch data: ${response.statusCode}');
+      throw Exception(
+        errorDecoded['error'] ?? 'Failed to patch data: ${response.statusCode}',
+      );
     }
   }
 
@@ -235,10 +294,7 @@ class ApiClient {
     late http.Response response;
     try {
       response = await _httpClient
-          .delete(
-            Uri.parse('$baseUrl$endpoint'),
-            headers: await _headers(),
-          )
+          .delete(Uri.parse('$baseUrl$endpoint'), headers: await _headers())
           .timeout(_requestTimeout);
     } on TimeoutException catch (error) {
       throw _connectionException(error);
@@ -254,7 +310,10 @@ class ApiClient {
       return json.decode(response.body);
     } else {
       final errorDecoded = json.decode(response.body);
-      throw Exception(errorDecoded['error'] ?? 'Failed to delete data: ${response.statusCode}');
+      throw Exception(
+        errorDecoded['error'] ??
+            'Failed to delete data: ${response.statusCode}',
+      );
     }
   }
 }
@@ -263,10 +322,7 @@ class _CachedResponse {
   final String body;
   final DateTime cachedAt;
 
-  const _CachedResponse({
-    required this.body,
-    required this.cachedAt,
-  });
+  const _CachedResponse({required this.body, required this.cachedAt});
 
   bool isExpired(Duration maxAge) {
     return DateTime.now().difference(cachedAt) > maxAge;

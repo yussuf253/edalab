@@ -1,18 +1,25 @@
-import 'package:flutter/material.dart';
 import 'dart:convert';
+
+import 'package:flutter/material.dart';
+
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/app_preferences.dart';
+import '../models/pro_account.dart';
 import '../models/pro_profile.dart';
 import '../utils/pro_module_helper.dart';
 
 class ProAuthProvider extends ChangeNotifier {
+  ProAccount? _currentAccount;
   ProProfile? _currentProfile;
   bool _isLoading = false;
+  bool _isInitialized = false;
   int _unreadInboxCount = 0;
 
+  ProAccount? get currentAccount => _currentAccount;
   ProProfile? get currentProfile => _currentProfile;
   bool get isLoading => _isLoading;
-  bool get isAuthenticated => _currentProfile != null;
+  bool get isInitialized => _isInitialized;
+  bool get isAuthenticated => _currentAccount != null;
   int get unreadInboxCount => _unreadInboxCount;
   bool get hasUnreadInbox => _unreadInboxCount > 0;
   bool get supportsInbox =>
@@ -20,17 +27,6 @@ class ProAuthProvider extends ChangeNotifier {
 
   bool _isConnectionError(Object error) {
     return error.toString().contains('Could not reach the API at');
-  }
-
-  bool _isMissingProRoute(Object error) {
-    final message = error.toString().toLowerCase();
-    return message.contains('route not found') ||
-        message.contains('cannot post /pro') ||
-        message.contains('cannot get /pro');
-  }
-
-  Future<void> _persistLocalProfile(ProProfile profile) {
-    return AppPreferences.setProProfileJson(jsonEncode(profile.toJson()));
   }
 
   bool _supportsInbox(ProProfileType type) {
@@ -41,6 +37,132 @@ class ProAuthProvider extends ChangeNotifier {
       ProProfileType.delivery,
       ProProfileType.rider,
     }.contains(type);
+  }
+
+  ProProfile _profileFromApi(Map<String, dynamic> json) {
+    final profile = ProProfile.fromJson(json);
+    return profile.copyWith(
+      activeModules: ProModuleHelper.sanitizeModules(
+        profile.type,
+        profile.activeModules,
+      ),
+    );
+  }
+
+  Future<void> initialize() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await ApiClient.configureSessionScope(ApiSessionScope.pro);
+      await _restoreLocalSession();
+      final token = await AppPreferences.getProAuthToken();
+
+      if (token == null || token.isEmpty) {
+        await _clearLocalSession(clearToken: false);
+      } else {
+        try {
+          await refreshSession();
+        } catch (error) {
+          if (!_isConnectionError(error)) {
+            await _clearLocalSession(clearToken: true);
+            rethrow;
+          }
+        }
+      }
+    } finally {
+      _isLoading = false;
+      _isInitialized = true;
+      notifyListeners();
+    }
+  }
+
+  Future<void> refreshSession() async {
+    final response = Map<String, dynamic>.from(
+      await ApiClient.get('/pro-auth/me', forceRefresh: true) as Map,
+    );
+    await _applySessionResponse(response);
+  }
+
+  Future<void> registerAccount({
+    required String fullName,
+    required String email,
+    required String phone,
+    required String password,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = Map<String, dynamic>.from(
+        await ApiClient.post('/pro-auth/register', {
+              'fullName': fullName.trim(),
+              'email': email.trim(),
+              'phone': phone.trim(),
+              'password': password,
+            })
+            as Map,
+      );
+      await _applySessionResponse(response);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> login({required String email, required String password}) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = Map<String, dynamic>.from(
+        await ApiClient.post('/pro-auth/login', {
+              'email': email.trim(),
+              'password': password,
+            })
+            as Map,
+      );
+      await _applySessionResponse(response);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> completeProfile({
+    required ProProfileType type,
+    required List<ProModule> selectedModules,
+    required String businessName,
+  }) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final normalizedModules = ProModuleHelper.sanitizeModules(
+        type,
+        selectedModules,
+      );
+      final response = Map<String, dynamic>.from(
+        await ApiClient.post('/pro-auth/profile', {
+              'type': _typeToApi(type),
+              'activeModules': normalizedModules.map(_moduleToApi).toList(),
+              'businessName': businessName.trim(),
+            })
+            as Map,
+      );
+      await _applySessionResponse(response);
+      await refreshInboxSummary();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchProfile(String unusedUserId) async {
+    if (unusedUserId.isEmpty && _currentProfile == null) {
+      return;
+    }
+    await refreshSession();
   }
 
   void updateUnreadInboxCount(int value) {
@@ -69,152 +191,6 @@ class ProAuthProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
-  ProProfile _profileFromApi(Map<String, dynamic> json) {
-    final profile = ProProfile.fromJson(json);
-    return profile.copyWith(
-      activeModules: ProModuleHelper.sanitizeModules(
-        profile.type,
-        profile.activeModules,
-      ),
-    );
-  }
-
-  Map<String, dynamic> _profilePayload({
-    required String userId,
-    required ProProfileType type,
-    required List<ProModule> modules,
-    required String businessName,
-    bool? isOnline,
-  }) {
-    final payload = <String, dynamic>{
-      'userId': userId,
-      'type': _typeToApi(type),
-      'activeModules': modules.map(_moduleToApi).toList(),
-      'businessName': businessName,
-    };
-    if (isOnline != null) {
-      payload['isOnline'] = isOnline;
-    }
-    return payload;
-  }
-
-  Future<void> signUpAsPro({
-    required String userId,
-    required ProProfileType type,
-    required List<ProModule> selectedModules,
-    required String businessName,
-  }) async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      final normalizedModules = ProModuleHelper.sanitizeModules(
-        type,
-        selectedModules,
-      );
-      final payload = _profilePayload(
-        userId: userId,
-        type: type,
-        modules: normalizedModules,
-        businessName: businessName,
-      );
-
-      try {
-        final response = Map<String, dynamic>.from(
-          await ApiClient.post('/pro', payload) as Map,
-        );
-        _currentProfile = _profileFromApi(response);
-        await refreshInboxSummary();
-      } catch (error) {
-        if (!_isConnectionError(error) && !_isMissingProRoute(error)) {
-          rethrow;
-        }
-
-        _currentProfile = ProProfile(
-          id: 'pro_${DateTime.now().millisecondsSinceEpoch}',
-          userId: userId,
-          type: type,
-          activeModules: normalizedModules,
-          businessName: businessName,
-          isOnline: true,
-        );
-        updateUnreadInboxCount(0);
-      }
-
-      await _persistLocalProfile(_currentProfile!);
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> fetchProfile(String userId) async {
-    _isLoading = true;
-    notifyListeners();
-
-    try {
-      if (userId.isEmpty) {
-        _currentProfile = null;
-        updateUnreadInboxCount(0);
-        return;
-      }
-
-      try {
-        final response = Map<String, dynamic>.from(
-          await ApiClient.get('/pro/$userId', forceRefresh: true) as Map,
-        );
-        _currentProfile = _profileFromApi(response);
-        await _persistLocalProfile(_currentProfile!);
-        await refreshInboxSummary();
-        return;
-      } catch (error) {
-        final message = error.toString();
-        if (message.contains('Pro profile not found')) {
-          _currentProfile = null;
-          updateUnreadInboxCount(0);
-          await AppPreferences.clearProProfileJson();
-          return;
-        }
-
-        if (!_isConnectionError(error) && !_isMissingProRoute(error)) {
-          rethrow;
-        }
-      }
-
-      final rawProfile = await AppPreferences.getProProfileJson();
-      if (rawProfile == null || rawProfile.isEmpty) {
-        _currentProfile = null;
-        return;
-      }
-
-      final profile = ProProfile.fromJson(
-        Map<String, dynamic>.from(jsonDecode(rawProfile) as Map),
-      );
-      _currentProfile = profile.userId == userId
-          ? profile.copyWith(
-              activeModules: ProModuleHelper.sanitizeModules(
-                profile.type,
-                profile.activeModules,
-              ),
-            )
-          : null;
-      await refreshInboxSummary(forceRefresh: false);
-    } catch (_) {
-      _currentProfile = null;
-      updateUnreadInboxCount(0);
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> logout() async {
-    _currentProfile = null;
-    _unreadInboxCount = 0;
-    await AppPreferences.clearProProfileJson();
-    notifyListeners();
-  }
-
   Future<void> updateOnlineStatus(bool isOnline) async {
     final profile = _currentProfile;
     if (profile == null) return;
@@ -231,16 +207,91 @@ class ProAuthProvider extends ChangeNotifier {
             as Map,
       );
       _currentProfile = _profileFromApi(response);
-      await _persistLocalProfile(_currentProfile!);
+      await _persistLocalSession();
       notifyListeners();
     } catch (error) {
       if (_isConnectionError(error)) {
-        await _persistLocalProfile(_currentProfile!);
+        await _persistLocalSession();
         return;
       }
       _currentProfile = previous;
       notifyListeners();
       rethrow;
+    }
+  }
+
+  Future<void> logout() async {
+    await _clearLocalSession(clearToken: true);
+    notifyListeners();
+  }
+
+  Future<void> _applySessionResponse(Map<String, dynamic> response) async {
+    final token = response['token'] as String?;
+    if (token != null && token.isNotEmpty) {
+      await ApiClient.setToken(token);
+    }
+
+    final rawAccount = response['account'];
+    final rawProfile = response['profile'];
+
+    _currentAccount = rawAccount is Map
+        ? ProAccount.fromJson(Map<String, dynamic>.from(rawAccount))
+        : null;
+    _currentProfile = rawProfile is Map
+        ? _profileFromApi(Map<String, dynamic>.from(rawProfile))
+        : null;
+
+    await _persistLocalSession();
+  }
+
+  Future<void> _persistLocalSession() async {
+    if (_currentAccount != null) {
+      await AppPreferences.setProAccountJson(
+        jsonEncode(_currentAccount!.toJson()),
+      );
+    } else {
+      await AppPreferences.clearProAccountJson();
+    }
+
+    if (_currentProfile != null) {
+      await AppPreferences.setProProfileJson(
+        jsonEncode(_currentProfile!.toJson()),
+      );
+    } else {
+      await AppPreferences.clearProProfileJson();
+    }
+  }
+
+  Future<void> _restoreLocalSession() async {
+    final rawAccount = await AppPreferences.getProAccountJson();
+    if (rawAccount != null && rawAccount.isNotEmpty) {
+      _currentAccount = ProAccount.fromJson(
+        Map<String, dynamic>.from(jsonDecode(rawAccount) as Map),
+      );
+    }
+
+    final rawProfile = await AppPreferences.getProProfileJson();
+    if (rawProfile != null && rawProfile.isNotEmpty) {
+      final cachedProfile = ProProfile.fromJson(
+        Map<String, dynamic>.from(jsonDecode(rawProfile) as Map),
+      );
+      _currentProfile = cachedProfile.copyWith(
+        activeModules: ProModuleHelper.sanitizeModules(
+          cachedProfile.type,
+          cachedProfile.activeModules,
+        ),
+      );
+    }
+  }
+
+  Future<void> _clearLocalSession({required bool clearToken}) async {
+    _currentAccount = null;
+    _currentProfile = null;
+    _unreadInboxCount = 0;
+    await AppPreferences.clearProAccountJson();
+    await AppPreferences.clearProProfileJson();
+    if (clearToken) {
+      await ApiClient.setToken(null);
     }
   }
 

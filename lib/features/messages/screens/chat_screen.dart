@@ -86,7 +86,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
     _notificationProvider?.removeListener(_handleNotificationsChanged);
     _notificationProvider = provider;
-    _seenNotificationIds = provider.notifications.map((item) => item.id).toSet();
+    _seenNotificationIds = provider.notifications
+        .map((item) => item.id)
+        .toSet();
     provider.addListener(_handleNotificationsChanged);
   }
 
@@ -199,8 +201,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
           )
           .toList();
-      final previousLastMessageId = _messages.isNotEmpty ? _messages.last.id : null;
-      final nextLastMessageId = nextMessages.isNotEmpty ? nextMessages.last.id : null;
+      final previousLastMessageId = _messages.isNotEmpty
+          ? _messages.last.id
+          : null;
+      final nextLastMessageId = nextMessages.isNotEmpty
+          ? nextMessages.last.id
+          : null;
       final shouldMarkRead =
           actorUserId != null && nextConversation.unreadCount > 0;
 
@@ -211,7 +217,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         _isLoading = false;
       });
 
-      if (nextLastMessageId != null && nextLastMessageId != previousLastMessageId) {
+      if (nextLastMessageId != null &&
+          nextLastMessageId != previousLastMessageId) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           _scrollToBottom(animated: previousLastMessageId != null);
@@ -234,7 +241,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _sendMessage() async {
-    final auth = context.read<AuthProvider>();
     final text = _messageController.text.trim();
     final actorUserId = _actorUserId(context);
     if (text.isEmpty || actorUserId == null) return;
@@ -244,7 +250,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       final senderLabel = widget.isProView
           ? context.read<ProAuthProvider>().currentProfile?.businessName ??
                 'Pro'
-          : auth.user?.fullName ?? 'User';
+          : context.read<AuthProvider>().user?.fullName ?? 'User';
       await ApiClient.post(
         '/messages/conversations/${widget.conversationId}/messages',
         {
