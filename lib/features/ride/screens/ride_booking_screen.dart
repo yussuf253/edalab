@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/providers/providers.dart';
-import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../services/ride_route_service.dart';
@@ -24,14 +21,10 @@ class RideBookingScreen extends StatefulWidget {
 
 class _RideBookingScreenState extends State<RideBookingScreen> {
   int _selectedVehicle = 0;
-  int _selectedPayment = 0;
-  bool _isSubmitting = false;
   List<RideCategory> _categories = RideModel.sampleCategories;
   bool _isLoading = true;
   RideRouteDetails? _routeDetails;
   bool _isLoadingRoute = true;
-
-  final _payments = const ['•••• 4242', 'Apple Pay', 'Cash'];
 
   @override
   void initState() {
@@ -141,6 +134,8 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
         widget.bookingData?['destinationTitle'] as String? ?? 'City Mall';
     final destination =
         widget.bookingData?['destination'] as String? ?? 'City Mall, Downtown';
+    final paymentMethod =
+        widget.bookingData?['payment'] as String? ?? 'Cash';
     final pickupPoint =
         rideMapPointFromJson(
           widget.bookingData?['pickupPoint'],
@@ -174,13 +169,11 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
         _routeDetails?.distanceKm ??
         (widget.bookingData?['distance'] as num?)?.toDouble() ??
         5.2;
-    final routeDurationLabel =
-        _routeDetails?.durationLabel ?? selectedCategory.timeToArrive;
-    final routeDurationBadgeLabel = _isLoadingRoute ? null : routeDurationLabel;
-    final estimatedRidePrice =
-        selectedCategory.basePrice +
-        (selectedCategory.pricePerMile * routeDistance);
-
+    final routeDurationLabel = _routeDetails?.durationLabel;
+    final routeDurationBadgeLabel =
+        _isLoadingRoute || routeDurationLabel == null
+        ? null
+        : routeDurationLabel;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -205,6 +198,16 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                 showLegend: false,
                 badgeLabel: routeDurationBadgeLabel,
                 routePolyline: _routeDetails?.polylinePoints,
+                overlayStatusIcon: _isLoadingRoute
+                    ? Icons.route_rounded
+                    : routeDurationLabel == null
+                    ? Icons.info_outline_rounded
+                    : null,
+                overlayStatusMessage: _isLoadingRoute
+                    ? 'Calculating route and travel time...'
+                    : routeDurationLabel == null
+                    ? 'Route estimate unavailable right now.'
+                    : null,
                 actionLabel: 'Open map',
                 onActionTap: () => openRideRouteInMaps(
                   context,
@@ -297,6 +300,8 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                     child: Text(
                       _isLoadingRoute
                           ? 'Calculating route...'
+                          : routeDurationLabel == null
+                          ? 'Route estimate unavailable'
                           : l10n.t(
                               'ride_booking.route_summary',
                               params: {
@@ -368,6 +373,8 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                             Text(
                                               _isLoadingRoute
                                                   ? 'Calculating route...'
+                                                  : routeDurationLabel == null
+                                                  ? '${cat.capacity} seats'
                                                   : l10n.t(
                                                       'ride_booking.arrival_seats',
                                                       params: {
@@ -384,12 +391,11 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                       ),
                                       Text(
                                         '\$${estPrice.toStringAsFixed(2)}',
-                                        style: AppTextStyles.priceSmall
-                                            .copyWith(
-                                              color: sel
-                                                  ? AppColors.ride
-                                                  : AppColors.dark,
-                                            ),
+                                        style: AppTextStyles.labelLarge.copyWith(
+                                          color: sel
+                                              ? AppColors.ride
+                                              : AppColors.dark,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -399,106 +405,37 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                           ),
                   ),
                   const SizedBox(height: 12),
-                  // Payment method
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: AppColors.extraLightGrey,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.credit_card_rounded,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          _payments[_selectedPayment],
-                          style: AppTextStyles.labelMedium,
-                        ),
-                        const Spacer(),
-                        GestureDetector(
-                          onTap: _selectPayment,
-                          child: Text(
-                            l10n.t('ride_booking.change'),
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   SafeArea(
                     child: AppButton(
-                      text: l10n.t(
-                        'ride_booking.confirm',
-                        params: {
-                          'amount': estimatedRidePrice.toStringAsFixed(2),
-                        },
-                      ),
+                      text: l10n.t('ride_booking.continue'),
                       color: AppColors.ride,
-                      isLoading: _isSubmitting,
-                      onPressed: () async {
-                        if (_isSubmitting ||
-                            _isLoading ||
+                      onPressed: () {
+                        if (_isLoading ||
                             _isLoadingRoute ||
                             categories.isEmpty) {
                           return;
                         }
-                        final allowed = await requireLoggedIn(
-                          context,
-                          message: l10n.t('ride_booking.login_required'),
+                        context.push(
+                          '/ride/summary',
+                          extra: {
+                            'selectedCategory': selectedCategory,
+                            'payment': paymentMethod,
+                            'pickup': pickup,
+                            'destination': destination,
+                            'pickupAddressId': widget.bookingData?['pickupAddressId'],
+                            'dropoffAddressId': widget.bookingData?['dropoffAddressId'],
+                            'pickupPoint': rideMapPointToJson(pickupPoint),
+                            'destinationPoint': rideMapPointToJson(destinationPoint),
+                            'routeDistance': routeDistance,
+                            'routeDurationLabel': routeDurationLabel ?? 'ETA unavailable',
+                            'estimatedRidePrice':
+                                selectedCategory.basePrice +
+                                (selectedCategory.pricePerMile * routeDistance),
+                            if (_routeDetails != null)
+                              'routeDetails': _routeDetails!.toJson(),
+                          },
                         );
-                        if (!context.mounted || !allowed) return;
-                        final auth = context.read<AuthProvider>();
-                        setState(() => _isSubmitting = true);
-                        try {
-                          final ride = await _createRideBooking(
-                            userId: auth.user!.id,
-                            selectedCategory: selectedCategory,
-                            routeDistance: routeDistance,
-                            routeDurationLabel: routeDurationLabel,
-                            pickup: pickup,
-                            destination: destination,
-                            estimatedRidePrice: estimatedRidePrice,
-                            pickupPoint: pickupPoint,
-                            destinationPoint: destinationPoint,
-                            routeDetails: _routeDetails,
-                          );
-                          if (!context.mounted) return;
-                          setState(() => _isSubmitting = false);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.t('ride_booking.success')),
-                              backgroundColor: AppColors.success,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          );
-                          context.go(
-                            '/ride/tracking/${ride['id']}',
-                            extra: ride,
-                          );
-                        } catch (e) {
-                          if (!context.mounted) return;
-                          setState(() => _isSubmitting = false);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                l10n.t(
-                                  'ride_booking.failed',
-                                  params: {'error': '$e'},
-                                ),
-                              ),
-                              backgroundColor: AppColors.error,
-                            ),
-                          );
-                        }
                       },
                     ),
                   ),
@@ -510,90 +447,5 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _selectPayment() async {
-    final l10n = context.l10n;
-    final selected = await showModalBottomSheet<int>(
-      context: context,
-      backgroundColor: AppColors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.t('checkout.payment_method'),
-                  style: AppTextStyles.h3,
-                ),
-                const SizedBox(height: 16),
-                ..._payments.asMap().entries.map(
-                  (entry) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(entry.value, style: AppTextStyles.labelMedium),
-                    trailing: _selectedPayment == entry.key
-                        ? const Icon(
-                            Icons.check_circle_rounded,
-                            color: AppColors.primary,
-                          )
-                        : null,
-                    onTap: () => Navigator.of(context).pop(entry.key),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
-    if (selected != null) {
-      setState(() => _selectedPayment = selected);
-    }
-  }
-
-  Future<Map<String, dynamic>> _createRideBooking({
-    required String userId,
-    required RideCategory selectedCategory,
-    required double routeDistance,
-    required String routeDurationLabel,
-    required String pickup,
-    required String destination,
-    required double estimatedRidePrice,
-    required RideMapPoint pickupPoint,
-    required RideMapPoint destinationPoint,
-    required RideRouteDetails? routeDetails,
-  }) async {
-    final tax = estimatedRidePrice * 0.08;
-    final total = estimatedRidePrice + tax;
-    final response = await ApiClient.post('/rides', {
-      'userId': userId,
-      'rideCategoryId': selectedCategory.id,
-      'pickupAddressId': widget.bookingData?['pickupAddressId']?.toString(),
-      'dropoffAddressId': widget.bookingData?['dropoffAddressId']?.toString(),
-      'pickupLabel': pickup,
-      'dropoffLabel': destination,
-      'distanceKm': routeDistance,
-      'estimatedFare': estimatedRidePrice,
-      'tax': tax,
-      'total': total,
-      'etaLabel': routeDurationLabel,
-      'vehicleName': selectedCategory.name,
-      'trackingData': {
-        'payment': _payments[_selectedPayment],
-        'distance': routeDistance,
-        'durationLabel': routeDurationLabel,
-        'pickup': rideMapPointToJson(pickupPoint),
-        'destination': rideMapPointToJson(destinationPoint),
-        if (routeDetails != null) 'routeDetails': routeDetails.toJson(),
-      },
-    });
-    return Map<String, dynamic>.from(response as Map);
   }
 }

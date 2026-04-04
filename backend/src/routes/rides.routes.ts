@@ -35,9 +35,17 @@ function serializeRideBooking(
       paymentMethod: true;
       pickupAddress: true;
       dropoffAddress: true;
+      user: {
+        select: {
+          firstName: true;
+          lastName: true;
+          phone: true;
+        };
+      };
     };
   }>,
 ) {
+  const customerName = `${booking.user.firstName} ${booking.user.lastName}`.trim();
   return {
     id: booking.id,
     userId: booking.userId,
@@ -54,6 +62,8 @@ function serializeRideBooking(
     vehicle: booking.vehicleName,
     driverName: booking.driverName,
     driverPhone: booking.driverPhone,
+    customerName: customerName.length === 0 ? null : customerName,
+    customerPhone: booking.user.phone,
     paymentMethod: booking.paymentMethod
         ? booking.paymentMethod.brand && booking.paymentMethod.last4
             ? '${booking.paymentMethod.brand} •••• ${booking.paymentMethod.last4}'
@@ -95,6 +105,9 @@ router.get(
     const bookings = await prisma.rideBooking.findMany({
       where: { userId },
       include: {
+        user: {
+          select: { firstName: true, lastName: true, phone: true },
+        },
         rideCategory: true,
         paymentMethod: true,
         pickupAddress: true,
@@ -114,6 +127,9 @@ router.get(
     const booking = await prisma.rideBooking.findUnique({
       where: { id: rideId },
       include: {
+        user: {
+          select: { firstName: true, lastName: true, phone: true },
+        },
         rideCategory: true,
         paymentMethod: true,
         pickupAddress: true,
@@ -155,6 +171,9 @@ router.post(
         trackingData: body.trackingData ?? undefined,
       },
       include: {
+        user: {
+          select: { firstName: true, lastName: true, phone: true },
+        },
         rideCategory: true,
         paymentMethod: true,
         pickupAddress: true,

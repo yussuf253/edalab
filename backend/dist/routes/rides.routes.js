@@ -28,6 +28,7 @@ const createRideSchema = zod_1.z.object({
     trackingData: zod_1.z.record(zod_1.z.any()).optional(),
 });
 function serializeRideBooking(booking) {
+    const customerName = `${booking.user.firstName} ${booking.user.lastName}`.trim();
     return {
         id: booking.id,
         userId: booking.userId,
@@ -44,6 +45,8 @@ function serializeRideBooking(booking) {
         vehicle: booking.vehicleName,
         driverName: booking.driverName,
         driverPhone: booking.driverPhone,
+        customerName: customerName.length === 0 ? null : customerName,
+        customerPhone: booking.user.phone,
         paymentMethod: booking.paymentMethod
             ? booking.paymentMethod.brand && booking.paymentMethod.last4
                 ? '${booking.paymentMethod.brand} •••• ${booking.paymentMethod.last4}'
@@ -82,6 +85,9 @@ router.get('/user/:userId', (0, async_handler_1.asyncHandler)(async (req, res) =
     const bookings = await db_1.prisma.rideBooking.findMany({
         where: { userId },
         include: {
+            user: {
+                select: { firstName: true, lastName: true, phone: true },
+            },
             rideCategory: true,
             paymentMethod: true,
             pickupAddress: true,
@@ -96,6 +102,9 @@ router.get('/:rideId', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const booking = await db_1.prisma.rideBooking.findUnique({
         where: { id: rideId },
         include: {
+            user: {
+                select: { firstName: true, lastName: true, phone: true },
+            },
             rideCategory: true,
             paymentMethod: true,
             pickupAddress: true,
@@ -130,6 +139,9 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
             trackingData: body.trackingData ?? undefined,
         },
         include: {
+            user: {
+                select: { firstName: true, lastName: true, phone: true },
+            },
             rideCategory: true,
             paymentMethod: true,
             pickupAddress: true,

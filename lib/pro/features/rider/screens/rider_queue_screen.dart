@@ -88,6 +88,17 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
     }
   }
 
+  Future<void> _openRide(String id) async {
+    if (id.isEmpty) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => RiderActiveTripScreen(rideId: id, userId: widget.userId),
+      ),
+    );
+    if (!mounted) return;
+    await _loadQueue();
+  }
+
   @override
   Widget build(BuildContext context) {
     final filteredItems = _items
@@ -235,7 +246,11 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
                 ],
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: isBusy ? null : () => _claimRide(item),
+                  onPressed: isBusy
+                      ? null
+                      : () => queueType == 'assigned'
+                          ? _openRide(id)
+                          : _claimRide(item),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.ride,
                     foregroundColor: Colors.white,

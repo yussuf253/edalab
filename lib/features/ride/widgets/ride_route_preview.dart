@@ -127,6 +127,8 @@ class RideRoutePreview extends StatefulWidget {
   final bool showTitleChip;
   final bool showLegend;
   final List<LatLng>? routePolyline;
+  final IconData? overlayStatusIcon;
+  final String? overlayStatusMessage;
 
   const RideRoutePreview({
     super.key,
@@ -144,6 +146,8 @@ class RideRoutePreview extends StatefulWidget {
     this.showTitleChip = true,
     this.showLegend = true,
     this.routePolyline,
+    this.overlayStatusIcon,
+    this.overlayStatusMessage,
   });
 
   @override
@@ -283,6 +287,47 @@ class _RideRoutePreviewState extends State<RideRoutePreview> {
                 label: widget.badgeLabel!,
                 backgroundColor: AppColors.ride,
                 foregroundColor: AppColors.white,
+              ),
+            ),
+          if (widget.overlayStatusMessage != null &&
+              widget.overlayStatusMessage!.trim().isNotEmpty)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 28),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: AppSpacing.shadowMd,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          widget.overlayStatusIcon ??
+                              Icons.route_rounded,
+                          size: 18,
+                          color: AppColors.ride,
+                        ),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                            widget.overlayStatusMessage!,
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: AppColors.grey,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           Positioned(

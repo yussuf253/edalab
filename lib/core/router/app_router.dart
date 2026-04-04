@@ -36,6 +36,7 @@ import '../../features/hotel/screens/hotel_booking_screen.dart';
 import '../../features/hotel/screens/hotel_order_detail_screen.dart';
 import '../../features/ride/screens/ride_screen.dart';
 import '../../features/ride/screens/ride_booking_screen.dart';
+import '../../features/ride/screens/ride_booking_summary_screen.dart';
 import '../../features/ride/screens/ride_tracking_screen.dart';
 import '../../features/pharmacy/screens/pharmacy_screen.dart';
 import '../../features/pharmacy/screens/medicine_detail_screen.dart';
@@ -303,6 +304,14 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         path: '/ride/book',
         builder: (context, state) => RideBookingScreen(
           bookingData: state.extra as Map<String, dynamic>?,
+        ),
+      ),
+      GoRoute(
+        path: '/ride/summary',
+        builder: (context, state) => RideBookingSummaryScreen(
+          bookingData: state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : <String, dynamic>{},
         ),
       ),
       GoRoute(
