@@ -1832,6 +1832,7 @@ router.post(
 
     const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
     const bindings = normalizeBindings(hydratedProfile.bindings);
+    const todayStart = startOfToday();
     const order = await prisma.order.findUnique({
       where: { id: body.orderId },
       include: {
@@ -2278,17 +2279,69 @@ router.get(
 
     const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
     const bindings = normalizeBindings(hydratedProfile.bindings);
-    const [stores, restaurants, pharmacyProducts] = await Promise.all([
+    const todayStart = startOfToday();
+    const [
+      stores,
+      shoppingProducts,
+      shoppingOrders,
+      restaurants,
+      restaurantMenuItems,
+      foodOrders,
+      allPharmacyProducts,
+    ] = await Promise.all([
       bindings.shoppingStoreIds.length === 0
         ? Promise.resolve([])
         : prisma.shoppingStore.findMany({
             where: { id: { in: bindings.shoppingStoreIds } },
             select: {
               id: true,
+              slug: true,
               name: true,
+              tagline: true,
+              imageUrl: true,
               isOpen: true,
             },
             orderBy: { name: 'asc' },
+          }),
+      bindings.shoppingStoreIds.length === 0
+        ? Promise.resolve([])
+        : prisma.product.findMany({
+            where: {
+              moduleType: ModuleType.SHOPPING,
+              shopId: { in: bindings.shoppingStoreIds },
+            },
+            select: {
+              id: true,
+              shopId: true,
+              inStock: true,
+            },
+          }),
+      bindings.shoppingStoreIds.length === 0
+        ? Promise.resolve([])
+        : prisma.order.findMany({
+            where: {
+              moduleType: ModuleType.SHOPPING,
+              items: {
+                some: {
+                  product: {
+                    shopId: { in: bindings.shoppingStoreIds },
+                  },
+                },
+              },
+            },
+            select: {
+              status: true,
+              updatedAt: true,
+              items: {
+                select: {
+                  product: {
+                    select: {
+                      shopId: true,
+                    },
+                  },
+                },
+              },
+            },
           }),
       bindings.restaurantIds.length === 0
         ? Promise.resolve([])
@@ -2297,28 +2350,74 @@ router.get(
             select: {
               id: true,
               name: true,
+              cuisine: true,
+              imageUrl: true,
               isOpen: true,
             },
             orderBy: { name: 'asc' },
           }),
+      bindings.restaurantIds.length === 0
+        ? Promise.resolve([])
+        : prisma.restaurantMenuItem.findMany({
+            where: {
+              category: {
+                restaurantId: { in: bindings.restaurantIds },
+              },
+            },
+            select: {
+              id: true,
+              isAvailable: true,
+              category: {
+                select: {
+                  restaurantId: true,
+                },
+              },
+            },
+          }),
+      bindings.restaurantNames.length === 0
+        ? Promise.resolve([])
+        : prisma.order.findMany({
+            where: {
+              moduleType: ModuleType.FOOD,
+              items: {
+                some: {
+                  brand: { in: bindings.restaurantNames },
+                },
+              },
+            },
+            select: {
+              status: true,
+              updatedAt: true,
+              items: {
+                select: {
+                  brand: true,
+                },
+              },
+            },
+          }),
       prisma.product.findMany({
-        where: {
-          moduleType: ModuleType.PHARMACY,
-        },
+        where: { moduleType: ModuleType.PHARMACY },
         select: {
           id: true,
           name: true,
           inStock: true,
+          price: true,
+          requiresPrescription: true,
           metadata: true,
+          category: {
+            select: {
+              name: true,
+            },
+          },
         },
         orderBy: { name: 'asc' },
       }),
     ]);
 
-    const pharmacyItems =
+    const pharmacyItems: typeof allPharmacyProducts =
       bindings.pharmacyBusinesses.length === 0
         ? []
-        : pharmacyProducts.filter((product) => {
+        : allPharmacyProducts.filter((product) => {
             const metadata =
               product.metadata &&
               typeof product.metadata === 'object' &&
@@ -2332,22 +2431,266 @@ router.get(
             );
           });
 
+    const pharmacyProductIds = pharmacyItems.map((product) => product.id);
+    const pharmacyOrders =
+      pharmacyProductIds.length === 0
+        ? []
+        : await prisma.order.findMany({
+            where: {
+              moduleType: ModuleType.PHARMACY,
+              items: {
+                some: {
+                  productId: { in: pharmacyProductIds },
+                },
+              },
+            },
+            select: {
+              status: true,
+              updatedAt: true,
+              items: {
+                select: {
+                  productId: true,
+                },
+              },
+            },
+          });
+
+    const shoppingProductCountByStore = new Map<string, number>();
+    const shoppingOutOfStockByStore = new Map<string, number>();
+    for (const product of shoppingProducts) {
+      if (!product.shopId) continue;
+      shoppingProductCountByStore.set(
+        product.shopId,
+        (shoppingProductCountByStore.get(product.shopId) ?? 0) + 1,
+      );
+      if (!product.inStock) {
+        shoppingOutOfStockByStore.set(
+          product.shopId,
+          (shoppingOutOfStockByStore.get(product.shopId) ?? 0) + 1,
+        );
+      }
+    }
+
+    const shoppingLiveOrdersByStore = new Map<string, number>();
+    const shoppingCompletedTodayByStore = new Map<string, number>();
+    for (const order of shoppingOrders) {
+      const shopIds = new Set(
+        order.items
+          .map((item) => item.product?.shopId)
+          .filter((value): value is string => Boolean(value)),
+      );
+      for (const shopId of shopIds) {
+        if (liveOrderStatuses.includes(order.status)) {
+          shoppingLiveOrdersByStore.set(
+            shopId,
+            (shoppingLiveOrdersByStore.get(shopId) ?? 0) + 1,
+          );
+        }
+        if (
+          order.status === OrderStatus.COMPLETED &&
+          order.updatedAt >= todayStart
+        ) {
+          shoppingCompletedTodayByStore.set(
+            shopId,
+            (shoppingCompletedTodayByStore.get(shopId) ?? 0) + 1,
+          );
+        }
+      }
+    }
+
+    const restaurantMenuCountById = new Map<string, number>();
+    const restaurantUnavailableCountById = new Map<string, number>();
+    for (const item of restaurantMenuItems) {
+      const restaurantId = item.category.restaurantId;
+      restaurantMenuCountById.set(
+        restaurantId,
+        (restaurantMenuCountById.get(restaurantId) ?? 0) + 1,
+      );
+      if (!item.isAvailable) {
+        restaurantUnavailableCountById.set(
+          restaurantId,
+          (restaurantUnavailableCountById.get(restaurantId) ?? 0) + 1,
+        );
+      }
+    }
+
+    const foodLiveOrdersByRestaurant = new Map<string, number>();
+    const foodCompletedTodayByRestaurant = new Map<string, number>();
+    const restaurantIdByName = new Map(
+      restaurants.map((restaurant) => [restaurant.name, restaurant.id] as const),
+    );
+    for (const order of foodOrders) {
+      const restaurantIds = new Set(
+        order.items
+          .map((item) => item.brand)
+          .filter((value): value is string => Boolean(value))
+          .map((brand) => restaurantIdByName.get(brand))
+          .filter((value): value is string => Boolean(value)),
+      );
+      for (const restaurantId of restaurantIds) {
+        if (liveOrderStatuses.includes(order.status)) {
+          foodLiveOrdersByRestaurant.set(
+            restaurantId,
+            (foodLiveOrdersByRestaurant.get(restaurantId) ?? 0) + 1,
+          );
+        }
+        if (
+          order.status === OrderStatus.COMPLETED &&
+          order.updatedAt >= todayStart
+        ) {
+          foodCompletedTodayByRestaurant.set(
+            restaurantId,
+            (foodCompletedTodayByRestaurant.get(restaurantId) ?? 0) + 1,
+          );
+        }
+      }
+    }
+
+    const pharmacyBusinessNames = Array.from(
+      new Set(
+        pharmacyItems
+          .map((product) => {
+            const metadata =
+              product.metadata &&
+              typeof product.metadata === 'object' &&
+              !Array.isArray(product.metadata)
+                ? (product.metadata as Record<string, unknown>)
+                : null;
+            return metadata?.sourceBusiness?.toString();
+          })
+          .filter((value): value is string => Boolean(value)),
+      ),
+    );
+    const pharmacyLiveOrderCount = pharmacyOrders.filter((order) =>
+      liveOrderStatuses.includes(order.status),
+    ).length;
+    const pharmacyCompletedTodayCount = pharmacyOrders.filter(
+      (order) =>
+        order.status === OrderStatus.COMPLETED && order.updatedAt >= todayStart,
+    ).length;
+    const pharmacyOutOfStockCount = pharmacyItems.filter(
+      (product) => !product.inStock,
+    ).length;
+    const pharmacyPrescriptionCount = pharmacyItems.filter(
+      (product) => product.requiresPrescription,
+    ).length;
+
+    const shoppingManagedCount = stores.length;
+    const shoppingActiveCount = stores.filter((store) => store.isOpen).length;
+    const shoppingLiveListingCount = shoppingProducts.filter(
+      (product) => product.inStock,
+    ).length;
+    const shoppingAttentionCount = shoppingProducts.filter(
+      (product) => !product.inStock,
+    ).length;
+
+    const foodManagedCount = restaurants.length;
+    const foodActiveCount = restaurants.filter((restaurant) => restaurant.isOpen).length;
+    const foodLiveListingCount = restaurantMenuItems.filter(
+      (item) => item.isAvailable,
+    ).length;
+    const foodAttentionCount = restaurantMenuItems.filter(
+      (item) => !item.isAvailable,
+    ).length;
+
     res.json({
+      shoppingSummary: {
+        title: 'Shopping storefront',
+        subtitle: shoppingManagedCount == 1
+            ? '1 retail store connected'
+            : '$shoppingManagedCount retail stores connected',
+        metrics: [
+          {'label': 'Open stores', 'value': '$shoppingActiveCount'},
+          {'label': 'Live listings', 'value': '$shoppingLiveListingCount'},
+          {'label': 'Need attention', 'value': '$shoppingAttentionCount'},
+          {
+            'label': 'Orders in progress',
+            'value': '${shoppingLiveOrdersByStore.values.fold<int>(0, (sum, count) => sum + count)}',
+          },
+        ],
+      },
       shopping: stores.map((store) => ({
         id: store.id,
+        previewId: store.slug,
         name: store.name,
         enabled: store.isOpen,
+        subtitle: store.tagline ?? 'Retail storefront',
+        detail:
+            '${shoppingProductCountByStore.get(store.id) ?? 0} live items • ${shoppingOutOfStockByStore.get(store.id) ?? 0} out of stock',
+        metrics: [
+          '${shoppingLiveOrdersByStore.get(store.id) ?? 0} orders in progress',
+          '${shoppingCompletedTodayByStore.get(store.id) ?? 0} completed today',
+        ],
+        imageUrl: store.imageUrl,
       })),
+      foodSummary: {
+        title: 'Food storefront',
+        subtitle: foodManagedCount == 1
+            ? '1 restaurant connected'
+            : '$foodManagedCount restaurants connected',
+        metrics: [
+          {'label': 'Open restaurants', 'value': '$foodActiveCount'},
+          {'label': 'Available dishes', 'value': '$foodLiveListingCount'},
+          {'label': 'Need attention', 'value': '$foodAttentionCount'},
+          {
+            'label': 'Orders in progress',
+            'value': '${foodLiveOrdersByRestaurant.values.fold<int>(0, (sum, count) => sum + count)}',
+          },
+        ],
+      },
       food: restaurants.map((restaurant) => ({
         id: restaurant.id,
         name: restaurant.name,
         enabled: restaurant.isOpen,
+        subtitle: restaurant.cuisine,
+        detail:
+            '${restaurantMenuCountById.get(restaurant.id) ?? 0} menu items • ${restaurantUnavailableCountById.get(restaurant.id) ?? 0} unavailable',
+        metrics: [
+          '${foodLiveOrdersByRestaurant.get(restaurant.id) ?? 0} orders in progress',
+          '${foodCompletedTodayByRestaurant.get(restaurant.id) ?? 0} completed today',
+        ],
+        imageUrl: restaurant.imageUrl,
       })),
-      pharmacy: pharmacyItems.map((product) => ({
-        id: product.id,
-        name: product.name,
-        enabled: product.inStock,
-      })),
+      pharmacySummary: {
+        title: 'Pharmacy storefront',
+        subtitle: pharmacyBusinessNames.length === 0
+            ? 'No pharmacy business connected'
+            : pharmacyBusinessNames.length == 1
+                ? '1 pharmacy business connected'
+                : '${pharmacyBusinessNames.length} pharmacy businesses connected',
+        metrics: [
+          {'label': 'Listed medicines', 'value': '${pharmacyItems.length}'},
+          {'label': 'Prescription items', 'value': '$pharmacyPrescriptionCount'},
+          {'label': 'Need attention', 'value': '$pharmacyOutOfStockCount'},
+          {'label': 'Orders in progress', 'value': '$pharmacyLiveOrderCount'},
+        ],
+      },
+      pharmacy: pharmacyItems.map((product) => {
+        const metadata =
+          product.metadata &&
+          typeof product.metadata === 'object' &&
+          !Array.isArray(product.metadata)
+            ? (product.metadata as Record<string, unknown>)
+            : null;
+        const sourceBusiness =
+          metadata?.sourceBusiness?.toString() ?? 'Pharmacy';
+
+        return {
+          id: product.id,
+          name: product.name,
+          enabled: product.inStock,
+          subtitle: product.category?.name ?? 'Medicine',
+          detail: `${formatCurrency(toNumber(product.price))} • ${
+            product.requiresPrescription
+              ? 'Prescription required'
+              : 'Over the counter'
+          }`,
+          metrics: [
+            sourceBusiness,
+            '$pharmacyCompletedTodayCount completed today',
+          ],
+        };
+      }),
     });
   }),
 );
