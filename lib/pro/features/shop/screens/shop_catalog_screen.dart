@@ -75,10 +75,82 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
     }
   }
 
-  Future<void> _createShoppingStore() async {
+  Future<void> _showCreateShoppingStoreForm() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => _ShoppingStoreFormDialog(
+        initialName: widget.businessName,
+      ),
+    );
+    if (result == null) return;
+
     try {
       final response = Map<String, dynamic>.from(
-        await ApiClient.post('/pro/${widget.userId}/shopping-store', {
+        await ApiClient.post('/pro/${widget.userId}/shopping-store', result)
+            as Map,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            (response['created'] as bool? ?? false)
+                ? 'Store created and connected to your profile.'
+                : 'Existing store updated and connected to your profile.',
+          ),
+        ),
+      );
+      await _refresh();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
+      );
+    }
+  }
+
+  Future<void> _showCreateShoppingProductForm(
+    List<Map<String, dynamic>> shoppingStores,
+  ) async {
+    if (shoppingStores.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Create a store first before adding products.'),
+        ),
+      );
+      return;
+    }
+
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (_) => _ShoppingProductFormDialog(stores: shoppingStores),
+    );
+    if (result == null) return;
+
+    try {
+      await ApiClient.post('/pro/${widget.userId}/shopping-products', result);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Product added to your catalog.'),
+        ),
+      );
+      await _refresh();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
+      );
+    }
+  }
+
+  Future<void> _createRestaurant() async {
+    try {
+      final response = Map<String, dynamic>.from(
+        await ApiClient.post('/pro/${widget.userId}/restaurant', {
               'name': widget.businessName,
             })
             as Map,
@@ -88,9 +160,31 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
         SnackBar(
           content: Text(
             (response['created'] as bool? ?? false)
-                ? 'Store created and connected to your profile.'
-                : 'Existing store connected to your profile.',
+                ? 'Restaurant created and connected to your profile.'
+                : 'Existing restaurant connected to your profile.',
           ),
+        ),
+      );
+      await _refresh();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
+      );
+    }
+  }
+
+  Future<void> _createPharmacyBusiness() async {
+    try {
+      await ApiClient.post('/pro/${widget.userId}/pharmacy-business', {
+        'name': widget.businessName,
+      });
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Pharmacy business connected to your profile.'),
         ),
       );
       await _refresh();
@@ -212,8 +306,22 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                         targetId: targetId,
                         enabled: enabled,
                       ),
-                      onCreateShoppingStore: module == ProModule.shopping
-                          ? _createShoppingStore
+                      onCreateModule: switch (module) {
+                        ProModule.shopping => _showCreateShoppingStoreForm,
+                        ProModule.food => _createRestaurant,
+                        ProModule.pharmacy => _createPharmacyBusiness,
+                        _ => null,
+                      },
+                      onAddShoppingProduct: module == ProModule.shopping
+                          ? () => _showCreateShoppingProductForm(
+                              (data['shopping'] as List<dynamic>? ?? const [])
+                                  .map(
+                                    (entry) => Map<String, dynamic>.from(
+                                      entry as Map,
+                                    ),
+                                  )
+                                  .toList(growable: false),
+                            )
                           : null,
                       onPreview: (item) => _openPreview(module, item),
                     ),
@@ -246,7 +354,8 @@ class _StorefrontModuleTab extends StatelessWidget {
   final ValueChanged<String> onSearchChanged;
   final Set<String> busyIds;
   final Future<void> Function(String targetId, bool enabled) onToggle;
-  final Future<void> Function()? onCreateShoppingStore;
+  final Future<void> Function()? onCreateModule;
+  final Future<void> Function()? onAddShoppingProduct;
   final Future<void> Function(Map<String, dynamic> item) onPreview;
 
   const _StorefrontModuleTab({
@@ -257,7 +366,8 @@ class _StorefrontModuleTab extends StatelessWidget {
     required this.onSearchChanged,
     required this.busyIds,
     required this.onToggle,
-    required this.onCreateShoppingStore,
+    required this.onCreateModule,
+    required this.onAddShoppingProduct,
     required this.onPreview,
   });
 
@@ -291,13 +401,20 @@ class _StorefrontModuleTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
+        if (module == ProModule.shopping)
+          _ShoppingActionsRow(
+            summary: summary,
+            onCreateStore: onCreateModule,
+            onAddProduct: onAddShoppingProduct,
+          ),
+        if (module == ProModule.shopping) const SizedBox(height: 16),
         _StorefrontSummaryCard(module: module, summary: summary),
         const SizedBox(height: 16),
         if (items.isEmpty)
           _EmptyModuleState(
             module: module,
             summary: summary,
-            onCreateShoppingStore: onCreateShoppingStore,
+            onCreateModule: onCreateModule,
           )
         else if (filteredItems.isEmpty)
           const _EmptySearchState()
@@ -404,6 +521,43 @@ class _StorefrontSummaryCard extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+class _ShoppingActionsRow extends StatelessWidget {
+  final Map<String, dynamic> summary;
+  final Future<void> Function()? onCreateStore;
+  final Future<void> Function()? onAddProduct;
+
+  const _ShoppingActionsRow({
+    required this.summary,
+    required this.onCreateStore,
+    required this.onAddProduct,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasBindings = summary['hasBindings'] as bool? ?? false;
+
+    return Row(
+      children: [
+        Expanded(
+          child: FilledButton.icon(
+            onPressed: onCreateStore,
+            icon: const Icon(Icons.add_business_outlined),
+            label: Text(hasBindings ? 'Edit Store Setup' : 'Create Store'),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: hasBindings ? onAddProduct : null,
+            icon: const Icon(Icons.add_box_outlined),
+            label: const Text('Add Product'),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -590,15 +744,276 @@ class _StorefrontAvatar extends StatelessWidget {
   }
 }
 
+class _ShoppingStoreFormDialog extends StatefulWidget {
+  final String initialName;
+
+  const _ShoppingStoreFormDialog({required this.initialName});
+
+  @override
+  State<_ShoppingStoreFormDialog> createState() =>
+      _ShoppingStoreFormDialogState();
+}
+
+class _ShoppingStoreFormDialogState extends State<_ShoppingStoreFormDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nameController;
+  final _taglineController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _imageUrlController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.initialName);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _taglineController.dispose();
+    _descriptionController.dispose();
+    _imageUrlController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Create Store'),
+      content: SizedBox(
+        width: 460,
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: 'Store name'),
+                  validator: (value) => (value == null || value.trim().length < 2)
+                      ? 'Enter a store name'
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _taglineController,
+                  decoration: const InputDecoration(labelText: 'Tagline'),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                  minLines: 3,
+                  maxLines: 4,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _imageUrlController,
+                  decoration: const InputDecoration(
+                    labelText: 'Image URL',
+                    hintText: 'https://...',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (!_formKey.currentState!.validate()) return;
+            Navigator.of(context).pop({
+              'name': _nameController.text.trim(),
+              'tagline': _taglineController.text.trim(),
+              'description': _descriptionController.text.trim(),
+              'imageUrl': _imageUrlController.text.trim(),
+            });
+          },
+          child: const Text('Save Store'),
+        ),
+      ],
+    );
+  }
+}
+
+class _ShoppingProductFormDialog extends StatefulWidget {
+  final List<Map<String, dynamic>> stores;
+
+  const _ShoppingProductFormDialog({required this.stores});
+
+  @override
+  State<_ShoppingProductFormDialog> createState() =>
+      _ShoppingProductFormDialogState();
+}
+
+class _ShoppingProductFormDialogState extends State<_ShoppingProductFormDialog> {
+  final _formKey = GlobalKey<FormState>();
+  String? _selectedStoreId;
+  final _categoryController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _originalPriceController = TextEditingController();
+  final _unitController = TextEditingController();
+  final _imageUrlController = TextEditingController();
+  bool _inStock = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedStoreId = widget.stores.isNotEmpty
+        ? widget.stores.first['id']?.toString()
+        : null;
+  }
+
+  @override
+  void dispose() {
+    _categoryController.dispose();
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    _originalPriceController.dispose();
+    _unitController.dispose();
+    _imageUrlController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Add Product'),
+      content: SizedBox(
+        width: 460,
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedStoreId,
+                  items: widget.stores
+                      .map(
+                        (store) => DropdownMenuItem<String>(
+                          value: store['id']?.toString(),
+                          child: Text(store['name']?.toString() ?? 'Store'),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) => setState(() => _selectedStoreId = value),
+                  decoration: const InputDecoration(labelText: 'Store'),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _categoryController,
+                  decoration: const InputDecoration(labelText: 'Catalog category'),
+                  validator: (value) => (value == null || value.trim().length < 2)
+                      ? 'Enter a category'
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(labelText: 'Product name'),
+                  validator: (value) => (value == null || value.trim().length < 2)
+                      ? 'Enter a product name'
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                  minLines: 3,
+                  maxLines: 4,
+                  validator: (value) => (value == null || value.trim().length < 4)
+                      ? 'Enter a description'
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _priceController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(labelText: 'Price'),
+                  validator: (value) =>
+                      (double.tryParse(value ?? '') ?? 0) <= 0 ? 'Enter a valid price' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _originalPriceController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(labelText: 'Original price'),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _unitController,
+                  decoration: const InputDecoration(labelText: 'Unit'),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _imageUrlController,
+                  decoration: const InputDecoration(
+                    labelText: 'Image URL',
+                    hintText: 'https://...',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: _inStock,
+                  onChanged: (value) => setState(() => _inStock = value),
+                  title: const Text('Available in stock'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () {
+            if (!_formKey.currentState!.validate()) return;
+            if (_selectedStoreId == null || _selectedStoreId!.isEmpty) return;
+            Navigator.of(context).pop({
+              'storeId': _selectedStoreId,
+              'categoryName': _categoryController.text.trim(),
+              'name': _nameController.text.trim(),
+              'description': _descriptionController.text.trim(),
+              'price': double.parse(_priceController.text.trim()),
+              'originalPrice':
+                  _originalPriceController.text.trim().isEmpty
+                      ? null
+                      : double.tryParse(_originalPriceController.text.trim()),
+              'unit': _unitController.text.trim(),
+              'imageUrl': _imageUrlController.text.trim(),
+              'inStock': _inStock,
+            });
+          },
+          child: const Text('Add Product'),
+        ),
+      ],
+    );
+  }
+}
+
 class _EmptyModuleState extends StatelessWidget {
   final ProModule module;
   final Map<String, dynamic> summary;
-  final Future<void> Function()? onCreateShoppingStore;
+  final Future<void> Function()? onCreateModule;
 
   const _EmptyModuleState({
     required this.module,
     required this.summary,
-    this.onCreateShoppingStore,
+    this.onCreateModule,
   });
 
   @override
@@ -621,20 +1036,29 @@ class _EmptyModuleState extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
             ),
-            if (!hasBindings &&
-                module == ProModule.shopping &&
-                onCreateShoppingStore != null) ...[
+            if (!hasBindings && onCreateModule != null) ...[
               const SizedBox(height: 16),
               FilledButton.icon(
-                onPressed: onCreateShoppingStore,
+                onPressed: onCreateModule,
                 icon: const Icon(Icons.add_business_outlined),
-                label: const Text('Create Store'),
+                label: Text(_createLabel(module)),
               ),
             ],
           ],
         ),
       ),
     );
+  }
+
+  String _createLabel(ProModule module) {
+    switch (module) {
+      case ProModule.food:
+        return 'Create Restaurant';
+      case ProModule.pharmacy:
+        return 'Create Pharmacy';
+      default:
+        return 'Create Store';
+    }
   }
 
   String _unboundMessage(ProModule module) {

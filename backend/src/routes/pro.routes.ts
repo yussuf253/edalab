@@ -71,6 +71,30 @@ const updateShopAvailabilitySchema = z.object({
 
 const createShoppingStoreSchema = z.object({
   name: z.string().trim().min(2).max(120).optional(),
+  tagline: z.string().trim().max(160).optional().or(z.literal('')),
+  description: z.string().trim().max(800).optional().or(z.literal('')),
+  imageUrl: z.string().trim().url().optional().or(z.literal('')),
+});
+
+const createRestaurantSchema = z.object({
+  name: z.string().trim().min(2).max(120).optional(),
+  cuisine: z.string().trim().min(2).max(80).optional(),
+});
+
+const createPharmacyBusinessSchema = z.object({
+  name: z.string().trim().min(2).max(120).optional(),
+});
+
+const createShoppingProductSchema = z.object({
+  storeId: z.string().min(1),
+  categoryName: z.string().trim().min(2).max(80),
+  name: z.string().trim().min(2).max(120),
+  description: z.string().trim().min(4).max(800),
+  price: z.number().positive(),
+  originalPrice: z.number().positive().optional(),
+  unit: z.string().trim().max(40).optional().or(z.literal('')),
+  imageUrl: z.string().trim().url().optional().or(z.literal('')),
+  inStock: z.boolean().optional(),
 });
 
 const updateProviderAvailabilitySchema = z.object({
@@ -194,6 +218,22 @@ function slugifyStoreName(value: string) {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+async function ensureUniqueSlug(
+  baseValue: string,
+  exists: (slug: string) => Promise<boolean>,
+) {
+  const baseSlug = slugifyStoreName(baseValue) || 'item';
+  let slug = baseSlug;
+  let suffix = 1;
+
+  while (await exists(slug)) {
+    suffix += 1;
+    slug = `${baseSlug}-${suffix}`;
+  }
+
+  return slug;
 }
 
 function matchesBusinessName(query: string, candidate: string) {
@@ -2640,11 +2680,10 @@ router.get(
         name: store.name,
         enabled: store.isOpen,
         subtitle: store.tagline ?? 'Retail storefront',
-        detail:
-            '${shoppingProductCountByStore.get(store.id) ?? 0} live items • ${shoppingOutOfStockByStore.get(store.id) ?? 0} out of stock',
+        detail: `${shoppingProductCountByStore.get(store.id) ?? 0} live items • ${shoppingOutOfStockByStore.get(store.id) ?? 0} out of stock`,
         metrics: [
-          '${shoppingLiveOrdersByStore.get(store.id) ?? 0} orders in progress',
-          '${shoppingCompletedTodayByStore.get(store.id) ?? 0} completed today',
+          `${shoppingLiveOrdersByStore.get(store.id) ?? 0} orders in progress`,
+          `${shoppingCompletedTodayByStore.get(store.id) ?? 0} completed today`,
         ],
         imageUrl: store.imageUrl,
       })),
@@ -2674,11 +2713,10 @@ router.get(
         name: restaurant.name,
         enabled: restaurant.isOpen,
         subtitle: restaurant.cuisine,
-        detail:
-            '${restaurantMenuCountById.get(restaurant.id) ?? 0} menu items • ${restaurantUnavailableCountById.get(restaurant.id) ?? 0} unavailable',
+        detail: `${restaurantMenuCountById.get(restaurant.id) ?? 0} menu items • ${restaurantUnavailableCountById.get(restaurant.id) ?? 0} unavailable`,
         metrics: [
-          '${foodLiveOrdersByRestaurant.get(restaurant.id) ?? 0} orders in progress',
-          '${foodCompletedTodayByRestaurant.get(restaurant.id) ?? 0} completed today',
+          `${foodLiveOrdersByRestaurant.get(restaurant.id) ?? 0} orders in progress`,
+          `${foodCompletedTodayByRestaurant.get(restaurant.id) ?? 0} completed today`,
         ],
         imageUrl: restaurant.imageUrl,
       })),
@@ -2690,13 +2728,13 @@ router.get(
             ? 'No pharmacy business connected'
             : pharmacyBusinessNames.length == 1
                 ? '1 pharmacy business connected'
-                : '${pharmacyBusinessNames.length} pharmacy businesses connected',
+                : `${pharmacyBusinessNames.length} pharmacy businesses connected`,
         emptyStateMessage:
             pharmacyBusinessNames.length === 0
                 ? 'No pharmacy business is bound to this shop profile yet.'
                 : 'Your pharmacy is connected, but no medicines are listed yet.',
         metrics: [
-          {'label': 'Listed medicines', 'value': '${pharmacyItems.length}'},
+          {'label': 'Listed medicines', 'value': `${pharmacyItems.length}`},
           {'label': 'Prescription items', 'value': `${pharmacyPrescriptionCount}`},
           {'label': 'Need attention', 'value': `${pharmacyOutOfStockCount}`},
           {'label': 'Orders in progress', 'value': `${pharmacyLiveOrderCount}`},
@@ -2762,30 +2800,40 @@ router.post(
     const store =
       matchingStore ??
       (await (async () => {
-        const baseSlug = slugifyStoreName(storeName) || `store-${userId.slice(-6)}`;
-        let slug = baseSlug;
-        let suffix = 1;
-
-        while (
-          await prisma.shoppingStore.findUnique({
-            where: { slug },
-            select: { id: true },
-          })
-        ) {
-          suffix += 1;
-          slug = `${baseSlug}-${suffix}`;
-        }
+        const slug = await ensureUniqueSlug(
+          storeName || `store-${userId.slice(-6)}`,
+          async (candidate) =>
+            Boolean(
+              await prisma.shoppingStore.findUnique({
+                where: { slug: candidate },
+                select: { id: true },
+              }),
+            ),
+        );
 
         return prisma.shoppingStore.create({
           data: {
             id: randomUUID(),
             name: storeName,
             slug,
-            tagline: 'New store on EdaLab',
+            tagline: body.tagline?.trim() || 'New store on EdaLab',
+            description: body.description?.trim() || null,
+            imageUrl: body.imageUrl?.trim() || null,
             isOpen: true,
           },
         });
       })());
+
+    if (matchingStore) {
+      await prisma.shoppingStore.update({
+        where: { id: matchingStore.id },
+        data: {
+          tagline: body.tagline?.trim() || matchingStore.tagline,
+          description: body.description?.trim() || matchingStore.description,
+          imageUrl: body.imageUrl?.trim() || matchingStore.imageUrl,
+        },
+      });
+    }
 
     const resolvedBindings = await resolveBindings(
       profile.businessName,
@@ -2818,6 +2866,247 @@ router.post(
       name: store.name,
       created: matchingStore == null,
       bindings,
+    });
+  }),
+);
+
+router.post(
+  '/:userId/restaurant',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const body = createRestaurantSchema.parse(req.body);
+    const profile = await prisma.proProfile.findUnique({ where: { userId } });
+
+    if (!profile || profile.type !== ProProfileType.SHOP) {
+      return res.status(404).json({ error: 'Shop pro profile not found.' });
+    }
+
+    if (!profile.activeModules.includes(ProModule.FOOD)) {
+      return res.status(400).json({
+        error: 'Food is not enabled for this shop profile.',
+      });
+    }
+
+    const restaurantName = body.name?.trim() || profile.businessName.trim();
+    const matchingRestaurant = await prisma.restaurant.findFirst({
+      where: {
+        name: {
+          equals: restaurantName,
+          mode: 'insensitive',
+        },
+      },
+    });
+
+    const restaurant =
+      matchingRestaurant ??
+      (await prisma.restaurant.create({
+        data: {
+          id: randomUUID(),
+          name: restaurantName,
+          cuisine: body.cuisine?.trim() || 'General',
+          isOpen: true,
+        },
+      }));
+
+    const resolvedBindings = await resolveBindings(
+      profile.businessName,
+      profile.activeModules,
+    );
+    const ownedLaundryServiceIds = await syncLaundryOwnership(
+      profile.userId,
+      profile.type,
+      profile.activeModules,
+      resolvedBindings,
+    );
+    const bindings = {
+      ...resolvedBindings,
+      laundryServiceIds: ownedLaundryServiceIds,
+      restaurantIds: Array.from(
+        new Set([...resolvedBindings.restaurantIds, restaurant.id]),
+      ),
+      restaurantNames: Array.from(
+        new Set([...resolvedBindings.restaurantNames, restaurant.name]),
+      ),
+    };
+
+    await prisma.proProfile.update({
+      where: { userId },
+      data: {
+        bindings,
+      },
+    });
+
+    res.status(matchingRestaurant ? 200 : 201).json({
+      id: restaurant.id,
+      name: restaurant.name,
+      created: matchingRestaurant == null,
+      bindings,
+    });
+  }),
+);
+
+router.post(
+  '/:userId/pharmacy-business',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const body = createPharmacyBusinessSchema.parse(req.body);
+    const profile = await prisma.proProfile.findUnique({ where: { userId } });
+
+    if (!profile || profile.type !== ProProfileType.SHOP) {
+      return res.status(404).json({ error: 'Shop pro profile not found.' });
+    }
+
+    if (!profile.activeModules.includes(ProModule.PHARMACY)) {
+      return res.status(400).json({
+        error: 'Pharmacy is not enabled for this shop profile.',
+      });
+    }
+
+    const businessName = body.name?.trim() || profile.businessName.trim();
+    const resolvedBindings = await resolveBindings(
+      profile.businessName,
+      profile.activeModules,
+    );
+    const ownedLaundryServiceIds = await syncLaundryOwnership(
+      profile.userId,
+      profile.type,
+      profile.activeModules,
+      resolvedBindings,
+    );
+    const bindings = {
+      ...resolvedBindings,
+      laundryServiceIds: ownedLaundryServiceIds,
+      pharmacyBusinesses: Array.from(
+        new Set([...resolvedBindings.pharmacyBusinesses, businessName]),
+      ),
+    };
+
+    await prisma.proProfile.update({
+      where: { userId },
+      data: {
+        bindings,
+      },
+    });
+
+    res.status(201).json({
+      name: businessName,
+      created: true,
+      bindings,
+    });
+  }),
+);
+
+router.post(
+  '/:userId/shopping-products',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const body = createShoppingProductSchema.parse(req.body);
+    const profile = await prisma.proProfile.findUnique({ where: { userId } });
+
+    if (!profile || profile.type !== ProProfileType.SHOP) {
+      return res.status(404).json({ error: 'Shop pro profile not found.' });
+    }
+
+    if (!profile.activeModules.includes(ProModule.SHOPPING)) {
+      return res.status(400).json({
+        error: 'Shopping is not enabled for this shop profile.',
+      });
+    }
+
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
+    if (
+      bindings.shoppingStoreIds.length === 0 ||
+      !bindings.shoppingStoreIds.includes(body.storeId)
+    ) {
+      return res.status(403).json({
+        error: 'Store is not assigned to this shop profile.',
+      });
+    }
+
+    const categorySlug = await ensureUniqueSlug(
+      `${body.categoryName.trim()}-${ModuleType.SHOPPING.toLowerCase()}`,
+      async (candidate) =>
+        Boolean(
+          await prisma.productCategory.findUnique({
+            where: { slug: candidate },
+            select: { id: true },
+          }),
+        ),
+    );
+
+    const existingCategory = await prisma.productCategory.findFirst({
+      where: {
+        moduleType: ModuleType.SHOPPING,
+        name: {
+          equals: body.categoryName.trim(),
+          mode: 'insensitive',
+        },
+      },
+    });
+
+    const category =
+      existingCategory ??
+      (await prisma.productCategory.create({
+        data: {
+          id: randomUUID(),
+          moduleType: ModuleType.SHOPPING,
+          name: body.categoryName.trim(),
+          slug: categorySlug,
+          active: true,
+        },
+      }));
+
+    const product = await prisma.product.create({
+      data: {
+        id: randomUUID(),
+        moduleType: ModuleType.SHOPPING,
+        categoryId: category.id,
+        shopId: body.storeId,
+        name: body.name.trim(),
+        description: body.description.trim(),
+        price: body.price,
+        originalPrice: body.originalPrice ?? null,
+        unit: body.unit?.trim() || null,
+        imageUrlsJson: body.imageUrl?.trim().length
+            ? [body.imageUrl!.trim()]
+            : [],
+        inStock: body.inStock ?? true,
+      },
+      include: {
+        category: true,
+        shop: true,
+      },
+    });
+
+    const storeProducts = await prisma.product.findMany({
+      where: {
+        moduleType: ModuleType.SHOPPING,
+        shopId: body.storeId,
+      },
+      select: {
+        price: true,
+      },
+    });
+    const prices = storeProducts
+      .map((entry) => toNumber(entry.price))
+      .filter((value): value is number => value != null);
+
+    await prisma.shoppingStore.update({
+      where: { id: body.storeId },
+      data: {
+        minPrice: prices.length === 0 ? null : Math.min(...prices),
+        maxPrice: prices.length === 0 ? null : Math.max(...prices),
+      },
+    });
+
+    res.status(201).json({
+      id: product.id,
+      name: product.name,
+      shopId: product.shopId,
+      category: product.category?.name ?? body.categoryName.trim(),
+      price: toNumber(product.price),
+      inStock: product.inStock,
     });
   }),
 );
