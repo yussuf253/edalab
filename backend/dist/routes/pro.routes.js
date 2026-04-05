@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveBindings = resolveBindings;
 exports.syncLaundryOwnership = syncLaundryOwnership;
 const client_1 = require("@prisma/client");
+const crypto_1 = require("crypto");
 const express_1 = require("express");
 const zod_1 = require("zod");
 const db_1 = require("../db");
@@ -52,6 +53,9 @@ const updateShopAvailabilitySchema = zod_1.z.object({
     module: zod_1.z.enum(['shopping', 'food', 'pharmacy']),
     targetId: zod_1.z.string().min(1),
     enabled: zod_1.z.boolean(),
+});
+const createShoppingStoreSchema = zod_1.z.object({
+    name: zod_1.z.string().trim().min(2).max(120).optional(),
 });
 const updateProviderAvailabilitySchema = zod_1.z.object({
     module: zod_1.z.enum(['services', 'laundry']),
@@ -129,6 +133,13 @@ function normalizeText(value) {
         .replace(/[^a-z0-9\s]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
+}
+function slugifyStoreName(value) {
+    return value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
 }
 function matchesBusinessName(query, candidate) {
     const left = normalizeText(query);
@@ -2043,6 +2054,70 @@ router.get('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async
                 ],
             };
         }),
+    });
+}));
+router.post('/:userId/shopping-store', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const body = createShoppingStoreSchema.parse(req.body);
+    const profile = await db_1.prisma.proProfile.findUnique({ where: { userId } });
+    if (!profile || profile.type !== client_1.ProProfileType.SHOP) {
+        return res.status(404).json({ error: 'Shop pro profile not found.' });
+    }
+    if (!profile.activeModules.includes(client_1.ProModule.SHOPPING)) {
+        return res.status(400).json({
+            error: 'Shopping is not enabled for this shop profile.',
+        });
+    }
+    const storeName = body.name?.trim() || profile.businessName.trim();
+    const matchingStore = await db_1.prisma.shoppingStore.findFirst({
+        where: {
+            name: {
+                equals: storeName,
+                mode: 'insensitive',
+            },
+        },
+    });
+    const store = matchingStore ??
+        (await (async () => {
+            const baseSlug = slugifyStoreName(storeName) || `store-${userId.slice(-6)}`;
+            let slug = baseSlug;
+            let suffix = 1;
+            while (await db_1.prisma.shoppingStore.findUnique({
+                where: { slug },
+                select: { id: true },
+            })) {
+                suffix += 1;
+                slug = `${baseSlug}-${suffix}`;
+            }
+            return db_1.prisma.shoppingStore.create({
+                data: {
+                    id: (0, crypto_1.randomUUID)(),
+                    name: storeName,
+                    slug,
+                    tagline: 'New store on EdaLab',
+                    isOpen: true,
+                },
+            });
+        })());
+    const resolvedBindings = await resolveBindings(profile.businessName, profile.activeModules);
+    const ownedLaundryServiceIds = await syncLaundryOwnership(profile.userId, profile.type, profile.activeModules, resolvedBindings);
+    const bindings = {
+        ...resolvedBindings,
+        laundryServiceIds: ownedLaundryServiceIds,
+        shoppingStoreIds: Array.from(new Set([...resolvedBindings.shoppingStoreIds, store.id])),
+    };
+    await db_1.prisma.proProfile.update({
+        where: { userId },
+        data: {
+            bindings,
+        },
+    });
+    res.status(matchingStore ? 200 : 201).json({
+        id: store.id,
+        slug: store.slug,
+        name: store.name,
+        created: matchingStore == null,
+        bindings,
     });
 }));
 router.post('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async (req, res) => {

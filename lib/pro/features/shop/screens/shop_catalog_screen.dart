@@ -75,6 +75,35 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
     }
   }
 
+  Future<void> _createShoppingStore() async {
+    try {
+      final response = Map<String, dynamic>.from(
+        await ApiClient.post('/pro/${widget.userId}/shopping-store', {
+              'name': widget.businessName,
+            })
+            as Map,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            (response['created'] as bool? ?? false)
+                ? 'Store created and connected to your profile.'
+                : 'Existing store connected to your profile.',
+          ),
+        ),
+      );
+      await _refresh();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
+      );
+    }
+  }
+
   Future<void> _openPreview(ProModule module, Map<String, dynamic> item) async {
     if (module == ProModule.shopping) {
       final previewId = item['previewId']?.toString() ?? '';
@@ -183,6 +212,9 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                         targetId: targetId,
                         enabled: enabled,
                       ),
+                      onCreateShoppingStore: module == ProModule.shopping
+                          ? _createShoppingStore
+                          : null,
                       onPreview: (item) => _openPreview(module, item),
                     ),
                   )
@@ -214,6 +246,7 @@ class _StorefrontModuleTab extends StatelessWidget {
   final ValueChanged<String> onSearchChanged;
   final Set<String> busyIds;
   final Future<void> Function(String targetId, bool enabled) onToggle;
+  final Future<void> Function()? onCreateShoppingStore;
   final Future<void> Function(Map<String, dynamic> item) onPreview;
 
   const _StorefrontModuleTab({
@@ -224,6 +257,7 @@ class _StorefrontModuleTab extends StatelessWidget {
     required this.onSearchChanged,
     required this.busyIds,
     required this.onToggle,
+    required this.onCreateShoppingStore,
     required this.onPreview,
   });
 
@@ -260,7 +294,11 @@ class _StorefrontModuleTab extends StatelessWidget {
         _StorefrontSummaryCard(module: module, summary: summary),
         const SizedBox(height: 16),
         if (items.isEmpty)
-          _EmptyModuleState(module: module, summary: summary)
+          _EmptyModuleState(
+            module: module,
+            summary: summary,
+            onCreateShoppingStore: onCreateShoppingStore,
+          )
         else if (filteredItems.isEmpty)
           const _EmptySearchState()
         else
@@ -555,8 +593,13 @@ class _StorefrontAvatar extends StatelessWidget {
 class _EmptyModuleState extends StatelessWidget {
   final ProModule module;
   final Map<String, dynamic> summary;
+  final Future<void> Function()? onCreateShoppingStore;
 
-  const _EmptyModuleState({required this.module, required this.summary});
+  const _EmptyModuleState({
+    required this.module,
+    required this.summary,
+    this.onCreateShoppingStore,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -571,9 +614,24 @@ class _EmptyModuleState extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
-        child: Text(
-          message,
-          textAlign: TextAlign.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              message,
+              textAlign: TextAlign.center,
+            ),
+            if (!hasBindings &&
+                module == ProModule.shopping &&
+                onCreateShoppingStore != null) ...[
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: onCreateShoppingStore,
+                icon: const Icon(Icons.add_business_outlined),
+                label: const Text('Create Store'),
+              ),
+            ],
+          ],
         ),
       ),
     );
