@@ -260,7 +260,7 @@ class _StorefrontModuleTab extends StatelessWidget {
         _StorefrontSummaryCard(module: module, summary: summary),
         const SizedBox(height: 16),
         if (items.isEmpty)
-          _EmptyModuleState(module: module)
+          _EmptyModuleState(module: module, summary: summary)
         else if (filteredItems.isEmpty)
           const _EmptySearchState()
         else
@@ -554,20 +554,51 @@ class _StorefrontAvatar extends StatelessWidget {
 
 class _EmptyModuleState extends StatelessWidget {
   final ProModule module;
+  final Map<String, dynamic> summary;
 
-  const _EmptyModuleState({required this.module});
+  const _EmptyModuleState({required this.module, required this.summary});
 
   @override
   Widget build(BuildContext context) {
+    final hasBindings = summary['hasBindings'] as bool? ?? false;
+    final message =
+        summary['emptyStateMessage']?.toString().trim().isNotEmpty == true
+            ? summary['emptyStateMessage']!.toString()
+            : hasBindings
+            ? _connectedEmptyMessage(module)
+            : _unboundMessage(module);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Text(
-          'No ${ProModuleHelper.getModuleName(module)} business is bound to this shop profile yet.',
+          message,
           textAlign: TextAlign.center,
         ),
       ),
     );
+  }
+
+  String _unboundMessage(ProModule module) {
+    switch (module) {
+      case ProModule.food:
+        return 'No restaurant is bound to this shop profile yet.';
+      case ProModule.pharmacy:
+        return 'No pharmacy business is bound to this shop profile yet.';
+      default:
+        return 'No shopping store is bound to this shop profile yet.';
+    }
+  }
+
+  String _connectedEmptyMessage(ProModule module) {
+    switch (module) {
+      case ProModule.food:
+        return 'Your restaurant is connected, but no menu records are available right now.';
+      case ProModule.pharmacy:
+        return 'Your pharmacy is connected, but no medicines are listed yet.';
+      default:
+        return 'Your shopping store is connected, but no storefront records are available right now.';
+    }
   }
 }
 

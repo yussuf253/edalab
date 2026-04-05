@@ -2592,20 +2592,32 @@ router.get(
     const foodAttentionCount = restaurantMenuItems.filter(
       (item) => !item.isAvailable,
     ).length;
+    const shoppingOrdersInProgress = Array.from(
+      shoppingLiveOrdersByStore.values(),
+    ).reduce((sum, count) => sum + count, 0);
+    const foodOrdersInProgress = Array.from(
+      foodLiveOrdersByRestaurant.values(),
+    ).reduce((sum, count) => sum + count, 0);
 
     res.json({
       shoppingSummary: {
         title: 'Shopping storefront',
+        hasBindings: shoppingManagedCount > 0,
+        managedCount: shoppingManagedCount,
         subtitle: shoppingManagedCount == 1
             ? '1 retail store connected'
-            : '$shoppingManagedCount retail stores connected',
+            : `${shoppingManagedCount} retail stores connected`,
+        emptyStateMessage:
+            shoppingManagedCount == 0
+                ? 'No shopping store is bound to this shop profile yet.'
+                : 'Your shopping store is connected, but no storefront records are available right now.',
         metrics: [
-          {'label': 'Open stores', 'value': '$shoppingActiveCount'},
-          {'label': 'Live listings', 'value': '$shoppingLiveListingCount'},
-          {'label': 'Need attention', 'value': '$shoppingAttentionCount'},
+          {'label': 'Open stores', 'value': `${shoppingActiveCount}`},
+          {'label': 'Live listings', 'value': `${shoppingLiveListingCount}`},
+          {'label': 'Need attention', 'value': `${shoppingAttentionCount}`},
           {
             'label': 'Orders in progress',
-            'value': '${shoppingLiveOrdersByStore.values.fold<int>(0, (sum, count) => sum + count)}',
+            'value': `${shoppingOrdersInProgress}`,
           },
         ],
       },
@@ -2625,16 +2637,22 @@ router.get(
       })),
       foodSummary: {
         title: 'Food storefront',
+        hasBindings: foodManagedCount > 0,
+        managedCount: foodManagedCount,
         subtitle: foodManagedCount == 1
             ? '1 restaurant connected'
-            : '$foodManagedCount restaurants connected',
+            : `${foodManagedCount} restaurants connected`,
+        emptyStateMessage:
+            foodManagedCount == 0
+                ? 'No restaurant is bound to this shop profile yet.'
+                : 'Your restaurant is connected, but no menu records are available right now.',
         metrics: [
-          {'label': 'Open restaurants', 'value': '$foodActiveCount'},
-          {'label': 'Available dishes', 'value': '$foodLiveListingCount'},
-          {'label': 'Need attention', 'value': '$foodAttentionCount'},
+          {'label': 'Open restaurants', 'value': `${foodActiveCount}`},
+          {'label': 'Available dishes', 'value': `${foodLiveListingCount}`},
+          {'label': 'Need attention', 'value': `${foodAttentionCount}`},
           {
             'label': 'Orders in progress',
-            'value': '${foodLiveOrdersByRestaurant.values.fold<int>(0, (sum, count) => sum + count)}',
+            'value': `${foodOrdersInProgress}`,
           },
         ],
       },
@@ -2653,16 +2671,22 @@ router.get(
       })),
       pharmacySummary: {
         title: 'Pharmacy storefront',
+        hasBindings: pharmacyBusinessNames.length > 0,
+        managedCount: pharmacyBusinessNames.length,
         subtitle: pharmacyBusinessNames.length === 0
             ? 'No pharmacy business connected'
             : pharmacyBusinessNames.length == 1
                 ? '1 pharmacy business connected'
                 : '${pharmacyBusinessNames.length} pharmacy businesses connected',
+        emptyStateMessage:
+            pharmacyBusinessNames.length === 0
+                ? 'No pharmacy business is bound to this shop profile yet.'
+                : 'Your pharmacy is connected, but no medicines are listed yet.',
         metrics: [
           {'label': 'Listed medicines', 'value': '${pharmacyItems.length}'},
-          {'label': 'Prescription items', 'value': '$pharmacyPrescriptionCount'},
-          {'label': 'Need attention', 'value': '$pharmacyOutOfStockCount'},
-          {'label': 'Orders in progress', 'value': '$pharmacyLiveOrderCount'},
+          {'label': 'Prescription items', 'value': `${pharmacyPrescriptionCount}`},
+          {'label': 'Need attention', 'value': `${pharmacyOutOfStockCount}`},
+          {'label': 'Orders in progress', 'value': `${pharmacyLiveOrderCount}`},
         ],
       },
       pharmacy: pharmacyItems.map((product) => {
