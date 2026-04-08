@@ -4,8 +4,11 @@ class CartItem {
   final String? brand;
   final double price;
   final String? imageUrl;
+  final String? description;
   final String? color;
   final String? size;
+  final String? shopId;
+  final String? shopName;
   int quantity;
   final String moduleType; // 'shopping', 'food', 'pharmacy', 'grocery'
 
@@ -15,8 +18,11 @@ class CartItem {
     this.brand,
     required this.price,
     this.imageUrl,
+    this.description,
     this.color,
     this.size,
+    this.shopId,
+    this.shopName,
     this.quantity = 1,
     required this.moduleType,
   });
@@ -30,8 +36,11 @@ class CartItem {
       'brand': brand,
       'price': price,
       'imageUrl': imageUrl,
+      'description': description,
       'color': color,
       'size': size,
+      'shopId': shopId,
+      'shopName': shopName,
       'quantity': quantity,
       'moduleType': moduleType,
     };
@@ -44,8 +53,11 @@ class CartItem {
       brand: json['brand']?.toString(),
       price: (json['price'] as num?)?.toDouble() ?? 0,
       imageUrl: json['imageUrl']?.toString(),
+      description: json['description']?.toString(),
       color: json['color']?.toString(),
       size: json['size']?.toString(),
+      shopId: json['shopId']?.toString(),
+      shopName: json['shopName']?.toString(),
       quantity: (json['quantity'] as num?)?.toInt() ?? 1,
       moduleType: json['moduleType']?.toString() ?? '',
     );

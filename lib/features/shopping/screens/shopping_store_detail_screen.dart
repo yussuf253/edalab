@@ -439,13 +439,20 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                                             CartItem(
                                               id: product.id,
                                               name: product.name,
-                                              brand: product.brand,
+                                              brand: product.brand
+                                                      .trim()
+                                                      .isNotEmpty
+                                                  ? product.brand
+                                                  : _store.name,
                                               price: product.price,
                                               moduleType: 'shopping',
                                               imageUrl:
                                                   product.images.isNotEmpty
                                                   ? product.images.first
                                                   : null,
+                                              description: product.description,
+                                              shopId: product.shopId,
+                                              shopName: product.shopName ?? _store.name,
                                             ),
                                           );
                                         },

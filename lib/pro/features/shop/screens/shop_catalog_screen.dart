@@ -983,19 +983,22 @@ class _ShoppingProductFormDialogState extends State<_ShoppingProductFormDialog> 
           onPressed: () {
             if (!_formKey.currentState!.validate()) return;
             if (_selectedStoreId == null || _selectedStoreId!.isEmpty) return;
-            Navigator.of(context).pop({
+            final payload = <String, dynamic>{
               'storeId': _selectedStoreId,
               'categoryName': _categoryController.text.trim(),
               'name': _nameController.text.trim(),
               'description': _descriptionController.text.trim(),
               'price': double.parse(_priceController.text.trim()),
-              'originalPrice':
-                  _originalPriceController.text.trim().isEmpty
-                      ? null
-                      : double.tryParse(_originalPriceController.text.trim()),
               'unit': _unitController.text.trim(),
               'imageUrl': _imageUrlController.text.trim(),
               'inStock': _inStock,
+            };
+            final originalPrice = _originalPriceController.text.trim();
+            if (originalPrice.isNotEmpty) {
+              payload['originalPrice'] = double.parse(originalPrice);
+            }
+            Navigator.of(context).pop({
+              ...payload,
             });
           },
           child: const Text('Add Product'),

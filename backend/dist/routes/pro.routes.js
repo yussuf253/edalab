@@ -73,7 +73,7 @@ const createShoppingProductSchema = zod_1.z.object({
     name: zod_1.z.string().trim().min(2).max(120),
     description: zod_1.z.string().trim().min(4).max(800),
     price: zod_1.z.number().positive(),
-    originalPrice: zod_1.z.number().positive().optional(),
+    originalPrice: zod_1.z.number().positive().nullable().optional(),
     unit: zod_1.z.string().trim().max(40).optional().or(zod_1.z.literal('')),
     imageUrl: zod_1.z.string().trim().url().optional().or(zod_1.z.literal('')),
     inStock: zod_1.z.boolean().optional(),
@@ -2252,10 +2252,20 @@ router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(asyn
             error: 'Shopping is not enabled for this shop profile.',
         });
     }
+    const store = await db_1.prisma.shoppingStore.findUnique({
+        where: { id: body.storeId },
+        select: {
+            id: true,
+            name: true,
+        },
+    });
+    if (!store) {
+        return res.status(404).json({ error: 'Shopping store not found.' });
+    }
     const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
     const bindings = normalizeBindings(hydratedProfile.bindings);
     if (bindings.shoppingStoreIds.length === 0 ||
-        !bindings.shoppingStoreIds.includes(body.storeId)) {
+        !bindings.shoppingStoreIds.includes(store.id)) {
         return res.status(403).json({
             error: 'Store is not assigned to this shop profile.',
         });
@@ -2288,8 +2298,9 @@ router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(asyn
             id: (0, crypto_1.randomUUID)(),
             moduleType: client_1.ModuleType.SHOPPING,
             categoryId: category.id,
-            shopId: body.storeId,
+            shopId: store.id,
             name: body.name.trim(),
+            brand: store.name,
             description: body.description.trim(),
             price: body.price,
             originalPrice: body.originalPrice ?? null,
@@ -2298,6 +2309,11 @@ router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(asyn
                 ? [body.imageUrl.trim()]
                 : [],
             inStock: body.inStock ?? true,
+            metadata: {
+                source: 'shop_dashboard',
+                shopId: store.id,
+                shopName: store.name,
+            },
         },
         include: {
             category: true,
@@ -2307,7 +2323,7 @@ router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(asyn
     const storeProducts = await db_1.prisma.product.findMany({
         where: {
             moduleType: client_1.ModuleType.SHOPPING,
-            shopId: body.storeId,
+            shopId: store.id,
         },
         select: {
             price: true,
@@ -2317,7 +2333,7 @@ router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(asyn
         .map((entry) => (0, serializers_1.toNumber)(entry.price))
         .filter((value) => value != null);
     await db_1.prisma.shoppingStore.update({
-        where: { id: body.storeId },
+        where: { id: store.id },
         data: {
             minPrice: prices.length === 0 ? null : Math.min(...prices),
             maxPrice: prices.length === 0 ? null : Math.max(...prices),

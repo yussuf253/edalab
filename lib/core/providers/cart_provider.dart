@@ -197,21 +197,46 @@ class CartProvider extends ChangeNotifier {
     final sub = getModuleSubtotal(moduleType);
     final modTax = sub * 0.08;
     final modTotal = sub + modTax;
+    final normalizedModuleType = moduleType.toLowerCase();
+    final supportsCatalogProduct = {
+      'shopping',
+      'pharmacy',
+      'grocery',
+    }.contains(normalizedModuleType);
 
     final itemsJson = moduleItems
-        .map(
-          (item) => {
+        .map((item) {
+          final itemMetadata = <String, dynamic>{
+            ...?orderMetadata,
+            'itemName': item.name,
+            'itemImageUrl': item.imageUrl,
+            'itemDescription': item.description,
+            'shopId': item.shopId,
+            'shopName': item.shopName,
+          }..removeWhere((_, value) {
+              if (value == null) return true;
+              if (value is String && value.trim().isEmpty) return true;
+              return false;
+            });
+
+          final effectiveBrand =
+              (item.brand != null && item.brand!.trim().isNotEmpty)
+              ? item.brand
+              : item.shopName;
+
+          return {
             'id': item.id,
+            if (supportsCatalogProduct) 'productId': item.id,
             'name': item.name,
-            'brand': item.brand,
+            'brand': effectiveBrand,
             'price': item.price,
             'quantity': item.quantity,
             'total': item.total,
             'color': item.color,
             'size': item.size,
-            'metadata': orderMetadata,
-          },
-        )
+            'metadata': itemMetadata,
+          };
+        })
         .toList();
 
     try {

@@ -514,10 +514,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     final cartItem = CartItem(
                       id: _product.id,
                       name: _product.name,
-                      brand: _product.brand,
+                      brand: _product.brand.trim().isNotEmpty
+                          ? _product.brand
+                          : _product.shopName,
                       price: _product.price,
                       quantity: _quantity,
                       moduleType: 'shopping',
+                      imageUrl: _product.images.isNotEmpty
+                          ? _product.images.first
+                          : null,
+                      description: _product.description,
+                      shopId: _product.shopId,
+                      shopName: _product.shopName,
                       color: _product.colors.isNotEmpty
                           ? _product.colors[_selectedColor]
                           : null,

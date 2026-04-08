@@ -120,27 +120,107 @@ function serializeHotelBooking(
   };
 }
 
-function serializeOrderDetail(
-  order: Prisma.OrderGetPayload<{
-    include: {
-      items: true;
-      deliveryAssignee: true;
+type OrderWithItemsAndDelivery = Prisma.OrderGetPayload<{
+  include: {
+    items: {
+      include: {
+        product: {
+          include: {
+            shop: true;
+          };
+        };
+      };
     };
-  }>,
+    deliveryAssignee: true;
+  };
+}>;
+
+type OrderItemWithProduct = OrderWithItemsAndDelivery['items'][number];
+
+function metadataRecord(value: Prisma.JsonValue | null | undefined) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return { ...(value as Record<string, unknown>) };
+  }
+  return {} as Record<string, unknown>;
+}
+
+function firstImageFromJson(value: Prisma.JsonValue | null | undefined) {
+  if (!Array.isArray(value)) return null;
+  const image = value.find((entry) => typeof entry === 'string');
+  return typeof image === 'string' ? image : null;
+}
+
+function firstNonEmptyString(...values: Array<string | null | undefined>) {
+  for (const value of values) {
+    if (value && value.trim().length > 0) {
+      return value.trim();
+    }
+  }
+  return null;
+}
+
+function enrichOrderItemMetadata(item: OrderItemWithProduct) {
+  const metadata = metadataRecord(item.metadata);
+  const shop = item.product?.shop;
+
+  if (shop) {
+    metadata.shopId ??= shop.id;
+    metadata.shopName ??= shop.name;
+    metadata.shopSlug ??= shop.slug;
+  }
+
+  if (item.product) {
+    metadata.productName ??= item.product.name;
+    metadata.productDescription ??= item.product.description;
+    const productImage = firstImageFromJson(item.product.imageUrlsJson);
+    if (productImage != null) {
+      metadata.productImage ??= productImage;
+    }
+  }
+
+  return metadata;
+}
+
+function resolveOrderModuleName(order: OrderWithItemsAndDelivery) {
+  if (order.moduleType === ModuleType.SHOPPING) {
+    for (const item of order.items) {
+      const metadata = enrichOrderItemMetadata(item);
+      if (
+        typeof metadata.shopName === 'string' &&
+        metadata.shopName.trim().length > 0
+      ) {
+        return metadata.shopName.trim();
+      }
+      if (
+        item.product?.shop?.name &&
+        item.product.shop.name.trim().length > 0
+      ) {
+        return item.product.shop.name.trim();
+      }
+    }
+  }
+
+  return (
+    firstNonEmptyString(
+      order.items[0]?.brand,
+      order.items[0]?.name,
+      order.moduleType.toLowerCase(),
+    ) ?? order.moduleType.toLowerCase()
+  );
+}
+
+function serializeOrderDetail(
+  order: OrderWithItemsAndDelivery,
 ) {
-  const firstMetadata =
-    order.items[0]?.metadata && typeof order.items[0].metadata === 'object'
-      ? (order.items[0].metadata as Record<string, unknown>)
-      : null;
+  const firstMetadata = order.items[0]
+    ? enrichOrderItemMetadata(order.items[0])
+    : null;
 
   return {
     id: order.id,
     userId: order.userId,
     moduleType: order.moduleType,
-    moduleName:
-      order.items[0]?.brand ??
-      order.items[0]?.name ??
-      order.moduleType.toLowerCase(),
+    moduleName: resolveOrderModuleName(order),
     status: order.status,
     subtotal: toNumber(order.subtotal),
     tax: toNumber(order.tax),
@@ -178,7 +258,7 @@ function serializeOrderDetail(
       total: toNumber(item.lineTotal),
       color: item.color,
       size: item.size,
-      metadata: item.metadata,
+      metadata: enrichOrderItemMetadata(item),
     })),
   };
 }
@@ -190,7 +270,15 @@ router.get(
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        items: true,
+        items: {
+          include: {
+            product: {
+              include: {
+                shop: true,
+              },
+            },
+          },
+        },
         deliveryAssignee: true,
       },
     });
@@ -280,12 +368,31 @@ router.get(
         prisma.order.findMany({
           where: { userId },
           include: {
-            items: true,
+            items: {
+              include: {
+                product: {
+                  include: {
+                    shop: true,
+                  },
+                },
+              },
+            },
             deliveryAssignee: true,
           },
         }) as Promise<
           Prisma.OrderGetPayload<{
-            include: { items: true; deliveryAssignee: true };
+            include: {
+              items: {
+                include: {
+                  product: {
+                    include: {
+                      shop: true;
+                    };
+                  };
+                };
+              };
+              deliveryAssignee: true;
+            };
           }>[]
         >,
         prisma.appointment.findMany({
@@ -316,20 +423,16 @@ router.get(
 
     const history = [
       ...orders.map((order) => {
-        const firstMetadata =
-          order.items[0]?.metadata && typeof order.items[0].metadata === 'object'
-            ? (order.items[0].metadata as Record<string, unknown>)
-            : null;
+        const firstMetadata = order.items[0]
+          ? enrichOrderItemMetadata(order.items[0])
+          : null;
 
         return {
           id: order.id,
           entryType: 'ORDER',
           userId: order.userId,
           moduleType: order.moduleType,
-          moduleName:
-            order.items[0]?.brand ??
-            order.items[0]?.name ??
-            order.moduleType.toLowerCase(),
+          moduleName: resolveOrderModuleName(order),
           status: order.status,
           subtotal: toNumber(order.subtotal),
           tax: toNumber(order.tax),
@@ -375,7 +478,7 @@ router.get(
             total: toNumber(item.lineTotal),
             color: item.color,
             size: item.size,
-            metadata: item.metadata,
+            metadata: enrichOrderItemMetadata(item),
           })),
         };
       }),
@@ -556,14 +659,20 @@ router.post(
         },
       },
       include: {
-        items: true,
+        items: {
+          include: {
+            product: {
+              include: {
+                shop: true,
+              },
+            },
+          },
+        },
+        deliveryAssignee: true,
       },
-    }) as Prisma.OrderGetPayload<{ include: { items: true } }>;
+    }) as OrderWithItemsAndDelivery;
 
-    const primaryLabel =
-      order.items[0]?.brand ??
-      order.items[0]?.name ??
-      order.moduleType.toLowerCase();
+    const primaryLabel = resolveOrderModuleName(order);
     await createOrderCreatedNotification({
       userId: order.userId,
       orderId: order.id,
@@ -589,6 +698,7 @@ router.post(
         quantity: item.quantity,
         price: toNumber(item.unitPrice),
         total: toNumber(item.lineTotal),
+        metadata: enrichOrderItemMetadata(item),
       })),
     });
   }),

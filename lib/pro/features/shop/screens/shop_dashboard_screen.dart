@@ -23,6 +23,7 @@ class ShopDashboardScreen extends StatefulWidget {
 class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
   late Future<ProDashboardData> _dashboardFuture;
   final Set<String> _busyItemIds = <String>{};
+  String _selectedOrderModule = 'all';
 
   @override
   void initState() {
@@ -199,6 +200,24 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
     }
   }
 
+  List<String> _orderFilterModules(List<_RecentOrderEntry> entries) {
+    final modules = entries.map((entry) => entry.module).toSet().toList()
+      ..sort();
+    return ['all', ...modules];
+  }
+
+  List<_RecentOrderEntry> _filterRecentOrders(List<_RecentOrderEntry> entries) {
+    if (_selectedOrderModule == 'all') return entries;
+    return entries
+        .where((entry) => entry.module == _selectedOrderModule)
+        .toList(growable: false);
+  }
+
+  bool _isActionableStatus(String status) {
+    final normalized = status.toUpperCase();
+    return !{'COMPLETED', 'CANCELLED', 'REFUNDED'}.contains(normalized);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -223,6 +242,11 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
           final moduleSummaries =
               data?.moduleSummaries ?? const <ProDashboardModuleSummary>[];
           final recentOrders = _collectRecentOrders(moduleSummaries);
+          final orderFilterModules = _orderFilterModules(recentOrders);
+          final filteredRecentOrders = _filterRecentOrders(recentOrders);
+          final actionableCount = recentOrders
+              .where((entry) => _isActionableStatus(entry.item.status))
+              .length;
 
           if (snapshot.connectionState == ConnectionState.waiting &&
               data == null) {
@@ -240,10 +264,10 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
                   onOpenOrders: () => _openQueue(),
                   onOpenCatalog: _openStorefront,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 if (stats.isNotEmpty)
                   _StatsGrid(stats: stats.take(4).toList(growable: false)),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 Text(
                   'Manage Store',
                   style: Theme.of(
@@ -277,38 +301,47 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
                     ),
                   ),
                 const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Live Orders',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => _openQueue(),
-                      child: const Text('View all'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                if (recentOrders.isEmpty)
-                  const _EmptyOrdersState()
-                else
-                  ...recentOrders.map(
-                    (entry) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _LiveOrderCard(
-                        entry: entry,
-                        isBusy: _busyItemIds.contains(entry.item.id),
-                        actionLabel: _statusActionLabel(entry.item.status),
-                        canAdvance: _nextShopStatus(entry.item.status) != null,
-                        onAdvance: () => _advanceOrderStatus(entry.item),
-                      ),
-                    ),
+                _OrdersSectionCard(
+                  totalOrders: recentOrders.length,
+                  actionableCount: actionableCount,
+                  moduleCount: orderFilterModules.length - 1,
+                  selectedModule: _selectedOrderModule,
+                  availableModules: orderFilterModules,
+                  onSelectModule: (module) {
+                    setState(() {
+                      _selectedOrderModule = module;
+                    });
+                  },
+                  onOpenQueue: () => _openQueue(
+                    initialModule:
+                        _selectedOrderModule == 'all'
+                            ? 'all'
+                            : _selectedOrderModule,
                   ),
+                  child: recentOrders.isEmpty
+                      ? const _EmptyOrdersState(compact: true)
+                      : Column(
+                          children: filteredRecentOrders
+                              .map(
+                                (entry) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: _LiveOrderCard(
+                                    entry: entry,
+                                    isBusy: _busyItemIds.contains(entry.item.id),
+                                    actionLabel: _statusActionLabel(
+                                      entry.item.status,
+                                    ),
+                                    canAdvance:
+                                        _nextShopStatus(entry.item.status) !=
+                                        null,
+                                    onAdvance: () =>
+                                        _advanceOrderStatus(entry.item),
+                                  ),
+                                ),
+                              )
+                              .toList(growable: false),
+                        ),
+                ),
               ],
             ),
           );
@@ -334,7 +367,7 @@ class _DashboardHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [AppColors.shopping, AppColors.primaryDark],
@@ -352,26 +385,30 @@ class _DashboardHero extends StatelessWidget {
               color: Colors.white,
               fontWeight: FontWeight.w800,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
-            'Orders, catalog, and stock in one place.',
+            'Orders, catalog, and stock controls in one place.',
             style: Theme.of(
               context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+            ).textTheme.bodySmall?.copyWith(color: Colors.white70),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           if (scopeNote?.trim().isNotEmpty == true) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             Text(
               scopeNote!,
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(color: Colors.white70),
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ],
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -380,8 +417,9 @@ class _DashboardHero extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: AppColors.shopping,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  icon: const Icon(Icons.receipt_long_outlined),
+                  icon: const Icon(Icons.receipt_long_outlined, size: 18),
                   label: const Text('Orders'),
                 ),
               ),
@@ -392,8 +430,9 @@ class _DashboardHero extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side: const BorderSide(color: Colors.white54),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  icon: const Icon(Icons.storefront_outlined),
+                  icon: const Icon(Icons.storefront_outlined, size: 18),
                   label: const Text('Catalog'),
                 ),
               ),
@@ -412,17 +451,20 @@ class _StatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: stats
-          .map(
-            (stat) => SizedBox(
-              width: (MediaQuery.of(context).size.width - 44) / 2,
-              child: _StatTile(stat: stat),
-            ),
-          )
-          .toList(),
+    return SizedBox(
+      height: 92,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: stats.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        itemBuilder: (context, index) {
+          final stat = stats[index];
+          return SizedBox(
+            width: 150,
+            child: _StatTile(stat: stat),
+          );
+        },
+      ),
     );
   }
 }
@@ -435,7 +477,7 @@ class _StatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
@@ -448,10 +490,15 @@ class _StatTile extends StatelessWidget {
             stat.value,
             style: Theme.of(
               context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
-          const SizedBox(height: 6),
-          Text(stat.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+          const SizedBox(height: 4),
+          Text(
+            stat.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ],
       ),
     );
@@ -471,38 +518,39 @@ class _ManagementGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _ManagementCard(
-                icon: Icons.receipt_long_outlined,
-                title: 'Orders',
-                subtitle: 'Review and update incoming orders.',
-                onTap: onOrders,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _ManagementCard(
-                icon: Icons.storefront_outlined,
-                title: 'Catalog',
-                subtitle: 'Open your storefront and menu.',
-                onTap: onCatalog,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        _ManagementCard(
-          icon: Icons.inventory_2_outlined,
-          title: 'Stock & Products',
-          subtitle: 'Search listings and manage availability.',
-          onTap: onProducts,
-          wide: true,
-        ),
-      ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Column(
+        children: [
+          _ManagementCard(
+            icon: Icons.receipt_long_outlined,
+            title: 'Orders Queue',
+            subtitle: 'Review incoming orders and update status.',
+            tag: 'Queue',
+            onTap: onOrders,
+          ),
+          const Divider(height: 1),
+          _ManagementCard(
+            icon: Icons.storefront_outlined,
+            title: 'Storefront Catalog',
+            subtitle: 'Manage store info, visibility, and menu/catalog.',
+            tag: 'Catalog',
+            onTap: onCatalog,
+          ),
+          const Divider(height: 1),
+          _ManagementCard(
+            icon: Icons.inventory_2_outlined,
+            title: 'Stock & Products',
+            subtitle: 'Add products and control item availability.',
+            tag: 'Inventory',
+            onTap: onProducts,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -511,30 +559,24 @@ class _ManagementCard extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final String tag;
   final VoidCallback onTap;
-  final bool wide;
 
   const _ManagementCard({
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.tag,
     required this.onTap,
-    this.wide = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        width: wide ? double.infinity : null,
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.black12),
-        ),
         child: Row(
           children: [
             Container(
@@ -563,9 +605,177 @@ class _ManagementCard extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.shopping.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                tag,
+                style: const TextStyle(
+                  color: AppColors.shopping,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+            const SizedBox(width: 6),
             const Icon(Icons.chevron_right),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _OrdersSectionCard extends StatelessWidget {
+  final int totalOrders;
+  final int actionableCount;
+  final int moduleCount;
+  final String selectedModule;
+  final List<String> availableModules;
+  final ValueChanged<String> onSelectModule;
+  final VoidCallback onOpenQueue;
+  final Widget child;
+
+  const _OrdersSectionCard({
+    required this.totalOrders,
+    required this.actionableCount,
+    required this.moduleCount,
+    required this.selectedModule,
+    required this.availableModules,
+    required this.onSelectModule,
+    required this.onOpenQueue,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Manage Orders',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Review incoming orders and move them through the queue.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
+              ),
+              TextButton.icon(
+                onPressed: onOpenQueue,
+                icon: const Icon(Icons.open_in_new, size: 18),
+                label: const Text('Open queue'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _OrderSummaryTile(
+                  value: '$totalOrders',
+                  label: 'Live now',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _OrderSummaryTile(
+                  value: '$actionableCount',
+                  label: 'Need action',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _OrderSummaryTile(
+                  value: '$moduleCount',
+                  label: 'Active lanes',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: availableModules
+                .map(
+                  (module) => ChoiceChip(
+                    label: Text(_moduleLabel(module)),
+                    selected: selectedModule == module,
+                    onSelected: (_) => onSelectModule(module),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+          const SizedBox(height: 14),
+          child,
+        ],
+      ),
+    );
+  }
+
+  String _moduleLabel(String module) {
+    switch (module) {
+      case 'shopping':
+        return 'Shopping';
+      case 'food':
+        return 'Food';
+      case 'pharmacy':
+        return 'Pharmacy';
+      default:
+        return 'All';
+    }
+  }
+}
+
+class _OrderSummaryTile extends StatelessWidget {
+  final String value;
+  final String label;
+
+  const _OrderSummaryTile({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.shopping.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 4),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ],
       ),
     );
   }
@@ -746,7 +956,9 @@ class _EmptyStoreState extends StatelessWidget {
 }
 
 class _EmptyOrdersState extends StatelessWidget {
-  const _EmptyOrdersState();
+  final bool compact;
+
+  const _EmptyOrdersState({this.compact = false});
 
   @override
   Widget build(BuildContext context) {
@@ -755,7 +967,7 @@ class _EmptyOrdersState extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.black12),
+        border: compact ? null : Border.all(color: Colors.black12),
       ),
       child: const Text(
         'No live orders right now. New shopping, food, and pharmacy orders will appear here.',

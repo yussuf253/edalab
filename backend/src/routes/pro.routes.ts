@@ -91,7 +91,7 @@ const createShoppingProductSchema = z.object({
   name: z.string().trim().min(2).max(120),
   description: z.string().trim().min(4).max(800),
   price: z.number().positive(),
-  originalPrice: z.number().positive().optional(),
+  originalPrice: z.number().positive().nullable().optional(),
   unit: z.string().trim().max(40).optional().or(z.literal('')),
   imageUrl: z.string().trim().url().optional().or(z.literal('')),
   inStock: z.boolean().optional(),
@@ -3013,11 +3013,23 @@ router.post(
       });
     }
 
+    const store = await prisma.shoppingStore.findUnique({
+      where: { id: body.storeId },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    if (!store) {
+      return res.status(404).json({ error: 'Shopping store not found.' });
+    }
+
     const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
     const bindings = normalizeBindings(hydratedProfile.bindings);
     if (
       bindings.shoppingStoreIds.length === 0 ||
-      !bindings.shoppingStoreIds.includes(body.storeId)
+      !bindings.shoppingStoreIds.includes(store.id)
     ) {
       return res.status(403).json({
         error: 'Store is not assigned to this shop profile.',
@@ -3062,8 +3074,9 @@ router.post(
         id: randomUUID(),
         moduleType: ModuleType.SHOPPING,
         categoryId: category.id,
-        shopId: body.storeId,
+        shopId: store.id,
         name: body.name.trim(),
+        brand: store.name,
         description: body.description.trim(),
         price: body.price,
         originalPrice: body.originalPrice ?? null,
@@ -3072,6 +3085,11 @@ router.post(
             ? [body.imageUrl!.trim()]
             : [],
         inStock: body.inStock ?? true,
+        metadata: {
+          source: 'shop_dashboard',
+          shopId: store.id,
+          shopName: store.name,
+        },
       },
       include: {
         category: true,
@@ -3082,7 +3100,7 @@ router.post(
     const storeProducts = await prisma.product.findMany({
       where: {
         moduleType: ModuleType.SHOPPING,
-        shopId: body.storeId,
+        shopId: store.id,
       },
       select: {
         price: true,
@@ -3093,7 +3111,7 @@ router.post(
       .filter((value): value is number => value != null);
 
     await prisma.shoppingStore.update({
-      where: { id: body.storeId },
+      where: { id: store.id },
       data: {
         minPrice: prices.length === 0 ? null : Math.min(...prices),
         maxPrice: prices.length === 0 ? null : Math.max(...prices),

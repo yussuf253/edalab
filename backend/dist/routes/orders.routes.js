@@ -104,17 +104,69 @@ function serializeHotelBooking(booking) {
         ],
     };
 }
+function metadataRecord(value) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+        return { ...value };
+    }
+    return {};
+}
+function firstImageFromJson(value) {
+    if (!Array.isArray(value))
+        return null;
+    const image = value.find((entry) => typeof entry === 'string');
+    return typeof image === 'string' ? image : null;
+}
+function firstNonEmptyString(...values) {
+    for (const value of values) {
+        if (value && value.trim().length > 0) {
+            return value.trim();
+        }
+    }
+    return null;
+}
+function enrichOrderItemMetadata(item) {
+    const metadata = metadataRecord(item.metadata);
+    const shop = item.product?.shop;
+    if (shop) {
+        metadata.shopId ??= shop.id;
+        metadata.shopName ??= shop.name;
+        metadata.shopSlug ??= shop.slug;
+    }
+    if (item.product) {
+        metadata.productName ??= item.product.name;
+        metadata.productDescription ??= item.product.description;
+        const productImage = firstImageFromJson(item.product.imageUrlsJson);
+        if (productImage != null) {
+            metadata.productImage ??= productImage;
+        }
+    }
+    return metadata;
+}
+function resolveOrderModuleName(order) {
+    if (order.moduleType === client_1.ModuleType.SHOPPING) {
+        for (const item of order.items) {
+            const metadata = enrichOrderItemMetadata(item);
+            if (typeof metadata.shopName === 'string' &&
+                metadata.shopName.trim().length > 0) {
+                return metadata.shopName.trim();
+            }
+            if (item.product?.shop?.name &&
+                item.product.shop.name.trim().length > 0) {
+                return item.product.shop.name.trim();
+            }
+        }
+    }
+    return (firstNonEmptyString(order.items[0]?.brand, order.items[0]?.name, order.moduleType.toLowerCase()) ?? order.moduleType.toLowerCase());
+}
 function serializeOrderDetail(order) {
-    const firstMetadata = order.items[0]?.metadata && typeof order.items[0].metadata === 'object'
-        ? order.items[0].metadata
+    const firstMetadata = order.items[0]
+        ? enrichOrderItemMetadata(order.items[0])
         : null;
     return {
         id: order.id,
         userId: order.userId,
         moduleType: order.moduleType,
-        moduleName: order.items[0]?.brand ??
-            order.items[0]?.name ??
-            order.moduleType.toLowerCase(),
+        moduleName: resolveOrderModuleName(order),
         status: order.status,
         subtotal: (0, serializers_1.toNumber)(order.subtotal),
         tax: (0, serializers_1.toNumber)(order.tax),
@@ -149,7 +201,7 @@ function serializeOrderDetail(order) {
             total: (0, serializers_1.toNumber)(item.lineTotal),
             color: item.color,
             size: item.size,
-            metadata: item.metadata,
+            metadata: enrichOrderItemMetadata(item),
         })),
     };
 }
@@ -158,7 +210,15 @@ router.get('/detail/:orderId', (0, async_handler_1.asyncHandler)(async (req, res
     const order = await db_1.prisma.order.findUnique({
         where: { id: orderId },
         include: {
-            items: true,
+            items: {
+                include: {
+                    product: {
+                        include: {
+                            shop: true,
+                        },
+                    },
+                },
+            },
             deliveryAssignee: true,
         },
     });
@@ -225,7 +285,15 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
         db_1.prisma.order.findMany({
             where: { userId },
             include: {
-                items: true,
+                items: {
+                    include: {
+                        product: {
+                            include: {
+                                shop: true,
+                            },
+                        },
+                    },
+                },
                 deliveryAssignee: true,
             },
         }),
@@ -256,17 +324,15 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
     ]);
     const history = [
         ...orders.map((order) => {
-            const firstMetadata = order.items[0]?.metadata && typeof order.items[0].metadata === 'object'
-                ? order.items[0].metadata
+            const firstMetadata = order.items[0]
+                ? enrichOrderItemMetadata(order.items[0])
                 : null;
             return {
                 id: order.id,
                 entryType: 'ORDER',
                 userId: order.userId,
                 moduleType: order.moduleType,
-                moduleName: order.items[0]?.brand ??
-                    order.items[0]?.name ??
-                    order.moduleType.toLowerCase(),
+                moduleName: resolveOrderModuleName(order),
                 status: order.status,
                 subtotal: (0, serializers_1.toNumber)(order.subtotal),
                 tax: (0, serializers_1.toNumber)(order.tax),
@@ -306,7 +372,7 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
                     total: (0, serializers_1.toNumber)(item.lineTotal),
                     color: item.color,
                     size: item.size,
-                    metadata: item.metadata,
+                    metadata: enrichOrderItemMetadata(item),
                 })),
             };
         }),
@@ -473,12 +539,19 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
             },
         },
         include: {
-            items: true,
+            items: {
+                include: {
+                    product: {
+                        include: {
+                            shop: true,
+                        },
+                    },
+                },
+            },
+            deliveryAssignee: true,
         },
     });
-    const primaryLabel = order.items[0]?.brand ??
-        order.items[0]?.name ??
-        order.moduleType.toLowerCase();
+    const primaryLabel = resolveOrderModuleName(order);
     await (0, notifications_1.createOrderCreatedNotification)({
         userId: order.userId,
         orderId: order.id,
@@ -503,6 +576,7 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
             quantity: item.quantity,
             price: (0, serializers_1.toNumber)(item.unitPrice),
             total: (0, serializers_1.toNumber)(item.lineTotal),
+            metadata: enrichOrderItemMetadata(item),
         })),
     });
 }));

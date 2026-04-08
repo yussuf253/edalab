@@ -15,6 +15,8 @@ class ProductModel {
   final bool isFavorite;
   final bool inStock;
   final List<String> features;
+  final String? shopId;
+  final String? shopName;
 
   ProductModel({
     required this.id,
@@ -33,6 +35,8 @@ class ProductModel {
     this.isFavorite = false,
     this.inStock = true,
     this.features = const [],
+    this.shopId,
+    this.shopName,
   });
 
   double get discountPercent {
@@ -58,6 +62,8 @@ class ProductModel {
       isFavorite: isFavorite ?? this.isFavorite,
       inStock: inStock,
       features: features,
+      shopId: shopId,
+      shopName: shopName,
     );
   }
 
@@ -85,6 +91,8 @@ class ProductModel {
       badge: json['badge'] as String?,
       inStock: json['inStock'] as bool? ?? true,
       features: readStringList(json['features']),
+      shopId: json['shopId']?.toString(),
+      shopName: json['shopName']?.toString(),
     );
   }
 
