@@ -92,7 +92,8 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
     if (id.isEmpty) return;
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => RiderActiveTripScreen(rideId: id, userId: widget.userId),
+        builder: (_) =>
+            RiderActiveTripScreen(rideId: id, userId: widget.userId),
       ),
     );
     if (!mounted) return;
@@ -101,6 +102,16 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final openCount = _items
+        .where((item) => (item['queueType']?.toString() ?? '') == 'open')
+        .length;
+    final assignedCount = _items
+        .where((item) => (item['queueType']?.toString() ?? '') == 'assigned')
+        .length;
+    final liveCount = _items.where((item) {
+      final status = item['status']?.toString().toUpperCase() ?? '';
+      return status != 'COMPLETED' && status != 'CANCELLED';
+    }).length;
     final filteredItems = _items
         .where((item) {
           final lane = item['queueType']?.toString() ?? '';
@@ -122,6 +133,23 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.ride.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  _QueueMetric(label: 'Open', value: '$openCount'),
+                  const SizedBox(width: 8),
+                  _QueueMetric(label: 'Assigned', value: '$assignedCount'),
+                  const SizedBox(width: 8),
+                  _QueueMetric(label: 'Live', value: '$liveCount'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -136,9 +164,25 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
             ),
             const SizedBox(height: 16),
             if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.only(top: 48),
-                child: Center(child: CircularProgressIndicator()),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 36,
+                  horizontal: 12,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: AppColors.white,
+                  border: Border.all(color: AppColors.lightGrey),
+                ),
+                child: const Column(
+                  children: [
+                    Icon(Icons.local_taxi_outlined, size: 34),
+                    SizedBox(height: 10),
+                    CircularProgressIndicator(),
+                    SizedBox(height: 10),
+                    Text('Loading ride queue...'),
+                  ],
+                ),
               )
             else if (filteredItems.isEmpty)
               const Card(
@@ -249,8 +293,8 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
                   onPressed: isBusy
                       ? null
                       : () => queueType == 'assigned'
-                          ? _openRide(id)
-                          : _claimRide(item),
+                            ? _openRide(id)
+                            : _claimRide(item),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.ride,
                     foregroundColor: Colors.white,
@@ -288,5 +332,32 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
     final parsed = DateTime.tryParse(raw);
     if (parsed == null) return raw;
     return DateFormat('MMM d, h:mm a').format(parsed.toLocal());
+  }
+}
+
+class _QueueMetric extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _QueueMetric({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: [
+            Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 2),
+            Text(label, style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
+    );
   }
 }

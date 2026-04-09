@@ -7,7 +7,6 @@ import '../../../core/models/pro_profile.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
-import '../../../core/widgets/pro_drawer.dart';
 
 class ProAccountScreen extends StatelessWidget {
   const ProAccountScreen({super.key, required this.profile});
@@ -18,6 +17,51 @@ class ProAccountScreen extends StatelessWidget {
     return context.push(route);
   }
 
+  String _profileDescriptor(ProProfile profile) {
+    switch (profile.type) {
+      case ProProfileType.shop:
+        return 'Store owner workspace';
+      case ProProfileType.provider:
+        return 'Service operator workspace';
+      case ProProfileType.doctor:
+        return 'Clinical workspace';
+      case ProProfileType.delivery:
+        return 'Dispatch partner workspace';
+      case ProProfileType.rider:
+        return 'Ride partner workspace';
+    }
+  }
+
+  String _managementTitle(ProProfileType type) {
+    switch (type) {
+      case ProProfileType.shop:
+        return 'Store Management';
+      case ProProfileType.provider:
+        return 'Service Management';
+      case ProProfileType.doctor:
+        return 'Clinic Management';
+      case ProProfileType.delivery:
+        return 'Dispatch Management';
+      case ProProfileType.rider:
+        return 'Trip Management';
+    }
+  }
+
+  String _moduleAccessTitle(ProProfileType type) {
+    switch (type) {
+      case ProProfileType.shop:
+        return 'Store Lanes';
+      case ProProfileType.provider:
+        return 'Service Lanes';
+      case ProProfileType.doctor:
+        return 'Care Lanes';
+      case ProProfileType.delivery:
+        return 'Delivery Lanes';
+      case ProProfileType.rider:
+        return 'Ride Lanes';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final proAuth = context.watch<ProAuthProvider>();
@@ -26,8 +70,8 @@ class ProAccountScreen extends StatelessWidget {
     final profileColor = ProModuleHelper.getProfileColor(currentProfile.type);
 
     return Scaffold(
-      drawer: const ProDrawer(),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Account'),
         backgroundColor: profileColor,
         foregroundColor: Colors.white,
@@ -73,7 +117,7 @@ class ProAccountScreen extends StatelessWidget {
                                 ),
                           ),
                           Text(
-                            ProModuleHelper.getProfileName(currentProfile.type),
+                            _profileDescriptor(currentProfile),
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(color: Colors.white70),
                           ),
@@ -162,7 +206,7 @@ class ProAccountScreen extends StatelessWidget {
           ],
           const SizedBox(height: 16),
           Text(
-            'Management',
+            _managementTitle(currentProfile.type),
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
@@ -171,7 +215,7 @@ class ProAccountScreen extends StatelessWidget {
           ..._buildManagementTiles(context, currentProfile),
           const SizedBox(height: 16),
           Text(
-            'Module Access',
+            _moduleAccessTitle(currentProfile.type),
             style: Theme.of(
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
@@ -205,11 +249,25 @@ class ProAccountScreen extends StatelessWidget {
       case ProProfileType.shop:
         return [
           _AccountActionTile(
+            icon: Icons.receipt_long_outlined,
+            color: AppColors.shopping,
+            title: 'Orders Queue',
+            subtitle: 'Review incoming shopping, food, and pharmacy orders.',
+            onTap: () => _open(context, ProRoutePaths.shopQueue),
+          ),
+          _AccountActionTile(
             icon: Icons.storefront_outlined,
             color: AppColors.shopping,
             title: 'Catalog & Availability',
             subtitle: 'Open store, restaurant, and pharmacy controls.',
             onTap: () => _open(context, ProRoutePaths.shopCatalog),
+          ),
+          _AccountActionTile(
+            icon: Icons.inventory_2_outlined,
+            color: AppColors.primary,
+            title: 'Products Manager',
+            subtitle: 'Manage products and stock across your stores.',
+            onTap: () => _open(context, ProRoutePaths.shopProducts),
           ),
         ];
       case ProProfileType.provider:

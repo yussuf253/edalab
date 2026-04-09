@@ -212,6 +212,14 @@ function resolveOrderModuleName(order: OrderWithItemsAndDelivery) {
 function serializeOrderDetail(
   order: OrderWithItemsAndDelivery,
 ) {
+  const user = (
+    order as OrderWithItemsAndDelivery & {
+      user?: { firstName: string; lastName: string; phone: string | null };
+    }
+  ).user;
+  const customerLabel = user
+    ? `${user.firstName} ${user.lastName}`.trim()
+    : null;
   const firstMetadata = order.items[0]
     ? enrichOrderItemMetadata(order.items[0])
     : null;
@@ -229,6 +237,8 @@ function serializeOrderDetail(
     total: toNumber(order.total),
     createdAt: order.createdAt,
     updatedAt: order.updatedAt,
+    customerName: customerLabel && customerLabel.length > 0 ? customerLabel : null,
+    customerPhone: user?.phone ?? null,
     address:
       typeof firstMetadata?.address === 'string' ? firstMetadata.address : null,
     deliveryLabel:
@@ -270,6 +280,9 @@ router.get(
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
+        user: {
+          select: { firstName: true, lastName: true, phone: true },
+        },
         items: {
           include: {
             product: {

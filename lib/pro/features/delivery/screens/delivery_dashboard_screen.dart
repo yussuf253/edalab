@@ -6,10 +6,8 @@ import '../../../core/models/pro_dashboard_data.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/utils/pro_module_helper.dart';
-import '../../../core/widgets/pro_drawer.dart';
-import '../../../core/widgets/pro_stat_card.dart';
-import 'delivery_queue_screen.dart';
 import '../../rider/screens/rider_active_delivery_screen.dart';
+import 'delivery_queue_screen.dart';
 
 class DeliveryDashboardScreen extends StatefulWidget {
   final ProProfile profile;
@@ -17,7 +15,8 @@ class DeliveryDashboardScreen extends StatefulWidget {
   const DeliveryDashboardScreen({super.key, required this.profile});
 
   @override
-  State<DeliveryDashboardScreen> createState() => _DeliveryDashboardScreenState();
+  State<DeliveryDashboardScreen> createState() =>
+      _DeliveryDashboardScreenState();
 }
 
 class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
@@ -45,6 +44,27 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
     return ProDashboardData.fromJson(response);
   }
 
+  Future<void> _refreshDashboard() async {
+    final future = _loadDashboard();
+    setState(() {
+      _dashboardFuture = future;
+    });
+    await future;
+  }
+
+  Future<void> _openQueue() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DeliveryQueueScreen(
+          userId: widget.profile.userId,
+          businessName: widget.profile.businessName,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    await _refreshDashboard();
+  }
+
   Future<void> _claimDelivery(ProDashboardHighlight highlight) async {
     if (_isClaiming || highlight.requestId.isEmpty) return;
     final isOnline =
@@ -62,9 +82,6 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
         'orderId': highlight.requestId,
       });
       if (!mounted) return;
-      setState(() {
-        _dashboardFuture = _loadDashboard();
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Delivery request claimed successfully.')),
       );
@@ -77,9 +94,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
         ),
       );
       if (!mounted) return;
-      setState(() {
-        _dashboardFuture = _loadDashboard();
-      });
+      await _refreshDashboard();
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -92,39 +107,74 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
     }
   }
 
+  int _numericValue(String input) {
+    final match = RegExp(r'\d+').firstMatch(input.replaceAll(',', ''));
+    return int.tryParse(match?.group(0) ?? '') ?? 0;
+  }
+
+  ProDashboardMetric? _metricAt(List<ProDashboardMetric> stats, int index) {
+    if (index < 0 || index >= stats.length) return null;
+    return stats[index];
+  }
+
+  int _laneItemCount(ProDashboardModuleSummary summary) {
+    if (summary.recentItems.isNotEmpty) return summary.recentItems.length;
+    for (final metric in summary.metrics) {
+      final lower = metric.toLowerCase();
+      if (!lower.contains('pending') &&
+          !lower.contains('active') &&
+          !lower.contains('queued') &&
+          !lower.contains('in progress')) {
+        continue;
+      }
+      final parsed = _numericValue(metric);
+      if (parsed > 0) return parsed;
+    }
+    return 0;
+  }
+
+  int _totalLaneItems(List<ProDashboardModuleSummary> summaries) {
+    return summaries.fold<int>(
+      0,
+      (sum, summary) => sum + _laneItemCount(summary),
+    );
+  }
+
+  int _urgentItems(List<ProDashboardModuleSummary> summaries) {
+    return summaries.fold<int>(0, (sum, summary) {
+      final urgent = summary.recentItems.where(
+        (item) => item.status.toUpperCase().contains('PENDING'),
+      );
+      return sum + urgent.length;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isOnline =
         context.watch<ProAuthProvider>().currentProfile?.isOnline ??
         widget.profile.isOnline;
     final activeModules = widget.profile.activeModules
-        .where((module) => {
-              ProModule.shoppingDelivery,
-              ProModule.foodDelivery,
-              ProModule.pharmacyDelivery,
-            }.contains(module))
+        .where(
+          (module) => {
+            ProModule.shoppingDelivery,
+            ProModule.foodDelivery,
+            ProModule.pharmacyDelivery,
+          }.contains(module),
+        )
         .toList(growable: false);
 
     return Scaffold(
-      drawer: const ProDrawer(),
       appBar: AppBar(
-        title: Text('Delivery: ${widget.profile.businessName}'),
+        automaticallyImplyLeading: false,
+        title: Text(widget.profile.businessName),
         elevation: 0,
         backgroundColor: AppColors.food,
         foregroundColor: AppColors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.list_alt_outlined),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => DeliveryQueueScreen(
-                    userId: widget.profile.userId,
-                    businessName: widget.profile.businessName,
-                  ),
-                ),
-              );
-            },
+            onPressed: _openQueue,
           ),
           Switch(
             value: isOnline,
@@ -134,6 +184,8 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
               final proAuth = context.read<ProAuthProvider>();
               try {
                 await proAuth.updateOnlineStatus(value);
+                if (!mounted) return;
+                await _refreshDashboard();
               } catch (error) {
                 if (!mounted) return;
                 messenger.showSnackBar(
@@ -154,147 +206,84 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
         builder: (context, snapshot) {
           final data = snapshot.data;
           final stats = data?.stats ?? const <ProDashboardMetric>[];
+          final summaries =
+              data?.moduleSummaries ?? const <ProDashboardModuleSummary>[];
           final highlight = data?.highlightedRequest;
 
-          if (snapshot.connectionState == ConnectionState.waiting && data == null) {
+          final activeRequests =
+              _numericValue(_metricAt(stats, 0)?.value ?? '') > 0
+              ? _numericValue(_metricAt(stats, 0)!.value)
+              : _totalLaneItems(summaries);
+          final hotJobs = _numericValue(_metricAt(stats, 1)?.value ?? '') > 0
+              ? _numericValue(_metricAt(stats, 1)!.value)
+              : _urgentItems(summaries);
+          final coverage = _numericValue(_metricAt(stats, 2)?.value ?? '') > 0
+              ? _numericValue(_metricAt(stats, 2)!.value)
+              : activeModules.length;
+
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              data == null) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          return RefreshIndicator(
+            onRefresh: _refreshDashboard,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
               children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.food, AppColors.food.withValues(alpha: 0.78)],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.route_rounded, color: Colors.white, size: 32),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isOnline
-                                  ? 'Delivery dispatch is live'
-                                  : 'Delivery is offline',
-                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              isOnline
-                                  ? 'Shopping, food, and pharmacy requests arrive in one queue.'
-                                  : 'Switch back online to claim shopping, food, and pharmacy jobs.',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: activeModules.map((module) {
-                    final color = ProModuleHelper.getModuleColor(module);
-                    return Chip(
-                      avatar: Icon(
-                        ProModuleHelper.getModuleIcon(module),
-                        size: 18,
-                        color: color,
-                      ),
-                      label: Text(ProModuleHelper.getModuleName(module)),
-                      backgroundColor: color.withValues(alpha: 0.10),
-                    );
-                  }).toList(),
+                _DeliveryDispatchHero(
+                  businessName: widget.profile.businessName,
+                  headline: data?.headline,
+                  isOnline: isOnline,
+                  modules: activeModules,
+                  onOpenQueue: _openQueue,
                 ),
                 if (data?.scopeNote?.isNotEmpty == true) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _ScopeNote(message: data!.scopeNote!),
                 ],
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(0)?.title ?? 'Active Requests',
-                        value: stats.elementAtOrNull(0)?.value ?? '7',
-                        icon: Icons.local_shipping_outlined,
-                        color: AppColors.food,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(1)?.title ?? 'Modules Enabled',
-                        value: stats.elementAtOrNull(1)?.value ?? '${activeModules.length}',
-                        icon: Icons.check_circle_outline,
-                        color: AppColors.success,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 12),
+                _DeliverySnapshotStrip(
+                  activeRequests: activeRequests,
+                  hotJobs: hotJobs,
+                  coverageZones: coverage,
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(2)?.title ?? 'Dispatch Lanes',
-                        value: stats.elementAtOrNull(2)?.value ?? '${activeModules.length}',
-                        icon: Icons.account_tree_outlined,
-                        color: AppColors.info,
-                      ),
+                if (highlight != null) ...[
+                  const SizedBox(height: 20),
+                  Text(
+                    'Priority Dispatch',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(3)?.title ?? 'Coverage Zones',
-                        value: stats.elementAtOrNull(3)?.value ?? '3',
-                        icon: Icons.map_outlined,
-                        color: AppColors.warning,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  'Dispatch Queue',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
-                const SizedBox(height: 16),
-                if (highlight != null)
-                  _HighlightCard(
+                  const SizedBox(height: 12),
+                  _PriorityDispatchCard(
                     highlight: highlight,
                     isBusy: _isClaiming || !isOnline,
                     onAccept: () => _claimDelivery(highlight),
                     buttonLabel: isOnline ? highlight.ctaLabel : 'Offline',
                   ),
-                if (data?.moduleSummaries.isNotEmpty == true)
-                  ...data!.moduleSummaries.map(
-                    (summary) => _SummaryCard(summary: summary),
-                  ),
+                ],
+                const SizedBox(height: 20),
+                Text(
+                  'Dispatch Lanes',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                if (summaries.isNotEmpty)
+                  ...summaries.map(
+                    (summary) => _DeliveryLaneCard(
+                      summary: summary,
+                      onOpenLane: _openQueue,
+                    ),
+                  )
+                else
+                  const _FallbackDispatchState(),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => DeliveryQueueScreen(
-                          userId: widget.profile.userId,
-                          businessName: widget.profile.businessName,
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: _openQueue,
                   icon: const Icon(Icons.list_alt_outlined),
                   label: const Text('Open Full Queue'),
                 ),
@@ -307,10 +296,201 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  final ProDashboardModuleSummary summary;
+class _DeliveryDispatchHero extends StatelessWidget {
+  final String businessName;
+  final String? headline;
+  final bool isOnline;
+  final List<ProModule> modules;
+  final VoidCallback onOpenQueue;
 
-  const _SummaryCard({required this.summary});
+  const _DeliveryDispatchHero({
+    required this.businessName,
+    required this.headline,
+    required this.isOnline,
+    required this.modules,
+    required this.onOpenQueue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.food, AppColors.food.withValues(alpha: 0.8)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  businessName,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: isOnline
+                      ? Colors.greenAccent.withValues(alpha: 0.2)
+                      : Colors.black26,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  isOnline ? 'ONLINE' : 'OFFLINE',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            headline?.trim().isNotEmpty == true
+                ? headline!
+                : 'Run shopping, food, and pharmacy dispatch from one board.',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: modules
+                .map(
+                  (module) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      ProModuleHelper.getModuleName(module),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: onOpenQueue,
+            icon: const Icon(Icons.route_outlined),
+            label: const Text('Open Dispatch Queue'),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.food,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeliverySnapshotStrip extends StatelessWidget {
+  final int activeRequests;
+  final int hotJobs;
+  final int coverageZones;
+
+  const _DeliverySnapshotStrip({
+    required this.activeRequests,
+    required this.hotJobs,
+    required this.coverageZones,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _SnapshotPill(
+            label: 'Active',
+            value: '$activeRequests',
+            color: AppColors.food,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _SnapshotPill(
+            label: 'Urgent',
+            value: '$hotJobs',
+            color: AppColors.warning,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _SnapshotPill(
+            label: 'Zones',
+            value: '$coverageZones',
+            color: AppColors.info,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SnapshotPill extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _SnapshotPill({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeliveryLaneCard extends StatelessWidget {
+  final ProDashboardModuleSummary summary;
+  final VoidCallback onOpenLane;
+
+  const _DeliveryLaneCard({required this.summary, required this.onOpenLane});
 
   @override
   Widget build(BuildContext context) {
@@ -321,14 +501,56 @@ class _SummaryCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(summary.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              summary.title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
             const SizedBox(height: 4),
             Text(summary.subtitle),
+            if (summary.metrics.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              ...summary.metrics
+                  .take(3)
+                  .map(
+                    (metric) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(metric),
+                    ),
+                  ),
+            ],
+            if (summary.recentItems.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: summary.recentItems
+                    .take(2)
+                    .map(
+                      (item) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.food.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          '${item.title} • ${item.status.replaceAll('_', ' ')}',
+                        ),
+                      ),
+                    )
+                    .toList(growable: false),
+              ),
+            ],
             const SizedBox(height: 12),
-            ...summary.metrics.map(
-              (metric) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text(metric),
+            ElevatedButton.icon(
+              onPressed: onOpenLane,
+              icon: const Icon(Icons.arrow_forward),
+              label: Text(summary.actionLabel),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.food,
+                foregroundColor: Colors.white,
               ),
             ),
           ],
@@ -338,13 +560,13 @@ class _SummaryCard extends StatelessWidget {
   }
 }
 
-class _HighlightCard extends StatelessWidget {
+class _PriorityDispatchCard extends StatelessWidget {
   final ProDashboardHighlight highlight;
   final bool isBusy;
   final VoidCallback onAccept;
   final String buttonLabel;
 
-  const _HighlightCard({
+  const _PriorityDispatchCard({
     required this.highlight,
     required this.isBusy,
     required this.onAccept,
@@ -365,28 +587,46 @@ class _HighlightCard extends StatelessWidget {
         child: Column(
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(highlight.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                const Icon(Icons.notifications_active, color: Colors.redAccent),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    highlight.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
                 Text(
                   highlight.amount ?? '',
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
             const Divider(height: 24),
-            ...highlight.lines.where((line) => line.isNotEmpty).map(
-              (line) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Row(
-                  children: [
-                    const Icon(Icons.arrow_right_alt, color: AppColors.food),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(line)),
-                  ],
+            ...highlight.lines
+                .where((line) => line.isNotEmpty)
+                .map(
+                  (line) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.arrow_right_alt,
+                          color: AppColors.food,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(line)),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
@@ -397,12 +637,26 @@ class _HighlightCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: isBusy ? null : onAccept,
-                child: Text(
-                  isBusy && !isOffline ? 'Claiming...' : buttonLabel,
-                ),
+                child: Text(isBusy && !isOffline ? 'Claiming...' : buttonLabel),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FallbackDispatchState extends StatelessWidget {
+  const _FallbackDispatchState();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Card(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Text(
+          'No active dispatch lanes yet. New requests will appear here.',
         ),
       ),
     );
@@ -424,12 +678,5 @@ class _ScopeNote extends StatelessWidget {
       ),
       child: Text(message),
     );
-  }
-}
-
-extension<T> on List<T> {
-  T? elementAtOrNull(int index) {
-    if (index < 0 || index >= length) return null;
-    return this[index];
   }
 }

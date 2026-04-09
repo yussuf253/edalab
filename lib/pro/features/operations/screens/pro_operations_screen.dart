@@ -9,7 +9,6 @@ import '../../../core/models/pro_profile.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
-import '../../../core/widgets/pro_drawer.dart';
 
 class ProOperationsScreen extends StatefulWidget {
   const ProOperationsScreen({super.key, required this.profile});
@@ -72,6 +71,13 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             icon: Icons.storefront_outlined,
             color: AppColors.primary,
             onTap: () => _open(ProRoutePaths.shopCatalog),
+          ),
+          _OperationAction(
+            title: 'Products Manager',
+            subtitle: 'Manage product stock and add new catalog items.',
+            icon: Icons.inventory_2_outlined,
+            color: AppColors.shopping,
+            onTap: () => _open(ProRoutePaths.shopProducts),
           ),
           _OperationAction(
             title: 'Shopping Lane',
@@ -182,6 +188,49 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
     }
   }
 
+  String _quickActionsTitle(ProProfileType type) {
+    switch (type) {
+      case ProProfileType.shop:
+        return 'Store Controls';
+      case ProProfileType.provider:
+        return 'Service Controls';
+      case ProProfileType.doctor:
+        return 'Clinical Controls';
+      case ProProfileType.delivery:
+        return 'Dispatch Controls';
+      case ProProfileType.rider:
+        return 'Trip Controls';
+    }
+  }
+
+  String _workstreamTitle(ProProfileType type) {
+    switch (type) {
+      case ProProfileType.shop:
+        return 'Store Modules';
+      case ProProfileType.provider:
+        return 'Service Workstreams';
+      case ProProfileType.doctor:
+        return 'Consultation Workstreams';
+      case ProProfileType.delivery:
+        return 'Dispatch Workstreams';
+      case ProProfileType.rider:
+        return 'Ride Workstreams';
+    }
+  }
+
+  String _laneShortcutsTitle(ProProfileType type) {
+    switch (type) {
+      case ProProfileType.shop:
+        return 'Lane Shortcuts';
+      case ProProfileType.provider:
+        return 'Pipeline Shortcuts';
+      case ProProfileType.doctor:
+      case ProProfileType.delivery:
+      case ProProfileType.rider:
+        return 'Shortcuts';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final profileColor = ProModuleHelper.getProfileColor(widget.profile.type);
@@ -190,8 +239,8 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
         widget.profile.isOnline;
 
     return Scaffold(
-      drawer: const ProDrawer(),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(
           widget.profile.type == ProProfileType.shop
               ? 'Store Tools'
@@ -205,6 +254,21 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
         builder: (context, snapshot) {
           final data = snapshot.data;
           final actions = _buildActions(widget.profile);
+          final type = widget.profile.type;
+          final coreActions = switch (type) {
+            ProProfileType.shop => actions.take(3).toList(growable: false),
+            ProProfileType.provider => actions.take(3).toList(growable: false),
+            ProProfileType.doctor => actions,
+            ProProfileType.delivery => actions,
+            ProProfileType.rider => actions,
+          };
+          final laneActions = switch (type) {
+            ProProfileType.shop => actions.skip(3).toList(growable: false),
+            ProProfileType.provider => actions.skip(3).toList(growable: false),
+            ProProfileType.doctor => const <_OperationAction>[],
+            ProProfileType.delivery => const <_OperationAction>[],
+            ProProfileType.rider => const <_OperationAction>[],
+          };
 
           return RefreshIndicator(
             onRefresh: _refresh,
@@ -219,24 +283,38 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Quick Actions',
+                  _quickActionsTitle(type),
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 12),
-                ...actions.map(
+                ...coreActions.map(
                   (action) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: _OperationCard(action: action),
                   ),
                 ),
+                if (laneActions.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    _laneShortcutsTitle(type),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ...laneActions.map(
+                    (action) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _OperationCard(action: action),
+                    ),
+                  ),
+                ],
                 if (data?.moduleSummaries.isNotEmpty == true) ...[
                   const SizedBox(height: 12),
                   Text(
-                    widget.profile.type == ProProfileType.shop
-                        ? 'Store Modules'
-                        : 'Module Workstreams',
+                    _workstreamTitle(type),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -274,6 +352,13 @@ class _OperationsHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = ProModuleHelper.getProfileColor(profile.type);
+    final fallbackHeadline = switch (profile.type) {
+      ProProfileType.shop => 'Manage store lanes, catalog, and stock.',
+      ProProfileType.provider => 'Coordinate service and laundry operations.',
+      ProProfileType.doctor => 'Run appointments and care availability.',
+      ProProfileType.delivery => 'Handle live dispatch and delivery claims.',
+      ProProfileType.rider => 'Track and claim nearby ride requests.',
+    };
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -342,9 +427,7 @@ class _OperationsHero extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           Text(
-            headline?.isNotEmpty == true
-                ? headline!
-                : 'Operate your live workload from here.',
+            headline?.isNotEmpty == true ? headline! : fallbackHeadline,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,

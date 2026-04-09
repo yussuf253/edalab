@@ -7,7 +7,6 @@ import '../../../core/models/pro_dashboard_data.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
-import '../../../core/widgets/pro_drawer.dart';
 import '../../../core/widgets/pro_stat_card.dart';
 
 class ProInsightsScreen extends StatefulWidget {
@@ -69,8 +68,8 @@ class _ProInsightsScreenState extends State<ProInsightsScreen> {
     final profileColor = ProModuleHelper.getProfileColor(widget.profile.type);
 
     return Scaffold(
-      drawer: const ProDrawer(),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Insights'),
         backgroundColor: profileColor,
         foregroundColor: Colors.white,

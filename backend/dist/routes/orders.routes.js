@@ -159,6 +159,10 @@ function resolveOrderModuleName(order) {
     return (firstNonEmptyString(order.items[0]?.brand, order.items[0]?.name, order.moduleType.toLowerCase()) ?? order.moduleType.toLowerCase());
 }
 function serializeOrderDetail(order) {
+    const user = order.user;
+    const customerLabel = user
+        ? `${user.firstName} ${user.lastName}`.trim()
+        : null;
     const firstMetadata = order.items[0]
         ? enrichOrderItemMetadata(order.items[0])
         : null;
@@ -175,6 +179,8 @@ function serializeOrderDetail(order) {
         total: (0, serializers_1.toNumber)(order.total),
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
+        customerName: customerLabel && customerLabel.length > 0 ? customerLabel : null,
+        customerPhone: user?.phone ?? null,
         address: typeof firstMetadata?.address === 'string' ? firstMetadata.address : null,
         deliveryLabel: typeof firstMetadata?.deliveryLabel === 'string'
             ? firstMetadata.deliveryLabel
@@ -210,6 +216,9 @@ router.get('/detail/:orderId', (0, async_handler_1.asyncHandler)(async (req, res
     const order = await db_1.prisma.order.findUnique({
         where: { id: orderId },
         include: {
+            user: {
+                select: { firstName: true, lastName: true, phone: true },
+            },
             items: {
                 include: {
                     product: {

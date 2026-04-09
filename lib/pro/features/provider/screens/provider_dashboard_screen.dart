@@ -6,8 +6,6 @@ import '../../../core/models/pro_dashboard_data.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
-import '../../../core/widgets/pro_drawer.dart';
-import '../../../core/widgets/pro_stat_card.dart';
 
 class ProviderDashboardScreen extends StatefulWidget {
   final ProProfile profile;
@@ -15,7 +13,8 @@ class ProviderDashboardScreen extends StatefulWidget {
   const ProviderDashboardScreen({super.key, required this.profile});
 
   @override
-  State<ProviderDashboardScreen> createState() => _ProviderDashboardScreenState();
+  State<ProviderDashboardScreen> createState() =>
+      _ProviderDashboardScreenState();
 }
 
 class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
@@ -49,6 +48,49 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
       _dashboardFuture = future;
     });
     await future;
+  }
+
+  Future<void> _openSchedule() async {
+    await context.push(ProRoutePaths.providerSchedule);
+    if (!mounted) return;
+    await _refreshDashboard();
+  }
+
+  Future<void> _openAvailability() async {
+    await context.push(ProRoutePaths.providerAvailability);
+    if (!mounted) return;
+    await _refreshDashboard();
+  }
+
+  int _moduleRequestCount(ProDashboardModuleSummary summary) {
+    for (final metric in summary.metrics) {
+      final lower = metric.toLowerCase();
+      if (!lower.contains('order') &&
+          !lower.contains('job') &&
+          !lower.contains('request')) {
+        continue;
+      }
+      final match = RegExp(r'\d+').firstMatch(metric);
+      final parsed = int.tryParse(match?.group(0) ?? '');
+      if (parsed != null) return parsed;
+    }
+    return summary.recentItems.length;
+  }
+
+  int _totalRequests(List<ProDashboardModuleSummary> summaries) {
+    return summaries.fold<int>(
+      0,
+      (sum, summary) => sum + _moduleRequestCount(summary),
+    );
+  }
+
+  int _actionableRequests(List<ProDashboardModuleSummary> summaries) {
+    return summaries.fold<int>(0, (sum, summary) {
+      final actionable = summary.recentItems.where(
+        (item) => _nextProviderStatus(summary.module, item.status) != null,
+      );
+      return sum + actionable.length;
+    });
   }
 
   String? _nextProviderStatus(String module, String status) {
@@ -92,19 +134,25 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
 
     setState(() => _busyItemIds.add(item.id));
     try {
-      await ApiClient.post('/pro/${widget.profile.userId}/provider-order-status', {
-        'orderId': item.id,
-        'status': nextStatus,
-      });
+      await ApiClient.post(
+        '/pro/${widget.profile.userId}/provider-order-status',
+        {'orderId': item.id, 'status': nextStatus},
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Request updated to ${nextStatus.replaceAll('_', ' ')}.')),
+        SnackBar(
+          content: Text(
+            'Request updated to ${nextStatus.replaceAll('_', ' ')}.',
+          ),
+        ),
       );
       await _refreshDashboard();
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
       );
     } finally {
       if (mounted) {
@@ -116,12 +164,14 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final activeModules = widget.profile.activeModules
-        .where((module) => {ProModule.services, ProModule.laundry}.contains(module))
+        .where(
+          (module) => {ProModule.services, ProModule.laundry}.contains(module),
+        )
         .toList(growable: false);
 
     return Scaffold(
-      drawer: const ProDrawer(),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(widget.profile.businessName),
         elevation: 0,
         backgroundColor: AppColors.homeServices,
@@ -129,19 +179,11 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.schedule_outlined),
-            onPressed: () async {
-              await context.push(ProRoutePaths.providerSchedule);
-              if (!mounted) return;
-              await _refreshDashboard();
-            },
+            onPressed: _openSchedule,
           ),
           IconButton(
             icon: const Icon(Icons.tune),
-            onPressed: () async {
-              await context.push(ProRoutePaths.providerAvailability);
-              if (!mounted) return;
-              await _refreshDashboard();
-            },
+            onPressed: _openAvailability,
           ),
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline),
@@ -153,106 +195,48 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
         future: _dashboardFuture,
         builder: (context, snapshot) {
           final data = snapshot.data;
-          final stats = data?.stats ?? const <ProDashboardMetric>[];
+          final summaries =
+              data?.moduleSummaries ?? const <ProDashboardModuleSummary>[];
+          final totalRequests = _totalRequests(summaries);
+          final actionable = _actionableRequests(summaries);
 
-          if (snapshot.connectionState == ConnectionState.waiting && data == null) {
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              data == null) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          return RefreshIndicator(
+            onRefresh: _refreshDashboard,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
               children: [
-                Text(
-                  data?.headline.isNotEmpty == true ? data!.headline : 'Provider Operations',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: activeModules.map((module) {
-                    final color = ProModuleHelper.getModuleColor(module);
-                    return Chip(
-                      avatar: Icon(
-                        ProModuleHelper.getModuleIcon(module),
-                        size: 18,
-                        color: color,
-                      ),
-                      label: Text(ProModuleHelper.getModuleName(module)),
-                      backgroundColor: color.withValues(alpha: 0.10),
-                    );
-                  }).toList(),
+                _ProviderPipelineHero(
+                  businessName: widget.profile.businessName,
+                  headline: data?.headline,
+                  modules: activeModules,
+                  onOpenSchedule: _openSchedule,
+                  onOpenAvailability: _openAvailability,
                 ),
                 if (data?.scopeNote?.isNotEmpty == true) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _ScopeNote(message: data!.scopeNote!),
                 ],
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(0)?.title ?? 'Upcoming Jobs',
-                        value: stats.elementAtOrNull(0)?.value ?? '8',
-                        icon: Icons.event_available,
-                        color: AppColors.homeServices,
-                        trend: stats.elementAtOrNull(0)?.trend,
-                        isUp: stats.elementAtOrNull(0)?.isUp ?? true,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(1)?.title ?? 'Completed Today',
-                        value: stats.elementAtOrNull(1)?.value ?? '5',
-                        icon: Icons.check_circle_outline,
-                        color: Colors.green,
-                        trend: stats.elementAtOrNull(1)?.trend,
-                        isUp: stats.elementAtOrNull(1)?.isUp ?? true,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 12),
+                _ProviderSnapshotStrip(
+                  totalRequests: totalRequests,
+                  actionable: actionable,
+                  activePipelines: activeModules.length,
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(2)?.title ?? 'Active Pipelines',
-                        value: stats.elementAtOrNull(2)?.value ?? '${activeModules.length}',
-                        icon: Icons.groups_2_outlined,
-                        color: AppColors.info,
-                        trend: stats.elementAtOrNull(2)?.trend,
-                        isUp: stats.elementAtOrNull(2)?.isUp ?? true,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(3)?.title ?? 'Service Modules',
-                        value: stats.elementAtOrNull(3)?.value ?? '${activeModules.length}',
-                        icon: Icons.schedule_outlined,
-                        color: AppColors.warning,
-                        trend: stats.elementAtOrNull(3)?.trend,
-                        isUp: stats.elementAtOrNull(3)?.isUp ?? true,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 20),
                 Text(
-                  'Module Pipelines',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  'Pipeline Workboard',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 16),
-                if (data?.moduleSummaries.isNotEmpty == true)
-                  ...data!.moduleSummaries.map(_buildSummaryCard)
+                const SizedBox(height: 12),
+                if (summaries.isNotEmpty)
+                  ...summaries.map(_buildSummaryCard)
                 else
                   const _FallbackProviderState(),
               ],
@@ -264,7 +248,9 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   }
 
   Widget _buildSummaryCard(ProDashboardModuleSummary summary) {
-    final module = summary.module == 'laundry' ? ProModule.laundry : ProModule.services;
+    final module = summary.module == 'laundry'
+        ? ProModule.laundry
+        : ProModule.services;
     final color = ProModuleHelper.getModuleColor(module);
 
     return Card(
@@ -279,7 +265,10 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
               children: [
                 CircleAvatar(
                   backgroundColor: color.withValues(alpha: 0.12),
-                  child: Icon(ProModuleHelper.getModuleIcon(module), color: color),
+                  child: Icon(
+                    ProModuleHelper.getModuleIcon(module),
+                    color: color,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -288,7 +277,10 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                     children: [
                       Text(
                         summary.title,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(summary.subtitle),
@@ -306,56 +298,70 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
             ),
             if (summary.recentItems.isNotEmpty) ...[
               const SizedBox(height: 12),
-              ...summary.recentItems.take(2).map(
-                (item) => Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.title,
-                        style: const TextStyle(fontWeight: FontWeight.w700),
+              ...summary.recentItems
+                  .take(2)
+                  .map(
+                    (item) => Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      const SizedBox(height: 4),
-                      Text('${item.subtitle}${item.amount == null || item.amount!.isEmpty ? '' : ' • ${item.amount}'}'),
-                      const SizedBox(height: 8),
-                      Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Text(
-                              item.status.replaceAll('_', ' '),
-                              style: TextStyle(
-                                color: color,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                          Text(
+                            item.title,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
                           ),
-                          if (_nextProviderStatus(summary.module, item.status) != null)
-                            ElevatedButton(
-                              onPressed: _busyItemIds.contains(item.id)
-                                  ? null
-                                  : () => _advanceProviderOrder(summary, item),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: color,
-                                foregroundColor: Colors.white,
+                          const SizedBox(height: 4),
+                          Text(
+                            '${item.subtitle}${item.amount == null || item.amount!.isEmpty ? '' : ' • ${item.amount}'}',
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  item.status.replaceAll('_', ' '),
+                                  style: TextStyle(
+                                    color: color,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ),
-                              child: Text(
-                                _busyItemIds.contains(item.id)
-                                    ? 'Updating...'
-                                    : _providerActionLabel(summary.module, item.status),
-                              ),
-                            ),
+                              if (_nextProviderStatus(
+                                    summary.module,
+                                    item.status,
+                                  ) !=
+                                  null)
+                                ElevatedButton(
+                                  onPressed: _busyItemIds.contains(item.id)
+                                      ? null
+                                      : () => _advanceProviderOrder(
+                                          summary,
+                                          item,
+                                        ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: color,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: Text(
+                                    _busyItemIds.contains(item.id)
+                                        ? 'Updating...'
+                                        : _providerActionLabel(
+                                            summary.module,
+                                            item.status,
+                                          ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
             ],
             const SizedBox(height: 12),
             Row(
@@ -405,6 +411,193 @@ class _ScopeNote extends StatelessWidget {
   }
 }
 
+class _ProviderPipelineHero extends StatelessWidget {
+  final String businessName;
+  final String? headline;
+  final List<ProModule> modules;
+  final VoidCallback onOpenSchedule;
+  final VoidCallback onOpenAvailability;
+
+  const _ProviderPipelineHero({
+    required this.businessName,
+    required this.headline,
+    required this.modules,
+    required this.onOpenSchedule,
+    required this.onOpenAvailability,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.homeServices,
+            AppColors.homeServices.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            businessName,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            headline?.trim().isNotEmpty == true
+                ? headline!
+                : 'Coordinate live service and laundry pipelines.',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: modules
+                .map(
+                  (module) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      ProModuleHelper.getModuleName(module),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onOpenSchedule,
+                  icon: const Icon(Icons.schedule_outlined),
+                  label: const Text('Schedule'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white54),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: onOpenAvailability,
+                  icon: const Icon(Icons.tune),
+                  label: const Text('Availability'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppColors.homeServices,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProviderSnapshotStrip extends StatelessWidget {
+  final int totalRequests;
+  final int actionable;
+  final int activePipelines;
+
+  const _ProviderSnapshotStrip({
+    required this.totalRequests,
+    required this.actionable,
+    required this.activePipelines,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _SnapshotTile(
+            label: 'Requests',
+            value: '$totalRequests',
+            color: AppColors.homeServices,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _SnapshotTile(
+            label: 'Actionable',
+            value: '$actionable',
+            color: AppColors.warning,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _SnapshotTile(
+            label: 'Pipelines',
+            value: '$activePipelines',
+            color: AppColors.info,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SnapshotTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _SnapshotTile({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+    );
+  }
+}
+
 class _FallbackProviderState extends StatelessWidget {
   const _FallbackProviderState();
 
@@ -413,15 +606,10 @@ class _FallbackProviderState extends StatelessWidget {
     return const Card(
       child: Padding(
         padding: EdgeInsets.all(16),
-        child: Text('Live provider summaries will appear here when data is available.'),
+        child: Text(
+          'Live provider summaries will appear here when data is available.',
+        ),
       ),
     );
-  }
-}
-
-extension<T> on List<T> {
-  T? elementAtOrNull(int index) {
-    if (index < 0 || index >= length) return null;
-    return this[index];
   }
 }

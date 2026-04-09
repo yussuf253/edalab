@@ -18,6 +18,7 @@ class ProRoutePaths {
   static const shopHome = '/pro/shop';
   static const shopQueue = '/pro/shop/queue';
   static const shopCatalog = '/pro/shop/catalog';
+  static const shopProducts = '/pro/shop/products';
 
   static const providerHome = '/pro/provider';
   static const providerQueue = '/pro/provider/queue';

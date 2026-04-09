@@ -11,7 +11,6 @@ import 'package:provider/provider.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/utils/pro_module_helper.dart';
-import '../../../core/widgets/pro_drawer.dart';
 
 class ProMessagesScreen extends StatefulWidget {
   final ProProfile profile;
@@ -98,9 +97,9 @@ class _ProMessagesScreenState extends State<ProMessagesScreen> {
     final accent = ProModuleHelper.getProfileColor(widget.profile.type);
 
     return Scaffold(
-      drawer: const ProDrawer(),
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Inbox'),
         elevation: 0,
         backgroundColor: accent,
@@ -134,7 +133,9 @@ class _ProMessagesScreenState extends State<ProMessagesScreen> {
                   final conversation = _conversations[index];
                   return GestureDetector(
                     onTap: () async {
-                      await context.push('/pro/messages/chat/${conversation.id}');
+                      await context.push(
+                        '/pro/messages/chat/${conversation.id}',
+                      );
                       if (!mounted) return;
                       await _loadConversations();
                     },

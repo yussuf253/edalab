@@ -1,6 +1,8 @@
 import {
   AppointmentStatus,
   ModuleType,
+  NotificationModule,
+  NotificationType,
   OrderStatus,
   ProModule,
   ProProfileType,
@@ -12,6 +14,7 @@ import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
+import { createBackendNotification } from '../utils/notifications';
 import { toNumber } from '../utils/serializers';
 
 const router = Router();
@@ -89,12 +92,24 @@ const createShoppingProductSchema = z.object({
   storeId: z.string().min(1),
   categoryName: z.string().trim().min(2).max(80),
   name: z.string().trim().min(2).max(120),
+  brand: z.string().trim().max(120).optional().or(z.literal('')),
   description: z.string().trim().min(4).max(800),
   price: z.number().positive(),
   originalPrice: z.number().positive().nullable().optional(),
   unit: z.string().trim().max(40).optional().or(z.literal('')),
+  badge: z.string().trim().max(40).optional().or(z.literal('')),
   imageUrl: z.string().trim().url().optional().or(z.literal('')),
+  imageUrls: z.array(z.string().trim().url()).max(8).optional(),
+  colors: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
+  sizes: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
+  tags: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
+  features: z.array(z.string().trim().min(1).max(120)).max(30).optional(),
+  isOrganic: z.boolean().optional(),
   inStock: z.boolean().optional(),
+});
+
+const updateShoppingProductStockSchema = z.object({
+  inStock: z.boolean(),
 });
 
 const updateProviderAvailabilitySchema = z.object({
@@ -200,6 +215,169 @@ function formatModule(value: string) {
     .join(' ');
 }
 
+function orderNotificationModule(moduleType: ModuleType): NotificationModule {
+  switch (moduleType) {
+    case ModuleType.FOOD:
+      return NotificationModule.FOOD;
+    case ModuleType.SHOPPING:
+      return NotificationModule.SHOPPING;
+    case ModuleType.PHARMACY:
+      return NotificationModule.PHARMACY;
+    case ModuleType.HOME_SERVICES:
+      return NotificationModule.HOME_SERVICES;
+    case ModuleType.LAUNDRY:
+      return NotificationModule.LAUNDRY;
+    case ModuleType.HOTEL:
+      return NotificationModule.HOTEL;
+    case ModuleType.GROCERY:
+      return NotificationModule.GROCERY;
+    default:
+      return NotificationModule.ORDERS;
+  }
+}
+
+function orderNotificationType(moduleType: ModuleType): NotificationType {
+  if (moduleType === ModuleType.LAUNDRY) {
+    return NotificationType.LAUNDRY;
+  }
+  return NotificationType.ORDER;
+}
+
+function orderRouteForModule(moduleType: ModuleType, orderId: string): string {
+  switch (moduleType) {
+    case ModuleType.FOOD:
+      return `/food/tracking/${orderId}`;
+    case ModuleType.SHOPPING:
+      return `/shopping/order/${orderId}`;
+    case ModuleType.PHARMACY:
+      return `/pharmacy/order/${orderId}`;
+    case ModuleType.HOME_SERVICES:
+      return `/home-services/booking/${orderId}`;
+    case ModuleType.LAUNDRY:
+      return `/laundry/tracking/${orderId}`;
+    case ModuleType.HOTEL:
+      return `/hotel/order/${orderId}`;
+    default:
+      return '/orders';
+  }
+}
+
+async function notifyOrderLifecycle(params: {
+  userId: string;
+  orderId: string;
+  moduleType: ModuleType;
+  status: OrderStatus;
+  event: 'claimed' | 'status';
+}) {
+  const statusLabel = formatModule(params.status);
+  const moduleLabel = formatModule(params.moduleType).toLowerCase();
+  const title =
+    params.event === 'claimed'
+      ? `${formatModule(params.moduleType)} delivery assigned`
+      : `${formatModule(params.moduleType)} order update`;
+  const body =
+    params.event === 'claimed'
+      ? `A courier accepted your ${moduleLabel} order. Status: ${statusLabel}.`
+      : `Your ${moduleLabel} order is now ${statusLabel}.`;
+  const route = orderRouteForModule(params.moduleType, params.orderId);
+
+  try {
+    await createBackendNotification({
+      userId: params.userId,
+      type: orderNotificationType(params.moduleType),
+      module: orderNotificationModule(params.moduleType),
+      title,
+      body,
+      route,
+      dedupeKey: `pro-order:${params.orderId}:${params.status}:${params.event}`,
+      metadata: {
+        orderId: params.orderId,
+        moduleType: params.moduleType,
+        status: params.status,
+        source: 'pro_status_flow',
+      },
+    });
+  } catch (error) {
+    console.error('[PRO NOTIFY] Failed to send order lifecycle notification', {
+      orderId: params.orderId,
+      status: params.status,
+      event: params.event,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+async function notifyRideLifecycle(params: {
+  userId: string;
+  rideId: string;
+  status: RideStatus;
+  pickupLabel?: string | null;
+  event: 'claimed' | 'status';
+}) {
+  const statusLabel = formatModule(params.status);
+  const title = params.event === 'claimed' ? 'Driver assigned' : 'Ride status update';
+  const body =
+    params.event === 'claimed'
+      ? `Your driver is assigned${params.pickupLabel ? ` and heading to ${params.pickupLabel}` : ''}.`
+      : `Your ride is now ${statusLabel}.`;
+
+  try {
+    await createBackendNotification({
+      userId: params.userId,
+      type: NotificationType.RIDE,
+      module: NotificationModule.RIDE,
+      title,
+      body,
+      route: `/ride/tracking/${params.rideId}`,
+      dedupeKey: `pro-ride:${params.rideId}:${params.status}:${params.event}`,
+      metadata: {
+        rideId: params.rideId,
+        status: params.status,
+        source: 'pro_status_flow',
+      },
+    });
+  } catch (error) {
+    console.error('[PRO NOTIFY] Failed to send ride lifecycle notification', {
+      rideId: params.rideId,
+      status: params.status,
+      event: params.event,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+async function notifyAppointmentLifecycle(params: {
+  userId: string;
+  appointmentId: string;
+  status: AppointmentStatus;
+  doctorId: string;
+}) {
+  const statusLabel = formatModule(params.status);
+  try {
+    await createBackendNotification({
+      userId: params.userId,
+      type: NotificationType.APPOINTMENT,
+      module: NotificationModule.DOCTOR,
+      title: 'Appointment status update',
+      body: `Your appointment is now ${statusLabel}.`,
+      route: '/doctor/appointments',
+      dedupeKey: `pro-appointment:${params.appointmentId}:${params.status}`,
+      metadata: {
+        appointmentId: params.appointmentId,
+        doctorId: params.doctorId,
+        status: params.status,
+        source: 'pro_status_flow',
+      },
+    });
+  } catch (error) {
+    console.error('[PRO NOTIFY] Failed to send appointment notification', {
+      appointmentId: params.appointmentId,
+      status: params.status,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
 function isPresent<T>(value: T | null): value is T {
   return value != null;
 }
@@ -279,7 +457,7 @@ function normalizeStringList(value: unknown): string[] {
     new Set(
       value
         .map((entry) => entry?.toString().trim() ?? '')
-        .filter((entry) => entry.isNotEmpty),
+        .filter((entry) => entry.length > 0),
     ),
   );
 }
@@ -298,6 +476,14 @@ function normalizeHours(
     saturday: map.saturday?.toString().trim() || defaults.saturday,
     sunday: map.sunday?.toString().trim() || defaults.sunday,
   };
+}
+
+function firstImageUrlFromJson(value: unknown): string | null {
+  if (!Array.isArray(value)) return null;
+  const url = value
+    .map((entry) => entry?.toString().trim() ?? '')
+    .find((entry) => entry.length > 0);
+  return url ?? null;
 }
 
 function hasShopOrderAccess(
@@ -413,6 +599,26 @@ function orderAddressLabel(
   );
 }
 
+function queueSourceLabel(
+  moduleType: ModuleType,
+  firstItem?: { brand: string | null; name: string; metadata: unknown } | null,
+) {
+  const itemMetadata =
+    firstItem?.metadata &&
+    typeof firstItem.metadata === 'object' &&
+    !Array.isArray(firstItem.metadata)
+      ? (firstItem.metadata as Record<string, unknown>)
+      : null;
+
+  return (
+    itemMetadata?.shopName?.toString() ??
+    itemMetadata?.sourceBusiness?.toString() ??
+    firstItem?.brand ??
+    firstItem?.name ??
+    formatModule(moduleType)
+  );
+}
+
 function serializeQueueOrderItem(
   order: {
     id: string;
@@ -440,7 +646,7 @@ function serializeQueueOrderItem(
     module: order.moduleType.toLowerCase(),
     status: order.status,
     title: `${formatModule(order.moduleType)} #${order.id.slice(-5)}`,
-    subtitle: `${totalItems} item${totalItems == 1 ? '' : 's'} • ${firstItem?.brand ?? firstItem?.name ?? formatModule(order.moduleType)}`,
+    subtitle: `${totalItems} item${totalItems == 1 ? '' : 's'} • ${queueSourceLabel(order.moduleType, firstItem)}`,
     amount: formatCurrency(
       typeof order.total === 'number'
         ? order.total
@@ -489,6 +695,8 @@ function serializeDispatchQueueOrderItem(
     status: OrderStatus;
     total: { toString(): string } | number;
     createdAt: Date;
+    notes: string | null;
+    metadata: unknown;
     userId: string;
     deliveryUserId: string | null;
     user: { firstName: string; lastName: string; phone: string | null };
@@ -509,7 +717,7 @@ function serializeDispatchQueueOrderItem(
     module: order.moduleType.toLowerCase(),
     status: order.status,
     title: `${formatModule(order.moduleType)} #${order.id.slice(-5)}`,
-    subtitle: `${totalItems} item${totalItems == 1 ? '' : 's'} • ${firstItem?.brand ?? firstItem?.name ?? formatModule(order.moduleType)}`,
+    subtitle: `${totalItems} item${totalItems == 1 ? '' : 's'} • ${queueSourceLabel(order.moduleType, firstItem)}`,
     amount: formatCurrency(
       typeof order.total === 'number'
         ? order.total
@@ -517,7 +725,8 @@ function serializeDispatchQueueOrderItem(
     ),
     customerName: customerName(order.user),
     customerPhone: order.user.phone,
-    address: order.address?.line1 ?? '',
+    notes: order.notes,
+    address: orderAddressLabel(order, firstItem?.metadata),
     queueType: order.deliveryUserId == currentUserId ? 'assigned' : 'open',
     createdAt: order.createdAt,
     customerUserId: order.userId,
@@ -533,6 +742,7 @@ function serializeRideQueueItem(
     driverUserId: string | null;
     pickupLabel: string | null;
     dropoffLabel: string | null;
+    etaLabel: string | null;
     estimatedFare: { toString(): string } | number | null;
     driverName: string | null;
     user: { firstName: string; lastName: string; phone: string | null };
@@ -556,6 +766,9 @@ function serializeRideQueueItem(
     title: `${ride.rideCategory.name} Ride`,
     subtitle: `${ride.pickupLabel ?? 'Pickup pending'} -> ${ride.dropoffLabel ?? 'Dropoff pending'}`,
     amount: fare,
+    pickup: ride.pickupLabel,
+    destination: ride.dropoffLabel,
+    eta: ride.etaLabel,
     customerName: customerName(ride.user),
     customerPhone: ride.user.phone,
     queueType: ride.driverUserId == currentUserId ? 'assigned' : 'open',
@@ -1728,6 +1941,14 @@ router.post(
       include: { items: true },
     });
 
+    await notifyOrderLifecycle({
+      userId: updatedOrder.userId,
+      orderId: updatedOrder.id,
+      moduleType: updatedOrder.moduleType,
+      status: updatedOrder.status,
+      event: 'claimed',
+    });
+
     res.json({
       id: updatedOrder.id,
       moduleType: updatedOrder.moduleType,
@@ -1792,6 +2013,14 @@ router.post(
       },
     });
 
+    await notifyRideLifecycle({
+      userId: updatedRide.userId,
+      rideId: updatedRide.id,
+      status: updatedRide.status,
+      pickupLabel: updatedRide.pickupLabel,
+      event: 'claimed',
+    });
+
     res.json({
       id: updatedRide.id,
       status: updatedRide.status,
@@ -1828,6 +2057,14 @@ router.post(
       data: { status: body.status },
     });
 
+    await notifyOrderLifecycle({
+      userId: updatedOrder.userId,
+      orderId: updatedOrder.id,
+      moduleType: updatedOrder.moduleType,
+      status: updatedOrder.status,
+      event: 'status',
+    });
+
     res.json({
       id: updatedOrder.id,
       status: updatedOrder.status,
@@ -1860,6 +2097,14 @@ router.post(
     const updatedRide = await prisma.rideBooking.update({
       where: { id: ride.id },
       data: { status: body.status },
+    });
+
+    await notifyRideLifecycle({
+      userId: updatedRide.userId,
+      rideId: updatedRide.id,
+      status: updatedRide.status,
+      pickupLabel: updatedRide.pickupLabel,
+      event: 'status',
     });
 
     res.json({
@@ -1915,6 +2160,14 @@ router.post(
       data: { status: body.status },
     });
 
+    await notifyOrderLifecycle({
+      userId: updatedOrder.userId,
+      orderId: updatedOrder.id,
+      moduleType: updatedOrder.moduleType,
+      status: updatedOrder.status,
+      event: 'status',
+    });
+
     res.json({
       id: updatedOrder.id,
       status: updatedOrder.status,
@@ -1962,6 +2215,14 @@ router.post(
       data: { status: body.status },
     });
 
+    await notifyOrderLifecycle({
+      userId: updatedOrder.userId,
+      orderId: updatedOrder.id,
+      moduleType: updatedOrder.moduleType,
+      status: updatedOrder.status,
+      event: 'status',
+    });
+
     res.json({
       id: updatedOrder.id,
       status: updatedOrder.status,
@@ -2004,6 +2265,13 @@ router.post(
       data: { status: body.status },
     });
 
+    await notifyAppointmentLifecycle({
+      userId: updatedAppointment.userId,
+      appointmentId: updatedAppointment.id,
+      doctorId: updatedAppointment.doctorId,
+      status: updatedAppointment.status,
+    });
+
     res.json({
       id: updatedAppointment.id,
       status: updatedAppointment.status,
@@ -2027,8 +2295,11 @@ router.get(
 
     const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
     const bindings = normalizeBindings(hydratedProfile.bindings);
+    const canShopping = profile.activeModules.includes(ProModule.SHOPPING);
+    const canFood = profile.activeModules.includes(ProModule.FOOD);
+    const canPharmacy = profile.activeModules.includes(ProModule.PHARMACY);
     const [shoppingOrders, foodOrders, pharmacyCandidates] = await Promise.all([
-      bindings.shoppingStoreIds.length === 0
+      !canShopping || bindings.shoppingStoreIds.length === 0
         ? Promise.resolve([])
         : prisma.order.findMany({
             where: {
@@ -2057,7 +2328,7 @@ router.get(
             orderBy: { createdAt: 'desc' },
             take: 100,
           }),
-      bindings.restaurantNames.length === 0
+      !canFood || bindings.restaurantNames.length === 0
         ? Promise.resolve([])
         : prisma.order.findMany({
             where: {
@@ -2084,28 +2355,30 @@ router.get(
             orderBy: { createdAt: 'desc' },
             take: 100,
           }),
-      prisma.order.findMany({
-        where: { moduleType: ModuleType.PHARMACY },
-        include: {
-          user: {
-            select: { firstName: true, lastName: true, phone: true },
-          },
-          address: { select: { line1: true } },
-          items: {
+      !canPharmacy
+        ? Promise.resolve([])
+        : prisma.order.findMany({
+            where: { moduleType: ModuleType.PHARMACY },
             include: {
-              product: {
-                select: { shopId: true, metadata: true },
+              user: {
+                select: { firstName: true, lastName: true, phone: true },
+              },
+              address: { select: { line1: true } },
+              items: {
+                include: {
+                  product: {
+                    select: { shopId: true, metadata: true },
+                  },
+                },
               },
             },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 100,
-      }),
+            orderBy: { createdAt: 'desc' },
+            take: 100,
+          }),
     ]);
 
     const pharmacyOrders =
-      bindings.pharmacyBusinesses.length === 0
+      !canPharmacy || bindings.pharmacyBusinesses.length === 0
         ? []
         : pharmacyCandidates.filter((order) =>
             order.items.some((item) => {
@@ -2144,63 +2417,69 @@ router.get(
     }
 
     const bindings = normalizeBindings(profile.bindings);
+    const canServices = profile.activeModules.includes(ProModule.SERVICES);
+    const canLaundry = profile.activeModules.includes(ProModule.LAUNDRY);
     const [serviceOrders, laundryOrders] = await Promise.all([
-      prisma.order.findMany({
-        where:
-          bindings.providerIds.length === 0
-            ? { moduleType: ModuleType.HOME_SERVICES }
-            : {
-                moduleType: ModuleType.HOME_SERVICES,
-                items: {
-                  some: {
-                    externalRefId: { in: bindings.providerIds },
+      !canServices
+        ? Promise.resolve([])
+        : prisma.order.findMany({
+            where:
+              bindings.providerIds.length === 0
+                ? { moduleType: ModuleType.HOME_SERVICES }
+                : {
+                    moduleType: ModuleType.HOME_SERVICES,
+                    items: {
+                      some: {
+                        externalRefId: { in: bindings.providerIds },
+                      },
+                    },
+                  },
+            include: {
+              user: {
+                select: { firstName: true, lastName: true, phone: true },
+              },
+              address: { select: { line1: true } },
+              items: {
+                include: {
+                  product: {
+                    select: { shopId: true, metadata: true },
                   },
                 },
               },
-        include: {
-          user: {
-            select: { firstName: true, lastName: true, phone: true },
-          },
-          address: { select: { line1: true } },
-          items: {
-            include: {
-              product: {
-                select: { shopId: true, metadata: true },
-              },
             },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 100,
-      }),
-      prisma.order.findMany({
-        where:
-          bindings.laundryServiceIds.length === 0
-            ? { moduleType: ModuleType.LAUNDRY }
-            : {
-                moduleType: ModuleType.LAUNDRY,
-                items: {
-                  some: {
-                    externalRefId: { in: bindings.laundryServiceIds },
+            orderBy: { createdAt: 'desc' },
+            take: 100,
+          }),
+      !canLaundry
+        ? Promise.resolve([])
+        : prisma.order.findMany({
+            where:
+              bindings.laundryServiceIds.length === 0
+                ? { moduleType: ModuleType.LAUNDRY }
+                : {
+                    moduleType: ModuleType.LAUNDRY,
+                    items: {
+                      some: {
+                        externalRefId: { in: bindings.laundryServiceIds },
+                      },
+                    },
+                  },
+            include: {
+              user: {
+                select: { firstName: true, lastName: true, phone: true },
+              },
+              address: { select: { line1: true } },
+              items: {
+                include: {
+                  product: {
+                    select: { shopId: true, metadata: true },
                   },
                 },
               },
-        include: {
-          user: {
-            select: { firstName: true, lastName: true, phone: true },
-          },
-          address: { select: { line1: true } },
-          items: {
-            include: {
-              product: {
-                select: { shopId: true, metadata: true },
-              },
             },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 100,
-      }),
+            orderBy: { createdAt: 'desc' },
+            take: 100,
+          }),
     ]);
 
     const items = [...serviceOrders, ...laundryOrders]
@@ -3069,6 +3348,28 @@ router.post(
         },
       }));
 
+    const primaryImageUrl = body.imageUrl?.trim() ?? '';
+    const galleryImageUrls = (body.imageUrls ?? [])
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0);
+    const imageUrls = Array.from(
+      new Set([
+        ...galleryImageUrls,
+        ...(primaryImageUrl.length > 0 ? [primaryImageUrl] : []),
+      ]),
+    );
+    const normalizeTextArray = (values?: string[]) =>
+      (values ?? [])
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0);
+
+    const colors = normalizeTextArray(body.colors);
+    const sizes = normalizeTextArray(body.sizes);
+    const tags = normalizeTextArray(body.tags);
+    const features = normalizeTextArray(body.features);
+    const normalizedBrand = body.brand?.trim() || store.name;
+    const normalizedBadge = body.badge?.trim() || null;
+
     const product = await prisma.product.create({
       data: {
         id: randomUUID(),
@@ -3076,24 +3377,26 @@ router.post(
         categoryId: category.id,
         shopId: store.id,
         name: body.name.trim(),
-        brand: store.name,
+        brand: normalizedBrand,
         description: body.description.trim(),
         price: body.price,
         originalPrice: body.originalPrice ?? null,
         unit: body.unit?.trim() || null,
-        imageUrlsJson: body.imageUrl?.trim().length
-            ? [body.imageUrl!.trim()]
-            : [],
+        imageUrlsJson: imageUrls,
+        colorsJson: colors.length > 0 ? colors : undefined,
+        sizesJson: sizes.length > 0 ? sizes : undefined,
+        tagsJson: tags.length > 0 ? tags : undefined,
+        featuresJson: features.length > 0 ? features : undefined,
+        badge: normalizedBadge,
         inStock: body.inStock ?? true,
+        isOrganic: body.isOrganic ?? false,
         metadata: {
           source: 'shop_dashboard',
           shopId: store.id,
           shopName: store.name,
+          categoryName: category.name,
+          createdByProProfile: userId,
         },
-      },
-      include: {
-        category: true,
-        shop: true,
       },
     });
 
@@ -3122,9 +3425,182 @@ router.post(
       id: product.id,
       name: product.name,
       shopId: product.shopId,
-      category: product.category?.name ?? body.categoryName.trim(),
+      category: category.name,
       price: toNumber(product.price),
       inStock: product.inStock,
+    });
+  }),
+);
+
+router.get(
+  '/:userId/shopping-products',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const requestedStoreId = req.query.storeId?.toString().trim();
+    const profile = await prisma.proProfile.findUnique({ where: { userId } });
+
+    if (!profile || profile.type !== ProProfileType.SHOP) {
+      return res.status(404).json({ error: 'Shop pro profile not found.' });
+    }
+
+    if (!profile.activeModules.includes(ProModule.SHOPPING)) {
+      return res.status(400).json({
+        error: 'Shopping is not enabled for this shop profile.',
+      });
+    }
+
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
+    if (bindings.shoppingStoreIds.length === 0) {
+      return res.json({
+        stores: [],
+        products: [],
+      });
+    }
+
+    if (
+      requestedStoreId &&
+      requestedStoreId.length > 0 &&
+      !bindings.shoppingStoreIds.includes(requestedStoreId)
+    ) {
+      return res
+        .status(403)
+        .json({ error: 'Store is not assigned to this shop profile.' });
+    }
+
+    const allowedStoreIds =
+      requestedStoreId && requestedStoreId.length > 0
+        ? [requestedStoreId]
+        : bindings.shoppingStoreIds;
+    const [stores, products] = await Promise.all([
+      prisma.shoppingStore.findMany({
+        where: { id: { in: bindings.shoppingStoreIds } },
+        select: {
+          id: true,
+          name: true,
+          isOpen: true,
+        },
+        orderBy: { name: 'asc' },
+      }),
+      prisma.product.findMany({
+        where: {
+          moduleType: ModuleType.SHOPPING,
+          shopId: { in: allowedStoreIds },
+        },
+        select: {
+          id: true,
+          shopId: true,
+          name: true,
+          brand: true,
+          price: true,
+          originalPrice: true,
+          inStock: true,
+          unit: true,
+          badge: true,
+          imageUrlsJson: true,
+          createdAt: true,
+          updatedAt: true,
+          category: {
+            select: {
+              name: true,
+            },
+          },
+        },
+        orderBy: [{ updatedAt: 'desc' }],
+      }),
+    ]);
+
+    const storeNameById = new Map(stores.map((store) => [store.id, store.name]));
+    const productCountByStoreId = new Map<string, number>();
+    for (const product of products) {
+      const storeId = product.shopId;
+      if (!storeId) continue;
+      productCountByStoreId.set(
+        storeId,
+        (productCountByStoreId.get(storeId) ?? 0) + 1,
+      );
+    }
+
+    res.json({
+      stores: stores.map((store) => ({
+        id: store.id,
+        name: store.name,
+        isOpen: store.isOpen,
+        productCount: productCountByStoreId.get(store.id) ?? 0,
+      })),
+      products: products.map((product) => ({
+        id: product.id,
+        storeId: product.shopId,
+        storeName: product.shopId ? storeNameById.get(product.shopId) : null,
+        name: product.name,
+        brand: product.brand,
+        categoryName: product.category?.name ?? 'General',
+        price: toNumber(product.price),
+        originalPrice: toNumber(product.originalPrice),
+        inStock: product.inStock,
+        unit: product.unit,
+        badge: product.badge,
+        imageUrl: firstImageUrlFromJson(product.imageUrlsJson),
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
+      })),
+    });
+  }),
+);
+
+router.patch(
+  '/:userId/shopping-products/:productId',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const productId = getParam(req.params.productId, 'productId');
+    const body = updateShoppingProductStockSchema.parse(req.body);
+    const profile = await prisma.proProfile.findUnique({ where: { userId } });
+
+    if (!profile || profile.type !== ProProfileType.SHOP) {
+      return res.status(404).json({ error: 'Shop pro profile not found.' });
+    }
+
+    if (!profile.activeModules.includes(ProModule.SHOPPING)) {
+      return res.status(400).json({
+        error: 'Shopping is not enabled for this shop profile.',
+      });
+    }
+
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+      select: {
+        id: true,
+        moduleType: true,
+        shopId: true,
+      },
+    });
+
+    if (!product || product.moduleType !== ModuleType.SHOPPING) {
+      return res.status(404).json({ error: 'Shopping product not found.' });
+    }
+
+    if (!product.shopId || !bindings.shoppingStoreIds.includes(product.shopId)) {
+      return res
+        .status(403)
+        .json({ error: 'Product is not assigned to this shop profile.' });
+    }
+
+    const updated = await prisma.product.update({
+      where: { id: product.id },
+      data: {
+        inStock: body.inStock,
+      },
+      select: {
+        id: true,
+        inStock: true,
+      },
+    });
+
+    res.json({
+      id: updated.id,
+      inStock: updated.inStock,
     });
   }),
 );

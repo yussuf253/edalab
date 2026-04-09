@@ -6,8 +6,6 @@ import '../../../core/models/pro_dashboard_data.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/utils/pro_module_helper.dart';
-import '../../../core/widgets/pro_drawer.dart';
-import '../../../core/widgets/pro_stat_card.dart';
 import 'rider_active_trip_screen.dart';
 import 'rider_queue_screen.dart';
 
@@ -45,6 +43,27 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
     return ProDashboardData.fromJson(response);
   }
 
+  Future<void> _refreshDashboard() async {
+    final future = _loadDashboard();
+    setState(() {
+      _dashboardFuture = future;
+    });
+    await future;
+  }
+
+  Future<void> _openQueue() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => RiderQueueScreen(
+          userId: widget.profile.userId,
+          businessName: widget.profile.businessName,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    await _refreshDashboard();
+  }
+
   Future<void> _claimRide(ProDashboardHighlight highlight) async {
     if (_isClaiming || highlight.requestId.isEmpty) return;
     final isOnline =
@@ -62,9 +81,6 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
         'rideId': highlight.requestId,
       });
       if (!mounted) return;
-      setState(() {
-        _dashboardFuture = _loadDashboard();
-      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Ride request claimed successfully.')),
       );
@@ -77,14 +93,12 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
         ),
       );
       if (!mounted) return;
-      setState(() {
-        _dashboardFuture = _loadDashboard();
-      });
+      await _refreshDashboard();
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not claim ride: $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not claim ride: $error')));
     } finally {
       if (mounted) {
         setState(() => _isClaiming = false);
@@ -92,31 +106,56 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
     }
   }
 
+  int _numericValue(String input) {
+    final match = RegExp(r'\d+').firstMatch(input.replaceAll(',', ''));
+    return int.tryParse(match?.group(0) ?? '') ?? 0;
+  }
+
+  ProDashboardMetric? _metricAt(List<ProDashboardMetric> stats, int index) {
+    if (index < 0 || index >= stats.length) return null;
+    return stats[index];
+  }
+
+  int _summaryActiveCount(ProDashboardModuleSummary summary) {
+    if (summary.recentItems.isNotEmpty) return summary.recentItems.length;
+    for (final metric in summary.metrics) {
+      final lower = metric.toLowerCase();
+      if (!lower.contains('active') &&
+          !lower.contains('pending') &&
+          !lower.contains('in progress') &&
+          !lower.contains('queued')) {
+        continue;
+      }
+      final parsed = _numericValue(metric);
+      if (parsed > 0) return parsed;
+    }
+    return 0;
+  }
+
+  int _liveTrips(List<ProDashboardModuleSummary> summaries) {
+    return summaries.fold<int>(
+      0,
+      (sum, summary) => sum + _summaryActiveCount(summary),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isOnline =
         context.watch<ProAuthProvider>().currentProfile?.isOnline ??
         widget.profile.isOnline;
+
     return Scaffold(
-      drawer: const ProDrawer(),
       appBar: AppBar(
-        title: Text('Rider: ${widget.profile.businessName}'),
+        automaticallyImplyLeading: false,
+        title: Text(widget.profile.businessName),
         elevation: 0,
         backgroundColor: AppColors.ride,
         foregroundColor: AppColors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.list_alt_outlined),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => RiderQueueScreen(
-                    userId: widget.profile.userId,
-                    businessName: widget.profile.businessName,
-                  ),
-                ),
-              );
-            },
+            onPressed: _openQueue,
           ),
           Switch(
             value: isOnline,
@@ -126,6 +165,8 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
               final proAuth = context.read<ProAuthProvider>();
               try {
                 await proAuth.updateOnlineStatus(value);
+                if (!mounted) return;
+                await _refreshDashboard();
               } catch (error) {
                 if (!mounted) return;
                 messenger.showSnackBar(
@@ -146,198 +187,79 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
         builder: (context, snapshot) {
           final data = snapshot.data;
           final stats = data?.stats ?? const <ProDashboardMetric>[];
+          final summaries =
+              data?.moduleSummaries ?? const <ProDashboardModuleSummary>[];
           final highlight = data?.highlightedRequest;
 
-          if (snapshot.connectionState == ConnectionState.waiting && data == null) {
+          final tripsToday = _numericValue(_metricAt(stats, 0)?.value ?? '');
+          final liveRequests =
+              _numericValue(_metricAt(stats, 1)?.value ?? '') > 0
+              ? _numericValue(_metricAt(stats, 1)!.value)
+              : _liveTrips(summaries);
+          final completedToday = _numericValue(
+            _metricAt(stats, 3)?.value ?? '',
+          );
+
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              data == null) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          return RefreshIndicator(
+            onRefresh: _refreshDashboard,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
               children: [
-                Wrap(
-                  spacing: 8,
-                  children: widget.profile.activeModules.map((module) {
-                    final color = ProModuleHelper.getModuleColor(module);
-                    return Chip(
-                      avatar: Icon(
-                        ProModuleHelper.getModuleIcon(module),
-                        size: 18,
-                        color: color,
-                      ),
-                      label: Text(ProModuleHelper.getModuleName(module)),
-                      backgroundColor: color.withValues(alpha: 0.10),
-                    );
-                  }).toList(),
+                _RiderShiftHero(
+                  businessName: widget.profile.businessName,
+                  headline: data?.headline,
+                  isOnline: isOnline,
+                  modules: widget.profile.activeModules,
+                  onOpenQueue: _openQueue,
                 ),
                 if (data?.scopeNote?.isNotEmpty == true) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _ScopeNote(message: data!.scopeNote!),
                 ],
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.ride, AppColors.ride.withValues(alpha: 0.7)],
+                const SizedBox(height: 12),
+                _RiderPerformanceStrip(
+                  tripsToday: tripsToday,
+                  liveRequests: liveRequests,
+                  completedToday: completedToday,
+                ),
+                if (highlight != null) ...[
+                  const SizedBox(height: 20),
+                  Text(
+                    'Next Best Trip',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
                     ),
-                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.wifi_tethering, color: Colors.white, size: 32),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isOnline ? 'You are Online' : 'You are Offline',
-                              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              isOnline
-                                  ? 'Looking for nearby ride requests...'
-                                  : 'Switch online to receive and claim new trips.',
-                              style: TextStyle(color: Colors.white70),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  const SizedBox(height: 12),
+                  _UrgentTripCard(
+                    highlight: highlight,
+                    isBusy: _isClaiming || !isOnline,
+                    onAccept: () => _claimRide(highlight),
+                    buttonLabel: isOnline ? highlight.ctaLabel : 'Offline',
                   ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(0)?.title ?? 'Trips Today',
-                        value: stats.elementAtOrNull(0)?.value ?? '3',
-                        icon: Icons.account_balance_wallet,
-                        color: Colors.green,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(1)?.title ?? 'Active Requests',
-                        value: stats.elementAtOrNull(1)?.value ?? '9',
-                        icon: Icons.local_taxi_outlined,
-                        color: AppColors.ride,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(2)?.title ?? 'Ride Categories',
-                        value: stats.elementAtOrNull(2)?.value ?? '4',
-                        icon: Icons.category_outlined,
-                        color: AppColors.info,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(3)?.title ?? 'Completed Today',
-                        value: stats.elementAtOrNull(3)?.value ?? '2',
-                        icon: Icons.done_all_outlined,
-                        color: AppColors.warning,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
+                ],
+                const SizedBox(height: 20),
                 Text(
-                  'New Request!',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.redAccent,
-                  ),
+                  'Ride Lanes',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 16),
-                if (highlight != null)
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: const BorderSide(color: Colors.redAccent, width: 2),
-                    ),
-                    elevation: 4,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                highlight.title,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                              Text(
-                                highlight.amount ?? '',
-                                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 16),
-                              ),
-                            ],
-                          ),
-                          const Divider(height: 24),
-                          ...highlight.lines.where((line) => line.isNotEmpty).map(
-                            (line) => Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.arrow_right_alt, color: AppColors.ride),
-                                  const SizedBox(width: 12),
-                                  Expanded(child: Text(line)),
-                                ],
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.ride,
-                                foregroundColor: AppColors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              onPressed: _isClaiming
-                                      || !isOnline
-                                  ? null
-                                  : () => _claimRide(highlight),
-                              child: Text(
-                                !isOnline
-                                    ? 'Offline'
-                                    : _isClaiming
-                                        ? 'Claiming...'
-                                        : highlight.ctaLabel,
-                                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                const SizedBox(height: 12),
+                if (summaries.isNotEmpty)
+                  ...summaries.map(
+                    (summary) => _RiderLaneCard(summary: summary),
+                  )
+                else
+                  const _FallbackRideState(),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => RiderQueueScreen(
-                          userId: widget.profile.userId,
-                          businessName: widget.profile.businessName,
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: _openQueue,
                   icon: const Icon(Icons.list_alt_outlined),
                   label: const Text('Open Full Queue'),
                 ),
@@ -345,6 +267,345 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _RiderShiftHero extends StatelessWidget {
+  final String businessName;
+  final String? headline;
+  final bool isOnline;
+  final List<ProModule> modules;
+  final VoidCallback onOpenQueue;
+
+  const _RiderShiftHero({
+    required this.businessName,
+    required this.headline,
+    required this.isOnline,
+    required this.modules,
+    required this.onOpenQueue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.ride, AppColors.ride.withValues(alpha: 0.8)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  businessName,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: isOnline
+                      ? Colors.greenAccent.withValues(alpha: 0.2)
+                      : Colors.black26,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  isOnline ? 'ON SHIFT' : 'OFF SHIFT',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            headline?.trim().isNotEmpty == true
+                ? headline!
+                : 'Stay online, claim nearby trips, and keep your completion pace.',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: modules
+                .map(
+                  (module) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          ProModuleHelper.getModuleIcon(module),
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          ProModuleHelper.getModuleName(module),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: onOpenQueue,
+            icon: const Icon(Icons.alt_route),
+            label: const Text('Open Rider Queue'),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.ride,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RiderPerformanceStrip extends StatelessWidget {
+  final int tripsToday;
+  final int liveRequests;
+  final int completedToday;
+
+  const _RiderPerformanceStrip({
+    required this.tripsToday,
+    required this.liveRequests,
+    required this.completedToday,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _PerformanceTile(
+            label: 'Trips',
+            value: '$tripsToday',
+            color: Colors.green,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _PerformanceTile(
+            label: 'Live',
+            value: '$liveRequests',
+            color: AppColors.ride,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _PerformanceTile(
+            label: 'Completed',
+            value: '$completedToday',
+            color: AppColors.warning,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PerformanceTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _PerformanceTile({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+    );
+  }
+}
+
+class _UrgentTripCard extends StatelessWidget {
+  final ProDashboardHighlight highlight;
+  final bool isBusy;
+  final VoidCallback onAccept;
+  final String buttonLabel;
+
+  const _UrgentTripCard({
+    required this.highlight,
+    required this.isBusy,
+    required this.onAccept,
+    required this.buttonLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isOffline = buttonLabel == 'Offline';
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Colors.redAccent, width: 2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.local_taxi, color: AppColors.ride),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    highlight.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                Text(
+                  highlight.amount ?? '',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 24),
+            ...highlight.lines
+                .where((line) => line.isNotEmpty)
+                .map(
+                  (line) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.arrow_right_alt,
+                          color: AppColors.ride,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(line)),
+                      ],
+                    ),
+                  ),
+                ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.ride,
+                  foregroundColor: AppColors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                onPressed: isBusy ? null : onAccept,
+                child: Text(isBusy && !isOffline ? 'Claiming...' : buttonLabel),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RiderLaneCard extends StatelessWidget {
+  final ProDashboardModuleSummary summary;
+
+  const _RiderLaneCard({required this.summary});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              summary.title,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 4),
+            Text(summary.subtitle),
+            if (summary.metrics.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              ...summary.metrics
+                  .take(3)
+                  .map(
+                    (metric) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(metric),
+                    ),
+                  ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FallbackRideState extends StatelessWidget {
+  const _FallbackRideState();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Card(
+      child: Padding(
+        padding: EdgeInsets.all(16),
+        child: Text('No live ride lanes yet. New trips will appear here.'),
       ),
     );
   }
@@ -365,12 +626,5 @@ class _ScopeNote extends StatelessWidget {
       ),
       child: Text(message),
     );
-  }
-}
-
-extension<T> on List<T> {
-  T? elementAtOrNull(int index) {
-    if (index < 0 || index >= length) return null;
-    return this[index];
   }
 }

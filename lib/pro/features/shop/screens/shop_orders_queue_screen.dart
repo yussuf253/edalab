@@ -4,18 +4,21 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/contact_launcher.dart';
+import '../../../core/models/pro_profile.dart';
 import '../../../core/utils/pro_message_launcher.dart';
 
 class ShopOrdersQueueScreen extends StatefulWidget {
   final String userId;
   final String businessName;
   final String initialModule;
+  final List<ProModule> activeModules;
 
   const ShopOrdersQueueScreen({
     super.key,
     required this.userId,
     required this.businessName,
     this.initialModule = 'all',
+    this.activeModules = const [],
   });
 
   @override
@@ -29,11 +32,47 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
   String _selectedModule = 'all';
   String _selectedStatus = 'active';
 
+  late final List<String> _allowedModules = _resolveAllowedModules();
+  late final Set<String> _allowedModuleSet = _allowedModules.toSet();
+
   @override
   void initState() {
     super.initState();
-    _selectedModule = widget.initialModule;
+    _selectedModule = _normalizeSelectedModule(widget.initialModule);
     _loadQueue();
+  }
+
+  List<String> _resolveAllowedModules() {
+    final modules = <String>[];
+    for (final module in widget.activeModules) {
+      switch (module) {
+        case ProModule.shopping:
+          modules.add('shopping');
+          break;
+        case ProModule.food:
+          modules.add('food');
+          break;
+        case ProModule.pharmacy:
+          modules.add('pharmacy');
+          break;
+        default:
+          break;
+      }
+    }
+    if (modules.isEmpty) {
+      return const ['shopping'];
+    }
+    return modules.toSet().toList(growable: false);
+  }
+
+  String _normalizeSelectedModule(String requested) {
+    if (requested == 'all') {
+      return _allowedModules.length > 1 ? 'all' : _allowedModules.first;
+    }
+    if (_allowedModuleSet.contains(requested)) {
+      return requested;
+    }
+    return _allowedModules.length > 1 ? 'all' : _allowedModules.first;
   }
 
   Future<void> _loadQueue() async {
@@ -142,9 +181,28 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final activeCount = _items.where((item) {
+      final status = item['status']?.toString().toUpperCase() ?? '';
+      return !{'COMPLETED', 'CANCELLED', 'REFUNDED'}.contains(status);
+    }).length;
+    final completedCount = _items
+        .where(
+          (item) =>
+              (item['status']?.toString().toUpperCase() ?? '') == 'COMPLETED',
+        )
+        .length;
+    final moduleCount = _items
+        .map((item) => item['module']?.toString() ?? '')
+        .where((module) => _allowedModuleSet.contains(module))
+        .where((module) => module.isNotEmpty)
+        .toSet()
+        .length;
     final filteredItems = _items
         .where((item) {
           final module = item['module']?.toString() ?? '';
+          if (!_allowedModuleSet.contains(module)) {
+            return false;
+          }
           if (_selectedModule != 'all' && module != _selectedModule) {
             return false;
           }
@@ -163,11 +221,31 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.shopping.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  _QueueMetric(label: 'Active', value: '$activeCount'),
+                  const SizedBox(width: 8),
+                  _QueueMetric(label: 'Completed', value: '$completedCount'),
+                  const SizedBox(width: 8),
+                  _QueueMetric(label: 'Modules', value: '$moduleCount'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                for (final module in ['all', 'shopping', 'food', 'pharmacy'])
+                for (final module in [
+                  if (_allowedModules.length > 1) 'all',
+                  ..._allowedModules,
+                ])
                   ChoiceChip(
                     label: Text(_moduleLabel(module)),
                     selected: _selectedModule == module,
@@ -190,9 +268,25 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
             ),
             const SizedBox(height: 16),
             if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.only(top: 48),
-                child: Center(child: CircularProgressIndicator()),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 36,
+                  horizontal: 12,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: AppColors.white,
+                  border: Border.all(color: AppColors.lightGrey),
+                ),
+                child: const Column(
+                  children: [
+                    Icon(Icons.inventory_2_outlined, size: 34),
+                    SizedBox(height: 10),
+                    CircularProgressIndicator(),
+                    SizedBox(height: 10),
+                    Text('Loading order queue...'),
+                  ],
+                ),
               )
             else if (filteredItems.isEmpty)
               const Card(
@@ -378,5 +472,32 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
       default:
         return 'SHOPPING';
     }
+  }
+}
+
+class _QueueMetric extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _QueueMetric({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: [
+            Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 2),
+            Text(label, style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
+    );
   }
 }

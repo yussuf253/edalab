@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../core/models/pro_profile.dart';
+import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
+import '../widgets/shop_module_bottom_nav.dart';
+import 'shop_product_create_screen.dart';
+import 'shop_store_setup_screen.dart';
 
 class ShopCatalogScreen extends StatefulWidget {
   final String userId;
@@ -23,7 +28,8 @@ class ShopCatalogScreen extends StatefulWidget {
 class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
   late Future<Map<String, dynamic>> _storefrontFuture;
   final Set<String> _busyIds = <String>{};
-  String _searchQuery = '';
+  final Map<ProModule, String> _searchByModule = <ProModule, String>{};
+  ProModule? _selectedModule;
 
   @override
   void initState() {
@@ -75,42 +81,23 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
     }
   }
 
-  Future<void> _showCreateShoppingStoreForm() async {
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (_) => _ShoppingStoreFormDialog(
-        initialName: widget.businessName,
+  Future<void> _openShoppingStoreSetupScreen({
+    required Map<String, dynamic>? existingStore,
+  }) async {
+    final updated = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => ShopStoreSetupScreen(
+          userId: widget.userId,
+          businessName: widget.businessName,
+          initialStore: existingStore,
+        ),
       ),
     );
-    if (result == null) return;
-
-    try {
-      final response = Map<String, dynamic>.from(
-        await ApiClient.post('/pro/${widget.userId}/shopping-store', result)
-            as Map,
-      );
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            (response['created'] as bool? ?? false)
-                ? 'Store created and connected to your profile.'
-                : 'Existing store updated and connected to your profile.',
-          ),
-        ),
-      );
-      await _refresh();
-    } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.toString().replaceFirst('Exception: ', '')),
-        ),
-      );
-    }
+    if (updated != true || !mounted) return;
+    await _refresh();
   }
 
-  Future<void> _showCreateShoppingProductForm(
+  Future<void> _openCreateShoppingProductScreen(
     List<Map<String, dynamic>> shoppingStores,
   ) async {
     if (shoppingStores.isEmpty) {
@@ -122,29 +109,31 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
       return;
     }
 
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (_) => _ShoppingProductFormDialog(stores: shoppingStores),
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => ShopProductCreateScreen(
+          userId: widget.userId,
+          stores: shoppingStores,
+        ),
+      ),
     );
-    if (result == null) return;
+    if (created != true || !mounted) return;
+    await _refresh();
+  }
 
-    try {
-      await ApiClient.post('/pro/${widget.userId}/shopping-products', result);
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Product added to your catalog.'),
-        ),
-      );
-      await _refresh();
-    } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.toString().replaceFirst('Exception: ', '')),
-        ),
-      );
-    }
+  Future<void> _openQueue({String? module}) async {
+    final path = module == null || module.isEmpty
+        ? ProRoutePaths.shopQueue
+        : '${ProRoutePaths.shopQueue}?module=$module';
+    await context.push(path);
+    if (!mounted) return;
+    await _refresh();
+  }
+
+  Future<void> _openProductsManager() async {
+    await context.push(ProRoutePaths.shopProducts);
+    if (!mounted) return;
+    await _refresh();
   }
 
   Future<void> _createRestaurant() async {
@@ -198,27 +187,31 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
     }
   }
 
-  Future<void> _openPreview(ProModule module, Map<String, dynamic> item) async {
-    if (module == ProModule.shopping) {
-      final previewId = item['previewId']?.toString() ?? '';
-      if (previewId.isEmpty) return;
-      await showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => _StorePreviewSheet(storeSlug: previewId),
-      );
-      return;
-    }
+  List<Map<String, dynamic>> _shoppingStoresFromData(
+    Map<String, dynamic> data,
+  ) {
+    return (data['shopping'] as List<dynamic>? ?? const [])
+        .map((entry) => Map<String, dynamic>.from(entry as Map))
+        .toList(growable: false);
+  }
 
-    if (module == ProModule.food) {
-      final restaurantId = item['id']?.toString() ?? '';
-      if (restaurantId.isEmpty) return;
-      await showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => _RestaurantPreviewSheet(restaurantId: restaurantId),
-      );
+  Map<String, dynamic>? _primaryShoppingStore(Map<String, dynamic> data) {
+    final stores = _shoppingStoresFromData(data);
+    return stores.isEmpty ? null : stores.first;
+  }
+
+  int _ordersInProgressFromSummary(Map<String, dynamic> summary) {
+    final metrics = (summary['metrics'] as List<dynamic>? ?? const [])
+        .map((entry) => Map<String, dynamic>.from(entry as Map))
+        .toList(growable: false);
+    for (final metric in metrics) {
+      final label = metric['label']?.toString().toLowerCase() ?? '';
+      if (!label.contains('orders in progress')) continue;
+      final value = metric['value']?.toString() ?? '0';
+      final match = RegExp(r'\d+').firstMatch(value);
+      return int.tryParse(match?.group(0) ?? '') ?? 0;
     }
+    return 0;
   }
 
   @override
@@ -232,105 +225,131 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
           }.contains(module),
         )
         .toList(growable: false);
-    final tabs = storeModules.isEmpty ? [ProModule.shopping] : storeModules;
+    final modules = storeModules.isEmpty ? [ProModule.shopping] : storeModules;
+    final selectedModule = modules.contains(_selectedModule)
+        ? _selectedModule!
+        : modules.first;
 
-    return DefaultTabController(
-      length: tabs.length,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            '${widget.businessName} Storefront',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          elevation: 0,
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(48),
-            child: TabBar(
-              isScrollable: true,
-              labelColor: Theme.of(context).colorScheme.primary,
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: Theme.of(context).colorScheme.primary,
-              tabs: tabs
-                  .map(
-                    (module) =>
-                        Tab(text: ProModuleHelper.getModuleName(module)),
-                  )
-                  .toList(),
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _storefrontFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                '${widget.businessName} Storefront',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-        ),
-        body: FutureBuilder<Map<String, dynamic>>(
-          future: _storefrontFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting &&
-                !snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
 
-            if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    snapshot.error.toString().replaceFirst('Exception: ', ''),
+        if (snapshot.hasError) {
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(
+                '${widget.businessName} Storefront',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  snapshot.error.toString().replaceFirst('Exception: ', ''),
+                ),
+              ),
+            ),
+          );
+        }
+
+        final data = snapshot.data ?? const <String, dynamic>{};
+        final shoppingStores = _shoppingStoresFromData(data);
+        final primaryShoppingStore = _primaryShoppingStore(data);
+        final activeSummary = Map<String, dynamic>.from(
+          (data['${_keyForModule(selectedModule)}Summary'] as Map?) ??
+              const <String, dynamic>{},
+        );
+        final activeItems =
+            (data[_keyForModule(selectedModule)] as List<dynamic>? ?? const [])
+                .map((entry) => Map<String, dynamic>.from(entry as Map))
+                .toList(growable: false);
+
+        final orderChips = modules
+            .map(
+              (module) => (
+                module: module,
+                count: _ordersInProgressFromSummary(
+                  Map<String, dynamic>.from(
+                    (data['${_keyForModule(module)}Summary'] as Map?) ??
+                        const <String, dynamic>{},
                   ),
                 ),
-              );
-            }
+              ),
+            )
+            .toList(growable: false);
 
-            final data = snapshot.data ?? const <String, dynamic>{};
-            return TabBarView(
-              children: tabs
-                  .map(
-                    (module) => _StorefrontModuleTab(
-                      module: module,
-                      summary: Map<String, dynamic>.from(
-                        (data['${_keyForModule(module)}Summary'] as Map?) ??
-                            const <String, dynamic>{},
-                      ),
-                      items:
-                          (data[_keyForModule(module)] as List<dynamic>? ??
-                                  const [])
-                              .map(
-                                (entry) =>
-                                    Map<String, dynamic>.from(entry as Map),
-                              )
-                              .toList(growable: false),
-                      searchQuery: _searchQuery,
-                      onSearchChanged: (value) {
-                        setState(() => _searchQuery = value);
-                      },
-                      busyIds: _busyIds,
-                      onToggle: (targetId, enabled) => _toggleAvailability(
-                        module: _keyForModule(module),
-                        targetId: targetId,
-                        enabled: enabled,
-                      ),
-                      onCreateModule: switch (module) {
-                        ProModule.shopping => _showCreateShoppingStoreForm,
-                        ProModule.food => _createRestaurant,
-                        ProModule.pharmacy => _createPharmacyBusiness,
-                        _ => null,
-                      },
-                      onAddShoppingProduct: module == ProModule.shopping
-                          ? () => _showCreateShoppingProductForm(
-                              (data['shopping'] as List<dynamic>? ?? const [])
-                                  .map(
-                                    (entry) => Map<String, dynamic>.from(
-                                      entry as Map,
-                                    ),
-                                  )
-                                  .toList(growable: false),
-                            )
-                          : null,
-                      onPreview: (item) => _openPreview(module, item),
-                    ),
-                  )
-                  .toList(),
-            );
-          },
-        ),
-      ),
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              '${widget.businessName} Storefront',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            elevation: 0,
+          ),
+          body: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _RecentOrdersModuleChips(
+                chips: orderChips,
+                selected: selectedModule,
+                onSelect: (module) {
+                  setState(() {
+                    _selectedModule = module;
+                  });
+                },
+              ),
+              const SizedBox(height: 12),
+              _StorefrontModuleTab(
+                module: selectedModule,
+                summary: activeSummary,
+                items: activeItems,
+                searchQuery: _searchByModule[selectedModule] ?? '',
+                onSearchChanged: (value) {
+                  setState(() {
+                    _searchByModule[selectedModule] = value;
+                  });
+                },
+                busyIds: _busyIds,
+                onToggle: (targetId, enabled) => _toggleAvailability(
+                  module: _keyForModule(selectedModule),
+                  targetId: targetId,
+                  enabled: enabled,
+                ),
+                onCreateModule: switch (selectedModule) {
+                  ProModule.shopping => () => _openShoppingStoreSetupScreen(
+                    existingStore: primaryShoppingStore,
+                  ),
+                  ProModule.food => _createRestaurant,
+                  ProModule.pharmacy => _createPharmacyBusiness,
+                  _ => null,
+                },
+                onAddShoppingProduct: selectedModule == ProModule.shopping
+                    ? () => _openCreateShoppingProductScreen(shoppingStores)
+                    : null,
+              ),
+            ],
+          ),
+          bottomNavigationBar: ShopModuleBottomNav(
+            activeTab: ShopModuleBottomTab.storefront,
+            onOrders: () => _openQueue(module: _keyForModule(selectedModule)),
+            onStorefront: () {},
+            onProducts: _openProductsManager,
+          ),
+        );
+      },
     );
   }
 
@@ -346,6 +365,37 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
   }
 }
 
+class _RecentOrdersModuleChips extends StatelessWidget {
+  final List<({ProModule module, int count})> chips;
+  final ProModule selected;
+  final ValueChanged<ProModule> onSelect;
+
+  const _RecentOrdersModuleChips({
+    required this.chips,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: chips
+          .map(
+            (chip) => ChoiceChip(
+              selected: selected == chip.module,
+              onSelected: (_) => onSelect(chip.module),
+              label: Text(
+                '${ProModuleHelper.getModuleName(chip.module)} • ${chip.count}',
+              ),
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+}
+
 class _StorefrontModuleTab extends StatelessWidget {
   final ProModule module;
   final Map<String, dynamic> summary;
@@ -356,7 +406,6 @@ class _StorefrontModuleTab extends StatelessWidget {
   final Future<void> Function(String targetId, bool enabled) onToggle;
   final Future<void> Function()? onCreateModule;
   final Future<void> Function()? onAddShoppingProduct;
-  final Future<void> Function(Map<String, dynamic> item) onPreview;
 
   const _StorefrontModuleTab({
     required this.module,
@@ -368,7 +417,6 @@ class _StorefrontModuleTab extends StatelessWidget {
     required this.onToggle,
     required this.onCreateModule,
     required this.onAddShoppingProduct,
-    required this.onPreview,
   });
 
   @override
@@ -387,8 +435,8 @@ class _StorefrontModuleTab extends StatelessWidget {
         })
         .toList(growable: false);
 
-    return ListView(
-      padding: const EdgeInsets.all(16),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         TextFormField(
           key: ValueKey('${module.name}:$searchQuery'),
@@ -429,9 +477,6 @@ class _StorefrontModuleTab extends StatelessWidget {
                 isBusy: busyIds.contains(item['id']?.toString() ?? ''),
                 onToggle: (enabled) =>
                     onToggle(item['id']?.toString() ?? '', enabled),
-                onPreview: module == ProModule.pharmacy
-                    ? null
-                    : () => onPreview(item),
               ),
             ),
           ),
@@ -568,7 +613,6 @@ class _StorefrontItemCard extends StatelessWidget {
   final Color color;
   final bool isBusy;
   final ValueChanged<bool> onToggle;
-  final VoidCallback? onPreview;
 
   const _StorefrontItemCard({
     required this.module,
@@ -576,7 +620,6 @@ class _StorefrontItemCard extends StatelessWidget {
     required this.color,
     required this.isBusy,
     required this.onToggle,
-    this.onPreview,
   });
 
   @override
@@ -662,15 +705,6 @@ class _StorefrontItemCard extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const Spacer(),
-                if (onPreview != null)
-                  OutlinedButton.icon(
-                    onPressed: onPreview,
-                    icon: const Icon(Icons.visibility_outlined),
-                    label: Text(
-                      module == ProModule.food ? 'View Menu' : 'View Catalog',
-                    ),
-                  ),
               ],
             ),
           ],
@@ -744,270 +778,6 @@ class _StorefrontAvatar extends StatelessWidget {
   }
 }
 
-class _ShoppingStoreFormDialog extends StatefulWidget {
-  final String initialName;
-
-  const _ShoppingStoreFormDialog({required this.initialName});
-
-  @override
-  State<_ShoppingStoreFormDialog> createState() =>
-      _ShoppingStoreFormDialogState();
-}
-
-class _ShoppingStoreFormDialogState extends State<_ShoppingStoreFormDialog> {
-  final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nameController;
-  final _taglineController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _imageUrlController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: widget.initialName);
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _taglineController.dispose();
-    _descriptionController.dispose();
-    _imageUrlController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Create Store'),
-      content: SizedBox(
-        width: 460,
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Store name'),
-                  validator: (value) => (value == null || value.trim().length < 2)
-                      ? 'Enter a store name'
-                      : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _taglineController,
-                  decoration: const InputDecoration(labelText: 'Tagline'),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                  minLines: 3,
-                  maxLines: 4,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _imageUrlController,
-                  decoration: const InputDecoration(
-                    labelText: 'Image URL',
-                    hintText: 'https://...',
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () {
-            if (!_formKey.currentState!.validate()) return;
-            Navigator.of(context).pop({
-              'name': _nameController.text.trim(),
-              'tagline': _taglineController.text.trim(),
-              'description': _descriptionController.text.trim(),
-              'imageUrl': _imageUrlController.text.trim(),
-            });
-          },
-          child: const Text('Save Store'),
-        ),
-      ],
-    );
-  }
-}
-
-class _ShoppingProductFormDialog extends StatefulWidget {
-  final List<Map<String, dynamic>> stores;
-
-  const _ShoppingProductFormDialog({required this.stores});
-
-  @override
-  State<_ShoppingProductFormDialog> createState() =>
-      _ShoppingProductFormDialogState();
-}
-
-class _ShoppingProductFormDialogState extends State<_ShoppingProductFormDialog> {
-  final _formKey = GlobalKey<FormState>();
-  String? _selectedStoreId;
-  final _categoryController = TextEditingController();
-  final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _priceController = TextEditingController();
-  final _originalPriceController = TextEditingController();
-  final _unitController = TextEditingController();
-  final _imageUrlController = TextEditingController();
-  bool _inStock = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedStoreId = widget.stores.isNotEmpty
-        ? widget.stores.first['id']?.toString()
-        : null;
-  }
-
-  @override
-  void dispose() {
-    _categoryController.dispose();
-    _nameController.dispose();
-    _descriptionController.dispose();
-    _priceController.dispose();
-    _originalPriceController.dispose();
-    _unitController.dispose();
-    _imageUrlController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Add Product'),
-      content: SizedBox(
-        width: 460,
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedStoreId,
-                  items: widget.stores
-                      .map(
-                        (store) => DropdownMenuItem<String>(
-                          value: store['id']?.toString(),
-                          child: Text(store['name']?.toString() ?? 'Store'),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) => setState(() => _selectedStoreId = value),
-                  decoration: const InputDecoration(labelText: 'Store'),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _categoryController,
-                  decoration: const InputDecoration(labelText: 'Catalog category'),
-                  validator: (value) => (value == null || value.trim().length < 2)
-                      ? 'Enter a category'
-                      : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Product name'),
-                  validator: (value) => (value == null || value.trim().length < 2)
-                      ? 'Enter a product name'
-                      : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                  minLines: 3,
-                  maxLines: 4,
-                  validator: (value) => (value == null || value.trim().length < 4)
-                      ? 'Enter a description'
-                      : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _priceController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: 'Price'),
-                  validator: (value) =>
-                      (double.tryParse(value ?? '') ?? 0) <= 0 ? 'Enter a valid price' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _originalPriceController,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: 'Original price'),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _unitController,
-                  decoration: const InputDecoration(labelText: 'Unit'),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _imageUrlController,
-                  decoration: const InputDecoration(
-                    labelText: 'Image URL',
-                    hintText: 'https://...',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  value: _inStock,
-                  onChanged: (value) => setState(() => _inStock = value),
-                  title: const Text('Available in stock'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () {
-            if (!_formKey.currentState!.validate()) return;
-            if (_selectedStoreId == null || _selectedStoreId!.isEmpty) return;
-            final payload = <String, dynamic>{
-              'storeId': _selectedStoreId,
-              'categoryName': _categoryController.text.trim(),
-              'name': _nameController.text.trim(),
-              'description': _descriptionController.text.trim(),
-              'price': double.parse(_priceController.text.trim()),
-              'unit': _unitController.text.trim(),
-              'imageUrl': _imageUrlController.text.trim(),
-              'inStock': _inStock,
-            };
-            final originalPrice = _originalPriceController.text.trim();
-            if (originalPrice.isNotEmpty) {
-              payload['originalPrice'] = double.parse(originalPrice);
-            }
-            Navigator.of(context).pop({
-              ...payload,
-            });
-          },
-          child: const Text('Add Product'),
-        ),
-      ],
-    );
-  }
-}
-
 class _EmptyModuleState extends StatelessWidget {
   final ProModule module;
   final Map<String, dynamic> summary;
@@ -1024,10 +794,10 @@ class _EmptyModuleState extends StatelessWidget {
     final hasBindings = summary['hasBindings'] as bool? ?? false;
     final message =
         summary['emptyStateMessage']?.toString().trim().isNotEmpty == true
-            ? summary['emptyStateMessage']!.toString()
-            : hasBindings
-            ? _connectedEmptyMessage(module)
-            : _unboundMessage(module);
+        ? summary['emptyStateMessage']!.toString()
+        : hasBindings
+        ? _connectedEmptyMessage(module)
+        : _unboundMessage(module);
 
     return Card(
       child: Padding(
@@ -1035,10 +805,7 @@ class _EmptyModuleState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              message,
-              textAlign: TextAlign.center,
-            ),
+            Text(message, textAlign: TextAlign.center),
             if (!hasBindings && onCreateModule != null) ...[
               const SizedBox(height: 16),
               FilledButton.icon(
@@ -1100,229 +867,6 @@ class _EmptySearchState extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
       ),
-    );
-  }
-}
-
-class _StorePreviewSheet extends StatelessWidget {
-  final String storeSlug;
-
-  const _StorePreviewSheet({required this.storeSlug});
-
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.88,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (context, controller) {
-        return FutureBuilder<Map<String, dynamic>>(
-          future: _loadStore(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    snapshot.error.toString().replaceFirst('Exception: ', ''),
-                  ),
-                ),
-              );
-            }
-
-            final store = snapshot.data ?? const <String, dynamic>{};
-            final products = (store['products'] as List<dynamic>? ?? const [])
-                .map((entry) => Map<String, dynamic>.from(entry as Map))
-                .toList(growable: false);
-
-            return Material(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
-              ),
-              child: ListView(
-                controller: controller,
-                padding: const EdgeInsets.all(20),
-                children: [
-                  Text(
-                    store['name']?.toString() ?? 'Store preview',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(store['tagline']?.toString() ?? ''),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _PreviewMetricChip(
-                        label: 'Products',
-                        value: '${products.length}',
-                      ),
-                      _PreviewMetricChip(
-                        label: 'Categories',
-                        value:
-                            '${(store['categories'] as List<dynamic>? ?? const []).length}',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  ...products.map(
-                    (product) => ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(product['name']?.toString() ?? 'Product'),
-                      subtitle: Text(
-                        [
-                          product['category']?.toString() ?? '',
-                          product['price']?.toString() ?? '',
-                        ].where((entry) => entry.isNotEmpty).join(' • '),
-                      ),
-                      trailing: Text(
-                        (product['inStock'] as bool? ?? false)
-                            ? 'In stock'
-                            : 'Out of stock',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Future<Map<String, dynamic>> _loadStore() async {
-    final response = await ApiClient.get('/catalog/shopping-stores/$storeSlug');
-    return Map<String, dynamic>.from(response as Map);
-  }
-}
-
-class _RestaurantPreviewSheet extends StatelessWidget {
-  final String restaurantId;
-
-  const _RestaurantPreviewSheet({required this.restaurantId});
-
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.88,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (context, controller) {
-        return FutureBuilder<Map<String, dynamic>>(
-          future: _loadRestaurant(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    snapshot.error.toString().replaceFirst('Exception: ', ''),
-                  ),
-                ),
-              );
-            }
-
-            final restaurant = snapshot.data ?? const <String, dynamic>{};
-            final menu = (restaurant['menu'] as List<dynamic>? ?? const [])
-                .map((entry) => Map<String, dynamic>.from(entry as Map))
-                .toList(growable: false);
-
-            return Material(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
-              ),
-              child: ListView(
-                controller: controller,
-                padding: const EdgeInsets.all(20),
-                children: [
-                  Text(
-                    restaurant['name']?.toString() ?? 'Restaurant preview',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(restaurant['cuisine']?.toString() ?? ''),
-                  const SizedBox(height: 20),
-                  ...menu.map((category) {
-                    final items =
-                        (category['items'] as List<dynamic>? ?? const [])
-                            .map(
-                              (entry) =>
-                                  Map<String, dynamic>.from(entry as Map),
-                            )
-                            .toList(growable: false);
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          category['name']?.toString() ?? 'Menu section',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w800),
-                        ),
-                        const SizedBox(height: 8),
-                        ...items.map(
-                          (item) => ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Text(item['name']?.toString() ?? 'Dish'),
-                            subtitle: Text(
-                              item['description']?.toString() ?? '',
-                            ),
-                            trailing: Text(
-                              (item['isAvailable'] as bool? ?? false)
-                                  ? 'Available'
-                                  : 'Hidden',
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                    );
-                  }),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Future<Map<String, dynamic>> _loadRestaurant() async {
-    final response = await ApiClient.get('/catalog/restaurants/$restaurantId');
-    return Map<String, dynamic>.from(response as Map);
-  }
-}
-
-class _PreviewMetricChip extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _PreviewMetricChip({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text('$value $label'),
     );
   }
 }

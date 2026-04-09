@@ -29,6 +29,7 @@ import '../../features/rider/screens/rider_queue_screen.dart';
 import '../../features/shop/screens/shop_catalog_screen.dart';
 import '../../features/shop/screens/shop_dashboard_screen.dart';
 import '../../features/shop/screens/shop_orders_queue_screen.dart';
+import '../../features/shop/screens/shop_products_screen.dart';
 import '../models/pro_profile.dart';
 import '../providers/pro_auth_provider.dart';
 import 'pro_route_paths.dart';
@@ -137,6 +138,7 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
             userId: profile.userId,
             businessName: profile.businessName,
             initialModule: state.uri.queryParameters['module'] ?? 'all',
+            activeModules: profile.activeModules,
           ),
         ),
       ),
@@ -148,6 +150,16 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
             userId: profile.userId,
             businessName: profile.businessName,
             modules: profile.activeModules,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: ProRoutePaths.shopProducts,
+        builder: (context, state) => _withProfile(
+          context,
+          (profile) => ShopProductsScreen(
+            userId: profile.userId,
+            businessName: profile.businessName,
           ),
         ),
       ),
@@ -166,6 +178,7 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
             userId: profile.userId,
             businessName: profile.businessName,
             initialModule: state.uri.queryParameters['module'] ?? 'all',
+            activeModules: profile.activeModules,
           ),
         ),
       ),

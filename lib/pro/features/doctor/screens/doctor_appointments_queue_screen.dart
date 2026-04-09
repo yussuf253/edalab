@@ -112,6 +112,22 @@ class _DoctorAppointmentsQueueScreenState
 
   @override
   Widget build(BuildContext context) {
+    final pendingCount = _items
+        .where(
+          (item) =>
+              (item['status']?.toString().toUpperCase() ?? '') == 'PENDING',
+        )
+        .length;
+    final approvedCount = _items.where((item) {
+      final status = item['status']?.toString().toUpperCase() ?? '';
+      return status == 'APPROVED' || status == 'UPCOMING';
+    }).length;
+    final completedCount = _items
+        .where(
+          (item) =>
+              (item['status']?.toString().toUpperCase() ?? '') == 'COMPLETED',
+        )
+        .length;
     final filteredItems = _items.where(_matchesStatus).toList(growable: false);
 
     return Scaffold(
@@ -125,6 +141,23 @@ class _DoctorAppointmentsQueueScreenState
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.doctor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  _QueueMetric(label: 'Pending', value: '$pendingCount'),
+                  const SizedBox(width: 8),
+                  _QueueMetric(label: 'Approved', value: '$approvedCount'),
+                  const SizedBox(width: 8),
+                  _QueueMetric(label: 'Done', value: '$completedCount'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -144,9 +177,25 @@ class _DoctorAppointmentsQueueScreenState
             ),
             const SizedBox(height: 16),
             if (_isLoading)
-              const Padding(
-                padding: EdgeInsets.only(top: 48),
-                child: Center(child: CircularProgressIndicator()),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 36,
+                  horizontal: 12,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: AppColors.white,
+                  border: Border.all(color: AppColors.lightGrey),
+                ),
+                child: const Column(
+                  children: [
+                    Icon(Icons.medical_information_outlined, size: 34),
+                    SizedBox(height: 10),
+                    CircularProgressIndicator(),
+                    SizedBox(height: 10),
+                    Text('Loading appointments...'),
+                  ],
+                ),
               )
             else if (filteredItems.isEmpty)
               const Card(
@@ -317,5 +366,32 @@ class _DoctorAppointmentsQueueScreenState
     final parsed = DateTime.tryParse(raw);
     if (parsed == null) return raw;
     return DateFormat('EEE, MMM d • h:mm a').format(parsed.toLocal());
+  }
+}
+
+class _QueueMetric extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _QueueMetric({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          children: [
+            Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
+            const SizedBox(height: 2),
+            Text(label, style: const TextStyle(fontSize: 12)),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -3,9 +3,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../core/models/pro_dashboard_data.dart';
 import '../../../core/models/pro_profile.dart';
-import '../../../core/utils/pro_module_helper.dart';
-import '../../../core/widgets/pro_drawer.dart';
-import '../../../core/widgets/pro_stat_card.dart';
 import 'doctor_availability_screen.dart';
 import 'doctor_appointments_queue_screen.dart';
 import 'doctor_schedule_settings_screen.dart';
@@ -53,25 +50,78 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     await future;
   }
 
+  Future<void> _openSchedule() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DoctorScheduleSettingsScreen(
+          userId: widget.profile.userId,
+          businessName: widget.profile.businessName,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    await _refreshDashboard();
+  }
+
+  Future<void> _openAvailability() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DoctorAvailabilityScreen(
+          userId: widget.profile.userId,
+          businessName: widget.profile.businessName,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    await _refreshDashboard();
+  }
+
+  Future<void> _openAppointmentsQueue() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DoctorAppointmentsQueueScreen(
+          userId: widget.profile.userId,
+          businessName: widget.profile.businessName,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    await _refreshDashboard();
+  }
+
+  Future<void> _openTelemedicine() async {
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const DoctorTelemedicineScreen()));
+    if (!mounted) return;
+    await _refreshDashboard();
+  }
+
   Future<void> _updateAppointmentStatus(
     ProDashboardItem item,
     String status,
   ) async {
     setState(() => _busyAppointmentIds.add(item.id));
     try {
-      await ApiClient.post('/pro/${widget.profile.userId}/doctor-appointment-status', {
-        'appointmentId': item.id,
-        'status': status,
-      });
+      await ApiClient.post(
+        '/pro/${widget.profile.userId}/doctor-appointment-status',
+        {'appointmentId': item.id, 'status': status},
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Appointment updated to ${status.replaceAll('_', ' ')}.')),
+        SnackBar(
+          content: Text(
+            'Appointment updated to ${status.replaceAll('_', ' ')}.',
+          ),
+        ),
       );
       await _refreshDashboard();
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
       );
     } finally {
       if (mounted) {
@@ -83,54 +133,23 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: const ProDrawer(),
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Dr. ${widget.profile.businessName}'),
         elevation: 0,
         backgroundColor: AppColors.doctor,
         foregroundColor: AppColors.white,
         actions: [
           IconButton(
-            onPressed: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => DoctorScheduleSettingsScreen(
-                    userId: widget.profile.userId,
-                    businessName: widget.profile.businessName,
-                  ),
-                ),
-              );
-              if (!mounted) return;
-              await _refreshDashboard();
-            },
+            onPressed: _openSchedule,
             icon: const Icon(Icons.schedule_outlined),
           ),
           IconButton(
-            onPressed: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => DoctorAvailabilityScreen(
-                    userId: widget.profile.userId,
-                    businessName: widget.profile.businessName,
-                  ),
-                ),
-              );
-              if (!mounted) return;
-              await _refreshDashboard();
-            },
+            onPressed: _openAvailability,
             icon: const Icon(Icons.tune),
           ),
           IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => DoctorAppointmentsQueueScreen(
-                    userId: widget.profile.userId,
-                    businessName: widget.profile.businessName,
-                  ),
-                ),
-              );
-            },
+            onPressed: _openAppointmentsQueue,
             icon: const Icon(Icons.event_note_outlined),
           ),
         ],
@@ -141,98 +160,83 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
           final data = snapshot.data;
           final stats = data?.stats ?? const <ProDashboardMetric>[];
           final summary = data?.moduleSummaries.firstOrNull;
+          final recentItems =
+              summary?.recentItems ?? const <ProDashboardItem>[];
+          final pendingCount = recentItems
+              .where((item) => item.status.toUpperCase() == 'PENDING')
+              .length;
+          final approvedCount = recentItems.where((item) {
+            final status = item.status.toUpperCase();
+            return status == 'APPROVED' || status == 'UPCOMING';
+          }).length;
+          final videoCount = recentItems
+              .where((item) => item.subtitle.toLowerCase().contains('video'))
+              .length;
 
-          if (snapshot.connectionState == ConnectionState.waiting && data == null) {
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              data == null) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          return RefreshIndicator(
+            onRefresh: _refreshDashboard,
+            child: ListView(
+              padding: const EdgeInsets.all(16),
               children: [
-                Wrap(
-                  spacing: 8,
-                  children: widget.profile.activeModules.map((module) {
-                    final color = ProModuleHelper.getModuleColor(module);
-                    return Chip(
-                      avatar: Icon(
-                        ProModuleHelper.getModuleIcon(module),
-                        size: 18,
-                        color: color,
-                      ),
-                      label: Text(ProModuleHelper.getModuleName(module)),
-                      backgroundColor: color.withValues(alpha: 0.10),
-                    );
-                  }).toList(),
+                _DoctorClinicalHero(
+                  doctorName: widget.profile.businessName,
+                  headline: data?.headline,
+                  pendingCount: pendingCount,
+                  videoCount: videoCount,
+                  onOpenQueue: _openAppointmentsQueue,
                 ),
                 if (data?.scopeNote?.isNotEmpty == true) ...[
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   _ScopeNote(message: data!.scopeNote!),
                 ],
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(0)?.title ?? 'Patients Today',
-                        value: stats.elementAtOrNull(0)?.value ?? '12',
-                        icon: Icons.people_outline,
-                        color: AppColors.doctor,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(1)?.title ?? 'Video Queue',
-                        value: stats.elementAtOrNull(1)?.value ?? '4',
-                        icon: Icons.video_camera_front_outlined,
-                        color: Colors.purple,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 14),
+                _DoctorQuickActions(
+                  onQueue: _openAppointmentsQueue,
+                  onAvailability: _openAvailability,
+                  onSchedule: _openSchedule,
+                  onVideo: _openTelemedicine,
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(2)?.title ?? 'Available Doctors',
-                        value: stats.elementAtOrNull(2)?.value ?? '8',
-                        icon: Icons.local_hospital_outlined,
-                        color: AppColors.doctor,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ProStatCard(
-                        title: stats.elementAtOrNull(3)?.title ?? 'Upcoming Consults',
-                        value: stats.elementAtOrNull(3)?.value ?? '3',
-                        icon: Icons.assignment_outlined,
-                        color: AppColors.info,
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 14),
+                _DoctorTriageStrip(
+                  pendingCount: pendingCount,
+                  approvedCount: approvedCount,
+                  videoCount: videoCount,
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 14),
+                _DoctorMetricsGrid(
+                  stats: stats,
+                  fallbackPatients: recentItems.length,
+                  fallbackVideo: videoCount,
+                  fallbackUpcoming: approvedCount,
+                ),
+                const SizedBox(height: 24),
                 Text(
-                  summary?.title ?? 'Upcoming Appointments',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  summary?.title ?? 'Clinical Queue',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 if (summary?.subtitle.isNotEmpty == true)
                   Text(summary!.subtitle),
-                const SizedBox(height: 16),
-                if (summary?.recentItems.isNotEmpty == true)
-                  ...summary!.recentItems.map((item) {
-                    final isVideo = item.subtitle.toLowerCase().contains('video');
+                const SizedBox(height: 12),
+                if (recentItems.isNotEmpty)
+                  ...recentItems.map((item) {
+                    final isVideo = item.subtitle.toLowerCase().contains(
+                      'video',
+                    );
                     final status = item.status.toUpperCase();
                     final isBusy = _busyAppointmentIds.contains(item.id);
                     return Card(
                       margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
@@ -253,11 +257,14 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         item.title,
-                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(item.subtitle),
@@ -265,7 +272,9 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                                         const SizedBox(height: 4),
                                         Text(
                                           item.meta!,
-                                          style: TextStyle(color: Colors.grey.shade600),
+                                          style: TextStyle(
+                                            color: Colors.grey.shade600,
+                                          ),
                                         ),
                                       ],
                                     ],
@@ -273,18 +282,17 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                                 ),
                                 IconButton(
                                   icon: Icon(
-                                    isVideo ? Icons.video_call : Icons.event_available,
+                                    isVideo
+                                        ? Icons.video_call
+                                        : Icons.event_available,
                                     size: 24,
                                     color: Colors.teal,
                                   ),
                                   onPressed: () {
                                     if (isVideo &&
-                                        (status == 'APPROVED' || status == 'UPCOMING')) {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (_) => const DoctorTelemedicineScreen(),
-                                        ),
-                                      );
+                                        (status == 'APPROVED' ||
+                                            status == 'UPCOMING')) {
+                                      _openTelemedicine();
                                     }
                                   },
                                 ),
@@ -306,30 +314,44 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                                   TextButton(
                                     onPressed: isBusy
                                         ? null
-                                        : () => _updateAppointmentStatus(item, 'REJECTED'),
+                                        : () => _updateAppointmentStatus(
+                                            item,
+                                            'REJECTED',
+                                          ),
                                     child: const Text('Reject'),
                                   ),
                                   const SizedBox(width: 8),
                                   ElevatedButton(
                                     onPressed: isBusy
                                         ? null
-                                        : () => _updateAppointmentStatus(item, 'APPROVED'),
+                                        : () => _updateAppointmentStatus(
+                                            item,
+                                            'APPROVED',
+                                          ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.doctor,
                                       foregroundColor: Colors.white,
                                     ),
-                                    child: Text(isBusy ? 'Updating...' : 'Approve'),
+                                    child: Text(
+                                      isBusy ? 'Updating...' : 'Approve',
+                                    ),
                                   ),
-                                ] else if (status == 'APPROVED' || status == 'UPCOMING')
+                                ] else if (status == 'APPROVED' ||
+                                    status == 'UPCOMING')
                                   ElevatedButton(
                                     onPressed: isBusy
                                         ? null
-                                        : () => _updateAppointmentStatus(item, 'COMPLETED'),
+                                        : () => _updateAppointmentStatus(
+                                            item,
+                                            'COMPLETED',
+                                          ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.doctor,
                                       foregroundColor: Colors.white,
                                     ),
-                                    child: Text(isBusy ? 'Updating...' : 'Complete'),
+                                    child: Text(
+                                      isBusy ? 'Updating...' : 'Complete',
+                                    ),
                                   ),
                               ],
                             ),
@@ -353,16 +375,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.doctor,
         foregroundColor: AppColors.white,
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => DoctorAppointmentsQueueScreen(
-                userId: widget.profile.userId,
-                businessName: widget.profile.businessName,
-              ),
-            ),
-          );
-        },
+        onPressed: _openAppointmentsQueue,
         child: const Icon(Icons.medical_information_outlined),
       ),
     );
@@ -383,6 +396,353 @@ class _ScopeNote extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(message),
+    );
+  }
+}
+
+class _DoctorClinicalHero extends StatelessWidget {
+  final String doctorName;
+  final String? headline;
+  final int pendingCount;
+  final int videoCount;
+  final VoidCallback onOpenQueue;
+
+  const _DoctorClinicalHero({
+    required this.doctorName,
+    required this.headline,
+    required this.pendingCount,
+    required this.videoCount,
+    required this.onOpenQueue,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.doctor, AppColors.doctor.withValues(alpha: 0.82)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Dr. $doctorName',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            headline?.trim().isNotEmpty == true
+                ? headline!
+                : 'Clinical command center for appointments and consultations.',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _HeroBadge(
+                icon: Icons.priority_high_outlined,
+                label: '$pendingCount pending',
+              ),
+              const SizedBox(width: 10),
+              _HeroBadge(
+                icon: Icons.video_camera_front_outlined,
+                label: '$videoCount video consults',
+              ),
+              const Spacer(),
+              FilledButton.tonalIcon(
+                onPressed: onOpenQueue,
+                icon: const Icon(Icons.event_note_outlined),
+                label: const Text('Open Queue'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.doctor,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroBadge extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _HeroBadge({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DoctorQuickActions extends StatelessWidget {
+  final VoidCallback onQueue;
+  final VoidCallback onAvailability;
+  final VoidCallback onSchedule;
+  final VoidCallback onVideo;
+
+  const _DoctorQuickActions({
+    required this.onQueue,
+    required this.onAvailability,
+    required this.onSchedule,
+    required this.onVideo,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        _DoctorActionChip(
+          icon: Icons.event_note_outlined,
+          label: 'Appointments',
+          onTap: onQueue,
+        ),
+        _DoctorActionChip(
+          icon: Icons.tune,
+          label: 'Availability',
+          onTap: onAvailability,
+        ),
+        _DoctorActionChip(
+          icon: Icons.schedule_outlined,
+          label: 'Schedule',
+          onTap: onSchedule,
+        ),
+        _DoctorActionChip(
+          icon: Icons.video_call_outlined,
+          label: 'Telemedicine',
+          onTap: onVideo,
+        ),
+      ],
+    );
+  }
+}
+
+class _DoctorActionChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _DoctorActionChip({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ActionChip(
+      avatar: Icon(icon, size: 18, color: AppColors.doctor),
+      label: Text(label),
+      onPressed: onTap,
+      backgroundColor: AppColors.doctor.withValues(alpha: 0.08),
+      side: BorderSide(color: AppColors.doctor.withValues(alpha: 0.12)),
+    );
+  }
+}
+
+class _DoctorTriageStrip extends StatelessWidget {
+  final int pendingCount;
+  final int approvedCount;
+  final int videoCount;
+
+  const _DoctorTriageStrip({
+    required this.pendingCount,
+    required this.approvedCount,
+    required this.videoCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _TriageTile(
+            label: 'Pending',
+            value: '$pendingCount',
+            color: AppColors.warning,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _TriageTile(
+            label: 'Upcoming',
+            value: '$approvedCount',
+            color: AppColors.doctor,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _TriageTile(
+            label: 'Video',
+            value: '$videoCount',
+            color: AppColors.info,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TriageTile extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+
+  const _TriageTile({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
+        ],
+      ),
+    );
+  }
+}
+
+class _DoctorMetricsGrid extends StatelessWidget {
+  final List<ProDashboardMetric> stats;
+  final int fallbackPatients;
+  final int fallbackVideo;
+  final int fallbackUpcoming;
+
+  const _DoctorMetricsGrid({
+    required this.stats,
+    required this.fallbackPatients,
+    required this.fallbackVideo,
+    required this.fallbackUpcoming,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: _DoctorMetricCard(
+            title: stats.elementAtOrNull(0)?.title ?? 'Patients Today',
+            value: stats.elementAtOrNull(0)?.value ?? '$fallbackPatients',
+            icon: Icons.people_outline,
+            color: AppColors.doctor,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _DoctorMetricCard(
+            title: stats.elementAtOrNull(1)?.title ?? 'Video Queue',
+            value: stats.elementAtOrNull(1)?.value ?? '$fallbackVideo',
+            icon: Icons.video_camera_front_outlined,
+            color: Colors.purple,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _DoctorMetricCard(
+            title: stats.elementAtOrNull(2)?.title ?? 'Upcoming',
+            value: stats.elementAtOrNull(2)?.value ?? '$fallbackUpcoming',
+            icon: Icons.assignment_outlined,
+            color: AppColors.info,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DoctorMetricCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  const _DoctorMetricCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            title,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.black54),
+          ),
+        ],
+      ),
     );
   }
 }

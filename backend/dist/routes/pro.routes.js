@@ -9,6 +9,7 @@ const zod_1 = require("zod");
 const db_1 = require("../db");
 const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
+const notifications_1 = require("../utils/notifications");
 const serializers_1 = require("../utils/serializers");
 const router = (0, express_1.Router)();
 const proProfileSchema = zod_1.z.object({
@@ -71,12 +72,23 @@ const createShoppingProductSchema = zod_1.z.object({
     storeId: zod_1.z.string().min(1),
     categoryName: zod_1.z.string().trim().min(2).max(80),
     name: zod_1.z.string().trim().min(2).max(120),
+    brand: zod_1.z.string().trim().max(120).optional().or(zod_1.z.literal('')),
     description: zod_1.z.string().trim().min(4).max(800),
     price: zod_1.z.number().positive(),
     originalPrice: zod_1.z.number().positive().nullable().optional(),
     unit: zod_1.z.string().trim().max(40).optional().or(zod_1.z.literal('')),
+    badge: zod_1.z.string().trim().max(40).optional().or(zod_1.z.literal('')),
     imageUrl: zod_1.z.string().trim().url().optional().or(zod_1.z.literal('')),
+    imageUrls: zod_1.z.array(zod_1.z.string().trim().url()).max(8).optional(),
+    colors: zod_1.z.array(zod_1.z.string().trim().min(1).max(40)).max(20).optional(),
+    sizes: zod_1.z.array(zod_1.z.string().trim().min(1).max(40)).max(20).optional(),
+    tags: zod_1.z.array(zod_1.z.string().trim().min(1).max(40)).max(20).optional(),
+    features: zod_1.z.array(zod_1.z.string().trim().min(1).max(120)).max(30).optional(),
+    isOrganic: zod_1.z.boolean().optional(),
     inStock: zod_1.z.boolean().optional(),
+});
+const updateShoppingProductStockSchema = zod_1.z.object({
+    inStock: zod_1.z.boolean(),
 });
 const updateProviderAvailabilitySchema = zod_1.z.object({
     module: zod_1.z.enum(['services', 'laundry']),
@@ -145,6 +157,144 @@ function formatModule(value) {
         .map((part) => part[0].toUpperCase() + part.slice(1))
         .join(' ');
 }
+function orderNotificationModule(moduleType) {
+    switch (moduleType) {
+        case client_1.ModuleType.FOOD:
+            return client_1.NotificationModule.FOOD;
+        case client_1.ModuleType.SHOPPING:
+            return client_1.NotificationModule.SHOPPING;
+        case client_1.ModuleType.PHARMACY:
+            return client_1.NotificationModule.PHARMACY;
+        case client_1.ModuleType.HOME_SERVICES:
+            return client_1.NotificationModule.HOME_SERVICES;
+        case client_1.ModuleType.LAUNDRY:
+            return client_1.NotificationModule.LAUNDRY;
+        case client_1.ModuleType.HOTEL:
+            return client_1.NotificationModule.HOTEL;
+        case client_1.ModuleType.GROCERY:
+            return client_1.NotificationModule.GROCERY;
+        default:
+            return client_1.NotificationModule.ORDERS;
+    }
+}
+function orderNotificationType(moduleType) {
+    if (moduleType === client_1.ModuleType.LAUNDRY) {
+        return client_1.NotificationType.LAUNDRY;
+    }
+    return client_1.NotificationType.ORDER;
+}
+function orderRouteForModule(moduleType, orderId) {
+    switch (moduleType) {
+        case client_1.ModuleType.FOOD:
+            return `/food/tracking/${orderId}`;
+        case client_1.ModuleType.SHOPPING:
+            return `/shopping/order/${orderId}`;
+        case client_1.ModuleType.PHARMACY:
+            return `/pharmacy/order/${orderId}`;
+        case client_1.ModuleType.HOME_SERVICES:
+            return `/home-services/booking/${orderId}`;
+        case client_1.ModuleType.LAUNDRY:
+            return `/laundry/tracking/${orderId}`;
+        case client_1.ModuleType.HOTEL:
+            return `/hotel/order/${orderId}`;
+        default:
+            return '/orders';
+    }
+}
+async function notifyOrderLifecycle(params) {
+    const statusLabel = formatModule(params.status);
+    const moduleLabel = formatModule(params.moduleType).toLowerCase();
+    const title = params.event === 'claimed'
+        ? `${formatModule(params.moduleType)} delivery assigned`
+        : `${formatModule(params.moduleType)} order update`;
+    const body = params.event === 'claimed'
+        ? `A courier accepted your ${moduleLabel} order. Status: ${statusLabel}.`
+        : `Your ${moduleLabel} order is now ${statusLabel}.`;
+    const route = orderRouteForModule(params.moduleType, params.orderId);
+    try {
+        await (0, notifications_1.createBackendNotification)({
+            userId: params.userId,
+            type: orderNotificationType(params.moduleType),
+            module: orderNotificationModule(params.moduleType),
+            title,
+            body,
+            route,
+            dedupeKey: `pro-order:${params.orderId}:${params.status}:${params.event}`,
+            metadata: {
+                orderId: params.orderId,
+                moduleType: params.moduleType,
+                status: params.status,
+                source: 'pro_status_flow',
+            },
+        });
+    }
+    catch (error) {
+        console.error('[PRO NOTIFY] Failed to send order lifecycle notification', {
+            orderId: params.orderId,
+            status: params.status,
+            event: params.event,
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+}
+async function notifyRideLifecycle(params) {
+    const statusLabel = formatModule(params.status);
+    const title = params.event === 'claimed' ? 'Driver assigned' : 'Ride status update';
+    const body = params.event === 'claimed'
+        ? `Your driver is assigned${params.pickupLabel ? ` and heading to ${params.pickupLabel}` : ''}.`
+        : `Your ride is now ${statusLabel}.`;
+    try {
+        await (0, notifications_1.createBackendNotification)({
+            userId: params.userId,
+            type: client_1.NotificationType.RIDE,
+            module: client_1.NotificationModule.RIDE,
+            title,
+            body,
+            route: `/ride/tracking/${params.rideId}`,
+            dedupeKey: `pro-ride:${params.rideId}:${params.status}:${params.event}`,
+            metadata: {
+                rideId: params.rideId,
+                status: params.status,
+                source: 'pro_status_flow',
+            },
+        });
+    }
+    catch (error) {
+        console.error('[PRO NOTIFY] Failed to send ride lifecycle notification', {
+            rideId: params.rideId,
+            status: params.status,
+            event: params.event,
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+}
+async function notifyAppointmentLifecycle(params) {
+    const statusLabel = formatModule(params.status);
+    try {
+        await (0, notifications_1.createBackendNotification)({
+            userId: params.userId,
+            type: client_1.NotificationType.APPOINTMENT,
+            module: client_1.NotificationModule.DOCTOR,
+            title: 'Appointment status update',
+            body: `Your appointment is now ${statusLabel}.`,
+            route: '/doctor/appointments',
+            dedupeKey: `pro-appointment:${params.appointmentId}:${params.status}`,
+            metadata: {
+                appointmentId: params.appointmentId,
+                doctorId: params.doctorId,
+                status: params.status,
+                source: 'pro_status_flow',
+            },
+        });
+    }
+    catch (error) {
+        console.error('[PRO NOTIFY] Failed to send appointment notification', {
+            appointmentId: params.appointmentId,
+            status: params.status,
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+}
 function isPresent(value) {
     return value != null;
 }
@@ -212,7 +362,7 @@ function normalizeStringList(value) {
     }
     return Array.from(new Set(value
         .map((entry) => entry?.toString().trim() ?? '')
-        .filter((entry) => entry.isNotEmpty)));
+        .filter((entry) => entry.length > 0)));
 }
 function normalizeHours(value, defaults) {
     const map = value != null && typeof value === 'object' && !Array.isArray(value)
@@ -223,6 +373,14 @@ function normalizeHours(value, defaults) {
         saturday: map.saturday?.toString().trim() || defaults.saturday,
         sunday: map.sunday?.toString().trim() || defaults.sunday,
     };
+}
+function firstImageUrlFromJson(value) {
+    if (!Array.isArray(value))
+        return null;
+    const url = value
+        .map((entry) => entry?.toString().trim() ?? '')
+        .find((entry) => entry.length > 0);
+    return url ?? null;
 }
 function hasShopOrderAccess(bindings, order) {
     switch (order.moduleType) {
@@ -283,6 +441,18 @@ function orderAddressLabel(order, firstItemMetadata) {
         order.address?.line1 ??
         '');
 }
+function queueSourceLabel(moduleType, firstItem) {
+    const itemMetadata = firstItem?.metadata &&
+        typeof firstItem.metadata === 'object' &&
+        !Array.isArray(firstItem.metadata)
+        ? firstItem.metadata
+        : null;
+    return (itemMetadata?.shopName?.toString() ??
+        itemMetadata?.sourceBusiness?.toString() ??
+        firstItem?.brand ??
+        firstItem?.name ??
+        formatModule(moduleType));
+}
 function serializeQueueOrderItem(order) {
     const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
     const firstItem = order.items[0];
@@ -291,7 +461,7 @@ function serializeQueueOrderItem(order) {
         module: order.moduleType.toLowerCase(),
         status: order.status,
         title: `${formatModule(order.moduleType)} #${order.id.slice(-5)}`,
-        subtitle: `${totalItems} item${totalItems == 1 ? '' : 's'} • ${firstItem?.brand ?? firstItem?.name ?? formatModule(order.moduleType)}`,
+        subtitle: `${totalItems} item${totalItems == 1 ? '' : 's'} • ${queueSourceLabel(order.moduleType, firstItem)}`,
         amount: formatCurrency(typeof order.total === 'number'
             ? order.total
             : Number(order.total.toString())),
@@ -325,13 +495,14 @@ function serializeDispatchQueueOrderItem(order, currentUserId) {
         module: order.moduleType.toLowerCase(),
         status: order.status,
         title: `${formatModule(order.moduleType)} #${order.id.slice(-5)}`,
-        subtitle: `${totalItems} item${totalItems == 1 ? '' : 's'} • ${firstItem?.brand ?? firstItem?.name ?? formatModule(order.moduleType)}`,
+        subtitle: `${totalItems} item${totalItems == 1 ? '' : 's'} • ${queueSourceLabel(order.moduleType, firstItem)}`,
         amount: formatCurrency(typeof order.total === 'number'
             ? order.total
             : Number(order.total.toString())),
         customerName: customerName(order.user),
         customerPhone: order.user.phone,
-        address: order.address?.line1 ?? '',
+        notes: order.notes,
+        address: orderAddressLabel(order, firstItem?.metadata),
         queueType: order.deliveryUserId == currentUserId ? 'assigned' : 'open',
         createdAt: order.createdAt,
         customerUserId: order.userId,
@@ -350,6 +521,9 @@ function serializeRideQueueItem(ride, currentUserId) {
         title: `${ride.rideCategory.name} Ride`,
         subtitle: `${ride.pickupLabel ?? 'Pickup pending'} -> ${ride.dropoffLabel ?? 'Dropoff pending'}`,
         amount: fare,
+        pickup: ride.pickupLabel,
+        destination: ride.dropoffLabel,
+        eta: ride.etaLabel,
         customerName: customerName(ride.user),
         customerPhone: ride.user.phone,
         queueType: ride.driverUserId == currentUserId ? 'assigned' : 'open',
@@ -1257,6 +1431,13 @@ router.post('/:userId/claim-delivery', (0, async_handler_1.asyncHandler)(async (
         },
         include: { items: true },
     });
+    await notifyOrderLifecycle({
+        userId: updatedOrder.userId,
+        orderId: updatedOrder.id,
+        moduleType: updatedOrder.moduleType,
+        status: updatedOrder.status,
+        event: 'claimed',
+    });
     res.json({
         id: updatedOrder.id,
         moduleType: updatedOrder.moduleType,
@@ -1306,6 +1487,13 @@ router.post('/:userId/claim-ride', (0, async_handler_1.asyncHandler)(async (req,
             status: ride.status === client_1.RideStatus.REQUESTED ? client_1.RideStatus.ACCEPTED : ride.status,
         },
     });
+    await notifyRideLifecycle({
+        userId: updatedRide.userId,
+        rideId: updatedRide.id,
+        status: updatedRide.status,
+        pickupLabel: updatedRide.pickupLabel,
+        event: 'claimed',
+    });
     res.json({
         id: updatedRide.id,
         status: updatedRide.status,
@@ -1333,6 +1521,13 @@ router.post('/:userId/delivery-status', (0, async_handler_1.asyncHandler)(async 
         where: { id: order.id },
         data: { status: body.status },
     });
+    await notifyOrderLifecycle({
+        userId: updatedOrder.userId,
+        orderId: updatedOrder.id,
+        moduleType: updatedOrder.moduleType,
+        status: updatedOrder.status,
+        event: 'status',
+    });
     res.json({
         id: updatedOrder.id,
         status: updatedOrder.status,
@@ -1357,6 +1552,13 @@ router.post('/:userId/ride-status', (0, async_handler_1.asyncHandler)(async (req
     const updatedRide = await db_1.prisma.rideBooking.update({
         where: { id: ride.id },
         data: { status: body.status },
+    });
+    await notifyRideLifecycle({
+        userId: updatedRide.userId,
+        rideId: updatedRide.id,
+        status: updatedRide.status,
+        pickupLabel: updatedRide.pickupLabel,
+        event: 'status',
     });
     res.json({
         id: updatedRide.id,
@@ -1401,6 +1603,13 @@ router.post('/:userId/shop-order-status', (0, async_handler_1.asyncHandler)(asyn
         where: { id: order.id },
         data: { status: body.status },
     });
+    await notifyOrderLifecycle({
+        userId: updatedOrder.userId,
+        orderId: updatedOrder.id,
+        moduleType: updatedOrder.moduleType,
+        status: updatedOrder.status,
+        event: 'status',
+    });
     res.json({
         id: updatedOrder.id,
         status: updatedOrder.status,
@@ -1438,6 +1647,13 @@ router.post('/:userId/provider-order-status', (0, async_handler_1.asyncHandler)(
         where: { id: order.id },
         data: { status: body.status },
     });
+    await notifyOrderLifecycle({
+        userId: updatedOrder.userId,
+        orderId: updatedOrder.id,
+        moduleType: updatedOrder.moduleType,
+        status: updatedOrder.status,
+        event: 'status',
+    });
     res.json({
         id: updatedOrder.id,
         status: updatedOrder.status,
@@ -1468,6 +1684,12 @@ router.post('/:userId/doctor-appointment-status', (0, async_handler_1.asyncHandl
         where: { id: appointment.id },
         data: { status: body.status },
     });
+    await notifyAppointmentLifecycle({
+        userId: updatedAppointment.userId,
+        appointmentId: updatedAppointment.id,
+        doctorId: updatedAppointment.doctorId,
+        status: updatedAppointment.status,
+    });
     res.json({
         id: updatedAppointment.id,
         status: updatedAppointment.status,
@@ -1485,8 +1707,11 @@ router.get('/:userId/shop-queue', (0, async_handler_1.asyncHandler)(async (req, 
     }
     const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
     const bindings = normalizeBindings(hydratedProfile.bindings);
+    const canShopping = profile.activeModules.includes(client_1.ProModule.SHOPPING);
+    const canFood = profile.activeModules.includes(client_1.ProModule.FOOD);
+    const canPharmacy = profile.activeModules.includes(client_1.ProModule.PHARMACY);
     const [shoppingOrders, foodOrders, pharmacyCandidates] = await Promise.all([
-        bindings.shoppingStoreIds.length === 0
+        !canShopping || bindings.shoppingStoreIds.length === 0
             ? Promise.resolve([])
             : db_1.prisma.order.findMany({
                 where: {
@@ -1515,7 +1740,7 @@ router.get('/:userId/shop-queue', (0, async_handler_1.asyncHandler)(async (req, 
                 orderBy: { createdAt: 'desc' },
                 take: 100,
             }),
-        bindings.restaurantNames.length === 0
+        !canFood || bindings.restaurantNames.length === 0
             ? Promise.resolve([])
             : db_1.prisma.order.findMany({
                 where: {
@@ -1542,26 +1767,28 @@ router.get('/:userId/shop-queue', (0, async_handler_1.asyncHandler)(async (req, 
                 orderBy: { createdAt: 'desc' },
                 take: 100,
             }),
-        db_1.prisma.order.findMany({
-            where: { moduleType: client_1.ModuleType.PHARMACY },
-            include: {
-                user: {
-                    select: { firstName: true, lastName: true, phone: true },
-                },
-                address: { select: { line1: true } },
-                items: {
-                    include: {
-                        product: {
-                            select: { shopId: true, metadata: true },
+        !canPharmacy
+            ? Promise.resolve([])
+            : db_1.prisma.order.findMany({
+                where: { moduleType: client_1.ModuleType.PHARMACY },
+                include: {
+                    user: {
+                        select: { firstName: true, lastName: true, phone: true },
+                    },
+                    address: { select: { line1: true } },
+                    items: {
+                        include: {
+                            product: {
+                                select: { shopId: true, metadata: true },
+                            },
                         },
                     },
                 },
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 100,
-        }),
+                orderBy: { createdAt: 'desc' },
+                take: 100,
+            }),
     ]);
-    const pharmacyOrders = bindings.pharmacyBusinesses.length === 0
+    const pharmacyOrders = !canPharmacy || bindings.pharmacyBusinesses.length === 0
         ? []
         : pharmacyCandidates.filter((order) => order.items.some((item) => {
             const metadata = item.product?.metadata &&
@@ -1587,61 +1814,67 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
         return res.status(404).json({ error: 'Provider pro profile not found.' });
     }
     const bindings = normalizeBindings(profile.bindings);
+    const canServices = profile.activeModules.includes(client_1.ProModule.SERVICES);
+    const canLaundry = profile.activeModules.includes(client_1.ProModule.LAUNDRY);
     const [serviceOrders, laundryOrders] = await Promise.all([
-        db_1.prisma.order.findMany({
-            where: bindings.providerIds.length === 0
-                ? { moduleType: client_1.ModuleType.HOME_SERVICES }
-                : {
-                    moduleType: client_1.ModuleType.HOME_SERVICES,
+        !canServices
+            ? Promise.resolve([])
+            : db_1.prisma.order.findMany({
+                where: bindings.providerIds.length === 0
+                    ? { moduleType: client_1.ModuleType.HOME_SERVICES }
+                    : {
+                        moduleType: client_1.ModuleType.HOME_SERVICES,
+                        items: {
+                            some: {
+                                externalRefId: { in: bindings.providerIds },
+                            },
+                        },
+                    },
+                include: {
+                    user: {
+                        select: { firstName: true, lastName: true, phone: true },
+                    },
+                    address: { select: { line1: true } },
                     items: {
-                        some: {
-                            externalRefId: { in: bindings.providerIds },
+                        include: {
+                            product: {
+                                select: { shopId: true, metadata: true },
+                            },
                         },
                     },
                 },
-            include: {
-                user: {
-                    select: { firstName: true, lastName: true, phone: true },
-                },
-                address: { select: { line1: true } },
-                items: {
-                    include: {
-                        product: {
-                            select: { shopId: true, metadata: true },
+                orderBy: { createdAt: 'desc' },
+                take: 100,
+            }),
+        !canLaundry
+            ? Promise.resolve([])
+            : db_1.prisma.order.findMany({
+                where: bindings.laundryServiceIds.length === 0
+                    ? { moduleType: client_1.ModuleType.LAUNDRY }
+                    : {
+                        moduleType: client_1.ModuleType.LAUNDRY,
+                        items: {
+                            some: {
+                                externalRefId: { in: bindings.laundryServiceIds },
+                            },
                         },
                     },
-                },
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 100,
-        }),
-        db_1.prisma.order.findMany({
-            where: bindings.laundryServiceIds.length === 0
-                ? { moduleType: client_1.ModuleType.LAUNDRY }
-                : {
-                    moduleType: client_1.ModuleType.LAUNDRY,
+                include: {
+                    user: {
+                        select: { firstName: true, lastName: true, phone: true },
+                    },
+                    address: { select: { line1: true } },
                     items: {
-                        some: {
-                            externalRefId: { in: bindings.laundryServiceIds },
+                        include: {
+                            product: {
+                                select: { shopId: true, metadata: true },
+                            },
                         },
                     },
                 },
-            include: {
-                user: {
-                    select: { firstName: true, lastName: true, phone: true },
-                },
-                address: { select: { line1: true } },
-                items: {
-                    include: {
-                        product: {
-                            select: { shopId: true, metadata: true },
-                        },
-                    },
-                },
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 100,
-        }),
+                orderBy: { createdAt: 'desc' },
+                take: 100,
+            }),
     ]);
     const items = [...serviceOrders, ...laundryOrders]
         .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())
@@ -2293,6 +2526,23 @@ router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(asyn
                 active: true,
             },
         }));
+    const primaryImageUrl = body.imageUrl?.trim() ?? '';
+    const galleryImageUrls = (body.imageUrls ?? [])
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0);
+    const imageUrls = Array.from(new Set([
+        ...galleryImageUrls,
+        ...(primaryImageUrl.length > 0 ? [primaryImageUrl] : []),
+    ]));
+    const normalizeTextArray = (values) => (values ?? [])
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0);
+    const colors = normalizeTextArray(body.colors);
+    const sizes = normalizeTextArray(body.sizes);
+    const tags = normalizeTextArray(body.tags);
+    const features = normalizeTextArray(body.features);
+    const normalizedBrand = body.brand?.trim() || store.name;
+    const normalizedBadge = body.badge?.trim() || null;
     const product = await db_1.prisma.product.create({
         data: {
             id: (0, crypto_1.randomUUID)(),
@@ -2300,24 +2550,26 @@ router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(asyn
             categoryId: category.id,
             shopId: store.id,
             name: body.name.trim(),
-            brand: store.name,
+            brand: normalizedBrand,
             description: body.description.trim(),
             price: body.price,
             originalPrice: body.originalPrice ?? null,
             unit: body.unit?.trim() || null,
-            imageUrlsJson: body.imageUrl?.trim().length
-                ? [body.imageUrl.trim()]
-                : [],
+            imageUrlsJson: imageUrls,
+            colorsJson: colors.length > 0 ? colors : undefined,
+            sizesJson: sizes.length > 0 ? sizes : undefined,
+            tagsJson: tags.length > 0 ? tags : undefined,
+            featuresJson: features.length > 0 ? features : undefined,
+            badge: normalizedBadge,
             inStock: body.inStock ?? true,
+            isOrganic: body.isOrganic ?? false,
             metadata: {
                 source: 'shop_dashboard',
                 shopId: store.id,
                 shopName: store.name,
+                categoryName: category.name,
+                createdByProProfile: userId,
             },
-        },
-        include: {
-            category: true,
-            shop: true,
         },
     });
     const storeProducts = await db_1.prisma.product.findMany({
@@ -2343,9 +2595,155 @@ router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(asyn
         id: product.id,
         name: product.name,
         shopId: product.shopId,
-        category: product.category?.name ?? body.categoryName.trim(),
+        category: category.name,
         price: (0, serializers_1.toNumber)(product.price),
         inStock: product.inStock,
+    });
+}));
+router.get('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const requestedStoreId = req.query.storeId?.toString().trim();
+    const profile = await db_1.prisma.proProfile.findUnique({ where: { userId } });
+    if (!profile || profile.type !== client_1.ProProfileType.SHOP) {
+        return res.status(404).json({ error: 'Shop pro profile not found.' });
+    }
+    if (!profile.activeModules.includes(client_1.ProModule.SHOPPING)) {
+        return res.status(400).json({
+            error: 'Shopping is not enabled for this shop profile.',
+        });
+    }
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
+    if (bindings.shoppingStoreIds.length === 0) {
+        return res.json({
+            stores: [],
+            products: [],
+        });
+    }
+    if (requestedStoreId &&
+        requestedStoreId.length > 0 &&
+        !bindings.shoppingStoreIds.includes(requestedStoreId)) {
+        return res
+            .status(403)
+            .json({ error: 'Store is not assigned to this shop profile.' });
+    }
+    const allowedStoreIds = requestedStoreId && requestedStoreId.length > 0
+        ? [requestedStoreId]
+        : bindings.shoppingStoreIds;
+    const [stores, products] = await Promise.all([
+        db_1.prisma.shoppingStore.findMany({
+            where: { id: { in: bindings.shoppingStoreIds } },
+            select: {
+                id: true,
+                name: true,
+                isOpen: true,
+            },
+            orderBy: { name: 'asc' },
+        }),
+        db_1.prisma.product.findMany({
+            where: {
+                moduleType: client_1.ModuleType.SHOPPING,
+                shopId: { in: allowedStoreIds },
+            },
+            select: {
+                id: true,
+                shopId: true,
+                name: true,
+                brand: true,
+                price: true,
+                originalPrice: true,
+                inStock: true,
+                unit: true,
+                badge: true,
+                imageUrlsJson: true,
+                createdAt: true,
+                updatedAt: true,
+                category: {
+                    select: {
+                        name: true,
+                    },
+                },
+            },
+            orderBy: [{ updatedAt: 'desc' }],
+        }),
+    ]);
+    const storeNameById = new Map(stores.map((store) => [store.id, store.name]));
+    const productCountByStoreId = new Map();
+    for (const product of products) {
+        const storeId = product.shopId;
+        if (!storeId)
+            continue;
+        productCountByStoreId.set(storeId, (productCountByStoreId.get(storeId) ?? 0) + 1);
+    }
+    res.json({
+        stores: stores.map((store) => ({
+            id: store.id,
+            name: store.name,
+            isOpen: store.isOpen,
+            productCount: productCountByStoreId.get(store.id) ?? 0,
+        })),
+        products: products.map((product) => ({
+            id: product.id,
+            storeId: product.shopId,
+            storeName: product.shopId ? storeNameById.get(product.shopId) : null,
+            name: product.name,
+            brand: product.brand,
+            categoryName: product.category?.name ?? 'General',
+            price: (0, serializers_1.toNumber)(product.price),
+            originalPrice: (0, serializers_1.toNumber)(product.originalPrice),
+            inStock: product.inStock,
+            unit: product.unit,
+            badge: product.badge,
+            imageUrl: firstImageUrlFromJson(product.imageUrlsJson),
+            createdAt: product.createdAt,
+            updatedAt: product.updatedAt,
+        })),
+    });
+}));
+router.patch('/:userId/shopping-products/:productId', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const productId = (0, http_1.getParam)(req.params.productId, 'productId');
+    const body = updateShoppingProductStockSchema.parse(req.body);
+    const profile = await db_1.prisma.proProfile.findUnique({ where: { userId } });
+    if (!profile || profile.type !== client_1.ProProfileType.SHOP) {
+        return res.status(404).json({ error: 'Shop pro profile not found.' });
+    }
+    if (!profile.activeModules.includes(client_1.ProModule.SHOPPING)) {
+        return res.status(400).json({
+            error: 'Shopping is not enabled for this shop profile.',
+        });
+    }
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
+    const product = await db_1.prisma.product.findUnique({
+        where: { id: productId },
+        select: {
+            id: true,
+            moduleType: true,
+            shopId: true,
+        },
+    });
+    if (!product || product.moduleType !== client_1.ModuleType.SHOPPING) {
+        return res.status(404).json({ error: 'Shopping product not found.' });
+    }
+    if (!product.shopId || !bindings.shoppingStoreIds.includes(product.shopId)) {
+        return res
+            .status(403)
+            .json({ error: 'Product is not assigned to this shop profile.' });
+    }
+    const updated = await db_1.prisma.product.update({
+        where: { id: product.id },
+        data: {
+            inStock: body.inStock,
+        },
+        select: {
+            id: true,
+            inStock: true,
+        },
+    });
+    res.json({
+        id: updated.id,
+        inStock: updated.inStock,
     });
 }));
 router.post('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async (req, res) => {
