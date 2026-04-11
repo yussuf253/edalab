@@ -26,6 +26,12 @@ const proProfileSetupSchema = zod_1.z.object({
     activeModules: zod_1.z.array(zod_1.z.nativeEnum(client_1.ProModule)).min(1),
     businessName: zod_1.z.string().trim().min(2),
     avatarUrl: zod_1.z.string().trim().optional().nullable(),
+    bindingOverrides: zod_1.z
+        .object({
+        providerIds: zod_1.z.array(zod_1.z.string().min(1)).optional(),
+        laundryServiceIds: zod_1.z.array(zod_1.z.string().min(1)).optional(),
+    })
+        .optional(),
 });
 function serializeProAccount(account) {
     return {
@@ -75,6 +81,16 @@ function sanitizeModulesForProfile(type, modules) {
     const allowed = new Set(allowedModulesForProfile(type));
     const sanitized = Array.from(new Set(modules.filter((module) => allowed.has(module))));
     return sanitized.length > 0 ? sanitized : [allowedModulesForProfile(type)[0]];
+}
+function normalizeBindingsForProfileType(type, bindings) {
+    if (type !== client_1.ProProfileType.PROVIDER) {
+        return bindings;
+    }
+    return {
+        ...bindings,
+        providerIds: [],
+        laundryServiceIds: [],
+    };
 }
 function proAccountIdFromRequest(req) {
     return req.auth?.accountType == 'pro' ? req.auth.userId : null;
@@ -161,7 +177,21 @@ router.post('/profile', auth_1.requireAuth, (0, async_handler_1.asyncHandler)(as
     }
     const body = proProfileSetupSchema.parse(req.body);
     const activeModules = sanitizeModulesForProfile(body.type, body.activeModules);
-    const resolvedBindings = await (0, pro_routes_1.resolveBindings)(body.businessName.trim(), activeModules);
+    const resolvedBindingsRaw = await (0, pro_routes_1.resolveBindings)(body.businessName.trim(), activeModules);
+    const resolvedBindings = normalizeBindingsForProfileType(body.type, resolvedBindingsRaw);
+    const bindingOverrides = body.bindingOverrides;
+    const sanitizedOverrides = bindingOverrides == null
+        ? null
+        : await (0, pro_routes_1.sanitizeProviderBindingOverrides)(activeModules, bindingOverrides);
+    const mergedBindings = {
+        ...resolvedBindings,
+        ...(bindingOverrides?.providerIds === undefined
+            ? {}
+            : { providerIds: sanitizedOverrides?.providerIds ?? [] }),
+        ...(bindingOverrides?.laundryServiceIds === undefined
+            ? {}
+            : { laundryServiceIds: sanitizedOverrides?.laundryServiceIds ?? [] }),
+    };
     const payload = await db_1.prisma.$transaction(async (tx) => {
         const account = await tx.proAccount.findUnique({
             where: { id: accountId },
@@ -171,9 +201,9 @@ router.post('/profile', auth_1.requireAuth, (0, async_handler_1.asyncHandler)(as
             throw new Error('Pro account not found.');
         }
         if (account.proProfile) {
-            const ownedLaundryServiceIds = await (0, pro_routes_1.syncLaundryOwnership)(account.proProfile.userId, body.type, activeModules, resolvedBindings);
+            const ownedLaundryServiceIds = await (0, pro_routes_1.syncLaundryOwnership)(account.proProfile.userId, body.type, activeModules, mergedBindings);
             const bindings = {
-                ...resolvedBindings,
+                ...mergedBindings,
                 laundryServiceIds: ownedLaundryServiceIds,
             };
             const updatedProfile = await tx.proProfile.update({
@@ -204,9 +234,9 @@ router.post('/profile', auth_1.requireAuth, (0, async_handler_1.asyncHandler)(as
         });
         if (legacyUser?.proProfile != null &&
             legacyUser.proProfile.accountId == null) {
-            const ownedLaundryServiceIds = await (0, pro_routes_1.syncLaundryOwnership)(legacyUser.id, body.type, activeModules, resolvedBindings);
+            const ownedLaundryServiceIds = await (0, pro_routes_1.syncLaundryOwnership)(legacyUser.id, body.type, activeModules, mergedBindings);
             const bindings = {
-                ...resolvedBindings,
+                ...mergedBindings,
                 laundryServiceIds: ownedLaundryServiceIds,
             };
             const linkedProfile = await tx.proProfile.update({
@@ -243,9 +273,9 @@ router.post('/profile', auth_1.requireAuth, (0, async_handler_1.asyncHandler)(as
                 passwordHash: await (0, password_1.hashPassword)(`pro:${account.id}:${Date.now().toString()}`),
             },
         });
-        const ownedLaundryServiceIds = await (0, pro_routes_1.syncLaundryOwnership)(internalUser.id, body.type, activeModules, resolvedBindings);
+        const ownedLaundryServiceIds = await (0, pro_routes_1.syncLaundryOwnership)(internalUser.id, body.type, activeModules, mergedBindings);
         const bindings = {
-            ...resolvedBindings,
+            ...mergedBindings,
             laundryServiceIds: ownedLaundryServiceIds,
         };
         const profile = await tx.proProfile.create({

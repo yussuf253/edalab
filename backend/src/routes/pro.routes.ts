@@ -4,6 +4,7 @@ import {
   NotificationModule,
   NotificationType,
   OrderStatus,
+  Prisma,
   ProModule,
   ProProfileType,
   RideStatus,
@@ -88,6 +89,21 @@ const createPharmacyBusinessSchema = z.object({
   name: z.string().trim().min(2).max(120).optional(),
 });
 
+const createHomeServiceProviderSchema = z.object({
+  name: z.string().trim().min(2).max(120).optional(),
+  title: z.string().trim().max(120).optional().or(z.literal('')),
+  categoryId: z.string().trim().min(1).optional(),
+  startingPrice: z.coerce.number().positive().max(100000).optional(),
+  yearsExperience: z.string().trim().max(80).optional().or(z.literal('')),
+  responseTime: z.string().trim().max(60).optional().or(z.literal('')),
+  location: z.string().trim().max(120).optional().or(z.literal('')),
+  contactPhone: z.string().trim().max(40).optional().or(z.literal('')),
+  about: z.string().trim().max(800).optional().or(z.literal('')),
+  imageUrl: z.string().trim().url().optional().or(z.literal('')),
+  services: z.array(z.string().trim().min(1).max(80)).max(24).optional(),
+  highlights: z.array(z.string().trim().min(1).max(120)).max(12).optional(),
+});
+
 const createShoppingProductSchema = z.object({
   storeId: z.string().min(1),
   categoryName: z.string().trim().min(2).max(80),
@@ -118,6 +134,19 @@ const updateProviderAvailabilitySchema = z.object({
   enabled: z.boolean(),
 });
 
+const updateProviderBindingsSchema = z
+  .object({
+    providerIds: z.array(z.string().min(1)).optional(),
+    laundryServiceIds: z.array(z.string().min(1)).optional(),
+  })
+  .refine(
+    (value) =>
+      value.providerIds !== undefined || value.laundryServiceIds !== undefined,
+    {
+      message: 'At least one provider binding list must be supplied.',
+    },
+  );
+
 const updateDoctorAvailabilitySchema = z.object({
   doctorId: z.string().min(1),
   enabled: z.boolean(),
@@ -136,6 +165,7 @@ const updateProviderSettingsSchema = z.object({
   location: z.string().trim().max(120).optional(),
   contactPhone: z.string().trim().max(40).optional(),
   responseTime: z.string().trim().max(60).optional(),
+  services: z.array(z.string().trim().min(1).max(80)).max(24).optional(),
   bookingModes: settingsModesSchema.optional(),
   availability: hoursSchema.optional(),
 });
@@ -464,6 +494,44 @@ function normalizeStringList(value: unknown): string[] {
   );
 }
 
+function mergeStringLists(left: string[], right: string[]) {
+  return Array.from(new Set([...left, ...right]));
+}
+
+export async function sanitizeProviderBindingOverrides(
+  activeModules: ProModule[],
+  overrides: {
+    providerIds?: unknown;
+    laundryServiceIds?: unknown;
+  },
+) {
+  const hasServices = activeModules.includes(ProModule.SERVICES);
+  const hasLaundry = activeModules.includes(ProModule.LAUNDRY);
+
+  const providerIdsRaw = normalizeStringList(overrides.providerIds);
+  const laundryServiceIdsRaw = normalizeStringList(overrides.laundryServiceIds);
+
+  const [providers, laundryServices] = await Promise.all([
+    !hasServices || providerIdsRaw.length === 0
+      ? Promise.resolve([])
+      : prisma.homeServiceProvider.findMany({
+          where: { id: { in: providerIdsRaw } },
+          select: { id: true },
+        }),
+    !hasLaundry || laundryServiceIdsRaw.length === 0
+      ? Promise.resolve([])
+      : prisma.laundryService.findMany({
+          where: { id: { in: laundryServiceIdsRaw } },
+          select: { id: true },
+        }),
+  ]);
+
+  return {
+    providerIds: providers.map((provider) => provider.id),
+    laundryServiceIds: laundryServices.map((service) => service.id),
+  };
+}
+
 function normalizeHours(
   value: unknown,
   defaults: { weekdays: string; saturday: string; sunday: string },
@@ -664,7 +732,9 @@ function serializeQueueOrderItem(
   const providerId =
     order.moduleType === ModuleType.HOME_SERVICES ||
         order.moduleType === ModuleType.HOUSE_HELP
-      ? (firstItem?.externalRefId ?? null)
+      ? (firstItem?.externalRefId ??
+            firstItemMetadata?.providerId?.toString() ??
+            null)
       : null;
   const categorySlug = firstItemMetadata?.categorySlug?.toString() ?? null;
   return {
@@ -906,6 +976,21 @@ export async function resolveBindings(
   return bindings;
 }
 
+function normalizeResolvedBindingsForProfileType(
+  type: ProProfileType,
+  bindings: ProBindings,
+): ProBindings {
+  if (type !== ProProfileType.PROVIDER) {
+    return bindings;
+  }
+
+  return {
+    ...bindings,
+    providerIds: [],
+    laundryServiceIds: [],
+  };
+}
+
 export async function syncLaundryOwnership(
   userId: string,
   type: ProProfileType,
@@ -980,9 +1065,13 @@ async function hydrateProfileBindingsIfMissing(profile: {
     return profile;
   }
 
-  const resolvedBindings = await resolveBindings(
+  const resolvedBindingsRaw = await resolveBindings(
     profile.businessName,
     profile.activeModules,
+  );
+  const resolvedBindings = normalizeResolvedBindingsForProfileType(
+    profile.type,
+    resolvedBindingsRaw,
   );
   const ownedLaundryServiceIds = await syncLaundryOwnership(
     profile.userId,
@@ -3289,6 +3378,179 @@ router.post(
 );
 
 router.post(
+  '/:userId/home-service-provider',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const body = createHomeServiceProviderSchema.parse(req.body);
+    const profile = await prisma.proProfile.findUnique({ where: { userId } });
+
+    if (!profile || profile.type !== ProProfileType.PROVIDER) {
+      return res.status(404).json({ error: 'Provider pro profile not found.' });
+    }
+
+    if (!profile.activeModules.includes(ProModule.SERVICES)) {
+      return res.status(400).json({
+        error: 'Services is not enabled for this provider profile.',
+      });
+    }
+
+    const activeCategories = await prisma.homeServiceCategory.findMany({
+      where: { active: true },
+      select: { id: true, name: true, slug: true, colorHex: true, iconKey: true },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+    if (activeCategories.length == 0) {
+      return res.status(400).json({ error: 'No active home-service categories found.' });
+    }
+
+    const fallbackCategory =
+      activeCategories.find((category) => category.slug === 'house-help') ??
+      activeCategories[0];
+    const selectedCategory =
+      body.categoryId == null
+        ? fallbackCategory
+        : activeCategories.find((category) => category.id === body.categoryId);
+    if (!selectedCategory) {
+      return res.status(400).json({ error: 'Selected home-service category is invalid.' });
+    }
+
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const existingBindings = normalizeBindings(hydratedProfile.bindings);
+    const providerName = body.name?.trim() || profile.businessName.trim();
+    const existingProvider =
+      existingBindings.providerIds.length === 0
+        ? null
+        : await prisma.homeServiceProvider.findFirst({
+            where: {
+              id: { in: existingBindings.providerIds },
+              categoryId: selectedCategory.id,
+              name: {
+                equals: providerName,
+                mode: 'insensitive',
+              },
+            },
+            select: {
+              id: true,
+              title: true,
+              yearsExperience: true,
+              responseTime: true,
+              location: true,
+              contactPhone: true,
+              about: true,
+              imageUrl: true,
+              startingPrice: true,
+              servicesJson: true,
+              highlightsJson: true,
+              bookingModesJson: true,
+              availabilityJson: true,
+            },
+          });
+
+    const defaultBookingModes = ['Home Visit'];
+    const defaultAvailability = {
+      weekdays: '08:00 AM - 06:00 PM',
+      saturday: '09:00 AM - 02:00 PM',
+      sunday: 'Closed',
+    };
+    const providerId = existingProvider?.id ?? randomUUID();
+    const provider = await prisma.homeServiceProvider.upsert({
+      where: { id: providerId },
+      update: {
+        title: body.title?.trim() || existingProvider?.title || selectedCategory.name,
+        yearsExperience:
+          body.yearsExperience == null
+            ? existingProvider?.yearsExperience
+            : body.yearsExperience.trim() || null,
+        startingPrice: new Prisma.Decimal(
+          body.startingPrice ?? toNumber(existingProvider?.startingPrice) ?? 25,
+        ),
+        responseTime:
+          body.responseTime == null
+            ? existingProvider?.responseTime
+            : body.responseTime.trim() || null,
+        location:
+          body.location == null ? existingProvider?.location : body.location.trim() || null,
+        contactPhone:
+          body.contactPhone == null
+            ? existingProvider?.contactPhone
+            : body.contactPhone.trim() || null,
+        about: body.about == null ? existingProvider?.about : body.about.trim() || null,
+        imageUrl:
+          body.imageUrl == null ? existingProvider?.imageUrl : body.imageUrl.trim() || null,
+        servicesJson:
+          body.services == null
+            ? (existingProvider?.servicesJson ?? undefined)
+            : normalizeStringList(body.services),
+        highlightsJson:
+          body.highlights == null
+            ? (existingProvider?.highlightsJson ?? undefined)
+            : normalizeStringList(body.highlights),
+        bookingModesJson:
+          existingProvider?.bookingModesJson == null
+            ? defaultBookingModes
+            : existingProvider.bookingModesJson,
+        availabilityJson:
+          existingProvider?.availabilityJson == null
+            ? defaultAvailability
+            : existingProvider.availabilityJson,
+        isAvailable: true,
+      },
+      create: {
+        id: providerId,
+        categoryId: selectedCategory.id,
+        name: providerName,
+        title: body.title?.trim() || selectedCategory.name,
+        startingPrice: new Prisma.Decimal(body.startingPrice ?? 25),
+        yearsExperience: body.yearsExperience?.trim() || null,
+        responseTime: body.responseTime?.trim() || null,
+        location: body.location?.trim() || null,
+        contactPhone: body.contactPhone?.trim() || null,
+        about: body.about?.trim() || null,
+        imageUrl: body.imageUrl?.trim() || null,
+        isAvailable: true,
+        isVerified: false,
+        servicesJson: normalizeStringList(body.services ?? []),
+        highlightsJson: normalizeStringList(body.highlights ?? []),
+        bookingModesJson: defaultBookingModes,
+        availabilityJson: defaultAvailability,
+      },
+      select: {
+        id: true,
+        categoryId: true,
+        name: true,
+        title: true,
+      },
+    });
+
+    const ownedLaundryServiceIds = await syncLaundryOwnership(
+      profile.userId,
+      profile.type,
+      profile.activeModules,
+      existingBindings,
+    );
+    const bindings = {
+      ...existingBindings,
+      laundryServiceIds: ownedLaundryServiceIds,
+      providerIds: mergeStringLists(existingBindings.providerIds, [provider.id]),
+    };
+
+    await prisma.proProfile.update({
+      where: { userId },
+      data: { bindings },
+    });
+
+    res.status(existingProvider == null ? 201 : 200).json({
+      id: provider.id,
+      name: provider.name,
+      title: provider.title,
+      categoryId: provider.categoryId,
+      created: existingProvider == null,
+      bindings,
+    });
+  }),
+);
+
+router.post(
   '/:userId/shopping-products',
   asyncHandler(async (req, res) => {
     const userId = getParam(req.params.userId, 'userId');
@@ -3710,6 +3972,136 @@ router.post(
 );
 
 router.get(
+  '/:userId/provider-bindings',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const profile = await prisma.proProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile || profile.type !== ProProfileType.PROVIDER) {
+      return res.status(404).json({ error: 'Provider pro profile not found.' });
+    }
+
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
+    const canServices = hydratedProfile.activeModules.includes(ProModule.SERVICES);
+    const canLaundry = hydratedProfile.activeModules.includes(ProModule.LAUNDRY);
+
+    const [serviceCandidates, laundryCandidates] = await Promise.all([
+      !canServices
+        ? Promise.resolve([])
+        : prisma.homeServiceProvider.findMany({
+            select: {
+              id: true,
+              name: true,
+              title: true,
+              isAvailable: true,
+              category: {
+                select: {
+                  name: true,
+                  slug: true,
+                },
+              },
+            },
+            orderBy: [{ isAvailable: 'desc' }, { rating: 'desc' }, { name: 'asc' }],
+            take: 200,
+          }),
+      !canLaundry
+        ? Promise.resolve([])
+        : prisma.laundryService.findMany({
+            select: {
+              id: true,
+              name: true,
+              active: true,
+            },
+            orderBy: [{ active: 'desc' }, { name: 'asc' }],
+            take: 200,
+          }),
+    ]);
+
+    res.json({
+      bindings: {
+        providerIds: bindings.providerIds,
+        laundryServiceIds: bindings.laundryServiceIds,
+      },
+      services: serviceCandidates.map((provider) => ({
+        id: provider.id,
+        name: provider.name,
+        title: provider.title,
+        categoryName: provider.category.name,
+        categorySlug: provider.category.slug,
+        enabled: provider.isAvailable,
+        isBound: bindings.providerIds.includes(provider.id),
+      })),
+      laundry: laundryCandidates.map((service) => ({
+        id: service.id,
+        name: service.name,
+        enabled: service.active,
+        isBound: bindings.laundryServiceIds.includes(service.id),
+      })),
+    });
+  }),
+);
+
+router.post(
+  '/:userId/provider-bindings',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const body = updateProviderBindingsSchema.parse(req.body);
+    const profile = await prisma.proProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile || profile.type !== ProProfileType.PROVIDER) {
+      return res.status(404).json({ error: 'Provider pro profile not found.' });
+    }
+
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const existingBindings = normalizeBindings(hydratedProfile.bindings);
+    const sanitizedOverrides = await sanitizeProviderBindingOverrides(
+      hydratedProfile.activeModules,
+      body,
+    );
+
+    const nextBindings: ProBindings = {
+      ...existingBindings,
+      providerIds:
+        body.providerIds === undefined
+          ? existingBindings.providerIds
+          : mergeStringLists([], sanitizedOverrides.providerIds),
+      laundryServiceIds:
+        body.laundryServiceIds === undefined
+          ? existingBindings.laundryServiceIds
+          : mergeStringLists([], sanitizedOverrides.laundryServiceIds),
+    };
+
+    const ownedLaundryServiceIds = await syncLaundryOwnership(
+      hydratedProfile.userId,
+      hydratedProfile.type,
+      hydratedProfile.activeModules,
+      nextBindings,
+    );
+
+    const updated = await prisma.proProfile.update({
+      where: { id: hydratedProfile.id },
+      data: {
+        bindings: {
+          ...nextBindings,
+          laundryServiceIds: ownedLaundryServiceIds,
+        },
+      },
+    });
+
+    const normalized = normalizeBindings(updated.bindings);
+    res.json({
+      providerIds: normalized.providerIds,
+      laundryServiceIds: normalized.laundryServiceIds,
+    });
+  }),
+);
+
+router.get(
   '/:userId/provider-availability',
   asyncHandler(async (req, res) => {
     const userId = getParam(req.params.userId, 'userId');
@@ -3906,6 +4298,7 @@ router.get(
               location: true,
               contactPhone: true,
               responseTime: true,
+              servicesJson: true,
               bookingModesJson: true,
               availabilityJson: true,
             },
@@ -3920,6 +4313,7 @@ router.get(
         location: provider.location,
         contactPhone: provider.contactPhone,
         responseTime: provider.responseTime,
+        services: normalizeStringList(provider.servicesJson),
         bookingModes: normalizeStringList(provider.bookingModesJson),
         availability: normalizeHours(provider.availabilityJson, {
           weekdays: '08:00 AM - 06:00 PM',
@@ -3964,6 +4358,8 @@ router.post(
           body.responseTime == null
             ? undefined
             : body.responseTime.trim() || null,
+        servicesJson:
+          body.services == null ? undefined : normalizeStringList(body.services),
         bookingModesJson:
           body.bookingModes == null
             ? undefined
@@ -3984,6 +4380,7 @@ router.post(
         location: true,
         contactPhone: true,
         responseTime: true,
+        servicesJson: true,
         bookingModesJson: true,
         availabilityJson: true,
       },
@@ -3996,6 +4393,7 @@ router.post(
       location: provider.location,
       contactPhone: provider.contactPhone,
       responseTime: provider.responseTime,
+      services: normalizeStringList(provider.servicesJson),
       bookingModes: normalizeStringList(provider.bookingModesJson),
       availability: normalizeHours(provider.availabilityJson, {
         weekdays: '08:00 AM - 06:00 PM',
@@ -4194,9 +4592,13 @@ router.post(
       return res.status(404).json({ error: 'User not found.' });
     }
 
-    const resolvedBindings = await resolveBindings(
+    const resolvedBindingsRaw = await resolveBindings(
       body.businessName,
       body.activeModules,
+    );
+    const resolvedBindings = normalizeResolvedBindingsForProfileType(
+      body.type,
+      resolvedBindingsRaw,
     );
     const ownedLaundryServiceIds = await syncLaundryOwnership(
       body.userId,

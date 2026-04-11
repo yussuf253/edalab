@@ -3,7 +3,11 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { requireAuth } from '../middleware/auth';
-import { resolveBindings, syncLaundryOwnership } from './pro.routes';
+import {
+  resolveBindings,
+  sanitizeProviderBindingOverrides,
+  syncLaundryOwnership,
+} from './pro.routes';
 import { asyncHandler } from '../utils/async-handler';
 import { signAccessToken } from '../utils/jwt';
 import { hashPassword, verifyPassword } from '../utils/password';
@@ -28,6 +32,12 @@ const proProfileSetupSchema = z.object({
   activeModules: z.array(z.nativeEnum(ProModule)).min(1),
   businessName: z.string().trim().min(2),
   avatarUrl: z.string().trim().optional().nullable(),
+  bindingOverrides: z
+    .object({
+      providerIds: z.array(z.string().min(1)).optional(),
+      laundryServiceIds: z.array(z.string().min(1)).optional(),
+    })
+    .optional(),
 });
 
 function serializeProAccount(account: {
@@ -107,6 +117,21 @@ function sanitizeModulesForProfile(
   );
 
   return sanitized.length > 0 ? sanitized : [allowedModulesForProfile(type)[0]];
+}
+
+function normalizeBindingsForProfileType(
+  type: ProProfileType,
+  bindings: Awaited<ReturnType<typeof resolveBindings>>,
+) {
+  if (type !== ProProfileType.PROVIDER) {
+    return bindings;
+  }
+
+  return {
+    ...bindings,
+    providerIds: [],
+    laundryServiceIds: [],
+  };
 }
 
 function proAccountIdFromRequest(req: Express.Request) {
@@ -224,10 +249,28 @@ router.post(
       body.type,
       body.activeModules,
     );
-    const resolvedBindings = await resolveBindings(
+    const resolvedBindingsRaw = await resolveBindings(
       body.businessName.trim(),
       activeModules,
     );
+    const resolvedBindings = normalizeBindingsForProfileType(
+      body.type,
+      resolvedBindingsRaw,
+    );
+    const bindingOverrides = body.bindingOverrides;
+    const sanitizedOverrides =
+      bindingOverrides == null
+        ? null
+        : await sanitizeProviderBindingOverrides(activeModules, bindingOverrides);
+    const mergedBindings = {
+      ...resolvedBindings,
+      ...(bindingOverrides?.providerIds === undefined
+        ? {}
+        : { providerIds: sanitizedOverrides?.providerIds ?? [] }),
+      ...(bindingOverrides?.laundryServiceIds === undefined
+        ? {}
+        : { laundryServiceIds: sanitizedOverrides?.laundryServiceIds ?? [] }),
+    };
 
     const payload = await prisma.$transaction(async (tx) => {
       const account = await tx.proAccount.findUnique({
@@ -244,10 +287,10 @@ router.post(
           account.proProfile.userId,
           body.type,
           activeModules,
-          resolvedBindings,
+          mergedBindings,
         );
         const bindings = {
-          ...resolvedBindings,
+          ...mergedBindings,
           laundryServiceIds: ownedLaundryServiceIds,
         };
         const updatedProfile = await tx.proProfile.update({
@@ -288,10 +331,10 @@ router.post(
           legacyUser.id,
           body.type,
           activeModules,
-          resolvedBindings,
+          mergedBindings,
         );
         const bindings = {
-          ...resolvedBindings,
+          ...mergedBindings,
           laundryServiceIds: ownedLaundryServiceIds,
         };
         const linkedProfile = await tx.proProfile.update({
@@ -338,10 +381,10 @@ router.post(
         internalUser.id,
         body.type,
         activeModules,
-        resolvedBindings,
+        mergedBindings,
       );
       const bindings = {
-        ...resolvedBindings,
+        ...mergedBindings,
         laundryServiceIds: ownedLaundryServiceIds,
       };
 

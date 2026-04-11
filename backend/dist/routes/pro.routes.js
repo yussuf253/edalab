@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sanitizeProviderBindingOverrides = sanitizeProviderBindingOverrides;
 exports.resolveBindings = resolveBindings;
 exports.syncLaundryOwnership = syncLaundryOwnership;
 const client_1 = require("@prisma/client");
@@ -68,6 +69,20 @@ const createRestaurantSchema = zod_1.z.object({
 const createPharmacyBusinessSchema = zod_1.z.object({
     name: zod_1.z.string().trim().min(2).max(120).optional(),
 });
+const createHomeServiceProviderSchema = zod_1.z.object({
+    name: zod_1.z.string().trim().min(2).max(120).optional(),
+    title: zod_1.z.string().trim().max(120).optional().or(zod_1.z.literal('')),
+    categoryId: zod_1.z.string().trim().min(1).optional(),
+    startingPrice: zod_1.z.coerce.number().positive().max(100000).optional(),
+    yearsExperience: zod_1.z.string().trim().max(80).optional().or(zod_1.z.literal('')),
+    responseTime: zod_1.z.string().trim().max(60).optional().or(zod_1.z.literal('')),
+    location: zod_1.z.string().trim().max(120).optional().or(zod_1.z.literal('')),
+    contactPhone: zod_1.z.string().trim().max(40).optional().or(zod_1.z.literal('')),
+    about: zod_1.z.string().trim().max(800).optional().or(zod_1.z.literal('')),
+    imageUrl: zod_1.z.string().trim().url().optional().or(zod_1.z.literal('')),
+    services: zod_1.z.array(zod_1.z.string().trim().min(1).max(80)).max(24).optional(),
+    highlights: zod_1.z.array(zod_1.z.string().trim().min(1).max(120)).max(12).optional(),
+});
 const createShoppingProductSchema = zod_1.z.object({
     storeId: zod_1.z.string().min(1),
     categoryName: zod_1.z.string().trim().min(2).max(80),
@@ -95,6 +110,14 @@ const updateProviderAvailabilitySchema = zod_1.z.object({
     targetId: zod_1.z.string().min(1),
     enabled: zod_1.z.boolean(),
 });
+const updateProviderBindingsSchema = zod_1.z
+    .object({
+    providerIds: zod_1.z.array(zod_1.z.string().min(1)).optional(),
+    laundryServiceIds: zod_1.z.array(zod_1.z.string().min(1)).optional(),
+})
+    .refine((value) => value.providerIds !== undefined || value.laundryServiceIds !== undefined, {
+    message: 'At least one provider binding list must be supplied.',
+});
 const updateDoctorAvailabilitySchema = zod_1.z.object({
     doctorId: zod_1.z.string().min(1),
     enabled: zod_1.z.boolean(),
@@ -110,6 +133,7 @@ const updateProviderSettingsSchema = zod_1.z.object({
     location: zod_1.z.string().trim().max(120).optional(),
     contactPhone: zod_1.z.string().trim().max(40).optional(),
     responseTime: zod_1.z.string().trim().max(60).optional(),
+    services: zod_1.z.array(zod_1.z.string().trim().min(1).max(80)).max(24).optional(),
     bookingModes: settingsModesSchema.optional(),
     availability: hoursSchema.optional(),
 });
@@ -366,6 +390,33 @@ function normalizeStringList(value) {
         .map((entry) => entry?.toString().trim() ?? '')
         .filter((entry) => entry.length > 0)));
 }
+function mergeStringLists(left, right) {
+    return Array.from(new Set([...left, ...right]));
+}
+async function sanitizeProviderBindingOverrides(activeModules, overrides) {
+    const hasServices = activeModules.includes(client_1.ProModule.SERVICES);
+    const hasLaundry = activeModules.includes(client_1.ProModule.LAUNDRY);
+    const providerIdsRaw = normalizeStringList(overrides.providerIds);
+    const laundryServiceIdsRaw = normalizeStringList(overrides.laundryServiceIds);
+    const [providers, laundryServices] = await Promise.all([
+        !hasServices || providerIdsRaw.length === 0
+            ? Promise.resolve([])
+            : db_1.prisma.homeServiceProvider.findMany({
+                where: { id: { in: providerIdsRaw } },
+                select: { id: true },
+            }),
+        !hasLaundry || laundryServiceIdsRaw.length === 0
+            ? Promise.resolve([])
+            : db_1.prisma.laundryService.findMany({
+                where: { id: { in: laundryServiceIdsRaw } },
+                select: { id: true },
+            }),
+    ]);
+    return {
+        providerIds: providers.map((provider) => provider.id),
+        laundryServiceIds: laundryServices.map((service) => service.id),
+    };
+}
 function normalizeHours(value, defaults) {
     const map = value != null && typeof value === 'object' && !Array.isArray(value)
         ? value
@@ -475,7 +526,9 @@ function serializeQueueOrderItem(order) {
         : null;
     const providerId = order.moduleType === client_1.ModuleType.HOME_SERVICES ||
         order.moduleType === client_1.ModuleType.HOUSE_HELP
-        ? (firstItem?.externalRefId ?? null)
+        ? (firstItem?.externalRefId ??
+            firstItemMetadata?.providerId?.toString() ??
+            null)
         : null;
     const categorySlug = firstItemMetadata?.categorySlug?.toString() ?? null;
     return {
@@ -634,6 +687,16 @@ async function resolveBindings(businessName, activeModules) {
     bindings.pharmacyBusinesses = Array.from(pharmacyBusinesses);
     return bindings;
 }
+function normalizeResolvedBindingsForProfileType(type, bindings) {
+    if (type !== client_1.ProProfileType.PROVIDER) {
+        return bindings;
+    }
+    return {
+        ...bindings,
+        providerIds: [],
+        laundryServiceIds: [],
+    };
+}
 async function syncLaundryOwnership(userId, type, activeModules, bindings) {
     const ownsLaundry = type === client_1.ProProfileType.PROVIDER &&
         activeModules.includes(client_1.ProModule.LAUNDRY);
@@ -680,7 +743,8 @@ async function hydrateProfileBindingsIfMissing(profile) {
     if (hasBindings) {
         return profile;
     }
-    const resolvedBindings = await resolveBindings(profile.businessName, profile.activeModules);
+    const resolvedBindingsRaw = await resolveBindings(profile.businessName, profile.activeModules);
+    const resolvedBindings = normalizeResolvedBindingsForProfileType(profile.type, resolvedBindingsRaw);
     const ownedLaundryServiceIds = await syncLaundryOwnership(profile.userId, profile.type, profile.activeModules, resolvedBindings);
     return db_1.prisma.proProfile.update({
         where: { id: profile.id },
@@ -2487,6 +2551,147 @@ router.post('/:userId/pharmacy-business', (0, async_handler_1.asyncHandler)(asyn
         bindings,
     });
 }));
+router.post('/:userId/home-service-provider', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const body = createHomeServiceProviderSchema.parse(req.body);
+    const profile = await db_1.prisma.proProfile.findUnique({ where: { userId } });
+    if (!profile || profile.type !== client_1.ProProfileType.PROVIDER) {
+        return res.status(404).json({ error: 'Provider pro profile not found.' });
+    }
+    if (!profile.activeModules.includes(client_1.ProModule.SERVICES)) {
+        return res.status(400).json({
+            error: 'Services is not enabled for this provider profile.',
+        });
+    }
+    const activeCategories = await db_1.prisma.homeServiceCategory.findMany({
+        where: { active: true },
+        select: { id: true, name: true, slug: true, colorHex: true, iconKey: true },
+        orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+    if (activeCategories.length == 0) {
+        return res.status(400).json({ error: 'No active home-service categories found.' });
+    }
+    const fallbackCategory = activeCategories.find((category) => category.slug === 'house-help') ??
+        activeCategories[0];
+    const selectedCategory = body.categoryId == null
+        ? fallbackCategory
+        : activeCategories.find((category) => category.id === body.categoryId);
+    if (!selectedCategory) {
+        return res.status(400).json({ error: 'Selected home-service category is invalid.' });
+    }
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const existingBindings = normalizeBindings(hydratedProfile.bindings);
+    const providerName = body.name?.trim() || profile.businessName.trim();
+    const existingProvider = existingBindings.providerIds.length === 0
+        ? null
+        : await db_1.prisma.homeServiceProvider.findFirst({
+            where: {
+                id: { in: existingBindings.providerIds },
+                categoryId: selectedCategory.id,
+                name: {
+                    equals: providerName,
+                    mode: 'insensitive',
+                },
+            },
+            select: {
+                id: true,
+                title: true,
+                yearsExperience: true,
+                responseTime: true,
+                location: true,
+                contactPhone: true,
+                about: true,
+                imageUrl: true,
+                startingPrice: true,
+                servicesJson: true,
+                highlightsJson: true,
+                bookingModesJson: true,
+                availabilityJson: true,
+            },
+        });
+    const defaultBookingModes = ['Home Visit'];
+    const defaultAvailability = {
+        weekdays: '08:00 AM - 06:00 PM',
+        saturday: '09:00 AM - 02:00 PM',
+        sunday: 'Closed',
+    };
+    const providerId = existingProvider?.id ?? (0, crypto_1.randomUUID)();
+    const provider = await db_1.prisma.homeServiceProvider.upsert({
+        where: { id: providerId },
+        update: {
+            title: body.title?.trim() || existingProvider?.title || selectedCategory.name,
+            yearsExperience: body.yearsExperience == null
+                ? existingProvider?.yearsExperience
+                : body.yearsExperience.trim() || null,
+            startingPrice: new client_1.Prisma.Decimal(body.startingPrice ?? (0, serializers_1.toNumber)(existingProvider?.startingPrice) ?? 25),
+            responseTime: body.responseTime == null
+                ? existingProvider?.responseTime
+                : body.responseTime.trim() || null,
+            location: body.location == null ? existingProvider?.location : body.location.trim() || null,
+            contactPhone: body.contactPhone == null
+                ? existingProvider?.contactPhone
+                : body.contactPhone.trim() || null,
+            about: body.about == null ? existingProvider?.about : body.about.trim() || null,
+            imageUrl: body.imageUrl == null ? existingProvider?.imageUrl : body.imageUrl.trim() || null,
+            servicesJson: body.services == null
+                ? (existingProvider?.servicesJson ?? undefined)
+                : normalizeStringList(body.services),
+            highlightsJson: body.highlights == null
+                ? (existingProvider?.highlightsJson ?? undefined)
+                : normalizeStringList(body.highlights),
+            bookingModesJson: existingProvider?.bookingModesJson == null
+                ? defaultBookingModes
+                : existingProvider.bookingModesJson,
+            availabilityJson: existingProvider?.availabilityJson == null
+                ? defaultAvailability
+                : existingProvider.availabilityJson,
+            isAvailable: true,
+        },
+        create: {
+            id: providerId,
+            categoryId: selectedCategory.id,
+            name: providerName,
+            title: body.title?.trim() || selectedCategory.name,
+            startingPrice: new client_1.Prisma.Decimal(body.startingPrice ?? 25),
+            yearsExperience: body.yearsExperience?.trim() || null,
+            responseTime: body.responseTime?.trim() || null,
+            location: body.location?.trim() || null,
+            contactPhone: body.contactPhone?.trim() || null,
+            about: body.about?.trim() || null,
+            imageUrl: body.imageUrl?.trim() || null,
+            isAvailable: true,
+            isVerified: false,
+            servicesJson: normalizeStringList(body.services ?? []),
+            highlightsJson: normalizeStringList(body.highlights ?? []),
+            bookingModesJson: defaultBookingModes,
+            availabilityJson: defaultAvailability,
+        },
+        select: {
+            id: true,
+            categoryId: true,
+            name: true,
+            title: true,
+        },
+    });
+    const ownedLaundryServiceIds = await syncLaundryOwnership(profile.userId, profile.type, profile.activeModules, existingBindings);
+    const bindings = {
+        ...existingBindings,
+        laundryServiceIds: ownedLaundryServiceIds,
+        providerIds: mergeStringLists(existingBindings.providerIds, [provider.id]),
+    };
+    await db_1.prisma.proProfile.update({
+        where: { userId },
+        data: { bindings },
+    });
+    res.status(existingProvider == null ? 201 : 200).json({
+        id: provider.id,
+        name: provider.name,
+        title: provider.title,
+        categoryId: provider.categoryId,
+        created: existingProvider == null,
+        bindings,
+    });
+}));
 router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const userId = (0, http_1.getParam)(req.params.userId, 'userId');
     const body = createShoppingProductSchema.parse(req.body);
@@ -2827,6 +3032,108 @@ router.post('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(asyn
         enabled: updatedProduct.inStock,
     });
 }));
+router.get('/:userId/provider-bindings', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const profile = await db_1.prisma.proProfile.findUnique({
+        where: { userId },
+    });
+    if (!profile || profile.type !== client_1.ProProfileType.PROVIDER) {
+        return res.status(404).json({ error: 'Provider pro profile not found.' });
+    }
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
+    const canServices = hydratedProfile.activeModules.includes(client_1.ProModule.SERVICES);
+    const canLaundry = hydratedProfile.activeModules.includes(client_1.ProModule.LAUNDRY);
+    const [serviceCandidates, laundryCandidates] = await Promise.all([
+        !canServices
+            ? Promise.resolve([])
+            : db_1.prisma.homeServiceProvider.findMany({
+                select: {
+                    id: true,
+                    name: true,
+                    title: true,
+                    isAvailable: true,
+                    category: {
+                        select: {
+                            name: true,
+                            slug: true,
+                        },
+                    },
+                },
+                orderBy: [{ isAvailable: 'desc' }, { rating: 'desc' }, { name: 'asc' }],
+                take: 200,
+            }),
+        !canLaundry
+            ? Promise.resolve([])
+            : db_1.prisma.laundryService.findMany({
+                select: {
+                    id: true,
+                    name: true,
+                    active: true,
+                },
+                orderBy: [{ active: 'desc' }, { name: 'asc' }],
+                take: 200,
+            }),
+    ]);
+    res.json({
+        bindings: {
+            providerIds: bindings.providerIds,
+            laundryServiceIds: bindings.laundryServiceIds,
+        },
+        services: serviceCandidates.map((provider) => ({
+            id: provider.id,
+            name: provider.name,
+            title: provider.title,
+            categoryName: provider.category.name,
+            categorySlug: provider.category.slug,
+            enabled: provider.isAvailable,
+            isBound: bindings.providerIds.includes(provider.id),
+        })),
+        laundry: laundryCandidates.map((service) => ({
+            id: service.id,
+            name: service.name,
+            enabled: service.active,
+            isBound: bindings.laundryServiceIds.includes(service.id),
+        })),
+    });
+}));
+router.post('/:userId/provider-bindings', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const body = updateProviderBindingsSchema.parse(req.body);
+    const profile = await db_1.prisma.proProfile.findUnique({
+        where: { userId },
+    });
+    if (!profile || profile.type !== client_1.ProProfileType.PROVIDER) {
+        return res.status(404).json({ error: 'Provider pro profile not found.' });
+    }
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const existingBindings = normalizeBindings(hydratedProfile.bindings);
+    const sanitizedOverrides = await sanitizeProviderBindingOverrides(hydratedProfile.activeModules, body);
+    const nextBindings = {
+        ...existingBindings,
+        providerIds: body.providerIds === undefined
+            ? existingBindings.providerIds
+            : mergeStringLists([], sanitizedOverrides.providerIds),
+        laundryServiceIds: body.laundryServiceIds === undefined
+            ? existingBindings.laundryServiceIds
+            : mergeStringLists([], sanitizedOverrides.laundryServiceIds),
+    };
+    const ownedLaundryServiceIds = await syncLaundryOwnership(hydratedProfile.userId, hydratedProfile.type, hydratedProfile.activeModules, nextBindings);
+    const updated = await db_1.prisma.proProfile.update({
+        where: { id: hydratedProfile.id },
+        data: {
+            bindings: {
+                ...nextBindings,
+                laundryServiceIds: ownedLaundryServiceIds,
+            },
+        },
+    });
+    const normalized = normalizeBindings(updated.bindings);
+    res.json({
+        providerIds: normalized.providerIds,
+        laundryServiceIds: normalized.laundryServiceIds,
+    });
+}));
 router.get('/:userId/provider-availability', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const userId = (0, http_1.getParam)(req.params.userId, 'userId');
     const profile = await db_1.prisma.proProfile.findUnique({ where: { userId } });
@@ -2976,6 +3283,7 @@ router.get('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(async
                 location: true,
                 contactPhone: true,
                 responseTime: true,
+                servicesJson: true,
                 bookingModesJson: true,
                 availabilityJson: true,
             },
@@ -2988,6 +3296,7 @@ router.get('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(async
         location: provider.location,
         contactPhone: provider.contactPhone,
         responseTime: provider.responseTime,
+        services: normalizeStringList(provider.servicesJson),
         bookingModes: normalizeStringList(provider.bookingModesJson),
         availability: normalizeHours(provider.availabilityJson, {
             weekdays: '08:00 AM - 06:00 PM',
@@ -3019,6 +3328,7 @@ router.post('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(asyn
             responseTime: body.responseTime == null
                 ? undefined
                 : body.responseTime.trim() || null,
+            servicesJson: body.services == null ? undefined : normalizeStringList(body.services),
             bookingModesJson: body.bookingModes == null
                 ? undefined
                 : normalizeStringList(body.bookingModes),
@@ -3037,6 +3347,7 @@ router.post('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(asyn
             location: true,
             contactPhone: true,
             responseTime: true,
+            servicesJson: true,
             bookingModesJson: true,
             availabilityJson: true,
         },
@@ -3048,6 +3359,7 @@ router.post('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(asyn
         location: provider.location,
         contactPhone: provider.contactPhone,
         responseTime: provider.responseTime,
+        services: normalizeStringList(provider.servicesJson),
         bookingModes: normalizeStringList(provider.bookingModesJson),
         availability: normalizeHours(provider.availabilityJson, {
             weekdays: '08:00 AM - 06:00 PM',
@@ -3196,7 +3508,8 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
     if (!user) {
         return res.status(404).json({ error: 'User not found.' });
     }
-    const resolvedBindings = await resolveBindings(body.businessName, body.activeModules);
+    const resolvedBindingsRaw = await resolveBindings(body.businessName, body.activeModules);
+    const resolvedBindings = normalizeResolvedBindingsForProfileType(body.type, resolvedBindingsRaw);
     const ownedLaundryServiceIds = await syncLaundryOwnership(body.userId, body.type, body.activeModules, resolvedBindings);
     const bindings = {
         ...resolvedBindings,

@@ -52,7 +52,6 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
       );
       return;
     }
-
     final proAuth = context.read<ProAuthProvider>();
     setState(() {
       _submissionMessage = null;
@@ -112,7 +111,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                           ProDesignSystem.spacing20,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
+                          color: Colors.blue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(
                             ProDesignSystem.radiusLarge,
                           ),
@@ -151,7 +150,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                         message:
                             'Signed in as ${proAuth.currentAccount!.email}. Now choose the pro profile and modules you want to operate.',
                         icon: Icons.verified_user_outlined,
-                        backgroundColor: Colors.blue.withOpacity(0.1),
+                        backgroundColor: Colors.blue.withValues(alpha: 0.1),
                         textColor: Colors.blue[700]!,
                         borderColor: Colors.blue[300]!,
                       ),
@@ -277,7 +276,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                         icon: ProModuleHelper.getProfileIcon(
                           _selectedProfileType!,
                         ),
-                        backgroundColor: Colors.blue.withOpacity(0.1),
+                        backgroundColor: Colors.blue.withValues(alpha: 0.1),
                         textColor: Colors.blue[700]!,
                         borderColor: Colors.blue[300]!,
                       ),
@@ -314,6 +313,17 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                           },
                         );
                       }),
+                      if (_selectedProfileType == ProProfileType.provider) ...[
+                        const SizedBox(height: ProDesignSystem.spacing12),
+                        ModernInfoBox(
+                          message:
+                              'After sign-up, create your own service listing from Availability, then configure services offered, activity zone, booking modes, and hours in Schedule.',
+                          icon: Icons.tune_rounded,
+                          backgroundColor: Colors.blue.withValues(alpha: 0.08),
+                          textColor: Colors.blue[700]!,
+                          borderColor: Colors.blue[200]!,
+                        ),
+                      ],
                       const SizedBox(height: ProDesignSystem.spacing24),
                       TextFormField(
                         controller: _businessNameController,

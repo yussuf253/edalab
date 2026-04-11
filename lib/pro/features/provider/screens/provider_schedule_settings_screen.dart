@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../core/router/pro_route_paths.dart';
 
 class ProviderScheduleSettingsScreen extends StatefulWidget {
   final String userId;
@@ -59,6 +61,7 @@ class _ProviderScheduleSettingsScreenState
     required String location,
     required String contactPhone,
     required String responseTime,
+    required List<String> services,
     required List<String> bookingModes,
     required Map<String, String> availability,
   }) async {
@@ -69,6 +72,7 @@ class _ProviderScheduleSettingsScreenState
         'location': location,
         'contactPhone': contactPhone,
         'responseTime': responseTime,
+        'services': services,
         'bookingModes': bookingModes,
         'availability': availability,
       });
@@ -80,7 +84,9 @@ class _ProviderScheduleSettingsScreenState
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
       );
     } finally {
       if (mounted) {
@@ -100,6 +106,12 @@ class _ProviderScheduleSettingsScreenState
     final responseTimeController = TextEditingController(
       text: item['responseTime']?.toString() ?? '',
     );
+    final servicesController = TextEditingController(
+      text: (item['services'] as List<dynamic>? ?? const <dynamic>[])
+          .map((entry) => entry.toString().trim())
+          .where((entry) => entry.isNotEmpty)
+          .join(', '),
+    );
     final availability = Map<String, String>.from(
       (item['availability'] as Map?)?.map(
             (key, value) => MapEntry(key.toString(), value?.toString() ?? ''),
@@ -107,8 +119,9 @@ class _ProviderScheduleSettingsScreenState
           const <String, String>{},
     );
     final selectedModes = <String>{
-      ...(item['bookingModes'] as List<dynamic>? ?? const <dynamic>[])
-          .map((entry) => entry.toString()),
+      ...(item['bookingModes'] as List<dynamic>? ?? const <dynamic>[]).map(
+        (entry) => entry.toString(),
+      ),
     };
 
     await showModalBottomSheet<void>(
@@ -117,10 +130,7 @@ class _ProviderScheduleSettingsScreenState
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            Widget scheduleField({
-              required String key,
-              required String label,
-            }) {
+            Widget scheduleField({required String key, required String label}) {
               return TextFormField(
                 initialValue: availability[key] ?? '',
                 decoration: InputDecoration(labelText: label),
@@ -153,7 +163,9 @@ class _ProviderScheduleSettingsScreenState
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: locationController,
-                      decoration: const InputDecoration(labelText: 'Service area'),
+                      decoration: const InputDecoration(
+                        labelText: 'Service area / activity zone',
+                      ),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -163,7 +175,20 @@ class _ProviderScheduleSettingsScreenState
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: responseTimeController,
-                      decoration: const InputDecoration(labelText: 'Response time'),
+                      decoration: const InputDecoration(
+                        labelText: 'Response time',
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: servicesController,
+                      minLines: 2,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Services offered',
+                        hintText:
+                            'Room Cleaning, Floor Cleaning, Kitchen Cleaning',
+                      ),
                     ),
                     const SizedBox(height: 20),
                     const _SettingsSectionLabel('Booking modes'),
@@ -190,20 +215,11 @@ class _ProviderScheduleSettingsScreenState
                     const SizedBox(height: 20),
                     const _SettingsSectionLabel('Weekly availability'),
                     const SizedBox(height: 8),
-                    scheduleField(
-                      key: 'weekdays',
-                      label: 'Weekdays',
-                    ),
+                    scheduleField(key: 'weekdays', label: 'Weekdays'),
                     const SizedBox(height: 12),
-                    scheduleField(
-                      key: 'saturday',
-                      label: 'Saturday',
-                    ),
+                    scheduleField(key: 'saturday', label: 'Saturday'),
                     const SizedBox(height: 12),
-                    scheduleField(
-                      key: 'sunday',
-                      label: 'Sunday',
-                    ),
+                    scheduleField(key: 'sunday', label: 'Sunday'),
                     const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
@@ -215,16 +231,25 @@ class _ProviderScheduleSettingsScreenState
                                 await _saveSettings(
                                   providerId: providerId,
                                   location: locationController.text.trim(),
-                                  contactPhone: contactPhoneController.text.trim(),
-                                  responseTime: responseTimeController.text.trim(),
-                                  bookingModes: selectedModes.toList(growable: false),
+                                  contactPhone: contactPhoneController.text
+                                      .trim(),
+                                  responseTime: responseTimeController.text
+                                      .trim(),
+                                  services: servicesController.text
+                                      .split(RegExp(r'[,\\n]'))
+                                      .map((entry) => entry.trim())
+                                      .where((entry) => entry.isNotEmpty)
+                                      .toList(growable: false),
+                                  bookingModes: selectedModes.toList(
+                                    growable: false,
+                                  ),
                                   availability: {
-                                    'weekdays':
-                                        (availability['weekdays'] ?? '').trim(),
-                                    'saturday':
-                                        (availability['saturday'] ?? '').trim(),
-                                    'sunday':
-                                        (availability['sunday'] ?? '').trim(),
+                                    'weekdays': (availability['weekdays'] ?? '')
+                                        .trim(),
+                                    'saturday': (availability['saturday'] ?? '')
+                                        .trim(),
+                                    'sunday': (availability['sunday'] ?? '')
+                                        .trim(),
                                   },
                                 );
                               },
@@ -233,7 +258,9 @@ class _ProviderScheduleSettingsScreenState
                           foregroundColor: Colors.white,
                         ),
                         child: Text(
-                          _busyIds.contains(providerId) ? 'Saving...' : 'Save settings',
+                          _busyIds.contains(providerId)
+                              ? 'Saving...'
+                              : 'Save settings',
                         ),
                       ),
                     ),
@@ -276,10 +303,29 @@ class _ProviderScheduleSettingsScreenState
 
           final items = snapshot.data ?? const <Map<String, dynamic>>[];
           if (items.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('No providers are currently bound to this account.'),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'No service listing is configured yet for this provider account.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: () =>
+                          context.push(ProRoutePaths.providerAvailability),
+                      icon: const Icon(Icons.add_business_rounded),
+                      label: const Text('Create service listing'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.homeServices,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -297,6 +343,11 @@ class _ProviderScheduleSettingsScreenState
               final bookingModes =
                   (item['bookingModes'] as List<dynamic>? ?? const <dynamic>[])
                       .map((entry) => entry.toString())
+                      .toList(growable: false);
+              final services =
+                  (item['services'] as List<dynamic>? ?? const <dynamic>[])
+                      .map((entry) => entry.toString())
+                      .where((entry) => entry.trim().isNotEmpty)
                       .toList(growable: false);
 
               return Card(
@@ -327,7 +378,8 @@ class _ProviderScheduleSettingsScreenState
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                if ((item['title']?.toString() ?? '').isNotEmpty)
+                                if ((item['title']?.toString() ?? '')
+                                    .isNotEmpty)
                                   Text(item['title']!.toString()),
                               ],
                             ),
@@ -361,12 +413,20 @@ class _ProviderScheduleSettingsScreenState
                             : bookingModes.join(', '),
                       ),
                       _SettingsInfoRow(
+                        label: 'Services',
+                        value: services.isEmpty
+                            ? 'No services configured'
+                            : services.join(', '),
+                      ),
+                      _SettingsInfoRow(
                         label: 'Weekdays',
-                        value: availability['weekdays']?.toString() ?? 'Not set',
+                        value:
+                            availability['weekdays']?.toString() ?? 'Not set',
                       ),
                       _SettingsInfoRow(
                         label: 'Saturday',
-                        value: availability['saturday']?.toString() ?? 'Not set',
+                        value:
+                            availability['saturday']?.toString() ?? 'Not set',
                       ),
                       _SettingsInfoRow(
                         label: 'Sunday',
@@ -404,10 +464,7 @@ class _SettingsInfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _SettingsInfoRow({
-    required this.label,
-    required this.value,
-  });
+  const _SettingsInfoRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
