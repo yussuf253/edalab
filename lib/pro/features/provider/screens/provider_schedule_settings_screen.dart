@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../core/models/pro_profile.dart';
 import '../../../core/router/pro_route_paths.dart';
 
 class ProviderScheduleSettingsScreen extends StatefulWidget {
   final String userId;
   final String businessName;
+  final List<ProModule> activeModules;
 
   const ProviderScheduleSettingsScreen({
     super.key,
     required this.userId,
     required this.businessName,
+    this.activeModules = const [],
   });
 
   @override
@@ -31,6 +35,18 @@ class _ProviderScheduleSettingsScreenState
 
   late Future<List<Map<String, dynamic>>> _settingsFuture;
   final Set<String> _busyIds = <String>{};
+
+  bool get _supportsServices =>
+      widget.activeModules.isEmpty ||
+      widget.activeModules.contains(ProModule.services);
+
+  List<String> _splitValues(String value) {
+    return value
+        .split(RegExp(r'[,\\n]'))
+        .map((entry) => entry.trim())
+        .where((entry) => entry.isNotEmpty)
+        .toList(growable: false);
+  }
 
   @override
   void initState() {
@@ -64,6 +80,8 @@ class _ProviderScheduleSettingsScreenState
     required List<String> services,
     required List<String> bookingModes,
     required Map<String, String> availability,
+    required Map<String, dynamic> serviceZone,
+    required Map<String, dynamic> houseHelpConfig,
   }) async {
     setState(() => _busyIds.add(providerId));
     try {
@@ -75,6 +93,8 @@ class _ProviderScheduleSettingsScreenState
         'services': services,
         'bookingModes': bookingModes,
         'availability': availability,
+        'serviceZone': serviceZone,
+        'houseHelpConfig': houseHelpConfig,
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -123,6 +143,56 @@ class _ProviderScheduleSettingsScreenState
         (entry) => entry.toString(),
       ),
     };
+    final serviceZone = Map<String, dynamic>.from(
+      (item['serviceZone'] as Map?) ?? const <String, dynamic>{},
+    );
+    var zoneEnabled = serviceZone['enabled'] as bool? ?? true;
+    var zoneCenter = LatLng(
+      (serviceZone['centerLatitude'] as num?)?.toDouble() ?? 11.5886,
+      (serviceZone['centerLongitude'] as num?)?.toDouble() ?? 43.1457,
+    );
+    final zoneLatitudeController = TextEditingController(
+      text: zoneCenter.latitude.toStringAsFixed(6),
+    );
+    final zoneLongitudeController = TextEditingController(
+      text: zoneCenter.longitude.toStringAsFixed(6),
+    );
+    final zoneRadiusController = TextEditingController(
+      text: ((serviceZone['radiusKm'] as num?)?.toDouble() ?? 8).toString(),
+    );
+    final houseHelpConfig = Map<String, dynamic>.from(
+      (item['houseHelpConfig'] as Map?) ?? const <String, dynamic>{},
+    );
+    final bookingTypesController = TextEditingController(
+      text: (houseHelpConfig['bookingTypes'] as List<dynamic>? ?? const [])
+          .map((entry) => entry.toString().trim())
+          .where((entry) => entry.isNotEmpty)
+          .join(', '),
+    );
+    final shiftDurationsController = TextEditingController(
+      text: (houseHelpConfig['shiftDurations'] as List<dynamic>? ?? const [])
+          .map((entry) => entry.toString().trim())
+          .where((entry) => entry.isNotEmpty)
+          .join(', '),
+    );
+    final homeSizesController = TextEditingController(
+      text: (houseHelpConfig['homeSizes'] as List<dynamic>? ?? const [])
+          .map((entry) => entry.toString().trim())
+          .where((entry) => entry.isNotEmpty)
+          .join(', '),
+    );
+    final arrivalTargetsController = TextEditingController(
+      text: (houseHelpConfig['arrivalTargets'] as List<dynamic>? ?? const [])
+          .map((entry) => entry.toString().trim())
+          .where((entry) => entry.isNotEmpty)
+          .join(', '),
+    );
+    final supplyModesController = TextEditingController(
+      text: (houseHelpConfig['supplyModes'] as List<dynamic>? ?? const [])
+          .map((entry) => entry.toString().trim())
+          .where((entry) => entry.isNotEmpty)
+          .join(', '),
+    );
 
     await showModalBottomSheet<void>(
       context: context,
@@ -191,6 +261,163 @@ class _ProviderScheduleSettingsScreenState
                       ),
                     ),
                     const SizedBox(height: 20),
+                    SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      value: zoneEnabled,
+                      title: const Text('Enable activity zone matching'),
+                      subtitle: const Text(
+                        'Only users inside this zone should see your request in queue.',
+                      ),
+                      onChanged: (value) =>
+                          setModalState(() => zoneEnabled = value),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 170,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: zoneCenter,
+                            zoom: 12.4,
+                          ),
+                          markers: {
+                            Marker(
+                              markerId: const MarkerId('provider-zone-center'),
+                              position: zoneCenter,
+                            ),
+                          },
+                          myLocationButtonEnabled: false,
+                          zoomControlsEnabled: false,
+                          mapToolbarEnabled: false,
+                          rotateGesturesEnabled: false,
+                          tiltGesturesEnabled: false,
+                          liteModeEnabled: true,
+                          onTap: (point) {
+                            setModalState(() {
+                              zoneCenter = point;
+                              zoneLatitudeController.text = point.latitude
+                                  .toStringAsFixed(6);
+                              zoneLongitudeController.text = point.longitude
+                                  .toStringAsFixed(6);
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: zoneLatitudeController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                              signed: true,
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: 'Zone latitude',
+                            ),
+                            onChanged: (value) {
+                              final parsed = double.tryParse(value.trim());
+                              if (parsed == null) return;
+                              setModalState(() {
+                                zoneCenter = LatLng(
+                                  parsed,
+                                  zoneCenter.longitude,
+                                );
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: zoneLongitudeController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                              signed: true,
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: 'Zone longitude',
+                            ),
+                            onChanged: (value) {
+                              final parsed = double.tryParse(value.trim());
+                              if (parsed == null) return;
+                              setModalState(() {
+                                zoneCenter = LatLng(
+                                  zoneCenter.latitude,
+                                  parsed,
+                                );
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: zoneRadiusController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Zone radius (km)',
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const _SettingsSectionLabel('House-help booking criteria'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: bookingTypesController,
+                      minLines: 2,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Booking types',
+                        hintText: 'One-time job, Daily recurring',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: shiftDurationsController,
+                      minLines: 2,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Shift durations',
+                        hintText: '2 hours, 4 hours, 8 hours',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: homeSizesController,
+                      minLines: 1,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Home sizes',
+                        hintText: 'F2, F3, F4',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: arrivalTargetsController,
+                      minLines: 2,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Arrival targets',
+                        hintText: 'Within 30 min, Scheduled slot',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: supplyModesController,
+                      minLines: 1,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Supply modes',
+                        hintText: 'Provider supplies, Customer supplies',
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     const _SettingsSectionLabel('Booking modes'),
                     const SizedBox(height: 8),
                     Wrap(
@@ -227,6 +454,30 @@ class _ProviderScheduleSettingsScreenState
                         onPressed: _busyIds.contains(providerId)
                             ? null
                             : () async {
+                                final zoneLatitude = double.tryParse(
+                                  zoneLatitudeController.text.trim(),
+                                );
+                                final zoneLongitude = double.tryParse(
+                                  zoneLongitudeController.text.trim(),
+                                );
+                                final zoneRadius = double.tryParse(
+                                  zoneRadiusController.text.trim(),
+                                );
+                                if (zoneEnabled &&
+                                    (zoneLatitude == null ||
+                                        zoneLongitude == null ||
+                                        zoneRadius == null ||
+                                        zoneRadius <= 0)) {
+                                  if (!context.mounted) return;
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Set a valid zone center and radius before saving.',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
                                 Navigator.of(sheetContext).pop();
                                 await _saveSettings(
                                   providerId: providerId,
@@ -235,11 +486,9 @@ class _ProviderScheduleSettingsScreenState
                                       .trim(),
                                   responseTime: responseTimeController.text
                                       .trim(),
-                                  services: servicesController.text
-                                      .split(RegExp(r'[,\\n]'))
-                                      .map((entry) => entry.trim())
-                                      .where((entry) => entry.isNotEmpty)
-                                      .toList(growable: false),
+                                  services: _splitValues(
+                                    servicesController.text,
+                                  ),
                                   bookingModes: selectedModes.toList(
                                     growable: false,
                                   ),
@@ -250,6 +499,33 @@ class _ProviderScheduleSettingsScreenState
                                         .trim(),
                                     'sunday': (availability['sunday'] ?? '')
                                         .trim(),
+                                  },
+                                  serviceZone: {
+                                    'enabled': zoneEnabled,
+                                    'centerLatitude': zoneEnabled
+                                        ? zoneLatitude
+                                        : null,
+                                    'centerLongitude': zoneEnabled
+                                        ? zoneLongitude
+                                        : null,
+                                    'radiusKm': zoneEnabled ? zoneRadius : 8,
+                                  },
+                                  houseHelpConfig: {
+                                    'bookingTypes': _splitValues(
+                                      bookingTypesController.text,
+                                    ),
+                                    'shiftDurations': _splitValues(
+                                      shiftDurationsController.text,
+                                    ),
+                                    'homeSizes': _splitValues(
+                                      homeSizesController.text,
+                                    ),
+                                    'arrivalTargets': _splitValues(
+                                      arrivalTargetsController.text,
+                                    ),
+                                    'supplyModes': _splitValues(
+                                      supplyModesController.text,
+                                    ),
                                   },
                                 );
                               },
@@ -285,6 +561,17 @@ class _ProviderScheduleSettingsScreenState
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _settingsFuture,
         builder: (context, snapshot) {
+          if (!_supportsServices) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'Services module is not enabled for this provider profile.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
           if (snapshot.connectionState == ConnectionState.waiting &&
               !snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
@@ -348,6 +635,42 @@ class _ProviderScheduleSettingsScreenState
                   (item['services'] as List<dynamic>? ?? const <dynamic>[])
                       .map((entry) => entry.toString())
                       .where((entry) => entry.trim().isNotEmpty)
+                      .toList(growable: false);
+              final serviceZone = Map<String, dynamic>.from(
+                (item['serviceZone'] as Map?) ?? const <String, dynamic>{},
+              );
+              final houseHelpConfig = Map<String, dynamic>.from(
+                (item['houseHelpConfig'] as Map?) ?? const <String, dynamic>{},
+              );
+              final zoneEnabled = serviceZone['enabled'] == true;
+              final zoneRadius =
+                  (serviceZone['radiusKm'] as num?)?.toDouble() ?? 8;
+              final zoneCenterLatitude = (serviceZone['centerLatitude'] as num?)
+                  ?.toDouble();
+              final zoneCenterLongitude =
+                  (serviceZone['centerLongitude'] as num?)?.toDouble();
+              final bookingTypes =
+                  (houseHelpConfig['bookingTypes'] as List<dynamic>? ??
+                          const [])
+                      .map((entry) => entry.toString().trim())
+                      .where((entry) => entry.isNotEmpty)
+                      .toList(growable: false);
+              final shiftDurations =
+                  (houseHelpConfig['shiftDurations'] as List<dynamic>? ??
+                          const [])
+                      .map((entry) => entry.toString().trim())
+                      .where((entry) => entry.isNotEmpty)
+                      .toList(growable: false);
+              final homeSizes =
+                  (houseHelpConfig['homeSizes'] as List<dynamic>? ?? const [])
+                      .map((entry) => entry.toString().trim())
+                      .where((entry) => entry.isNotEmpty)
+                      .toList(growable: false);
+              final arrivalTargets =
+                  (houseHelpConfig['arrivalTargets'] as List<dynamic>? ??
+                          const [])
+                      .map((entry) => entry.toString().trim())
+                      .where((entry) => entry.isNotEmpty)
                       .toList(growable: false);
 
               return Card(
@@ -417,6 +740,44 @@ class _ProviderScheduleSettingsScreenState
                         value: services.isEmpty
                             ? 'No services configured'
                             : services.join(', '),
+                      ),
+                      _SettingsInfoRow(
+                        label: 'Zone',
+                        value: zoneEnabled
+                            ? 'Enabled • ${zoneRadius.toStringAsFixed(1)} km'
+                            : 'Disabled',
+                      ),
+                      _SettingsInfoRow(
+                        label: 'Zone center',
+                        value:
+                            zoneCenterLatitude == null ||
+                                zoneCenterLongitude == null
+                            ? 'Not set'
+                            : '${zoneCenterLatitude.toStringAsFixed(5)}, ${zoneCenterLongitude.toStringAsFixed(5)}',
+                      ),
+                      _SettingsInfoRow(
+                        label: 'Booking types',
+                        value: bookingTypes.isEmpty
+                            ? 'Not configured'
+                            : bookingTypes.join(', '),
+                      ),
+                      _SettingsInfoRow(
+                        label: 'Shifts',
+                        value: shiftDurations.isEmpty
+                            ? 'Not configured'
+                            : shiftDurations.join(', '),
+                      ),
+                      _SettingsInfoRow(
+                        label: 'Home sizes',
+                        value: homeSizes.isEmpty
+                            ? 'Not configured'
+                            : homeSizes.join(', '),
+                      ),
+                      _SettingsInfoRow(
+                        label: 'Arrival',
+                        value: arrivalTargets.isEmpty
+                            ? 'Not configured'
+                            : arrivalTargets.join(', '),
                       ),
                       _SettingsInfoRow(
                         label: 'Weekdays',

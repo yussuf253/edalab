@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../core/models/pro_profile.dart';
 
 class ProviderAvailabilityScreen extends StatefulWidget {
   final String userId;
   final String businessName;
+  final List<ProModule> activeModules;
 
   const ProviderAvailabilityScreen({
     super.key,
     required this.userId,
     required this.businessName,
+    this.activeModules = const [],
   });
 
   @override
@@ -22,6 +26,19 @@ class _ProviderAvailabilityScreenState
     extends State<ProviderAvailabilityScreen> {
   late Future<Map<String, dynamic>> _availabilityFuture;
   final Set<String> _busyIds = <String>{};
+
+  bool get _supportsServices =>
+      widget.activeModules.isEmpty ||
+      widget.activeModules.contains(ProModule.services);
+  bool get _supportsLaundry => widget.activeModules.contains(ProModule.laundry);
+
+  List<String> _splitValues(String value) {
+    return value
+        .split(RegExp(r'[,\\n]'))
+        .map((entry) => entry.trim())
+        .where((entry) => entry.isNotEmpty)
+        .toList(growable: false);
+  }
 
   @override
   void initState() {
@@ -114,6 +131,24 @@ class _ProviderAvailabilityScreenState
     final servicesController = TextEditingController(
       text: 'Room Cleaning, Floor Cleaning',
     );
+    final bookingTypesController = TextEditingController(
+      text: 'One-time job, Daily recurring, Weekly recurring',
+    );
+    final shiftDurationsController = TextEditingController(
+      text: '2 hours, 4 hours, 8 hours',
+    );
+    final homeSizesController = TextEditingController(text: 'F2, F3, F4');
+    final arrivalTargetsController = TextEditingController(
+      text: 'Within 30 min, Scheduled slot',
+    );
+    final supplyModesController = TextEditingController(
+      text: 'Provider supplies, Customer supplies',
+    );
+    final zoneLatitudeController = TextEditingController(text: '11.5886');
+    final zoneLongitudeController = TextEditingController(text: '43.1457');
+    final zoneRadiusController = TextEditingController(text: '8');
+    var zoneEnabled = true;
+    var zoneCenter = const LatLng(11.5886, 43.1457);
     String selectedCategoryId =
         (categories
             .firstWhere(
@@ -142,6 +177,26 @@ class _ProviderAvailabilityScreenState
                 });
                 return;
               }
+              final parsedZoneLatitude = double.tryParse(
+                zoneLatitudeController.text.trim(),
+              );
+              final parsedZoneLongitude = double.tryParse(
+                zoneLongitudeController.text.trim(),
+              );
+              final parsedZoneRadius = double.tryParse(
+                zoneRadiusController.text.trim(),
+              );
+              if (zoneEnabled &&
+                  (parsedZoneLatitude == null ||
+                      parsedZoneLongitude == null ||
+                      parsedZoneRadius == null ||
+                      parsedZoneRadius <= 0)) {
+                setModalState(() {
+                  errorText =
+                      'Set a valid zone center (latitude/longitude) and radius.';
+                });
+                return;
+              }
 
               setModalState(() {
                 isSaving = true;
@@ -159,11 +214,26 @@ class _ProviderAvailabilityScreenState
                     'location': locationController.text.trim(),
                     'contactPhone': phoneController.text.trim(),
                     'responseTime': responseTimeController.text.trim(),
-                    'services': servicesController.text
-                        .split(RegExp(r'[,\\n]'))
-                        .map((entry) => entry.trim())
-                        .where((entry) => entry.isNotEmpty)
-                        .toList(growable: false),
+                    'services': _splitValues(servicesController.text),
+                    'serviceZone': {
+                      'enabled': zoneEnabled,
+                      'centerLatitude': zoneEnabled ? parsedZoneLatitude : null,
+                      'centerLongitude': zoneEnabled
+                          ? parsedZoneLongitude
+                          : null,
+                      'radiusKm': zoneEnabled ? parsedZoneRadius : 8,
+                    },
+                    'houseHelpConfig': {
+                      'bookingTypes': _splitValues(bookingTypesController.text),
+                      'shiftDurations': _splitValues(
+                        shiftDurationsController.text,
+                      ),
+                      'homeSizes': _splitValues(homeSizesController.text),
+                      'arrivalTargets': _splitValues(
+                        arrivalTargetsController.text,
+                      ),
+                      'supplyModes': _splitValues(supplyModesController.text),
+                    },
                   },
                 );
                 if (!mounted) return;
@@ -281,6 +351,163 @@ class _ProviderAvailabilityScreenState
                             'Room Cleaning, Floor Cleaning, Kitchen Cleaning',
                       ),
                     ),
+                    const SizedBox(height: 20),
+                    SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      value: zoneEnabled,
+                      title: const Text('Enable activity zone matching'),
+                      subtitle: const Text(
+                        'Only requests inside this zone appear for acceptance.',
+                      ),
+                      onChanged: isSaving
+                          ? null
+                          : (value) => setModalState(() => zoneEnabled = value),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 170,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: GoogleMap(
+                          initialCameraPosition: CameraPosition(
+                            target: zoneCenter,
+                            zoom: 12.4,
+                          ),
+                          markers: {
+                            Marker(
+                              markerId: const MarkerId('provider-zone-center'),
+                              position: zoneCenter,
+                            ),
+                          },
+                          myLocationButtonEnabled: false,
+                          zoomControlsEnabled: false,
+                          mapToolbarEnabled: false,
+                          rotateGesturesEnabled: false,
+                          tiltGesturesEnabled: false,
+                          liteModeEnabled: true,
+                          onTap: (point) {
+                            if (isSaving) return;
+                            setModalState(() {
+                              zoneCenter = point;
+                              zoneLatitudeController.text = point.latitude
+                                  .toStringAsFixed(6);
+                              zoneLongitudeController.text = point.longitude
+                                  .toStringAsFixed(6);
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: zoneLatitudeController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                              signed: true,
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: 'Zone latitude',
+                            ),
+                            onChanged: (value) {
+                              final parsed = double.tryParse(value.trim());
+                              if (parsed == null) return;
+                              setModalState(() {
+                                zoneCenter = LatLng(
+                                  parsed,
+                                  zoneCenter.longitude,
+                                );
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: zoneLongitudeController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                              signed: true,
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: 'Zone longitude',
+                            ),
+                            onChanged: (value) {
+                              final parsed = double.tryParse(value.trim());
+                              if (parsed == null) return;
+                              setModalState(() {
+                                zoneCenter = LatLng(
+                                  zoneCenter.latitude,
+                                  parsed,
+                                );
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: zoneRadiusController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Zone radius (km)',
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: bookingTypesController,
+                      minLines: 2,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Booking types',
+                        hintText: 'One-time job, Daily recurring',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: shiftDurationsController,
+                      minLines: 2,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Shift durations',
+                        hintText: '2 hours, 4 hours, 8 hours',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: homeSizesController,
+                      minLines: 1,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Home sizes',
+                        hintText: 'F2, F3, F4',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: arrivalTargetsController,
+                      minLines: 2,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Arrival targets',
+                        hintText: 'Within 30 min, Scheduled slot',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: supplyModesController,
+                      minLines: 1,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Supply modes',
+                        hintText: 'Provider supplies, Customer supplies',
+                      ),
+                    ),
                     if (errorText != null) ...[
                       const SizedBox(height: 12),
                       Text(
@@ -312,86 +539,161 @@ class _ProviderAvailabilityScreenState
     );
   }
 
+  List<_AvailabilityModuleTab> _resolveTabs(Map<String, dynamic> data) {
+    final tabs = <_AvailabilityModuleTab>[];
+    if (_supportsServices) {
+      tabs.add(
+        _AvailabilityModuleTab(
+          module: 'services',
+          label: 'Services',
+          color: AppColors.homeServices,
+          enabledLabel: 'Available for booking',
+          disabledLabel: 'Temporarily unavailable',
+          items: (data['services'] as List<dynamic>? ?? const [])
+              .map((entry) => Map<String, dynamic>.from(entry as Map))
+              .toList(growable: false),
+        ),
+      );
+    }
+    if (_supportsLaundry) {
+      tabs.add(
+        _AvailabilityModuleTab(
+          module: 'laundry',
+          label: 'Laundry',
+          color: AppColors.laundry,
+          enabledLabel: 'Accepting laundry orders',
+          disabledLabel: 'Laundry service paused',
+          items: (data['laundry'] as List<dynamic>? ?? const [])
+              .map((entry) => Map<String, dynamic>.from(entry as Map))
+              .toList(growable: false),
+        ),
+      );
+    }
+    return tabs;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('${widget.businessName} Availability'),
-          backgroundColor: AppColors.homeServices,
-          foregroundColor: Colors.white,
-          actions: [
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('${widget.businessName} Availability'),
+        backgroundColor: AppColors.homeServices,
+        foregroundColor: Colors.white,
+        actions: [
+          if (_supportsServices)
             IconButton(
               onPressed: _openCreateServiceListing,
               icon: const Icon(Icons.add_business_rounded),
               tooltip: 'Create listing',
             ),
-          ],
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Services'),
-              Tab(text: 'Laundry'),
-            ],
-          ),
-        ),
-        body: FutureBuilder<Map<String, dynamic>>(
-          future: _availabilityFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting &&
-                !snapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
+        ],
+      ),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _availabilityFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting &&
+              !snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            if (snapshot.hasError) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    snapshot.error.toString().replaceFirst('Exception: ', ''),
-                  ),
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  snapshot.error.toString().replaceFirst('Exception: ', ''),
                 ),
-              );
-            }
+              ),
+            );
+          }
 
-            final data = snapshot.data ?? const <String, dynamic>{};
-            return TabBarView(
+          final data = snapshot.data ?? const <String, dynamic>{};
+          final tabs = _resolveTabs(data);
+          if (tabs.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'No provider modules are enabled for this pro profile.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
+
+          if (tabs.length == 1) {
+            final tab = tabs.first;
+            return _AvailabilityItemsList(
+              color: tab.color,
+              enabledLabel: tab.enabledLabel,
+              disabledLabel: tab.disabledLabel,
+              items: tab.items,
+              busyIds: _busyIds,
+              onToggle: (targetId, enabled) => _toggle(
+                module: tab.module,
+                targetId: targetId,
+                enabled: enabled,
+              ),
+            );
+          }
+
+          return DefaultTabController(
+            length: tabs.length,
+            child: Column(
               children: [
-                _AvailabilityItemsList(
+                Material(
                   color: AppColors.homeServices,
-                  enabledLabel: 'Available for booking',
-                  disabledLabel: 'Temporarily unavailable',
-                  items: (data['services'] as List<dynamic>? ?? const [])
-                      .map((entry) => Map<String, dynamic>.from(entry as Map))
-                      .toList(growable: false),
-                  busyIds: _busyIds,
-                  onToggle: (targetId, enabled) => _toggle(
-                    module: 'services',
-                    targetId: targetId,
-                    enabled: enabled,
+                  child: TabBar(
+                    tabs: tabs
+                        .map((entry) => Tab(text: entry.label))
+                        .toList(growable: false),
                   ),
                 ),
-                _AvailabilityItemsList(
-                  color: AppColors.laundry,
-                  enabledLabel: 'Accepting laundry orders',
-                  disabledLabel: 'Laundry service paused',
-                  items: (data['laundry'] as List<dynamic>? ?? const [])
-                      .map((entry) => Map<String, dynamic>.from(entry as Map))
-                      .toList(growable: false),
-                  busyIds: _busyIds,
-                  onToggle: (targetId, enabled) => _toggle(
-                    module: 'laundry',
-                    targetId: targetId,
-                    enabled: enabled,
+                Expanded(
+                  child: TabBarView(
+                    children: tabs
+                        .map(
+                          (tab) => _AvailabilityItemsList(
+                            color: tab.color,
+                            enabledLabel: tab.enabledLabel,
+                            disabledLabel: tab.disabledLabel,
+                            items: tab.items,
+                            busyIds: _busyIds,
+                            onToggle: (targetId, enabled) => _toggle(
+                              module: tab.module,
+                              targetId: targetId,
+                              enabled: enabled,
+                            ),
+                          ),
+                        )
+                        .toList(growable: false),
                   ),
                 ),
               ],
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
+}
+
+class _AvailabilityModuleTab {
+  final String module;
+  final String label;
+  final Color color;
+  final String enabledLabel;
+  final String disabledLabel;
+  final List<Map<String, dynamic>> items;
+
+  const _AvailabilityModuleTab({
+    required this.module,
+    required this.label,
+    required this.color,
+    required this.enabledLabel,
+    required this.disabledLabel,
+    required this.items,
+  });
 }
 
 class _AvailabilityItemsList extends StatelessWidget {

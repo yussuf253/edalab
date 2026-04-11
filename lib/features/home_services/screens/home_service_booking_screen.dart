@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
@@ -22,6 +23,7 @@ class HomeServiceBookingScreen extends StatefulWidget {
 }
 
 class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
+  static const String _zoneDispatchProviderId = 'house-help-zone';
   int _selectedDate = 1;
   int _selectedTime = 1;
   int _selectedService = 0;
@@ -32,6 +34,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
   int _selectedHouseHelpUrgency = 1;
   bool _houseHelpBringSupplies = false;
   HomeServiceProviderModel? _provider;
+  List<HomeServiceProviderModel> _zonePoolProviders = const [];
   bool _isLoading = true;
   bool _didInitializeAddress = false;
 
@@ -52,6 +55,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
   final _houseHelpHomeSizes = const ['F2', 'F3', 'F4'];
   final _houseHelpUrgency = const ['Within 30 min', 'Scheduled slot'];
 
+  bool get _isZoneDispatchRoute => widget.providerId == _zoneDispatchProviderId;
+
   bool _isHouseHelpProvider(HomeServiceProviderModel provider) {
     final slug = (provider.categorySlug ?? '').toLowerCase();
     final name = (provider.categoryName ?? '').toLowerCase();
@@ -69,8 +74,116 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
         services.contains('maid');
   }
 
-  bool _isInstantHouseHelp(bool isHouseHelp) =>
-      isHouseHelp && _selectedHouseHelpUrgency == 0;
+  bool _isInstantArrivalLabel(String value) {
+    final normalized = value.toLowerCase();
+    if (normalized.contains('schedule')) return false;
+    return normalized.contains('instant') ||
+        normalized.contains('now') ||
+        normalized.contains('15') ||
+        normalized.contains('30');
+  }
+
+  HomeServiceProviderModel _buildZoneDispatchProvider(
+    List<HomeServiceProviderModel> providers,
+  ) {
+    final primary = providers.isNotEmpty ? providers.first : null;
+    final minStartingPrice = providers.isEmpty
+        ? 25.0
+        : providers
+              .map((provider) => provider.startingPrice)
+              .reduce((left, right) => left < right ? left : right);
+    final unionServices = providers
+        .expand((provider) => provider.services)
+        .map((service) => service.trim())
+        .where((service) => service.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+    return HomeServiceProviderModel(
+      id: _zoneDispatchProviderId,
+      categoryId: primary?.categoryId ?? 'hs-house-help',
+      categoryName: primary?.categoryName ?? 'House Help',
+      categorySlug: primary?.categorySlug ?? 'house-help',
+      categoryIconKey: primary?.categoryIconKey ?? 'house_help',
+      categoryColorHex: primary?.categoryColorHex ?? '#1A9A77',
+      name: 'House Help Dispatch',
+      title: 'Nearest available helper',
+      rating: providers.isEmpty
+          ? 0
+          : providers
+                .map((provider) => provider.rating)
+                .reduce((left, right) => left > right ? left : right),
+      reviewCount: providers.fold<int>(
+        0,
+        (count, provider) => count + provider.reviewCount,
+      ),
+      startingPrice: minStartingPrice,
+      isAvailable: true,
+      isVerified: true,
+      services: unionServices,
+      bookingModes: const ['Home Visit'],
+      availability: providers.isEmpty
+          ? const <String, dynamic>{}
+          : providers.first.availability,
+    );
+  }
+
+  Map<String, List<String>> _houseHelpConfigFromProviders(
+    List<HomeServiceProviderModel> providers,
+  ) {
+    final bookingTypes = <String>{};
+    final shiftDurations = <String>{};
+    final homeSizes = <String>{};
+    final arrivalTargets = <String>{};
+    final supplyModes = <String>{};
+
+    for (final provider in providers) {
+      final config = provider.availability['houseHelpConfig'];
+      if (config is! Map) continue;
+      final map = Map<String, dynamic>.from(config);
+      for (final value in (map['bookingTypes'] as List<dynamic>? ?? const [])) {
+        final text = value.toString().trim();
+        if (text.isNotEmpty) bookingTypes.add(text);
+      }
+      for (final value
+          in (map['shiftDurations'] as List<dynamic>? ?? const [])) {
+        final text = value.toString().trim();
+        if (text.isNotEmpty) shiftDurations.add(text);
+      }
+      for (final value in (map['homeSizes'] as List<dynamic>? ?? const [])) {
+        final text = value.toString().trim();
+        if (text.isNotEmpty) homeSizes.add(text);
+      }
+      for (final value
+          in (map['arrivalTargets'] as List<dynamic>? ?? const [])) {
+        final text = value.toString().trim();
+        if (text.isNotEmpty) arrivalTargets.add(text);
+      }
+      for (final value in (map['supplyModes'] as List<dynamic>? ?? const [])) {
+        final text = value.toString().trim();
+        if (text.isNotEmpty) supplyModes.add(text);
+      }
+    }
+
+    return {
+      'bookingTypes': bookingTypes.isEmpty
+          ? [..._houseHelpPlans]
+          : bookingTypes.toList(growable: false),
+      'shiftDurations': shiftDurations.isEmpty
+          ? _houseHelpShiftOptions
+                .map((entry) => entry.$1)
+                .toList(growable: false)
+          : shiftDurations.toList(growable: false),
+      'homeSizes': homeSizes.isEmpty
+          ? [..._houseHelpHomeSizes]
+          : homeSizes.toList(growable: false),
+      'arrivalTargets': arrivalTargets.isEmpty
+          ? [..._houseHelpUrgency]
+          : arrivalTargets.toList(growable: false),
+      'supplyModes': supplyModes.isEmpty
+          ? const ['Customer supplies', 'Provider supplies']
+          : supplyModes.toList(growable: false),
+    };
+  }
 
   List<DateTime> get _dateOptions {
     final now = DateTime.now();
@@ -97,7 +210,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
 
   String _dayTwoDigits(DateTime date) => date.day.toString().padLeft(2, '0');
 
-  String _monthTwoDigits(DateTime date) => date.month.toString().padLeft(2, '0');
+  String _monthTwoDigits(DateTime date) =>
+      date.month.toString().padLeft(2, '0');
 
   String _summaryDateLabel(DateTime date) =>
       '${_weekdayShortLabel(date)}, ${_dayTwoDigits(date)}/${_monthTwoDigits(date)}/${date.year}';
@@ -136,14 +250,36 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
     return filtered;
   }
 
-  double _estimateHouseHelpPrice(HomeServiceProviderModel provider) {
+  double _shiftMultiplierFromLabel(String value) {
+    final normalized = value.toLowerCase();
+    if (normalized.contains('8')) return 3.2;
+    if (normalized.contains('4')) return 1.8;
+    if (normalized.contains('2')) return 1.0;
+    return 1.0;
+  }
+
+  double _estimateHouseHelpPrice(
+    HomeServiceProviderModel provider, {
+    required String selectedShiftLabel,
+    required int selectedHomeSizeIndex,
+    required int selectedPlanIndex,
+    required bool providerSupplies,
+  }) {
     final basePrice = provider.startingPrice;
-    final shiftMultiplier = _houseHelpShiftOptions[_selectedHouseHelpShift].$2;
+    final shiftMultiplier = _shiftMultiplierFromLabel(selectedShiftLabel);
     const sizeMultipliers = [1.0, 1.15, 1.3];
     const planMultipliers = [1.0, 0.92, 0.95];
-    final sizeMultiplier = sizeMultipliers[_selectedHouseHelpHomeSize];
-    final planMultiplier = planMultipliers[_selectedHouseHelpPlan];
-    final suppliesFee = _houseHelpBringSupplies ? 5.0 : 0.0;
+    final safeHomeSizeIndex = selectedHomeSizeIndex.clamp(
+      0,
+      sizeMultipliers.length - 1,
+    );
+    final safePlanIndex = selectedPlanIndex.clamp(
+      0,
+      planMultipliers.length - 1,
+    );
+    final sizeMultiplier = sizeMultipliers[safeHomeSizeIndex];
+    final planMultiplier = planMultipliers[safePlanIndex];
+    final suppliesFee = providerSupplies ? 5.0 : 0.0;
     final total =
         basePrice * shiftMultiplier * sizeMultiplier * planMultiplier +
         suppliesFee;
@@ -158,54 +294,59 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
     return amount.toStringAsFixed(2);
   }
 
-  String _houseHelpPlanLabel(int index, AppLocalizations l10n) {
-    switch (index) {
-      case 0:
-        return l10n.t('home_service_booking.house_help_plan_one_time');
-      case 1:
-        return l10n.t('home_service_booking.house_help_plan_daily');
-      case 2:
-        return l10n.t('home_service_booking.house_help_plan_weekly');
-      default:
-        return _houseHelpPlans[index];
+  String _localizedHouseHelpPlanLabel(String value, AppLocalizations l10n) {
+    final normalized = value.toLowerCase();
+    if (normalized.contains('daily')) {
+      return l10n.t('home_service_booking.house_help_plan_daily');
     }
+    if (normalized.contains('weekly')) {
+      return l10n.t('home_service_booking.house_help_plan_weekly');
+    }
+    if (normalized.contains('one') ||
+        normalized.contains('single') ||
+        normalized.contains('once')) {
+      return l10n.t('home_service_booking.house_help_plan_one_time');
+    }
+    return l10n.homeServiceDynamicLabel(value);
   }
 
-  String _houseHelpShiftLabel(int index, AppLocalizations l10n) {
-    switch (index) {
-      case 0:
-        return l10n.t('home_service_booking.house_help_shift_2h');
-      case 1:
-        return l10n.t('home_service_booking.house_help_shift_4h');
-      case 2:
-        return l10n.t('home_service_booking.house_help_shift_8h');
-      default:
-        return _houseHelpShiftOptions[index].$1;
+  String _localizedHouseHelpShiftLabel(String value, AppLocalizations l10n) {
+    final normalized = value.toLowerCase();
+    if (normalized.contains('8')) {
+      return l10n.t('home_service_booking.house_help_shift_8h');
     }
+    if (normalized.contains('4')) {
+      return l10n.t('home_service_booking.house_help_shift_4h');
+    }
+    if (normalized.contains('2')) {
+      return l10n.t('home_service_booking.house_help_shift_2h');
+    }
+    return l10n.homeServiceDynamicLabel(value);
   }
 
-  String _houseHelpHomeSizeLabel(int index, AppLocalizations l10n) {
-    switch (index) {
-      case 0:
-        return l10n.t('home_service_booking.house_help_home_size_small');
-      case 1:
-        return l10n.t('home_service_booking.house_help_home_size_medium');
-      case 2:
-        return l10n.t('home_service_booking.house_help_home_size_large');
-      default:
-        return _houseHelpHomeSizes[index];
+  String _localizedHouseHelpHomeSizeLabel(String value, AppLocalizations l10n) {
+    final normalized = value.toLowerCase();
+    if (normalized == 'f2') {
+      return l10n.t('home_service_booking.house_help_home_size_small');
     }
+    if (normalized == 'f3') {
+      return l10n.t('home_service_booking.house_help_home_size_medium');
+    }
+    if (normalized == 'f4') {
+      return l10n.t('home_service_booking.house_help_home_size_large');
+    }
+    return l10n.homeServiceDynamicLabel(value);
   }
 
-  String _houseHelpUrgencyLabel(int index, AppLocalizations l10n) {
-    switch (index) {
-      case 0:
-        return l10n.t('home_service_booking.house_help_arrival_30');
-      case 1:
-        return l10n.t('home_service_booking.house_help_arrival_scheduled');
-      default:
-        return _houseHelpUrgency[index];
+  String _localizedHouseHelpArrivalLabel(String value, AppLocalizations l10n) {
+    final normalized = value.toLowerCase();
+    if (normalized.contains('30')) {
+      return l10n.t('home_service_booking.house_help_arrival_30');
     }
+    if (normalized.contains('scheduled')) {
+      return l10n.t('home_service_booking.house_help_arrival_scheduled');
+    }
+    return l10n.homeServiceDynamicLabel(value);
   }
 
   @override
@@ -216,15 +357,40 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
 
   Future<void> _loadProvider() async {
     try {
+      if (_isZoneDispatchRoute) {
+        final response = await ApiClient.get(
+          '/catalog/home-service-providers',
+          forceRefresh: true,
+        );
+        final providers = (response as List<dynamic>)
+            .map(
+              (entry) => HomeServiceProviderModel.fromApi(
+                Map<String, dynamic>.from(entry as Map),
+              ),
+            )
+            .where(_isHouseHelpProvider)
+            .where((provider) => provider.isAvailable)
+            .toList(growable: false);
+        if (!mounted) return;
+        setState(() {
+          _zonePoolProviders = providers;
+          _provider = _buildZoneDispatchProvider(providers);
+          _isLoading = false;
+        });
+        return;
+      }
+
       final response = await ApiClient.get(
         '/catalog/home-service-providers/${widget.providerId}',
         forceRefresh: true,
       );
       if (!mounted) return;
+      final provider = HomeServiceProviderModel.fromApi(
+        Map<String, dynamic>.from(response as Map),
+      );
       setState(() {
-        _provider = HomeServiceProviderModel.fromApi(
-          Map<String, dynamic>.from(response as Map),
-        );
+        _provider = provider;
+        _zonePoolProviders = [provider];
         _isLoading = false;
       });
     } catch (_) {
@@ -288,6 +454,35 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                   Builder(
                     builder: (context) {
                       final isHouseHelp = _isHouseHelpProvider(provider);
+                      final houseHelpProviderPool = _isZoneDispatchRoute
+                          ? _zonePoolProviders
+                          : [provider];
+                      final houseHelpConfig = isHouseHelp
+                          ? _houseHelpConfigFromProviders(houseHelpProviderPool)
+                          : const <String, List<String>>{};
+                      final houseHelpPlanOptionsRaw =
+                          houseHelpConfig['bookingTypes'] ?? _houseHelpPlans;
+                      final houseHelpShiftOptionsRaw =
+                          houseHelpConfig['shiftDurations'] ??
+                          _houseHelpShiftOptions
+                              .map((entry) => entry.$1)
+                              .toList(growable: false);
+                      final houseHelpHomeSizeOptionsRaw =
+                          houseHelpConfig['homeSizes'] ?? _houseHelpHomeSizes;
+                      final houseHelpArrivalOptionsRaw =
+                          houseHelpConfig['arrivalTargets'] ??
+                          _houseHelpUrgency;
+                      final selectedHouseHelpPlan = _selectedHouseHelpPlan
+                          .clamp(0, houseHelpPlanOptionsRaw.length - 1);
+                      final selectedHouseHelpShift = _selectedHouseHelpShift
+                          .clamp(0, houseHelpShiftOptionsRaw.length - 1);
+                      final selectedHouseHelpHomeSize =
+                          _selectedHouseHelpHomeSize.clamp(
+                            0,
+                            houseHelpHomeSizeOptionsRaw.length - 1,
+                          );
+                      final selectedHouseHelpArrival = _selectedHouseHelpUrgency
+                          .clamp(0, houseHelpArrivalOptionsRaw.length - 1);
                       final providerServiceOptionsRaw =
                           provider.services.isNotEmpty
                           ? provider.services
@@ -307,11 +502,21 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                         _dateOptions.length - 1,
                       );
                       final selectedDateValue = _dateOptions[selectedDateIndex];
-                      final isInstantHouseHelp = _isInstantHouseHelp(
-                        isHouseHelp,
-                      );
+                      final selectedArrivalOption = isHouseHelp
+                          ? houseHelpArrivalOptionsRaw[selectedHouseHelpArrival]
+                          : '';
+                      final isInstantHouseHelp =
+                          isHouseHelp &&
+                          _isInstantArrivalLabel(selectedArrivalOption);
                       final serviceFee = isHouseHelp
-                          ? _estimateHouseHelpPrice(provider)
+                          ? _estimateHouseHelpPrice(
+                              provider,
+                              selectedShiftLabel:
+                                  houseHelpShiftOptionsRaw[selectedHouseHelpShift],
+                              selectedHomeSizeIndex: selectedHouseHelpHomeSize,
+                              selectedPlanIndex: selectedHouseHelpPlan,
+                              providerSupplies: _houseHelpBringSupplies,
+                            )
                           : provider.startingPrice;
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,11 +597,14 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     spacing: 8,
                                     runSpacing: 8,
                                     children: List.generate(
-                                      _houseHelpPlans.length,
+                                      houseHelpPlanOptionsRaw.length,
                                       (index) => _BookingOptionChip(
-                                        label: _houseHelpPlanLabel(index, l10n),
+                                        label: _localizedHouseHelpPlanLabel(
+                                          houseHelpPlanOptionsRaw[index],
+                                          l10n,
+                                        ),
                                         selected:
-                                            _selectedHouseHelpPlan == index,
+                                            selectedHouseHelpPlan == index,
                                         onTap: () => setState(
                                           () => _selectedHouseHelpPlan = index,
                                         ),
@@ -417,14 +625,14 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     spacing: 8,
                                     runSpacing: 8,
                                     children: List.generate(
-                                      _houseHelpShiftOptions.length,
+                                      houseHelpShiftOptionsRaw.length,
                                       (index) => _BookingOptionChip(
-                                        label: _houseHelpShiftLabel(
-                                          index,
+                                        label: _localizedHouseHelpShiftLabel(
+                                          houseHelpShiftOptionsRaw[index],
                                           l10n,
                                         ),
                                         selected:
-                                            _selectedHouseHelpShift == index,
+                                            selectedHouseHelpShift == index,
                                         onTap: () => setState(
                                           () => _selectedHouseHelpShift = index,
                                         ),
@@ -445,14 +653,14 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     spacing: 8,
                                     runSpacing: 8,
                                     children: List.generate(
-                                      _houseHelpHomeSizes.length,
+                                      houseHelpHomeSizeOptionsRaw.length,
                                       (index) => _BookingOptionChip(
-                                        label: _houseHelpHomeSizeLabel(
-                                          index,
+                                        label: _localizedHouseHelpHomeSizeLabel(
+                                          houseHelpHomeSizeOptionsRaw[index],
                                           l10n,
                                         ),
                                         selected:
-                                            _selectedHouseHelpHomeSize == index,
+                                            selectedHouseHelpHomeSize == index,
                                         onTap: () => setState(
                                           () => _selectedHouseHelpHomeSize =
                                               index,
@@ -474,14 +682,14 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     spacing: 8,
                                     runSpacing: 8,
                                     children: List.generate(
-                                      _houseHelpUrgency.length,
+                                      houseHelpArrivalOptionsRaw.length,
                                       (index) => _BookingOptionChip(
-                                        label: _houseHelpUrgencyLabel(
-                                          index,
+                                        label: _localizedHouseHelpArrivalLabel(
+                                          houseHelpArrivalOptionsRaw[index],
                                           l10n,
                                         ),
                                         selected:
-                                            _selectedHouseHelpUrgency == index,
+                                            selectedHouseHelpArrival == index,
                                         onTap: () => setState(
                                           () =>
                                               _selectedHouseHelpUrgency = index,
@@ -776,6 +984,45 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 );
                               }).toList(),
                             ),
+                          if (selectedAddress?.latitude != null &&
+                              selectedAddress?.longitude != null) ...[
+                            const SizedBox(height: 12),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(14),
+                              child: SizedBox(
+                                height: 168,
+                                width: double.infinity,
+                                child: GoogleMap(
+                                  initialCameraPosition: CameraPosition(
+                                    target: LatLng(
+                                      selectedAddress!.latitude!,
+                                      selectedAddress.longitude!,
+                                    ),
+                                    zoom: 15.2,
+                                  ),
+                                  markers: {
+                                    Marker(
+                                      markerId: const MarkerId(
+                                        'selected-address',
+                                      ),
+                                      position: LatLng(
+                                        selectedAddress.latitude!,
+                                        selectedAddress.longitude!,
+                                      ),
+                                    ),
+                                  },
+                                  zoomControlsEnabled: false,
+                                  myLocationButtonEnabled: false,
+                                  mapToolbarEnabled: false,
+                                  rotateGesturesEnabled: false,
+                                  scrollGesturesEnabled: false,
+                                  tiltGesturesEnabled: false,
+                                  zoomGesturesEnabled: false,
+                                  liteModeEnabled: true,
+                                ),
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 24),
                           Container(
                             padding: const EdgeInsets.all(16),
@@ -798,8 +1045,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     l10n.t(
                                       'home_service_booking.house_help_summary_booking_format',
                                     ),
-                                    _houseHelpPlanLabel(
-                                      _selectedHouseHelpPlan,
+                                    _localizedHouseHelpPlanLabel(
+                                      houseHelpPlanOptionsRaw[selectedHouseHelpPlan],
                                       l10n,
                                     ),
                                   ),
@@ -808,8 +1055,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     l10n.t(
                                       'home_service_booking.house_help_summary_shift',
                                     ),
-                                    _houseHelpShiftLabel(
-                                      _selectedHouseHelpShift,
+                                    _localizedHouseHelpShiftLabel(
+                                      houseHelpShiftOptionsRaw[selectedHouseHelpShift],
                                       l10n,
                                     ),
                                   ),
@@ -818,8 +1065,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     l10n.t(
                                       'home_service_booking.house_help_summary_home_size',
                                     ),
-                                    _houseHelpHomeSizeLabel(
-                                      _selectedHouseHelpHomeSize,
+                                    _localizedHouseHelpHomeSizeLabel(
+                                      houseHelpHomeSizeOptionsRaw[selectedHouseHelpHomeSize],
                                       l10n,
                                     ),
                                   ),
@@ -828,8 +1075,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     l10n.t(
                                       'home_service_booking.house_help_summary_arrival_target',
                                     ),
-                                    _houseHelpUrgencyLabel(
-                                      _selectedHouseHelpUrgency,
+                                    _localizedHouseHelpArrivalLabel(
+                                      houseHelpArrivalOptionsRaw[selectedHouseHelpArrival],
                                       l10n,
                                     ),
                                   ),
@@ -888,6 +1135,17 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 ),
                               );
                               if (!context.mounted || !allowed) return;
+                              if (_isZoneDispatchRoute &&
+                                  _zonePoolProviders.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'No house-help providers are available in your zone right now.',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
 
                               if (selectedAddress == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -905,7 +1163,6 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               final addressText =
                                   '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}';
                               final bookingMetadata = <String, dynamic>{
-                                'providerId': provider.id,
                                 'categorySlug': provider.categorySlug,
                                 'providerTitle': provider.title,
                                 'serviceName':
@@ -913,6 +1170,21 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 'address': addressText,
                                 'addressId': selectedAddress.id,
                                 'addressLabel': selectedAddress.label,
+                                if (!_isZoneDispatchRoute)
+                                  'providerId': provider.id,
+                                if (_isZoneDispatchRoute) ...{
+                                  'dispatchMode': 'ZONE_POOL',
+                                  'providerPoolIds': _zonePoolProviders
+                                      .map((entry) => entry.id)
+                                      .toList(growable: false),
+                                  'zoneDispatch': true,
+                                },
+                                if (selectedAddress.latitude != null &&
+                                    selectedAddress.longitude != null)
+                                  'serviceLocation': {
+                                    'latitude': selectedAddress.latitude,
+                                    'longitude': selectedAddress.longitude,
+                                  },
                               };
                               if (!isInstantHouseHelp) {
                                 bookingMetadata['scheduledDate'] =
@@ -921,26 +1193,33 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     _times[_selectedTime];
                               } else {
                                 bookingMetadata['dispatchWindow'] =
-                                    _houseHelpUrgency[_selectedHouseHelpUrgency];
+                                    houseHelpArrivalOptionsRaw[selectedHouseHelpArrival];
                               }
                               if (isHouseHelp) {
                                 bookingMetadata['bookingFormat'] = {
                                   'vertical': 'HOUSE_HELP',
                                   'type':
-                                      _houseHelpPlans[_selectedHouseHelpPlan],
+                                      houseHelpPlanOptionsRaw[selectedHouseHelpPlan],
                                   'shift':
-                                      _houseHelpShiftOptions[_selectedHouseHelpShift]
-                                          .$1,
+                                      houseHelpShiftOptionsRaw[selectedHouseHelpShift],
                                   'homeSize':
-                                      _houseHelpHomeSizes[_selectedHouseHelpHomeSize],
+                                      houseHelpHomeSizeOptionsRaw[selectedHouseHelpHomeSize],
                                   'arrivalTarget':
-                                      _houseHelpUrgency[_selectedHouseHelpUrgency],
+                                      houseHelpArrivalOptionsRaw[selectedHouseHelpArrival],
                                   'bringSupplies': _houseHelpBringSupplies,
                                 };
                               }
                               final bookingModuleType = isHouseHelp
                                   ? 'HOUSE_HELP'
                                   : 'HOME_SERVICES';
+                              final orderItem = <String, dynamic>{
+                                if (!_isZoneDispatchRoute) 'id': provider.id,
+                                'name': serviceOptions[selectedService],
+                                'brand': provider.name,
+                                'price': serviceFee,
+                                'quantity': 1,
+                                'metadata': bookingMetadata,
+                              };
                               final order = await ApiClient.post('/orders', {
                                 'userId': auth.user!.id,
                                 'moduleType': bookingModuleType,
@@ -950,16 +1229,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 'discount': 0,
                                 'total': serviceFee,
                                 'notes': '',
-                                'items': [
-                                  {
-                                    'id': provider.id,
-                                    'name': serviceOptions[selectedService],
-                                    'brand': provider.name,
-                                    'price': serviceFee,
-                                    'quantity': 1,
-                                    'metadata': bookingMetadata,
-                                  },
-                                ],
+                                'items': [orderItem],
                               });
                               if (!context.mounted) return;
                               context.go(
@@ -971,7 +1241,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     'home_service_booking.pay_on_confirmation',
                                   ),
                                   'delivery': isInstantHouseHelp
-                                      ? _houseHelpUrgency[_selectedHouseHelpUrgency]
+                                      ? houseHelpArrivalOptionsRaw[selectedHouseHelpArrival]
                                       : '${_summaryDateLabel(selectedDateValue)}, ${_times[_selectedTime]}',
                                   'moduleName': serviceOptions[selectedService],
                                   'itemCount': 1,

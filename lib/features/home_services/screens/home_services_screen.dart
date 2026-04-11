@@ -140,31 +140,8 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
   }
 
   void _openHouseHelpCategory(BuildContext context) {
-    final l10n = context.l10n;
-    final provider = _preferredHouseHelpProvider;
-    if (provider != null) {
-      context.push('/home-services/book/${provider.id}');
-      return;
-    }
-    final category = _houseHelpCategory;
-    if (category == null) {
-      context.push(
-        '/home-services/category/all',
-        extra: {
-          'label': l10n.homeServiceCategoryName(
-            _fallbackHouseHelpCategory.slug,
-            _fallbackHouseHelpCategory.name,
-          ),
-        },
-      );
-      return;
-    }
-    context.push(
-      '/home-services/category/${category.slug}',
-      extra: {
-        'label': l10n.homeServiceCategoryName(category.slug, category.name),
-      },
-    );
+    context.push('/home-services/book/house-help-zone');
+    return;
   }
 
   void _openCategory(BuildContext context, HomeServiceCategoryModel category) {

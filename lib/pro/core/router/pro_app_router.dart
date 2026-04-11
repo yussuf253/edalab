@@ -181,6 +181,7 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
           (profile) => ProviderAvailabilityScreen(
             userId: profile.userId,
             businessName: profile.businessName,
+            activeModules: profile.activeModules,
           ),
         ),
       ),
@@ -191,6 +192,7 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
           (profile) => ProviderScheduleSettingsScreen(
             userId: profile.userId,
             businessName: profile.businessName,
+            activeModules: profile.activeModules,
           ),
         ),
       ),

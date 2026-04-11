@@ -82,6 +82,23 @@ const createHomeServiceProviderSchema = zod_1.z.object({
     imageUrl: zod_1.z.string().trim().url().optional().or(zod_1.z.literal('')),
     services: zod_1.z.array(zod_1.z.string().trim().min(1).max(80)).max(24).optional(),
     highlights: zod_1.z.array(zod_1.z.string().trim().min(1).max(120)).max(12).optional(),
+    serviceZone: zod_1.z
+        .object({
+        enabled: zod_1.z.boolean().optional(),
+        centerLatitude: zod_1.z.coerce.number().min(-90).max(90).optional().nullable(),
+        centerLongitude: zod_1.z.coerce.number().min(-180).max(180).optional().nullable(),
+        radiusKm: zod_1.z.coerce.number().positive().max(120).optional(),
+    })
+        .optional(),
+    houseHelpConfig: zod_1.z
+        .object({
+        bookingTypes: zod_1.z.array(zod_1.z.string().trim().min(1).max(60)).max(8).optional(),
+        shiftDurations: zod_1.z.array(zod_1.z.string().trim().min(1).max(60)).max(8).optional(),
+        homeSizes: zod_1.z.array(zod_1.z.string().trim().min(1).max(40)).max(8).optional(),
+        arrivalTargets: zod_1.z.array(zod_1.z.string().trim().min(1).max(60)).max(8).optional(),
+        supplyModes: zod_1.z.array(zod_1.z.string().trim().min(1).max(60)).max(8).optional(),
+    })
+        .optional(),
 });
 const createShoppingProductSchema = zod_1.z.object({
     storeId: zod_1.z.string().min(1),
@@ -136,6 +153,23 @@ const updateProviderSettingsSchema = zod_1.z.object({
     services: zod_1.z.array(zod_1.z.string().trim().min(1).max(80)).max(24).optional(),
     bookingModes: settingsModesSchema.optional(),
     availability: hoursSchema.optional(),
+    serviceZone: zod_1.z
+        .object({
+        enabled: zod_1.z.boolean().optional(),
+        centerLatitude: zod_1.z.coerce.number().min(-90).max(90).optional().nullable(),
+        centerLongitude: zod_1.z.coerce.number().min(-180).max(180).optional().nullable(),
+        radiusKm: zod_1.z.coerce.number().positive().max(120).optional(),
+    })
+        .optional(),
+    houseHelpConfig: zod_1.z
+        .object({
+        bookingTypes: zod_1.z.array(zod_1.z.string().trim().min(1).max(60)).max(8).optional(),
+        shiftDurations: zod_1.z.array(zod_1.z.string().trim().min(1).max(60)).max(8).optional(),
+        homeSizes: zod_1.z.array(zod_1.z.string().trim().min(1).max(40)).max(8).optional(),
+        arrivalTargets: zod_1.z.array(zod_1.z.string().trim().min(1).max(60)).max(8).optional(),
+        supplyModes: zod_1.z.array(zod_1.z.string().trim().min(1).max(60)).max(8).optional(),
+    })
+        .optional(),
 });
 const updateDoctorSettingsSchema = zod_1.z.object({
     doctorId: zod_1.z.string().min(1),
@@ -427,6 +461,146 @@ function normalizeHours(value, defaults) {
         sunday: map.sunday?.toString().trim() || defaults.sunday,
     };
 }
+function toFiniteNumber(value) {
+    if (typeof value === 'number' && Number.isFinite(value))
+        return value;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+function defaultHouseHelpConfig() {
+    return {
+        bookingTypes: ['One-time job', 'Daily recurring', 'Weekly recurring'],
+        shiftDurations: ['2 hours', '4 hours', '8 hours'],
+        homeSizes: ['F2', 'F3', 'F4'],
+        arrivalTargets: ['Within 30 min', 'Scheduled slot'],
+        supplyModes: ['Provider supplies', 'Customer supplies'],
+    };
+}
+function normalizeServiceZoneConfig(value, fallback) {
+    const defaults = fallback ?? {
+        enabled: false,
+        centerLatitude: null,
+        centerLongitude: null,
+        radiusKm: 8,
+    };
+    const map = value != null && typeof value === 'object' && !Array.isArray(value)
+        ? value
+        : {};
+    const radiusRaw = toFiniteNumber(map.radiusKm ?? defaults.radiusKm);
+    const centerLatitude = toFiniteNumber(map.centerLatitude ?? defaults.centerLatitude);
+    const centerLongitude = toFiniteNumber(map.centerLongitude ?? defaults.centerLongitude);
+    return {
+        enabled: map.enabled == null ? defaults.enabled : Boolean(map.enabled),
+        centerLatitude: centerLatitude != null && centerLatitude >= -90 && centerLatitude <= 90
+            ? centerLatitude
+            : defaults.centerLatitude,
+        centerLongitude: centerLongitude != null && centerLongitude >= -180 && centerLongitude <= 180
+            ? centerLongitude
+            : defaults.centerLongitude,
+        radiusKm: radiusRaw != null && radiusRaw > 0 && radiusRaw <= 120
+            ? radiusRaw
+            : defaults.radiusKm,
+    };
+}
+function normalizeHouseHelpConfig(value, fallback) {
+    const defaults = fallback ?? defaultHouseHelpConfig();
+    const map = value != null && typeof value === 'object' && !Array.isArray(value)
+        ? value
+        : {};
+    const readList = (key, max = 8) => {
+        if (!Array.isArray(map[key]))
+            return defaults[key];
+        const values = normalizeStringList(map[key]).slice(0, max);
+        return values.length === 0 ? defaults[key] : values;
+    };
+    return {
+        bookingTypes: readList('bookingTypes'),
+        shiftDurations: readList('shiftDurations'),
+        homeSizes: readList('homeSizes'),
+        arrivalTargets: readList('arrivalTargets'),
+        supplyModes: readList('supplyModes'),
+    };
+}
+function serviceZoneFromAvailabilityJson(value) {
+    const map = value != null && typeof value === 'object' && !Array.isArray(value)
+        ? value
+        : {};
+    const nested = map.serviceZone;
+    return normalizeServiceZoneConfig(nested, normalizeServiceZoneConfig(map.serviceZone));
+}
+function houseHelpConfigFromAvailabilityJson(value) {
+    const map = value != null && typeof value === 'object' && !Array.isArray(value)
+        ? value
+        : {};
+    return normalizeHouseHelpConfig(map.houseHelpConfig);
+}
+function normalizeProviderAvailabilityJson(params) {
+    const defaults = {
+        weekdays: '08:00 AM - 06:00 PM',
+        saturday: '09:00 AM - 02:00 PM',
+        sunday: 'Closed',
+    };
+    const existingHours = normalizeHours(params.current, defaults);
+    const updatedHours = params.availability == null
+        ? existingHours
+        : normalizeHours(params.availability, defaults);
+    const existingServiceZone = serviceZoneFromAvailabilityJson(params.current);
+    const existingHouseHelpConfig = houseHelpConfigFromAvailabilityJson(params.current);
+    return {
+        ...updatedHours,
+        serviceZone: params.serviceZone == null
+            ? existingServiceZone
+            : normalizeServiceZoneConfig(params.serviceZone, existingServiceZone),
+        houseHelpConfig: params.houseHelpConfig == null
+            ? existingHouseHelpConfig
+            : normalizeHouseHelpConfig(params.houseHelpConfig, existingHouseHelpConfig),
+    };
+}
+function toRadians(value) {
+    return (value * Math.PI) / 180;
+}
+function haversineDistanceKm(startLatitude, startLongitude, endLatitude, endLongitude) {
+    const earthRadiusKm = 6371;
+    const latitudeDelta = toRadians(endLatitude - startLatitude);
+    const longitudeDelta = toRadians(endLongitude - startLongitude);
+    const startLatRad = toRadians(startLatitude);
+    const endLatRad = toRadians(endLatitude);
+    const a = Math.sin(latitudeDelta / 2) * Math.sin(latitudeDelta / 2) +
+        Math.cos(startLatRad) *
+            Math.cos(endLatRad) *
+            Math.sin(longitudeDelta / 2) *
+            Math.sin(longitudeDelta / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusKm * c;
+}
+function orderServiceLocation(order) {
+    const firstItemMetadata = order.items[0]?.metadata &&
+        typeof order.items[0].metadata === 'object' &&
+        !Array.isArray(order.items[0].metadata)
+        ? order.items[0].metadata
+        : null;
+    const serviceLocation = firstItemMetadata?.serviceLocation &&
+        typeof firstItemMetadata.serviceLocation === 'object' &&
+        !Array.isArray(firstItemMetadata.serviceLocation)
+        ? firstItemMetadata.serviceLocation
+        : null;
+    const latitude = toFiniteNumber(serviceLocation?.latitude ?? order.address?.latitude);
+    const longitude = toFiniteNumber(serviceLocation?.longitude ?? order.address?.longitude);
+    if (latitude == null || longitude == null)
+        return null;
+    return { latitude, longitude };
+}
+function assignedProviderIdFromMetadata(metadata) {
+    if (metadata == null || typeof metadata !== 'object' || Array.isArray(metadata)) {
+        return null;
+    }
+    const map = metadata;
+    const assigned = map.assignedProviderId?.toString().trim();
+    if (assigned && assigned.length > 0)
+        return assigned;
+    const providerId = map.providerId?.toString().trim();
+    return providerId && providerId.length > 0 ? providerId : null;
+}
 function firstImageUrlFromJson(value) {
     if (!Array.isArray(value))
         return null;
@@ -468,7 +642,11 @@ function hasProviderOrderAccess(bindings, order) {
             return (bindings.providerIds.length > 0 &&
                 order.items.some((item) => item.externalRefId != null
                     ? bindings.providerIds.includes(item.externalRefId)
-                    : false));
+                    : (() => {
+                        const assignedProviderId = assignedProviderIdFromMetadata(item.metadata);
+                        return (assignedProviderId != null &&
+                            bindings.providerIds.includes(assignedProviderId));
+                    })()));
         case client_1.ModuleType.LAUNDRY:
             return (bindings.laundryServiceIds.length > 0 &&
                 order.items.some((item) => item.externalRefId != null
@@ -516,7 +694,7 @@ function queueModuleForOrder(moduleType) {
             return moduleType.toLowerCase();
     }
 }
-function serializeQueueOrderItem(order) {
+function serializeQueueOrderItem(order, options) {
     const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
     const firstItem = order.items[0];
     const firstItemMetadata = firstItem?.metadata &&
@@ -524,12 +702,17 @@ function serializeQueueOrderItem(order) {
         !Array.isArray(firstItem.metadata)
         ? firstItem.metadata
         : null;
-    const providerId = order.moduleType === client_1.ModuleType.HOME_SERVICES ||
-        order.moduleType === client_1.ModuleType.HOUSE_HELP
-        ? (firstItem?.externalRefId ??
-            firstItemMetadata?.providerId?.toString() ??
-            null)
-        : null;
+    const providerId = options?.providerIdOverride ??
+        (order.moduleType === client_1.ModuleType.HOME_SERVICES ||
+            order.moduleType === client_1.ModuleType.HOUSE_HELP
+            ? (firstItem?.externalRefId ??
+                assignedProviderIdFromMetadata(firstItemMetadata) ??
+                null)
+            : null);
+    const queueType = options?.queueType ??
+        (providerId == null || providerId.trim().length === 0
+            ? 'open'
+            : 'assigned');
     const categorySlug = firstItemMetadata?.categorySlug?.toString() ?? null;
     return {
         id: order.id,
@@ -549,6 +732,10 @@ function serializeQueueOrderItem(order) {
         customerUserId: order.userId,
         providerId,
         categorySlug,
+        queueType,
+        distanceKm: options?.distanceKm != null
+            ? Number(options.distanceKm.toFixed(1))
+            : null,
     };
 }
 function serializeQueueAppointmentItem(appointment) {
@@ -1012,44 +1199,100 @@ async function buildPharmacySummary(todayStart, bindings, businessName) {
     };
 }
 async function buildServicesSummary(todayStart, bindings) {
-    const orderWhere = {
-        moduleType: { in: [client_1.ModuleType.HOME_SERVICES, client_1.ModuleType.HOUSE_HELP] },
-        items: {
-            some: {
-                externalRefId: { in: bindings.providerIds },
-            },
-        },
-    };
-    const [providerCount, availableCount, pendingOrders, completedToday, recent] = await Promise.all([
-        db_1.prisma.homeServiceProvider.count({
-            where: { id: { in: bindings.providerIds } },
-        }),
-        db_1.prisma.homeServiceProvider.count({
-            where: {
-                isAvailable: true,
-                id: { in: bindings.providerIds },
-            },
-        }),
-        db_1.prisma.order.count({
-            where: {
-                ...orderWhere,
-                status: { in: liveOrderStatuses },
-            },
-        }),
-        db_1.prisma.order.count({
-            where: {
-                ...orderWhere,
-                status: client_1.OrderStatus.COMPLETED,
-                updatedAt: { gte: todayStart },
-            },
-        }),
-        db_1.prisma.order.findMany({
-            where: orderWhere,
-            include: { items: true },
-            orderBy: { createdAt: 'desc' },
-            take: 3,
-        }),
+    const [providers, serviceCandidates] = await Promise.all([
+        bindings.providerIds.length === 0
+            ? Promise.resolve([])
+            : db_1.prisma.homeServiceProvider.findMany({
+                where: { id: { in: bindings.providerIds } },
+                select: {
+                    id: true,
+                    isAvailable: true,
+                    availabilityJson: true,
+                },
+            }),
+        bindings.providerIds.length === 0
+            ? Promise.resolve([])
+            : db_1.prisma.order.findMany({
+                where: {
+                    moduleType: { in: [client_1.ModuleType.HOME_SERVICES, client_1.ModuleType.HOUSE_HELP] },
+                },
+                select: {
+                    id: true,
+                    moduleType: true,
+                    status: true,
+                    total: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    address: {
+                        select: {
+                            latitude: true,
+                            longitude: true,
+                        },
+                    },
+                    items: {
+                        select: {
+                            name: true,
+                            quantity: true,
+                            brand: true,
+                            externalRefId: true,
+                            metadata: true,
+                        },
+                    },
+                },
+                orderBy: { createdAt: 'desc' },
+                take: 200,
+            }),
     ]);
+    const providerCount = providers.length;
+    const availableCount = providers.filter((provider) => provider.isAvailable).length;
+    const pickZoneProvider = (order) => {
+        const location = orderServiceLocation(order);
+        if (location == null)
+            return null;
+        const matches = providers
+            .filter((provider) => provider.isAvailable)
+            .map((provider) => {
+            const zone = serviceZoneFromAvailabilityJson(provider.availabilityJson);
+            if (!zone.enabled ||
+                zone.centerLatitude == null ||
+                zone.centerLongitude == null) {
+                return null;
+            }
+            const distanceKm = haversineDistanceKm(zone.centerLatitude, zone.centerLongitude, location.latitude, location.longitude);
+            if (distanceKm > zone.radiusKm)
+                return null;
+            return { providerId: provider.id, distanceKm };
+        })
+            .filter((entry) => entry != null);
+        matches.sort((left, right) => left.distanceKm - right.distanceKm);
+        return matches.length === 0 ? null : matches[0];
+    };
+    const relevantOrders = serviceCandidates.filter((order) => {
+        const firstItem = order.items[0];
+        const directProviderId = firstItem?.externalRefId;
+        const assignedProviderId = assignedProviderIdFromMetadata(firstItem?.metadata);
+        if (order.moduleType === client_1.ModuleType.HOME_SERVICES) {
+            return (directProviderId != null &&
+                bindings.providerIds.includes(directProviderId));
+        }
+        if (directProviderId != null &&
+            bindings.providerIds.includes(directProviderId)) {
+            return true;
+        }
+        if (assignedProviderId != null &&
+            bindings.providerIds.includes(assignedProviderId)) {
+            return true;
+        }
+        if (order.status !== client_1.OrderStatus.PENDING)
+            return false;
+        const zoneCandidate = pickZoneProvider(order);
+        return zoneCandidate != null;
+    });
+    const pendingOrders = relevantOrders.filter((order) => liveOrderStatuses.includes(order.status)).length;
+    const completedToday = relevantOrders.filter((order) => order.status === client_1.OrderStatus.COMPLETED && order.updatedAt >= todayStart).length;
+    const recent = [...relevantOrders]
+        .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())
+        .slice(0, 3);
     return {
         module: 'services',
         title: 'Home Services',
@@ -1706,12 +1949,30 @@ router.post('/:userId/provider-order-status', (0, async_handler_1.asyncHandler)(
     }
     const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
     const bindings = normalizeBindings(hydratedProfile.bindings);
+    const serviceProviders = bindings.providerIds.length === 0
+        ? []
+        : await db_1.prisma.homeServiceProvider.findMany({
+            where: { id: { in: bindings.providerIds } },
+            select: {
+                id: true,
+                isAvailable: true,
+                availabilityJson: true,
+            },
+        });
     const order = await db_1.prisma.order.findUnique({
         where: { id: body.orderId },
         include: {
+            address: {
+                select: {
+                    latitude: true,
+                    longitude: true,
+                },
+            },
             items: {
                 select: {
+                    id: true,
                     externalRefId: true,
+                    metadata: true,
                 },
             },
         },
@@ -1719,8 +1980,96 @@ router.post('/:userId/provider-order-status', (0, async_handler_1.asyncHandler)(
     if (!order) {
         return res.status(404).json({ error: 'Order not found.' });
     }
-    if (!hasProviderOrderAccess(bindings, order)) {
-        return res.status(403).json({ error: 'Order is not assigned to this provider profile.' });
+    const firstItem = order.items[0];
+    const firstItemMetadata = firstItem?.metadata &&
+        typeof firstItem.metadata === 'object' &&
+        !Array.isArray(firstItem.metadata)
+        ? { ...firstItem.metadata }
+        : {};
+    const assignedProviderId = assignedProviderIdFromMetadata(firstItemMetadata);
+    const canAccessAssignedProvider = assignedProviderId != null && bindings.providerIds.includes(assignedProviderId);
+    const canAccessDirectly = hasProviderOrderAccess(bindings, order);
+    const canAccess = canAccessDirectly || canAccessAssignedProvider;
+    const chooseEligibleProviderForZoneOrder = () => {
+        const location = orderServiceLocation(order);
+        if (location == null || serviceProviders.length === 0)
+            return null;
+        const candidates = serviceProviders
+            .filter((provider) => provider.isAvailable)
+            .map((provider) => {
+            const zone = serviceZoneFromAvailabilityJson(provider.availabilityJson);
+            if (!zone.enabled ||
+                zone.centerLatitude == null ||
+                zone.centerLongitude == null) {
+                return null;
+            }
+            const distanceKm = haversineDistanceKm(zone.centerLatitude, zone.centerLongitude, location.latitude, location.longitude);
+            if (distanceKm > zone.radiusKm)
+                return null;
+            return { providerId: provider.id, distanceKm };
+        })
+            .filter((entry) => entry != null);
+        candidates.sort((left, right) => left.distanceKm - right.distanceKm);
+        return candidates.length === 0 ? null : candidates[0].providerId;
+    };
+    if (!canAccess) {
+        const isZonePlaceholderExternalRef = firstItem?.externalRefId == null ||
+            firstItem.externalRefId === 'house-help-zone';
+        const isZonePlaceholderAssignedProvider = assignedProviderId == null || assignedProviderId === 'house-help-zone';
+        const isZoneClaimCandidate = order.moduleType === client_1.ModuleType.HOUSE_HELP &&
+            order.status === client_1.OrderStatus.PENDING &&
+            body.status === client_1.OrderStatus.CONFIRMED &&
+            isZonePlaceholderExternalRef &&
+            isZonePlaceholderAssignedProvider;
+        if (!isZoneClaimCandidate) {
+            return res.status(403).json({ error: 'Order is not assigned to this provider profile.' });
+        }
+        const assignedByZone = chooseEligibleProviderForZoneOrder();
+        if (assignedByZone == null || firstItem == null) {
+            return res.status(403).json({
+                error: 'No provider in your configured service zone can claim this house-help request.',
+            });
+        }
+        const nextMetadata = {
+            ...firstItemMetadata,
+            dispatchMode: 'ZONE_POOL',
+            assignedProviderId: assignedByZone,
+            providerId: assignedByZone,
+            assignedAt: new Date().toISOString(),
+        };
+        const updatedOrder = await db_1.prisma.$transaction(async (tx) => {
+            const updated = await tx.order.update({
+                where: { id: order.id },
+                data: { status: body.status },
+            });
+            await tx.orderItem.update({
+                where: { id: firstItem.id },
+                data: { metadata: nextMetadata },
+            });
+            return updated;
+        });
+        await notifyOrderLifecycle({
+            userId: updatedOrder.userId,
+            orderId: updatedOrder.id,
+            moduleType: updatedOrder.moduleType,
+            status: updatedOrder.status,
+            event: 'status',
+        });
+        return res.json({
+            id: updatedOrder.id,
+            status: updatedOrder.status,
+            moduleType: updatedOrder.moduleType,
+        });
+    }
+    if (order.moduleType === client_1.ModuleType.HOUSE_HELP &&
+        (firstItem?.externalRefId == null ||
+            firstItem?.externalRefId === 'house-help-zone') &&
+        (assignedProviderId == null ||
+            assignedProviderId === 'house-help-zone') &&
+        body.status !== client_1.OrderStatus.CONFIRMED) {
+        return res.status(409).json({
+            error: 'This request must be accepted first before status updates.',
+        });
     }
     const updatedOrder = await db_1.prisma.order.update({
         where: { id: order.id },
@@ -1881,7 +2230,7 @@ router.get('/:userId/shop-queue', (0, async_handler_1.asyncHandler)(async (req, 
         }));
     const items = [...shoppingOrders, ...foodOrders, ...pharmacyOrders]
         .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())
-        .map(serializeQueueOrderItem);
+        .map((order) => serializeQueueOrderItem(order));
     res.json(items);
 }));
 router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (req, res) => {
@@ -1896,25 +2245,39 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
     const bindings = normalizeBindings(hydratedProfile.bindings);
     const canServices = profile.activeModules.includes(client_1.ProModule.SERVICES);
     const canLaundry = profile.activeModules.includes(client_1.ProModule.LAUNDRY);
-    const [serviceOrders, laundryOrders] = await Promise.all([
+    const [serviceProviders, serviceCandidates, laundryOrders] = await Promise.all([
         !canServices || bindings.providerIds.length === 0
+            ? Promise.resolve([])
+            : db_1.prisma.homeServiceProvider.findMany({
+                where: { id: { in: bindings.providerIds } },
+                select: {
+                    id: true,
+                    isAvailable: true,
+                    availabilityJson: true,
+                },
+            }),
+        !canServices
             ? Promise.resolve([])
             : db_1.prisma.order.findMany({
                 where: {
                     moduleType: {
                         in: [client_1.ModuleType.HOME_SERVICES, client_1.ModuleType.HOUSE_HELP],
                     },
-                    items: {
-                        some: {
-                            externalRefId: { in: bindings.providerIds },
-                        },
+                    status: {
+                        in: [
+                            client_1.OrderStatus.PENDING,
+                            client_1.OrderStatus.CONFIRMED,
+                            client_1.OrderStatus.IN_PROGRESS,
+                            client_1.OrderStatus.PROCESSING,
+                            client_1.OrderStatus.DISPATCHED,
+                        ],
                     },
                 },
                 include: {
                     user: {
                         select: { firstName: true, lastName: true, phone: true },
                     },
-                    address: { select: { line1: true } },
+                    address: { select: { line1: true, latitude: true, longitude: true } },
                     items: {
                         include: {
                             product: {
@@ -1924,7 +2287,7 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
                     },
                 },
                 orderBy: { createdAt: 'desc' },
-                take: 100,
+                take: 200,
             }),
         !canLaundry || bindings.laundryServiceIds.length === 0
             ? Promise.resolve([])
@@ -1941,7 +2304,7 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
                     user: {
                         select: { firstName: true, lastName: true, phone: true },
                     },
-                    address: { select: { line1: true } },
+                    address: { select: { line1: true, latitude: true, longitude: true } },
                     items: {
                         include: {
                             product: {
@@ -1954,9 +2317,89 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
                 take: 100,
             }),
     ]);
-    const items = [...serviceOrders, ...laundryOrders]
-        .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())
-        .map(serializeQueueOrderItem);
+    const serviceItems = !canServices
+        ? []
+        : (() => {
+            const providerLookup = new Map(serviceProviders.map((provider) => [provider.id, provider]));
+            const candidatesByOrderId = new Map();
+            const pickZoneProvider = (order) => {
+                const location = orderServiceLocation(order);
+                if (location == null)
+                    return null;
+                const matches = Array.from(providerLookup.values())
+                    .filter((provider) => provider.isAvailable)
+                    .map((provider) => {
+                    const zone = serviceZoneFromAvailabilityJson(provider.availabilityJson);
+                    if (!zone.enabled ||
+                        zone.centerLatitude == null ||
+                        zone.centerLongitude == null) {
+                        return null;
+                    }
+                    const distanceKm = haversineDistanceKm(zone.centerLatitude, zone.centerLongitude, location.latitude, location.longitude);
+                    if (distanceKm > zone.radiusKm)
+                        return null;
+                    return { providerId: provider.id, distanceKm };
+                })
+                    .filter((entry) => entry != null);
+                matches.sort((left, right) => left.distanceKm - right.distanceKm);
+                return matches.length > 0 ? matches[0] : null;
+            };
+            for (const order of serviceCandidates) {
+                const firstItem = order.items[0];
+                const directProviderId = firstItem?.externalRefId;
+                const assignedProviderId = assignedProviderIdFromMetadata(firstItem?.metadata);
+                if (order.moduleType === client_1.ModuleType.HOME_SERVICES) {
+                    if (directProviderId != null &&
+                        bindings.providerIds.includes(directProviderId)) {
+                        candidatesByOrderId.set(order.id, {
+                            order,
+                            providerIdOverride: directProviderId,
+                            queueType: 'assigned',
+                        });
+                    }
+                    continue;
+                }
+                if (directProviderId != null &&
+                    bindings.providerIds.includes(directProviderId)) {
+                    candidatesByOrderId.set(order.id, {
+                        order,
+                        providerIdOverride: directProviderId,
+                        queueType: 'assigned',
+                    });
+                    continue;
+                }
+                if (assignedProviderId != null &&
+                    bindings.providerIds.includes(assignedProviderId)) {
+                    candidatesByOrderId.set(order.id, {
+                        order,
+                        providerIdOverride: assignedProviderId,
+                        queueType: 'assigned',
+                    });
+                    continue;
+                }
+                if (order.status !== client_1.OrderStatus.PENDING) {
+                    continue;
+                }
+                const zoneCandidate = pickZoneProvider(order);
+                if (zoneCandidate == null)
+                    continue;
+                candidatesByOrderId.set(order.id, {
+                    order,
+                    providerIdOverride: zoneCandidate.providerId,
+                    queueType: 'open',
+                    distanceKm: zoneCandidate.distanceKm,
+                });
+            }
+            return Array.from(candidatesByOrderId.values()).map((entry) => serializeQueueOrderItem(entry.order, {
+                providerIdOverride: entry.providerIdOverride,
+                queueType: entry.queueType,
+                distanceKm: entry.distanceKm,
+            }));
+        })();
+    const items = [
+        ...serviceItems,
+        ...laundryOrders.map((order) => serializeQueueOrderItem(order)),
+    ].sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime());
     res.json(items);
 }));
 router.get('/:userId/doctor-appointments', (0, async_handler_1.asyncHandler)(async (req, res) => {
@@ -2610,11 +3053,23 @@ router.post('/:userId/home-service-provider', (0, async_handler_1.asyncHandler)(
             },
         });
     const defaultBookingModes = ['Home Visit'];
-    const defaultAvailability = {
+    const baseAvailability = {
         weekdays: '08:00 AM - 06:00 PM',
         saturday: '09:00 AM - 02:00 PM',
         sunday: 'Closed',
+        serviceZone: {
+            enabled: true,
+            centerLatitude: 11.5886,
+            centerLongitude: 43.1457,
+            radiusKm: 8,
+        },
+        houseHelpConfig: defaultHouseHelpConfig(),
     };
+    const defaultAvailability = normalizeProviderAvailabilityJson({
+        current: baseAvailability,
+        serviceZone: body.serviceZone,
+        houseHelpConfig: body.houseHelpConfig,
+    });
     const providerId = existingProvider?.id ?? (0, crypto_1.randomUUID)();
     const provider = await db_1.prisma.homeServiceProvider.upsert({
         where: { id: providerId },
@@ -2642,9 +3097,11 @@ router.post('/:userId/home-service-provider', (0, async_handler_1.asyncHandler)(
             bookingModesJson: existingProvider?.bookingModesJson == null
                 ? defaultBookingModes
                 : existingProvider.bookingModesJson,
-            availabilityJson: existingProvider?.availabilityJson == null
-                ? defaultAvailability
-                : existingProvider.availabilityJson,
+            availabilityJson: normalizeProviderAvailabilityJson({
+                current: existingProvider?.availabilityJson ?? defaultAvailability,
+                serviceZone: body.serviceZone,
+                houseHelpConfig: body.houseHelpConfig,
+            }),
             isAvailable: true,
         },
         create: {
@@ -3142,8 +3599,10 @@ router.get('/:userId/provider-availability', (0, async_handler_1.asyncHandler)(a
     }
     const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
     const bindings = normalizeBindings(hydratedProfile.bindings);
+    const canServices = hydratedProfile.activeModules.includes(client_1.ProModule.SERVICES);
+    const canLaundry = hydratedProfile.activeModules.includes(client_1.ProModule.LAUNDRY);
     const [providers, laundryServices] = await Promise.all([
-        bindings.providerIds.length === 0
+        !canServices || bindings.providerIds.length === 0
             ? Promise.resolve([])
             : db_1.prisma.homeServiceProvider.findMany({
                 where: { id: { in: bindings.providerIds } },
@@ -3154,7 +3613,7 @@ router.get('/:userId/provider-availability', (0, async_handler_1.asyncHandler)(a
                 },
                 orderBy: { name: 'asc' },
             }),
-        bindings.laundryServiceIds.length === 0
+        !canLaundry || bindings.laundryServiceIds.length === 0
             ? Promise.resolve([])
             : db_1.prisma.laundryService.findMany({
                 where: { id: { in: bindings.laundryServiceIds } },
@@ -3188,7 +3647,12 @@ router.post('/:userId/provider-availability', (0, async_handler_1.asyncHandler)(
     }
     const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
     const bindings = normalizeBindings(hydratedProfile.bindings);
+    const canServices = hydratedProfile.activeModules.includes(client_1.ProModule.SERVICES);
+    const canLaundry = hydratedProfile.activeModules.includes(client_1.ProModule.LAUNDRY);
     if (body.module === 'services') {
+        if (!canServices) {
+            return res.status(403).json({ error: 'Services module is not enabled for this profile.' });
+        }
         if (bindings.providerIds.length === 0 ||
             !bindings.providerIds.includes(body.targetId)) {
             return res.status(403).json({ error: 'Provider is not assigned to this profile.' });
@@ -3202,6 +3666,9 @@ router.post('/:userId/provider-availability', (0, async_handler_1.asyncHandler)(
             id: provider.id,
             enabled: provider.isAvailable,
         });
+    }
+    if (!canLaundry) {
+        return res.status(403).json({ error: 'Laundry module is not enabled for this profile.' });
     }
     if (bindings.laundryServiceIds.length === 0 ||
         !bindings.laundryServiceIds.includes(body.targetId)) {
@@ -3303,6 +3770,8 @@ router.get('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(async
             saturday: '09:00 AM - 02:00 PM',
             sunday: 'Closed',
         }),
+        serviceZone: serviceZoneFromAvailabilityJson(provider.availabilityJson),
+        houseHelpConfig: houseHelpConfigFromAvailabilityJson(provider.availabilityJson),
     })));
 }));
 router.post('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(async (req, res) => {
@@ -3318,6 +3787,10 @@ router.post('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(asyn
         !bindings.providerIds.includes(body.providerId)) {
         return res.status(403).json({ error: 'Provider is not assigned to this profile.' });
     }
+    const currentProvider = await db_1.prisma.homeServiceProvider.findUnique({
+        where: { id: body.providerId },
+        select: { availabilityJson: true },
+    });
     const provider = await db_1.prisma.homeServiceProvider.update({
         where: { id: body.providerId },
         data: {
@@ -3332,12 +3805,15 @@ router.post('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(asyn
             bookingModesJson: body.bookingModes == null
                 ? undefined
                 : normalizeStringList(body.bookingModes),
-            availabilityJson: body.availability == null
+            availabilityJson: body.availability == null &&
+                body.serviceZone == null &&
+                body.houseHelpConfig == null
                 ? undefined
-                : normalizeHours(body.availability, {
-                    weekdays: '08:00 AM - 06:00 PM',
-                    saturday: '09:00 AM - 02:00 PM',
-                    sunday: 'Closed',
+                : normalizeProviderAvailabilityJson({
+                    current: currentProvider?.availabilityJson,
+                    availability: body.availability,
+                    serviceZone: body.serviceZone,
+                    houseHelpConfig: body.houseHelpConfig,
                 }),
         },
         select: {
@@ -3366,6 +3842,8 @@ router.post('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(asyn
             saturday: '09:00 AM - 02:00 PM',
             sunday: 'Closed',
         }),
+        serviceZone: serviceZoneFromAvailabilityJson(provider.availabilityJson),
+        houseHelpConfig: houseHelpConfigFromAvailabilityJson(provider.availabilityJson),
     });
 }));
 router.get('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async (req, res) => {
