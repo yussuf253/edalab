@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../core/constants/pro_design_system.dart';
 import '../../../core/models/pro_dashboard_data.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/router/pro_route_paths.dart';
@@ -208,7 +209,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           return RefreshIndicator(
             onRefresh: _refreshDashboard,
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(ProDesignSystem.spacing16),
               children: [
                 _ProviderPipelineHero(
                   businessName: widget.profile.businessName,
@@ -218,23 +219,23 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                   onOpenAvailability: _openAvailability,
                 ),
                 if (data?.scopeNote?.isNotEmpty == true) ...[
-                  const SizedBox(height: 12),
+                  const SizedBox(height: ProDesignSystem.spacing16),
                   _ScopeNote(message: data!.scopeNote!),
                 ],
-                const SizedBox(height: 12),
+                const SizedBox(height: ProDesignSystem.spacing16),
                 _ProviderSnapshotStrip(
                   totalRequests: totalRequests,
                   actionable: actionable,
                   activePipelines: activeModules.length,
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: ProDesignSystem.spacing20),
                 Text(
                   'Pipeline Workboard',
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: ProDesignSystem.spacing12),
                 if (summaries.isNotEmpty)
                   ...summaries.map(_buildSummaryCard)
                 else
@@ -253,24 +254,33 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
         : ProModule.services;
     final color = ProModuleHelper.getModuleColor(module);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: ProDesignSystem.spacing12),
+      child: ModernCard(
+        backgroundColor: Colors.white,
+        borderRadius: ProDesignSystem.radiusLarge,
+        shadows: ProDesignSystem.shadowElevation2,
+        padding: const EdgeInsets.all(ProDesignSystem.spacing16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: color.withValues(alpha: 0.12),
+                Container(
+                  padding: const EdgeInsets.all(ProDesignSystem.spacing8),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(
+                      ProDesignSystem.radiusSmall,
+                    ),
+                  ),
                   child: Icon(
                     ProModuleHelper.getModuleIcon(module),
                     color: color,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: ProDesignSystem.spacing12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,92 +288,172 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                       Text(
                         summary.title,
                         style: const TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w800,
                           fontSize: 16,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(summary.subtitle),
+                      const SizedBox(height: ProDesignSystem.spacing4),
+                      Text(
+                        summary.subtitle,
+                        style: const TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 13,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            ...summary.metrics.map(
-              (metric) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Text(metric),
-              ),
+            const SizedBox(height: ProDesignSystem.spacing12),
+            Wrap(
+              spacing: ProDesignSystem.spacing8,
+              runSpacing: ProDesignSystem.spacing8,
+              children: summary.metrics
+                  .map(
+                    (metric) => Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: ProDesignSystem.spacing12,
+                        vertical: ProDesignSystem.spacing6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(
+                          ProDesignSystem.radiusMedium,
+                        ),
+                        border: Border.all(color: color.withValues(alpha: 0.2)),
+                      ),
+                      child: Text(
+                        metric,
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
             if (summary.recentItems.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: ProDesignSystem.spacing12),
               ...summary.recentItems
                   .take(2)
                   .map(
-                    (item) => Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(12),
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: ProDesignSystem.spacing8,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.title,
-                            style: const TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${item.subtitle}${item.amount == null || item.amount!.isEmpty ? '' : ' • ${item.amount}'}',
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  item.status.replaceAll('_', ' '),
-                                  style: TextStyle(
-                                    color: color,
-                                    fontWeight: FontWeight.w600,
+                      child: ModernCard(
+                        backgroundColor: color.withValues(alpha: 0.06),
+                        borderRadius: ProDesignSystem.radiusMedium,
+                        padding: const EdgeInsets.all(
+                          ProDesignSystem.spacing12,
+                        ),
+                        shadows: const [],
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item.title,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: ProDesignSystem.spacing4,
+                                      ),
+                                      Text(
+                                        '${item.subtitle}${item.amount == null || item.amount!.isEmpty ? '' : ' • ${item.amount}'}',
+                                        style: const TextStyle(
+                                          color: Color(0xFF6B7280),
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ),
-                              if (_nextProviderStatus(
-                                    summary.module,
-                                    item.status,
-                                  ) !=
-                                  null)
-                                ElevatedButton(
-                                  onPressed: _busyItemIds.contains(item.id)
-                                      ? null
-                                      : () => _advanceProviderOrder(
-                                          summary,
-                                          item,
-                                        ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: color,
-                                    foregroundColor: Colors.white,
+                              ],
+                            ),
+                            const SizedBox(height: ProDesignSystem.spacing8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: ProDesignSystem.spacing8,
+                                    vertical: ProDesignSystem.spacing4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: color.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(
+                                      ProDesignSystem.radiusSmall,
+                                    ),
                                   ),
                                   child: Text(
-                                    _busyItemIds.contains(item.id)
-                                        ? 'Updating...'
-                                        : _providerActionLabel(
-                                            summary.module,
-                                            item.status,
-                                          ),
+                                    item.status.replaceAll('_', ' '),
+                                    style: TextStyle(
+                                      color: color,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 11,
+                                    ),
                                   ),
                                 ),
-                            ],
-                          ),
-                        ],
+                                if (_nextProviderStatus(
+                                      summary.module,
+                                      item.status,
+                                    ) !=
+                                    null)
+                                  ElevatedButton(
+                                    onPressed: _busyItemIds.contains(item.id)
+                                        ? null
+                                        : () => _advanceProviderOrder(
+                                            summary,
+                                            item,
+                                          ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: color,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          ProDesignSystem.radiusSmall,
+                                        ),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: ProDesignSystem.spacing12,
+                                        vertical: ProDesignSystem.spacing6,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      _busyItemIds.contains(item.id)
+                                          ? 'Updating...'
+                                          : _providerActionLabel(
+                                              summary.module,
+                                              item.status,
+                                            ),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+                  )
+                  .toList(),
             ],
-            const SizedBox(height: 12),
+            const SizedBox(height: ProDesignSystem.spacing16),
             Row(
               children: [
                 OutlinedButton.icon(
@@ -371,7 +461,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                   icon: const Icon(Icons.chat_bubble_outline),
                   label: const Text('Inbox'),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: ProDesignSystem.spacing12),
                 ElevatedButton(
                   onPressed: () {
                     context.push(

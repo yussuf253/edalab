@@ -29,6 +29,12 @@ class ProAuthProvider extends ChangeNotifier {
     return error.toString().contains('Could not reach the API at');
   }
 
+  bool _isMissingProSessionError(Object error) {
+    final message = error.toString().toLowerCase();
+    return message.contains('requires a pro account session') ||
+        message.contains('pro account session');
+  }
+
   bool _supportsInbox(ProProfileType type) {
     return {
       ProProfileType.shop,
@@ -162,7 +168,20 @@ class ProAuthProvider extends ChangeNotifier {
     if (unusedUserId.isEmpty && _currentProfile == null) {
       return;
     }
-    await refreshSession();
+    try {
+      await refreshSession();
+    } catch (error) {
+      if (_isConnectionError(error)) {
+        return;
+      }
+      if (_isMissingProSessionError(error)) {
+        await _clearLocalSession(clearToken: true);
+        notifyListeners();
+        return;
+      }
+      await _clearLocalSession(clearToken: true);
+      notifyListeners();
+    }
   }
 
   void updateUnreadInboxCount(int value) {

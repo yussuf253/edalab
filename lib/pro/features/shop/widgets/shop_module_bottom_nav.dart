@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 
-enum ShopModuleBottomTab { orders, storefront, products }
+enum ShopModuleBottomTab { orders, products }
 
 class ShopModuleBottomNav extends StatelessWidget {
   final ShopModuleBottomTab activeTab;
   final VoidCallback onOrders;
-  final VoidCallback onStorefront;
   final VoidCallback onProducts;
 
   const ShopModuleBottomNav({
     super.key,
     required this.activeTab,
     required this.onOrders,
-    required this.onStorefront,
     required this.onProducts,
   });
 
@@ -34,14 +32,6 @@ class ShopModuleBottomNav extends StatelessWidget {
                 label: 'Orders',
                 onTap: onOrders,
                 active: activeTab == ShopModuleBottomTab.orders,
-              ),
-            ),
-            Expanded(
-              child: _ShopModuleNavButton(
-                icon: Icons.storefront_outlined,
-                label: 'Storefront',
-                onTap: onStorefront,
-                active: activeTab == ShopModuleBottomTab.storefront,
               ),
             ),
             Expanded(

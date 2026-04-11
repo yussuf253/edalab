@@ -7,6 +7,7 @@ import '../../../core/models/pro_profile.dart';
 import '../../../core/utils/pro_module_helper.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
+import '../../../core/constants/pro_design_system.dart';
 
 class ProSignupScreen extends StatefulWidget {
   const ProSignupScreen({super.key});
@@ -102,17 +103,32 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
             if (proAuth.currentAccount == null) {
               return Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(ProDesignSystem.spacing24),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.lock_outline_rounded, size: 40),
-                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(
+                          ProDesignSystem.spacing20,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(
+                            ProDesignSystem.radiusLarge,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.lock_outline_rounded,
+                          size: 40,
+                          color: Colors.blue[700],
+                        ),
+                      ),
+                      const SizedBox(height: ProDesignSystem.spacing12),
                       const Text(
                         'Create or sign in to a pro account first before setting up your workspace.',
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: ProDesignSystem.spacing16),
                       AppButton(
                         text: 'Go to Pro Sign In',
                         onPressed: () => context.go(ProRoutePaths.login),
@@ -124,68 +140,41 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
             }
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(ProDesignSystem.spacing24),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     if (proAuth.currentAccount != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.surfaceContainerHighest,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.verified_user_outlined,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Signed in as ${proAuth.currentAccount!.email}. Now choose the pro profile and modules you want to operate.',
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ),
-                          ],
-                        ),
+                      ModernInfoBox(
+                        message:
+                            'Signed in as ${proAuth.currentAccount!.email}. Now choose the pro profile and modules you want to operate.',
+                        icon: Icons.verified_user_outlined,
+                        backgroundColor: Colors.blue.withOpacity(0.1),
+                        textColor: Colors.blue[700]!,
+                        borderColor: Colors.blue[300]!,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: ProDesignSystem.spacing20),
                     ],
                     if (proAuth.isLoading) ...[
                       const LinearProgressIndicator(),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: ProDesignSystem.spacing16),
                       Text(
                         'Creating your pro workspace...',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: ProDesignSystem.spacing20),
                     ],
                     if (_submissionMessage != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.errorContainer.withValues(alpha: 0.7),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Text(
-                          _submissionMessage!,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onErrorContainer,
-                              ),
-                        ),
+                      ModernInfoBox(
+                        message: _submissionMessage!,
+                        icon: Icons.error_outline,
+                        backgroundColor: const Color(0xFFFFF5F5),
+                        textColor: const Color(0xFFDC2626),
+                        borderColor: const Color(0xFFF87171),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: ProDesignSystem.spacing20),
                     ],
                     Text(
                       'Choose Your Profile Type',
@@ -193,36 +182,34 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: ProDesignSystem.spacing16),
                     GridView.count(
                       crossAxisCount: 2,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
+                      crossAxisSpacing: ProDesignSystem.spacing16,
+                      mainAxisSpacing: ProDesignSystem.spacing16,
                       childAspectRatio: 0.9,
                       children: ProProfileType.values.map((type) {
                         final isSelected = _selectedProfileType == type;
                         return InkWell(
                           onTap: () => _onProfileSelected(type),
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isSelected
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context).colorScheme.outline
-                                          .withValues(alpha: 0.5),
-                                width: isSelected ? 2 : 1,
-                              ),
+                          borderRadius: BorderRadius.circular(
+                            ProDesignSystem.radiusLarge,
+                          ),
+                          child: ModernCard(
+                            borderRadius: ProDesignSystem.radiusLarge,
+                            border: Border.all(
                               color: isSelected
-                                  ? Theme.of(context)
-                                        .colorScheme
-                                        .primaryContainer
-                                        .withValues(alpha: 0.5)
-                                  : null,
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context).colorScheme.outline
+                                        .withValues(alpha: 0.5),
+                              width: isSelected ? 2 : 1,
                             ),
+                            backgroundColor: isSelected
+                                ? Theme.of(context).colorScheme.primaryContainer
+                                      .withValues(alpha: 0.5)
+                                : Colors.white,
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -235,7 +222,9 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                                           context,
                                         ).colorScheme.onSurfaceVariant,
                                 ),
-                                const SizedBox(height: 12),
+                                const SizedBox(
+                                  height: ProDesignSystem.spacing12,
+                                ),
                                 Text(
                                   ProModuleHelper.getProfileName(type),
                                   textAlign: TextAlign.center,
@@ -253,10 +242,12 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                                               ).colorScheme.onSurface,
                                       ),
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(
+                                  height: ProDesignSystem.spacing8,
+                                ),
                                 Padding(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
+                                    horizontal: ProDesignSystem.spacing12,
                                   ),
                                   child: Text(
                                     ProModuleHelper.getProfileDescription(type),
@@ -277,44 +268,27 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: ProDesignSystem.spacing32),
                     if (_selectedProfileType != null) ...[
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer
-                              .withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(16),
+                      ModernInfoBox(
+                        message: ProModuleHelper.getProfileDescription(
+                          _selectedProfileType!,
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              ProModuleHelper.getProfileIcon(
-                                _selectedProfileType!,
-                              ),
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                ProModuleHelper.getProfileDescription(
-                                  _selectedProfileType!,
-                                ),
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ),
-                          ],
+                        icon: ProModuleHelper.getProfileIcon(
+                          _selectedProfileType!,
                         ),
+                        backgroundColor: Colors.blue.withOpacity(0.1),
+                        textColor: Colors.blue[700]!,
+                        borderColor: Colors.blue[300]!,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: ProDesignSystem.spacing24),
                       Text(
                         'Select Active Modules',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: ProDesignSystem.spacing16),
                       ...ProModuleHelper.getModulesForProfile(
                         _selectedProfileType!,
                       ).map((module) {
@@ -340,7 +314,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                           },
                         );
                       }),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: ProDesignSystem.spacing24),
                       TextFormField(
                         controller: _businessNameController,
                         decoration: InputDecoration(
@@ -348,7 +322,13 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                           hintText:
                               'Enter the business, provider, clinic, fleet, or profile name',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(
+                              ProDesignSystem.radiusSmall,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: ProDesignSystem.spacing12,
+                            vertical: ProDesignSystem.spacing12,
                           ),
                         ),
                         validator: (value) {
@@ -358,7 +338,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: ProDesignSystem.spacing32),
                       AppButton(
                         text: 'Complete Sign Up',
                         isLoading: proAuth.isLoading,

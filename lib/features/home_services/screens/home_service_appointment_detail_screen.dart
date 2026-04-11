@@ -54,7 +54,10 @@ class _HomeServiceAppointmentDetailScreenState
     try {
       Map<String, dynamic>? order = _order;
       if (order == null || order.isEmpty) {
-        final response = await ApiClient.get('/orders/$userId', forceRefresh: true);
+        final response = await ApiClient.get(
+          '/orders/$userId',
+          forceRefresh: true,
+        );
         final orders = response is List ? response : const [];
         for (final entry in orders) {
           final candidate = Map<String, dynamic>.from(entry as Map);
@@ -126,19 +129,22 @@ class _HomeServiceAppointmentDetailScreenState
     final l10n = context.l10n;
     final order = _order;
     final provider = _provider;
-    final serviceName =
-        _metadataValue('serviceName').isNotEmpty
-            ? _metadataValue('serviceName')
-            : (((order?['items'] as List?)?.isNotEmpty ?? false)
-                  ? Map<String, dynamic>.from(
+    final serviceName = _metadataValue('serviceName').isNotEmpty
+        ? _metadataValue('serviceName')
+        : (((order?['items'] as List?)?.isNotEmpty ?? false)
+              ? Map<String, dynamic>.from(
                       (order!['items'] as List).first as Map,
                     )['name']?.toString() ??
                     l10n.t('module.home_services')
-                  : l10n.t('module.home_services'));
+              : l10n.t('module.home_services'));
     final bookingMode = _metadataValue('bookingMode');
     final scheduledDate = _metadataValue('scheduledDate');
     final timeSlot = _metadataValue('timeSlot');
     final address = _metadataValue('address');
+    final orderModuleType =
+        order?['moduleType']?.toString().toUpperCase() == 'HOUSE_HELP'
+        ? 'HOUSE_HELP'
+        : 'HOME_SERVICES';
 
     return PopScope(
       canPop: context.canPop(),
@@ -148,188 +154,219 @@ class _HomeServiceAppointmentDetailScreenState
         }
       },
       child: Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.t('home_service_detail.title')),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/home-services');
-            }
-          },
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text(l10n.t('home_service_detail.title')),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/home-services');
+              }
+            },
+          ),
         ),
-      ),
-      body: _isLoading
-          ? const DetailContentShimmer(
-              accentColor: AppColors.homeServices,
-              showHero: false,
-            )
-          : order == null
-          ? Center(
-              child: Text(
-                l10n.t('home_service_detail.unavailable'),
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
-              ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.homeServices, AppColors.secondaryLight],
-                      ),
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 62,
-                          height: 62,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.16),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Icon(
-                            provider?.categoryIcon ??
-                                Icons.home_repair_service_rounded,
-                            color: AppColors.white,
-                            size: 30,
-                          ),
+        body: _isLoading
+            ? const DetailContentShimmer(
+                accentColor: AppColors.homeServices,
+                showHero: false,
+              )
+            : order == null
+            ? Center(
+                child: Text(
+                  l10n.t('home_service_detail.unavailable'),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.grey,
+                  ),
+                ),
+              )
+            : SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            AppColors.homeServices,
+                            AppColors.secondaryLight,
+                          ],
                         ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                serviceName,
-                                style: AppTextStyles.h4.copyWith(
-                                  color: AppColors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                provider?.name ??
-                                    order['moduleName']?.toString() ??
-                                    l10n.t('home_service_detail.provider_name'),
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: Colors.white70,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 5,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.14),
-                                  borderRadius: BorderRadius.circular(999),
-                                ),
-                                child: Text(
-                                  order['status']?.toString() ?? 'PENDING',
-                                  style: AppTextStyles.labelSmall.copyWith(
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 62,
+                            height: 62,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.16),
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Icon(
+                              provider?.categoryIcon ??
+                                  Icons.home_repair_service_rounded,
+                              color: AppColors.white,
+                              size: 30,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  serviceName,
+                                  style: AppTextStyles.h4.copyWith(
                                     color: AppColors.white,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _DetailCard(
-                    title: l10n.t('home_service_detail.summary'),
-                    children: [
-                      _DetailRow(l10n.t('home_service_detail.booking_id'), '#${order['id']}'),
-                      _DetailRow(
-                        l10n.t('home_service_detail.price'),
-                        '\$${((order['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(0)}',
-                      ),
-                      if (bookingMode.isNotEmpty)
-                        _DetailRow(l10n.t('home_service_detail.mode'), bookingMode),
-                      if (scheduledDate.isNotEmpty)
-                        _DetailRow(l10n.t('home_service_detail.date'), scheduledDate),
-                      if (timeSlot.isNotEmpty)
-                        _DetailRow(l10n.t('home_service_detail.time'), timeSlot),
-                      if (address.isNotEmpty)
-                        _DetailRow(l10n.t('home_service_detail.address'), address),
-                    ],
-                  ),
-                  if (provider != null) ...[
-                    const SizedBox(height: 16),
-                    _DetailCard(
-                      title: l10n.t('home_service_detail.provider'),
-                      children: [
-                        _DetailRow(l10n.t('home_service_detail.name'), provider.name),
-                        _DetailRow(l10n.t('home_service_detail.role'), provider.title),
-                        if ((provider.contactPhone ?? '').isNotEmpty)
-                          _DetailRow(l10n.t('home_service_detail.phone'), provider.contactPhone!),
-                        _DetailRow(
-                          l10n.t('home_service_detail.availability'),
-                          provider.isAvailable
-                              ? l10n.t('home_service_detail.available_today')
-                              : l10n.t('home_service_detail.by_confirmation'),
-                        ),
-                      ],
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  if (provider != null)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: AppButton(
-                            text: l10n.t('home_service_detail.message'),
-                            isOutlined: true,
-                            color: AppColors.homeServices,
-                            onPressed: () => openConversation(
-                              context,
-                              moduleType: 'HOME_SERVICES',
-                              entityType: 'HOME_SERVICE_PROVIDER',
-                              entityId: provider.id,
-                              title: provider.name,
-                              subtitle: provider.title,
-                              avatarUrl: provider.imageUrl,
-                              accentColor: '#0F9D92',
-                              metadata: {
-                                'providerId': provider.id,
-                                'categorySlug': provider.categorySlug,
-                                'serviceModes': provider.bookingModes,
-                                'orderId': order['id'],
-                              },
+                                const SizedBox(height: 4),
+                                Text(
+                                  provider?.name ??
+                                      order['moduleName']?.toString() ??
+                                      l10n.t(
+                                        'home_service_detail.provider_name',
+                                      ),
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.14),
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Text(
+                                    order['status']?.toString() ?? 'PENDING',
+                                    style: AppTextStyles.labelSmall.copyWith(
+                                      color: AppColors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _DetailCard(
+                      title: l10n.t('home_service_detail.summary'),
+                      children: [
+                        _DetailRow(
+                          l10n.t('home_service_detail.booking_id'),
+                          '#${order['id']}',
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: AppButton(
-                            text: l10n.t('home_service_detail.call_provider'),
-                            color: AppColors.homeServices,
-                            onPressed: _callProvider,
+                        _DetailRow(
+                          l10n.t('home_service_detail.price'),
+                          '\$${((order['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(0)}',
+                        ),
+                        if (bookingMode.isNotEmpty)
+                          _DetailRow(
+                            l10n.t('home_service_detail.mode'),
+                            bookingMode,
                           ),
-                        ),
+                        if (scheduledDate.isNotEmpty)
+                          _DetailRow(
+                            l10n.t('home_service_detail.date'),
+                            scheduledDate,
+                          ),
+                        if (timeSlot.isNotEmpty)
+                          _DetailRow(
+                            l10n.t('home_service_detail.time'),
+                            timeSlot,
+                          ),
+                        if (address.isNotEmpty)
+                          _DetailRow(
+                            l10n.t('home_service_detail.address'),
+                            address,
+                          ),
                       ],
                     ),
-                  const SizedBox(height: 12),
-                  AppButton(
-                    text: l10n.t('home_service_detail.view_orders'),
-                    isOutlined: true,
-                    color: AppColors.homeServices,
-                    onPressed: () => context.go('/orders'),
-                  ),
-                ],
+                    if (provider != null) ...[
+                      const SizedBox(height: 16),
+                      _DetailCard(
+                        title: l10n.t('home_service_detail.provider'),
+                        children: [
+                          _DetailRow(
+                            l10n.t('home_service_detail.name'),
+                            provider.name,
+                          ),
+                          _DetailRow(
+                            l10n.t('home_service_detail.role'),
+                            provider.title,
+                          ),
+                          if ((provider.contactPhone ?? '').isNotEmpty)
+                            _DetailRow(
+                              l10n.t('home_service_detail.phone'),
+                              provider.contactPhone!,
+                            ),
+                          _DetailRow(
+                            l10n.t('home_service_detail.availability'),
+                            provider.isAvailable
+                                ? l10n.t('home_service_detail.available_today')
+                                : l10n.t('home_service_detail.by_confirmation'),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 24),
+                    if (provider != null)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppButton(
+                              text: l10n.t('home_service_detail.message'),
+                              isOutlined: true,
+                              color: AppColors.homeServices,
+                              onPressed: () => openConversation(
+                                context,
+                                moduleType: orderModuleType,
+                                entityType: 'HOME_SERVICE_PROVIDER',
+                                entityId: provider.id,
+                                title: provider.name,
+                                subtitle: provider.title,
+                                avatarUrl: provider.imageUrl,
+                                accentColor: '#0F9D92',
+                                metadata: {
+                                  'providerId': provider.id,
+                                  'categorySlug': provider.categorySlug,
+                                  'serviceModes': provider.bookingModes,
+                                  'orderId': order['id'],
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: AppButton(
+                              text: l10n.t('home_service_detail.call_provider'),
+                              color: AppColors.homeServices,
+                              onPressed: _callProvider,
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 12),
+                    AppButton(
+                      text: l10n.t('home_service_detail.view_orders'),
+                      isOutlined: true,
+                      color: AppColors.homeServices,
+                      onPressed: () => context.go('/orders'),
+                    ),
+                  ],
+                ),
               ),
-            ),
       ),
     );
   }

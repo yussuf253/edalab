@@ -85,6 +85,9 @@ function parseModule(raw) {
             return client_1.NotificationModule.ACCOUNT;
         case 'HOME-SERVICES':
         case 'HOME_SERVICE':
+        case 'HOUSE_HELP':
+        case 'HOUSE-HELP':
+        case 'HOUSEHELP':
             return client_1.NotificationModule.HOME_SERVICES;
         default:
             return undefined;

@@ -11,6 +11,12 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
 
+String _canonicalOrderModuleType(String? moduleType) {
+  final normalized = (moduleType ?? '').toUpperCase();
+  if (normalized == 'HOUSE_HELP') return 'HOME_SERVICES';
+  return normalized;
+}
+
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
   @override
@@ -61,7 +67,7 @@ class _OrdersScreenState extends State<OrdersScreen>
               DateTime.tryParse(b['createdAt']?.toString() ?? '') ??
               DateTime.fromMillisecondsSinceEpoch(0);
           return bDate.compareTo(aDate);
-      });
+        });
       final hasLiveResponse = results.any((result) => result['ok'] == true);
 
       setState(() {
@@ -89,27 +95,32 @@ class _OrdersScreenState extends State<OrdersScreen>
 
   List<Map<String, dynamic>> _normalizeOrders(dynamic value) {
     if (value is! List) return const [];
-    return value.map<Map<String, dynamic>>((entry) {
-      final order = Map<String, dynamic>.from(entry as Map);
-      final moduleType =
-          order['moduleType']?.toString().toUpperCase() ?? 'ORDER';
-      final items = (order['items'] as List? ?? const [])
-          .map((item) => Map<String, dynamic>.from(item as Map))
-          .toList();
-      final firstItem = items.isNotEmpty ? items.first : null;
-      return {
-        ...order,
-        'moduleType': moduleType,
-        'moduleName':
-            order['moduleName']?.toString() ??
-            firstItem?['brand']?.toString() ??
-            firstItem?['name']?.toString() ??
-            moduleType,
-        'trackingRoute':
-            order['trackingRoute']?.toString() ??
-            _defaultTrackingRoute(moduleType, order['id']?.toString()),
-      };
-    }).where((order) => order['moduleType'] != 'GROCERY').toList();
+    return value
+        .map<Map<String, dynamic>>((entry) {
+          final order = Map<String, dynamic>.from(entry as Map);
+          final rawModuleType =
+              order['moduleType']?.toString().toUpperCase() ?? 'ORDER';
+          final moduleType = _canonicalOrderModuleType(rawModuleType);
+          final items = (order['items'] as List? ?? const [])
+              .map((item) => Map<String, dynamic>.from(item as Map))
+              .toList();
+          final firstItem = items.isNotEmpty ? items.first : null;
+          return {
+            ...order,
+            'rawModuleType': rawModuleType,
+            'moduleType': moduleType,
+            'moduleName':
+                order['moduleName']?.toString() ??
+                firstItem?['brand']?.toString() ??
+                firstItem?['name']?.toString() ??
+                moduleType,
+            'trackingRoute':
+                order['trackingRoute']?.toString() ??
+                _defaultTrackingRoute(rawModuleType, order['id']?.toString()),
+          };
+        })
+        .where((order) => order['moduleType'] != 'GROCERY')
+        .toList();
   }
 
   List<Map<String, dynamic>> _normalizeAppointments(dynamic value) {
@@ -120,7 +131,8 @@ class _OrdersScreenState extends State<OrdersScreen>
         'id': appointment['id'],
         'moduleType': 'DOCTOR',
         'moduleName':
-            appointment['doctorName']?.toString() ?? 'orders.group_appointments',
+            appointment['doctorName']?.toString() ??
+            'orders.group_appointments',
         'status': appointment['status']?.toString().toUpperCase() ?? 'UPCOMING',
         'total': appointment['fee'] ?? 0,
         'createdAt':
@@ -200,6 +212,7 @@ class _OrdersScreenState extends State<OrdersScreen>
     if (id == null || id.isEmpty) return null;
     switch (moduleType) {
       case 'HOME_SERVICES':
+      case 'HOUSE_HELP':
         return '/home-services/booking/$id';
       case 'SHOPPING':
         return '/shopping/order/$id';
@@ -301,8 +314,7 @@ class _OrdersScreenState extends State<OrdersScreen>
             child: _ModuleFilterBar(
               selectedModule: _selectedModule,
               modules: _availableModules(_allOrders),
-              onSelected: (value) =>
-                  setState(() => _selectedModule = value),
+              onSelected: (value) => setState(() => _selectedModule = value),
             ),
           ),
           Expanded(
@@ -330,12 +342,17 @@ class _OrdersScreenState extends State<OrdersScreen>
   }
 
   List<String> _availableModules(List<dynamic> orders) {
-    final modules = orders
-        .map((entry) => (entry as Map)['moduleType']?.toString().toUpperCase() ?? '')
-        .where((value) => value.isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
+    final modules =
+        orders
+            .map(
+              (entry) => _canonicalOrderModuleType(
+                (entry as Map)['moduleType']?.toString(),
+              ),
+            )
+            .where((value) => value.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
     return ['ALL', ...modules];
   }
 }
@@ -344,10 +361,7 @@ class _OrderList extends StatelessWidget {
   final List<dynamic> orders;
   final String selectedModule;
 
-  const _OrderList({
-    required this.orders,
-    required this.selectedModule,
-  });
+  const _OrderList({required this.orders, required this.selectedModule});
 
   IconData _getIcon(String mod) {
     switch (mod) {
@@ -368,6 +382,7 @@ class _OrderList extends StatelessWidget {
       case 'RIDE':
         return Icons.directions_car_rounded;
       case 'HOME_SERVICES':
+      case 'HOUSE_HELP':
         return Icons.home_repair_service_rounded;
       default:
         return Icons.receipt_long_rounded;
@@ -393,6 +408,7 @@ class _OrderList extends StatelessWidget {
       case 'RIDE':
         return AppColors.ride;
       case 'HOME_SERVICES':
+      case 'HOUSE_HELP':
         return AppColors.homeServices;
       default:
         return AppColors.primary;
@@ -404,6 +420,7 @@ class _OrderList extends StatelessWidget {
       case 'DOCTOR':
         return 'orders.group_appointments';
       case 'HOME_SERVICES':
+      case 'HOUSE_HELP':
         return 'orders.group_home_services';
       case 'RIDE':
         return 'orders.group_rides';
@@ -429,6 +446,7 @@ class _OrderList extends StatelessWidget {
       case 'DOCTOR':
         return 0;
       case 'HOME_SERVICES':
+      case 'HOUSE_HELP':
         return 1;
       case 'RIDE':
         return 2;
@@ -479,7 +497,7 @@ class _OrderList extends StatelessWidget {
   }
 
   String _displayTitle(Map<String, dynamic> order) {
-    final module = order['moduleType'].toString().toUpperCase();
+    final module = _canonicalOrderModuleType(order['moduleType']?.toString());
     final items = (order['items'] as List? ?? const [])
         .map((item) => Map<String, dynamic>.from(item as Map))
         .toList();
@@ -507,7 +525,7 @@ class _OrderList extends StatelessWidget {
   }
 
   String _displaySubtitle(Map<String, dynamic> order) {
-    final module = order['moduleType'].toString().toUpperCase();
+    final module = _canonicalOrderModuleType(order['moduleType']?.toString());
     final items = (order['items'] as List? ?? const [])
         .map((item) => Map<String, dynamic>.from(item as Map))
         .toList();
@@ -520,18 +538,22 @@ class _OrderList extends StatelessWidget {
       final type = firstItem?['name']?.toString() ?? 'orders.consultation';
       final date = _formatDate(metadata['date']?.toString());
       final time = _formatTime(metadata['timeSlot']?.toString());
-      return [type, date, time]
-          .where((part) => part.trim().isNotEmpty)
-          .join(' • ');
+      return [
+        type,
+        date,
+        time,
+      ].where((part) => part.trim().isNotEmpty).join(' • ');
     }
     if (module == 'HOME_SERVICES') {
-      final provider = firstItem?['brand']?.toString() ??
+      final provider =
+          firstItem?['brand']?.toString() ??
           order['moduleName']?.toString() ??
           'orders.service_provider';
       final date = _formatDate(metadata['scheduledDate']?.toString());
-      return [provider, date]
-          .where((part) => part.trim().isNotEmpty)
-          .join(' • ');
+      return [
+        provider,
+        date,
+      ].where((part) => part.trim().isNotEmpty).join(' • ');
     }
     if (module == 'RIDE') {
       final pickup = metadata['pickup']?.toString() ?? '';
@@ -546,17 +568,21 @@ class _OrderList extends StatelessWidget {
       0,
       (sum, item) => sum + ((item['quantity'] as num?)?.toInt() ?? 0),
     );
-    final brand = firstItem?['brand']?.toString() ?? order['moduleName']?.toString() ?? '';
+    final brand =
+        firstItem?['brand']?.toString() ??
+        order['moduleName']?.toString() ??
+        '';
     final quantityLabel = quantity > 0
         ? 'orders.item_count|$quantity|${quantity == 1 ? '' : 's'}'
         : '';
-    return [brand, quantityLabel]
-        .where((part) => part.trim().isNotEmpty)
-        .join(' • ');
+    return [
+      brand,
+      quantityLabel,
+    ].where((part) => part.trim().isNotEmpty).join(' • ');
   }
 
   String _actionLabel(Map<String, dynamic> order) {
-    final module = order['moduleType'].toString().toUpperCase();
+    final module = _canonicalOrderModuleType(order['moduleType']?.toString());
     final trackingRoute = order['trackingRoute']?.toString();
     if (trackingRoute != null && trackingRoute.isNotEmpty) {
       if (module == 'DOCTOR' || module == 'HOME_SERVICES') {
@@ -571,9 +597,10 @@ class _OrderList extends StatelessWidget {
     final grouped = <String, List<Map<String, dynamic>>>{};
     for (final entry in source) {
       final order = Map<String, dynamic>.from(entry as Map);
-      final module = order['moduleType']?.toString().toUpperCase() ?? 'OTHER';
+      final module = _canonicalOrderModuleType(order['moduleType']?.toString());
+      final normalizedModule = module.isEmpty ? 'OTHER' : module;
       if (selectedModule != 'ALL' && module != selectedModule) continue;
-      grouped.putIfAbsent(module, () => []).add(order);
+      grouped.putIfAbsent(normalizedModule, () => []).add(order);
     }
 
     final sortedKeys = grouped.keys.toList()
@@ -581,15 +608,16 @@ class _OrderList extends StatelessWidget {
 
     return {
       for (final key in sortedKeys)
-        key: (grouped[key]!..sort((a, b) {
-          final aDate =
-              DateTime.tryParse(a['createdAt']?.toString() ?? '') ??
-              DateTime.fromMillisecondsSinceEpoch(0);
-          final bDate =
-              DateTime.tryParse(b['createdAt']?.toString() ?? '') ??
-              DateTime.fromMillisecondsSinceEpoch(0);
-          return bDate.compareTo(aDate);
-        })),
+        key: (grouped[key]!
+          ..sort((a, b) {
+            final aDate =
+                DateTime.tryParse(a['createdAt']?.toString() ?? '') ??
+                DateTime.fromMillisecondsSinceEpoch(0);
+            final bDate =
+                DateTime.tryParse(b['createdAt']?.toString() ?? '') ??
+                DateTime.fromMillisecondsSinceEpoch(0);
+            return bDate.compareTo(aDate);
+          })),
     };
   }
 
@@ -735,9 +763,9 @@ class _OrderList extends StatelessWidget {
                                     width: 42,
                                     height: 42,
                                     decoration: BoxDecoration(
-                                      color: _getColor(module).withValues(
-                                        alpha: 0.12,
-                                      ),
+                                      color: _getColor(
+                                        module,
+                                      ).withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Icon(
@@ -811,9 +839,8 @@ class _OrderList extends StatelessWidget {
                                       const SizedBox(height: 1),
                                       Text(
                                         '\$${amount.toStringAsFixed(2)}',
-                                        style: AppTextStyles.priceSmall.copyWith(
-                                          color: _getColor(module),
-                                        ),
+                                        style: AppTextStyles.priceSmall
+                                            .copyWith(color: _getColor(module)),
                                       ),
                                     ],
                                   ),
@@ -827,10 +854,7 @@ class _OrderList extends StatelessWidget {
                                             module == 'SHOPPING' ||
                                             module == 'HOTEL' ||
                                             module == 'PHARMACY') {
-                                          context.push(
-                                            trackingRoute,
-                                            extra: o,
-                                          );
+                                          context.push(trackingRoute, extra: o);
                                           return;
                                         }
                                         context.push(trackingRoute);
@@ -840,7 +864,9 @@ class _OrderList extends StatelessWidget {
                                         context.push('/doctor/appointments');
                                         return;
                                       }
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
                                         SnackBar(
                                           content: Text(
                                             l10n.t(
@@ -905,6 +931,7 @@ class _ModuleFilterBar extends StatelessWidget {
       case 'DOCTOR':
         return 'orders.group_appointments';
       case 'HOME_SERVICES':
+      case 'HOUSE_HELP':
         return 'module.home_services';
       case 'SHOPPING':
         return 'module.shopping';
@@ -965,7 +992,9 @@ class _ModuleFilterBar extends StatelessWidget {
 
 extension on _OrderList {
   String _resolveLabel(String value, AppLocalizations l10n) {
-    if (value.startsWith('orders.') || value.startsWith('module.') || value.startsWith('common.')) {
+    if (value.startsWith('orders.') ||
+        value.startsWith('module.') ||
+        value.startsWith('common.')) {
       return l10n.t(value);
     }
     return value;

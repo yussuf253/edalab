@@ -31,6 +31,54 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
   List<HomeServiceProviderModel> _providers = const [];
   bool _isLoading = true;
 
+  bool _isHouseHelpSlug(String slug) {
+    final value = slug.toLowerCase();
+    return value.contains('house-help') ||
+        value.contains('house_help') ||
+        value.contains('househelp') ||
+        (value.contains('house') && value.contains('help')) ||
+        value.contains('maid') ||
+        value.contains('helper');
+  }
+
+  bool _isCleaningSlug(String slug) {
+    final value = slug.toLowerCase();
+    return value.contains('clean');
+  }
+
+  bool _isHouseHelpGroupSlug(String slug) {
+    return _isHouseHelpSlug(slug) || _isCleaningSlug(slug);
+  }
+
+  bool _isHouseHelpOrCleaningProvider(HomeServiceProviderModel provider) {
+    final slug = (provider.categorySlug ?? '').toLowerCase();
+    final categoryName = (provider.categoryName ?? '').toLowerCase();
+    final title = provider.title.toLowerCase();
+    final services = provider.services.join(' ').toLowerCase();
+    return _isHouseHelpGroupSlug(slug) ||
+        categoryName.contains('house help') ||
+        categoryName.contains('maid') ||
+        categoryName.contains('clean') ||
+        title.contains('house help') ||
+        title.contains('maid') ||
+        title.contains('clean') ||
+        services.contains('house help') ||
+        services.contains('maid') ||
+        services.contains('clean');
+  }
+
+  HomeServiceCategoryModel? _pickHouseHelpCategory(
+    List<HomeServiceCategoryModel> categories,
+  ) {
+    for (final category in categories) {
+      if (_isHouseHelpSlug(category.slug)) return category;
+    }
+    for (final category in categories) {
+      if (_isCleaningSlug(category.slug)) return category;
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -39,11 +87,13 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
 
   Future<void> _loadProviders() async {
     try {
+      final slug = widget.categorySlug.toLowerCase();
+      final isHouseHelpGroup = _isHouseHelpGroupSlug(slug);
       final categoriesResponse = await ApiClient.get(
         '/catalog/home-service-categories',
         forceRefresh: true,
       );
-      final endpoint = widget.categorySlug == 'all'
+      final endpoint = widget.categorySlug == 'all' || isHouseHelpGroup
           ? '/catalog/home-service-providers'
           : '/catalog/home-service-providers?category=${widget.categorySlug}';
       final response = await ApiClient.get(endpoint, forceRefresh: true);
@@ -61,15 +111,20 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
             ),
           )
           .toList();
+      final providers = isHouseHelpGroup
+          ? items.where(_isHouseHelpOrCleaningProvider).toList(growable: false)
+          : items;
       if (!mounted) return;
       setState(() {
         _category = widget.categorySlug == 'all'
             ? null
+            : isHouseHelpGroup
+            ? _pickHouseHelpCategory(categories)
             : categories.cast<HomeServiceCategoryModel?>().firstWhere(
                 (item) => item?.slug == widget.categorySlug,
                 orElse: () => null,
               );
-        _providers = items;
+        _providers = providers;
         _isLoading = false;
       });
     } catch (_) {
@@ -101,7 +156,9 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(widget.categoryLabel ?? l10n.t('home_category.professionals')),
+        title: Text(
+          widget.categoryLabel ?? l10n.t('home_category.professionals'),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => context.pop(),

@@ -187,6 +187,23 @@ export async function createOrderCreatedNotification({
           moduleName,
         },
       });
+    case ModuleType.HOUSE_HELP:
+      return createBackendNotification({
+        userId,
+        type: NotificationType.SYSTEM,
+        module: NotificationModule.HOME_SERVICES,
+        title: 'House help scheduled',
+        body: detailName.length === 0
+            ? 'Your house help booking is confirmed.'
+            : `${detailName} has been scheduled successfully.`,
+        route: `/home-services/booking/${orderId}`,
+        dedupeKey: `order:${orderId}:/home-services/booking/${orderId}`,
+        metadata: {
+          orderId,
+          moduleType,
+          moduleName,
+        },
+      });
     case ModuleType.LAUNDRY:
       return createBackendNotification({
         userId,

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
+import '../../../core/constants/pro_design_system.dart';
 
 class ProLoginScreen extends StatefulWidget {
   const ProLoginScreen({super.key});
@@ -59,10 +60,14 @@ class _ProLoginScreenState extends State<ProLoginScreen> {
     final proAuth = context.watch<ProAuthProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pro Sign In')),
+      appBar: AppBar(
+        title: const Text('Pro Sign In'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(ProDesignSystem.spacing24),
           child: Form(
             key: _formKey,
             child: Column(
@@ -74,36 +79,36 @@ class _ProLoginScreenState extends State<ProLoginScreen> {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: ProDesignSystem.spacing8),
                 Text(
                   'Sign in with your dedicated pro account to continue managing your workspace.',
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: ProDesignSystem.spacing24),
                 if (_errorMessage != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.errorContainer.withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Text(
-                      _errorMessage!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onErrorContainer,
-                      ),
-                    ),
+                  ModernInfoBox(
+                    message: _errorMessage!,
+                    icon: Icons.error_outline,
+                    backgroundColor: const Color(0xFFFFF5F5),
+                    textColor: const Color(0xFFDC2626),
+                    borderColor: const Color(0xFFF87171),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: ProDesignSystem.spacing20),
                 ],
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Email',
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        ProDesignSystem.radiusSmall,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: ProDesignSystem.spacing12,
+                      vertical: ProDesignSystem.spacing12,
+                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -112,13 +117,21 @@ class _ProLoginScreenState extends State<ProLoginScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: ProDesignSystem.spacing16),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Password',
-                    border: OutlineInputBorder(),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        ProDesignSystem.radiusSmall,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: ProDesignSystem.spacing12,
+                      vertical: ProDesignSystem.spacing12,
+                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -127,13 +140,13 @@ class _ProLoginScreenState extends State<ProLoginScreen> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: ProDesignSystem.spacing24),
                 AppButton(
                   text: proAuth.isLoading ? 'Signing in...' : 'Sign In',
                   isLoading: proAuth.isLoading,
                   onPressed: () => _submit(),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: ProDesignSystem.spacing12),
                 TextButton(
                   onPressed: () => context.go(ProRoutePaths.register),
                   child: const Text('Create a pro account'),

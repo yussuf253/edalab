@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../core/constants/pro_design_system.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
@@ -77,33 +78,33 @@ class ProAccountScreen extends StatelessWidget {
         foregroundColor: Colors.white,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(ProDesignSystem.spacing16),
         children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [profileColor, profileColor.withValues(alpha: 0.82)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(24),
-            ),
+          ModernCard(
+            backgroundColor: profileColor,
+            borderRadius: ProDesignSystem.radiusLarge,
+            shadows: ProDesignSystem.shadowElevation3,
+            padding: const EdgeInsets.all(ProDesignSystem.spacing20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: Colors.white.withValues(alpha: 0.18),
+                    Container(
+                      padding: const EdgeInsets.all(ProDesignSystem.spacing8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(
+                          ProDesignSystem.radiusMedium,
+                        ),
+                      ),
                       child: Icon(
                         ProModuleHelper.getProfileIcon(currentProfile.type),
                         color: Colors.white,
                         size: 28,
                       ),
                     ),
-                    const SizedBox(width: 14),
+                    const SizedBox(width: ProDesignSystem.spacing16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,6 +117,7 @@ class ProAccountScreen extends StatelessWidget {
                                   fontWeight: FontWeight.w800,
                                 ),
                           ),
+                          const SizedBox(height: ProDesignSystem.spacing4),
                           Text(
                             _profileDescriptor(currentProfile),
                             style: Theme.of(context).textTheme.bodyMedium
@@ -126,43 +128,46 @@ class ProAccountScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: ProDesignSystem.spacing16),
                 Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
+                  spacing: ProDesignSystem.spacing8,
+                  runSpacing: ProDesignSystem.spacing8,
                   children: currentProfile.activeModules
                       .map(
                         (module) => Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                            horizontal: ProDesignSystem.spacing12,
+                            vertical: ProDesignSystem.spacing8,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(999),
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(
+                              ProDesignSystem.radiusCircle,
+                            ),
                           ),
                           child: Text(
                             ProModuleHelper.getModuleName(module),
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
+                              fontSize: 12,
                             ),
                           ),
                         ),
                       )
                       .toList(),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: ProDesignSystem.spacing16),
                 Text(
                   currentProfile.isVerified
-                      ? 'Verified account'
-                      : 'Verification pending',
+                      ? '✓ Verified account'
+                      : '⏳ Verification pending',
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: ProDesignSystem.spacing6),
                 Text(
                   currentAccount == null
                       ? 'Workspace ID: ${currentProfile.id}'
@@ -174,8 +179,10 @@ class ProAccountScreen extends StatelessWidget {
           ),
           if (currentProfile.type == ProProfileType.delivery ||
               currentProfile.type == ProProfileType.rider) ...[
-            const SizedBox(height: 16),
-            Card(
+            const SizedBox(height: ProDesignSystem.spacing16),
+            ModernCard(
+              backgroundColor: Colors.white,
+              padding: const EdgeInsets.all(ProDesignSystem.spacing12),
               child: SwitchListTile(
                 value: currentProfile.isOnline,
                 onChanged: (value) async {
@@ -204,38 +211,20 @@ class ProAccountScreen extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: 16),
-          Text(
-            _managementTitle(currentProfile.type),
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: ProDesignSystem.spacing20),
+          ModernHeader(title: _managementTitle(currentProfile.type)),
+          const SizedBox(height: ProDesignSystem.spacing12),
           ..._buildManagementTiles(context, currentProfile),
-          const SizedBox(height: 16),
-          Text(
-            _moduleAccessTitle(currentProfile.type),
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 12),
+          const SizedBox(height: ProDesignSystem.spacing20),
+          ModernHeader(title: _moduleAccessTitle(currentProfile.type)),
+          const SizedBox(height: ProDesignSystem.spacing12),
           ...currentProfile.activeModules.map(
-            (module) => Card(
-              margin: const EdgeInsets.only(bottom: 10),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: ProModuleHelper.getModuleColor(
-                    module,
-                  ).withValues(alpha: 0.12),
-                  child: Icon(
-                    ProModuleHelper.getModuleIcon(module),
-                    color: ProModuleHelper.getModuleColor(module),
-                  ),
-                ),
-                title: Text(ProModuleHelper.getModuleName(module)),
-                subtitle: Text(ProModuleHelper.getModuleDescription(module)),
+            (module) => Padding(
+              padding: const EdgeInsets.only(bottom: ProDesignSystem.spacing12),
+              child: ModernTile(
+                leadingIcon: ProModuleHelper.getModuleIcon(module),
+                title: ProModuleHelper.getModuleName(module),
+                subtitle: ProModuleHelper.getModuleDescription(module),
               ),
             ),
           ),
@@ -256,11 +245,11 @@ class ProAccountScreen extends StatelessWidget {
             onTap: () => _open(context, ProRoutePaths.shopQueue),
           ),
           _AccountActionTile(
-            icon: Icons.storefront_outlined,
+            icon: Icons.store_mall_directory_outlined,
             color: AppColors.shopping,
-            title: 'Catalog & Availability',
-            subtitle: 'Open store, restaurant, and pharmacy controls.',
-            onTap: () => _open(context, ProRoutePaths.shopCatalog),
+            title: 'Store Setup',
+            subtitle: 'Configure storefront identity and availability.',
+            onTap: () => _open(context, ProRoutePaths.shopProducts),
           ),
           _AccountActionTile(
             icon: Icons.inventory_2_outlined,
@@ -345,17 +334,18 @@ class _AccountActionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: ListTile(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: ProDesignSystem.spacing12),
+      child: ModernTile(
+        leadingIcon: icon,
+        title: title,
+        subtitle: subtitle,
         onTap: onTap,
-        leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.12),
-          child: Icon(icon, color: color),
+        trailing: const Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: 16,
+          color: Color(0xFF6B7280),
         ),
-        title: Text(title),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
       ),
     );
   }

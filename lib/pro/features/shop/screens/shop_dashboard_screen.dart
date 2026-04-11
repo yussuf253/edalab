@@ -3,19 +3,82 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../core/constants/pro_design_system.dart';
 import '../../../core/models/pro_dashboard_data.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/router/pro_route_paths.dart';
+
+int _parseMetricCount(String value) {
+  final match = RegExp(r'\d+').firstMatch(value);
+  return int.tryParse(match?.group(0) ?? '') ?? 0;
+}
 
 int _orderCountFromSummary(ProDashboardModuleSummary summary) {
   for (final metric in summary.metrics) {
     final lower = metric.toLowerCase();
     if (!lower.contains('order')) continue;
-    final match = RegExp(r'\d+').firstMatch(metric);
-    final parsed = int.tryParse(match?.group(0) ?? '');
-    if (parsed != null) return parsed;
+    return _parseMetricCount(metric);
   }
   return summary.recentItems.length;
+}
+
+int _completedCountFromSummary(ProDashboardModuleSummary summary) {
+  for (final metric in summary.metrics) {
+    if (metric.toLowerCase().contains('completed')) {
+      return _parseMetricCount(metric);
+    }
+  }
+  return 0;
+}
+
+int _attentionCountFromSummary(ProDashboardModuleSummary summary) {
+  for (final metric in summary.metrics) {
+    final lower = metric.toLowerCase();
+    if (lower.contains('out of stock') || lower.contains('prescription-only')) {
+      return _parseMetricCount(metric);
+    }
+  }
+  return 0;
+}
+
+String _moduleLabel(String module) {
+  switch (module) {
+    case 'food':
+      return 'Food';
+    case 'pharmacy':
+      return 'Pharmacy';
+    default:
+      return 'Shopping';
+  }
+}
+
+Color _moduleColor(String module) {
+  switch (module) {
+    case 'food':
+      return AppColors.food;
+    case 'pharmacy':
+      return AppColors.pharmacy;
+    default:
+      return AppColors.shopping;
+  }
+}
+
+DateTime _recentItemDate(ProDashboardItem item) {
+  final raw = item.meta;
+  if (raw == null || raw.isEmpty) return DateTime.fromMillisecondsSinceEpoch(0);
+  return DateTime.tryParse(raw) ?? DateTime.fromMillisecondsSinceEpoch(0);
+}
+
+class _ShopRecentOrderEntry {
+  final String module;
+  final String moduleTitle;
+  final ProDashboardItem item;
+
+  const _ShopRecentOrderEntry({
+    required this.module,
+    required this.moduleTitle,
+    required this.item,
+  });
 }
 
 class ShopDashboardScreen extends StatefulWidget {
@@ -53,16 +116,8 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
 
   Future<void> _refreshDashboard() async {
     final future = _loadDashboard();
-    setState(() {
-      _dashboardFuture = future;
-    });
+    setState(() => _dashboardFuture = future);
     await future;
-  }
-
-  Future<void> _openStorefront() async {
-    await context.push(ProRoutePaths.shopCatalog);
-    if (!mounted) return;
-    await _refreshDashboard();
   }
 
   Future<void> _openQueue({String initialModule = 'all'}) async {
@@ -80,38 +135,25 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
     await _refreshDashboard();
   }
 
-  int _extractCount(
-    ProDashboardModuleSummary summary, {
-    bool preferAttention = false,
-  }) {
-    for (final metric in summary.metrics) {
-      final lower = metric.toLowerCase();
-      if (preferAttention && !lower.contains('attention')) continue;
-      if (!preferAttention &&
-          !lower.contains('order') &&
-          !lower.contains('progress')) {
-        continue;
+  List<_ShopRecentOrderEntry> _buildRecentOrders(
+    List<ProDashboardModuleSummary> summaries,
+  ) {
+    final entries = <_ShopRecentOrderEntry>[];
+    for (final summary in summaries) {
+      for (final item in summary.recentItems) {
+        entries.add(
+          _ShopRecentOrderEntry(
+            module: summary.module,
+            moduleTitle: summary.title,
+            item: item,
+          ),
+        );
       }
-      final match = RegExp(r'\d+').firstMatch(metric);
-      final parsed = int.tryParse(match?.group(0) ?? '');
-      if (parsed != null) return parsed;
     }
-    if (preferAttention) return 0;
-    return summary.recentItems.length;
-  }
-
-  int _liveOrdersTotal(List<ProDashboardModuleSummary> summaries) {
-    return summaries.fold<int>(
-      0,
-      (sum, summary) => sum + _extractCount(summary),
+    entries.sort(
+      (a, b) => _recentItemDate(b.item).compareTo(_recentItemDate(a.item)),
     );
-  }
-
-  int _attentionTotal(List<ProDashboardModuleSummary> summaries) {
-    return summaries.fold<int>(
-      0,
-      (sum, summary) => sum + _extractCount(summary, preferAttention: true),
-    );
+    return entries.take(6).toList(growable: false);
   }
 
   @override
@@ -136,11 +178,19 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
           final data = snapshot.data;
           final summaries =
               data?.moduleSummaries ?? const <ProDashboardModuleSummary>[];
-          final liveOrders = _liveOrdersTotal(summaries);
-          final attention = _attentionTotal(summaries);
-          final activeLanes = summaries.where((entry) {
-            return _extractCount(entry) > 0 || entry.recentItems.isNotEmpty;
-          }).length;
+          final liveOrders = summaries.fold<int>(
+            0,
+            (sum, summary) => sum + _orderCountFromSummary(summary),
+          );
+          final completedToday = summaries.fold<int>(
+            0,
+            (sum, summary) => sum + _completedCountFromSummary(summary),
+          );
+          final attention = summaries.fold<int>(
+            0,
+            (sum, summary) => sum + _attentionCountFromSummary(summary),
+          );
+          final recentOrders = _buildRecentOrders(summaries);
 
           if (snapshot.connectionState == ConnectionState.waiting &&
               data == null) {
@@ -150,33 +200,34 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
           return RefreshIndicator(
             onRefresh: _refreshDashboard,
             child: ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(ProDesignSystem.spacing16),
               children: [
                 _DashboardHero(
                   businessName: widget.profile.businessName,
                   scopeNote: data?.scopeNote,
                   onOpenOrders: () => _openQueue(),
-                  onOpenCatalog: _openStorefront,
-                ),
-                const SizedBox(height: 16),
-                _ShopPulseRow(
-                  liveOrders: liveOrders,
-                  activeLanes: activeLanes,
-                  attentionCount: attention,
-                ),
-                const SizedBox(height: 16),
-                _StoreLaneBoard(
-                  summaries: summaries,
-                  onOpenModule: (module) => _openQueue(initialModule: module),
-                ),
-                const SizedBox(height: 16),
-                _RecentOrdersChipsCard(
-                  summaries: summaries,
-                  onOpenAll: () => _openQueue(),
-                  onOpenModule: (module) => _openQueue(initialModule: module),
                   onOpenProducts: _openProducts,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: ProDesignSystem.spacing20),
+                _ShopPulseRow(
+                  liveOrders: liveOrders,
+                  completedToday: completedToday,
+                  attentionCount: attention,
+                ),
+                const SizedBox(height: ProDesignSystem.spacing20),
+                _StoreManagementPanel(
+                  moduleSummaries: summaries,
+                  onOpenOrders: () => _openQueue(),
+                  onOpenProducts: _openProducts,
+                  onOpenModuleQueue: (module) =>
+                      _openQueue(initialModule: module),
+                ),
+                const SizedBox(height: ProDesignSystem.spacing20),
+                _RecentOrdersListCard(
+                  entries: recentOrders,
+                  onOpenAll: () => _openQueue(),
+                  onOpenModule: (module) => _openQueue(initialModule: module),
+                ),
               ],
             ),
           );
@@ -190,27 +241,22 @@ class _DashboardHero extends StatelessWidget {
   final String businessName;
   final String? scopeNote;
   final VoidCallback onOpenOrders;
-  final VoidCallback onOpenCatalog;
+  final VoidCallback onOpenProducts;
 
   const _DashboardHero({
     required this.businessName,
     required this.scopeNote,
     required this.onOpenOrders,
-    required this.onOpenCatalog,
+    required this.onOpenProducts,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.shopping, AppColors.primaryDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(22),
-      ),
+    return ModernCard(
+      backgroundColor: AppColors.shopping,
+      borderRadius: ProDesignSystem.radiusLarge,
+      shadows: ProDesignSystem.shadowElevation2,
+      padding: const EdgeInsets.all(ProDesignSystem.spacing20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -223,27 +269,25 @@ class _DashboardHero extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: ProDesignSystem.spacing8),
           Text(
-            'Orders, catalog, and stock controls in one place.',
+            'Operate your store, inventory, and order flow from here.',
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: Colors.white70),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
           if (scopeNote?.trim().isNotEmpty == true) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: ProDesignSystem.spacing12),
             Text(
               scopeNote!,
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(color: Colors.white70),
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ],
-          const SizedBox(height: 12),
+          const SizedBox(height: ProDesignSystem.spacing16),
           Row(
             children: [
               Expanded(
@@ -252,23 +296,43 @@ class _DashboardHero extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: AppColors.shopping,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: ProDesignSystem.spacing12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        ProDesignSystem.radiusMedium,
+                      ),
+                    ),
                   ),
                   icon: const Icon(Icons.receipt_long_outlined, size: 18),
-                  label: const Text('Orders'),
+                  label: const Text(
+                    'Order Queue',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: ProDesignSystem.spacing12),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: onOpenCatalog,
+                  onPressed: onOpenProducts,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
-                    side: const BorderSide(color: Colors.white54),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    side: const BorderSide(color: Colors.white54, width: 1.5),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: ProDesignSystem.spacing12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        ProDesignSystem.radiusMedium,
+                      ),
+                    ),
                   ),
-                  icon: const Icon(Icons.storefront_outlined, size: 18),
-                  label: const Text('Catalog'),
+                  icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                  label: const Text(
+                    'Products',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
                 ),
               ),
             ],
@@ -281,12 +345,12 @@ class _DashboardHero extends StatelessWidget {
 
 class _ShopPulseRow extends StatelessWidget {
   final int liveOrders;
-  final int activeLanes;
+  final int completedToday;
   final int attentionCount;
 
   const _ShopPulseRow({
     required this.liveOrders,
-    required this.activeLanes,
+    required this.completedToday,
     required this.attentionCount,
   });
 
@@ -296,25 +360,28 @@ class _ShopPulseRow extends StatelessWidget {
       children: [
         Expanded(
           child: _PulseTile(
-            label: 'Live',
+            label: 'Live Orders',
             value: '$liveOrders',
             color: AppColors.shopping,
+            icon: Icons.receipt_long_outlined,
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: ProDesignSystem.spacing12),
         Expanded(
           child: _PulseTile(
-            label: 'Lanes',
-            value: '$activeLanes',
+            label: 'Completed',
+            value: '$completedToday',
             color: AppColors.info,
+            icon: Icons.check_circle_outline,
           ),
         ),
-        const SizedBox(width: 10),
+        const SizedBox(width: ProDesignSystem.spacing12),
         Expanded(
           child: _PulseTile(
-            label: 'Attention',
+            label: 'Stock Alerts',
             value: '$attentionCount',
             color: AppColors.warning,
+            icon: Icons.warning_outlined,
           ),
         ),
       ],
@@ -326,147 +393,191 @@ class _PulseTile extends StatelessWidget {
   final String label;
   final String value;
   final Color color;
+  final IconData icon;
 
   const _PulseTile({
     required this.label,
     required this.value,
     required this.color,
+    required this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
-        ],
-      ),
+    return ModernStatCard(
+      label: label,
+      value: value,
+      icon: icon,
+      iconColor: color,
+      backgroundColor: color.withValues(alpha: 0.08),
     );
   }
 }
 
-class _StoreLaneBoard extends StatelessWidget {
-  final List<ProDashboardModuleSummary> summaries;
-  final ValueChanged<String> onOpenModule;
+class _StoreManagementPanel extends StatelessWidget {
+  final List<ProDashboardModuleSummary> moduleSummaries;
+  final VoidCallback onOpenOrders;
+  final VoidCallback onOpenProducts;
+  final ValueChanged<String> onOpenModuleQueue;
 
-  const _StoreLaneBoard({required this.summaries, required this.onOpenModule});
+  const _StoreManagementPanel({
+    required this.moduleSummaries,
+    required this.onOpenOrders,
+    required this.onOpenProducts,
+    required this.onOpenModuleQueue,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (summaries.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.black12),
-      ),
+    return ModernCard(
+      backgroundColor: Colors.white,
+      padding: const EdgeInsets.all(ProDesignSystem.spacing16),
+      shadows: ProDesignSystem.shadowElevation1,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Store Lanes',
+            'Store Management',
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
-          const SizedBox(height: 10),
-          ...summaries.map(
-            (summary) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _LaneTile(
-                title: summary.title,
-                subtitle: summary.subtitle,
-                count: _orderCountFromSummary(summary),
-                onTap: () => onOpenModule(summary.module),
-              ),
-            ),
+          const SizedBox(height: ProDesignSystem.spacing6),
+          Text(
+            'Use these controls to run your catalog and order operations.',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6B7280)),
           ),
+          const SizedBox(height: ProDesignSystem.spacing16),
+          Row(
+            children: [
+              Expanded(
+                child: _ManagementActionTile(
+                  title: 'Order Queue',
+                  subtitle: 'Handle active orders',
+                  icon: Icons.receipt_long_outlined,
+                  color: AppColors.shopping,
+                  onTap: onOpenOrders,
+                ),
+              ),
+              const SizedBox(width: ProDesignSystem.spacing12),
+              Expanded(
+                child: _ManagementActionTile(
+                  title: 'Products',
+                  subtitle: 'Update catalog',
+                  icon: Icons.inventory_2_outlined,
+                  color: AppColors.success,
+                  onTap: onOpenProducts,
+                ),
+              ),
+            ],
+          ),
+          if (moduleSummaries.isNotEmpty) ...[
+            const SizedBox(height: ProDesignSystem.spacing16),
+            Wrap(
+              spacing: ProDesignSystem.spacing8,
+              runSpacing: ProDesignSystem.spacing8,
+              children: moduleSummaries
+                  .map(
+                    (summary) => Chip(
+                      avatar: Container(
+                        padding: const EdgeInsets.all(ProDesignSystem.spacing4),
+                        decoration: BoxDecoration(
+                          color: _moduleColor(
+                            summary.module,
+                          ).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(
+                            ProDesignSystem.radiusSmall,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.local_offer_outlined,
+                          size: 14,
+                          color: _moduleColor(summary.module),
+                        ),
+                      ),
+                      label: Text(
+                        '${_moduleLabel(summary.module)} ${_orderCountFromSummary(summary)}',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      backgroundColor: _moduleColor(
+                        summary.module,
+                      ).withValues(alpha: 0.08),
+                      side: BorderSide(
+                        color: _moduleColor(
+                          summary.module,
+                        ).withValues(alpha: 0.2),
+                      ),
+                      onDeleted: () => onOpenModuleQueue(summary.module),
+                      deleteIcon: const SizedBox.shrink(),
+                    ),
+                  )
+                  .toList(growable: false),
+            ),
+          ],
         ],
       ),
     );
   }
 }
 
-class _LaneTile extends StatelessWidget {
+class _ManagementActionTile extends StatelessWidget {
   final String title;
   final String subtitle;
-  final int count;
+  final IconData icon;
+  final Color color;
   final VoidCallback onTap;
 
-  const _LaneTile({
+  const _ManagementActionTile({
     required this.title,
     required this.subtitle,
-    required this.count,
+    required this.icon,
+    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
+    return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.shopping.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
+      child: ModernCard(
+        backgroundColor: color.withValues(alpha: 0.08),
+        borderRadius: ProDesignSystem.radiusMedium,
+        shadows: ProDesignSystem.shadowElevation1,
+        padding: const EdgeInsets.all(ProDesignSystem.spacing12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              padding: const EdgeInsets.all(ProDesignSystem.spacing8),
               decoration: BoxDecoration(
-                color: AppColors.shopping.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                '$count',
-                style: const TextStyle(
-                  color: AppColors.shopping,
-                  fontWeight: FontWeight.w700,
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(
+                  ProDesignSystem.radiusSmall,
                 ),
               ),
+              child: Icon(icon, color: color, size: 20),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.black54),
-                  ),
-                ],
+            const SizedBox(height: ProDesignSystem.spacing8),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF1A1A2E),
               ),
             ),
-            const Icon(Icons.chevron_right_rounded),
+            const SizedBox(height: ProDesignSystem.spacing4),
+            Text(
+              subtitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6B7280)),
+            ),
           ],
         ),
       ),
@@ -474,38 +585,23 @@ class _LaneTile extends StatelessWidget {
   }
 }
 
-class _RecentOrdersChipsCard extends StatelessWidget {
-  final List<ProDashboardModuleSummary> summaries;
+class _RecentOrdersListCard extends StatelessWidget {
+  final List<_ShopRecentOrderEntry> entries;
   final VoidCallback onOpenAll;
-  final VoidCallback onOpenProducts;
   final ValueChanged<String> onOpenModule;
 
-  const _RecentOrdersChipsCard({
-    required this.summaries,
+  const _RecentOrdersListCard({
+    required this.entries,
     required this.onOpenAll,
-    required this.onOpenProducts,
     required this.onOpenModule,
   });
 
   @override
   Widget build(BuildContext context) {
-    final moduleChips = summaries
-        .map(
-          (summary) => (
-            module: summary.module,
-            title: summary.title,
-            count: _extractOrderCount(summary),
-          ),
-        )
-        .toList(growable: false);
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.black12),
-      ),
+    return ModernCard(
+      backgroundColor: Colors.white,
+      padding: const EdgeInsets.all(ProDesignSystem.spacing16),
+      shadows: ProDesignSystem.shadowElevation1,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -519,38 +615,143 @@ class _RecentOrdersChipsCard extends StatelessWidget {
               ),
               const Spacer(),
               TextButton(
-                onPressed: onOpenProducts,
-                child: const Text('Products'),
+                onPressed: onOpenAll,
+                child: const Text(
+                  'Open queue',
+                  style: TextStyle(
+                    color: Color(0xFF039D55),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              TextButton(onPressed: onOpenAll, child: const Text('Open all')),
             ],
           ),
-          const SizedBox(height: 8),
-          if (moduleChips.isEmpty)
-            const Text(
-              'No active order lanes right now.',
-              style: TextStyle(color: Colors.black54),
+          const SizedBox(height: ProDesignSystem.spacing12),
+          if (entries.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: ProDesignSystem.spacing8,
+              ),
+              child: Text(
+                'No recent orders available for this profile yet.',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6B7280)),
+              ),
             )
           else
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: moduleChips
-                  .map(
-                    (chip) => ActionChip(
-                      onPressed: () => onOpenModule(chip.module),
-                      avatar: const Icon(Icons.receipt_long_outlined, size: 16),
-                      label: Text('${chip.title} (${chip.count})'),
-                    ),
-                  )
-                  .toList(growable: false),
+            ...entries.map(
+              (entry) => Padding(
+                padding: const EdgeInsets.only(
+                  bottom: ProDesignSystem.spacing12,
+                ),
+                child: _RecentOrderTile(
+                  entry: entry,
+                  onTap: () => onOpenModule(entry.module),
+                ),
+              ),
             ),
         ],
       ),
     );
   }
+}
 
-  int _extractOrderCount(ProDashboardModuleSummary summary) {
-    return _orderCountFromSummary(summary);
+class _RecentOrderTile extends StatelessWidget {
+  final _ShopRecentOrderEntry entry;
+  final VoidCallback onTap;
+
+  const _RecentOrderTile({required this.entry, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final moduleColor = _moduleColor(entry.module);
+    final statusLabel = entry.item.status.replaceAll('_', ' ');
+    return ModernCard(
+      onTap: onTap,
+      backgroundColor: const Color(0xFFFAFAFA),
+      borderRadius: ProDesignSystem.radiusMedium,
+      shadows: ProDesignSystem.shadowElevation1,
+      padding: const EdgeInsets.all(ProDesignSystem.spacing12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 40,
+            width: 40,
+            decoration: BoxDecoration(
+              color: moduleColor.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(ProDesignSystem.radiusSmall),
+            ),
+            child: Icon(
+              Icons.receipt_long_outlined,
+              color: moduleColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: ProDesignSystem.spacing12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  entry.item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1A1A2E),
+                  ),
+                ),
+                const SizedBox(height: ProDesignSystem.spacing4),
+                Text(
+                  '${entry.moduleTitle} • ${entry.item.subtitle}',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: const Color(0xFF6B7280),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: ProDesignSystem.spacing8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if ((entry.item.amount ?? '').isNotEmpty)
+                Text(
+                  entry.item.amount!,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1A1A2E),
+                  ),
+                ),
+              const SizedBox(height: ProDesignSystem.spacing4),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ProDesignSystem.spacing8,
+                  vertical: ProDesignSystem.spacing4,
+                ),
+                decoration: BoxDecoration(
+                  color: moduleColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(
+                    ProDesignSystem.radiusCircle,
+                  ),
+                ),
+                child: Text(
+                  statusLabel,
+                  style: TextStyle(
+                    color: moduleColor,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

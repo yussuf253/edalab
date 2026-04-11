@@ -95,6 +95,9 @@ function parseModule(raw: unknown): NotificationModule | undefined {
       return NotificationModule.ACCOUNT;
     case 'HOME-SERVICES':
     case 'HOME_SERVICE':
+    case 'HOUSE_HELP':
+    case 'HOUSE-HELP':
+    case 'HOUSEHELP':
       return NotificationModule.HOME_SERVICES;
     default:
       return undefined;

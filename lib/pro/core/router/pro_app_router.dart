@@ -26,7 +26,6 @@ import '../../features/rider/screens/rider_active_delivery_screen.dart';
 import '../../features/rider/screens/rider_active_trip_screen.dart';
 import '../../features/rider/screens/rider_dashboard_screen.dart';
 import '../../features/rider/screens/rider_queue_screen.dart';
-import '../../features/shop/screens/shop_catalog_screen.dart';
 import '../../features/shop/screens/shop_dashboard_screen.dart';
 import '../../features/shop/screens/shop_orders_queue_screen.dart';
 import '../../features/shop/screens/shop_products_screen.dart';
@@ -144,14 +143,7 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
       ),
       GoRoute(
         path: ProRoutePaths.shopCatalog,
-        builder: (context, state) => _withProfile(
-          context,
-          (profile) => ShopCatalogScreen(
-            userId: profile.userId,
-            businessName: profile.businessName,
-            modules: profile.activeModules,
-          ),
-        ),
+        redirect: (_, state) => ProRoutePaths.shopProducts,
       ),
       GoRoute(
         path: ProRoutePaths.shopProducts,

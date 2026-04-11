@@ -65,12 +65,12 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             onTap: () => _open(ProRoutePaths.shopQueue),
           ),
           _OperationAction(
-            title: 'Catalog & Availability',
+            title: 'Store Setup',
             subtitle:
-                'Control what customers can currently buy from your business.',
-            icon: Icons.storefront_outlined,
+                'Manage storefront setup, visibility, and business profile.',
+            icon: Icons.store_mall_directory_outlined,
             color: AppColors.primary,
-            onTap: () => _open(ProRoutePaths.shopCatalog),
+            onTap: () => _open(ProRoutePaths.shopProducts),
           ),
           _OperationAction(
             title: 'Products Manager',

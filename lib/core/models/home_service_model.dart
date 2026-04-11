@@ -45,6 +45,11 @@ class HomeServiceCategoryModel {
         return Icons.content_cut_rounded;
       case 'handyman':
         return Icons.handyman_rounded;
+      case 'house_help':
+      case 'house-help':
+      case 'househelp':
+      case 'maid':
+        return Icons.cleaning_services_rounded;
       default:
         return Icons.home_repair_service_rounded;
     }
@@ -171,6 +176,11 @@ class HomeServiceProviderModel {
         return Icons.content_cut_rounded;
       case 'handyman':
         return Icons.handyman_rounded;
+      case 'house_help':
+      case 'house-help':
+      case 'househelp':
+      case 'maid':
+        return Icons.cleaning_services_rounded;
       default:
         return Icons.home_repair_service_rounded;
     }

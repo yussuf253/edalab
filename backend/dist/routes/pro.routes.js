@@ -166,6 +166,7 @@ function orderNotificationModule(moduleType) {
         case client_1.ModuleType.PHARMACY:
             return client_1.NotificationModule.PHARMACY;
         case client_1.ModuleType.HOME_SERVICES:
+        case client_1.ModuleType.HOUSE_HELP:
             return client_1.NotificationModule.HOME_SERVICES;
         case client_1.ModuleType.LAUNDRY:
             return client_1.NotificationModule.LAUNDRY;
@@ -192,6 +193,7 @@ function orderRouteForModule(moduleType, orderId) {
         case client_1.ModuleType.PHARMACY:
             return `/pharmacy/order/${orderId}`;
         case client_1.ModuleType.HOME_SERVICES:
+        case client_1.ModuleType.HOUSE_HELP:
             return `/home-services/booking/${orderId}`;
         case client_1.ModuleType.LAUNDRY:
             return `/laundry/tracking/${orderId}`;
@@ -411,6 +413,7 @@ function hasShopOrderAccess(bindings, order) {
 function hasProviderOrderAccess(bindings, order) {
     switch (order.moduleType) {
         case client_1.ModuleType.HOME_SERVICES:
+        case client_1.ModuleType.HOUSE_HELP:
             return (bindings.providerIds.length > 0 &&
                 order.items.some((item) => item.externalRefId != null
                     ? bindings.providerIds.includes(item.externalRefId)
@@ -453,12 +456,32 @@ function queueSourceLabel(moduleType, firstItem) {
         firstItem?.name ??
         formatModule(moduleType));
 }
+function queueModuleForOrder(moduleType) {
+    switch (moduleType) {
+        case client_1.ModuleType.HOME_SERVICES:
+        case client_1.ModuleType.HOUSE_HELP:
+            return 'services';
+        default:
+            return moduleType.toLowerCase();
+    }
+}
 function serializeQueueOrderItem(order) {
     const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
     const firstItem = order.items[0];
+    const firstItemMetadata = firstItem?.metadata &&
+        typeof firstItem.metadata === 'object' &&
+        !Array.isArray(firstItem.metadata)
+        ? firstItem.metadata
+        : null;
+    const providerId = order.moduleType === client_1.ModuleType.HOME_SERVICES ||
+        order.moduleType === client_1.ModuleType.HOUSE_HELP
+        ? (firstItem?.externalRefId ?? null)
+        : null;
+    const categorySlug = firstItemMetadata?.categorySlug?.toString() ?? null;
     return {
         id: order.id,
-        module: order.moduleType.toLowerCase(),
+        module: queueModuleForOrder(order.moduleType),
+        moduleType: order.moduleType,
         status: order.status,
         title: `${formatModule(order.moduleType)} #${order.id.slice(-5)}`,
         subtitle: `${totalItems} item${totalItems == 1 ? '' : 's'} • ${queueSourceLabel(order.moduleType, firstItem)}`,
@@ -471,6 +494,8 @@ function serializeQueueOrderItem(order) {
         address: orderAddressLabel(order, firstItem?.metadata),
         createdAt: order.createdAt,
         customerUserId: order.userId,
+        providerId,
+        categorySlug,
     };
 }
 function serializeQueueAppointmentItem(appointment) {
@@ -923,28 +948,22 @@ async function buildPharmacySummary(todayStart, bindings, businessName) {
     };
 }
 async function buildServicesSummary(todayStart, bindings) {
-    const orderWhere = bindings.providerIds.length === 0
-        ? { moduleType: client_1.ModuleType.HOME_SERVICES }
-        : {
-            moduleType: client_1.ModuleType.HOME_SERVICES,
-            items: {
-                some: {
-                    externalRefId: { in: bindings.providerIds },
-                },
+    const orderWhere = {
+        moduleType: { in: [client_1.ModuleType.HOME_SERVICES, client_1.ModuleType.HOUSE_HELP] },
+        items: {
+            some: {
+                externalRefId: { in: bindings.providerIds },
             },
-        };
+        },
+    };
     const [providerCount, availableCount, pendingOrders, completedToday, recent] = await Promise.all([
         db_1.prisma.homeServiceProvider.count({
-            where: bindings.providerIds.length === 0
-                ? {}
-                : { id: { in: bindings.providerIds } },
+            where: { id: { in: bindings.providerIds } },
         }),
         db_1.prisma.homeServiceProvider.count({
             where: {
                 isAvailable: true,
-                ...(bindings.providerIds.length === 0
-                    ? {}
-                    : { id: { in: bindings.providerIds } }),
+                id: { in: bindings.providerIds },
             },
         }),
         db_1.prisma.order.count({
@@ -971,7 +990,7 @@ async function buildServicesSummary(todayStart, bindings) {
         module: 'services',
         title: 'Home Services',
         subtitle: bindings.providerIds.length === 0
-            ? 'Service bookings and provider operations across the platform.'
+            ? 'No provider bindings were found for this profile. Update the business name to match your provider listing.'
             : 'Service bookings and provider operations for bound providers.',
         metrics: [
             `${providerCount} service providers on platform`,
@@ -984,23 +1003,19 @@ async function buildServicesSummary(todayStart, bindings) {
     };
 }
 async function buildLaundrySummary(todayStart, bindings) {
-    const orderWhere = bindings.laundryServiceIds.length === 0
-        ? { moduleType: client_1.ModuleType.LAUNDRY }
-        : {
-            moduleType: client_1.ModuleType.LAUNDRY,
-            items: {
-                some: {
-                    externalRefId: { in: bindings.laundryServiceIds },
-                },
+    const orderWhere = {
+        moduleType: client_1.ModuleType.LAUNDRY,
+        items: {
+            some: {
+                externalRefId: { in: bindings.laundryServiceIds },
             },
-        };
+        },
+    };
     const [serviceCount, activeOrders, completedToday, recent] = await Promise.all([
         db_1.prisma.laundryService.count({
             where: {
                 active: true,
-                ...(bindings.laundryServiceIds.length === 0
-                    ? {}
-                    : { id: { in: bindings.laundryServiceIds } }),
+                id: { in: bindings.laundryServiceIds },
             },
         }),
         db_1.prisma.order.count({
@@ -1027,7 +1042,7 @@ async function buildLaundrySummary(todayStart, bindings) {
         module: 'laundry',
         title: 'Laundry',
         subtitle: bindings.laundryServiceIds.length === 0
-            ? 'Laundry pickup, cleaning, and delivery flow across the platform.'
+            ? 'No laundry bindings were found for this profile. Update the business name to match your laundry listing.'
             : 'Laundry pickup, cleaning, and delivery flow for owned laundry services.',
         metrics: [
             `${serviceCount} laundry services available`,
@@ -1813,23 +1828,24 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
     if (!profile || profile.type !== client_1.ProProfileType.PROVIDER) {
         return res.status(404).json({ error: 'Provider pro profile not found.' });
     }
-    const bindings = normalizeBindings(profile.bindings);
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
     const canServices = profile.activeModules.includes(client_1.ProModule.SERVICES);
     const canLaundry = profile.activeModules.includes(client_1.ProModule.LAUNDRY);
     const [serviceOrders, laundryOrders] = await Promise.all([
-        !canServices
+        !canServices || bindings.providerIds.length === 0
             ? Promise.resolve([])
             : db_1.prisma.order.findMany({
-                where: bindings.providerIds.length === 0
-                    ? { moduleType: client_1.ModuleType.HOME_SERVICES }
-                    : {
-                        moduleType: client_1.ModuleType.HOME_SERVICES,
-                        items: {
-                            some: {
-                                externalRefId: { in: bindings.providerIds },
-                            },
+                where: {
+                    moduleType: {
+                        in: [client_1.ModuleType.HOME_SERVICES, client_1.ModuleType.HOUSE_HELP],
+                    },
+                    items: {
+                        some: {
+                            externalRefId: { in: bindings.providerIds },
                         },
                     },
+                },
                 include: {
                     user: {
                         select: { firstName: true, lastName: true, phone: true },
@@ -1846,19 +1862,17 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
                 orderBy: { createdAt: 'desc' },
                 take: 100,
             }),
-        !canLaundry
+        !canLaundry || bindings.laundryServiceIds.length === 0
             ? Promise.resolve([])
             : db_1.prisma.order.findMany({
-                where: bindings.laundryServiceIds.length === 0
-                    ? { moduleType: client_1.ModuleType.LAUNDRY }
-                    : {
-                        moduleType: client_1.ModuleType.LAUNDRY,
-                        items: {
-                            some: {
-                                externalRefId: { in: bindings.laundryServiceIds },
-                            },
+                where: {
+                    moduleType: client_1.ModuleType.LAUNDRY,
+                    items: {
+                        some: {
+                            externalRefId: { in: bindings.laundryServiceIds },
                         },
                     },
+                },
                 include: {
                     user: {
                         select: { firstName: true, lastName: true, phone: true },
@@ -2819,30 +2833,31 @@ router.get('/:userId/provider-availability', (0, async_handler_1.asyncHandler)(a
     if (!profile || profile.type !== client_1.ProProfileType.PROVIDER) {
         return res.status(404).json({ error: 'Provider pro profile not found.' });
     }
-    const bindings = normalizeBindings(profile.bindings);
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
     const [providers, laundryServices] = await Promise.all([
-        db_1.prisma.homeServiceProvider.findMany({
-            where: bindings.providerIds.length === 0
-                ? undefined
-                : { id: { in: bindings.providerIds } },
-            select: {
-                id: true,
-                name: true,
-                isAvailable: true,
-            },
-            orderBy: { name: 'asc' },
-        }),
-        db_1.prisma.laundryService.findMany({
-            where: bindings.laundryServiceIds.length === 0
-                ? undefined
-                : { id: { in: bindings.laundryServiceIds } },
-            select: {
-                id: true,
-                name: true,
-                active: true,
-            },
-            orderBy: { name: 'asc' },
-        }),
+        bindings.providerIds.length === 0
+            ? Promise.resolve([])
+            : db_1.prisma.homeServiceProvider.findMany({
+                where: { id: { in: bindings.providerIds } },
+                select: {
+                    id: true,
+                    name: true,
+                    isAvailable: true,
+                },
+                orderBy: { name: 'asc' },
+            }),
+        bindings.laundryServiceIds.length === 0
+            ? Promise.resolve([])
+            : db_1.prisma.laundryService.findMany({
+                where: { id: { in: bindings.laundryServiceIds } },
+                select: {
+                    id: true,
+                    name: true,
+                    active: true,
+                },
+                orderBy: { name: 'asc' },
+            }),
     ]);
     res.json({
         services: providers.map((provider) => ({
@@ -2864,7 +2879,8 @@ router.post('/:userId/provider-availability', (0, async_handler_1.asyncHandler)(
     if (!profile || profile.type !== client_1.ProProfileType.PROVIDER) {
         return res.status(404).json({ error: 'Provider pro profile not found.' });
     }
-    const bindings = normalizeBindings(profile.bindings);
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
     if (body.module === 'services') {
         if (bindings.providerIds.length === 0 ||
             !bindings.providerIds.includes(body.targetId)) {
@@ -2947,23 +2963,24 @@ router.get('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(async
     if (!profile || profile.type !== client_1.ProProfileType.PROVIDER) {
         return res.status(404).json({ error: 'Provider pro profile not found.' });
     }
-    const bindings = normalizeBindings(profile.bindings);
-    const providers = await db_1.prisma.homeServiceProvider.findMany({
-        where: bindings.providerIds.length === 0
-            ? undefined
-            : { id: { in: bindings.providerIds } },
-        select: {
-            id: true,
-            name: true,
-            title: true,
-            location: true,
-            contactPhone: true,
-            responseTime: true,
-            bookingModesJson: true,
-            availabilityJson: true,
-        },
-        orderBy: { name: 'asc' },
-    });
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
+    const providers = bindings.providerIds.length === 0
+        ? []
+        : await db_1.prisma.homeServiceProvider.findMany({
+            where: { id: { in: bindings.providerIds } },
+            select: {
+                id: true,
+                name: true,
+                title: true,
+                location: true,
+                contactPhone: true,
+                responseTime: true,
+                bookingModesJson: true,
+                availabilityJson: true,
+            },
+            orderBy: { name: 'asc' },
+        });
     res.json(providers.map((provider) => ({
         id: provider.id,
         name: provider.name,
@@ -2986,7 +3003,8 @@ router.post('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(asyn
     if (!profile || profile.type !== client_1.ProProfileType.PROVIDER) {
         return res.status(404).json({ error: 'Provider pro profile not found.' });
     }
-    const bindings = normalizeBindings(profile.bindings);
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
     if (bindings.providerIds.length === 0 ||
         !bindings.providerIds.includes(body.providerId)) {
         return res.status(403).json({ error: 'Provider is not assigned to this profile.' });

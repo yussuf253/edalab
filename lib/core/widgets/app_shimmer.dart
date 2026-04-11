@@ -933,35 +933,80 @@ class _ShimmerGridCard extends StatelessWidget {
                         padding: const EdgeInsets.all(12),
                         child: LayoutBuilder(
                           builder: (context, constraints) {
-                            final compact = constraints.maxHeight < 72;
+                            final ultraCompact = constraints.maxHeight < 56;
+                            final compact = constraints.maxHeight < 78;
+                            if (ultraCompact) {
+                              return const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ShimmerBlock(
+                                    width: double.infinity,
+                                    height: 10,
+                                    radius: 10,
+                                  ),
+                                  SizedBox(height: 6),
+                                  ShimmerBlock(
+                                    width: 74,
+                                    height: 8,
+                                    radius: 10,
+                                  ),
+                                ],
+                              );
+                            }
+                            final baseTitleHeight = compact ? 12.0 : 14.0;
+                            final baseTitleGap = compact ? 6.0 : 8.0;
+                            final baseSubtitleHeight = compact ? 10.0 : 12.0;
+                            final baseSectionGap = compact ? 8.0 : 12.0;
+                            final baseRowHeight = compact ? 26.0 : 34.0;
+                            final totalBaseHeight =
+                                baseTitleHeight +
+                                baseTitleGap +
+                                baseSubtitleHeight +
+                                baseSectionGap +
+                                baseRowHeight;
+                            final scale =
+                                constraints.maxHeight > 0 &&
+                                    totalBaseHeight > constraints.maxHeight
+                                ? constraints.maxHeight / totalBaseHeight
+                                : 1.0;
+
+                            double scaled(double value) =>
+                                (value * scale).clamp(4.0, value);
+
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.max,
                               children: [
                                 ShimmerBlock(
                                   width: double.infinity,
-                                  height: compact ? 12 : 14,
+                                  height: scaled(baseTitleHeight),
                                 ),
-                                SizedBox(height: compact ? 6 : 8),
+                                SizedBox(height: scaled(baseTitleGap)),
                                 ShimmerBlock(
                                   width: compact ? 82 : 110,
-                                  height: compact ? 10 : 12,
+                                  height: scaled(baseSubtitleHeight),
                                   radius: 10,
                                 ),
-                                const Spacer(),
-                                Row(
-                                  children: [
-                                    ShimmerBlock(
-                                      width: compact ? 54 : 70,
-                                      height: compact ? 12 : 14,
-                                      radius: 10,
-                                    ),
-                                    const Spacer(),
-                                    ShimmerBlock(
-                                      width: compact ? 26 : 34,
-                                      height: compact ? 26 : 34,
-                                      radius: 10,
-                                    ),
-                                  ],
+                                SizedBox(height: scaled(baseSectionGap)),
+                                SizedBox(
+                                  height: scaled(baseRowHeight),
+                                  child: Row(
+                                    children: [
+                                      ShimmerBlock(
+                                        width: compact ? 54 : 70,
+                                        height: scaled(compact ? 12 : 14),
+                                        radius: 10,
+                                      ),
+                                      const Spacer(),
+                                      ShimmerBlock(
+                                        width: compact ? 26 : 34,
+                                        height: scaled(compact ? 26 : 34),
+                                        radius: 10,
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             );

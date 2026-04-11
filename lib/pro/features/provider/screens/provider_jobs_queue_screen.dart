@@ -73,6 +73,17 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
     return _allowedModules.length > 1 ? 'all' : _allowedModules.first;
   }
 
+  String _canonicalModule(String module) {
+    switch (module) {
+      case 'home_services':
+      case 'house_help':
+      case 'services':
+        return 'services';
+      default:
+        return module;
+    }
+  }
+
   Future<void> _loadQueue() async {
     setState(() => _isLoading = true);
     try {
@@ -82,6 +93,13 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
       );
       final items = (response as List)
           .map((entry) => Map<String, dynamic>.from(entry as Map))
+          .map((entry) {
+            final normalized = Map<String, dynamic>.from(entry);
+            normalized['module'] = _canonicalModule(
+              normalized['module']?.toString() ?? '',
+            );
+            return normalized;
+          })
           .toList(growable: false);
       if (!mounted) return;
       setState(() {
@@ -306,15 +324,24 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
     final id = item['id']?.toString() ?? '';
     final status = item['status']?.toString() ?? '';
     final module = item['module']?.toString() ?? '';
+    final rawModuleType = item['moduleType']?.toString().toUpperCase() ?? '';
     final address = item['address']?.toString() ?? '';
     final customerName = item['customerName']?.toString() ?? 'Customer';
     final customerPhone = item['customerPhone']?.toString() ?? '';
     final customerUserId = item['customerUserId']?.toString() ?? '';
+    final providerId = item['providerId']?.toString() ?? '';
+    final categorySlug = item['categorySlug']?.toString().trim() ?? '';
     final amount = item['amount']?.toString() ?? '';
     final notes = item['notes']?.toString() ?? '';
     final createdAt = _formatDate(item['createdAt']);
     final isBusy = _busyIds.contains(id);
     final nextStatus = _nextStatus(module, status);
+    final conversationModuleType = module == 'laundry'
+        ? 'LAUNDRY'
+        : (rawModuleType == 'HOUSE_HELP' ? 'HOUSE_HELP' : 'HOME_SERVICES');
+    final conversationCategorySlug = categorySlug.isNotEmpty
+        ? categorySlug
+        : (rawModuleType == 'HOUSE_HELP' ? 'house-help' : module);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -387,18 +414,20 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
                       context,
                       customerUserId: customerUserId,
                       participantUserId: widget.userId,
-                      moduleType: module == 'laundry'
-                          ? 'LAUNDRY'
-                          : 'HOME_SERVICES',
+                      moduleType: conversationModuleType,
                       entityType: 'HOME_SERVICE_PROVIDER',
-                      entityId: id,
+                      entityId: module == 'laundry'
+                          ? id
+                          : (providerId.isNotEmpty ? providerId : id),
                       title: widget.businessName,
                       subtitle: '${_moduleLabel(module)} request',
                       accentColor: '#1A9A77',
                       metadata: {
                         'orderId': id,
+                        if (providerId.isNotEmpty) 'providerId': providerId,
                         'customerPhone': customerPhone,
-                        'categorySlug': module,
+                        'categorySlug': conversationCategorySlug,
+                        'moduleType': conversationModuleType,
                       },
                     ),
                     icon: const Icon(Icons.chat_bubble_outline, size: 18),

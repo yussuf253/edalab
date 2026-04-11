@@ -136,7 +136,9 @@ class AppNotificationModel {
         _fallbackRouteForModule(_moduleFromRaw(rawType));
 
     return AppNotificationModel(
-      id: json['id']?.toString() ?? DateTime.now().microsecondsSinceEpoch.toString(),
+      id:
+          json['id']?.toString() ??
+          DateTime.now().microsecondsSinceEpoch.toString(),
       title: json['title']?.toString() ?? 'Notification',
       body:
           json['body']?.toString() ??
@@ -152,8 +154,7 @@ class AppNotificationModel {
       route: route,
       metadata: metadata,
       dedupeKey:
-          json['dedupeKey']?.toString() ??
-          metadata['dedupeKey']?.toString(),
+          json['dedupeKey']?.toString() ?? metadata['dedupeKey']?.toString(),
     );
   }
 
@@ -215,6 +216,9 @@ class AppNotificationModel {
             return NotificationModule.promotions;
           case 'home_services':
           case 'home-service':
+          case 'house_help':
+          case 'house-help':
+          case 'househelp':
             return NotificationModule.homeServices;
           case 'hotel_booking':
             return NotificationModule.hotel;

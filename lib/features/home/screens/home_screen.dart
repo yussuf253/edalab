@@ -242,6 +242,14 @@ class _ServicesGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final textScale = MediaQuery.textScalerOf(
+      context,
+    ).scale(1.0).clamp(1.0, 1.35);
+    final serviceGridAspectRatio =
+        (0.8 -
+                (l10n.languageCode == 'en' ? 0.0 : 0.05) -
+                ((textScale - 1.0) * 0.12))
+            .clamp(0.68, 0.8);
     final services = [
       _ServiceItem(
         assetPath: 'assets/icons/food.png',
@@ -306,50 +314,62 @@ class _ServicesGrid extends StatelessWidget {
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
           mainAxisSpacing: 16,
           crossAxisSpacing: 12,
-          childAspectRatio: 0.8,
+          childAspectRatio: serviceGridAspectRatio,
         ),
         itemCount: services.length,
         itemBuilder: (context, index) {
           final service = services[index];
           return GestureDetector(
             onTap: () => context.push(service.route),
-            child: Column(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Image.asset(
-                      service.assetPath,
-                      fit: BoxFit.contain,
-                      color: AppColors.primary,
-                      colorBlendMode: BlendMode.srcIn,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.widgets_rounded,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final iconSize = constraints.maxHeight >= 96 ? 60.0 : 54.0;
+                final iconPadding = iconSize >= 58 ? 12.0 : 10.0;
+                final gap = constraints.maxHeight >= 96 ? 8.0 : 6.0;
+                return Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Container(
+                      width: iconSize,
+                      height: iconSize,
+                      decoration: BoxDecoration(
+                        color: AppColors.secondary.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(iconPadding),
+                        child: Image.asset(
+                          service.assetPath,
+                          fit: BoxFit.contain,
                           color: AppColors.primary,
-                          size: 28,
-                        );
-                      },
+                          colorBlendMode: BlendMode.srcIn,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(
+                              Icons.widgets_rounded,
+                              color: AppColors.primary,
+                              size: 28,
+                            );
+                          },
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  service.title,
-                  style: AppTextStyles.labelMedium,
-                  textAlign: TextAlign.center,
-                ),
-              ],
+                    SizedBox(height: gap),
+                    Expanded(
+                      child: Text(
+                        service.title,
+                        style: AppTextStyles.labelMedium,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           );
         },
@@ -411,63 +431,63 @@ class _SpecialOffers extends StatelessWidget {
         itemBuilder: (context, index) {
           final offer = offers[index];
           return Container(
-              width: 280,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: offer.color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: offer.color.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: offer.color.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(offer.icon, color: offer.color, size: 26),
+            width: 280,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: offer.color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: offer.color.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: offer.color.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: offer.color,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            offer.discount,
-                            style: AppTextStyles.badge.copyWith(fontSize: 11),
-                          ),
+                  child: Icon(offer.icon, color: offer.color, size: 26),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          offer.title,
-                          style: AppTextStyles.labelLarge,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        decoration: BoxDecoration(
+                          color: offer.color,
+                          borderRadius: BorderRadius.circular(6),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          offer.subtitle,
-                          style: AppTextStyles.caption,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        child: Text(
+                          offer.discount,
+                          style: AppTextStyles.badge.copyWith(fontSize: 11),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        offer.title,
+                        style: AppTextStyles.labelLarge,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        offer.subtitle,
+                        style: AppTextStyles.caption,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -512,96 +532,95 @@ class _PopularRestaurants extends StatelessWidget {
             itemBuilder: (context, index) {
               final restaurant = restaurants[index];
               return GestureDetector(
-                  onTap: () =>
-                      context.push('/food/restaurant/${restaurant.id}'),
-                  child: Container(
-                    width: 220,
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: AppSpacing.shadowSm,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 120,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.food.withValues(alpha: 0.3),
-                                AppColors.food.withValues(alpha: 0.1),
-                              ],
-                            ),
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16),
-                            ),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              Icons.restaurant_rounded,
-                              size: 40,
-                              color: AppColors.food.withValues(alpha: 0.5),
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                restaurant.name,
-                                style: AppTextStyles.labelLarge,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                restaurant.cuisine,
-                                style: AppTextStyles.caption,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.star_rounded,
-                                    size: 16,
-                                    color: AppColors.warning,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    restaurant.rating.toString(),
-                                    style: AppTextStyles.labelSmall.copyWith(
-                                      color: AppColors.dark,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Icon(
-                                    Icons.schedule_rounded,
-                                    size: 14,
-                                    color: AppColors.mediumGrey,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    restaurant.deliveryTime,
-                                    style: AppTextStyles.caption,
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    restaurant.deliveryFee,
-                                    style: AppTextStyles.labelSmall.copyWith(
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                onTap: () => context.push('/food/restaurant/${restaurant.id}'),
+                child: Container(
+                  width: 220,
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: AppSpacing.shadowSm,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 120,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.food.withValues(alpha: 0.3),
+                              AppColors.food.withValues(alpha: 0.1),
                             ],
                           ),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(16),
+                          ),
                         ),
-                      ],
-                    ),
+                        child: Center(
+                          child: Icon(
+                            Icons.restaurant_rounded,
+                            size: 40,
+                            color: AppColors.food.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              restaurant.name,
+                              style: AppTextStyles.labelLarge,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              restaurant.cuisine,
+                              style: AppTextStyles.caption,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.star_rounded,
+                                  size: 16,
+                                  color: AppColors.warning,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  restaurant.rating.toString(),
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: AppColors.dark,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                const Icon(
+                                  Icons.schedule_rounded,
+                                  size: 14,
+                                  color: AppColors.mediumGrey,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  restaurant.deliveryTime,
+                                  style: AppTextStyles.caption,
+                                ),
+                                const Spacer(),
+                                Text(
+                                  restaurant.deliveryFee,
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
+                ),
               );
             },
           ),
@@ -638,75 +657,75 @@ class _TopDoctors extends StatelessWidget {
             itemBuilder: (context, index) {
               final doctor = doctors[index];
               return GestureDetector(
-                  onTap: () => context.push('/doctor/detail/${doctor.id}'),
-                  child: Container(
-                    width: 260,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: AppSpacing.shadowSm,
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: AppColors.doctor.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(
-                            Icons.person_rounded,
-                            color: AppColors.doctor,
-                            size: 28,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                doctor.name,
-                                style: AppTextStyles.labelLarge,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                doctor.specialty,
-                                style: AppTextStyles.caption,
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.star_rounded,
-                                    size: 14,
-                                    color: AppColors.warning,
-                                  ),
-                                  const SizedBox(width: 3),
-                                  Text(
-                                    '${doctor.rating}',
-                                    style: AppTextStyles.labelSmall.copyWith(
-                                      color: AppColors.dark,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    doctor.experience,
-                                    style: AppTextStyles.caption,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                onTap: () => context.push('/doctor/detail/${doctor.id}'),
+                child: Container(
+                  width: 260,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: AppSpacing.shadowSm,
                   ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: AppColors.doctor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Icon(
+                          Icons.person_rounded,
+                          color: AppColors.doctor,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              doctor.name,
+                              style: AppTextStyles.labelLarge,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              doctor.specialty,
+                              style: AppTextStyles.caption,
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.star_rounded,
+                                  size: 14,
+                                  color: AppColors.warning,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '${doctor.rating}',
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: AppColors.dark,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  doctor.experience,
+                                  style: AppTextStyles.caption,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               );
             },
           ),
@@ -743,95 +762,95 @@ class _TrendingProducts extends StatelessWidget {
             itemBuilder: (context, index) {
               final product = products[index];
               return GestureDetector(
-                  onTap: () => context.push('/shopping/product/${product.id}'),
-                  child: Container(
-                    width: 180,
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: AppSpacing.shadowSm,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Stack(
-                          children: [
-                            Container(
-                              height: 150,
-                              decoration: BoxDecoration(
-                                color: AppColors.extraLightGrey,
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(16),
-                                ),
+                onTap: () => context.push('/shopping/product/${product.id}'),
+                child: Container(
+                  width: 180,
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: AppSpacing.shadowSm,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Stack(
+                        children: [
+                          Container(
+                            height: 150,
+                            decoration: BoxDecoration(
+                              color: AppColors.extraLightGrey,
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(16),
                               ),
-                              child: Center(
-                                child: Icon(
-                                  Icons.shopping_bag_rounded,
-                                  size: 44,
-                                  color: AppColors.shopping.withValues(
-                                    alpha: 0.4,
-                                  ),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.shopping_bag_rounded,
+                                size: 44,
+                                color: AppColors.shopping.withValues(
+                                  alpha: 0.4,
                                 ),
                               ),
                             ),
-                            Positioned(
-                              top: 8,
-                              right: 8,
-                              child: Container(
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: AppColors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: AppSpacing.shadowSm,
-                                ),
-                                child: const Icon(
-                                  Icons.favorite_border_rounded,
-                                  size: 16,
-                                  color: AppColors.grey,
-                                ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: AppSpacing.shadowSm,
                               ),
+                              child: const Icon(
+                                Icons.favorite_border_rounded,
+                                size: 16,
+                                color: AppColors.grey,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.name,
+                              style: AppTextStyles.labelLarge,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              product.category,
+                              style: AppTextStyles.caption,
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Text(
+                                  '\$${product.price.toStringAsFixed(0)}',
+                                  style: AppTextStyles.priceSmall,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  product.originalPrice != null
+                                      ? '\$${product.originalPrice!.toStringAsFixed(0)}'
+                                      : '',
+                                  style: AppTextStyles.priceOld,
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                product.name,
-                                style: AppTextStyles.labelLarge,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                product.category,
-                                style: AppTextStyles.caption,
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Text(
-                                    '\$${product.price.toStringAsFixed(0)}',
-                                    style: AppTextStyles.priceSmall,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    product.originalPrice != null
-                                        ? '\$${product.originalPrice!.toStringAsFixed(0)}'
-                                        : '',
-                                    style: AppTextStyles.priceOld,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
+                ),
               );
             },
           ),

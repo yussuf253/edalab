@@ -97,6 +97,8 @@ function moduleLabel(moduleType: ModuleType) {
       return 'Ride';
     case ModuleType.HOME_SERVICES:
       return 'Home services';
+    case ModuleType.HOUSE_HELP:
+      return 'House help';
     case ModuleType.DOCTOR:
       return 'Doctor';
     case ModuleType.LAUNDRY:
@@ -523,7 +525,9 @@ async function resolveConversationParticipant({
               where: {
                 id: orderId,
                 userId,
-                moduleType: ModuleType.HOME_SERVICES,
+                moduleType: {
+                  in: [ModuleType.HOME_SERVICES, ModuleType.HOUSE_HELP],
+                },
               },
               select: {
                 id: true,

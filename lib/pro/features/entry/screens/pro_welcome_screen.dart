@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../core/router/pro_route_paths.dart';
+import '../../../core/constants/pro_design_system.dart';
 
 class ProWelcomeScreen extends StatelessWidget {
   const ProWelcomeScreen({super.key});
@@ -14,7 +15,7 @@ class ProWelcomeScreen extends StatelessWidget {
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(ProDesignSystem.spacing24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -23,25 +24,25 @@ class ProWelcomeScreen extends StatelessWidget {
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0F766E), Color(0xFF14B8A6)],
+                  color: Colors.teal[100],
+                  borderRadius: BorderRadius.circular(
+                    ProDesignSystem.radiusLarge,
                   ),
-                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.work_outline_rounded,
-                  color: Colors.white,
+                  color: Colors.teal[700],
                   size: 30,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: ProDesignSystem.spacing24),
               Text(
                 'EdaLab Pro',
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: ProDesignSystem.spacing12),
               Text(
                 'Manage your business profile, inbox, jobs, and operations from a dedicated pro entrypoint.',
                 style: theme.textTheme.bodyLarge?.copyWith(
@@ -49,24 +50,28 @@ class ProWelcomeScreen extends StatelessWidget {
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: ProDesignSystem.spacing32),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => context.go(ProRoutePaths.login),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: ProDesignSystem.spacing16,
+                    ),
                   ),
                   child: const Text('Sign In'),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: ProDesignSystem.spacing12),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () => context.go(ProRoutePaths.register),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: ProDesignSystem.spacing16,
+                    ),
                   ),
                   child: const Text('Create Account'),
                 ),

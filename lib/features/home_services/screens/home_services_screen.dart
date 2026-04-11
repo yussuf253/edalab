@@ -18,6 +18,8 @@ class HomeServicesScreen extends StatefulWidget {
 }
 
 class _HomeServicesScreenState extends State<HomeServicesScreen> {
+  static const String _houseHelpBannerAsset =
+      'assets/images/banners/home-service-banner.png';
   final TextEditingController _searchController = TextEditingController();
   List<HomeServiceCategoryModel> _categories = const [];
   List<HomeServiceProviderModel> _providers = const [];
@@ -31,6 +33,153 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
 
   List<HomeServiceProviderModel> get _availableNow =>
       _providers.where((provider) => provider.isAvailable).take(3).toList();
+
+  bool _isCleaningCategory(HomeServiceCategoryModel category) {
+    final slug = category.slug.toLowerCase();
+    final name = category.name.toLowerCase();
+    return slug.contains('clean') || name.contains('clean');
+  }
+
+  bool _isHouseHelpCategory(HomeServiceCategoryModel category) {
+    final slug = category.slug.toLowerCase();
+    final name = category.name.toLowerCase();
+    final description = category.description.toLowerCase();
+    final matchesSlug =
+        slug.contains('house-help') ||
+        slug.contains('house_help') ||
+        slug.contains('househelp') ||
+        (slug.contains('house') && slug.contains('help')) ||
+        slug.contains('maid') ||
+        slug.contains('helper');
+    final matchesText =
+        name.contains('house help') ||
+        name.contains('maid') ||
+        name.contains('helper') ||
+        description.contains('house help') ||
+        description.contains('maid');
+    return matchesSlug || matchesText;
+  }
+
+  bool _isHouseHelpGroupCategory(HomeServiceCategoryModel category) {
+    return _isHouseHelpCategory(category) || _isCleaningCategory(category);
+  }
+
+  HomeServiceCategoryModel? get _houseHelpCategory {
+    for (final category in _categories) {
+      if (_isHouseHelpCategory(category)) return category;
+    }
+    for (final category in _categories) {
+      if (_isCleaningCategory(category)) return category;
+    }
+    return null;
+  }
+
+  List<HomeServiceCategoryModel> get _displayCategories {
+    final houseHelp = _houseHelpCategory;
+    if (houseHelp == null) return _categories;
+    return _categories
+        .where((category) {
+          if (category.id == houseHelp.id) return true;
+          if (_isCleaningCategory(category)) return false;
+          return true;
+        })
+        .toList(growable: false);
+  }
+
+  HomeServiceCategoryModel get _fallbackHouseHelpCategory =>
+      const HomeServiceCategoryModel(
+        id: 'house-help',
+        name: 'House Help',
+        slug: 'house-help',
+        description: 'Daily chores, cleaning, and dependable in-home support.',
+        iconKey: 'cleaning',
+        colorHex: '#1A9A77',
+        providerCount: 0,
+      );
+
+  HomeServiceCategoryModel get _houseHelpDisplayCategory =>
+      _houseHelpCategory ?? _fallbackHouseHelpCategory;
+
+  bool _isHouseHelpProvider(HomeServiceProviderModel provider) {
+    final slug = (provider.categorySlug ?? '').toLowerCase();
+    final categoryName = (provider.categoryName ?? '').toLowerCase();
+    final title = provider.title.toLowerCase();
+    final services = provider.services.join(' ').toLowerCase();
+    return slug.contains('house-help') ||
+        slug.contains('house_help') ||
+        slug.contains('househelp') ||
+        (slug.contains('house') && slug.contains('help')) ||
+        slug.contains('maid') ||
+        categoryName.contains('house help') ||
+        categoryName.contains('maid') ||
+        title.contains('house help') ||
+        title.contains('maid') ||
+        slug.contains('clean') ||
+        categoryName.contains('clean') ||
+        services.contains('house help') ||
+        services.contains('maid') ||
+        services.contains('clean');
+  }
+
+  HomeServiceProviderModel? get _preferredHouseHelpProvider {
+    final candidates = _providers
+        .where(_isHouseHelpProvider)
+        .toList(growable: false);
+    if (candidates.isEmpty) return null;
+    final ranked = [...candidates]
+      ..sort((a, b) {
+        final availabilityOrder = (b.isAvailable ? 1 : 0).compareTo(
+          a.isAvailable ? 1 : 0,
+        );
+        if (availabilityOrder != 0) return availabilityOrder;
+        final ratingOrder = b.rating.compareTo(a.rating);
+        if (ratingOrder != 0) return ratingOrder;
+        return b.reviewCount.compareTo(a.reviewCount);
+      });
+    return ranked.first;
+  }
+
+  void _openHouseHelpCategory(BuildContext context) {
+    final l10n = context.l10n;
+    final provider = _preferredHouseHelpProvider;
+    if (provider != null) {
+      context.push('/home-services/book/${provider.id}');
+      return;
+    }
+    final category = _houseHelpCategory;
+    if (category == null) {
+      context.push(
+        '/home-services/category/all',
+        extra: {
+          'label': l10n.homeServiceCategoryName(
+            _fallbackHouseHelpCategory.slug,
+            _fallbackHouseHelpCategory.name,
+          ),
+        },
+      );
+      return;
+    }
+    context.push(
+      '/home-services/category/${category.slug}',
+      extra: {
+        'label': l10n.homeServiceCategoryName(category.slug, category.name),
+      },
+    );
+  }
+
+  void _openCategory(BuildContext context, HomeServiceCategoryModel category) {
+    final l10n = context.l10n;
+    if (_isHouseHelpGroupCategory(category)) {
+      _openHouseHelpCategory(context);
+      return;
+    }
+    context.push(
+      '/home-services/category/${category.slug}',
+      extra: {
+        'label': l10n.homeServiceCategoryName(category.slug, category.name),
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -79,6 +228,15 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final textScale = MediaQuery.textScalerOf(
+      context,
+    ).scale(1.0).clamp(1.0, 1.35);
+    final categoryGridAspectRatio =
+        (1.02 -
+                (l10n.languageCode == 'en' ? 0.0 : 0.12) -
+                ((textScale - 1.0) * 0.23))
+            .clamp(0.82, 1.02);
+    final houseHelpCategory = _houseHelpDisplayCategory;
     return PopScope(
       canPop: context.canPop(),
       onPopInvokedWithResult: (didPop, result) {
@@ -87,322 +245,502 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
         }
       },
       child: Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.t('home_services.title')),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/');
-            }
-          },
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text(l10n.t('home_services.title')),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/');
+              }
+            },
+          ),
         ),
-      ),
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-              child: AppSearchBar(
-                hint: l10n.t('home_services.search_hint'),
-                controller: _searchController,
-                readOnly: true,
-                onTap: () => context.push('/home-services/category/all'),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.homeServices, AppColors.secondaryLight],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                l10n.t('home_services.hero_title'),
-                                style: AppTextStyles.h4.copyWith(
-                                  color: AppColors.white,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                l10n.t(
-                                  'home_services.hero_stats',
-                                  params: {
-                                    'providers': '${_providers.length}',
-                                    'categories': '${_categories.length}',
-                                  },
-                                ),
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: Colors.white70,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  l10n.t('home_services.book_service'),
-                                  style: AppTextStyles.labelMedium.copyWith(
-                                    color: AppColors.homeServices,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Icon(
-                            Icons.home_repair_service_rounded,
-                            color: AppColors.white,
-                            size: 32,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: AppSearchBar(
+                  hint: l10n.t('home_services.search_hint'),
+                  controller: _searchController,
+                  readOnly: true,
+                  onTap: () => context.push('/home-services/category/all'),
                 ),
               ),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
-              child: Row(
-                children: [
-                  Text(l10n.t('home_services.popular_categories'), style: AppTextStyles.h3),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () =>
-                        context.push('/home-services/category/all'),
-                    child: Text(l10n.t('home_services.see_all')),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (_isLoading)
-            const SliverSectionGridShimmer(itemCount: 6, childAspectRatio: 2.25)
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverGrid(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final category = _categories[index];
-                  return GestureDetector(
-                    onTap: () => context.push(
-                      '/home-services/category/${category.slug}',
-                      extra: {'label': category.name},
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                child: GestureDetector(
+                  onTap: () => _openHouseHelpCategory(context),
+                  child: Container(
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF0D8067),
+                          AppColors.homeServices,
+                          Color(0xFF43BA92),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: AppSpacing.shadowSm,
                     ),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: AppSpacing.shadowSm,
-                      ),
+                    child: IntrinsicHeight(
                       child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: category.color.withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(
-                              category.icon,
-                              color: category.color,
-                              size: 18,
+                          Expanded(
+                            flex: 1,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                16,
+                                16,
+                                12,
+                                16,
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.homeServiceCategoryName(
+                                      houseHelpCategory.slug,
+                                      houseHelpCategory.name,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.h3.copyWith(
+                                      color: AppColors.white,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.2,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    l10n.t('home_services.house_help_subtitle'),
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.85,
+                                      ),
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 6,
+                                    children: [
+                                      _HouseHelpTag(
+                                        label: l10n.t(
+                                          'home_services.house_help_tag_cleaning',
+                                        ),
+                                      ),
+                                      _HouseHelpTag(
+                                        label: l10n.t(
+                                          'home_services.house_help_tag_dishes',
+                                        ),
+                                      ),
+                                      _HouseHelpTag(
+                                        label: l10n.t(
+                                          'home_services.house_help_tag_laundry',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: [
+                                        Expanded(
+                                          child: FittedBox(
+                                            fit: BoxFit.scaleDown,
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              l10n.t(
+                                                'home_services.book_service',
+                                              ),
+                                              style: AppTextStyles.labelMedium
+                                                  .copyWith(
+                                                    color:
+                                                        AppColors.homeServices,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        const Icon(
+                                          Icons.arrow_forward_rounded,
+                                          size: 16,
+                                          color: AppColors.homeServices,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 10),
                           Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            flex: 1,
+                            child: Stack(
+                              fit: StackFit.expand,
                               children: [
-                                Text(
-                                  category.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                Image.asset(
+                                  _houseHelpBannerAsset,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      _HouseHelpImageFallback(
+                                        color: houseHelpCategory.color,
+                                        label: l10n.t(
+                                          'home_services.house_help_add_image',
+                                        ),
+                                      ),
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  l10n.t(
-                                    'home_services.available_count',
-                                    params: {
-                                      'count': '${category.providerCount}',
-                                    },
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: category.color,
-                                    fontSize: 10.5,
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.transparent,
+                                        Colors.black.withValues(alpha: 0.26),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          Icon(
-                            Icons.chevron_right_rounded,
-                            size: 18,
-                            color: AppColors.mediumGrey,
-                          ),
                         ],
                       ),
                     ),
-                  );
-                }, childCount: _categories.length),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  childAspectRatio: 2.25,
+                  ),
                 ),
               ),
             ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-              child: Row(
-                children: [
-                  Text(l10n.t('home_services.available_now'), style: AppTextStyles.h3),
-                  const Spacer(),
-                  Text(
-                    l10n.t('home_services.fastest_response'),
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (_isLoading)
-            const SliverSectionListShimmer(itemCount: 3)
-          else
-            SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final provider = _availableNow[index];
-                return _FeaturedProviderCard(
-                  provider: provider,
-                  onTap: () =>
-                      context.push('/home-services/provider/${provider.id}'),
-                  accentColor: provider.categoryColor,
-                );
-              }, childCount: _availableNow.length),
-            ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
-              child: Row(
-                children: [
-                  Text(l10n.t('home_services.top_professionals'), style: AppTextStyles.h3),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () =>
-                        context.push('/home-services/category/all'),
-                    child: Text(l10n.t('home_services.see_all')),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          if (_isLoading)
-            const SliverSectionListShimmer(itemCount: 4)
-          else
-            SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final provider = _featuredProviders[index];
-                return _FeaturedProviderCard(
-                  provider: provider,
-                  onTap: () =>
-                      context.push('/home-services/provider/${provider.id}'),
-                  accentColor: provider.categoryColor,
-                );
-              }, childCount: _featuredProviders.length),
-            ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: AppSpacing.shadowSm,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
+                child: Row(
                   children: [
-                    Text(
-                      l10n.t('home_services.why_people_use'),
-                      style: AppTextStyles.h4,
+                    Expanded(
+                      child: Text(
+                        l10n.t('home_services.popular_categories'),
+                        style: AppTextStyles.h3,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    const SizedBox(height: 14),
-                    _TrustRow(
-                      icon: Icons.verified_user_rounded,
-                      title: l10n.t('home_services.verified_title'),
-                      subtitle: l10n.t('home_services.verified_subtitle'),
-                    ),
-                    const SizedBox(height: 12),
-                    _TrustRow(
-                      icon: Icons.schedule_rounded,
-                      title: l10n.t('home_services.scheduling_title'),
-                      subtitle: l10n.t('home_services.scheduling_subtitle'),
-                    ),
-                    const SizedBox(height: 12),
-                    _TrustRow(
-                      icon: Icons.payments_rounded,
-                      title: l10n.t('home_services.pricing_title'),
-                      subtitle: l10n.t('home_services.pricing_subtitle'),
+                    TextButton(
+                      onPressed: () =>
+                          context.push('/home-services/category/all'),
+                      child: Text(l10n.t('home_services.see_all')),
                     ),
                   ],
                 ),
               ),
             ),
-          ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        ],
+            if (_isLoading)
+              SliverSectionGridShimmer(
+                itemCount: 6,
+                childAspectRatio: categoryGridAspectRatio,
+              )
+            else
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final cardWidth = (constraints.maxWidth - 12) / 2;
+                      return Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: _displayCategories
+                            .map((category) {
+                              return SizedBox(
+                                width: cardWidth,
+                                child: GestureDetector(
+                                  onTap: () => _openCategory(context, category),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.white,
+                                      borderRadius: BorderRadius.circular(18),
+                                      boxShadow: AppSpacing.shadowSm,
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Container(
+                                              width: 44,
+                                              height: 44,
+                                              decoration: BoxDecoration(
+                                                color: category.color
+                                                    .withValues(alpha: 0.12),
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: Icon(
+                                                category.icon,
+                                                color: category.color,
+                                                size: 22,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            Container(
+                                              width: 30,
+                                              height: 30,
+                                              decoration: BoxDecoration(
+                                                color: category.color
+                                                    .withValues(alpha: 0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(999),
+                                              ),
+                                              child: Icon(
+                                                Icons.arrow_outward_rounded,
+                                                size: 16,
+                                                color: category.color,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          l10n.homeServiceCategoryName(
+                                            category.slug,
+                                            category.name,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppTextStyles.labelLarge
+                                              .copyWith(
+                                                fontWeight: FontWeight.w800,
+                                                height: 1.3,
+                                              ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          category.description.isEmpty
+                                              ? l10n.t(
+                                                  'home_services.category_description_fallback',
+                                                )
+                                              : l10n.homeServiceCategoryDescription(
+                                                  category.slug,
+                                                  category.description,
+                                                ),
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppTextStyles.bodySmall
+                                              .copyWith(
+                                                color: AppColors.grey,
+                                                height: 1.35,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            })
+                            .toList(growable: false),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
+                child: Row(
+                  children: [
+                    Text(
+                      l10n.t('home_services.available_now'),
+                      style: AppTextStyles.h3,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_isLoading)
+              const SliverSectionListShimmer(itemCount: 3)
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final provider = _availableNow[index];
+                  return _FeaturedProviderCard(
+                    provider: provider,
+                    onTap: () =>
+                        context.push('/home-services/provider/${provider.id}'),
+                    accentColor: provider.categoryColor,
+                  );
+                }, childCount: _availableNow.length),
+              ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l10n.t('home_services.top_professionals'),
+                        style: AppTextStyles.h3,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () =>
+                          context.push('/home-services/category/all'),
+                      child: Text(l10n.t('home_services.see_all')),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (_isLoading)
+              const SliverSectionListShimmer(itemCount: 4)
+            else
+              SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final provider = _featuredProviders[index];
+                  return _FeaturedProviderCard(
+                    provider: provider,
+                    onTap: () =>
+                        context.push('/home-services/provider/${provider.id}'),
+                    accentColor: provider.categoryColor,
+                  );
+                }, childCount: _featuredProviders.length),
+              ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                child: Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: AppSpacing.shadowSm,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.t('home_services.why_people_use'),
+                        style: AppTextStyles.h4,
+                      ),
+                      const SizedBox(height: 14),
+                      _TrustRow(
+                        icon: Icons.verified_user_rounded,
+                        title: l10n.t('home_services.verified_title'),
+                        subtitle: l10n.t('home_services.verified_subtitle'),
+                      ),
+                      const SizedBox(height: 12),
+                      _TrustRow(
+                        icon: Icons.schedule_rounded,
+                        title: l10n.t('home_services.scheduling_title'),
+                        subtitle: l10n.t('home_services.scheduling_subtitle'),
+                      ),
+                      const SizedBox(height: 12),
+                      _TrustRow(
+                        icon: Icons.payments_rounded,
+                        title: l10n.t('home_services.pricing_title'),
+                        subtitle: l10n.t('home_services.pricing_subtitle'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _HouseHelpTag extends StatelessWidget {
+  final String label;
+
+  const _HouseHelpTag({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+      ),
+      child: Text(
+        label,
+        style: AppTextStyles.labelSmall.copyWith(
+          color: AppColors.white,
+          letterSpacing: 0.2,
+        ),
+      ),
+    );
+  }
+}
+
+class _HouseHelpImageFallback extends StatelessWidget {
+  final Color color;
+  final String label;
+
+  const _HouseHelpImageFallback({required this.color, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.92),
+            color.withValues(alpha: 0.55),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.cleaning_services_rounded,
+            color: AppColors.white,
+            size: 30,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: AppColors.white,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -478,7 +816,11 @@ class _FeaturedProviderCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    provider.title,
+                    context.l10n.homeServiceProviderSubtitle(
+                      categorySlug: provider.categorySlug,
+                      categoryName: provider.categoryName,
+                      fallbackTitle: provider.title,
+                    ),
                     style: AppTextStyles.caption,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

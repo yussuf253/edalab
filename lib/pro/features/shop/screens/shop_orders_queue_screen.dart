@@ -238,33 +238,85 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final module in [
-                  if (_allowedModules.length > 1) 'all',
-                  ..._allowedModules,
-                ])
-                  ChoiceChip(
-                    label: Text(_moduleLabel(module)),
-                    selected: _selectedModule == module,
-                    onSelected: (_) => setState(() => _selectedModule = module),
-                  ),
-              ],
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.black12),
+              ),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final module in [
+                    if (_allowedModules.length > 1) 'all',
+                    ..._allowedModules,
+                  ])
+                    ChoiceChip(
+                      label: Text(
+                        _moduleLabel(module),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: _selectedModule == module
+                              ? _moduleColor(module)
+                              : Colors.black87,
+                        ),
+                      ),
+                      selectedColor: _moduleColor(
+                        module,
+                      ).withValues(alpha: 0.16),
+                      backgroundColor: Colors.white,
+                      side: BorderSide(
+                        color: _selectedModule == module
+                            ? _moduleColor(module)
+                            : Colors.black26,
+                      ),
+                      showCheckmark: false,
+                      selected: _selectedModule == module,
+                      onSelected: (_) =>
+                          setState(() => _selectedModule = module),
+                    ),
+                ],
+              ),
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final status in ['active', 'completed', 'all'])
-                  ChoiceChip(
-                    label: Text(_statusLabel(status)),
-                    selected: _selectedStatus == status,
-                    onSelected: (_) => setState(() => _selectedStatus = status),
-                  ),
-              ],
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.black12),
+              ),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final status in ['active', 'completed', 'all'])
+                    ChoiceChip(
+                      label: Text(
+                        _statusLabel(status),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: _selectedStatus == status
+                              ? AppColors.shopping
+                              : Colors.black87,
+                        ),
+                      ),
+                      selectedColor: AppColors.shopping.withValues(alpha: 0.16),
+                      backgroundColor: Colors.white,
+                      side: BorderSide(
+                        color: _selectedStatus == status
+                            ? AppColors.shopping
+                            : Colors.black26,
+                      ),
+                      showCheckmark: false,
+                      selected: _selectedStatus == status,
+                      onSelected: (_) =>
+                          setState(() => _selectedStatus = status),
+                    ),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             if (_isLoading)

@@ -26,6 +26,24 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
   HomeServiceProviderModel? _provider;
   bool _isLoading = true;
   bool _hasBookedService = false;
+
+  bool _isHouseHelpProvider(HomeServiceProviderModel provider) {
+    final slug = (provider.categorySlug ?? '').toLowerCase();
+    final name = (provider.categoryName ?? '').toLowerCase();
+    final title = provider.title.toLowerCase();
+    final services = provider.services.join(' ').toLowerCase();
+    return slug.contains('house-help') ||
+        slug.contains('house_help') ||
+        slug.contains('househelp') ||
+        slug.contains('maid') ||
+        name.contains('house help') ||
+        name.contains('maid') ||
+        title.contains('house help') ||
+        title.contains('maid') ||
+        services.contains('house help') ||
+        services.contains('maid');
+  }
+
   String? _bookingLookupUserId;
 
   @override
@@ -71,12 +89,17 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
     }
 
     try {
-      final response = await ApiClient.get('/orders/$userId', forceRefresh: true);
+      final response = await ApiClient.get(
+        '/orders/$userId',
+        forceRefresh: true,
+      );
       final orders = response is List ? response : const [];
       final hasBooked = orders.any((entry) {
         final order = Map<String, dynamic>.from(entry as Map);
         final moduleType = order['moduleType']?.toString().toUpperCase() ?? '';
-        if (moduleType != 'HOME_SERVICES') return false;
+        if (moduleType != 'HOME_SERVICES' && moduleType != 'HOUSE_HELP') {
+          return false;
+        }
 
         final status = order['status']?.toString().toUpperCase() ?? '';
         if (status == 'CANCELLED' || status == 'REFUNDED') return false;
@@ -134,7 +157,10 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [AppColors.homeServices, AppColors.secondaryLight],
+                        colors: [
+                          AppColors.homeServices,
+                          AppColors.secondaryLight,
+                        ],
                       ),
                       borderRadius: BorderRadius.circular(24),
                     ),
@@ -176,11 +202,14 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           alignment: WrapAlignment.center,
                           children: [
                             _HeroPill(
-                              label: provider.categoryName ??
+                              label:
+                                  provider.categoryName ??
                                   l10n.t('home_provider.home_service'),
                             ),
                             if (provider.isVerified)
-                              _HeroPill(label: l10n.t('home_provider.verified')),
+                              _HeroPill(
+                                label: l10n.t('home_provider.verified'),
+                              ),
                             if (provider.responseTime != null)
                               _HeroPill(label: provider.responseTime!),
                             if (provider.isAvailable)
@@ -204,7 +233,10 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           price: provider.startingPrice,
                         ),
                         const SizedBox(height: 20),
-                        Text(l10n.t('home_provider.about'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('home_provider.about'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           provider.about ??
@@ -215,7 +247,10 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        Text(l10n.t('home_provider.services'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('home_provider.services'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 12),
                         Wrap(
                           spacing: 8,
@@ -334,7 +369,10 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                         if (provider.contactPhone != null &&
                             provider.contactPhone!.isNotEmpty) ...[
                           const SizedBox(height: 20),
-                          Text(l10n.t('home_provider.contact'), style: AppTextStyles.h4),
+                          Text(
+                            l10n.t('home_provider.contact'),
+                            style: AppTextStyles.h4,
+                          ),
                           const SizedBox(height: 8),
                           Text(
                             provider.contactPhone!,
@@ -412,27 +450,35 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
 
                       return Row(
                         children: [
-                          Expanded(
-                            child: AppButton(
-                              text: l10n.t('home_provider.message'),
-                              isOutlined: true,
-                              color: AppColors.homeServices,
-                              onPressed: () => openConversation(
-                                context,
-                                moduleType: 'HOME_SERVICES',
-                                entityType: 'HOME_SERVICE_PROVIDER',
-                                entityId: provider.id,
-                                title: provider.name,
-                                subtitle: provider.title,
-                                avatarUrl: provider.imageUrl,
-                                accentColor: '#0F9D92',
-                                metadata: {
-                                  'providerId': provider.id,
-                                  'categorySlug': provider.categorySlug,
-                                  'serviceModes': provider.bookingModes,
-                                },
-                              ),
-                            ),
+                          Builder(
+                            builder: (context) {
+                              final conversationModuleType =
+                                  _isHouseHelpProvider(provider)
+                                  ? 'HOUSE_HELP'
+                                  : 'HOME_SERVICES';
+                              return Expanded(
+                                child: AppButton(
+                                  text: l10n.t('home_provider.message'),
+                                  isOutlined: true,
+                                  color: AppColors.homeServices,
+                                  onPressed: () => openConversation(
+                                    context,
+                                    moduleType: conversationModuleType,
+                                    entityType: 'HOME_SERVICE_PROVIDER',
+                                    entityId: provider.id,
+                                    title: provider.name,
+                                    subtitle: provider.title,
+                                    avatarUrl: provider.imageUrl,
+                                    accentColor: '#0F9D92',
+                                    metadata: {
+                                      'providerId': provider.id,
+                                      'categorySlug': provider.categorySlug,
+                                      'serviceModes': provider.bookingModes,
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                           const SizedBox(width: 12),
                           Expanded(

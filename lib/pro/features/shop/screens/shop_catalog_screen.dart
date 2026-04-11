@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/router/pro_route_paths.dart';
@@ -302,6 +303,14 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
           body: ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              _StorefrontHeaderCard(
+                businessName: widget.businessName,
+                selectedModule: selectedModule,
+                onOpenQueue: () =>
+                    _openQueue(module: _keyForModule(selectedModule)),
+                onOpenProducts: _openProductsManager,
+              ),
+              const SizedBox(height: 12),
               _RecentOrdersModuleChips(
                 chips: orderChips,
                 selected: selectedModule,
@@ -343,9 +352,8 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
             ],
           ),
           bottomNavigationBar: ShopModuleBottomNav(
-            activeTab: ShopModuleBottomTab.storefront,
+            activeTab: ShopModuleBottomTab.products,
             onOrders: () => _openQueue(module: _keyForModule(selectedModule)),
-            onStorefront: () {},
             onProducts: _openProductsManager,
           ),
         );
@@ -378,20 +386,53 @@ class _RecentOrdersModuleChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: chips
-          .map(
-            (chip) => ChoiceChip(
-              selected: selected == chip.module,
-              onSelected: (_) => onSelect(chip.module),
-              label: Text(
-                '${ProModuleHelper.getModuleName(chip.module)} • ${chip.count}',
-              ),
-            ),
-          )
-          .toList(growable: false),
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Module Filter',
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: chips
+                .map((chip) {
+                  final color = ProModuleHelper.getModuleColor(chip.module);
+                  final isSelected = selected == chip.module;
+                  return ChoiceChip(
+                    selected: isSelected,
+                    showCheckmark: false,
+                    selectedColor: color.withValues(alpha: 0.16),
+                    backgroundColor: Colors.white,
+                    side: BorderSide(
+                      color: isSelected ? color : Colors.black26,
+                      width: isSelected ? 1.4 : 1,
+                    ),
+                    onSelected: (_) => onSelect(chip.module),
+                    label: Text(
+                      '${ProModuleHelper.getModuleName(chip.module)} • ${chip.count}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: isSelected ? color : Colors.black87,
+                      ),
+                    ),
+                  );
+                })
+                .toList(growable: false),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -438,6 +479,13 @@ class _StorefrontModuleTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          '${ProModuleHelper.getModuleName(module)} controls',
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 10),
         TextFormField(
           key: ValueKey('${module.name}:$searchQuery'),
           initialValue: searchQuery,
@@ -458,6 +506,13 @@ class _StorefrontModuleTab extends StatelessWidget {
         if (module == ProModule.shopping) const SizedBox(height: 16),
         _StorefrontSummaryCard(module: module, summary: summary),
         const SizedBox(height: 16),
+        Text(
+          'Catalog Entries',
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 10),
         if (items.isEmpty)
           _EmptyModuleState(
             module: module,
@@ -866,6 +921,74 @@ class _EmptySearchState extends StatelessWidget {
           'No storefront items match your search yet.',
           textAlign: TextAlign.center,
         ),
+      ),
+    );
+  }
+}
+
+class _StorefrontHeaderCard extends StatelessWidget {
+  final String businessName;
+  final ProModule selectedModule;
+  final VoidCallback onOpenQueue;
+  final VoidCallback onOpenProducts;
+
+  const _StorefrontHeaderCard({
+    required this.businessName,
+    required this.selectedModule,
+    required this.onOpenQueue,
+    required this.onOpenProducts,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = ProModuleHelper.getModuleColor(selectedModule);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$businessName Storefront',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Manage availability, review inventory, and jump into queue actions quickly.',
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.black54),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: onOpenQueue,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.shopping,
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                  label: const Text('Open Queue'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onOpenProducts,
+                  icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                  label: const Text('Products'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

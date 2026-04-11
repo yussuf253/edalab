@@ -76,6 +76,282 @@ class AppLocalizations {
     }
   }
 
+  String homeServiceDynamicLabel(String value) {
+    final normalized = value
+        .toLowerCase()
+        .replaceAll('&', ' and ')
+        .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+        .trim()
+        .replaceAll(RegExp(r'\s+'), ' ');
+    switch (languageCode) {
+      case 'fr':
+        return _homeServiceDynamicLabelsFr[normalized] ?? value;
+      case 'ar':
+        return _homeServiceDynamicLabelsAr[normalized] ?? value;
+      default:
+        return value;
+    }
+  }
+
+  String homeServiceCategoryName(String slug, String fallback) {
+    final key = slug.toLowerCase().replaceAll('_', '-').trim();
+    switch (languageCode) {
+      case 'fr':
+        return _homeServiceCategoryNamesFr[key] ??
+            homeServiceDynamicLabel(fallback);
+      case 'ar':
+        return _homeServiceCategoryNamesAr[key] ??
+            homeServiceDynamicLabel(fallback);
+      default:
+        return fallback;
+    }
+  }
+
+  String homeServiceCategoryDescription(String slug, String fallback) {
+    final key = slug.toLowerCase().replaceAll('_', '-').trim();
+    switch (languageCode) {
+      case 'fr':
+        return _homeServiceCategoryDescriptionsFr[key] ?? fallback;
+      case 'ar':
+        return _homeServiceCategoryDescriptionsAr[key] ?? fallback;
+      default:
+        return fallback;
+    }
+  }
+
+  String homeServiceProviderSubtitle({
+    String? categorySlug,
+    String? categoryName,
+    required String fallbackTitle,
+  }) {
+    if (languageCode == 'en') return fallbackTitle;
+    final translatedTitle = homeServiceDynamicLabel(fallbackTitle);
+    if (translatedTitle != fallbackTitle) return translatedTitle;
+    final rawCategoryName = (categoryName ?? '').trim();
+    final translatedCategory = homeServiceCategoryName(
+      categorySlug ?? '',
+      rawCategoryName,
+    );
+    if (translatedCategory.isNotEmpty) return translatedCategory;
+    return fallbackTitle;
+  }
+
+  static const Map<String, String> _homeServiceDynamicLabelsFr = {
+    'home visit': 'Visite a domicile',
+    'phone advice': 'Conseil telephonique',
+    'instant dispatch': 'Envoi immediat',
+    'scheduled visit': 'Visite planifiee',
+    'recurring plan': 'Plan recurrent',
+    'house help': 'Aide menagere',
+    'home cleaning': 'Nettoyage maison',
+    'plumbing': 'Plomberie',
+    'electrical': 'Electricite',
+    'ac and cooling': 'Climatisation et refroidissement',
+    'beauty at home': 'Beaute a domicile',
+    'handyman': 'Homme a tout faire',
+    'deep cleaning': 'Nettoyage en profondeur',
+    'office cleaning': 'Nettoyage de bureau',
+    'disinfection': 'Desinfection',
+    'pipe installation': 'Installation de tuyaux',
+    'water fittings': 'Raccords d eau',
+    'technical inspection': 'Inspection technique',
+    'electrical inspection': 'Inspection electrique',
+    'connection support': 'Assistance de connexion',
+    'fault follow up': 'Suivi des pannes',
+    'ac cleaning': 'Nettoyage climatiseur',
+    'cooling repair': 'Reparation du refroidissement',
+    'maintenance visit': 'Visite de maintenance',
+    'makeup': 'Maquillage',
+    'hair styling': 'Coiffure',
+    'spa care': 'Soin spa',
+    'appliance repair': 'Reparation d appareils',
+    'minor home fixes': 'Petites reparations domestiques',
+    'equipment checks': 'Verification des equipements',
+    'apartment cleaning': 'Nettoyage d appartement',
+    'office cleanup': 'Remise en etat du bureau',
+    'move in refresh': 'Nettoyage avant emmenagement',
+    'electrical diagnostics': 'Diagnostic electrique',
+    'small installation help': 'Aide aux petites installations',
+    'device setup': 'Configuration des appareils',
+    'ac maintenance': 'Maintenance climatiseur',
+    'cooling inspection': 'Inspection du refroidissement',
+    'gas refill': 'Recharge de gaz',
+    'small repairs': 'Petites reparations',
+    'tv installation': 'Installation TV',
+    'home electronics setup': 'Installation electronique a domicile',
+    'device checks': 'Verification des appareils',
+    'makeup session': 'Session maquillage',
+    'beauty styling': 'Styling beaute',
+    'event prep': 'Preparation evenement',
+    'cosmetics styling': 'Styling cosmetique',
+    'makeup support': 'Assistance maquillage',
+    'event beauty prep': 'Preparation beaute evenement',
+    'beauty consultation': 'Consultation beaute',
+    'fragrance styling': 'Conseil parfum',
+    'minor repairs': 'Reparations mineures',
+    'hardware installation': 'Installation de quincaillerie',
+    'wall mounting': 'Fixation murale',
+    'minor installation': 'Petite installation',
+    'household fittings': 'Equipements domestiques',
+    'utility hardware help': 'Aide quincaillerie utilitaire',
+    'utility replacements': 'Remplacements utilitaires',
+    'basic install help': 'Aide installation de base',
+    'daily home upkeep': 'Entretien quotidien du domicile',
+    'dishes and kitchen reset': 'Vaisselle et remise en ordre de la cuisine',
+    'laundry folding': 'Pliage du linge',
+    'surface dusting': 'Depoussierage des surfaces',
+    'room tidying': 'Rangement des pieces',
+    'full home touch up': 'Rafraichissement complet du domicile',
+    'laundry sorting and wash prep': 'Tri du linge et preparation au lavage',
+    'bathroom reset': 'Remise en ordre de la salle de bain',
+    'kitchen deep touch up': 'Rafraichissement profond de la cuisine',
+    'bed making': 'Preparation du lit',
+    'quick room cleaning': 'Nettoyage rapide de la piece',
+    'room clean': 'Nettoyage de la piece',
+    'room cleaning': 'Nettoyage de la piece',
+    'dishes and sink reset': 'Vaisselle et remise en ordre de l evier',
+    'laundry handling': 'Gestion du linge',
+    'trash and utility cleanup': 'Nettoyage des dechets et utilitaires',
+    'post cooking cleanup': 'Nettoyage apres cuisson',
+    'floor cleaning': 'Nettoyage du sol',
+    'kitchen cleaning': 'Nettoyage cuisine',
+    'bathroom cleaning': 'Nettoyage salle de bain',
+    'dishes': 'Vaisselle',
+    'laundry': 'Lessive',
+  };
+
+  static const Map<String, String> _homeServiceDynamicLabelsAr = {
+    'home visit': 'زيارة منزلية',
+    'phone advice': 'استشارة هاتفية',
+    'instant dispatch': 'إرسال فوري',
+    'scheduled visit': 'زيارة مجدولة',
+    'recurring plan': 'خطة متكررة',
+    'house help': 'مساعدة منزلية',
+    'home cleaning': 'تنظيف منزلي',
+    'plumbing': 'سباكة',
+    'electrical': 'كهرباء',
+    'ac and cooling': 'تكييف وتبريد',
+    'beauty at home': 'تجميل في المنزل',
+    'handyman': 'فني منزلي',
+    'deep cleaning': 'تنظيف عميق',
+    'office cleaning': 'تنظيف المكتب',
+    'disinfection': 'تعقيم',
+    'pipe installation': 'تركيب الأنابيب',
+    'water fittings': 'تجهيزات المياه',
+    'technical inspection': 'فحص فني',
+    'electrical inspection': 'فحص كهربائي',
+    'connection support': 'دعم التوصيل',
+    'fault follow up': 'متابعة الأعطال',
+    'ac cleaning': 'تنظيف المكيف',
+    'cooling repair': 'إصلاح التبريد',
+    'maintenance visit': 'زيارة صيانة',
+    'makeup': 'مكياج',
+    'hair styling': 'تصفيف شعر',
+    'spa care': 'عناية سبا',
+    'appliance repair': 'إصلاح الأجهزة',
+    'minor home fixes': 'إصلاحات منزلية بسيطة',
+    'equipment checks': 'فحص المعدات',
+    'apartment cleaning': 'تنظيف الشقة',
+    'office cleanup': 'ترتيب المكتب',
+    'move in refresh': 'تنظيف قبل السكن',
+    'electrical diagnostics': 'تشخيص كهربائي',
+    'small installation help': 'مساعدة في التركيبات الصغيرة',
+    'device setup': 'إعداد الأجهزة',
+    'ac maintenance': 'صيانة المكيف',
+    'cooling inspection': 'فحص نظام التبريد',
+    'gas refill': 'إعادة تعبئة الغاز',
+    'small repairs': 'إصلاحات صغيرة',
+    'tv installation': 'تركيب التلفاز',
+    'home electronics setup': 'إعداد الإلكترونيات المنزلية',
+    'device checks': 'فحص الأجهزة',
+    'makeup session': 'جلسة مكياج',
+    'beauty styling': 'تنسيق تجميلي',
+    'event prep': 'تجهيز المناسبة',
+    'cosmetics styling': 'تنسيق مستحضرات التجميل',
+    'makeup support': 'دعم المكياج',
+    'event beauty prep': 'تجهيز تجميلي للمناسبة',
+    'beauty consultation': 'استشارة تجميل',
+    'fragrance styling': 'تنسيق العطور',
+    'minor repairs': 'إصلاحات طفيفة',
+    'hardware installation': 'تركيب معدات',
+    'wall mounting': 'تثبيت جداري',
+    'minor installation': 'تركيب بسيط',
+    'household fittings': 'تجهيزات منزلية',
+    'utility hardware help': 'مساعدة معدات الخدمات',
+    'utility replacements': 'استبدال ملحقات الخدمات',
+    'basic install help': 'مساعدة تركيب أساسية',
+    'daily home upkeep': 'عناية منزلية يومية',
+    'dishes and kitchen reset': 'غسيل الصحون وترتيب المطبخ',
+    'laundry folding': 'طي الملابس',
+    'surface dusting': 'إزالة الغبار عن الأسطح',
+    'room tidying': 'ترتيب الغرف',
+    'full home touch up': 'ترتيب شامل للمنزل',
+    'laundry sorting and wash prep': 'فرز الغسيل وتجهيزه للغسل',
+    'bathroom reset': 'ترتيب الحمام',
+    'kitchen deep touch up': 'تنظيف عميق للمطبخ',
+    'bed making': 'ترتيب السرير',
+    'quick room cleaning': 'تنظيف سريع للغرفة',
+    'room clean': 'تنظيف الغرفة',
+    'room cleaning': 'تنظيف الغرفة',
+    'dishes and sink reset': 'غسيل الصحون وترتيب الحوض',
+    'laundry handling': 'التعامل مع الغسيل',
+    'trash and utility cleanup': 'تنظيف النفايات ومرافق الخدمة',
+    'post cooking cleanup': 'تنظيف بعد الطبخ',
+    'floor cleaning': 'تنظيف الأرضيات',
+    'kitchen cleaning': 'تنظيف المطبخ',
+    'bathroom cleaning': 'تنظيف الحمام',
+    'dishes': 'غسيل الصحون',
+    'laundry': 'غسيل الملابس',
+  };
+
+  static const Map<String, String> _homeServiceCategoryNamesFr = {
+    'house-help': 'Aide menagere',
+    'cleaning': 'Nettoyage maison',
+    'plumbing': 'Plomberie',
+    'electrical': 'Electricite',
+    'ac-cooling': 'Climatisation et refroidissement',
+    'beauty-at-home': 'Beaute a domicile',
+    'handyman': 'Homme a tout faire',
+  };
+
+  static const Map<String, String> _homeServiceCategoryNamesAr = {
+    'house-help': 'مساعدة منزلية',
+    'cleaning': 'تنظيف منزلي',
+    'plumbing': 'سباكة',
+    'electrical': 'كهرباء',
+    'ac-cooling': 'تكييف وتبريد',
+    'beauty-at-home': 'تجميل في المنزل',
+    'handyman': 'فني منزلي',
+  };
+
+  static const Map<String, String> _homeServiceCategoryDescriptionsFr = {
+    'house-help':
+        'Aide menagere a la demande pour les taches quotidiennes, la cuisine et la lessive.',
+    'cleaning':
+        'Nettoyage courant, en profondeur et d emmenagement pour appartements et maisons.',
+    'plumbing': 'Fuites, installations, drainage et depannage plomberie.',
+    'electrical':
+        'Installations, reparations et interventions electriques securisees.',
+    'ac-cooling':
+        'Entretien climatiseur, recharge gaz et depannage du systeme de refroidissement.',
+    'beauty-at-home':
+        'Coiffure, maquillage, ongles et soins beaute a domicile.',
+    'handyman':
+        'Montage meubles, fixation tringles, percage et petits travaux domestiques.',
+  };
+
+  static const Map<String, String> _homeServiceCategoryDescriptionsAr = {
+    'house-help':
+        'مساعدة منزلية عند الطلب للمهام اليومية وتنظيف المطبخ والغسيل.',
+    'cleaning': 'تنظيف دوري وعميق وتنظيف ما قبل السكن للشقق والمنازل.',
+    'plumbing': 'إصلاح التسريبات والتركيبات والصرف وخدمات سباكة عاجلة.',
+    'electrical': 'تركيبات وإصلاحات وأعمال كهربائية منزلية آمنة.',
+    'ac-cooling': 'صيانة المكيف وتعبئة الغاز وإصلاح أعطال التبريد.',
+    'beauty-at-home':
+        'خدمات الشعر والمكياج والأظافر والعناية الذاتية في المنزل.',
+    'handyman': 'تركيب الأثاث وتعليق الستائر والثقب والمهام المنزلية اليومية.',
+  };
+
   static const Map<String, Map<String, String>> _localizedValues = {
     'en': {
       'common.all': 'All',
@@ -546,6 +822,17 @@ class AppLocalizations {
       'home_services.hero_stats':
           '{providers} active professionals across {categories} service types.',
       'home_services.book_service': 'Book a Service',
+      'home_services.house_help_badge_new': 'NEW CATEGORY',
+      'home_services.house_help_subtitle':
+          'Fast and trusted house help in 10-15 minutes for everyday chores.',
+      'home_services.house_help_tag_cleaning': 'Cleaning',
+      'home_services.house_help_tag_dishes': 'Dishes',
+      'home_services.house_help_tag_laundry': 'Laundry',
+      'home_services.house_help_helpers_available': '{count} helpers available',
+      'home_services.house_help_explore': 'Explore house help services',
+      'home_services.house_help_add_image': 'Add House Help Image',
+      'home_services.category_description_fallback':
+          'Book trusted professionals for this service category.',
       'home_services.popular_categories': 'Popular Categories',
       'home_services.available_now': 'Available Right Now',
       'home_services.fastest_response': 'Fastest response',
@@ -759,6 +1046,51 @@ class AppLocalizations {
       'home_service_booking.select_address':
           'Please add or select a saved address.',
       'home_service_booking.pay_on_confirmation': 'Pay on confirmation',
+      'home_service_booking.house_help_format_title':
+          'House Help Booking Format',
+      'home_service_booking.house_help_booking_type': 'Booking type',
+      'home_service_booking.house_help_shift_duration': 'Shift duration',
+      'home_service_booking.house_help_home_size': 'Home size',
+      'home_service_booking.house_help_arrival_target': 'Arrival target',
+      'home_service_booking.house_help_tasks': 'Tasks',
+      'home_service_booking.house_help_bring_supplies':
+          'Bring cleaning supplies',
+      'home_service_booking.house_help_supplies_fee':
+          'Adds \$5 service materials fee',
+      'home_service_booking.house_help_instant_dispatch':
+          'Instant dispatch selected: {window}. A nearby helper is assigned immediately.',
+      'home_service_booking.house_help_plan_one_time': 'One-time job',
+      'home_service_booking.house_help_plan_daily': 'Daily recurring',
+      'home_service_booking.house_help_plan_weekly': 'Weekly recurring',
+      'home_service_booking.house_help_shift_2h': '2 hours',
+      'home_service_booking.house_help_shift_4h': '4 hours',
+      'home_service_booking.house_help_shift_8h': '8 hours',
+      'home_service_booking.house_help_home_size_small': 'F2',
+      'home_service_booking.house_help_home_size_medium': 'F3',
+      'home_service_booking.house_help_home_size_large': 'F4',
+      'home_service_booking.house_help_arrival_15': 'Within 15 min',
+      'home_service_booking.house_help_arrival_30': 'Within 30 min',
+      'home_service_booking.house_help_arrival_scheduled': 'Scheduled slot',
+      'home_service_booking.house_help_task_floor': 'Floor cleaning',
+      'home_service_booking.house_help_task_kitchen': 'Kitchen cleaning',
+      'home_service_booking.house_help_task_bathroom': 'Bathroom cleaning',
+      'home_service_booking.house_help_task_dishes': 'Dishes',
+      'home_service_booking.house_help_task_laundry': 'Laundry',
+      'home_service_booking.house_help_summary_booking_format':
+          'Booking format',
+      'home_service_booking.house_help_summary_shift': 'Shift',
+      'home_service_booking.house_help_summary_home_size': 'Home size',
+      'home_service_booking.house_help_summary_tasks': 'Tasks',
+      'home_service_booking.house_help_summary_tasks_count': '{count} selected',
+      'home_service_booking.house_help_summary_arrival_target':
+          'Arrival target',
+      'home_service_booking.house_help_summary_supplies': 'Supplies',
+      'home_service_booking.house_help_summary_supplies_provider':
+          'Provider brings supplies',
+      'home_service_booking.house_help_summary_supplies_customer':
+          'Customer supplies only',
+      'home_service_booking.house_help_estimated_first_visit':
+          'Estimated first visit',
       'laundry_order.title': 'New Order',
       'laundry_order.service_type': 'Service Type',
       'laundry_order.items': 'Items',
@@ -1544,8 +1876,7 @@ class AppLocalizations {
       'ride_booking.login_required':
           'Veuillez vous connecter pour confirmer votre trajet.',
       'ride_booking.success': 'Trajet confirme ! Le chauffeur arrive.',
-      'ride_booking.failed':
-          'Impossible de confirmer le trajet : {error}',
+      'ride_booking.failed': 'Impossible de confirmer le trajet : {error}',
       'ride_summary.title': 'Resume du trajet',
       'ride_summary.trip_details': 'Details du trajet',
       'ride_summary.ride_details': 'Details de la course',
@@ -1614,6 +1945,18 @@ class AppLocalizations {
       'home_services.hero_stats':
           '{providers} professionnels actifs dans {categories} services.',
       'home_services.book_service': 'Reserver un service',
+      'home_services.house_help_badge_new': 'NOUVELLE CATEGORIE',
+      'home_services.house_help_subtitle':
+          'Aide menagere rapide et fiable en 10 a 15 minutes pour les taches du quotidien.',
+      'home_services.house_help_tag_cleaning': 'Nettoyage',
+      'home_services.house_help_tag_dishes': 'Vaisselle',
+      'home_services.house_help_tag_laundry': 'Lessive',
+      'home_services.house_help_helpers_available': '{count} aides disponibles',
+      'home_services.house_help_explore':
+          'Explorer les services d\'aide menagere',
+      'home_services.house_help_add_image': 'Ajouter une image Aide menagere',
+      'home_services.category_description_fallback':
+          'Reservez des professionnels de confiance pour cette categorie.',
       'home_services.popular_categories': 'Categories populaires',
       'home_services.available_now': 'Disponibles maintenant',
       'home_services.fastest_response': 'Reponse rapide',
@@ -1633,6 +1976,53 @@ class AppLocalizations {
       'home_services.pricing_title': 'Prix de depart clairs',
       'home_services.pricing_subtitle':
           'Connaissez le tarif de base avant de confirmer.',
+      'home_service_booking.house_help_format_title':
+          'Format de reservation aide menagere',
+      'home_service_booking.house_help_booking_type': 'Type de reservation',
+      'home_service_booking.house_help_shift_duration': 'Duree du shift',
+      'home_service_booking.house_help_home_size': 'Taille du logement',
+      'home_service_booking.house_help_arrival_target': 'Delai d\'arrivee',
+      'home_service_booking.house_help_tasks': 'Taches',
+      'home_service_booking.house_help_bring_supplies':
+          'Apporter les produits de nettoyage',
+      'home_service_booking.house_help_supplies_fee':
+          'Ajoute 5\$ de frais de materiel',
+      'home_service_booking.house_help_instant_dispatch':
+          'Dispatch instantane selectionne : {window}. Un aide proche est assigne immediatement.',
+      'home_service_booking.house_help_plan_one_time': 'Mission unique',
+      'home_service_booking.house_help_plan_daily': 'Recurrent quotidien',
+      'home_service_booking.house_help_plan_weekly': 'Recurrent hebdomadaire',
+      'home_service_booking.house_help_shift_2h': '2 heures',
+      'home_service_booking.house_help_shift_4h': '4 heures',
+      'home_service_booking.house_help_shift_8h': '8 heures',
+      'home_service_booking.house_help_home_size_small': 'F2',
+      'home_service_booking.house_help_home_size_medium': 'F3',
+      'home_service_booking.house_help_home_size_large': 'F4',
+      'home_service_booking.house_help_arrival_15': 'Sous 15 min',
+      'home_service_booking.house_help_arrival_30': 'Sous 30 min',
+      'home_service_booking.house_help_arrival_scheduled': 'Creneau planifie',
+      'home_service_booking.house_help_task_floor': 'Nettoyage du sol',
+      'home_service_booking.house_help_task_kitchen': 'Nettoyage cuisine',
+      'home_service_booking.house_help_task_bathroom':
+          'Nettoyage salle de bain',
+      'home_service_booking.house_help_task_dishes': 'Vaisselle',
+      'home_service_booking.house_help_task_laundry': 'Lessive',
+      'home_service_booking.house_help_summary_booking_format':
+          'Format de reservation',
+      'home_service_booking.house_help_summary_shift': 'Shift',
+      'home_service_booking.house_help_summary_home_size': 'Taille du logement',
+      'home_service_booking.house_help_summary_tasks': 'Taches',
+      'home_service_booking.house_help_summary_tasks_count':
+          '{count} selectionnees',
+      'home_service_booking.house_help_summary_arrival_target':
+          'Delai d\'arrivee',
+      'home_service_booking.house_help_summary_supplies': 'Fournitures',
+      'home_service_booking.house_help_summary_supplies_provider':
+          'Le prestataire apporte les produits',
+      'home_service_booking.house_help_summary_supplies_customer':
+          'Produits fournis par le client',
+      'home_service_booking.house_help_estimated_first_visit':
+          'Estimation premiere visite',
       'laundry.title': 'Blanchisserie',
       'laundry.hero_title': 'Frais et propre 🧺',
       'laundry.hero_subtitle':
@@ -2419,6 +2809,17 @@ class AppLocalizations {
       'home_services.hero_stats':
           '{providers} مختصين نشطين عبر {categories} أنواع خدمات.',
       'home_services.book_service': 'احجز خدمة',
+      'home_services.house_help_badge_new': 'فئة جديدة',
+      'home_services.house_help_subtitle':
+          'مساعدة منزلية سريعة وموثوقة خلال 10-15 دقيقة للمهام اليومية.',
+      'home_services.house_help_tag_cleaning': 'تنظيف',
+      'home_services.house_help_tag_dishes': 'غسيل الصحون',
+      'home_services.house_help_tag_laundry': 'غسيل الملابس',
+      'home_services.house_help_helpers_available': '{count} مساعدين متاحين',
+      'home_services.house_help_explore': 'استكشف خدمات المساعدة المنزلية',
+      'home_services.house_help_add_image': 'أضف صورة للمساعدة المنزلية',
+      'home_services.category_description_fallback':
+          'احجز مختصين موثوقين لهذه الفئة من الخدمات.',
       'home_services.popular_categories': 'الفئات الشائعة',
       'home_services.available_now': 'متاح الآن',
       'home_services.fastest_response': 'أسرع استجابة',
@@ -2435,6 +2836,48 @@ class AppLocalizations {
       'home_services.scheduling_subtitle': 'اختر الوقت المناسب ليومك.',
       'home_services.pricing_title': 'أسعار بداية واضحة',
       'home_services.pricing_subtitle': 'اعرف السعر الأساسي قبل تأكيد الحجز.',
+      'home_service_booking.house_help_format_title':
+          'صيغة حجز المساعدة المنزلية',
+      'home_service_booking.house_help_booking_type': 'نوع الحجز',
+      'home_service_booking.house_help_shift_duration': 'مدة الشفت',
+      'home_service_booking.house_help_home_size': 'حجم المنزل',
+      'home_service_booking.house_help_arrival_target': 'زمن الوصول',
+      'home_service_booking.house_help_tasks': 'المهام',
+      'home_service_booking.house_help_bring_supplies': 'إحضار مواد التنظيف',
+      'home_service_booking.house_help_supplies_fee':
+          'تضاف رسوم مواد قدرها 5\$',
+      'home_service_booking.house_help_instant_dispatch':
+          'تم اختيار إرسال فوري: {window}. سيتم تعيين مساعد قريب مباشرة.',
+      'home_service_booking.house_help_plan_one_time': 'مرة واحدة',
+      'home_service_booking.house_help_plan_daily': 'يومي متكرر',
+      'home_service_booking.house_help_plan_weekly': 'أسبوعي متكرر',
+      'home_service_booking.house_help_shift_2h': 'ساعتان',
+      'home_service_booking.house_help_shift_4h': '4 ساعات',
+      'home_service_booking.house_help_shift_8h': '8 ساعات',
+      'home_service_booking.house_help_home_size_small': 'F2',
+      'home_service_booking.house_help_home_size_medium': 'F3',
+      'home_service_booking.house_help_home_size_large': 'F4',
+      'home_service_booking.house_help_arrival_15': 'خلال 15 دقيقة',
+      'home_service_booking.house_help_arrival_30': 'خلال 30 دقيقة',
+      'home_service_booking.house_help_arrival_scheduled': 'موعد مجدول',
+      'home_service_booking.house_help_task_floor': 'تنظيف الأرضيات',
+      'home_service_booking.house_help_task_kitchen': 'تنظيف المطبخ',
+      'home_service_booking.house_help_task_bathroom': 'تنظيف الحمام',
+      'home_service_booking.house_help_task_dishes': 'غسيل الصحون',
+      'home_service_booking.house_help_task_laundry': 'غسيل الملابس',
+      'home_service_booking.house_help_summary_booking_format': 'صيغة الحجز',
+      'home_service_booking.house_help_summary_shift': 'الشفت',
+      'home_service_booking.house_help_summary_home_size': 'حجم المنزل',
+      'home_service_booking.house_help_summary_tasks': 'المهام',
+      'home_service_booking.house_help_summary_tasks_count': '{count} محددة',
+      'home_service_booking.house_help_summary_arrival_target': 'زمن الوصول',
+      'home_service_booking.house_help_summary_supplies': 'المواد',
+      'home_service_booking.house_help_summary_supplies_provider':
+          'المزود يحضر المواد',
+      'home_service_booking.house_help_summary_supplies_customer':
+          'المواد على العميل',
+      'home_service_booking.house_help_estimated_first_visit':
+          'تقدير الزيارة الأولى',
       'laundry.title': 'الغسيل',
       'laundry.hero_title': 'نظيف ومنعش 🧺',
       'laundry.hero_subtitle': 'الطلب الأول بخصم 50%! استلام وتوصيل مجاني',
