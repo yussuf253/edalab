@@ -1091,6 +1091,28 @@ class AppLocalizations {
           'Customer supplies only',
       'home_service_booking.house_help_estimated_first_visit':
           'Estimated first visit',
+      'home_service_booking.zone_nearby_found':
+          '{count} provider(s) found within 1 km.',
+      'home_service_booking.zone_nearby_missing':
+          'No provider found within 1 km from your location.',
+      'home_service_booking.zone_fallback_title': 'Available providers nearby',
+      'home_service_booking.zone_fallback_subtitle':
+          'Choose from the closest available providers, sorted for fast matching.',
+      'home_service_booking.zone_sort_distance': 'Nearest',
+      'home_service_booking.zone_sort_rating': 'Top rated',
+      'home_service_booking.zone_sort_reviews': 'Most reviewed',
+      'home_service_booking.zone_filter_3km': 'Up to 3 km',
+      'home_service_booking.zone_filter_5km': 'Up to 5 km',
+      'home_service_booking.zone_filter_all': 'Any distance',
+      'home_service_booking.zone_reviews': '{count} reviews',
+      'home_service_booking.zone_distance_away': '{distance} km away',
+      'home_service_booking.zone_distance_unavailable': 'Distance unavailable',
+      'home_service_booking.zone_select_provider_required':
+          'Select a provider from the fallback list to continue.',
+      'home_service_booking.zone_no_fallback_after_filters':
+          'No providers match your current distance filter.',
+      'home_service_booking.zone_no_providers_available':
+          'No available house-help providers found right now.',
       'laundry_order.title': 'New Order',
       'laundry_order.service_type': 'Service Type',
       'laundry_order.items': 'Items',
@@ -1241,6 +1263,17 @@ class AppLocalizations {
       'home_service_detail.message': 'Message',
       'home_service_detail.call_provider': 'Call Provider',
       'home_service_detail.view_orders': 'View All Orders',
+      'home_service_detail.service': 'Service',
+      'home_service_detail.dispatch_title': 'Dispatch Details',
+      'home_service_detail.dispatch_mode': 'Dispatch mode',
+      'home_service_detail.dispatch_zone': 'Zone-based matching',
+      'home_service_detail.dispatch_pool': 'Provider pool',
+      'home_service_detail.dispatch_pool_count': '{count} providers in range',
+      'home_service_detail.dispatch_assignment': 'Assignment',
+      'home_service_detail.dispatch_assignment_pending':
+          'Waiting for nearby provider acceptance',
+      'home_service_detail.dispatch_assignment_assigned': 'Provider assigned',
+      'home_service_detail.dispatch_assigned_at': 'Assigned at',
       'orders.title': 'My Orders',
       'orders.active': 'Active',
       'orders.completed': 'Completed',
@@ -2023,6 +2056,29 @@ class AppLocalizations {
           'Produits fournis par le client',
       'home_service_booking.house_help_estimated_first_visit':
           'Estimation premiere visite',
+      'home_service_booking.zone_nearby_found':
+          '{count} prestataire(s) trouve(s) dans un rayon de 1 km.',
+      'home_service_booking.zone_nearby_missing':
+          'Aucun prestataire trouve dans un rayon de 1 km.',
+      'home_service_booking.zone_fallback_title':
+          'Prestataires disponibles a proximite',
+      'home_service_booking.zone_fallback_subtitle':
+          'Choisissez parmi les prestataires disponibles les plus proches.',
+      'home_service_booking.zone_sort_distance': 'Le plus proche',
+      'home_service_booking.zone_sort_rating': 'Mieux notes',
+      'home_service_booking.zone_sort_reviews': 'Plus d\'avis',
+      'home_service_booking.zone_filter_3km': 'Jusqu\'a 3 km',
+      'home_service_booking.zone_filter_5km': 'Jusqu\'a 5 km',
+      'home_service_booking.zone_filter_all': 'Toute distance',
+      'home_service_booking.zone_reviews': '{count} avis',
+      'home_service_booking.zone_distance_away': '{distance} km',
+      'home_service_booking.zone_distance_unavailable': 'Distance indisponible',
+      'home_service_booking.zone_select_provider_required':
+          'Selectionnez un prestataire dans la liste pour continuer.',
+      'home_service_booking.zone_no_fallback_after_filters':
+          'Aucun prestataire ne correspond a ce filtre de distance.',
+      'home_service_booking.zone_no_providers_available':
+          'Aucun prestataire d\'aide menagere disponible pour le moment.',
       'laundry.title': 'Blanchisserie',
       'laundry.hero_title': 'Frais et propre 🧺',
       'laundry.hero_subtitle':
@@ -2247,6 +2303,18 @@ class AppLocalizations {
       'home_service_detail.message': 'Message',
       'home_service_detail.call_provider': 'Appeler le prestataire',
       'home_service_detail.view_orders': 'Voir toutes les commandes',
+      'home_service_detail.service': 'Service',
+      'home_service_detail.dispatch_title': 'Details de dispatch',
+      'home_service_detail.dispatch_mode': 'Mode de dispatch',
+      'home_service_detail.dispatch_zone': 'Affectation basee sur la zone',
+      'home_service_detail.dispatch_pool': 'Pool de prestataires',
+      'home_service_detail.dispatch_pool_count':
+          '{count} prestataires dans la zone',
+      'home_service_detail.dispatch_assignment': 'Affectation',
+      'home_service_detail.dispatch_assignment_pending':
+          'En attente d\'acceptation par un prestataire proche',
+      'home_service_detail.dispatch_assignment_assigned': 'Prestataire assigne',
+      'home_service_detail.dispatch_assigned_at': 'Assigne le',
       'orders.title': 'Mes commandes',
       'orders.active': 'En cours',
       'orders.completed': 'Terminees',
@@ -2878,6 +2946,28 @@ class AppLocalizations {
           'المواد على العميل',
       'home_service_booking.house_help_estimated_first_visit':
           'تقدير الزيارة الأولى',
+      'home_service_booking.zone_nearby_found':
+          'تم العثور على {count} مزود(ين) ضمن 1 كم.',
+      'home_service_booking.zone_nearby_missing':
+          'لا يوجد مزود ضمن 1 كم من موقعك.',
+      'home_service_booking.zone_fallback_title': 'مزودون متاحون بالقرب منك',
+      'home_service_booking.zone_fallback_subtitle':
+          'اختر من أقرب المزودين المتاحين حسب المسافة والتقييم.',
+      'home_service_booking.zone_sort_distance': 'الأقرب',
+      'home_service_booking.zone_sort_rating': 'الأعلى تقييما',
+      'home_service_booking.zone_sort_reviews': 'الأكثر مراجعات',
+      'home_service_booking.zone_filter_3km': 'حتى 3 كم',
+      'home_service_booking.zone_filter_5km': 'حتى 5 كم',
+      'home_service_booking.zone_filter_all': 'أي مسافة',
+      'home_service_booking.zone_reviews': '{count} مراجعة',
+      'home_service_booking.zone_distance_away': '{distance} كم',
+      'home_service_booking.zone_distance_unavailable': 'المسافة غير متاحة',
+      'home_service_booking.zone_select_provider_required':
+          'اختر مزودا من القائمة للمتابعة.',
+      'home_service_booking.zone_no_fallback_after_filters':
+          'لا يوجد مزودون مطابقون لفلتر المسافة الحالي.',
+      'home_service_booking.zone_no_providers_available':
+          'لا يوجد مزودو مساعدة منزلية متاحون حاليا.',
       'laundry.title': 'الغسيل',
       'laundry.hero_title': 'نظيف ومنعش 🧺',
       'laundry.hero_subtitle': 'الطلب الأول بخصم 50%! استلام وتوصيل مجاني',
@@ -3096,6 +3186,17 @@ class AppLocalizations {
       'home_service_detail.message': 'مراسلة',
       'home_service_detail.call_provider': 'اتصل بالمزود',
       'home_service_detail.view_orders': 'عرض جميع الطلبات',
+      'home_service_detail.service': 'الخدمة',
+      'home_service_detail.dispatch_title': 'تفاصيل التوزيع',
+      'home_service_detail.dispatch_mode': 'وضع التوزيع',
+      'home_service_detail.dispatch_zone': 'مطابقة حسب النطاق',
+      'home_service_detail.dispatch_pool': 'مجموعة المزودين',
+      'home_service_detail.dispatch_pool_count': '{count} مزودين ضمن النطاق',
+      'home_service_detail.dispatch_assignment': 'التعيين',
+      'home_service_detail.dispatch_assignment_pending':
+          'بانتظار قبول مزود قريب',
+      'home_service_detail.dispatch_assignment_assigned': 'تم تعيين المزود',
+      'home_service_detail.dispatch_assigned_at': 'تاريخ التعيين',
       'orders.title': 'طلباتي',
       'orders.active': 'النشطة',
       'orders.completed': 'المكتملة',

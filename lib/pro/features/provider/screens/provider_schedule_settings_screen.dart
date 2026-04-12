@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -74,9 +75,7 @@ class _ProviderScheduleSettingsScreenState
 
   Future<void> _saveSettings({
     required String providerId,
-    required String location,
     required String contactPhone,
-    required String responseTime,
     required List<String> services,
     required List<String> bookingModes,
     required Map<String, String> availability,
@@ -87,9 +86,7 @@ class _ProviderScheduleSettingsScreenState
     try {
       await ApiClient.post('/pro/${widget.userId}/provider-settings', {
         'providerId': providerId,
-        'location': location,
         'contactPhone': contactPhone,
-        'responseTime': responseTime,
         'services': services,
         'bookingModes': bookingModes,
         'availability': availability,
@@ -115,16 +112,100 @@ class _ProviderScheduleSettingsScreenState
     }
   }
 
+  Future<LatLng?> _requestCurrentLocation({
+    bool showFailureSnackBar = true,
+  }) async {
+    try {
+      final servicesEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!servicesEnabled) {
+        if (showFailureSnackBar && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Turn on location services to continue.'),
+            ),
+          );
+        }
+        return null;
+      }
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (showFailureSnackBar && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Location permission is required for service-zone matching.',
+              ),
+            ),
+          );
+        }
+        return null;
+      }
+
+      Position? cachedPosition;
+      try {
+        cachedPosition = await Geolocator.getLastKnownPosition();
+      } catch (_) {}
+
+      Position? position;
+      for (var attempt = 0; attempt < 3 && position == null; attempt++) {
+        final locationSettings = switch (attempt) {
+          0 => const LocationSettings(
+            accuracy: LocationAccuracy.best,
+            timeLimit: Duration(seconds: 10),
+          ),
+          1 => const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            timeLimit: Duration(seconds: 14),
+          ),
+          _ => const LocationSettings(
+            accuracy: LocationAccuracy.medium,
+            timeLimit: Duration(seconds: 18),
+          ),
+        };
+        try {
+          position = await Geolocator.getCurrentPosition(
+            locationSettings: locationSettings,
+          );
+        } catch (_) {
+          if (attempt < 2) {
+            await Future<void>.delayed(const Duration(milliseconds: 750));
+          }
+        }
+      }
+      position ??= cachedPosition;
+      if (position == null) {
+        if (showFailureSnackBar && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Could not resolve your current location yet. Move the map pin manually and continue.',
+              ),
+            ),
+          );
+        }
+        return null;
+      }
+      return LatLng(position.latitude, position.longitude);
+    } catch (_) {
+      if (showFailureSnackBar && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not access location permission right now.'),
+          ),
+        );
+      }
+      return null;
+    }
+  }
+
   Future<void> _openEditor(Map<String, dynamic> item) async {
     final providerId = item['id']?.toString() ?? '';
-    final locationController = TextEditingController(
-      text: item['location']?.toString() ?? '',
-    );
     final contactPhoneController = TextEditingController(
       text: item['contactPhone']?.toString() ?? '',
-    );
-    final responseTimeController = TextEditingController(
-      text: item['responseTime']?.toString() ?? '',
     );
     final servicesController = TextEditingController(
       text: (item['services'] as List<dynamic>? ?? const <dynamic>[])
@@ -146,19 +227,20 @@ class _ProviderScheduleSettingsScreenState
     final serviceZone = Map<String, dynamic>.from(
       (item['serviceZone'] as Map?) ?? const <String, dynamic>{},
     );
-    var zoneEnabled = serviceZone['enabled'] as bool? ?? true;
     var zoneCenter = LatLng(
       (serviceZone['centerLatitude'] as num?)?.toDouble() ?? 11.5886,
       (serviceZone['centerLongitude'] as num?)?.toDouble() ?? 43.1457,
     );
-    final zoneLatitudeController = TextEditingController(
-      text: zoneCenter.latitude.toStringAsFixed(6),
-    );
-    final zoneLongitudeController = TextEditingController(
-      text: zoneCenter.longitude.toStringAsFixed(6),
-    );
+    if (serviceZone['centerLatitude'] == null ||
+        serviceZone['centerLongitude'] == null) {
+      final current = await _requestCurrentLocation(showFailureSnackBar: false);
+      if (current != null) {
+        zoneCenter = current;
+      }
+    }
+    if (!mounted) return;
     final zoneRadiusController = TextEditingController(
-      text: ((serviceZone['radiusKm'] as num?)?.toDouble() ?? 8).toString(),
+      text: ((serviceZone['radiusKm'] as num?)?.toDouble() ?? 1).toString(),
     );
     final houseHelpConfig = Map<String, dynamic>.from(
       (item['houseHelpConfig'] as Map?) ?? const <String, dynamic>{},
@@ -230,24 +312,10 @@ class _ProviderScheduleSettingsScreenState
                       const SizedBox(height: 4),
                       Text(item['title']!.toString()),
                     ],
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: locationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Service area / activity zone',
-                      ),
-                    ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: contactPhoneController,
                       decoration: const InputDecoration(labelText: 'Phone'),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: responseTimeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Response time',
-                      ),
                     ),
                     const SizedBox(height: 20),
                     TextFormField(
@@ -261,17 +329,6 @@ class _ProviderScheduleSettingsScreenState
                       ),
                     ),
                     const SizedBox(height: 20),
-                    SwitchListTile.adaptive(
-                      contentPadding: EdgeInsets.zero,
-                      value: zoneEnabled,
-                      title: const Text('Enable activity zone matching'),
-                      subtitle: const Text(
-                        'Only users inside this zone should see your request in queue.',
-                      ),
-                      onChanged: (value) =>
-                          setModalState(() => zoneEnabled = value),
-                    ),
-                    const SizedBox(height: 8),
                     SizedBox(
                       height: 170,
                       child: ClipRRect(
@@ -296,10 +353,6 @@ class _ProviderScheduleSettingsScreenState
                           onTap: (point) {
                             setModalState(() {
                               zoneCenter = point;
-                              zoneLatitudeController.text = point.latitude
-                                  .toStringAsFixed(6);
-                              zoneLongitudeController.text = point.longitude
-                                  .toStringAsFixed(6);
                             });
                           },
                         ),
@@ -309,49 +362,23 @@ class _ProviderScheduleSettingsScreenState
                     Row(
                       children: [
                         Expanded(
-                          child: TextFormField(
-                            controller: zoneLatitudeController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                              signed: true,
-                            ),
-                            decoration: const InputDecoration(
-                              labelText: 'Zone latitude',
-                            ),
-                            onChanged: (value) {
-                              final parsed = double.tryParse(value.trim());
-                              if (parsed == null) return;
-                              setModalState(() {
-                                zoneCenter = LatLng(
-                                  parsed,
-                                  zoneCenter.longitude,
-                                );
-                              });
-                            },
+                          child: Text(
+                            'Zone center: ${zoneCenter.latitude.toStringAsFixed(5)}, ${zoneCenter.longitude.toStringAsFixed(5)}',
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextFormField(
-                            controller: zoneLongitudeController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                              signed: true,
-                            ),
-                            decoration: const InputDecoration(
-                              labelText: 'Zone longitude',
-                            ),
-                            onChanged: (value) {
-                              final parsed = double.tryParse(value.trim());
-                              if (parsed == null) return;
-                              setModalState(() {
-                                zoneCenter = LatLng(
-                                  zoneCenter.latitude,
-                                  parsed,
-                                );
-                              });
-                            },
-                          ),
+                        TextButton.icon(
+                          onPressed: () async {
+                            final current = await _requestCurrentLocation(
+                              showFailureSnackBar: false,
+                            );
+                            if (current == null || !sheetContext.mounted) {
+                              return;
+                            }
+                            setModalState(() => zoneCenter = current);
+                          },
+                          icon: const Icon(Icons.my_location_rounded),
+                          label: const Text('Use current'),
                         ),
                       ],
                     ),
@@ -362,7 +389,7 @@ class _ProviderScheduleSettingsScreenState
                         decimal: true,
                       ),
                       decoration: const InputDecoration(
-                        labelText: 'Zone radius (km)',
+                        labelText: 'Zone radius (km, max 1)',
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -454,25 +481,17 @@ class _ProviderScheduleSettingsScreenState
                         onPressed: _busyIds.contains(providerId)
                             ? null
                             : () async {
-                                final zoneLatitude = double.tryParse(
-                                  zoneLatitudeController.text.trim(),
-                                );
-                                final zoneLongitude = double.tryParse(
-                                  zoneLongitudeController.text.trim(),
-                                );
                                 final zoneRadius = double.tryParse(
                                   zoneRadiusController.text.trim(),
                                 );
-                                if (zoneEnabled &&
-                                    (zoneLatitude == null ||
-                                        zoneLongitude == null ||
-                                        zoneRadius == null ||
-                                        zoneRadius <= 0)) {
+                                if (zoneRadius == null ||
+                                    zoneRadius <= 0 ||
+                                    zoneRadius > 1) {
                                   if (!context.mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
-                                        'Set a valid zone center and radius before saving.',
+                                        'Set a valid zone center and radius (maximum 1 km) before saving.',
                                       ),
                                     ),
                                   );
@@ -481,10 +500,7 @@ class _ProviderScheduleSettingsScreenState
                                 Navigator.of(sheetContext).pop();
                                 await _saveSettings(
                                   providerId: providerId,
-                                  location: locationController.text.trim(),
                                   contactPhone: contactPhoneController.text
-                                      .trim(),
-                                  responseTime: responseTimeController.text
                                       .trim(),
                                   services: _splitValues(
                                     servicesController.text,
@@ -501,14 +517,10 @@ class _ProviderScheduleSettingsScreenState
                                         .trim(),
                                   },
                                   serviceZone: {
-                                    'enabled': zoneEnabled,
-                                    'centerLatitude': zoneEnabled
-                                        ? zoneLatitude
-                                        : null,
-                                    'centerLongitude': zoneEnabled
-                                        ? zoneLongitude
-                                        : null,
-                                    'radiusKm': zoneEnabled ? zoneRadius : 8,
+                                    'enabled': true,
+                                    'centerLatitude': zoneCenter.latitude,
+                                    'centerLongitude': zoneCenter.longitude,
+                                    'radiusKm': zoneRadius,
                                   },
                                   houseHelpConfig: {
                                     'bookingTypes': _splitValues(
@@ -642,9 +654,8 @@ class _ProviderScheduleSettingsScreenState
               final houseHelpConfig = Map<String, dynamic>.from(
                 (item['houseHelpConfig'] as Map?) ?? const <String, dynamic>{},
               );
-              final zoneEnabled = serviceZone['enabled'] == true;
               final zoneRadius =
-                  (serviceZone['radiusKm'] as num?)?.toDouble() ?? 8;
+                  (serviceZone['radiusKm'] as num?)?.toDouble() ?? 1;
               final zoneCenterLatitude = (serviceZone['centerLatitude'] as num?)
                   ?.toDouble();
               final zoneCenterLongitude =
@@ -718,16 +729,8 @@ class _ProviderScheduleSettingsScreenState
                       ),
                       const SizedBox(height: 12),
                       _SettingsInfoRow(
-                        label: 'Area',
-                        value: item['location']?.toString() ?? 'Not set',
-                      ),
-                      _SettingsInfoRow(
                         label: 'Phone',
                         value: item['contactPhone']?.toString() ?? 'Not set',
-                      ),
-                      _SettingsInfoRow(
-                        label: 'Response',
-                        value: item['responseTime']?.toString() ?? 'Not set',
                       ),
                       _SettingsInfoRow(
                         label: 'Modes',
@@ -743,9 +746,8 @@ class _ProviderScheduleSettingsScreenState
                       ),
                       _SettingsInfoRow(
                         label: 'Zone',
-                        value: zoneEnabled
-                            ? 'Enabled • ${zoneRadius.toStringAsFixed(1)} km'
-                            : 'Disabled',
+                        value:
+                            'Mandatory • ${zoneRadius.toStringAsFixed(1)} km',
                       ),
                       _SettingsInfoRow(
                         label: 'Zone center',

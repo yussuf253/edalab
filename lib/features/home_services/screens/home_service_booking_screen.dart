@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +36,11 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
   bool _houseHelpBringSupplies = false;
   HomeServiceProviderModel? _provider;
   List<HomeServiceProviderModel> _zonePoolProviders = const [];
+  List<HomeServiceProviderModel> _zoneFallbackProviders = const [];
+  String? _selectedFallbackProviderId;
+  String _fallbackSort = 'distance';
+  double? _fallbackMaxDistanceKm = 5;
+  LatLng? _deviceLocation;
   bool _isLoading = true;
   bool _didInitializeAddress = false;
 
@@ -81,6 +87,36 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
         normalized.contains('now') ||
         normalized.contains('15') ||
         normalized.contains('30');
+  }
+
+  String _normalizeServiceOption(String value) {
+    return value
+        .toLowerCase()
+        .replaceAll('&', ' and ')
+        .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
+        .trim()
+        .replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  bool _isGenericHouseHelpOption(String value) {
+    final normalized = _normalizeServiceOption(value);
+    return normalized == 'house help' ||
+        normalized == 'househelp' ||
+        normalized == 'house help service' ||
+        normalized == 'house help booking' ||
+        normalized == 'book house help' ||
+        normalized == 'maid' ||
+        normalized == 'maid service' ||
+        normalized == 'cleaning' ||
+        normalized == 'cleaning service';
+  }
+
+  List<String> _houseHelpSpecificServiceOptions(List<String> options) {
+    return options
+        .map((entry) => entry.trim())
+        .where((entry) => entry.isNotEmpty)
+        .where((entry) => !_isGenericHouseHelpOption(entry))
+        .toList(growable: false);
   }
 
   HomeServiceProviderModel _buildZoneDispatchProvider(
@@ -219,37 +255,6 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
   String _isoDateLabel(DateTime date) =>
       '${date.year}-${_monthTwoDigits(date)}-${_dayTwoDigits(date)}';
 
-  String _normalizeServiceOption(String value) {
-    return value
-        .toLowerCase()
-        .replaceAll('&', ' and ')
-        .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
-        .trim()
-        .replaceAll(RegExp(r'\s+'), ' ');
-  }
-
-  List<String> _houseHelpServiceOptions(List<String> options) {
-    final filtered = options.toList(growable: true);
-    final hasRoomCleaning = filtered.any((option) {
-      final normalized = _normalizeServiceOption(option);
-      return normalized == 'room clean' ||
-          normalized == 'room cleaning' ||
-          normalized == 'quick room cleaning' ||
-          normalized == 'room tidying';
-    });
-    if (!hasRoomCleaning) {
-      filtered.insert(0, 'Room cleaning');
-    }
-    final hasFloorCleaning = filtered.any((option) {
-      final normalized = _normalizeServiceOption(option);
-      return normalized == 'floor clean' || normalized == 'floor cleaning';
-    });
-    if (!hasFloorCleaning) {
-      filtered.add('Floor cleaning');
-    }
-    return filtered;
-  }
-
   double _shiftMultiplierFromLabel(String value) {
     final normalized = value.toLowerCase();
     if (normalized.contains('8')) return 3.2;
@@ -349,32 +354,230 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
     return l10n.homeServiceDynamicLabel(value);
   }
 
+  HomeServiceProviderModel? _selectedFallbackProvider() {
+    final selectedId = _selectedFallbackProviderId;
+    if (selectedId == null || selectedId.isEmpty) return null;
+    for (final provider in _zoneFallbackProviders) {
+      if (provider.id == selectedId) return provider;
+    }
+    return null;
+  }
+
+  String _distanceLabel(
+    AppLocalizations l10n,
+    double? distanceKm, {
+    int fractionDigits = 2,
+  }) {
+    if (distanceKm == null) {
+      return l10n.t('home_service_booking.zone_distance_unavailable');
+    }
+    return l10n.t(
+      'home_service_booking.zone_distance_away',
+      params: {'distance': distanceKm.toStringAsFixed(fractionDigits)},
+    );
+  }
+
+  String _buildZoneProvidersEndpoint({
+    LatLng? location,
+    required bool nearOnly,
+    required String sortBy,
+    double? radiusKm,
+    bool availableOnly = true,
+  }) {
+    final params = <String>[
+      'category=house-help',
+      if (availableOnly) 'availableOnly=true',
+      'nearOnly=${nearOnly ? 'true' : 'false'}',
+      'sort=$sortBy',
+      'limit=80',
+      if (location != null) 'latitude=${location.latitude}',
+      if (location != null) 'longitude=${location.longitude}',
+      if (radiusKm != null) 'radiusKm=${radiusKm.toStringAsFixed(1)}',
+    ];
+    return '/catalog/home-service-providers?${params.join('&')}';
+  }
+
+  Future<List<HomeServiceProviderModel>> _fetchHouseHelpProvidersForZone({
+    LatLng? location,
+    required bool nearOnly,
+    required String sortBy,
+    double? radiusKm,
+  }) async {
+    final endpoint = _buildZoneProvidersEndpoint(
+      location: location,
+      nearOnly: nearOnly,
+      sortBy: sortBy,
+      radiusKm: radiusKm,
+    );
+    final response = await ApiClient.get(endpoint, forceRefresh: true);
+    return (response as List<dynamic>)
+        .map(
+          (entry) => HomeServiceProviderModel.fromApi(
+            Map<String, dynamic>.from(entry as Map),
+          ),
+        )
+        .where(_isHouseHelpProvider)
+        .where((provider) => provider.isAvailable)
+        .toList(growable: false);
+  }
+
+  List<HomeServiceProviderModel> _visibleFallbackProviders() {
+    final maxDistance = _fallbackMaxDistanceKm;
+    final sorted = [..._zoneFallbackProviders];
+    if (maxDistance != null) {
+      sorted.removeWhere(
+        (provider) =>
+            provider.distanceKm != null && provider.distanceKm! > maxDistance,
+      );
+    }
+    sorted.sort((left, right) {
+      if (_fallbackSort == 'rating') {
+        final ratingDiff = right.rating.compareTo(left.rating);
+        if (ratingDiff != 0) return ratingDiff;
+        final reviewsDiff = right.reviewCount.compareTo(left.reviewCount);
+        if (reviewsDiff != 0) return reviewsDiff;
+        return (left.distanceKm ?? 9999).compareTo(right.distanceKm ?? 9999);
+      }
+      if (_fallbackSort == 'reviews') {
+        final reviewsDiff = right.reviewCount.compareTo(left.reviewCount);
+        if (reviewsDiff != 0) return reviewsDiff;
+        final ratingDiff = right.rating.compareTo(left.rating);
+        if (ratingDiff != 0) return ratingDiff;
+        return (left.distanceKm ?? 9999).compareTo(right.distanceKm ?? 9999);
+      }
+      final distanceDiff = (left.distanceKm ?? 9999).compareTo(
+        right.distanceKm ?? 9999,
+      );
+      if (distanceDiff != 0) return distanceDiff;
+      final ratingDiff = right.rating.compareTo(left.rating);
+      if (ratingDiff != 0) return ratingDiff;
+      return right.reviewCount.compareTo(left.reviewCount);
+    });
+    return sorted;
+  }
+
   @override
   void initState() {
     super.initState();
     _loadProvider();
+    _requestCurrentLocation(showFailureSnackBar: false);
+  }
+
+  Future<LatLng?> _requestCurrentLocation({
+    bool showFailureSnackBar = true,
+  }) async {
+    try {
+      final servicesEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!servicesEnabled) {
+        if (showFailureSnackBar && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Turn on location services to continue.'),
+            ),
+          );
+        }
+        return null;
+      }
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (showFailureSnackBar && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Location permission is required for zone matching.',
+              ),
+            ),
+          );
+        }
+        return null;
+      }
+
+      Position? cachedPosition;
+      try {
+        cachedPosition = await Geolocator.getLastKnownPosition();
+      } catch (_) {}
+
+      Position? position;
+      for (var attempt = 0; attempt < 3 && position == null; attempt++) {
+        final settings = switch (attempt) {
+          0 => const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            timeLimit: Duration(seconds: 10),
+          ),
+          1 => const LocationSettings(
+            accuracy: LocationAccuracy.medium,
+            timeLimit: Duration(seconds: 14),
+          ),
+          _ => const LocationSettings(
+            accuracy: LocationAccuracy.low,
+            timeLimit: Duration(seconds: 18),
+          ),
+        };
+        try {
+          position = await Geolocator.getCurrentPosition(
+            locationSettings: settings,
+          );
+        } catch (_) {
+          if (attempt < 2) {
+            await Future<void>.delayed(const Duration(milliseconds: 700));
+          }
+        }
+      }
+      position ??= cachedPosition;
+      if (!mounted || position == null) return null;
+      final resolved = position;
+      final latLng = LatLng(resolved.latitude, resolved.longitude);
+      setState(() {
+        _deviceLocation = latLng;
+      });
+      return latLng;
+    } catch (_) {
+      if (showFailureSnackBar && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not access your location right now.'),
+          ),
+        );
+      }
+      return null;
+    }
   }
 
   Future<void> _loadProvider() async {
     try {
       if (_isZoneDispatchRoute) {
-        final response = await ApiClient.get(
-          '/catalog/home-service-providers',
-          forceRefresh: true,
+        final location = await _requestCurrentLocation(
+          showFailureSnackBar: false,
         );
-        final providers = (response as List<dynamic>)
-            .map(
-              (entry) => HomeServiceProviderModel.fromApi(
-                Map<String, dynamic>.from(entry as Map),
-              ),
-            )
-            .where(_isHouseHelpProvider)
-            .where((provider) => provider.isAvailable)
-            .toList(growable: false);
+        final nearbyProviders = await _fetchHouseHelpProvidersForZone(
+          location: location,
+          nearOnly: true,
+          radiusKm: 1,
+          sortBy: 'distance',
+        );
+        final fallbackProviders = nearbyProviders.isNotEmpty
+            ? const <HomeServiceProviderModel>[]
+            : await _fetchHouseHelpProvidersForZone(
+                location: location,
+                nearOnly: false,
+                sortBy: 'distance',
+              );
+        final aggregateForBooking = nearbyProviders.isNotEmpty
+            ? nearbyProviders
+            : fallbackProviders;
+
         if (!mounted) return;
         setState(() {
-          _zonePoolProviders = providers;
-          _provider = _buildZoneDispatchProvider(providers);
+          _zonePoolProviders = nearbyProviders;
+          _zoneFallbackProviders = fallbackProviders;
+          _selectedFallbackProviderId = fallbackProviders.isNotEmpty
+              ? fallbackProviders.first.id
+              : null;
+          _provider = _buildZoneDispatchProvider(aggregateForBooking);
           _isLoading = false;
         });
         return;
@@ -391,6 +594,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
       setState(() {
         _provider = provider;
         _zonePoolProviders = [provider];
+        _zoneFallbackProviders = const [];
+        _selectedFallbackProviderId = null;
         _isLoading = false;
       });
     } catch (_) {
@@ -418,6 +623,10 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
     final selectedAddress = addresses.isNotEmpty
         ? addresses[_selectedAddress.clamp(0, addresses.length - 1)]
         : null;
+    final selectedLatitude =
+        selectedAddress?.latitude ?? _deviceLocation?.latitude;
+    final selectedLongitude =
+        selectedAddress?.longitude ?? _deviceLocation?.longitude;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -454,9 +663,23 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                   Builder(
                     builder: (context) {
                       final isHouseHelp = _isHouseHelpProvider(provider);
+                      final selectedFallbackProvider =
+                          _selectedFallbackProvider();
+                      final hasNearbyProviders =
+                          _isZoneDispatchRoute && _zonePoolProviders.isNotEmpty;
+                      final fallbackVisibleProviders =
+                          _isZoneDispatchRoute && _zonePoolProviders.isEmpty
+                          ? _visibleFallbackProviders()
+                          : const <HomeServiceProviderModel>[];
                       final houseHelpProviderPool = _isZoneDispatchRoute
-                          ? _zonePoolProviders
+                          ? (_zonePoolProviders.isNotEmpty
+                                ? _zonePoolProviders
+                                : _zoneFallbackProviders)
                           : [provider];
+                      final bookingProvider =
+                          _isZoneDispatchRoute && _zonePoolProviders.isEmpty
+                          ? (selectedFallbackProvider ?? provider)
+                          : provider;
                       final houseHelpConfig = isHouseHelp
                           ? _houseHelpConfigFromProviders(houseHelpProviderPool)
                           : const <String, List<String>>{};
@@ -487,8 +710,21 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                           provider.services.isNotEmpty
                           ? provider.services
                           : [provider.categoryName ?? provider.title];
+                      final configuredHouseHelpServices = isHouseHelp
+                          ? _houseHelpSpecificServiceOptions(provider.services)
+                          : const <String>[];
+                      final cappedHouseHelpServices = isHouseHelp
+                          ? configuredHouseHelpServices
+                                .take(6)
+                                .toList(growable: false)
+                          : const <String>[];
+                      final showServiceSelector = isHouseHelp
+                          ? cappedHouseHelpServices.isNotEmpty
+                          : providerServiceOptionsRaw.isNotEmpty;
                       final serviceOptionsRaw = isHouseHelp
-                          ? _houseHelpServiceOptions(providerServiceOptionsRaw)
+                          ? (showServiceSelector
+                                ? cappedHouseHelpServices
+                                : [provider.categoryName ?? provider.title])
                           : providerServiceOptionsRaw;
                       final serviceOptions = serviceOptionsRaw
                           .map((option) => l10n.homeServiceDynamicLabel(option))
@@ -510,7 +746,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                           _isInstantArrivalLabel(selectedArrivalOption);
                       final serviceFee = isHouseHelp
                           ? _estimateHouseHelpPrice(
-                              provider,
+                              bookingProvider,
                               selectedShiftLabel:
                                   houseHelpShiftOptionsRaw[selectedHouseHelpShift],
                               selectedHomeSizeIndex: selectedHouseHelpHomeSize,
@@ -521,51 +757,53 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            l10n.t('home_service_booking.choose_service'),
-                            style: AppTextStyles.h4,
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            children: List.generate(serviceOptions.length, (
-                              index,
-                            ) {
-                              final selected = selectedService == index;
-                              return GestureDetector(
-                                onTap: () =>
-                                    setState(() => _selectedService = index),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 180),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 11,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: selected
-                                        ? AppColors.homeServices
-                                        : AppColors.white,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: selected
-                                        ? null
-                                        : Border.all(
-                                            color: AppColors.lightGrey,
-                                          ),
-                                  ),
-                                  child: Text(
-                                    serviceOptions[index],
-                                    style: AppTextStyles.labelMedium.copyWith(
+                          if (showServiceSelector) ...[
+                            Text(
+                              l10n.t('home_service_booking.choose_service'),
+                              style: AppTextStyles.h4,
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              children: List.generate(serviceOptions.length, (
+                                index,
+                              ) {
+                                final selected = selectedService == index;
+                                return GestureDetector(
+                                  onTap: () =>
+                                      setState(() => _selectedService = index),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 180),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 11,
+                                    ),
+                                    decoration: BoxDecoration(
                                       color: selected
-                                          ? AppColors.white
-                                          : AppColors.dark,
+                                          ? AppColors.homeServices
+                                          : AppColors.white,
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: selected
+                                          ? null
+                                          : Border.all(
+                                              color: AppColors.lightGrey,
+                                            ),
+                                    ),
+                                    child: Text(
+                                      serviceOptions[index],
+                                      style: AppTextStyles.labelMedium.copyWith(
+                                        color: selected
+                                            ? AppColors.white
+                                            : AppColors.dark,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              );
-                            }),
-                          ),
-                          const SizedBox(height: 24),
+                                );
+                              }),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
                           if (isHouseHelp) ...[
                             Text(
                               l10n.t(
@@ -724,6 +962,239 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               ),
                             ),
                             const SizedBox(height: 24),
+                          ],
+                          if (isHouseHelp && _isZoneDispatchRoute) ...[
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: hasNearbyProviders
+                                    ? AppColors.homeServicesBg
+                                    : const Color(0xFFFFF4E5),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: hasNearbyProviders
+                                      ? AppColors.homeServices.withValues(
+                                          alpha: 0.35,
+                                        )
+                                      : const Color(0xFFFFC86E),
+                                ),
+                              ),
+                              child: Text(
+                                hasNearbyProviders
+                                    ? l10n.t(
+                                        'home_service_booking.zone_nearby_found',
+                                        params: {
+                                          'count':
+                                              '${_zonePoolProviders.length}',
+                                        },
+                                      )
+                                    : l10n.t(
+                                        'home_service_booking.zone_nearby_missing',
+                                      ),
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.dark,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            if (!hasNearbyProviders &&
+                                _zoneFallbackProviders.isNotEmpty) ...[
+                              Text(
+                                l10n.t(
+                                  'home_service_booking.zone_fallback_title',
+                                ),
+                                style: AppTextStyles.h4,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                l10n.t(
+                                  'home_service_booking.zone_fallback_subtitle',
+                                ),
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  _BookingOptionChip(
+                                    label: l10n.t(
+                                      'home_service_booking.zone_sort_distance',
+                                    ),
+                                    selected: _fallbackSort == 'distance',
+                                    onTap: () => setState(
+                                      () => _fallbackSort = 'distance',
+                                    ),
+                                  ),
+                                  _BookingOptionChip(
+                                    label: l10n.t(
+                                      'home_service_booking.zone_sort_rating',
+                                    ),
+                                    selected: _fallbackSort == 'rating',
+                                    onTap: () => setState(
+                                      () => _fallbackSort = 'rating',
+                                    ),
+                                  ),
+                                  _BookingOptionChip(
+                                    label: l10n.t(
+                                      'home_service_booking.zone_sort_reviews',
+                                    ),
+                                    selected: _fallbackSort == 'reviews',
+                                    onTap: () => setState(
+                                      () => _fallbackSort = 'reviews',
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  _BookingOptionChip(
+                                    label: l10n.t(
+                                      'home_service_booking.zone_filter_3km',
+                                    ),
+                                    selected: _fallbackMaxDistanceKm == 3,
+                                    onTap: () => setState(
+                                      () => _fallbackMaxDistanceKm = 3,
+                                    ),
+                                  ),
+                                  _BookingOptionChip(
+                                    label: l10n.t(
+                                      'home_service_booking.zone_filter_5km',
+                                    ),
+                                    selected: _fallbackMaxDistanceKm == 5,
+                                    onTap: () => setState(
+                                      () => _fallbackMaxDistanceKm = 5,
+                                    ),
+                                  ),
+                                  _BookingOptionChip(
+                                    label: l10n.t(
+                                      'home_service_booking.zone_filter_all',
+                                    ),
+                                    selected: _fallbackMaxDistanceKm == null,
+                                    onTap: () => setState(
+                                      () => _fallbackMaxDistanceKm = null,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              if (fallbackVisibleProviders.isEmpty)
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: AppColors.extraLightGrey,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    l10n.t(
+                                      'home_service_booking.zone_no_fallback_after_filters',
+                                    ),
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.grey,
+                                    ),
+                                  ),
+                                ),
+                              ...fallbackVisibleProviders.map((entry) {
+                                final isSelected =
+                                    _selectedFallbackProviderId == entry.id;
+                                return GestureDetector(
+                                  onTap: () => setState(
+                                    () =>
+                                        _selectedFallbackProviderId = entry.id,
+                                  ),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 170),
+                                    margin: const EdgeInsets.only(bottom: 10),
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.white,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? AppColors.homeServices
+                                            : AppColors.extraLightGrey,
+                                        width: isSelected ? 1.8 : 1,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                entry.name,
+                                                style: AppTextStyles.labelLarge
+                                                    .copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                              ),
+                                            ),
+                                            if (isSelected)
+                                              const Icon(
+                                                Icons.check_circle_rounded,
+                                                color: AppColors.homeServices,
+                                                size: 20,
+                                              ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Wrap(
+                                          spacing: 10,
+                                          runSpacing: 6,
+                                          children: [
+                                            Text(
+                                              _distanceLabel(
+                                                l10n,
+                                                entry.distanceKm,
+                                              ),
+                                              style: AppTextStyles.caption,
+                                            ),
+                                            Text(
+                                              '${entry.rating.toStringAsFixed(1)} ★',
+                                              style: AppTextStyles.caption,
+                                            ),
+                                            Text(
+                                              l10n.t(
+                                                'home_service_booking.zone_reviews',
+                                                params: {
+                                                  'count':
+                                                      '${entry.reviewCount}',
+                                                },
+                                              ),
+                                              style: AppTextStyles.caption,
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          '\$${_formatAmount(entry.startingPrice)}',
+                                          style: AppTextStyles.labelMedium
+                                              .copyWith(
+                                                color: AppColors.homeServices,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }),
+                              const SizedBox(height: 12),
+                            ],
                           ],
                           if (!isInstantHouseHelp) ...[
                             Text(
@@ -984,8 +1455,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 );
                               }).toList(),
                             ),
-                          if (selectedAddress?.latitude != null &&
-                              selectedAddress?.longitude != null) ...[
+                          if (selectedLatitude != null &&
+                              selectedLongitude != null) ...[
                             const SizedBox(height: 12),
                             ClipRRect(
                               borderRadius: BorderRadius.circular(14),
@@ -995,8 +1466,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 child: GoogleMap(
                                   initialCameraPosition: CameraPosition(
                                     target: LatLng(
-                                      selectedAddress!.latitude!,
-                                      selectedAddress.longitude!,
+                                      selectedLatitude,
+                                      selectedLongitude,
                                     ),
                                     zoom: 15.2,
                                   ),
@@ -1006,8 +1477,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                         'selected-address',
                                       ),
                                       position: LatLng(
-                                        selectedAddress.latitude!,
-                                        selectedAddress.longitude!,
+                                        selectedLatitude,
+                                        selectedLongitude,
                                       ),
                                     ),
                                   },
@@ -1034,7 +1505,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               children: [
                                 _SummaryRow(
                                   l10n.t('home_service_booking.professional'),
-                                  provider.name,
+                                  bookingProvider.name,
                                 ),
                                 _SummaryRow(
                                   l10n.t('home_service_booking.service'),
@@ -1136,11 +1607,28 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               );
                               if (!context.mounted || !allowed) return;
                               if (_isZoneDispatchRoute &&
-                                  _zonePoolProviders.isEmpty) {
+                                  _zonePoolProviders.isEmpty &&
+                                  _zoneFallbackProviders.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
+                                  SnackBar(
                                     content: Text(
-                                      'No house-help providers are available in your zone right now.',
+                                      l10n.t(
+                                        'home_service_booking.zone_no_providers_available',
+                                      ),
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              if (_isZoneDispatchRoute &&
+                                  _zonePoolProviders.isEmpty &&
+                                  selectedFallbackProvider == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      l10n.t(
+                                        'home_service_booking.zone_select_provider_required',
+                                      ),
                                     ),
                                   ),
                                 );
@@ -1159,6 +1647,30 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 );
                                 return;
                               }
+                              var serviceLatitude = selectedLatitude;
+                              var serviceLongitude = selectedLongitude;
+                              if (serviceLatitude == null ||
+                                  serviceLongitude == null) {
+                                await _requestCurrentLocation();
+                                if (!context.mounted) return;
+                                serviceLatitude =
+                                    selectedAddress.latitude ??
+                                    _deviceLocation?.latitude;
+                                serviceLongitude =
+                                    selectedAddress.longitude ??
+                                    _deviceLocation?.longitude;
+                              }
+                              if (serviceLatitude == null ||
+                                  serviceLongitude == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Location permission is required to place this booking.',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
 
                               final addressText =
                                   '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}';
@@ -1172,19 +1684,28 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 'addressLabel': selectedAddress.label,
                                 if (!_isZoneDispatchRoute)
                                   'providerId': provider.id,
-                                if (_isZoneDispatchRoute) ...{
+                                if (_isZoneDispatchRoute &&
+                                    _zonePoolProviders.isNotEmpty) ...{
                                   'dispatchMode': 'ZONE_POOL',
                                   'providerPoolIds': _zonePoolProviders
                                       .map((entry) => entry.id)
                                       .toList(growable: false),
                                   'zoneDispatch': true,
                                 },
-                                if (selectedAddress.latitude != null &&
-                                    selectedAddress.longitude != null)
-                                  'serviceLocation': {
-                                    'latitude': selectedAddress.latitude,
-                                    'longitude': selectedAddress.longitude,
-                                  },
+                                if (_isZoneDispatchRoute &&
+                                    _zonePoolProviders.isEmpty &&
+                                    selectedFallbackProvider != null) ...{
+                                  'dispatchMode': 'DIRECT_FALLBACK',
+                                  'providerId': selectedFallbackProvider.id,
+                                  'fallbackSortBy': _fallbackSort,
+                                  'fallbackDistanceKm':
+                                      selectedFallbackProvider.distanceKm,
+                                  'zoneDispatch': false,
+                                },
+                                'serviceLocation': {
+                                  'latitude': serviceLatitude,
+                                  'longitude': serviceLongitude,
+                                },
                               };
                               if (!isInstantHouseHelp) {
                                 bookingMetadata['scheduledDate'] =
@@ -1212,10 +1733,23 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               final bookingModuleType = isHouseHelp
                                   ? 'HOUSE_HELP'
                                   : 'HOME_SERVICES';
+                              final directProviderId = !_isZoneDispatchRoute
+                                  ? provider.id
+                                  : _zonePoolProviders.isEmpty
+                                  ? selectedFallbackProvider?.id
+                                  : null;
+                              final orderBrand = directProviderId == null
+                                  ? provider.name
+                                  : (selectedFallbackProvider?.name ??
+                                        provider.name);
                               final orderItem = <String, dynamic>{
-                                if (!_isZoneDispatchRoute) 'id': provider.id,
+                                ...?directProviderId == null
+                                    ? null
+                                    : <String, dynamic>{
+                                        'id': directProviderId,
+                                      },
                                 'name': serviceOptions[selectedService],
-                                'brand': provider.name,
+                                'brand': orderBrand,
                                 'price': serviceFee,
                                 'quantity': 1,
                                 'metadata': bookingMetadata,
@@ -1248,6 +1782,9 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                   'address': addressText,
                                   'trackingRoute':
                                       '/home-services/booking/${order['id']}',
+                                  'trackingExtra': order is Map
+                                      ? Map<String, dynamic>.from(order)
+                                      : null,
                                 },
                               );
                             },

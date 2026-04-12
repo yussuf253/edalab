@@ -37,6 +37,114 @@ function readJsonStringArray(value: unknown): string[] {
     .filter((entry): entry is string => entry != null);
 }
 
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
+function readBooleanQuery(value: unknown): boolean {
+  const normalized = value?.toString().trim().toLowerCase();
+  return (
+    normalized === '1' ||
+    normalized === 'true' ||
+    normalized === 'yes' ||
+    normalized === 'y'
+  );
+}
+
+function toRadians(value: number) {
+  return (value * Math.PI) / 180;
+}
+
+function haversineDistanceKm(
+  startLatitude: number,
+  startLongitude: number,
+  endLatitude: number,
+  endLongitude: number,
+) {
+  const earthRadiusKm = 6371;
+  const latitudeDelta = toRadians(endLatitude - startLatitude);
+  const longitudeDelta = toRadians(endLongitude - startLongitude);
+  const startLatRad = toRadians(startLatitude);
+  const endLatRad = toRadians(endLatitude);
+
+  const a =
+    Math.sin(latitudeDelta / 2) * Math.sin(latitudeDelta / 2) +
+    Math.cos(startLatRad) *
+      Math.cos(endLatRad) *
+      Math.sin(longitudeDelta / 2) *
+      Math.sin(longitudeDelta / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return earthRadiusKm * c;
+}
+
+type ServiceZoneConfig = {
+  enabled: boolean;
+  centerLatitude: number | null;
+  centerLongitude: number | null;
+  radiusKm: number;
+};
+
+function serviceZoneFromAvailabilityJson(value: unknown): ServiceZoneConfig {
+  const defaults: ServiceZoneConfig = {
+    enabled: false,
+    centerLatitude: null,
+    centerLongitude: null,
+    radiusKm: 1,
+  };
+  const map =
+    value != null && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
+  const nested =
+    map.serviceZone != null &&
+    typeof map.serviceZone === 'object' &&
+    !Array.isArray(map.serviceZone)
+      ? (map.serviceZone as Record<string, unknown>)
+      : {};
+
+  const enabled =
+    nested.enabled == null
+      ? defaults.enabled
+      : readBooleanQuery(nested.enabled);
+  const centerLatitude = toFiniteNumber(
+    nested.centerLatitude ?? defaults.centerLatitude,
+  );
+  const centerLongitude = toFiniteNumber(
+    nested.centerLongitude ?? defaults.centerLongitude,
+  );
+  const radiusRaw = toFiniteNumber(nested.radiusKm ?? defaults.radiusKm);
+
+  return {
+    enabled,
+    centerLatitude:
+      centerLatitude != null && centerLatitude >= -90 && centerLatitude <= 90
+        ? centerLatitude
+        : defaults.centerLatitude,
+    centerLongitude:
+      centerLongitude != null && centerLongitude >= -180 && centerLongitude <= 180
+        ? centerLongitude
+        : defaults.centerLongitude,
+    radiusKm:
+      radiusRaw != null && radiusRaw > 0 && radiusRaw <= 120
+        ? radiusRaw
+        : defaults.radiusKm,
+  };
+}
+
+function compareNullableNumberAsc(left: number | null, right: number | null) {
+  if (left == null && right == null) return 0;
+  if (left == null) return 1;
+  if (right == null) return -1;
+  return left - right;
+}
+
 function serializeHomeServiceCategory(
   category: Awaited<ReturnType<typeof prisma.homeServiceCategory.findMany>>[number] & {
     providers?: { id: string }[];
@@ -394,6 +502,24 @@ router.get(
   '/home-service-providers',
   asyncHandler(async (req, res) => {
     const categorySlug = req.query.category?.toString();
+    const availableOnly = readBooleanQuery(req.query.availableOnly);
+    const nearOnly = readBooleanQuery(req.query.nearOnly);
+    const latitude = toFiniteNumber(req.query.latitude);
+    const longitude = toFiniteNumber(req.query.longitude);
+    const hasSearchLocation = latitude != null && longitude != null;
+    const minRating = toFiniteNumber(req.query.minRating);
+    const minReviewsRaw = toFiniteNumber(req.query.minReviews);
+    const minReviews = minReviewsRaw != null ? Math.max(0, minReviewsRaw) : null;
+    const sortBy = req.query.sort?.toString().trim().toLowerCase() ?? 'distance';
+    const limitRaw = toFiniteNumber(req.query.limit);
+    const limit = limitRaw != null ? Math.round(limitRaw) : null;
+    const requestedRadiusRaw = toFiniteNumber(req.query.radiusKm);
+    const requestedRadiusKm = nearOnly
+      ? Math.min(Math.max(requestedRadiusRaw ?? 1, 0.1), 1)
+      : requestedRadiusRaw != null && requestedRadiusRaw > 0
+      ? requestedRadiusRaw
+      : null;
+
     const providers = await prisma.homeServiceProvider.findMany({
       where: {
         ...(categorySlug
@@ -403,14 +529,95 @@ router.get(
                 },
               }
             : {}),
+        ...(availableOnly ? { isAvailable: true } : {}),
       },
       include: {
         category: true,
       },
       orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
     });
+    const mapped = providers
+      .map((provider) => {
+        const serialized = serializeHomeServiceProvider(provider);
+        const zone = serviceZoneFromAvailabilityJson(provider.availabilityJson);
+        const distanceKm =
+          hasSearchLocation &&
+          zone.centerLatitude != null &&
+          zone.centerLongitude != null
+            ? haversineDistanceKm(
+                zone.centerLatitude,
+                zone.centerLongitude,
+                latitude!,
+                longitude!,
+              )
+            : null;
+        const withinProviderZone =
+          distanceKm != null &&
+          zone.enabled &&
+          distanceKm <= zone.radiusKm;
+        const withinRequestedRadius =
+          distanceKm != null && requestedRadiusKm != null
+            ? distanceKm <= requestedRadiusKm
+            : null;
+        const matchesNearbyScope =
+          nearOnly &&
+          hasSearchLocation &&
+          withinProviderZone &&
+          (withinRequestedRadius ?? false);
 
-    res.json(providers.map((provider) => serializeHomeServiceProvider(provider)));
+        return {
+          ...serialized,
+          serviceZone: zone,
+          distanceKm:
+            distanceKm == null ? null : Number(distanceKm.toFixed(3)),
+          withinProviderZone,
+          withinRequestedRadius,
+          matchesNearbyScope,
+        };
+      })
+      .filter((provider) => {
+        if (minRating != null && (provider.rating ?? 0) < minRating) {
+          return false;
+        }
+        if (minReviews != null && (provider.reviewCount ?? 0) < minReviews) {
+          return false;
+        }
+        if (nearOnly) {
+          return provider.matchesNearbyScope;
+        }
+        return true;
+      });
+
+    mapped.sort((left, right) => {
+      if (sortBy === 'rating') {
+        const ratingDiff = (right.rating ?? 0) - (left.rating ?? 0);
+        if (ratingDiff !== 0) return ratingDiff;
+        const reviewsDiff = (right.reviewCount ?? 0) - (left.reviewCount ?? 0);
+        if (reviewsDiff !== 0) return reviewsDiff;
+        return compareNullableNumberAsc(left.distanceKm, right.distanceKm);
+      }
+      if (sortBy === 'reviews') {
+        const reviewsDiff = (right.reviewCount ?? 0) - (left.reviewCount ?? 0);
+        if (reviewsDiff !== 0) return reviewsDiff;
+        const ratingDiff = (right.rating ?? 0) - (left.rating ?? 0);
+        if (ratingDiff !== 0) return ratingDiff;
+        return compareNullableNumberAsc(left.distanceKm, right.distanceKm);
+      }
+      const distanceDiff = compareNullableNumberAsc(
+        left.distanceKm,
+        right.distanceKm,
+      );
+      if (distanceDiff !== 0) return distanceDiff;
+      const ratingDiff = (right.rating ?? 0) - (left.rating ?? 0);
+      if (ratingDiff !== 0) return ratingDiff;
+      return (right.reviewCount ?? 0) - (left.reviewCount ?? 0);
+    });
+
+    const limited =
+      limit != null && limit > 0 ? mapped.slice(0, limit) : mapped;
+    res.json(
+      limited.map(({ matchesNearbyScope, ...provider }) => provider),
+    );
   }),
 );
 

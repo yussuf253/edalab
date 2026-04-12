@@ -87,6 +87,10 @@ class HomeServiceProviderModel {
   final List<String> highlights;
   final List<String> bookingModes;
   final Map<String, dynamic> availability;
+  final Map<String, dynamic> serviceZone;
+  final double? distanceKm;
+  final bool? withinProviderZone;
+  final bool? withinRequestedRadius;
 
   const HomeServiceProviderModel({
     required this.id,
@@ -112,6 +116,10 @@ class HomeServiceProviderModel {
     this.highlights = const [],
     this.bookingModes = const [],
     this.availability = const {},
+    this.serviceZone = const {},
+    this.distanceKm,
+    this.withinProviderZone,
+    this.withinRequestedRadius,
   });
 
   factory HomeServiceProviderModel.fromApi(Map<String, dynamic> json) {
@@ -156,6 +164,12 @@ class HomeServiceProviderModel {
       availability: Map<String, dynamic>.from(
         (json['availability'] as Map?) ?? const <String, dynamic>{},
       ),
+      serviceZone: Map<String, dynamic>.from(
+        (json['serviceZone'] as Map?) ?? const <String, dynamic>{},
+      ),
+      distanceKm: (json['distanceKm'] as num?)?.toDouble(),
+      withinProviderZone: json['withinProviderZone'] as bool?,
+      withinRequestedRadius: json['withinRequestedRadius'] as bool?,
     );
   }
 

@@ -201,6 +201,7 @@ const liveOrderStatuses = [
     client_1.OrderStatus.DISPATCHED,
     client_1.OrderStatus.IN_PROGRESS,
 ];
+const HOUSE_HELP_MAX_MATCH_RADIUS_KM = 1;
 function startOfToday() {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -481,7 +482,7 @@ function normalizeServiceZoneConfig(value, fallback) {
         enabled: false,
         centerLatitude: null,
         centerLongitude: null,
-        radiusKm: 8,
+        radiusKm: 1,
     };
     const map = value != null && typeof value === 'object' && !Array.isArray(value)
         ? value
@@ -572,6 +573,12 @@ function haversineDistanceKm(startLatitude, startLongitude, endLatitude, endLong
             Math.sin(longitudeDelta / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return earthRadiusKm * c;
+}
+function effectiveServiceZoneRadiusKm(zoneRadiusKm, moduleType) {
+    if (moduleType === client_1.ModuleType.HOUSE_HELP) {
+        return Math.min(zoneRadiusKm, HOUSE_HELP_MAX_MATCH_RADIUS_KM);
+    }
+    return zoneRadiusKm;
 }
 function orderServiceLocation(order) {
     const firstItemMetadata = order.items[0]?.metadata &&
@@ -1259,8 +1266,10 @@ async function buildServicesSummary(todayStart, bindings) {
                 return null;
             }
             const distanceKm = haversineDistanceKm(zone.centerLatitude, zone.centerLongitude, location.latitude, location.longitude);
-            if (distanceKm > zone.radiusKm)
+            if (distanceKm >
+                effectiveServiceZoneRadiusKm(zone.radiusKm, order.moduleType)) {
                 return null;
+            }
             return { providerId: provider.id, distanceKm };
         })
             .filter((entry) => entry != null);
@@ -2004,8 +2013,10 @@ router.post('/:userId/provider-order-status', (0, async_handler_1.asyncHandler)(
                 return null;
             }
             const distanceKm = haversineDistanceKm(zone.centerLatitude, zone.centerLongitude, location.latitude, location.longitude);
-            if (distanceKm > zone.radiusKm)
+            if (distanceKm >
+                effectiveServiceZoneRadiusKm(zone.radiusKm, order.moduleType)) {
                 return null;
+            }
             return { providerId: provider.id, distanceKm };
         })
             .filter((entry) => entry != null);
@@ -2336,8 +2347,10 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
                         return null;
                     }
                     const distanceKm = haversineDistanceKm(zone.centerLatitude, zone.centerLongitude, location.latitude, location.longitude);
-                    if (distanceKm > zone.radiusKm)
+                    if (distanceKm >
+                        effectiveServiceZoneRadiusKm(zone.radiusKm, order.moduleType)) {
                         return null;
+                    }
                     return { providerId: provider.id, distanceKm };
                 })
                     .filter((entry) => entry != null);
@@ -3061,7 +3074,7 @@ router.post('/:userId/home-service-provider', (0, async_handler_1.asyncHandler)(
             enabled: true,
             centerLatitude: 11.5886,
             centerLongitude: 43.1457,
-            radiusKm: 8,
+            radiusKm: 1,
         },
         houseHelpConfig: defaultHouseHelpConfig(),
     };

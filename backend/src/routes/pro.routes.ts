@@ -261,6 +261,7 @@ const liveOrderStatuses: OrderStatus[] = [
   OrderStatus.DISPATCHED,
   OrderStatus.IN_PROGRESS,
 ];
+const HOUSE_HELP_MAX_MATCH_RADIUS_KM = 1;
 
 function startOfToday() {
   const now = new Date();
@@ -621,7 +622,7 @@ function normalizeServiceZoneConfig(
     enabled: false,
     centerLatitude: null,
     centerLongitude: null,
-    radiusKm: 8,
+    radiusKm: 1,
   };
   const map =
     value != null && typeof value === 'object' && !Array.isArray(value)
@@ -754,6 +755,16 @@ function haversineDistanceKm(
       Math.sin(longitudeDelta / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return earthRadiusKm * c;
+}
+
+function effectiveServiceZoneRadiusKm(
+  zoneRadiusKm: number,
+  moduleType: ModuleType,
+) {
+  if (moduleType === ModuleType.HOUSE_HELP) {
+    return Math.min(zoneRadiusKm, HOUSE_HELP_MAX_MATCH_RADIUS_KM);
+  }
+  return zoneRadiusKm;
 }
 
 function orderServiceLocation(order: {
@@ -1772,7 +1783,12 @@ async function buildServicesSummary(todayStart: Date, bindings: ProBindings) {
           location.latitude,
           location.longitude,
         );
-        if (distanceKm > zone.radiusKm) return null;
+        if (
+          distanceKm >
+          effectiveServiceZoneRadiusKm(zone.radiusKm, order.moduleType)
+        ) {
+          return null;
+        }
         return { providerId: provider.id, distanceKm };
       })
       .filter(
@@ -2718,7 +2734,12 @@ router.post(
             location.latitude,
             location.longitude,
           );
-          if (distanceKm > zone.radiusKm) return null;
+          if (
+            distanceKm >
+            effectiveServiceZoneRadiusKm(zone.radiusKm, order.moduleType)
+          ) {
+            return null;
+          }
           return { providerId: provider.id, distanceKm };
         })
         .filter(
@@ -3120,7 +3141,12 @@ router.get(
                   location.latitude,
                   location.longitude,
                 );
-                if (distanceKm > zone.radiusKm) return null;
+                if (
+                  distanceKm >
+                  effectiveServiceZoneRadiusKm(zone.radiusKm, order.moduleType)
+                ) {
+                  return null;
+                }
                 return { providerId: provider.id, distanceKm };
               })
               .filter(
@@ -4071,7 +4097,7 @@ router.post(
         enabled: true,
         centerLatitude: 11.5886,
         centerLongitude: 43.1457,
-        radiusKm: 8,
+        radiusKm: 1,
       },
       houseHelpConfig: defaultHouseHelpConfig(),
     };

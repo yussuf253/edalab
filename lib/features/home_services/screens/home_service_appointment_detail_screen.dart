@@ -45,39 +45,57 @@ class _HomeServiceAppointmentDetailScreenState
   Future<void> _loadData() async {
     final auth = context.read<AuthProvider>();
     final userId = auth.user?.id;
-    if (userId == null || userId.isEmpty) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      return;
-    }
 
     try {
       Map<String, dynamic>? order = _order;
       if (order == null || order.isEmpty) {
-        final response = await ApiClient.get(
-          '/orders/$userId',
-          forceRefresh: true,
-        );
-        final orders = response is List ? response : const [];
-        for (final entry in orders) {
-          final candidate = Map<String, dynamic>.from(entry as Map);
-          if (candidate['id']?.toString() == widget.orderId) {
-            order = candidate;
-            break;
+        try {
+          final response = await ApiClient.get(
+            '/orders/detail/${widget.orderId}',
+            forceRefresh: true,
+          );
+          if (response is Map) {
+            final candidate = Map<String, dynamic>.from(response);
+            if (candidate['id']?.toString() == widget.orderId) {
+              order = candidate;
+            }
           }
-        }
+        } catch (_) {}
+      }
+
+      if ((order == null || order.isEmpty) &&
+          userId != null &&
+          userId.isNotEmpty) {
+        try {
+          final response = await ApiClient.get(
+            '/orders/$userId',
+            forceRefresh: true,
+          );
+          final orders = response is List ? response : const [];
+          for (final entry in orders) {
+            final candidate = Map<String, dynamic>.from(entry as Map);
+            if (candidate['id']?.toString() == widget.orderId) {
+              order = candidate;
+              break;
+            }
+          }
+        } catch (_) {}
       }
 
       HomeServiceProviderModel? provider;
       final providerId = _extractProviderId(order);
       if (providerId != null && providerId.isNotEmpty) {
-        final providerResponse = await ApiClient.get(
-          '/catalog/home-service-providers/$providerId',
-          forceRefresh: true,
-        );
-        provider = HomeServiceProviderModel.fromApi(
-          Map<String, dynamic>.from(providerResponse as Map),
-        );
+        try {
+          final providerResponse = await ApiClient.get(
+            '/catalog/home-service-providers/$providerId',
+            forceRefresh: true,
+          );
+          provider = HomeServiceProviderModel.fromApi(
+            Map<String, dynamic>.from(providerResponse as Map),
+          );
+        } catch (_) {
+          provider = null;
+        }
       }
 
       if (!mounted) return;
@@ -99,24 +117,136 @@ class _HomeServiceAppointmentDetailScreenState
     final firstItem = Map<String, dynamic>.from(items.first as Map);
     final metadata = firstItem['metadata'];
     if (metadata is Map) {
-      final value = metadata['providerId']?.toString();
-      if (value != null && value.isNotEmpty) return value;
+      final assignedProviderId = metadata['assignedProviderId']
+          ?.toString()
+          .trim();
+      if (assignedProviderId != null &&
+          assignedProviderId.isNotEmpty &&
+          assignedProviderId != 'house-help-zone') {
+        return assignedProviderId;
+      }
+      final value = metadata['providerId']?.toString().trim();
+      if (value != null && value.isNotEmpty && value != 'house-help-zone') {
+        return value;
+      }
     }
-    return firstItem['id']?.toString();
+    final externalRefId = firstItem['externalRefId']?.toString().trim();
+    if (externalRefId != null &&
+        externalRefId.isNotEmpty &&
+        externalRefId != 'house-help-zone') {
+      return externalRefId;
+    }
+    return null;
   }
 
   String _metadataValue(String key) {
+    final metadata = _metadataMap();
+    return metadata[key]?.toString() ?? '';
+  }
+
+  Map<String, dynamic> _metadataMap() {
     final order = _order;
-    if (order == null) return '';
+    if (order == null) return const <String, dynamic>{};
     final items = (order['items'] as List? ?? const []);
-    if (items.isEmpty) return '';
+    if (items.isEmpty) return const <String, dynamic>{};
     final firstItem = Map<String, dynamic>.from(items.first as Map);
     final metadata = firstItem['metadata'];
     if (metadata is Map) {
-      return metadata[key]?.toString() ?? '';
+      return Map<String, dynamic>.from(metadata);
     }
-    return '';
+    return const <String, dynamic>{};
   }
+
+  Map<String, dynamic> _bookingFormatMap() {
+    final metadata = _metadataMap();
+    final format = metadata['bookingFormat'];
+    if (format is Map) {
+      return Map<String, dynamic>.from(format);
+    }
+    return const <String, dynamic>{};
+  }
+
+  bool _isHouseHelpOrder(Map<String, dynamic>? order) {
+    final moduleType = order?['moduleType']?.toString().toUpperCase() ?? '';
+    if (moduleType == 'HOUSE_HELP') return true;
+    if (_bookingFormatMap().isNotEmpty) return true;
+    final dispatchMode = _metadataValue('dispatchMode').toUpperCase();
+    return dispatchMode == 'ZONE_POOL';
+  }
+
+  bool _boolValue(dynamic value) {
+    if (value is bool) return value;
+    final normalized = value?.toString().trim().toLowerCase() ?? '';
+    return normalized == 'true' ||
+        normalized == '1' ||
+        normalized == 'yes' ||
+        normalized == 'y';
+  }
+
+  String _localizedHouseHelpPlanLabel(String value, AppLocalizations l10n) {
+    final normalized = value.toLowerCase();
+    if (normalized.contains('daily')) {
+      return l10n.t('home_service_booking.house_help_plan_daily');
+    }
+    if (normalized.contains('weekly')) {
+      return l10n.t('home_service_booking.house_help_plan_weekly');
+    }
+    if (normalized.contains('one') ||
+        normalized.contains('single') ||
+        normalized.contains('once')) {
+      return l10n.t('home_service_booking.house_help_plan_one_time');
+    }
+    return l10n.homeServiceDynamicLabel(value);
+  }
+
+  String _localizedHouseHelpShiftLabel(String value, AppLocalizations l10n) {
+    final normalized = value.toLowerCase();
+    if (normalized.contains('8')) {
+      return l10n.t('home_service_booking.house_help_shift_8h');
+    }
+    if (normalized.contains('4')) {
+      return l10n.t('home_service_booking.house_help_shift_4h');
+    }
+    if (normalized.contains('2')) {
+      return l10n.t('home_service_booking.house_help_shift_2h');
+    }
+    return l10n.homeServiceDynamicLabel(value);
+  }
+
+  String _localizedHouseHelpHomeSizeLabel(String value, AppLocalizations l10n) {
+    final normalized = value.toLowerCase();
+    if (normalized == 'f2') {
+      return l10n.t('home_service_booking.house_help_home_size_small');
+    }
+    if (normalized == 'f3') {
+      return l10n.t('home_service_booking.house_help_home_size_medium');
+    }
+    if (normalized == 'f4') {
+      return l10n.t('home_service_booking.house_help_home_size_large');
+    }
+    return l10n.homeServiceDynamicLabel(value);
+  }
+
+  String _localizedHouseHelpArrivalLabel(String value, AppLocalizations l10n) {
+    final normalized = value.toLowerCase();
+    if (normalized.contains('30')) {
+      return l10n.t('home_service_booking.house_help_arrival_30');
+    }
+    if (normalized.contains('scheduled')) {
+      return l10n.t('home_service_booking.house_help_arrival_scheduled');
+    }
+    return l10n.homeServiceDynamicLabel(value);
+  }
+
+  String _formatDateTimeValue(String value) {
+    if (value.trim().isEmpty) return '';
+    final parsed = DateTime.tryParse(value.trim());
+    if (parsed == null) return value;
+    final local = parsed.toLocal();
+    return '${local.year}-${_twoDigits(local.month)}-${_twoDigits(local.day)} ${_twoDigits(local.hour)}:${_twoDigits(local.minute)}';
+  }
+
+  String _twoDigits(int input) => input.toString().padLeft(2, '0');
 
   Future<void> _callProvider() async {
     final phone = _provider?.contactPhone?.replaceAll(RegExp(r'[^0-9+]'), '');
@@ -129,6 +259,9 @@ class _HomeServiceAppointmentDetailScreenState
     final l10n = context.l10n;
     final order = _order;
     final provider = _provider;
+    final metadata = _metadataMap();
+    final bookingFormat = _bookingFormatMap();
+    final isHouseHelpOrder = _isHouseHelpOrder(order);
     final serviceName = _metadataValue('serviceName').isNotEmpty
         ? _metadataValue('serviceName')
         : (((order?['items'] as List?)?.isNotEmpty ?? false)
@@ -141,6 +274,28 @@ class _HomeServiceAppointmentDetailScreenState
     final scheduledDate = _metadataValue('scheduledDate');
     final timeSlot = _metadataValue('timeSlot');
     final address = _metadataValue('address');
+    final bookingType = bookingFormat['type']?.toString().trim() ?? '';
+    final shiftDuration = bookingFormat['shift']?.toString().trim() ?? '';
+    final homeSize = bookingFormat['homeSize']?.toString().trim() ?? '';
+    final arrivalTargetRaw =
+        bookingFormat['arrivalTarget']?.toString().trim() ??
+        _metadataValue('dispatchWindow');
+    final bringSupplies = _boolValue(bookingFormat['bringSupplies']);
+    final dispatchMode = metadata['dispatchMode']?.toString().trim() ?? '';
+    final assignedProviderId =
+        metadata['assignedProviderId']?.toString().trim().isNotEmpty == true
+        ? metadata['assignedProviderId']!.toString().trim()
+        : (metadata['providerId']?.toString().trim() ?? '');
+    final assignedAt = _formatDateTimeValue(
+      metadata['assignedAt']?.toString().trim() ?? '',
+    );
+    final providerPoolCount =
+        (metadata['providerPoolIds'] as List<dynamic>?)?.length ?? 0;
+    final showDispatchDetails =
+        isHouseHelpOrder &&
+        (dispatchMode.isNotEmpty ||
+            assignedProviderId.isNotEmpty ||
+            providerPoolCount > 0);
     final orderModuleType =
         order?['moduleType']?.toString().toUpperCase() == 'HOUSE_HELP'
         ? 'HOUSE_HELP'
@@ -268,6 +423,10 @@ class _HomeServiceAppointmentDetailScreenState
                           '#${order['id']}',
                         ),
                         _DetailRow(
+                          l10n.t('home_service_detail.service'),
+                          l10n.homeServiceDynamicLabel(serviceName),
+                        ),
+                        _DetailRow(
                           l10n.t('home_service_detail.price'),
                           '\$${((order['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(0)}',
                         ),
@@ -293,6 +452,101 @@ class _HomeServiceAppointmentDetailScreenState
                           ),
                       ],
                     ),
+                    if (isHouseHelpOrder) ...[
+                      const SizedBox(height: 16),
+                      _DetailCard(
+                        title: l10n.t(
+                          'home_service_booking.house_help_format_title',
+                        ),
+                        children: [
+                          if (bookingType.isNotEmpty)
+                            _DetailRow(
+                              l10n.t(
+                                'home_service_booking.house_help_booking_type',
+                              ),
+                              _localizedHouseHelpPlanLabel(bookingType, l10n),
+                            ),
+                          if (shiftDuration.isNotEmpty)
+                            _DetailRow(
+                              l10n.t(
+                                'home_service_booking.house_help_shift_duration',
+                              ),
+                              _localizedHouseHelpShiftLabel(
+                                shiftDuration,
+                                l10n,
+                              ),
+                            ),
+                          if (homeSize.isNotEmpty)
+                            _DetailRow(
+                              l10n.t(
+                                'home_service_booking.house_help_home_size',
+                              ),
+                              _localizedHouseHelpHomeSizeLabel(homeSize, l10n),
+                            ),
+                          if (arrivalTargetRaw.isNotEmpty)
+                            _DetailRow(
+                              l10n.t(
+                                'home_service_booking.house_help_arrival_target',
+                              ),
+                              _localizedHouseHelpArrivalLabel(
+                                arrivalTargetRaw,
+                                l10n,
+                              ),
+                            ),
+                          _DetailRow(
+                            l10n.t(
+                              'home_service_booking.house_help_summary_supplies',
+                            ),
+                            bringSupplies
+                                ? l10n.t(
+                                    'home_service_booking.house_help_summary_supplies_provider',
+                                  )
+                                : l10n.t(
+                                    'home_service_booking.house_help_summary_supplies_customer',
+                                  ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (showDispatchDetails) ...[
+                      const SizedBox(height: 16),
+                      _DetailCard(
+                        title: l10n.t('home_service_detail.dispatch_title'),
+                        children: [
+                          _DetailRow(
+                            l10n.t('home_service_detail.dispatch_mode'),
+                            dispatchMode.toUpperCase() == 'ZONE_POOL'
+                                ? l10n.t('home_service_detail.dispatch_zone')
+                                : l10n.homeServiceDynamicLabel(dispatchMode),
+                          ),
+                          if (providerPoolCount > 0)
+                            _DetailRow(
+                              l10n.t('home_service_detail.dispatch_pool'),
+                              l10n.t(
+                                'home_service_detail.dispatch_pool_count',
+                                params: {'count': '$providerPoolCount'},
+                              ),
+                            ),
+                          _DetailRow(
+                            l10n.t('home_service_detail.dispatch_assignment'),
+                            assignedProviderId.isEmpty
+                                ? l10n.t(
+                                    'home_service_detail.dispatch_assignment_pending',
+                                  )
+                                : l10n.t(
+                                    'home_service_detail.dispatch_assignment_assigned',
+                                  ),
+                          ),
+                          if (assignedAt.isNotEmpty)
+                            _DetailRow(
+                              l10n.t(
+                                'home_service_detail.dispatch_assigned_at',
+                              ),
+                              assignedAt,
+                            ),
+                        ],
+                      ),
+                    ],
                     if (provider != null) ...[
                       const SizedBox(height: 16),
                       _DetailCard(

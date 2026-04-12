@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -24,6 +25,36 @@ class ProviderAvailabilityScreen extends StatefulWidget {
 
 class _ProviderAvailabilityScreenState
     extends State<ProviderAvailabilityScreen> {
+  static const List<String> _servicesOptions = <String>[
+    'Room Cleaning',
+    'Floor Cleaning',
+    'Kitchen Cleaning',
+    'Bathroom Cleaning',
+    'Dishes',
+    'Laundry',
+    'Dusting',
+    'Ironing',
+  ];
+  static const List<String> _bookingTypeOptions = <String>[
+    'One-time job',
+    'Daily recurring',
+    'Weekly recurring',
+  ];
+  static const List<String> _shiftOptions = <String>[
+    '2 hours',
+    '4 hours',
+    '8 hours',
+  ];
+  static const List<String> _arrivalOptions = <String>[
+    'Within 30 min',
+    'Scheduled slot',
+  ];
+  static const List<String> _homeSizeOptions = <String>['F2', 'F3', 'F4'];
+  static const List<String> _supplyModeOptions = <String>[
+    'Provider supplies',
+    'Customer supplies',
+  ];
+
   late Future<Map<String, dynamic>> _availabilityFuture;
   final Set<String> _busyIds = <String>{};
 
@@ -32,12 +63,94 @@ class _ProviderAvailabilityScreenState
       widget.activeModules.contains(ProModule.services);
   bool get _supportsLaundry => widget.activeModules.contains(ProModule.laundry);
 
-  List<String> _splitValues(String value) {
-    return value
-        .split(RegExp(r'[,\\n]'))
-        .map((entry) => entry.trim())
-        .where((entry) => entry.isNotEmpty)
-        .toList(growable: false);
+  Future<LatLng?> _requestCurrentLocation({
+    bool showFailureSnackBar = true,
+  }) async {
+    try {
+      final servicesEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!servicesEnabled) {
+        if (showFailureSnackBar && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Turn on location services to continue.'),
+            ),
+          );
+        }
+        return null;
+      }
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        if (showFailureSnackBar && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Location permission is required for service-zone matching.',
+              ),
+            ),
+          );
+        }
+        return null;
+      }
+
+      Position? cachedPosition;
+      try {
+        cachedPosition = await Geolocator.getLastKnownPosition();
+      } catch (_) {}
+
+      Position? position;
+      for (var attempt = 0; attempt < 3 && position == null; attempt++) {
+        final locationSettings = switch (attempt) {
+          0 => const LocationSettings(
+            accuracy: LocationAccuracy.best,
+            timeLimit: Duration(seconds: 10),
+          ),
+          1 => const LocationSettings(
+            accuracy: LocationAccuracy.high,
+            timeLimit: Duration(seconds: 14),
+          ),
+          _ => const LocationSettings(
+            accuracy: LocationAccuracy.medium,
+            timeLimit: Duration(seconds: 18),
+          ),
+        };
+        try {
+          position = await Geolocator.getCurrentPosition(
+            locationSettings: locationSettings,
+          );
+        } catch (_) {
+          if (attempt < 2) {
+            await Future<void>.delayed(const Duration(milliseconds: 750));
+          }
+        }
+      }
+      position ??= cachedPosition;
+      if (position == null) {
+        if (showFailureSnackBar && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Could not resolve your current location yet. Move the map pin manually and continue.',
+              ),
+            ),
+          );
+        }
+        return null;
+      }
+      return LatLng(position.latitude, position.longitude);
+    } catch (_) {
+      if (showFailureSnackBar && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not access location permission right now.'),
+          ),
+        );
+      }
+      return null;
+    }
   }
 
   @override
@@ -91,6 +204,22 @@ class _ProviderAvailabilityScreenState
   }
 
   Future<void> _openCreateServiceListing() async {
+    final resolvedLocation = await _requestCurrentLocation(
+      showFailureSnackBar: false,
+    );
+    if (!mounted) return;
+    final initialZoneCenter =
+        resolvedLocation ?? const LatLng(11.5886, 43.1457);
+    if (resolvedLocation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Live location is taking longer than expected. Move the zone pin manually to continue.',
+          ),
+        ),
+      );
+    }
+
     List<Map<String, dynamic>> categories;
     try {
       final response = await ApiClient.get(
@@ -125,30 +254,24 @@ class _ProviderAvailabilityScreenState
       text: 'House Help Specialist',
     );
     final startingPriceController = TextEditingController(text: '25');
-    final locationController = TextEditingController();
     final phoneController = TextEditingController();
-    final responseTimeController = TextEditingController(text: '15 mins');
-    final servicesController = TextEditingController(
-      text: 'Room Cleaning, Floor Cleaning',
-    );
-    final bookingTypesController = TextEditingController(
-      text: 'One-time job, Daily recurring, Weekly recurring',
-    );
-    final shiftDurationsController = TextEditingController(
-      text: '2 hours, 4 hours, 8 hours',
-    );
-    final homeSizesController = TextEditingController(text: 'F2, F3, F4');
-    final arrivalTargetsController = TextEditingController(
-      text: 'Within 30 min, Scheduled slot',
-    );
-    final supplyModesController = TextEditingController(
-      text: 'Provider supplies, Customer supplies',
-    );
-    final zoneLatitudeController = TextEditingController(text: '11.5886');
-    final zoneLongitudeController = TextEditingController(text: '43.1457');
-    final zoneRadiusController = TextEditingController(text: '8');
-    var zoneEnabled = true;
-    var zoneCenter = const LatLng(11.5886, 43.1457);
+    final zoneRadiusController = TextEditingController(text: '1');
+
+    final selectedServices = <String>{_servicesOptions.first};
+    final selectedBookingTypes = <String>{_bookingTypeOptions.first};
+    final selectedShifts = <String>{_shiftOptions.first};
+    final selectedArrivals = <String>{_arrivalOptions.first};
+    final selectedHomeSizes = <String>{_homeSizeOptions.first};
+    final selectedSupplyModes = <String>{_supplyModeOptions.first};
+
+    var draftService = _servicesOptions.first;
+    var draftBookingType = _bookingTypeOptions.first;
+    var draftShift = _shiftOptions.first;
+    var draftArrival = _arrivalOptions.first;
+    var draftHomeSize = _homeSizeOptions.first;
+    var draftSupplyMode = _supplyModeOptions.first;
+
+    var zoneCenter = initialZoneCenter;
     String selectedCategoryId =
         (categories
             .firstWhere(
@@ -167,6 +290,65 @@ class _ProviderAvailabilityScreenState
         String? errorText;
         return StatefulBuilder(
           builder: (modalContext, setModalState) {
+            Widget multiSelectDropdown({
+              required String label,
+              required List<String> options,
+              required String draftValue,
+              required ValueChanged<String> onDraftChanged,
+              required Set<String> selectedValues,
+              required VoidCallback onAdd,
+              required ValueChanged<String> onRemove,
+            }) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          initialValue: draftValue,
+                          decoration: InputDecoration(labelText: label),
+                          items: options
+                              .map(
+                                (entry) => DropdownMenuItem<String>(
+                                  value: entry,
+                                  child: Text(entry),
+                                ),
+                              )
+                              .toList(growable: false),
+                          onChanged: isSaving
+                              ? null
+                              : (value) {
+                                  if (value == null) return;
+                                  onDraftChanged(value);
+                                },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: isSaving ? null : onAdd,
+                        icon: const Icon(Icons.add_circle_outline_rounded),
+                        tooltip: 'Add',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: selectedValues
+                        .map(
+                          (value) => Chip(
+                            label: Text(value),
+                            onDeleted: isSaving ? null : () => onRemove(value),
+                          ),
+                        )
+                        .toList(growable: false),
+                  ),
+                ],
+              );
+            }
+
             Future<void> save() async {
               final parsedPrice = double.tryParse(
                 startingPriceController.text.trim(),
@@ -177,23 +359,21 @@ class _ProviderAvailabilityScreenState
                 });
                 return;
               }
-              final parsedZoneLatitude = double.tryParse(
-                zoneLatitudeController.text.trim(),
-              );
-              final parsedZoneLongitude = double.tryParse(
-                zoneLongitudeController.text.trim(),
-              );
               final parsedZoneRadius = double.tryParse(
                 zoneRadiusController.text.trim(),
               );
-              if (zoneEnabled &&
-                  (parsedZoneLatitude == null ||
-                      parsedZoneLongitude == null ||
-                      parsedZoneRadius == null ||
-                      parsedZoneRadius <= 0)) {
+              if (parsedZoneRadius == null ||
+                  parsedZoneRadius <= 0 ||
+                  parsedZoneRadius > 1) {
                 setModalState(() {
                   errorText =
-                      'Set a valid zone center (latitude/longitude) and radius.';
+                      'Zone radius must be between 0.1 and 1 km for house-help matching.';
+                });
+                return;
+              }
+              if (selectedServices.isEmpty) {
+                setModalState(() {
+                  errorText = 'Select at least one service.';
                 });
                 return;
               }
@@ -211,33 +391,30 @@ class _ProviderAvailabilityScreenState
                     'title': titleController.text.trim(),
                     'categoryId': selectedCategoryId,
                     'startingPrice': parsedPrice,
-                    'location': locationController.text.trim(),
                     'contactPhone': phoneController.text.trim(),
-                    'responseTime': responseTimeController.text.trim(),
-                    'services': _splitValues(servicesController.text),
+                    'services': selectedServices.toList(growable: false),
                     'serviceZone': {
-                      'enabled': zoneEnabled,
-                      'centerLatitude': zoneEnabled ? parsedZoneLatitude : null,
-                      'centerLongitude': zoneEnabled
-                          ? parsedZoneLongitude
-                          : null,
-                      'radiusKm': zoneEnabled ? parsedZoneRadius : 8,
+                      'enabled': true,
+                      'centerLatitude': zoneCenter.latitude,
+                      'centerLongitude': zoneCenter.longitude,
+                      'radiusKm': parsedZoneRadius,
                     },
                     'houseHelpConfig': {
-                      'bookingTypes': _splitValues(bookingTypesController.text),
-                      'shiftDurations': _splitValues(
-                        shiftDurationsController.text,
+                      'bookingTypes': selectedBookingTypes.toList(
+                        growable: false,
                       ),
-                      'homeSizes': _splitValues(homeSizesController.text),
-                      'arrivalTargets': _splitValues(
-                        arrivalTargetsController.text,
+                      'shiftDurations': selectedShifts.toList(growable: false),
+                      'homeSizes': selectedHomeSizes.toList(growable: false),
+                      'arrivalTargets': selectedArrivals.toList(
+                        growable: false,
                       ),
-                      'supplyModes': _splitValues(supplyModesController.text),
+                      'supplyModes': selectedSupplyModes.toList(
+                        growable: false,
+                      ),
                     },
                   },
                 );
-                if (!mounted) return;
-                if (!sheetContext.mounted) return;
+                if (!mounted || !sheetContext.mounted) return;
                 Navigator.of(sheetContext).pop();
                 await _refresh();
                 if (!mounted) return;
@@ -323,47 +500,96 @@ class _ProviderAvailabilityScreenState
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
-                      controller: locationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Service area / activity zone',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
                       controller: phoneController,
                       decoration: const InputDecoration(labelText: 'Phone'),
                     ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: responseTimeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Response time',
-                      ),
+                    const SizedBox(height: 16),
+                    multiSelectDropdown(
+                      label: 'Services offered',
+                      options: _servicesOptions,
+                      draftValue: draftService,
+                      onDraftChanged: (value) =>
+                          setModalState(() => draftService = value),
+                      selectedValues: selectedServices,
+                      onAdd: () => setModalState(() {
+                        selectedServices.add(draftService);
+                      }),
+                      onRemove: (value) =>
+                          setModalState(() => selectedServices.remove(value)),
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
-                      controller: servicesController,
-                      minLines: 2,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Services offered',
-                        hintText:
-                            'Room Cleaning, Floor Cleaning, Kitchen Cleaning',
+                    multiSelectDropdown(
+                      label: 'Booking types',
+                      options: _bookingTypeOptions,
+                      draftValue: draftBookingType,
+                      onDraftChanged: (value) =>
+                          setModalState(() => draftBookingType = value),
+                      selectedValues: selectedBookingTypes,
+                      onAdd: () => setModalState(() {
+                        selectedBookingTypes.add(draftBookingType);
+                      }),
+                      onRemove: (value) => setModalState(
+                        () => selectedBookingTypes.remove(value),
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    SwitchListTile.adaptive(
-                      contentPadding: EdgeInsets.zero,
-                      value: zoneEnabled,
-                      title: const Text('Enable activity zone matching'),
-                      subtitle: const Text(
-                        'Only requests inside this zone appear for acceptance.',
-                      ),
-                      onChanged: isSaving
-                          ? null
-                          : (value) => setModalState(() => zoneEnabled = value),
+                    const SizedBox(height: 12),
+                    multiSelectDropdown(
+                      label: 'Shift durations',
+                      options: _shiftOptions,
+                      draftValue: draftShift,
+                      onDraftChanged: (value) =>
+                          setModalState(() => draftShift = value),
+                      selectedValues: selectedShifts,
+                      onAdd: () => setModalState(() {
+                        selectedShifts.add(draftShift);
+                      }),
+                      onRemove: (value) =>
+                          setModalState(() => selectedShifts.remove(value)),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
+                    multiSelectDropdown(
+                      label: 'Arrival targets',
+                      options: _arrivalOptions,
+                      draftValue: draftArrival,
+                      onDraftChanged: (value) =>
+                          setModalState(() => draftArrival = value),
+                      selectedValues: selectedArrivals,
+                      onAdd: () => setModalState(() {
+                        selectedArrivals.add(draftArrival);
+                      }),
+                      onRemove: (value) =>
+                          setModalState(() => selectedArrivals.remove(value)),
+                    ),
+                    const SizedBox(height: 12),
+                    multiSelectDropdown(
+                      label: 'Home sizes',
+                      options: _homeSizeOptions,
+                      draftValue: draftHomeSize,
+                      onDraftChanged: (value) =>
+                          setModalState(() => draftHomeSize = value),
+                      selectedValues: selectedHomeSizes,
+                      onAdd: () => setModalState(() {
+                        selectedHomeSizes.add(draftHomeSize);
+                      }),
+                      onRemove: (value) =>
+                          setModalState(() => selectedHomeSizes.remove(value)),
+                    ),
+                    const SizedBox(height: 12),
+                    multiSelectDropdown(
+                      label: 'Supply modes',
+                      options: _supplyModeOptions,
+                      draftValue: draftSupplyMode,
+                      onDraftChanged: (value) =>
+                          setModalState(() => draftSupplyMode = value),
+                      selectedValues: selectedSupplyModes,
+                      onAdd: () => setModalState(() {
+                        selectedSupplyModes.add(draftSupplyMode);
+                      }),
+                      onRemove: (value) => setModalState(
+                        () => selectedSupplyModes.remove(value),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     SizedBox(
                       height: 170,
                       child: ClipRRect(
@@ -387,125 +613,36 @@ class _ProviderAvailabilityScreenState
                           liteModeEnabled: true,
                           onTap: (point) {
                             if (isSaving) return;
-                            setModalState(() {
-                              zoneCenter = point;
-                              zoneLatitudeController.text = point.latitude
-                                  .toStringAsFixed(6);
-                              zoneLongitudeController.text = point.longitude
-                                  .toStringAsFixed(6);
-                            });
+                            setModalState(() => zoneCenter = point);
                           },
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: zoneLatitudeController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                              signed: true,
-                            ),
-                            decoration: const InputDecoration(
-                              labelText: 'Zone latitude',
-                            ),
-                            onChanged: (value) {
-                              final parsed = double.tryParse(value.trim());
-                              if (parsed == null) return;
-                              setModalState(() {
-                                zoneCenter = LatLng(
-                                  parsed,
-                                  zoneCenter.longitude,
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        onPressed: isSaving
+                            ? null
+                            : () async {
+                                final location = await _requestCurrentLocation(
+                                  showFailureSnackBar: false,
                                 );
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextFormField(
-                            controller: zoneLongitudeController,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                              signed: true,
-                            ),
-                            decoration: const InputDecoration(
-                              labelText: 'Zone longitude',
-                            ),
-                            onChanged: (value) {
-                              final parsed = double.tryParse(value.trim());
-                              if (parsed == null) return;
-                              setModalState(() {
-                                zoneCenter = LatLng(
-                                  zoneCenter.latitude,
-                                  parsed,
-                                );
-                              });
-                            },
-                          ),
-                        ),
-                      ],
+                                if (location == null) return;
+                                if (!sheetContext.mounted) return;
+                                setModalState(() => zoneCenter = location);
+                              },
+                        icon: const Icon(Icons.my_location_rounded),
+                        label: const Text('Use current location'),
+                      ),
                     ),
-                    const SizedBox(height: 12),
                     TextFormField(
                       controller: zoneRadiusController,
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       decoration: const InputDecoration(
-                        labelText: 'Zone radius (km)',
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: bookingTypesController,
-                      minLines: 2,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Booking types',
-                        hintText: 'One-time job, Daily recurring',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: shiftDurationsController,
-                      minLines: 2,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Shift durations',
-                        hintText: '2 hours, 4 hours, 8 hours',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: homeSizesController,
-                      minLines: 1,
-                      maxLines: 2,
-                      decoration: const InputDecoration(
-                        labelText: 'Home sizes',
-                        hintText: 'F2, F3, F4',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: arrivalTargetsController,
-                      minLines: 2,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Arrival targets',
-                        hintText: 'Within 30 min, Scheduled slot',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: supplyModesController,
-                      minLines: 1,
-                      maxLines: 2,
-                      decoration: const InputDecoration(
-                        labelText: 'Supply modes',
-                        hintText: 'Provider supplies, Customer supplies',
+                        labelText: 'Zone radius (km, max 1)',
                       ),
                     ),
                     if (errorText != null) ...[
