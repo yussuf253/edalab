@@ -767,6 +767,30 @@ function effectiveServiceZoneRadiusKm(
   return zoneRadiusKm;
 }
 
+function isHouseHelpCategorySlug(value: string | null | undefined) {
+  const normalized = (value ?? '').toLowerCase().trim();
+  return (
+    normalized === 'house-help' ||
+    normalized === 'house_help' ||
+    normalized === 'househelp' ||
+    normalized === 'maid'
+  );
+}
+
+function capServiceZoneRadiusForHouseHelp(value: unknown) {
+  if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+    return value;
+  }
+  const map = { ...(value as Record<string, unknown>) };
+  const radiusRaw = toFiniteNumber(map.radiusKm);
+  const normalizedRadius =
+    radiusRaw == null
+      ? HOUSE_HELP_MAX_MATCH_RADIUS_KM
+      : Math.max(0.1, Math.min(radiusRaw, HOUSE_HELP_MAX_MATCH_RADIUS_KM));
+  map.radiusKm = normalizedRadius;
+  return map;
+}
+
 function orderServiceLocation(order: {
   address?: { latitude: number | null; longitude: number | null } | null;
   items: Array<{ metadata: unknown }>;
@@ -4089,6 +4113,9 @@ router.post(
           });
 
     const defaultBookingModes = ['Home Visit'];
+    const serviceZoneInput = isHouseHelpCategorySlug(selectedCategory.slug)
+      ? capServiceZoneRadiusForHouseHelp(body.serviceZone)
+      : body.serviceZone;
     const baseAvailability = {
       weekdays: '08:00 AM - 06:00 PM',
       saturday: '09:00 AM - 02:00 PM',
@@ -4103,7 +4130,7 @@ router.post(
     };
     const defaultAvailability = normalizeProviderAvailabilityJson({
       current: baseAvailability,
-      serviceZone: body.serviceZone,
+      serviceZone: serviceZoneInput,
       houseHelpConfig: body.houseHelpConfig,
     });
     const providerId = existingProvider?.id ?? randomUUID();
@@ -4146,7 +4173,7 @@ router.post(
         availabilityJson:
           normalizeProviderAvailabilityJson({
             current: existingProvider?.availabilityJson ?? defaultAvailability,
-            serviceZone: body.serviceZone,
+            serviceZone: serviceZoneInput,
             houseHelpConfig: body.houseHelpConfig,
           }),
         isAvailable: true,
@@ -5018,8 +5045,20 @@ router.post(
 
     const currentProvider = await prisma.homeServiceProvider.findUnique({
       where: { id: body.providerId },
-      select: { availabilityJson: true },
+      select: {
+        availabilityJson: true,
+        category: {
+          select: {
+            slug: true,
+          },
+        },
+      },
     });
+    const serviceZoneInput = isHouseHelpCategorySlug(
+      currentProvider?.category?.slug,
+    )
+      ? capServiceZoneRadiusForHouseHelp(body.serviceZone)
+      : body.serviceZone;
 
     const provider = await prisma.homeServiceProvider.update({
       where: { id: body.providerId },
@@ -5042,13 +5081,13 @@ router.post(
             : normalizeStringList(body.bookingModes),
         availabilityJson:
           body.availability == null &&
-              body.serviceZone == null &&
+              serviceZoneInput == null &&
               body.houseHelpConfig == null
             ? undefined
             : normalizeProviderAvailabilityJson({
                 current: currentProvider?.availabilityJson,
                 availability: body.availability,
-                serviceZone: body.serviceZone,
+                serviceZone: serviceZoneInput,
                 houseHelpConfig: body.houseHelpConfig,
               }),
       },

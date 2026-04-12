@@ -421,6 +421,35 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
         .toList(growable: false);
   }
 
+  Future<_ZoneProviderResolution> _resolveZoneProvidersForServiceLocation({
+    required double latitude,
+    required double longitude,
+  }) async {
+    final location = LatLng(latitude, longitude);
+    final nearbyProviders = await _fetchHouseHelpProvidersForZone(
+      location: location,
+      nearOnly: true,
+      radiusKm: 1,
+      sortBy: 'distance',
+    );
+    if (nearbyProviders.isNotEmpty) {
+      return _ZoneProviderResolution(
+        nearbyProviders: nearbyProviders,
+        fallbackProviders: const <HomeServiceProviderModel>[],
+      );
+    }
+
+    final fallbackProviders = await _fetchHouseHelpProvidersForZone(
+      location: location,
+      nearOnly: false,
+      sortBy: _fallbackSort,
+    );
+    return _ZoneProviderResolution(
+      nearbyProviders: const <HomeServiceProviderModel>[],
+      fallbackProviders: fallbackProviders,
+    );
+  }
+
   List<HomeServiceProviderModel> _visibleFallbackProviders() {
     final maxDistance = _fallbackMaxDistanceKm;
     final sorted = [..._zoneFallbackProviders];
@@ -1606,34 +1635,6 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 ),
                               );
                               if (!context.mounted || !allowed) return;
-                              if (_isZoneDispatchRoute &&
-                                  _zonePoolProviders.isEmpty &&
-                                  _zoneFallbackProviders.isEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      l10n.t(
-                                        'home_service_booking.zone_no_providers_available',
-                                      ),
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
-                              if (_isZoneDispatchRoute &&
-                                  _zonePoolProviders.isEmpty &&
-                                  selectedFallbackProvider == null) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      l10n.t(
-                                        'home_service_booking.zone_select_provider_required',
-                                      ),
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
 
                               if (selectedAddress == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -1672,34 +1673,149 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 return;
                               }
 
+                              var effectiveZonePoolProviders =
+                                  _zonePoolProviders;
+                              HomeServiceProviderModel?
+                              effectiveFallbackProvider =
+                                  selectedFallbackProvider;
+                              if (_isZoneDispatchRoute) {
+                                final resolution =
+                                    await _resolveZoneProvidersForServiceLocation(
+                                      latitude: serviceLatitude,
+                                      longitude: serviceLongitude,
+                                    );
+                                if (!context.mounted) return;
+
+                                if (resolution.nearbyProviders.isNotEmpty) {
+                                  effectiveZonePoolProviders =
+                                      resolution.nearbyProviders;
+                                  effectiveFallbackProvider = null;
+                                  setState(() {
+                                    _zonePoolProviders =
+                                        resolution.nearbyProviders;
+                                    _zoneFallbackProviders =
+                                        const <HomeServiceProviderModel>[];
+                                    _selectedFallbackProviderId = null;
+                                    _provider = _buildZoneDispatchProvider(
+                                      resolution.nearbyProviders,
+                                    );
+                                  });
+                                } else {
+                                  effectiveZonePoolProviders =
+                                      const <HomeServiceProviderModel>[];
+                                  final fallbackProviders =
+                                      resolution.fallbackProviders;
+                                  if (fallbackProviders.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          l10n.t(
+                                            'home_service_booking.zone_no_providers_available',
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                    setState(() {
+                                      _zonePoolProviders =
+                                          const <HomeServiceProviderModel>[];
+                                      _zoneFallbackProviders =
+                                          const <HomeServiceProviderModel>[];
+                                      _selectedFallbackProviderId = null;
+                                      _provider = _buildZoneDispatchProvider(
+                                        const <HomeServiceProviderModel>[],
+                                      );
+                                    });
+                                    return;
+                                  }
+
+                                  String? selectedFallbackId =
+                                      _selectedFallbackProviderId;
+                                  if (selectedFallbackId == null ||
+                                      !fallbackProviders.any(
+                                        (entry) =>
+                                            entry.id == selectedFallbackId,
+                                      )) {
+                                    selectedFallbackId =
+                                        fallbackProviders.first.id;
+                                  }
+                                  for (final entry in fallbackProviders) {
+                                    if (entry.id == selectedFallbackId) {
+                                      effectiveFallbackProvider = entry;
+                                      break;
+                                    }
+                                  }
+                                  setState(() {
+                                    _zonePoolProviders =
+                                        const <HomeServiceProviderModel>[];
+                                    _zoneFallbackProviders = fallbackProviders;
+                                    _selectedFallbackProviderId =
+                                        selectedFallbackId;
+                                    _provider = _buildZoneDispatchProvider(
+                                      fallbackProviders,
+                                    );
+                                  });
+                                  if (effectiveFallbackProvider == null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          l10n.t(
+                                            'home_service_booking.zone_select_provider_required',
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                }
+                              }
+
+                              final bookingProvider =
+                                  _isZoneDispatchRoute &&
+                                      effectiveZonePoolProviders.isEmpty
+                                  ? (effectiveFallbackProvider ?? provider)
+                                  : provider;
+                              final bookingServiceFee = isHouseHelp
+                                  ? _estimateHouseHelpPrice(
+                                      bookingProvider,
+                                      selectedShiftLabel:
+                                          houseHelpShiftOptionsRaw[selectedHouseHelpShift],
+                                      selectedHomeSizeIndex:
+                                          selectedHouseHelpHomeSize,
+                                      selectedPlanIndex: selectedHouseHelpPlan,
+                                      providerSupplies: _houseHelpBringSupplies,
+                                    )
+                                  : bookingProvider.startingPrice;
+
                               final addressText =
                                   '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}';
                               final bookingMetadata = <String, dynamic>{
-                                'categorySlug': provider.categorySlug,
-                                'providerTitle': provider.title,
+                                'categorySlug':
+                                    bookingProvider.categorySlug ??
+                                    provider.categorySlug,
+                                'providerTitle': bookingProvider.title,
                                 'serviceName':
                                     serviceOptionsRaw[selectedService],
                                 'address': addressText,
                                 'addressId': selectedAddress.id,
                                 'addressLabel': selectedAddress.label,
                                 if (!_isZoneDispatchRoute)
-                                  'providerId': provider.id,
+                                  'providerId': bookingProvider.id,
                                 if (_isZoneDispatchRoute &&
-                                    _zonePoolProviders.isNotEmpty) ...{
+                                    effectiveZonePoolProviders.isNotEmpty) ...{
                                   'dispatchMode': 'ZONE_POOL',
-                                  'providerPoolIds': _zonePoolProviders
+                                  'providerPoolIds': effectiveZonePoolProviders
                                       .map((entry) => entry.id)
                                       .toList(growable: false),
                                   'zoneDispatch': true,
                                 },
                                 if (_isZoneDispatchRoute &&
-                                    _zonePoolProviders.isEmpty &&
-                                    selectedFallbackProvider != null) ...{
+                                    effectiveZonePoolProviders.isEmpty &&
+                                    effectiveFallbackProvider != null) ...{
                                   'dispatchMode': 'DIRECT_FALLBACK',
-                                  'providerId': selectedFallbackProvider.id,
+                                  'providerId': effectiveFallbackProvider.id,
                                   'fallbackSortBy': _fallbackSort,
                                   'fallbackDistanceKm':
-                                      selectedFallbackProvider.distanceKm,
+                                      effectiveFallbackProvider.distanceKm,
                                   'zoneDispatch': false,
                                 },
                                 'serviceLocation': {
@@ -1734,34 +1850,32 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                   ? 'HOUSE_HELP'
                                   : 'HOME_SERVICES';
                               final directProviderId = !_isZoneDispatchRoute
-                                  ? provider.id
-                                  : _zonePoolProviders.isEmpty
-                                  ? selectedFallbackProvider?.id
+                                  ? bookingProvider.id
+                                  : effectiveZonePoolProviders.isEmpty
+                                  ? effectiveFallbackProvider?.id
                                   : null;
                               final orderBrand = directProviderId == null
-                                  ? provider.name
-                                  : (selectedFallbackProvider?.name ??
-                                        provider.name);
+                                  ? bookingProvider.name
+                                  : (effectiveFallbackProvider?.name ??
+                                        bookingProvider.name);
                               final orderItem = <String, dynamic>{
                                 ...?directProviderId == null
                                     ? null
-                                    : <String, dynamic>{
-                                        'id': directProviderId,
-                                      },
+                                    : <String, dynamic>{'id': directProviderId},
                                 'name': serviceOptions[selectedService],
                                 'brand': orderBrand,
-                                'price': serviceFee,
+                                'price': bookingServiceFee,
                                 'quantity': 1,
                                 'metadata': bookingMetadata,
                               };
                               final order = await ApiClient.post('/orders', {
                                 'userId': auth.user!.id,
                                 'moduleType': bookingModuleType,
-                                'subtotal': serviceFee,
+                                'subtotal': bookingServiceFee,
                                 'tax': 0,
                                 'deliveryFee': 0,
                                 'discount': 0,
-                                'total': serviceFee,
+                                'total': bookingServiceFee,
                                 'notes': '',
                                 'items': [orderItem],
                               });
@@ -1770,7 +1884,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 '/checkout/success',
                                 extra: {
                                   'orderId': order['id'],
-                                  'amount': serviceFee,
+                                  'amount': bookingServiceFee,
                                   'payment': l10n.t(
                                     'home_service_booking.pay_on_confirmation',
                                   ),
@@ -1799,6 +1913,16 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
       ),
     );
   }
+}
+
+class _ZoneProviderResolution {
+  final List<HomeServiceProviderModel> nearbyProviders;
+  final List<HomeServiceProviderModel> fallbackProviders;
+
+  const _ZoneProviderResolution({
+    required this.nearbyProviders,
+    required this.fallbackProviders,
+  });
 }
 
 class _BookingOptionChip extends StatelessWidget {
