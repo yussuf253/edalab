@@ -4806,6 +4806,8 @@ router.get(
             select: {
               id: true,
               name: true,
+              title: true,
+              servicesJson: true,
               isAvailable: true,
             },
             orderBy: { name: 'asc' },
@@ -4824,11 +4826,20 @@ router.get(
     ]);
 
     res.json({
-      services: providers.map((provider) => ({
-        id: provider.id,
-        name: provider.name,
-        enabled: provider.isAvailable,
-      })),
+      services: providers.map((provider) => {
+        const normalizedServices = normalizeStringList(provider.servicesJson).filter(
+          (service) => service.trim().length > 0,
+        );
+        return {
+          id: provider.id,
+          name: normalizedServices[0] ?? 'Service Listing',
+          details:
+            normalizedServices.length > 1
+              ? normalizedServices.slice(1, 4).join(' • ')
+              : null,
+          enabled: provider.isAvailable,
+        };
+      }),
       laundry: laundryServices.map((service) => ({
         id: service.id,
         name: service.name,
@@ -4982,22 +4993,27 @@ router.get(
     const bindings = normalizeBindings(hydratedProfile.bindings);
     const providers =
       bindings.providerIds.length === 0
-        ? []
-        : await prisma.homeServiceProvider.findMany({
-            where: { id: { in: bindings.providerIds } },
-            select: {
-              id: true,
-              name: true,
-              title: true,
-              location: true,
-              contactPhone: true,
-              responseTime: true,
-              servicesJson: true,
-              bookingModesJson: true,
-              availabilityJson: true,
-            },
-            orderBy: { name: 'asc' },
-          });
+          ? []
+          : await prisma.homeServiceProvider.findMany({
+              where: { id: { in: bindings.providerIds } },
+              select: {
+                id: true,
+                name: true,
+                title: true,
+                location: true,
+                contactPhone: true,
+                responseTime: true,
+                servicesJson: true,
+                bookingModesJson: true,
+                availabilityJson: true,
+                category: {
+                  select: {
+                    slug: true,
+                  },
+                },
+              },
+              orderBy: { name: 'asc' },
+            });
 
     res.json(
       providers.map((provider) => ({
@@ -5007,6 +5023,7 @@ router.get(
         location: provider.location,
         contactPhone: provider.contactPhone,
         responseTime: provider.responseTime,
+        categorySlug: provider.category?.slug ?? null,
         services: normalizeStringList(provider.servicesJson),
         bookingModes: normalizeStringList(provider.bookingModesJson),
         availability: normalizeHours(provider.availabilityJson, {

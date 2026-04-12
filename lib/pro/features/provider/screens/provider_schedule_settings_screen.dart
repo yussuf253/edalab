@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
@@ -27,76 +25,80 @@ class ProviderScheduleSettingsScreen extends StatefulWidget {
 
 class _ProviderScheduleSettingsScreenState
     extends State<ProviderScheduleSettingsScreen> {
-  static const List<String> _modeOptions = <String>[
-    'Home Visit',
-    'Store Drop-off',
-    'Phone Advice',
-    'Video Consultation',
-  ];
-
-  late Future<List<Map<String, dynamic>>> _settingsFuture;
+  late Future<List<Map<String, dynamic>>> _scheduleFuture;
   final Set<String> _busyIds = <String>{};
 
   bool get _supportsServices =>
       widget.activeModules.isEmpty ||
       widget.activeModules.contains(ProModule.services);
 
-  List<String> _splitValues(String value) {
-    return value
-        .split(RegExp(r'[,\\n]'))
-        .map((entry) => entry.trim())
-        .where((entry) => entry.isNotEmpty)
-        .toList(growable: false);
-  }
-
   @override
   void initState() {
     super.initState();
-    _settingsFuture = _loadSettings();
+    _scheduleFuture = _loadScheduleData();
   }
 
-  Future<List<Map<String, dynamic>>> _loadSettings() async {
-    final response = await ApiClient.get(
-      '/pro/${widget.userId}/provider-settings',
-      forceRefresh: true,
-    );
-    return (response as List<dynamic>)
+  Future<List<Map<String, dynamic>>> _loadScheduleData() async {
+    final responses = await Future.wait([
+      ApiClient.get(
+        '/pro/${widget.userId}/provider-settings',
+        forceRefresh: true,
+      ),
+      ApiClient.get(
+        '/pro/${widget.userId}/provider-availability',
+        forceRefresh: true,
+      ),
+    ]);
+    final settings = (responses[0] as List<dynamic>)
         .map((entry) => Map<String, dynamic>.from(entry as Map))
+        .toList(growable: false);
+    final availability = Map<String, dynamic>.from(responses[1] as Map);
+    final servicesAvailability =
+        (availability['services'] as List<dynamic>? ?? const <dynamic>[])
+            .map((entry) => Map<String, dynamic>.from(entry as Map))
+            .toList(growable: false);
+    final enabledById = <String, bool>{
+      for (final entry in servicesAvailability)
+        entry['id']?.toString() ?? '': entry['enabled'] as bool? ?? false,
+    };
+
+    return settings
+        .map((item) {
+          final providerId = item['id']?.toString() ?? '';
+          return {...item, 'enabled': enabledById[providerId] ?? false};
+        })
         .toList(growable: false);
   }
 
   Future<void> _refresh() async {
-    final future = _loadSettings();
-    setState(() {
-      _settingsFuture = future;
-    });
+    final future = _loadScheduleData();
+    setState(() => _scheduleFuture = future);
     await future;
   }
 
-  Future<void> _saveSettings({
+  Future<void> _saveOperationalSettings({
     required String providerId,
-    required String contactPhone,
-    required List<String> services,
-    required List<String> bookingModes,
+    required bool enabled,
     required Map<String, String> availability,
-    required Map<String, dynamic> serviceZone,
-    required Map<String, dynamic> houseHelpConfig,
+    bool showSuccess = true,
   }) async {
     setState(() => _busyIds.add(providerId));
     try {
       await ApiClient.post('/pro/${widget.userId}/provider-settings', {
         'providerId': providerId,
-        'contactPhone': contactPhone,
-        'services': services,
-        'bookingModes': bookingModes,
         'availability': availability,
-        'serviceZone': serviceZone,
-        'houseHelpConfig': houseHelpConfig,
+      });
+      await ApiClient.post('/pro/${widget.userId}/provider-availability', {
+        'module': 'services',
+        'targetId': providerId,
+        'enabled': enabled,
       });
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Provider settings updated.')),
-      );
+      if (showSuccess) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Schedule and active status updated.')),
+        );
+      }
       await _refresh();
     } catch (error) {
       if (!mounted) return;
@@ -112,173 +114,24 @@ class _ProviderScheduleSettingsScreenState
     }
   }
 
-  Future<LatLng?> _requestCurrentLocation({
-    bool showFailureSnackBar = true,
-  }) async {
-    try {
-      final servicesEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!servicesEnabled) {
-        if (showFailureSnackBar && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Turn on location services to continue.'),
-            ),
-          );
-        }
-        return null;
-      }
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        if (showFailureSnackBar && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Location permission is required for service-zone matching.',
-              ),
-            ),
-          );
-        }
-        return null;
-      }
-
-      Position? cachedPosition;
-      try {
-        cachedPosition = await Geolocator.getLastKnownPosition();
-      } catch (_) {}
-
-      Position? position;
-      for (var attempt = 0; attempt < 3 && position == null; attempt++) {
-        final locationSettings = switch (attempt) {
-          0 => const LocationSettings(
-            accuracy: LocationAccuracy.best,
-            timeLimit: Duration(seconds: 10),
-          ),
-          1 => const LocationSettings(
-            accuracy: LocationAccuracy.high,
-            timeLimit: Duration(seconds: 14),
-          ),
-          _ => const LocationSettings(
-            accuracy: LocationAccuracy.medium,
-            timeLimit: Duration(seconds: 18),
-          ),
-        };
-        try {
-          position = await Geolocator.getCurrentPosition(
-            locationSettings: locationSettings,
-          );
-        } catch (_) {
-          if (attempt < 2) {
-            await Future<void>.delayed(const Duration(milliseconds: 750));
-          }
-        }
-      }
-      position ??= cachedPosition;
-      if (position == null) {
-        if (showFailureSnackBar && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Could not resolve your current location yet. Move the map pin manually and continue.',
-              ),
-            ),
-          );
-        }
-        return null;
-      }
-      return LatLng(position.latitude, position.longitude);
-    } catch (_) {
-      if (showFailureSnackBar && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not access location permission right now.'),
-          ),
-        );
-      }
-      return null;
-    }
-  }
-
   Future<void> _openEditor(Map<String, dynamic> item) async {
     final providerId = item['id']?.toString() ?? '';
-    final contactPhoneController = TextEditingController(
-      text: item['contactPhone']?.toString() ?? '',
-    );
-    final servicesController = TextEditingController(
-      text: (item['services'] as List<dynamic>? ?? const <dynamic>[])
-          .map((entry) => entry.toString().trim())
-          .where((entry) => entry.isNotEmpty)
-          .join(', '),
-    );
+    var enabled = item['enabled'] as bool? ?? false;
     final availability = Map<String, String>.from(
       (item['availability'] as Map?)?.map(
             (key, value) => MapEntry(key.toString(), value?.toString() ?? ''),
           ) ??
           const <String, String>{},
     );
-    final selectedModes = <String>{
-      ...(item['bookingModes'] as List<dynamic>? ?? const <dynamic>[]).map(
-        (entry) => entry.toString(),
-      ),
-    };
-    final serviceZone = Map<String, dynamic>.from(
-      (item['serviceZone'] as Map?) ?? const <String, dynamic>{},
-    );
-    var zoneCenter = LatLng(
-      (serviceZone['centerLatitude'] as num?)?.toDouble() ?? 11.5886,
-      (serviceZone['centerLongitude'] as num?)?.toDouble() ?? 43.1457,
-    );
-    if (serviceZone['centerLatitude'] == null ||
-        serviceZone['centerLongitude'] == null) {
-      final current = await _requestCurrentLocation(showFailureSnackBar: false);
-      if (current != null) {
-        zoneCenter = current;
-      }
-    }
-    if (!mounted) return;
-    final zoneRadiusController = TextEditingController(
-      text: ((serviceZone['radiusKm'] as num?)?.toDouble() ?? 1).toString(),
-    );
-    final houseHelpConfig = Map<String, dynamic>.from(
-      (item['houseHelpConfig'] as Map?) ?? const <String, dynamic>{},
-    );
-    final bookingTypesController = TextEditingController(
-      text: (houseHelpConfig['bookingTypes'] as List<dynamic>? ?? const [])
-          .map((entry) => entry.toString().trim())
-          .where((entry) => entry.isNotEmpty)
-          .join(', '),
-    );
-    final shiftDurationsController = TextEditingController(
-      text: (houseHelpConfig['shiftDurations'] as List<dynamic>? ?? const [])
-          .map((entry) => entry.toString().trim())
-          .where((entry) => entry.isNotEmpty)
-          .join(', '),
-    );
-    final homeSizesController = TextEditingController(
-      text: (houseHelpConfig['homeSizes'] as List<dynamic>? ?? const [])
-          .map((entry) => entry.toString().trim())
-          .where((entry) => entry.isNotEmpty)
-          .join(', '),
-    );
-    final arrivalTargetsController = TextEditingController(
-      text: (houseHelpConfig['arrivalTargets'] as List<dynamic>? ?? const [])
-          .map((entry) => entry.toString().trim())
-          .where((entry) => entry.isNotEmpty)
-          .join(', '),
-    );
-    final supplyModesController = TextEditingController(
-      text: (houseHelpConfig['supplyModes'] as List<dynamic>? ?? const [])
-          .map((entry) => entry.toString().trim())
-          .where((entry) => entry.isNotEmpty)
-          .join(', '),
-    );
 
+    if (!mounted) return;
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
+      useSafeArea: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.92,
+      ),
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setModalState) {
@@ -293,7 +146,7 @@ class _ProviderScheduleSettingsScreenState
             return Padding(
               padding: EdgeInsets.fromLTRB(
                 20,
-                20,
+                16,
                 20,
                 MediaQuery.of(sheetContext).viewInsets.bottom + 20,
               ),
@@ -312,202 +165,48 @@ class _ProviderScheduleSettingsScreenState
                       const SizedBox(height: 4),
                       Text(item['title']!.toString()),
                     ],
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: contactPhoneController,
-                      decoration: const InputDecoration(labelText: 'Phone'),
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: servicesController,
-                      minLines: 2,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Services offered',
-                        hintText:
-                            'Room Cleaning, Floor Cleaning, Kitchen Cleaning',
+                    const SizedBox(height: 16),
+                    SwitchListTile.adaptive(
+                      contentPadding: EdgeInsets.zero,
+                      value: enabled,
+                      onChanged: _busyIds.contains(providerId)
+                          ? null
+                          : (value) => setModalState(() => enabled = value),
+                      title: const Text('Accept bookings now'),
+                      subtitle: Text(
+                        enabled ? 'Active and visible to users' : 'Paused',
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      height: 170,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: GoogleMap(
-                          initialCameraPosition: CameraPosition(
-                            target: zoneCenter,
-                            zoom: 12.4,
-                          ),
-                          markers: {
-                            Marker(
-                              markerId: const MarkerId('provider-zone-center'),
-                              position: zoneCenter,
-                            ),
-                          },
-                          myLocationButtonEnabled: false,
-                          zoomControlsEnabled: false,
-                          mapToolbarEnabled: false,
-                          rotateGesturesEnabled: false,
-                          tiltGesturesEnabled: false,
-                          liteModeEnabled: true,
-                          onTap: (point) {
-                            setModalState(() {
-                              zoneCenter = point;
-                            });
-                          },
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Zone center: ${zoneCenter.latitude.toStringAsFixed(5)}, ${zoneCenter.longitude.toStringAsFixed(5)}',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ),
-                        TextButton.icon(
-                          onPressed: () async {
-                            final current = await _requestCurrentLocation(
-                              showFailureSnackBar: false,
-                            );
-                            if (current == null || !sheetContext.mounted) {
-                              return;
-                            }
-                            setModalState(() => zoneCenter = current);
-                          },
-                          icon: const Icon(Icons.my_location_rounded),
-                          label: const Text('Use current'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: zoneRadiusController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: const InputDecoration(
-                        labelText: 'Zone radius (km, max 1)',
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const _SettingsSectionLabel('House-help booking criteria'),
                     const SizedBox(height: 8),
-                    TextFormField(
-                      controller: bookingTypesController,
-                      minLines: 2,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Booking types',
-                        hintText: 'One-time job, Daily recurring',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: shiftDurationsController,
-                      minLines: 2,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Shift durations',
-                        hintText: '2 hours, 4 hours, 8 hours',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: homeSizesController,
-                      minLines: 1,
-                      maxLines: 2,
-                      decoration: const InputDecoration(
-                        labelText: 'Home sizes',
-                        hintText: 'F2, F3, F4',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: arrivalTargetsController,
-                      minLines: 2,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Arrival targets',
-                        hintText: 'Within 30 min, Scheduled slot',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: supplyModesController,
-                      minLines: 1,
-                      maxLines: 2,
-                      decoration: const InputDecoration(
-                        labelText: 'Supply modes',
-                        hintText: 'Provider supplies, Customer supplies',
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    const _SettingsSectionLabel('Booking modes'),
+                    const _SettingsSectionLabel('Weekly time slots'),
                     const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _modeOptions.map((mode) {
-                        return FilterChip(
-                          label: Text(mode),
-                          selected: selectedModes.contains(mode),
-                          onSelected: (selected) {
-                            setModalState(() {
-                              if (selected) {
-                                selectedModes.add(mode);
-                              } else {
-                                selectedModes.remove(mode);
-                              }
-                            });
-                          },
-                        );
-                      }).toList(),
+                    scheduleField(
+                      key: 'weekdays',
+                      label: 'Weekdays (e.g. 08:00 AM - 06:00 PM)',
                     ),
-                    const SizedBox(height: 20),
-                    const _SettingsSectionLabel('Weekly availability'),
-                    const SizedBox(height: 8),
-                    scheduleField(key: 'weekdays', label: 'Weekdays'),
                     const SizedBox(height: 12),
-                    scheduleField(key: 'saturday', label: 'Saturday'),
+                    scheduleField(
+                      key: 'saturday',
+                      label: 'Saturday (e.g. 09:00 AM - 02:00 PM)',
+                    ),
                     const SizedBox(height: 12),
-                    scheduleField(key: 'sunday', label: 'Sunday'),
-                    const SizedBox(height: 20),
+                    scheduleField(key: 'sunday', label: 'Sunday (e.g. Closed)'),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Use this screen for operations only: active status and time slots.',
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                    ),
+                    const SizedBox(height: 18),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _busyIds.contains(providerId)
                             ? null
                             : () async {
-                                final zoneRadius = double.tryParse(
-                                  zoneRadiusController.text.trim(),
-                                );
-                                if (zoneRadius == null ||
-                                    zoneRadius <= 0 ||
-                                    zoneRadius > 1) {
-                                  if (!context.mounted) return;
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Set a valid zone center and radius (maximum 1 km) before saving.',
-                                      ),
-                                    ),
-                                  );
-                                  return;
-                                }
                                 Navigator.of(sheetContext).pop();
-                                await _saveSettings(
+                                await _saveOperationalSettings(
                                   providerId: providerId,
-                                  contactPhone: contactPhoneController.text
-                                      .trim(),
-                                  services: _splitValues(
-                                    servicesController.text,
-                                  ),
-                                  bookingModes: selectedModes.toList(
-                                    growable: false,
-                                  ),
+                                  enabled: enabled,
                                   availability: {
                                     'weekdays': (availability['weekdays'] ?? '')
                                         .trim(),
@@ -516,29 +215,6 @@ class _ProviderScheduleSettingsScreenState
                                     'sunday': (availability['sunday'] ?? '')
                                         .trim(),
                                   },
-                                  serviceZone: {
-                                    'enabled': true,
-                                    'centerLatitude': zoneCenter.latitude,
-                                    'centerLongitude': zoneCenter.longitude,
-                                    'radiusKm': zoneRadius,
-                                  },
-                                  houseHelpConfig: {
-                                    'bookingTypes': _splitValues(
-                                      bookingTypesController.text,
-                                    ),
-                                    'shiftDurations': _splitValues(
-                                      shiftDurationsController.text,
-                                    ),
-                                    'homeSizes': _splitValues(
-                                      homeSizesController.text,
-                                    ),
-                                    'arrivalTargets': _splitValues(
-                                      arrivalTargetsController.text,
-                                    ),
-                                    'supplyModes': _splitValues(
-                                      supplyModesController.text,
-                                    ),
-                                  },
                                 );
                               },
                         style: ElevatedButton.styleFrom(
@@ -546,9 +222,7 @@ class _ProviderScheduleSettingsScreenState
                           foregroundColor: Colors.white,
                         ),
                         child: Text(
-                          _busyIds.contains(providerId)
-                              ? 'Saving...'
-                              : 'Save settings',
+                          _busyIds.contains(providerId) ? 'Saving...' : 'Save',
                         ),
                       ),
                     ),
@@ -571,7 +245,7 @@ class _ProviderScheduleSettingsScreenState
         foregroundColor: Colors.white,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _settingsFuture,
+        future: _scheduleFuture,
         builder: (context, snapshot) {
           if (!_supportsServices) {
             return const Center(
@@ -609,15 +283,15 @@ class _ProviderScheduleSettingsScreenState
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
-                      'No service listing is configured yet for this provider account.',
+                      'No offered service listing found yet for this provider account.',
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 12),
                     ElevatedButton.icon(
                       onPressed: () =>
                           context.push(ProRoutePaths.providerAvailability),
-                      icon: const Icon(Icons.add_business_rounded),
-                      label: const Text('Create service listing'),
+                      icon: const Icon(Icons.settings_outlined),
+                      label: const Text('Open Offered Services'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.homeServices,
                         foregroundColor: Colors.white,
@@ -631,58 +305,38 @@ class _ProviderScheduleSettingsScreenState
 
           return ListView.separated(
             padding: const EdgeInsets.all(16),
-            itemCount: items.length,
+            itemCount: items.length + 1,
             separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final item = items[index];
+              if (index == 0) {
+                return Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.settings_outlined),
+                    title: const Text('Manage offered services and profile'),
+                    subtitle: const Text(
+                      'Use Offered Services for listing/profile configuration. Scheduling is only for active status and time slots.',
+                    ),
+                    trailing: TextButton(
+                      onPressed: () =>
+                          context.push(ProRoutePaths.providerAvailability),
+                      child: const Text('Open'),
+                    ),
+                  ),
+                );
+              }
+
+              final item = items[index - 1];
               final providerId = item['id']?.toString() ?? '';
+              final isBusy = _busyIds.contains(providerId);
+              final enabled = item['enabled'] as bool? ?? false;
               final availability = Map<String, dynamic>.from(
                 (item['availability'] as Map?) ?? const <String, dynamic>{},
               );
-              final bookingModes =
-                  (item['bookingModes'] as List<dynamic>? ?? const <dynamic>[])
-                      .map((entry) => entry.toString())
-                      .toList(growable: false);
-              final services =
-                  (item['services'] as List<dynamic>? ?? const <dynamic>[])
-                      .map((entry) => entry.toString())
-                      .where((entry) => entry.trim().isNotEmpty)
-                      .toList(growable: false);
-              final serviceZone = Map<String, dynamic>.from(
-                (item['serviceZone'] as Map?) ?? const <String, dynamic>{},
-              );
-              final houseHelpConfig = Map<String, dynamic>.from(
-                (item['houseHelpConfig'] as Map?) ?? const <String, dynamic>{},
-              );
-              final zoneRadius =
-                  (serviceZone['radiusKm'] as num?)?.toDouble() ?? 1;
-              final zoneCenterLatitude = (serviceZone['centerLatitude'] as num?)
-                  ?.toDouble();
-              final zoneCenterLongitude =
-                  (serviceZone['centerLongitude'] as num?)?.toDouble();
-              final bookingTypes =
-                  (houseHelpConfig['bookingTypes'] as List<dynamic>? ??
-                          const [])
-                      .map((entry) => entry.toString().trim())
-                      .where((entry) => entry.isNotEmpty)
-                      .toList(growable: false);
-              final shiftDurations =
-                  (houseHelpConfig['shiftDurations'] as List<dynamic>? ??
-                          const [])
-                      .map((entry) => entry.toString().trim())
-                      .where((entry) => entry.isNotEmpty)
-                      .toList(growable: false);
-              final homeSizes =
-                  (houseHelpConfig['homeSizes'] as List<dynamic>? ?? const [])
-                      .map((entry) => entry.toString().trim())
-                      .where((entry) => entry.isNotEmpty)
-                      .toList(growable: false);
-              final arrivalTargets =
-                  (houseHelpConfig['arrivalTargets'] as List<dynamic>? ??
-                          const [])
-                      .map((entry) => entry.toString().trim())
-                      .where((entry) => entry.isNotEmpty)
-                      .toList(growable: false);
+              final currentAvailability = {
+                'weekdays': availability['weekdays']?.toString().trim() ?? '',
+                'saturday': availability['saturday']?.toString().trim() ?? '',
+                'sunday': availability['sunday']?.toString().trim() ?? '',
+              };
 
               return Card(
                 child: Padding(
@@ -697,7 +351,7 @@ class _ProviderScheduleSettingsScreenState
                               alpha: 0.12,
                             ),
                             child: const Icon(
-                              Icons.home_repair_service_outlined,
+                              Icons.schedule_outlined,
                               color: AppColors.homeServices,
                             ),
                           ),
@@ -712,88 +366,57 @@ class _ProviderScheduleSettingsScreenState
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                if ((item['title']?.toString() ?? '')
-                                    .isNotEmpty)
-                                  Text(item['title']!.toString()),
+                                Text(
+                                  enabled ? 'Active' : 'Paused',
+                                  style: TextStyle(
+                                    color: enabled
+                                        ? Colors.green
+                                        : Colors.orange,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                          TextButton.icon(
-                            onPressed: _busyIds.contains(providerId)
+                          Switch.adaptive(
+                            value: enabled,
+                            onChanged: isBusy
                                 ? null
-                                : () => _openEditor(item),
-                            icon: const Icon(Icons.edit_outlined),
-                            label: const Text('Edit'),
+                                : (value) => _saveOperationalSettings(
+                                    providerId: providerId,
+                                    enabled: value,
+                                    availability: currentAvailability,
+                                    showSuccess: false,
+                                  ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 12),
                       _SettingsInfoRow(
-                        label: 'Phone',
-                        value: item['contactPhone']?.toString() ?? 'Not set',
-                      ),
-                      _SettingsInfoRow(
-                        label: 'Modes',
-                        value: bookingModes.isEmpty
-                            ? 'No booking modes configured'
-                            : bookingModes.join(', '),
-                      ),
-                      _SettingsInfoRow(
-                        label: 'Services',
-                        value: services.isEmpty
-                            ? 'No services configured'
-                            : services.join(', '),
-                      ),
-                      _SettingsInfoRow(
-                        label: 'Zone',
-                        value:
-                            'Mandatory • ${zoneRadius.toStringAsFixed(1)} km',
-                      ),
-                      _SettingsInfoRow(
-                        label: 'Zone center',
-                        value:
-                            zoneCenterLatitude == null ||
-                                zoneCenterLongitude == null
-                            ? 'Not set'
-                            : '${zoneCenterLatitude.toStringAsFixed(5)}, ${zoneCenterLongitude.toStringAsFixed(5)}',
-                      ),
-                      _SettingsInfoRow(
-                        label: 'Booking types',
-                        value: bookingTypes.isEmpty
-                            ? 'Not configured'
-                            : bookingTypes.join(', '),
-                      ),
-                      _SettingsInfoRow(
-                        label: 'Shifts',
-                        value: shiftDurations.isEmpty
-                            ? 'Not configured'
-                            : shiftDurations.join(', '),
-                      ),
-                      _SettingsInfoRow(
-                        label: 'Home sizes',
-                        value: homeSizes.isEmpty
-                            ? 'Not configured'
-                            : homeSizes.join(', '),
-                      ),
-                      _SettingsInfoRow(
-                        label: 'Arrival',
-                        value: arrivalTargets.isEmpty
-                            ? 'Not configured'
-                            : arrivalTargets.join(', '),
-                      ),
-                      _SettingsInfoRow(
                         label: 'Weekdays',
-                        value:
-                            availability['weekdays']?.toString() ?? 'Not set',
+                        value: currentAvailability['weekdays']!.isEmpty
+                            ? 'Not set'
+                            : currentAvailability['weekdays']!,
                       ),
                       _SettingsInfoRow(
                         label: 'Saturday',
-                        value:
-                            availability['saturday']?.toString() ?? 'Not set',
+                        value: currentAvailability['saturday']!.isEmpty
+                            ? 'Not set'
+                            : currentAvailability['saturday']!,
                       ),
                       _SettingsInfoRow(
                         label: 'Sunday',
-                        value: availability['sunday']?.toString() ?? 'Not set',
+                        value: currentAvailability['sunday']!.isEmpty
+                            ? 'Not set'
+                            : currentAvailability['sunday']!,
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          onPressed: isBusy ? null : () => _openEditor(item),
+                          icon: const Icon(Icons.edit_outlined),
+                          label: const Text('Edit time slots'),
+                        ),
                       ),
                     ],
                   ),

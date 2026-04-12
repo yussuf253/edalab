@@ -3644,6 +3644,8 @@ router.get('/:userId/provider-availability', (0, async_handler_1.asyncHandler)(a
                 select: {
                     id: true,
                     name: true,
+                    title: true,
+                    servicesJson: true,
                     isAvailable: true,
                 },
                 orderBy: { name: 'asc' },
@@ -3661,11 +3663,17 @@ router.get('/:userId/provider-availability', (0, async_handler_1.asyncHandler)(a
             }),
     ]);
     res.json({
-        services: providers.map((provider) => ({
-            id: provider.id,
-            name: provider.name,
-            enabled: provider.isAvailable,
-        })),
+        services: providers.map((provider) => {
+            const normalizedServices = normalizeStringList(provider.servicesJson).filter((service) => service.trim().length > 0);
+            return {
+                id: provider.id,
+                name: normalizedServices[0] ?? 'Service Listing',
+                details: normalizedServices.length > 1
+                    ? normalizedServices.slice(1, 4).join(' • ')
+                    : null,
+                enabled: provider.isAvailable,
+            };
+        }),
         laundry: laundryServices.map((service) => ({
             id: service.id,
             name: service.name,
@@ -3788,6 +3796,11 @@ router.get('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(async
                 servicesJson: true,
                 bookingModesJson: true,
                 availabilityJson: true,
+                category: {
+                    select: {
+                        slug: true,
+                    },
+                },
             },
             orderBy: { name: 'asc' },
         });
@@ -3798,6 +3811,7 @@ router.get('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(async
         location: provider.location,
         contactPhone: provider.contactPhone,
         responseTime: provider.responseTime,
+        categorySlug: provider.category?.slug ?? null,
         services: normalizeStringList(provider.servicesJson),
         bookingModes: normalizeStringList(provider.bookingModesJson),
         availability: normalizeHours(provider.availabilityJson, {

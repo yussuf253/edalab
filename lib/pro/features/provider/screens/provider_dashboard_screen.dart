@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../core/constants/pro_design_system.dart';
 import '../../../core/models/pro_dashboard_data.dart';
 import '../../../core/models/pro_profile.dart';
+import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
 
@@ -19,34 +21,58 @@ class ProviderDashboardScreen extends StatefulWidget {
 }
 
 class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
-  late Future<ProDashboardData> _dashboardFuture;
+  late Future<_ProviderDashboardViewData> _viewFuture;
   final Set<String> _busyItemIds = <String>{};
+  bool _isUpdatingOnline = false;
 
   @override
   void initState() {
     super.initState();
-    _dashboardFuture = _loadDashboard();
+    _viewFuture = _loadViewData();
   }
 
   @override
   void didUpdateWidget(covariant ProviderDashboardScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.profile.userId != widget.profile.userId) {
-      _dashboardFuture = _loadDashboard();
+      _viewFuture = _loadViewData();
     }
   }
 
-  Future<ProDashboardData> _loadDashboard() async {
-    final response = Map<String, dynamic>.from(
-      await ApiClient.get('/pro/${widget.profile.userId}/dashboard') as Map,
+  Future<_ProviderDashboardViewData> _loadViewData() async {
+    final dashboardResponse = Map<String, dynamic>.from(
+      await ApiClient.get(
+            '/pro/${widget.profile.userId}/dashboard',
+            forceRefresh: true,
+          )
+          as Map,
     );
-    return ProDashboardData.fromJson(response);
+    final settingsResponse = await ApiClient.get(
+      '/pro/${widget.profile.userId}/provider-settings',
+      forceRefresh: true,
+    );
+    final availabilityResponse = Map<String, dynamic>.from(
+      await ApiClient.get(
+            '/pro/${widget.profile.userId}/provider-availability',
+            forceRefresh: true,
+          )
+          as Map,
+    );
+    return _ProviderDashboardViewData(
+      dashboard: ProDashboardData.fromJson(dashboardResponse),
+      setup: _ProviderSetupState.fromApi(
+        settings: (settingsResponse as List<dynamic>)
+            .map((entry) => Map<String, dynamic>.from(entry as Map))
+            .toList(growable: false),
+        availability: availabilityResponse,
+      ),
+    );
   }
 
   Future<void> _refreshDashboard() async {
-    final future = _loadDashboard();
+    final future = _loadViewData();
     setState(() {
-      _dashboardFuture = future;
+      _viewFuture = future;
     });
     await future;
   }
@@ -61,6 +87,37 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
     await context.push(ProRoutePaths.providerAvailability);
     if (!mounted) return;
     await _refreshDashboard();
+  }
+
+  Future<void> _setOnlineStatus(bool isOnline) async {
+    if (_isUpdatingOnline) return;
+    setState(() => _isUpdatingOnline = true);
+    try {
+      await context.read<ProAuthProvider>().updateOnlineStatus(isOnline);
+      if (!mounted) return;
+      await _refreshDashboard();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isOnline
+                ? 'You are now live and can receive nearby bookings.'
+                : 'You are now offline.',
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isUpdatingOnline = false);
+      }
+    }
   }
 
   int _moduleRequestCount(ProDashboardModuleSummary summary) {
@@ -164,6 +221,9 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final onlineState =
+        context.watch<ProAuthProvider>().currentProfile?.isOnline ??
+        widget.profile.isOnline;
     final activeModules = widget.profile.activeModules
         .where(
           (module) => {ProModule.services, ProModule.laundry}.contains(module),
@@ -179,12 +239,8 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
         foregroundColor: AppColors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.schedule_outlined),
+            icon: const Icon(Icons.settings_outlined),
             onPressed: _openSchedule,
-          ),
-          IconButton(
-            icon: const Icon(Icons.tune),
-            onPressed: _openAvailability,
           ),
           IconButton(
             icon: const Icon(Icons.chat_bubble_outline),
@@ -192,10 +248,11 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
           ),
         ],
       ),
-      body: FutureBuilder<ProDashboardData>(
-        future: _dashboardFuture,
+      body: FutureBuilder<_ProviderDashboardViewData>(
+        future: _viewFuture,
         builder: (context, snapshot) {
-          final data = snapshot.data;
+          final data = snapshot.data?.dashboard;
+          final setup = snapshot.data?.setup;
           final summaries =
               data?.moduleSummaries ?? const <ProDashboardModuleSummary>[];
           final totalRequests = _totalRequests(summaries);
@@ -211,35 +268,48 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
             child: ListView(
               padding: const EdgeInsets.all(ProDesignSystem.spacing16),
               children: [
-                _ProviderPipelineHero(
-                  businessName: widget.profile.businessName,
-                  headline: data?.headline,
-                  modules: activeModules,
-                  onOpenSchedule: _openSchedule,
-                  onOpenAvailability: _openAvailability,
-                ),
-                if (data?.scopeNote?.isNotEmpty == true) ...[
+                if (setup != null &&
+                    !setup.isReadyForLiveOperations(onlineState))
+                  _ProviderSetupOnboardingCard(
+                    setup: setup,
+                    onlineState: onlineState,
+                    isUpdatingOnline: _isUpdatingOnline,
+                    onOpenAvailability: _openAvailability,
+                    onOpenSchedule: _openSchedule,
+                    onSetOnline: () => _setOnlineStatus(true),
+                    onRefresh: _refreshDashboard,
+                  )
+                else ...[
+                  _ProviderPipelineHero(
+                    businessName: widget.profile.businessName,
+                    headline: data?.headline,
+                    modules: activeModules,
+                    onOpenSchedule: _openSchedule,
+                    onOpenAvailability: _openAvailability,
+                  ),
+                  if (data?.scopeNote?.isNotEmpty == true) ...[
+                    const SizedBox(height: ProDesignSystem.spacing16),
+                    _ScopeNote(message: data!.scopeNote!),
+                  ],
                   const SizedBox(height: ProDesignSystem.spacing16),
-                  _ScopeNote(message: data!.scopeNote!),
+                  _ProviderSnapshotStrip(
+                    totalRequests: totalRequests,
+                    actionable: actionable,
+                    activePipelines: activeModules.length,
+                  ),
+                  const SizedBox(height: ProDesignSystem.spacing20),
+                  Text(
+                    'Pipeline Workboard',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: ProDesignSystem.spacing12),
+                  if (summaries.isNotEmpty)
+                    ...summaries.map(_buildSummaryCard)
+                  else
+                    const _FallbackProviderState(),
                 ],
-                const SizedBox(height: ProDesignSystem.spacing16),
-                _ProviderSnapshotStrip(
-                  totalRequests: totalRequests,
-                  actionable: actionable,
-                  activePipelines: activeModules.length,
-                ),
-                const SizedBox(height: ProDesignSystem.spacing20),
-                Text(
-                  'Pipeline Workboard',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: ProDesignSystem.spacing12),
-                if (summaries.isNotEmpty)
-                  ...summaries.map(_buildSummaryCard)
-                else
-                  const _FallbackProviderState(),
               ],
             ),
           );
@@ -450,8 +520,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                         ),
                       ),
                     ),
-                  )
-                  .toList(),
+                  ),
             ],
             const SizedBox(height: ProDesignSystem.spacing16),
             Row(
@@ -699,6 +768,321 @@ class _FallbackProviderState extends StatelessWidget {
         child: Text(
           'Live provider summaries will appear here when data is available.',
         ),
+      ),
+    );
+  }
+}
+
+class _ProviderDashboardViewData {
+  final ProDashboardData dashboard;
+  final _ProviderSetupState setup;
+
+  const _ProviderDashboardViewData({
+    required this.dashboard,
+    required this.setup,
+  });
+}
+
+class _ProviderSetupState {
+  final bool hasServiceListing;
+  final bool hasOfferConfigured;
+  final bool hasZoneConfigured;
+  final bool hasScheduleConfigured;
+  final bool hasEnabledService;
+
+  const _ProviderSetupState({
+    required this.hasServiceListing,
+    required this.hasOfferConfigured,
+    required this.hasZoneConfigured,
+    required this.hasScheduleConfigured,
+    required this.hasEnabledService,
+  });
+
+  factory _ProviderSetupState.fromApi({
+    required List<Map<String, dynamic>> settings,
+    required Map<String, dynamic> availability,
+  }) {
+    final hasServiceListing = settings.isNotEmpty;
+    final firstSetting = hasServiceListing
+        ? settings.first
+        : const <String, dynamic>{};
+    final services = _toStringList(firstSetting['services']);
+    final houseHelpConfig = Map<String, dynamic>.from(
+      (firstSetting['houseHelpConfig'] as Map?) ?? const <String, dynamic>{},
+    );
+    final hasOfferConfigured =
+        services.isNotEmpty &&
+        _toStringList(houseHelpConfig['bookingTypes']).isNotEmpty &&
+        _toStringList(houseHelpConfig['shiftDurations']).isNotEmpty &&
+        _toStringList(houseHelpConfig['homeSizes']).isNotEmpty &&
+        _toStringList(houseHelpConfig['arrivalTargets']).isNotEmpty &&
+        _toStringList(houseHelpConfig['supplyModes']).isNotEmpty;
+    final serviceZone = Map<String, dynamic>.from(
+      (firstSetting['serviceZone'] as Map?) ?? const <String, dynamic>{},
+    );
+    final zoneEnabled = serviceZone['enabled'] as bool? ?? false;
+    final zoneLat = (serviceZone['centerLatitude'] as num?)?.toDouble();
+    final zoneLng = (serviceZone['centerLongitude'] as num?)?.toDouble();
+    final zoneRadius = (serviceZone['radiusKm'] as num?)?.toDouble();
+    final hasZoneConfigured =
+        zoneEnabled &&
+        zoneLat != null &&
+        zoneLng != null &&
+        zoneRadius != null &&
+        zoneRadius > 0;
+    final availabilityHours = Map<String, dynamic>.from(
+      (firstSetting['availability'] as Map?) ?? const <String, dynamic>{},
+    );
+    final hasScheduleConfigured = <String>['weekdays', 'saturday', 'sunday']
+        .every(
+          (key) => availabilityHours[key]?.toString().trim().isNotEmpty == true,
+        );
+    final servicesAvailability =
+        (availability['services'] as List<dynamic>? ?? const <dynamic>[])
+            .map((entry) => Map<String, dynamic>.from(entry as Map))
+            .toList(growable: false);
+    final hasEnabledService = servicesAvailability.any(
+      (item) => item['enabled'] as bool? ?? false,
+    );
+
+    return _ProviderSetupState(
+      hasServiceListing: hasServiceListing,
+      hasOfferConfigured: hasOfferConfigured,
+      hasZoneConfigured: hasZoneConfigured,
+      hasScheduleConfigured: hasScheduleConfigured,
+      hasEnabledService: hasEnabledService,
+    );
+  }
+
+  int completedStepCount(bool onlineState) {
+    var completed = 0;
+    if (hasServiceListing) completed++;
+    if (hasOfferConfigured) completed++;
+    if (hasZoneConfigured && hasScheduleConfigured) completed++;
+    if (hasEnabledService) completed++;
+    if (onlineState) completed++;
+    return completed;
+  }
+
+  bool isReadyForLiveOperations(bool onlineState) {
+    return completedStepCount(onlineState) >= 5;
+  }
+
+  List<_ProviderSetupStep> steps(bool onlineState) {
+    return <_ProviderSetupStep>[
+      _ProviderSetupStep(
+        title: 'Create a listing',
+        subtitle: 'Set up your House Help listing before receiving requests.',
+        done: hasServiceListing,
+      ),
+      _ProviderSetupStep(
+        title: 'Configure offered services',
+        subtitle:
+            'Select booking types, shifts, home sizes, arrival and supply modes.',
+        done: hasOfferConfigured,
+      ),
+      _ProviderSetupStep(
+        title: 'Configure zone and schedule',
+        subtitle:
+            'Set your service-zone center/radius and weekly working schedule.',
+        done: hasZoneConfigured && hasScheduleConfigured,
+      ),
+      _ProviderSetupStep(
+        title: 'Enable booking intake',
+        subtitle: 'Turn your listing availability on.',
+        done: hasEnabledService,
+      ),
+      _ProviderSetupStep(
+        title: 'Go online',
+        subtitle: 'Switch your pro profile online to start receiving requests.',
+        done: onlineState,
+      ),
+    ];
+  }
+
+  static List<String> _toStringList(dynamic value) {
+    if (value is! List) return const <String>[];
+    return value
+        .map((entry) => entry?.toString().trim() ?? '')
+        .where((entry) => entry.isNotEmpty)
+        .toList(growable: false);
+  }
+}
+
+class _ProviderSetupStep {
+  final String title;
+  final String subtitle;
+  final bool done;
+
+  const _ProviderSetupStep({
+    required this.title,
+    required this.subtitle,
+    required this.done,
+  });
+}
+
+class _ProviderSetupOnboardingCard extends StatelessWidget {
+  final _ProviderSetupState setup;
+  final bool onlineState;
+  final bool isUpdatingOnline;
+  final Future<void> Function() onOpenAvailability;
+  final Future<void> Function() onOpenSchedule;
+  final Future<void> Function() onSetOnline;
+  final Future<void> Function() onRefresh;
+
+  const _ProviderSetupOnboardingCard({
+    required this.setup,
+    required this.onlineState,
+    required this.isUpdatingOnline,
+    required this.onOpenAvailability,
+    required this.onOpenSchedule,
+    required this.onSetOnline,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final steps = setup.steps(onlineState);
+    final completed = setup.completedStepCount(onlineState);
+    final total = steps.length;
+    final progress = completed / total;
+
+    VoidCallback? primaryAction;
+    String primaryLabel;
+    IconData primaryIcon;
+    if (!setup.hasServiceListing) {
+      primaryAction = () => onOpenAvailability();
+      primaryLabel = 'Create listing';
+      primaryIcon = Icons.add_business_rounded;
+    } else if (!setup.hasOfferConfigured ||
+        !setup.hasZoneConfigured ||
+        !setup.hasScheduleConfigured) {
+      primaryAction = () => onOpenSchedule();
+      primaryLabel = 'Configure listing details';
+      primaryIcon = Icons.tune;
+    } else if (!setup.hasEnabledService) {
+      primaryAction = () => onOpenAvailability();
+      primaryLabel = 'Enable booking intake';
+      primaryIcon = Icons.toggle_on_rounded;
+    } else {
+      primaryAction = isUpdatingOnline ? null : () => onSetOnline();
+      primaryLabel = isUpdatingOnline ? 'Updating...' : 'Go online';
+      primaryIcon = Icons.wifi_tethering_rounded;
+    }
+
+    return ModernCard(
+      backgroundColor: Colors.white,
+      borderRadius: ProDesignSystem.radiusLarge,
+      shadows: ProDesignSystem.shadowElevation2,
+      padding: const EdgeInsets.all(ProDesignSystem.spacing16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Complete setup before accepting bookings',
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: ProDesignSystem.spacing6),
+          Text(
+            'Let’s finish your provider onboarding so nearby users can book you smoothly.',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF4B5563)),
+          ),
+          const SizedBox(height: ProDesignSystem.spacing12),
+          Row(
+            children: [
+              Expanded(
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 8,
+                  borderRadius: BorderRadius.circular(999),
+                  color: AppColors.homeServices,
+                  backgroundColor: AppColors.homeServices.withValues(
+                    alpha: 0.15,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '$completed/$total',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.homeServices,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: ProDesignSystem.spacing16),
+          ...steps.map(
+            (step) => Padding(
+              padding: const EdgeInsets.only(bottom: ProDesignSystem.spacing8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    step.done
+                        ? Icons.check_circle_rounded
+                        : Icons.radio_button_unchecked_rounded,
+                    size: 20,
+                    color: step.done ? Colors.green : const Color(0xFF9CA3AF),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          step.title,
+                          style: const TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          step.subtitle,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: ProDesignSystem.spacing8),
+          Row(
+            children: [
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: primaryAction,
+                  icon: Icon(primaryIcon),
+                  label: Text(primaryLabel),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.homeServices,
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              OutlinedButton.icon(
+                onPressed: () => onRefresh(),
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Refresh'),
+              ),
+            ],
+          ),
+          if (!setup.hasServiceListing) ...[
+            const SizedBox(height: ProDesignSystem.spacing8),
+            const Text(
+              'Tip: open Availability, then tap the + button to create your first House Help listing.',
+              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+            ),
+          ],
+        ],
       ),
     );
   }
