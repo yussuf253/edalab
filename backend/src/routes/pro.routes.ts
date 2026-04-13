@@ -4930,7 +4930,7 @@ router.get(
             provider.title?.trim() ||
             provider.name?.trim() ||
             'Service Listing',
-          details: detailsParts.isNotEmpty ? detailsParts.join(' • ') : null,
+          details: detailsParts.length > 0 ? detailsParts.join(' • ') : null,
           enabled: provider.isAvailable,
         };
       }),

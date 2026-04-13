@@ -2071,6 +2071,7 @@ router.post('/:userId/provider-order-status', (0, async_handler_1.asyncHandler)(
     if (!order) {
         return res.status(404).json({ error: 'Order not found.' });
     }
+    const firstItem = order.items[0];
     if (order.status === body.status) {
         return res.json({
             id: order.id,
@@ -2084,7 +2085,6 @@ router.post('/:userId/provider-order-status', (0, async_handler_1.asyncHandler)(
             error: `Invalid status transition from ${order.status} to ${body.status} for this booking.`,
         });
     }
-    const firstItem = order.items[0];
     const firstItemMetadata = firstItem?.metadata &&
         typeof firstItem.metadata === 'object' &&
         !Array.isArray(firstItem.metadata)

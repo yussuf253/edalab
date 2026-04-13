@@ -17,20 +17,23 @@ import '../../rider/screens/rider_dashboard_screen.dart';
 import '../../shop/screens/shop_dashboard_screen.dart';
 
 class ProDashboardScreen extends StatefulWidget {
-  const ProDashboardScreen({super.key});
+  final int initialIndex;
+
+  const ProDashboardScreen({super.key, this.initialIndex = 0});
 
   @override
   State<ProDashboardScreen> createState() => _ProDashboardScreenState();
 }
 
 class _ProDashboardScreenState extends State<ProDashboardScreen> {
-  int _currentIndex = 0;
+  late int _currentIndex;
   Timer? _inboxPollTimer;
   String? _pollingUserId;
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex.clamp(0, 4).toInt();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final profile = context.read<ProAuthProvider>().currentProfile;
@@ -38,6 +41,18 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
         _restartInboxPolling(profile);
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant ProDashboardScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final nextIndex = widget.initialIndex.clamp(0, 4).toInt();
+    if (oldWidget.initialIndex != widget.initialIndex &&
+        nextIndex != _currentIndex) {
+      setState(() {
+        _currentIndex = nextIndex;
+      });
+    }
   }
 
   @override
