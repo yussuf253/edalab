@@ -338,14 +338,45 @@ async function notifyOrderLifecycle(params: {
 }) {
   const statusLabel = formatModule(params.status);
   const moduleLabel = formatModule(params.moduleType).toLowerCase();
+  const isHomeServiceLifecycle =
+    params.moduleType === ModuleType.HOME_SERVICES ||
+    params.moduleType === ModuleType.HOUSE_HELP;
   const title =
     params.event === 'claimed'
       ? `${formatModule(params.moduleType)} delivery assigned`
-      : `${formatModule(params.moduleType)} order update`;
+      : isHomeServiceLifecycle
+        ? (() => {
+            switch (params.status) {
+              case OrderStatus.CONFIRMED:
+                return 'Booking confirmed';
+              case OrderStatus.DISPATCHED:
+                return 'Provider on the way';
+              case OrderStatus.COMPLETED:
+                return 'Work completed';
+              default:
+                return `${formatModule(params.moduleType)} order update`;
+            }
+          })()
+        : `${formatModule(params.moduleType)} order update`;
   const body =
     params.event === 'claimed'
       ? `A courier accepted your ${moduleLabel} order. Status: ${statusLabel}.`
-      : `Your ${moduleLabel} order is now ${statusLabel}.`;
+      : isHomeServiceLifecycle
+        ? (() => {
+            switch (params.status) {
+              case OrderStatus.CONFIRMED:
+                return `Your ${moduleLabel} booking is confirmed.`;
+              case OrderStatus.DISPATCHED:
+                return `Your ${moduleLabel} provider is on the way.`;
+              case OrderStatus.IN_PROGRESS:
+                return `Your ${moduleLabel} provider has started the work.`;
+              case OrderStatus.COMPLETED:
+                return `Your ${moduleLabel} service is marked as completed.`;
+              default:
+                return `Your ${moduleLabel} order is now ${statusLabel}.`;
+            }
+          })()
+        : `Your ${moduleLabel} order is now ${statusLabel}.`;
   const route = orderRouteForModule(params.moduleType, params.orderId);
 
   try {
@@ -371,6 +402,45 @@ async function notifyOrderLifecycle(params: {
       event: params.event,
       error: error instanceof Error ? error.message : String(error),
     });
+  }
+}
+
+function allowedProviderOrderTransitions(
+  moduleType: ModuleType,
+  currentStatus: OrderStatus,
+): OrderStatus[] {
+  const isServiceFlow =
+    moduleType === ModuleType.HOME_SERVICES || moduleType === ModuleType.HOUSE_HELP;
+  if (isServiceFlow) {
+    switch (currentStatus) {
+      case OrderStatus.PENDING:
+        return [OrderStatus.CONFIRMED];
+      case OrderStatus.CONFIRMED:
+        return [OrderStatus.DISPATCHED, OrderStatus.IN_PROGRESS];
+      case OrderStatus.DISPATCHED:
+        return [OrderStatus.IN_PROGRESS, OrderStatus.COMPLETED];
+      case OrderStatus.IN_PROGRESS:
+        return [OrderStatus.COMPLETED];
+      case OrderStatus.PROCESSING:
+        return [OrderStatus.DISPATCHED, OrderStatus.IN_PROGRESS, OrderStatus.COMPLETED];
+      default:
+        return [];
+    }
+  }
+
+  switch (currentStatus) {
+    case OrderStatus.PENDING:
+      return [OrderStatus.CONFIRMED];
+    case OrderStatus.CONFIRMED:
+      return [OrderStatus.PROCESSING];
+    case OrderStatus.PROCESSING:
+      return [OrderStatus.DISPATCHED];
+    case OrderStatus.DISPATCHED:
+      return [OrderStatus.IN_PROGRESS];
+    case OrderStatus.IN_PROGRESS:
+      return [OrderStatus.COMPLETED];
+    default:
+      return [];
   }
 }
 
@@ -2725,6 +2795,23 @@ router.post(
     }
 
     const firstItem = order.items[0];
+    if (order.status === body.status) {
+      return res.json({
+        id: order.id,
+        status: order.status,
+        moduleType: order.moduleType,
+      });
+    }
+    const allowedTransitions = allowedProviderOrderTransitions(
+      order.moduleType,
+      order.status,
+    );
+    if (!allowedTransitions.includes(body.status)) {
+      return res.status(409).json({
+        error: `Invalid status transition from ${order.status} to ${body.status} for this booking.`,
+      });
+    }
+
     const firstItemMetadata =
       firstItem?.metadata &&
       typeof firstItem.metadata === 'object' &&

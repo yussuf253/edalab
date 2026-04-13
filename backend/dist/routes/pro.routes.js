@@ -265,12 +265,42 @@ function orderRouteForModule(moduleType, orderId) {
 async function notifyOrderLifecycle(params) {
     const statusLabel = formatModule(params.status);
     const moduleLabel = formatModule(params.moduleType).toLowerCase();
+    const isHomeServiceLifecycle = params.moduleType === client_1.ModuleType.HOME_SERVICES ||
+        params.moduleType === client_1.ModuleType.HOUSE_HELP;
     const title = params.event === 'claimed'
         ? `${formatModule(params.moduleType)} delivery assigned`
-        : `${formatModule(params.moduleType)} order update`;
+        : isHomeServiceLifecycle
+            ? (() => {
+                switch (params.status) {
+                    case client_1.OrderStatus.CONFIRMED:
+                        return 'Booking confirmed';
+                    case client_1.OrderStatus.DISPATCHED:
+                        return 'Provider on the way';
+                    case client_1.OrderStatus.COMPLETED:
+                        return 'Work completed';
+                    default:
+                        return `${formatModule(params.moduleType)} order update`;
+                }
+            })()
+            : `${formatModule(params.moduleType)} order update`;
     const body = params.event === 'claimed'
         ? `A courier accepted your ${moduleLabel} order. Status: ${statusLabel}.`
-        : `Your ${moduleLabel} order is now ${statusLabel}.`;
+        : isHomeServiceLifecycle
+            ? (() => {
+                switch (params.status) {
+                    case client_1.OrderStatus.CONFIRMED:
+                        return `Your ${moduleLabel} booking is confirmed.`;
+                    case client_1.OrderStatus.DISPATCHED:
+                        return `Your ${moduleLabel} provider is on the way.`;
+                    case client_1.OrderStatus.IN_PROGRESS:
+                        return `Your ${moduleLabel} provider has started the work.`;
+                    case client_1.OrderStatus.COMPLETED:
+                        return `Your ${moduleLabel} service is marked as completed.`;
+                    default:
+                        return `Your ${moduleLabel} order is now ${statusLabel}.`;
+                }
+            })()
+            : `Your ${moduleLabel} order is now ${statusLabel}.`;
     const route = orderRouteForModule(params.moduleType, params.orderId);
     try {
         await (0, notifications_1.createBackendNotification)({
@@ -296,6 +326,39 @@ async function notifyOrderLifecycle(params) {
             event: params.event,
             error: error instanceof Error ? error.message : String(error),
         });
+    }
+}
+function allowedProviderOrderTransitions(moduleType, currentStatus) {
+    const isServiceFlow = moduleType === client_1.ModuleType.HOME_SERVICES || moduleType === client_1.ModuleType.HOUSE_HELP;
+    if (isServiceFlow) {
+        switch (currentStatus) {
+            case client_1.OrderStatus.PENDING:
+                return [client_1.OrderStatus.CONFIRMED];
+            case client_1.OrderStatus.CONFIRMED:
+                return [client_1.OrderStatus.DISPATCHED, client_1.OrderStatus.IN_PROGRESS];
+            case client_1.OrderStatus.DISPATCHED:
+                return [client_1.OrderStatus.IN_PROGRESS, client_1.OrderStatus.COMPLETED];
+            case client_1.OrderStatus.IN_PROGRESS:
+                return [client_1.OrderStatus.COMPLETED];
+            case client_1.OrderStatus.PROCESSING:
+                return [client_1.OrderStatus.DISPATCHED, client_1.OrderStatus.IN_PROGRESS, client_1.OrderStatus.COMPLETED];
+            default:
+                return [];
+        }
+    }
+    switch (currentStatus) {
+        case client_1.OrderStatus.PENDING:
+            return [client_1.OrderStatus.CONFIRMED];
+        case client_1.OrderStatus.CONFIRMED:
+            return [client_1.OrderStatus.PROCESSING];
+        case client_1.OrderStatus.PROCESSING:
+            return [client_1.OrderStatus.DISPATCHED];
+        case client_1.OrderStatus.DISPATCHED:
+            return [client_1.OrderStatus.IN_PROGRESS];
+        case client_1.OrderStatus.IN_PROGRESS:
+            return [client_1.OrderStatus.COMPLETED];
+        default:
+            return [];
     }
 }
 async function notifyRideLifecycle(params) {
@@ -2007,6 +2070,19 @@ router.post('/:userId/provider-order-status', (0, async_handler_1.asyncHandler)(
     });
     if (!order) {
         return res.status(404).json({ error: 'Order not found.' });
+    }
+    if (order.status === body.status) {
+        return res.json({
+            id: order.id,
+            status: order.status,
+            moduleType: order.moduleType,
+        });
+    }
+    const allowedTransitions = allowedProviderOrderTransitions(order.moduleType, order.status);
+    if (!allowedTransitions.includes(body.status)) {
+        return res.status(409).json({
+            error: `Invalid status transition from ${order.status} to ${body.status} for this booking.`,
+        });
     }
     const firstItem = order.items[0];
     const firstItemMetadata = firstItem?.metadata &&

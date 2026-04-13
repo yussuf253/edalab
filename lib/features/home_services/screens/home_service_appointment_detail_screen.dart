@@ -248,6 +248,50 @@ class _HomeServiceAppointmentDetailScreenState
 
   String _twoDigits(int input) => input.toString().padLeft(2, '0');
 
+  String _normalizedOrderStatus(Map<String, dynamic>? order) {
+    return order?['status']?.toString().toUpperCase().trim() ?? 'PENDING';
+  }
+
+  String _localizedOrderStatusLabel(AppLocalizations l10n, String status) {
+    switch (status.toUpperCase()) {
+      case 'PENDING':
+        return l10n.t('home_service_detail.status_requested');
+      case 'CONFIRMED':
+        return l10n.t('home_service_detail.status_confirmed');
+      case 'PROCESSING':
+      case 'DISPATCHED':
+        return l10n.t('home_service_detail.status_on_the_way');
+      case 'IN_PROGRESS':
+        return l10n.t('home_service_detail.status_in_progress');
+      case 'COMPLETED':
+        return l10n.t('home_service_detail.status_completed');
+      default:
+        return status.replaceAll('_', ' ');
+    }
+  }
+
+  List<String> _statusTimelineSteps(String status) {
+    final includesInProgress = status.toUpperCase() == 'IN_PROGRESS';
+    return <String>[
+      'PENDING',
+      'CONFIRMED',
+      'DISPATCHED',
+      if (includesInProgress) 'IN_PROGRESS',
+      'COMPLETED',
+    ];
+  }
+
+  int _statusTimelineIndex(List<String> steps, String status) {
+    final normalized = status.toUpperCase();
+    final index = steps.indexOf(normalized);
+    if (index >= 0) return index;
+    if (normalized == 'PROCESSING') {
+      final dispatched = steps.indexOf('DISPATCHED');
+      if (dispatched >= 0) return dispatched;
+    }
+    return 0;
+  }
+
   Future<void> _callProvider() async {
     final phone = _provider?.contactPhone?.replaceAll(RegExp(r'[^0-9+]'), '');
     if (phone == null || phone.isEmpty) return;
@@ -291,6 +335,9 @@ class _HomeServiceAppointmentDetailScreenState
     );
     final providerPoolCount =
         (metadata['providerPoolIds'] as List<dynamic>?)?.length ?? 0;
+    final orderStatus = _normalizedOrderStatus(order);
+    final statusSteps = _statusTimelineSteps(orderStatus);
+    final currentStatusIndex = _statusTimelineIndex(statusSteps, orderStatus);
     final showDispatchDetails =
         isHouseHelpOrder &&
         (dispatchMode.isNotEmpty ||
@@ -402,7 +449,10 @@ class _HomeServiceAppointmentDetailScreenState
                                     borderRadius: BorderRadius.circular(999),
                                   ),
                                   child: Text(
-                                    order['status']?.toString() ?? 'PENDING',
+                                    _localizedOrderStatusLabel(
+                                      l10n,
+                                      orderStatus,
+                                    ),
                                     style: AppTextStyles.labelSmall.copyWith(
                                       color: AppColors.white,
                                     ),
@@ -430,10 +480,14 @@ class _HomeServiceAppointmentDetailScreenState
                           l10n.t('home_service_detail.price'),
                           '\$${((order['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(0)}',
                         ),
+                        _DetailRow(
+                          l10n.t('order_detail.status'),
+                          _localizedOrderStatusLabel(l10n, orderStatus),
+                        ),
                         if (bookingMode.isNotEmpty)
                           _DetailRow(
                             l10n.t('home_service_detail.mode'),
-                            bookingMode,
+                            l10n.homeServiceDynamicLabel(bookingMode),
                           ),
                         if (scheduledDate.isNotEmpty)
                           _DetailRow(
@@ -451,6 +505,50 @@ class _HomeServiceAppointmentDetailScreenState
                             address,
                           ),
                       ],
+                    ),
+                    const SizedBox(height: 16),
+                    _DetailCard(
+                      title: l10n.t('home_service_detail.status_overview'),
+                      children: statusSteps
+                          .asMap()
+                          .entries
+                          .map((entry) {
+                            final index = entry.key;
+                            final step = entry.value;
+                            final reached = index <= currentStatusIndex;
+                            final isCurrent = index == currentStatusIndex;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    reached
+                                        ? Icons.check_circle_rounded
+                                        : Icons.radio_button_unchecked_rounded,
+                                    size: 18,
+                                    color: reached
+                                        ? AppColors.homeServices
+                                        : AppColors.grey,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      _localizedOrderStatusLabel(l10n, step),
+                                      style: AppTextStyles.bodyMedium.copyWith(
+                                        color: reached
+                                            ? AppColors.dark
+                                            : AppColors.grey,
+                                        fontWeight: isCurrent
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          })
+                          .toList(growable: false),
                     ),
                     if (isHouseHelpOrder) ...[
                       const SizedBox(height: 16),

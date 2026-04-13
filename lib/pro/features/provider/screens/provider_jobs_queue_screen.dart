@@ -6,6 +6,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/contact_launcher.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/utils/pro_message_launcher.dart';
+import 'provider_job_detail_screen.dart';
 
 class ProviderJobsQueueScreen extends StatefulWidget {
   final String userId;
@@ -118,6 +119,21 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
   }
 
   String? _nextStatus(String module, String status) {
+    final normalizedStatus = status.toUpperCase();
+    if (module == 'services') {
+      switch (normalizedStatus) {
+        case 'PENDING':
+          return 'CONFIRMED';
+        case 'CONFIRMED':
+        case 'PROCESSING':
+          return 'DISPATCHED';
+        case 'DISPATCHED':
+        case 'IN_PROGRESS':
+          return 'COMPLETED';
+        default:
+          return null;
+      }
+    }
     switch (status.toUpperCase()) {
       case 'PENDING':
         return 'CONFIRMED';
@@ -134,6 +150,21 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
   }
 
   String _actionLabel(String module, String status) {
+    final normalizedStatus = status.toUpperCase();
+    if (module == 'services') {
+      switch (normalizedStatus) {
+        case 'PENDING':
+          return 'Confirm';
+        case 'CONFIRMED':
+        case 'PROCESSING':
+          return 'On the way';
+        case 'DISPATCHED':
+        case 'IN_PROGRESS':
+          return 'Work done';
+        default:
+          return 'Done';
+      }
+    }
     switch (status.toUpperCase()) {
       case 'PENDING':
         return 'Accept';
@@ -146,6 +177,44 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
         return 'Complete';
       default:
         return 'Done';
+    }
+  }
+
+  String _statusLabel(String module, String status) {
+    final normalizedStatus = status.toUpperCase();
+    if (module == 'services') {
+      switch (normalizedStatus) {
+        case 'PENDING':
+          return 'Pending';
+        case 'CONFIRMED':
+          return 'Confirmed';
+        case 'PROCESSING':
+          return 'On the way';
+        case 'DISPATCHED':
+          return 'On the way';
+        case 'IN_PROGRESS':
+          return 'Work in progress';
+        case 'COMPLETED':
+          return 'Work done';
+        default:
+          return normalizedStatus.replaceAll('_', ' ');
+      }
+    }
+    return normalizedStatus.replaceAll('_', ' ');
+  }
+
+  Future<void> _openDetails(Map<String, dynamic> item) async {
+    await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => ProviderJobDetailScreen(
+          userId: widget.userId,
+          businessName: widget.businessName,
+          queueItem: item,
+        ),
+      ),
+    );
+    if (mounted) {
+      await _loadQueue();
     }
   }
 
@@ -277,7 +346,7 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
               children: [
                 for (final status in ['active', 'completed', 'all'])
                   ChoiceChip(
-                    label: Text(_statusLabel(status)),
+                    label: Text(_queueFilterLabel(status)),
                     selected: _selectedStatus == status,
                     onSelected: (_) => setState(() => _selectedStatus = status),
                   ),
@@ -391,7 +460,7 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
             ],
             const SizedBox(height: 12),
             Text(
-              '${status.replaceAll('_', ' ')}${amount.isEmpty ? '' : ' • $amount'}',
+              '${_statusLabel(module, status)}${amount.isEmpty ? '' : ' • $amount'}',
               style: TextStyle(
                 color: _moduleColor(module),
                 fontWeight: FontWeight.w600,
@@ -402,6 +471,11 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
               spacing: 8,
               runSpacing: 8,
               children: [
+                OutlinedButton.icon(
+                  onPressed: () => _openDetails(item),
+                  icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                  label: const Text('Details'),
+                ),
                 if (customerPhone.isNotEmpty)
                   OutlinedButton.icon(
                     onPressed: () => launchPhoneCall(context, customerPhone),
@@ -463,7 +537,7 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
     }
   }
 
-  String _statusLabel(String status) {
+  String _queueFilterLabel(String status) {
     switch (status) {
       case 'active':
         return 'Active';

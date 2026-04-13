@@ -152,14 +152,30 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   }
 
   String? _nextProviderStatus(String module, String status) {
+    final normalizedStatus = status.toUpperCase();
+    if (module == 'services') {
+      switch (normalizedStatus) {
+        case 'PENDING':
+          return 'CONFIRMED';
+        case 'CONFIRMED':
+        case 'PROCESSING':
+          return 'DISPATCHED';
+        case 'DISPATCHED':
+        case 'IN_PROGRESS':
+          return 'COMPLETED';
+        default:
+          return null;
+      }
+    }
     switch (status.toUpperCase()) {
       case 'PENDING':
         return 'CONFIRMED';
       case 'CONFIRMED':
-        return module == 'laundry' ? 'PROCESSING' : 'IN_PROGRESS';
+        return 'PROCESSING';
       case 'PROCESSING':
-        return module == 'laundry' ? 'DISPATCHED' : 'COMPLETED';
+        return 'DISPATCHED';
       case 'DISPATCHED':
+        return 'IN_PROGRESS';
       case 'IN_PROGRESS':
         return 'COMPLETED';
       default:
@@ -168,19 +184,57 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   }
 
   String _providerActionLabel(String module, String status) {
+    final normalizedStatus = status.toUpperCase();
+    if (module == 'services') {
+      switch (normalizedStatus) {
+        case 'PENDING':
+          return 'Confirm';
+        case 'CONFIRMED':
+        case 'PROCESSING':
+          return 'On the way';
+        case 'DISPATCHED':
+        case 'IN_PROGRESS':
+          return 'Work done';
+        default:
+          return 'Done';
+      }
+    }
     switch (status.toUpperCase()) {
       case 'PENDING':
         return 'Accept';
       case 'CONFIRMED':
-        return module == 'laundry' ? 'Start Cleaning' : 'Start Job';
+        return 'Start Cleaning';
       case 'PROCESSING':
-        return module == 'laundry' ? 'Send Out' : 'Complete';
+        return 'Send Out';
       case 'DISPATCHED':
+        return 'Start Delivery';
       case 'IN_PROGRESS':
         return 'Complete';
       default:
         return 'Done';
     }
+  }
+
+  String _providerStatusLabel(String module, String status) {
+    final normalizedStatus = status.toUpperCase();
+    if (module == 'services') {
+      switch (normalizedStatus) {
+        case 'PENDING':
+          return 'Pending';
+        case 'CONFIRMED':
+          return 'Confirmed';
+        case 'PROCESSING':
+        case 'DISPATCHED':
+          return 'On the way';
+        case 'IN_PROGRESS':
+          return 'Work in progress';
+        case 'COMPLETED':
+          return 'Work done';
+        default:
+          return normalizedStatus.replaceAll('_', ' ');
+      }
+    }
+    return normalizedStatus.replaceAll('_', ' ');
   }
 
   Future<void> _advanceProviderOrder(
@@ -318,7 +372,13 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
     final module = summary.module == 'laundry'
         ? ProModule.laundry
         : ProModule.services;
+    final isServicesSummary = summary.module == 'services';
+    final pendingServiceItems = summary.recentItems
+        .where((item) => item.status.toUpperCase() == 'PENDING')
+        .toList(growable: false);
     final color = ProModuleHelper.getModuleColor(module);
+    final visibleMetrics = summary.metrics.take(3).toList(growable: false);
+    final hiddenMetricCount = summary.metrics.length - visibleMetrics.length;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: ProDesignSystem.spacing12),
@@ -371,12 +431,119 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: ProDesignSystem.spacing12),
-            Wrap(
-              spacing: ProDesignSystem.spacing8,
-              runSpacing: ProDesignSystem.spacing8,
-              children: summary.metrics
-                  .map(
+            if (isServicesSummary) ...[
+              const SizedBox(height: ProDesignSystem.spacing12),
+              if (pendingServiceItems.isEmpty)
+                const Text(
+                  'No pending bookings to accept.',
+                  style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+                )
+              else
+                ...pendingServiceItems
+                    .take(3)
+                    .map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(
+                          bottom: ProDesignSystem.spacing8,
+                        ),
+                        child: ModernCard(
+                          backgroundColor: color.withValues(alpha: 0.06),
+                          borderRadius: ProDesignSystem.radiusMedium,
+                          padding: const EdgeInsets.all(
+                            ProDesignSystem.spacing12,
+                          ),
+                          shadows: const [],
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.title,
+                                style: const TextStyle(
+                                  color: Color(0xFF374151),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              const SizedBox(height: ProDesignSystem.spacing4),
+                              Text(
+                                '${item.subtitle}${item.amount == null || item.amount!.isEmpty ? '' : ' • ${item.amount}'}',
+                                style: const TextStyle(
+                                  color: Color(0xFF6B7280),
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: ProDesignSystem.spacing8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: ProDesignSystem.spacing8,
+                                      vertical: ProDesignSystem.spacing4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: color.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(
+                                        ProDesignSystem.radiusSmall,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      item.status.replaceAll('_', ' '),
+                                      style: TextStyle(
+                                        color: color,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: _busyItemIds.contains(item.id)
+                                        ? null
+                                        : () => _advanceProviderOrder(
+                                            summary,
+                                            item,
+                                          ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: color,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          ProDesignSystem.radiusSmall,
+                                        ),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: ProDesignSystem.spacing12,
+                                        vertical: ProDesignSystem.spacing6,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      _busyItemIds.contains(item.id)
+                                          ? 'Updating...'
+                                          : _providerActionLabel(
+                                              summary.module,
+                                              item.status,
+                                            ),
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+            ] else ...[
+              const SizedBox(height: ProDesignSystem.spacing12),
+              Wrap(
+                spacing: ProDesignSystem.spacing8,
+                runSpacing: ProDesignSystem.spacing8,
+                children: [
+                  ...visibleMetrics.map(
                     (metric) => Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: ProDesignSystem.spacing12,
@@ -398,10 +565,33 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                         ),
                       ),
                     ),
-                  )
-                  .toList(),
-            ),
-            if (summary.recentItems.isNotEmpty) ...[
+                  ),
+                  if (hiddenMetricCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: ProDesignSystem.spacing12,
+                        vertical: ProDesignSystem.spacing6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius: BorderRadius.circular(
+                          ProDesignSystem.radiusMedium,
+                        ),
+                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                      ),
+                      child: Text(
+                        '+$hiddenMetricCount more',
+                        style: const TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+            if (!isServicesSummary && summary.recentItems.isNotEmpty) ...[
               const SizedBox(height: ProDesignSystem.spacing12),
               ...summary.recentItems
                   .take(2)
@@ -464,7 +654,10 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    item.status.replaceAll('_', ' '),
+                                    _providerStatusLabel(
+                                      summary.module,
+                                      item.status,
+                                    ),
                                     style: TextStyle(
                                       color: color,
                                       fontWeight: FontWeight.w600,
@@ -518,29 +711,31 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                     ),
                   ),
             ],
-            const SizedBox(height: ProDesignSystem.spacing16),
-            Row(
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () => context.push(ProRoutePaths.inbox),
-                  icon: const Icon(Icons.chat_bubble_outline),
-                  label: const Text('Inbox'),
-                ),
-                const SizedBox(width: ProDesignSystem.spacing12),
-                ElevatedButton(
-                  onPressed: () {
-                    context.push(
-                      '${ProRoutePaths.providerQueue}?module=${summary.module}',
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: color,
-                    foregroundColor: Colors.white,
+            if (!isServicesSummary) ...[
+              const SizedBox(height: ProDesignSystem.spacing16),
+              Row(
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () => context.push(ProRoutePaths.inbox),
+                    icon: const Icon(Icons.chat_bubble_outline),
+                    label: const Text('Inbox'),
                   ),
-                  child: Text(summary.actionLabel),
-                ),
-              ],
-            ),
+                  const SizedBox(width: ProDesignSystem.spacing12),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.push(
+                        '${ProRoutePaths.providerQueue}?module=${summary.module}',
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: color,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text(summary.actionLabel),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
