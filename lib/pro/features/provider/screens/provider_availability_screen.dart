@@ -56,6 +56,7 @@ class _ProviderAvailabilityScreenState
     'Provider supplies',
     'Customer supplies',
   ];
+  static const List<double> _zoneRadiusOptionsKm = <double>[0.25, 0.5, 0.75, 1];
 
   late Future<Map<String, dynamic>> _availabilityFuture;
   final Set<String> _busyIds = <String>{};
@@ -72,6 +73,28 @@ class _ProviderAvailabilityScreenState
         normalized.contains('househelp') ||
         normalized == 'cleaning' ||
         normalized.contains('maid');
+  }
+
+  String _zoneRadiusLabel(double radiusKm) {
+    if (radiusKm == 1) return '1 km';
+    if ((radiusKm * 10).roundToDouble() == radiusKm * 10) {
+      return '${radiusKm.toStringAsFixed(1)} km';
+    }
+    return '${radiusKm.toStringAsFixed(2)} km';
+  }
+
+  double _normalizeZoneRadius(double radiusKm) {
+    final sorted = [..._zoneRadiusOptionsKm]..sort();
+    var best = sorted.first;
+    var smallestDistance = (radiusKm - best).abs();
+    for (final candidate in sorted.skip(1)) {
+      final distance = (radiusKm - candidate).abs();
+      if (distance < smallestDistance) {
+        best = candidate;
+        smallestDistance = distance;
+      }
+    }
+    return best;
   }
 
   _CategoryListingPreset _presetForCategorySlug(String slug) {
@@ -302,14 +325,6 @@ class _ProviderAvailabilityScreenState
     }
   }
 
-  List<String> _splitValues(String value) {
-    return value
-        .split(RegExp(r'[,\\n]'))
-        .map((entry) => entry.trim())
-        .where((entry) => entry.isNotEmpty)
-        .toList(growable: false);
-  }
-
   Future<Map<String, dynamic>?> _loadProviderSettingById(
     String providerId,
   ) async {
@@ -353,12 +368,34 @@ class _ProviderAvailabilityScreenState
     final contactPhoneController = TextEditingController(
       text: item['contactPhone']?.toString() ?? '',
     );
-    final servicesController = TextEditingController(
-      text: (item['services'] as List<dynamic>? ?? const <dynamic>[])
-          .map((entry) => entry.toString().trim())
-          .where((entry) => entry.isNotEmpty)
-          .join(', '),
+    List<String> mergeOptions(List<String> defaults, List<String> selected) {
+      return <String>{
+        ...defaults.map((entry) => entry.trim()).where((e) => e.isNotEmpty),
+        ...selected.map((entry) => entry.trim()).where((e) => e.isNotEmpty),
+      }.toList(growable: false);
+    }
+
+    final categorySlug = item['categorySlug']?.toString() ?? '';
+    final isHouseHelpCategory = _isHouseHelpLikeCategorySlug(categorySlug);
+    final preset = _presetForCategorySlug(categorySlug);
+    final existingServices =
+        (item['services'] as List<dynamic>? ?? const <dynamic>[])
+            .map((entry) => entry.toString().trim())
+            .where((entry) => entry.isNotEmpty)
+            .toList(growable: false);
+    final serviceOptions = mergeOptions(
+      preset.serviceOptions,
+      existingServices,
     );
+    final selectedServices = <String>{
+      ...existingServices.where((entry) => serviceOptions.contains(entry)),
+    };
+    if (selectedServices.isEmpty && serviceOptions.isNotEmpty) {
+      selectedServices.add(serviceOptions.first);
+    }
+    var draftService = selectedServices.isNotEmpty
+        ? selectedServices.first
+        : serviceOptions.first;
     final serviceZone = Map<String, dynamic>.from(
       (item['serviceZone'] as Map?) ?? const <String, dynamic>{},
     );
@@ -373,44 +410,103 @@ class _ProviderAvailabilityScreenState
         zoneCenter = current;
       }
     }
-    final zoneRadiusController = TextEditingController(
-      text: ((serviceZone['radiusKm'] as num?)?.toDouble() ?? 1).toString(),
+    var selectedZoneRadius = _normalizeZoneRadius(
+      (serviceZone['radiusKm'] as num?)?.toDouble() ?? 1,
     );
-    final categorySlug = item['categorySlug']?.toString() ?? '';
-    final isHouseHelpCategory = _isHouseHelpLikeCategorySlug(categorySlug);
     final houseHelpConfig = Map<String, dynamic>.from(
       (item['houseHelpConfig'] as Map?) ?? const <String, dynamic>{},
     );
-    final bookingTypesController = TextEditingController(
-      text: (houseHelpConfig['bookingTypes'] as List<dynamic>? ?? const [])
-          .map((entry) => entry.toString().trim())
-          .where((entry) => entry.isNotEmpty)
-          .join(', '),
+    final existingBookingTypes =
+        (houseHelpConfig['bookingTypes'] as List<dynamic>? ?? const [])
+            .map((entry) => entry.toString().trim())
+            .where((entry) => entry.isNotEmpty)
+            .toList(growable: false);
+    final bookingTypeOptions = mergeOptions(
+      preset.bookingTypeOptions,
+      existingBookingTypes,
     );
-    final shiftDurationsController = TextEditingController(
-      text: (houseHelpConfig['shiftDurations'] as List<dynamic>? ?? const [])
-          .map((entry) => entry.toString().trim())
-          .where((entry) => entry.isNotEmpty)
-          .join(', '),
+    final selectedBookingTypes = <String>{...existingBookingTypes};
+    if (isHouseHelpCategory &&
+        selectedBookingTypes.isEmpty &&
+        bookingTypeOptions.isNotEmpty) {
+      selectedBookingTypes.add(bookingTypeOptions.first);
+    }
+    var draftBookingType = selectedBookingTypes.isNotEmpty
+        ? selectedBookingTypes.first
+        : (bookingTypeOptions.isNotEmpty ? bookingTypeOptions.first : '');
+
+    final existingShifts =
+        (houseHelpConfig['shiftDurations'] as List<dynamic>? ?? const [])
+            .map((entry) => entry.toString().trim())
+            .where((entry) => entry.isNotEmpty)
+            .toList(growable: false);
+    final shiftOptions = mergeOptions(preset.shiftOptions, existingShifts);
+    final selectedShifts = <String>{...existingShifts};
+    if (isHouseHelpCategory &&
+        selectedShifts.isEmpty &&
+        shiftOptions.isNotEmpty) {
+      selectedShifts.add(shiftOptions.first);
+    }
+    var draftShift = selectedShifts.isNotEmpty
+        ? selectedShifts.first
+        : (shiftOptions.isNotEmpty ? shiftOptions.first : '');
+
+    final existingHomeSizes =
+        (houseHelpConfig['homeSizes'] as List<dynamic>? ?? const [])
+            .map((entry) => entry.toString().trim())
+            .where((entry) => entry.isNotEmpty)
+            .toList(growable: false);
+    final homeSizeOptions = mergeOptions(
+      preset.homeSizeOptions,
+      existingHomeSizes,
     );
-    final homeSizesController = TextEditingController(
-      text: (houseHelpConfig['homeSizes'] as List<dynamic>? ?? const [])
-          .map((entry) => entry.toString().trim())
-          .where((entry) => entry.isNotEmpty)
-          .join(', '),
+    final selectedHomeSizes = <String>{...existingHomeSizes};
+    if (isHouseHelpCategory &&
+        selectedHomeSizes.isEmpty &&
+        homeSizeOptions.isNotEmpty) {
+      selectedHomeSizes.add(homeSizeOptions.first);
+    }
+    var draftHomeSize = selectedHomeSizes.isNotEmpty
+        ? selectedHomeSizes.first
+        : (homeSizeOptions.isNotEmpty ? homeSizeOptions.first : '');
+
+    final existingArrivals =
+        (houseHelpConfig['arrivalTargets'] as List<dynamic>? ?? const [])
+            .map((entry) => entry.toString().trim())
+            .where((entry) => entry.isNotEmpty)
+            .toList(growable: false);
+    final arrivalOptions = mergeOptions(
+      preset.arrivalOptions,
+      existingArrivals,
     );
-    final arrivalTargetsController = TextEditingController(
-      text: (houseHelpConfig['arrivalTargets'] as List<dynamic>? ?? const [])
-          .map((entry) => entry.toString().trim())
-          .where((entry) => entry.isNotEmpty)
-          .join(', '),
+    final selectedArrivals = <String>{...existingArrivals};
+    if (isHouseHelpCategory &&
+        selectedArrivals.isEmpty &&
+        arrivalOptions.isNotEmpty) {
+      selectedArrivals.add(arrivalOptions.last);
+    }
+    var draftArrival = selectedArrivals.isNotEmpty
+        ? selectedArrivals.first
+        : (arrivalOptions.isNotEmpty ? arrivalOptions.last : '');
+
+    final existingSupplyModes =
+        (houseHelpConfig['supplyModes'] as List<dynamic>? ?? const [])
+            .map((entry) => entry.toString().trim())
+            .where((entry) => entry.isNotEmpty)
+            .toList(growable: false);
+    final supplyModeOptions = mergeOptions(
+      preset.supplyModeOptions,
+      existingSupplyModes,
     );
-    final supplyModesController = TextEditingController(
-      text: (houseHelpConfig['supplyModes'] as List<dynamic>? ?? const [])
-          .map((entry) => entry.toString().trim())
-          .where((entry) => entry.isNotEmpty)
-          .join(', '),
-    );
+    final selectedSupplyModes = <String>{...existingSupplyModes};
+    if (isHouseHelpCategory &&
+        selectedSupplyModes.isEmpty &&
+        supplyModeOptions.isNotEmpty) {
+      selectedSupplyModes.add(supplyModeOptions.last);
+    }
+    var draftSupplyMode = selectedSupplyModes.isNotEmpty
+        ? selectedSupplyModes.first
+        : (supplyModeOptions.isNotEmpty ? supplyModeOptions.last : '');
 
     if (!mounted) return;
     final didSave = await showModalBottomSheet<bool>(
@@ -425,22 +521,94 @@ class _ProviderAvailabilityScreenState
         String? errorText;
         return StatefulBuilder(
           builder: (context, setModalState) {
-            Future<void> save() async {
-              final parsedZoneRadius = double.tryParse(
-                zoneRadiusController.text.trim(),
+            Widget multiSelectDropdown({
+              required String label,
+              required List<String> options,
+              required String draftValue,
+              required ValueChanged<String> onDraftChanged,
+              required Set<String> selectedValues,
+              required VoidCallback onAdd,
+              required ValueChanged<String> onRemove,
+            }) {
+              if (options.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              final safeDraft = options.contains(draftValue)
+                  ? draftValue
+                  : options.first;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          key: ValueKey(
+                            '$label|$safeDraft|${options.join('|')}',
+                          ),
+                          isExpanded: true,
+                          initialValue: safeDraft,
+                          decoration: InputDecoration(labelText: label),
+                          items: options
+                              .map(
+                                (entry) => DropdownMenuItem<String>(
+                                  value: entry,
+                                  child: Text(
+                                    entry,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(growable: false),
+                          onChanged: isSaving
+                              ? null
+                              : (value) {
+                                  if (value == null) return;
+                                  onDraftChanged(value);
+                                },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: isSaving ? null : onAdd,
+                        icon: const Icon(Icons.add_circle_outline_rounded),
+                        tooltip: 'Add',
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: selectedValues
+                        .map(
+                          (value) => Chip(
+                            label: Text(value),
+                            onDeleted: isSaving ? null : () => onRemove(value),
+                          ),
+                        )
+                        .toList(growable: false),
+                  ),
+                ],
               );
-              if (parsedZoneRadius == null ||
-                  parsedZoneRadius <= 0 ||
-                  parsedZoneRadius > 1) {
+            }
+
+            Future<void> save() async {
+              if (selectedServices.isEmpty) {
                 setModalState(() {
-                  errorText = 'Zone radius must be between 0.1 and 1 km.';
+                  errorText = 'Add at least one offered service.';
                 });
                 return;
               }
-              final services = _splitValues(servicesController.text);
-              if (services.isEmpty) {
+              if (isHouseHelpCategory &&
+                  (selectedBookingTypes.isEmpty ||
+                      selectedShifts.isEmpty ||
+                      selectedArrivals.isEmpty ||
+                      selectedHomeSizes.isEmpty ||
+                      selectedSupplyModes.isEmpty)) {
                 setModalState(() {
-                  errorText = 'Add at least one offered service.';
+                  errorText =
+                      'Complete house-help criteria using the dedicated fields.';
                 });
                 return;
               }
@@ -453,25 +621,23 @@ class _ProviderAvailabilityScreenState
                 final payload = <String, dynamic>{
                   'providerId': providerId,
                   'contactPhone': contactPhoneController.text.trim(),
-                  'services': services,
+                  'services': selectedServices.toList(growable: false),
                   'serviceZone': {
                     'enabled': true,
                     'centerLatitude': zoneCenter.latitude,
                     'centerLongitude': zoneCenter.longitude,
-                    'radiusKm': parsedZoneRadius,
+                    'radiusKm': selectedZoneRadius,
                   },
                 };
                 if (isHouseHelpCategory) {
                   payload['houseHelpConfig'] = {
-                    'bookingTypes': _splitValues(bookingTypesController.text),
-                    'shiftDurations': _splitValues(
-                      shiftDurationsController.text,
+                    'bookingTypes': selectedBookingTypes.toList(
+                      growable: false,
                     ),
-                    'homeSizes': _splitValues(homeSizesController.text),
-                    'arrivalTargets': _splitValues(
-                      arrivalTargetsController.text,
-                    ),
-                    'supplyModes': _splitValues(supplyModesController.text),
+                    'shiftDurations': selectedShifts.toList(growable: false),
+                    'homeSizes': selectedHomeSizes.toList(growable: false),
+                    'arrivalTargets': selectedArrivals.toList(growable: false),
+                    'supplyModes': selectedSupplyModes.toList(growable: false),
                   };
                 }
                 await ApiClient.post(
@@ -516,64 +682,91 @@ class _ProviderAvailabilityScreenState
                       decoration: const InputDecoration(labelText: 'Phone'),
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
-                      controller: servicesController,
-                      minLines: 2,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Offered services',
-                        hintText: 'Room Cleaning, Kitchen Cleaning',
-                      ),
+                    multiSelectDropdown(
+                      label: 'Offered services',
+                      options: serviceOptions,
+                      draftValue: draftService,
+                      onDraftChanged: (value) =>
+                          setModalState(() => draftService = value),
+                      selectedValues: selectedServices,
+                      onAdd: () => setModalState(() {
+                        selectedServices.add(draftService);
+                      }),
+                      onRemove: (value) =>
+                          setModalState(() => selectedServices.remove(value)),
                     ),
                     if (isHouseHelpCategory) ...[
                       const SizedBox(height: 12),
-                      TextFormField(
-                        controller: bookingTypesController,
-                        minLines: 1,
-                        maxLines: 2,
-                        decoration: const InputDecoration(
-                          labelText: 'Booking types',
-                          hintText: 'One-time job, Daily recurring',
+                      multiSelectDropdown(
+                        label: 'Booking types',
+                        options: bookingTypeOptions,
+                        draftValue: draftBookingType,
+                        onDraftChanged: (value) =>
+                            setModalState(() => draftBookingType = value),
+                        selectedValues: selectedBookingTypes,
+                        onAdd: () => setModalState(() {
+                          selectedBookingTypes.add(draftBookingType);
+                        }),
+                        onRemove: (value) => setModalState(
+                          () => selectedBookingTypes.remove(value),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      TextFormField(
-                        controller: shiftDurationsController,
-                        minLines: 1,
-                        maxLines: 2,
-                        decoration: const InputDecoration(
-                          labelText: 'Shift durations',
-                          hintText: '2 hours, 4 hours, 8 hours',
+                      multiSelectDropdown(
+                        label: 'Shift durations',
+                        options: shiftOptions,
+                        draftValue: draftShift,
+                        onDraftChanged: (value) =>
+                            setModalState(() => draftShift = value),
+                        selectedValues: selectedShifts,
+                        onAdd: () => setModalState(() {
+                          selectedShifts.add(draftShift);
+                        }),
+                        onRemove: (value) =>
+                            setModalState(() => selectedShifts.remove(value)),
+                      ),
+                      const SizedBox(height: 12),
+                      multiSelectDropdown(
+                        label: 'Home sizes',
+                        options: homeSizeOptions,
+                        draftValue: draftHomeSize,
+                        onDraftChanged: (value) =>
+                            setModalState(() => draftHomeSize = value),
+                        selectedValues: selectedHomeSizes,
+                        onAdd: () => setModalState(() {
+                          selectedHomeSizes.add(draftHomeSize);
+                        }),
+                        onRemove: (value) => setModalState(
+                          () => selectedHomeSizes.remove(value),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      TextFormField(
-                        controller: homeSizesController,
-                        minLines: 1,
-                        maxLines: 2,
-                        decoration: const InputDecoration(
-                          labelText: 'Home sizes',
-                          hintText: 'F2, F3, F4',
-                        ),
+                      multiSelectDropdown(
+                        label: 'Arrival targets',
+                        options: arrivalOptions,
+                        draftValue: draftArrival,
+                        onDraftChanged: (value) =>
+                            setModalState(() => draftArrival = value),
+                        selectedValues: selectedArrivals,
+                        onAdd: () => setModalState(() {
+                          selectedArrivals.add(draftArrival);
+                        }),
+                        onRemove: (value) =>
+                            setModalState(() => selectedArrivals.remove(value)),
                       ),
                       const SizedBox(height: 12),
-                      TextFormField(
-                        controller: arrivalTargetsController,
-                        minLines: 1,
-                        maxLines: 2,
-                        decoration: const InputDecoration(
-                          labelText: 'Arrival targets',
-                          hintText: 'Within 30 min, Scheduled slot',
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: supplyModesController,
-                        minLines: 1,
-                        maxLines: 2,
-                        decoration: const InputDecoration(
-                          labelText: 'Supply modes',
-                          hintText: 'Provider supplies, Customer supplies',
+                      multiSelectDropdown(
+                        label: 'Supply modes',
+                        options: supplyModeOptions,
+                        draftValue: draftSupplyMode,
+                        onDraftChanged: (value) =>
+                            setModalState(() => draftSupplyMode = value),
+                        selectedValues: selectedSupplyModes,
+                        onAdd: () => setModalState(() {
+                          selectedSupplyModes.add(draftSupplyMode);
+                        }),
+                        onRemove: (value) => setModalState(
+                          () => selectedSupplyModes.remove(value),
                         ),
                       ),
                     ],
@@ -625,14 +818,27 @@ class _ProviderAvailabilityScreenState
                         label: const Text('Use current location'),
                       ),
                     ),
-                    TextFormField(
-                      controller: zoneRadiusController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
+                    DropdownButtonFormField<double>(
+                      key: ValueKey('zone-radius-edit|$selectedZoneRadius'),
+                      isExpanded: true,
+                      initialValue: selectedZoneRadius,
                       decoration: const InputDecoration(
-                        labelText: 'Zone radius (km, max 1)',
+                        labelText: 'Zone radius',
                       ),
+                      items: _zoneRadiusOptionsKm
+                          .map(
+                            (radius) => DropdownMenuItem<double>(
+                              value: radius,
+                              child: Text(_zoneRadiusLabel(radius)),
+                            ),
+                          )
+                          .toList(growable: false),
+                      onChanged: isSaving
+                          ? null
+                          : (value) {
+                              if (value == null) return;
+                              setModalState(() => selectedZoneRadius = value);
+                            },
                     ),
                     if (errorText != null) ...[
                       const SizedBox(height: 12),
@@ -756,7 +962,7 @@ class _ProviderAvailabilityScreenState
     );
     final startingPriceController = TextEditingController(text: '25');
     final phoneController = TextEditingController();
-    final zoneRadiusController = TextEditingController(text: '1');
+    var selectedZoneRadius = _zoneRadiusOptionsKm.last;
     final selectedServices = <String>{
       if (selectedPreset.serviceOptions.isNotEmpty)
         selectedPreset.serviceOptions.first,
@@ -899,18 +1105,6 @@ class _ProviderAvailabilityScreenState
                 });
                 return;
               }
-              final parsedZoneRadius = double.tryParse(
-                zoneRadiusController.text.trim(),
-              );
-              if (parsedZoneRadius == null ||
-                  parsedZoneRadius <= 0 ||
-                  parsedZoneRadius > 1) {
-                setModalState(() {
-                  errorText =
-                      'Zone radius must be between 0.1 and 1 km for house-help matching.';
-                });
-                return;
-              }
               if (selectedServices.isEmpty) {
                 setModalState(() {
                   errorText = 'Select at least one service.';
@@ -947,7 +1141,7 @@ class _ProviderAvailabilityScreenState
                     'enabled': true,
                     'centerLatitude': zoneCenter.latitude,
                     'centerLongitude': zoneCenter.longitude,
-                    'radiusKm': parsedZoneRadius,
+                    'radiusKm': selectedZoneRadius,
                   },
                 };
                 if (isHouseHelpCategory) {
@@ -1262,14 +1456,27 @@ class _ProviderAvailabilityScreenState
                         label: const Text('Use current location'),
                       ),
                     ),
-                    TextFormField(
-                      controller: zoneRadiusController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
+                    DropdownButtonFormField<double>(
+                      key: ValueKey('zone-radius-create|$selectedZoneRadius'),
+                      isExpanded: true,
+                      initialValue: selectedZoneRadius,
                       decoration: const InputDecoration(
-                        labelText: 'Zone radius (km, max 1)',
+                        labelText: 'Zone radius',
                       ),
+                      items: _zoneRadiusOptionsKm
+                          .map(
+                            (radius) => DropdownMenuItem<double>(
+                              value: radius,
+                              child: Text(_zoneRadiusLabel(radius)),
+                            ),
+                          )
+                          .toList(growable: false),
+                      onChanged: isSaving
+                          ? null
+                          : (value) {
+                              if (value == null) return;
+                              setModalState(() => selectedZoneRadius = value);
+                            },
                     ),
                     if (errorText != null) ...[
                       const SizedBox(height: 12),
@@ -1559,15 +1766,17 @@ class _AvailabilityItemsList extends StatelessWidget {
                     onPressed: isBusy ? null : () => onEdit!(id),
                     icon: const Icon(Icons.edit_outlined, size: 20),
                     tooltip: 'Edit listing',
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints.tightFor(
-                      width: 36,
-                      height: 36,
+                    style: IconButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(32, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
                     ),
                   ),
                 Switch(
                   value: enabled,
                   onChanged: isBusy ? null : (value) => onToggle(id, value),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
               ],
             ),

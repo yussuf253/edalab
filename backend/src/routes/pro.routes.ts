@@ -4830,13 +4830,20 @@ router.get(
         const normalizedServices = normalizeStringList(provider.servicesJson).filter(
           (service) => service.trim().length > 0,
         );
+        const orderedServices = [...normalizedServices].reverse();
+        const overflowCount = Math.max(0, orderedServices.length - 5);
+        const detailsParts = orderedServices.slice(1, 5);
+        if (overflowCount > 0) {
+          detailsParts.push(`+${overflowCount} more`);
+        }
         return {
           id: provider.id,
-          name: normalizedServices[0] ?? 'Service Listing',
-          details:
-            normalizedServices.length > 1
-              ? normalizedServices.slice(1, 4).join(' • ')
-              : null,
+          name:
+            orderedServices[0] ||
+            provider.title?.trim() ||
+            provider.name?.trim() ||
+            'Service Listing',
+          details: detailsParts.isNotEmpty ? detailsParts.join(' • ') : null,
           enabled: provider.isAvailable,
         };
       }),

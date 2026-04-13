@@ -287,10 +287,6 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                     onOpenSchedule: _openSchedule,
                     onOpenAvailability: _openAvailability,
                   ),
-                  if (data?.scopeNote?.isNotEmpty == true) ...[
-                    const SizedBox(height: ProDesignSystem.spacing16),
-                    _ScopeNote(message: data!.scopeNote!),
-                  ],
                   const SizedBox(height: ProDesignSystem.spacing16),
                   _ProviderSnapshotStrip(
                     totalRequests: totalRequests,
@@ -552,24 +548,6 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   }
 }
 
-class _ScopeNote extends StatelessWidget {
-  final String message;
-
-  const _ScopeNote({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.infoLight,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(message),
-    );
-  }
-}
-
 class _ProviderPipelineHero extends StatelessWidget {
   final String businessName;
   final String? headline;
@@ -654,6 +632,12 @@ class _ProviderPipelineHero extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
                     side: const BorderSide(color: Colors.white54),
+                    minimumSize: const Size.fromHeight(40),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                    visualDensity: VisualDensity.compact,
                   ),
                 ),
               ),
@@ -662,10 +646,16 @@ class _ProviderPipelineHero extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: onOpenAvailability,
                   icon: const Icon(Icons.tune),
-                  label: const Text('Availability'),
+                  label: const Text('Services'),
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: AppColors.homeServices,
+                    minimumSize: const Size.fromHeight(40),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
+                    visualDensity: VisualDensity.compact,
                   ),
                 ),
               ),
