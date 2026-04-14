@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/pro_message_launcher.dart';
+import '../widgets/provider_job_location_map.dart';
 
 class ProviderJobDetailScreen extends StatefulWidget {
   final String userId;
@@ -220,6 +222,21 @@ class _ProviderJobDetailScreenState extends State<ProviderJobDetailScreen> {
     return items.join(', ');
   }
 
+  double? _toDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '');
+  }
+
+  LatLng? _serviceLocation(Map<String, dynamic> metadata) {
+    final serviceLocationRaw = metadata['serviceLocation'];
+    if (serviceLocationRaw is! Map) return null;
+    final serviceLocation = Map<String, dynamic>.from(serviceLocationRaw);
+    final latitude = _toDouble(serviceLocation['latitude']);
+    final longitude = _toDouble(serviceLocation['longitude']);
+    if (latitude == null || longitude == null) return null;
+    return LatLng(latitude, longitude);
+  }
+
   List<String> _statusSteps(String module) {
     if (module == 'services') {
       return const ['PENDING', 'CONFIRMED', 'DISPATCHED', 'COMPLETED'];
@@ -315,6 +332,7 @@ class _ProviderJobDetailScreenState extends State<ProviderJobDetailScreen> {
     final notes = _detail?['notes']?.toString().trim().isNotEmpty == true
         ? _detail!['notes'].toString().trim()
         : widget.queueItem['notes']?.toString().trim() ?? '';
+    final serviceLocation = _serviceLocation(metadata);
 
     final steps = _statusSteps(module);
     final currentStepIndex = _statusIndex(steps, status);
@@ -437,6 +455,29 @@ class _ProviderJobDetailScreenState extends State<ProviderJobDetailScreen> {
                       ),
                     ),
                   ),
+                  if (serviceLocation != null) ...[
+                    const SizedBox(height: 10),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Service location',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            const SizedBox(height: 10),
+                            ProviderJobLocationMap(
+                              serviceLocation: serviceLocation,
+                              customerName: customerName,
+                              distanceKmHint: distanceKm?.toDouble(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                   if (bookingFormat.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     Card(

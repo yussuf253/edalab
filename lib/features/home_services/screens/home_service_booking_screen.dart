@@ -13,6 +13,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../widgets/house_help_booking_map.dart';
 
 class HomeServiceBookingScreen extends StatefulWidget {
   final String providerId;
@@ -762,6 +763,21 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                           _selectedService < serviceOptionsRaw.length
                           ? _selectedService
                           : 0;
+                      final mapProviders = _isZoneDispatchRoute
+                          ? (hasNearbyProviders
+                                ? _zonePoolProviders
+                                : fallbackVisibleProviders)
+                          : <HomeServiceProviderModel>[provider];
+                      final selectedMapProviderId = _isZoneDispatchRoute
+                          ? (hasNearbyProviders
+                                ? (_zonePoolProviders.isNotEmpty
+                                      ? _zonePoolProviders.first.id
+                                      : null)
+                                : (_selectedFallbackProviderId ??
+                                      (fallbackVisibleProviders.isNotEmpty
+                                          ? fallbackVisibleProviders.first.id
+                                          : null)))
+                          : provider.id;
                       final selectedDateIndex = _selectedDate.clamp(
                         0,
                         _dateOptions.length - 1,
@@ -783,6 +799,10 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               providerSupplies: _houseHelpBringSupplies,
                             )
                           : provider.startingPrice;
+                      final userName = auth.user?.fullName.trim() ?? '';
+                      final userDisplayName = userName.isEmpty
+                          ? 'Your location'
+                          : userName;
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -992,35 +1012,23 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                             ),
                             const SizedBox(height: 24),
                           ],
-                          if (isHouseHelp && _isZoneDispatchRoute) ...[
+                          if (isHouseHelp &&
+                              _isZoneDispatchRoute &&
+                              !hasNearbyProviders) ...[
                             Container(
                               width: double.infinity,
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: hasNearbyProviders
-                                    ? AppColors.homeServicesBg
-                                    : const Color(0xFFFFF4E5),
+                                color: const Color(0xFFFFF4E5),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: hasNearbyProviders
-                                      ? AppColors.homeServices.withValues(
-                                          alpha: 0.35,
-                                        )
-                                      : const Color(0xFFFFC86E),
+                                  color: const Color(0xFFFFC86E),
                                 ),
                               ),
                               child: Text(
-                                hasNearbyProviders
-                                    ? l10n.t(
-                                        'home_service_booking.zone_nearby_found',
-                                        params: {
-                                          'count':
-                                              '${_zonePoolProviders.length}',
-                                        },
-                                      )
-                                    : l10n.t(
-                                        'home_service_booking.zone_nearby_missing',
-                                      ),
+                                l10n.t(
+                                  'home_service_booking.zone_nearby_missing',
+                                ),
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.dark,
                                   fontWeight: FontWeight.w600,
@@ -1028,8 +1036,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               ),
                             ),
                             const SizedBox(height: 14),
-                            if (!hasNearbyProviders &&
-                                _zoneFallbackProviders.isNotEmpty) ...[
+                            if (_zoneFallbackProviders.isNotEmpty) ...[
                               Text(
                                 l10n.t(
                                   'home_service_booking.zone_fallback_title',
@@ -1487,40 +1494,12 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                           if (selectedLatitude != null &&
                               selectedLongitude != null) ...[
                             const SizedBox(height: 12),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(14),
-                              child: SizedBox(
-                                height: 168,
-                                width: double.infinity,
-                                child: GoogleMap(
-                                  initialCameraPosition: CameraPosition(
-                                    target: LatLng(
-                                      selectedLatitude,
-                                      selectedLongitude,
-                                    ),
-                                    zoom: 15.2,
-                                  ),
-                                  markers: {
-                                    Marker(
-                                      markerId: const MarkerId(
-                                        'selected-address',
-                                      ),
-                                      position: LatLng(
-                                        selectedLatitude,
-                                        selectedLongitude,
-                                      ),
-                                    ),
-                                  },
-                                  zoomControlsEnabled: false,
-                                  myLocationButtonEnabled: false,
-                                  mapToolbarEnabled: false,
-                                  rotateGesturesEnabled: false,
-                                  scrollGesturesEnabled: false,
-                                  tiltGesturesEnabled: false,
-                                  zoomGesturesEnabled: false,
-                                  liteModeEnabled: true,
-                                ),
-                              ),
+                            HouseHelpBookingMap(
+                              selectedLatitude: selectedLatitude,
+                              selectedLongitude: selectedLongitude,
+                              providers: mapProviders,
+                              selectedProviderId: selectedMapProviderId,
+                              userDisplayName: userDisplayName,
                             ),
                           ],
                           const SizedBox(height: 24),

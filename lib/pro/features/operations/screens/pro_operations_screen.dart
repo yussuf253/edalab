@@ -53,6 +53,10 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
     return context.push(route);
   }
 
+  bool _providerHasModule(ProProfile profile, ProModule module) {
+    return profile.activeModules.contains(module);
+  }
+
   List<_OperationAction> _buildActions(ProProfile profile) {
     switch (profile.type) {
       case ProProfileType.shop:
@@ -103,17 +107,29 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
           ),
         ];
       case ProProfileType.provider:
-        return [
+        final hasServices = _providerHasModule(profile, ProModule.services);
+        final hasLaundry = _providerHasModule(profile, ProModule.laundry);
+        final queueSubtitle = hasServices && hasLaundry
+            ? 'Review service bookings and laundry jobs.'
+            : hasLaundry
+            ? 'Review your laundry jobs.'
+            : 'Review your service bookings.';
+        final availabilitySubtitle = hasServices && hasLaundry
+            ? 'Control which provider and laundry lanes are open.'
+            : hasLaundry
+            ? 'Control which laundry lanes are open.'
+            : 'Control which service lanes are open.';
+        final actions = <_OperationAction>[
           _OperationAction(
             title: 'Jobs Queue',
-            subtitle: 'Review service bookings and laundry jobs.',
+            subtitle: queueSubtitle,
             icon: Icons.work_outline,
             color: AppColors.homeServices,
             onTap: () => _open(ProRoutePaths.providerQueue),
           ),
           _OperationAction(
             title: 'Availability',
-            subtitle: 'Control which provider and laundry lanes are open.',
+            subtitle: availabilitySubtitle,
             icon: Icons.toggle_on_outlined,
             color: AppColors.info,
             onTap: () => _open(ProRoutePaths.providerAvailability),
@@ -125,22 +141,32 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             color: AppColors.warning,
             onTap: () => _open(ProRoutePaths.providerSchedule),
           ),
-          _OperationAction(
-            title: 'Services Only',
-            subtitle: 'Open the home services queue directly.',
-            icon: Icons.home_repair_service_outlined,
-            color: AppColors.homeServices,
-            onTap: () =>
-                _open('${ProRoutePaths.providerQueue}?module=services'),
-          ),
-          _OperationAction(
-            title: 'Laundry Only',
-            subtitle: 'Open the laundry pipeline directly.',
-            icon: Icons.local_laundry_service_outlined,
-            color: AppColors.laundry,
-            onTap: () => _open('${ProRoutePaths.providerQueue}?module=laundry'),
-          ),
         ];
+        if (hasServices) {
+          actions.add(
+            _OperationAction(
+              title: 'Services Only',
+              subtitle: 'Open the home services queue directly.',
+              icon: Icons.home_repair_service_outlined,
+              color: AppColors.homeServices,
+              onTap: () =>
+                  _open('${ProRoutePaths.providerQueue}?module=services'),
+            ),
+          );
+        }
+        if (hasLaundry) {
+          actions.add(
+            _OperationAction(
+              title: 'Laundry Only',
+              subtitle: 'Open the laundry pipeline directly.',
+              icon: Icons.local_laundry_service_outlined,
+              color: AppColors.laundry,
+              onTap: () =>
+                  _open('${ProRoutePaths.providerQueue}?module=laundry'),
+            ),
+          );
+        }
+        return actions;
       case ProProfileType.doctor:
         return [
           _OperationAction(
@@ -270,6 +296,26 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             ProProfileType.rider => const <_OperationAction>[],
           };
 
+          final allowedProviderModules =
+              widget.profile.type != ProProfileType.provider
+              ? const <String>{}
+              : <String>{
+                  if (_providerHasModule(widget.profile, ProModule.services))
+                    'services',
+                  if (_providerHasModule(widget.profile, ProModule.laundry))
+                    'laundry',
+                };
+          final visibleSummaries = data == null
+              ? const <ProDashboardModuleSummary>[]
+              : widget.profile.type == ProProfileType.provider
+              ? data.moduleSummaries
+                    .where(
+                      (summary) =>
+                          allowedProviderModules.contains(summary.module),
+                    )
+                    .toList(growable: false)
+              : data.moduleSummaries;
+
           return RefreshIndicator(
             onRefresh: _refresh,
             child: ListView(
@@ -311,7 +357,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
                     ),
                   ),
                 ],
-                if (data?.moduleSummaries.isNotEmpty == true) ...[
+                if (visibleSummaries.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text(
                     _workstreamTitle(type),
@@ -320,7 +366,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  ...data!.moduleSummaries.map(
+                  ...visibleSummaries.map(
                     (summary) => Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _ModuleSummaryCard(summary: summary),

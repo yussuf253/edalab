@@ -110,6 +110,20 @@ function metadataRecord(value) {
     }
     return {};
 }
+function normalizeStringList(value) {
+    if (!Array.isArray(value))
+        return [];
+    return value
+        .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
+        .filter((entry) => entry.length > 0);
+}
+function bindingsProviderIds(value) {
+    if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+        return [];
+    }
+    const map = value;
+    return normalizeStringList(map.providerIds);
+}
 function firstImageFromJson(value) {
     if (!Array.isArray(value))
         return null;
@@ -567,6 +581,61 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
         moduleType: order.moduleType,
         moduleName: primaryLabel,
     });
+    const serviceRequestModule = order.moduleType === client_1.ModuleType.HOME_SERVICES ||
+        order.moduleType === client_1.ModuleType.HOUSE_HELP;
+    if (serviceRequestModule) {
+        const firstItem = order.items[0];
+        const firstMetadata = firstItem
+            ? enrichOrderItemMetadata(firstItem)
+            : {};
+        const poolProviderIds = normalizeStringList(firstMetadata.providerPoolIds);
+        const metadataProviderId = typeof firstMetadata.providerId === 'string'
+            ? firstMetadata.providerId.trim()
+            : '';
+        const directProviderId = firstItem?.externalRefId?.trim() || metadataProviderId;
+        const targetProviderIds = Array.from(new Set([
+            ...(directProviderId.length > 0 ? [directProviderId] : []),
+            ...poolProviderIds,
+        ]));
+        if (targetProviderIds.length > 0) {
+            const providerProfiles = await db_1.prisma.proProfile.findMany({
+                where: {
+                    type: client_1.ProProfileType.PROVIDER,
+                    activeModules: { has: client_1.ProModule.SERVICES },
+                },
+                select: {
+                    userId: true,
+                    bindings: true,
+                },
+            });
+            const recipientUserIds = Array.from(new Set(providerProfiles
+                .filter((profile) => {
+                const boundProviderIds = bindingsProviderIds(profile.bindings);
+                return boundProviderIds.some((id) => targetProviderIds.includes(id));
+            })
+                .map((profile) => profile.userId)
+                .filter((id) => id.trim().length > 0)));
+            await Promise.allSettled(recipientUserIds.map((providerUserId) => (0, notifications_1.createBackendNotification)({
+                userId: providerUserId,
+                type: client_1.NotificationType.SYSTEM,
+                module: client_1.NotificationModule.HOME_SERVICES,
+                title: order.moduleType === client_1.ModuleType.HOUSE_HELP
+                    ? 'New house-help request'
+                    : 'New home-service request',
+                body: order.moduleType === client_1.ModuleType.HOUSE_HELP
+                    ? 'A nearby house-help booking is waiting for provider action.'
+                    : 'A new service booking is waiting for provider action.',
+                route: '/pro/provider/queue?module=services',
+                dedupeKey: `provider-request:${order.id}:${providerUserId}`,
+                metadata: {
+                    orderId: order.id,
+                    moduleType: order.moduleType,
+                    source: 'order_created',
+                    queueType: poolProviderIds.length > 0 ? 'open' : 'assigned',
+                },
+            })));
+        }
+    }
     res.status(201).json({
         id: order.id,
         userId: order.userId,

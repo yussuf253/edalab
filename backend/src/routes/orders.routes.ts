@@ -1,15 +1,22 @@
 import {
   HotelBookingStatus,
   ModuleType,
+  NotificationModule,
+  NotificationType,
   OrderStatus,
   Prisma,
+  ProModule,
+  ProProfileType,
 } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
-import { createOrderCreatedNotification } from '../utils/notifications';
+import {
+  createBackendNotification,
+  createOrderCreatedNotification,
+} from '../utils/notifications';
 import { toNumber } from '../utils/serializers';
 
 const router = Router();
@@ -142,6 +149,21 @@ function metadataRecord(value: Prisma.JsonValue | null | undefined) {
     return { ...(value as Record<string, unknown>) };
   }
   return {} as Record<string, unknown>;
+}
+
+function normalizeStringList(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
+    .filter((entry): entry is string => entry.length > 0);
+}
+
+function bindingsProviderIds(value: unknown) {
+  if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+    return [];
+  }
+  const map = value as Record<string, unknown>;
+  return normalizeStringList(map.providerIds);
 }
 
 function firstImageFromJson(value: Prisma.JsonValue | null | undefined) {
@@ -692,6 +714,84 @@ router.post(
       moduleType: order.moduleType,
       moduleName: primaryLabel,
     });
+
+    const serviceRequestModule =
+      order.moduleType === ModuleType.HOME_SERVICES ||
+      order.moduleType === ModuleType.HOUSE_HELP;
+
+    if (serviceRequestModule) {
+      const firstItem = order.items[0];
+      const firstMetadata = firstItem
+        ? enrichOrderItemMetadata(firstItem)
+        : ({} as Record<string, unknown>);
+      const poolProviderIds = normalizeStringList(firstMetadata.providerPoolIds);
+      const metadataProviderId =
+        typeof firstMetadata.providerId === 'string'
+          ? firstMetadata.providerId.trim()
+          : '';
+      const directProviderId =
+        firstItem?.externalRefId?.trim() || metadataProviderId;
+
+      const targetProviderIds = Array.from(
+        new Set([
+          ...(directProviderId.length > 0 ? [directProviderId] : []),
+          ...poolProviderIds,
+        ]),
+      );
+
+      if (targetProviderIds.length > 0) {
+        const providerProfiles = await prisma.proProfile.findMany({
+          where: {
+            type: ProProfileType.PROVIDER,
+            activeModules: { has: ProModule.SERVICES },
+          },
+          select: {
+            userId: true,
+            bindings: true,
+          },
+        });
+
+        const recipientUserIds = Array.from(
+          new Set(
+            providerProfiles
+              .filter((profile) => {
+                const boundProviderIds = bindingsProviderIds(profile.bindings);
+                return boundProviderIds.some((id) =>
+                  targetProviderIds.includes(id),
+                );
+              })
+              .map((profile) => profile.userId)
+              .filter((id) => id.trim().length > 0),
+          ),
+        );
+
+        await Promise.allSettled(
+          recipientUserIds.map((providerUserId) =>
+            createBackendNotification({
+              userId: providerUserId,
+              type: NotificationType.SYSTEM,
+              module: NotificationModule.HOME_SERVICES,
+              title:
+                order.moduleType === ModuleType.HOUSE_HELP
+                  ? 'New house-help request'
+                  : 'New home-service request',
+              body:
+                order.moduleType === ModuleType.HOUSE_HELP
+                  ? 'A nearby house-help booking is waiting for provider action.'
+                  : 'A new service booking is waiting for provider action.',
+              route: '/pro/provider/queue?module=services',
+              dedupeKey: `provider-request:${order.id}:${providerUserId}`,
+              metadata: {
+                orderId: order.id,
+                moduleType: order.moduleType,
+                source: 'order_created',
+                queueType: poolProviderIds.length > 0 ? 'open' : 'assigned',
+              },
+            }),
+          ),
+        );
+      }
+    }
 
     res.status(201).json({
       id: order.id,
