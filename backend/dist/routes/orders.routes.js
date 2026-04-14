@@ -625,7 +625,7 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
                 body: order.moduleType === client_1.ModuleType.HOUSE_HELP
                     ? 'A nearby house-help booking is waiting for provider action.'
                     : 'A new service booking is waiting for provider action.',
-                route: '/pro/provider/queue?module=services',
+                route: `/pro/provider/job/${order.id}`,
                 dedupeKey: `provider-request:${order.id}:${providerUserId}`,
                 metadata: {
                     orderId: order.id,

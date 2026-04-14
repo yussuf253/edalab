@@ -33,6 +33,7 @@ Future<void> main() async {
   await notificationProvider.syncProSession(
     userId: proAuthProvider.currentProfile?.userId,
   );
+  PushNotificationService.setRouteOpener(openProAppRoute);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

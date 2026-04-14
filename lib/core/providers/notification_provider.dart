@@ -183,6 +183,7 @@ class NotificationProvider extends ChangeNotifier {
             ? _defaultInbox()
             : AppNotificationModel.decodeList(raw),
       );
+    _deduplicateInMemory();
     _notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     _isLoading = false;
     await _persist();
@@ -295,12 +296,11 @@ class NotificationProvider extends ChangeNotifier {
         notification.module == NotificationModule.ride) {
       return false;
     }
-    if (allowDuplicate || notification.dedupeKey == null) {
+    final dedupeKey = notification.dedupeKey?.trim();
+    if (allowDuplicate || dedupeKey == null || dedupeKey.isEmpty) {
       return true;
     }
-    return !_notifications.any(
-      (item) => item.dedupeKey == notification.dedupeKey,
-    );
+    return !_notifications.any((item) => item.dedupeKey?.trim() == dedupeKey);
   }
 
   List<AppNotificationModel> _mergeNotifications(
@@ -308,21 +308,25 @@ class NotificationProvider extends ChangeNotifier {
   ) {
     final existingIds = _notifications.map((item) => item.id).toSet();
     final existingDedupeKeys = _notifications
-        .map((item) => item.dedupeKey)
+        .map((item) => item.dedupeKey?.trim())
         .whereType<String>()
+        .where((key) => key.isNotEmpty)
         .toSet();
     final mergedById = {for (final item in _notifications) item.id: item};
     final mergedByDedupe = {
       for (final item in _notifications)
-        if (item.dedupeKey != null) item.dedupeKey!: item.id,
+        if (item.dedupeKey?.trim().isNotEmpty == true)
+          item.dedupeKey!.trim(): item.id,
     };
 
     final added = <AppNotificationModel>[];
     for (final remote in remoteItems) {
       final existingId = mergedById[remote.id]?.id;
-      final existingDedupeId = remote.dedupeKey == null
+      final remoteDedupeKey = remote.dedupeKey?.trim();
+      final existingDedupeId =
+          remoteDedupeKey == null || remoteDedupeKey.isEmpty
           ? null
-          : mergedByDedupe[remote.dedupeKey!];
+          : mergedByDedupe[remoteDedupeKey];
 
       if (existingId != null) {
         mergedById[remote.id] = _prefer(remote, mergedById[remote.id]!);
@@ -334,27 +338,62 @@ class NotificationProvider extends ChangeNotifier {
         if (local != null) {
           mergedById.remove(existingDedupeId);
           mergedById[remote.id] = _prefer(remote, local);
-          mergedByDedupe[remote.dedupeKey!] = remote.id;
+          if (remoteDedupeKey != null && remoteDedupeKey.isNotEmpty) {
+            mergedByDedupe[remoteDedupeKey] = remote.id;
+          }
           continue;
         }
       }
 
       mergedById[remote.id] = remote;
       if (!existingIds.contains(remote.id) &&
-          (remote.dedupeKey == null ||
-              !existingDedupeKeys.contains(remote.dedupeKey))) {
+          (remoteDedupeKey == null ||
+              !existingDedupeKeys.contains(remoteDedupeKey))) {
         added.add(remote);
       }
-      if (remote.dedupeKey != null) {
-        mergedByDedupe[remote.dedupeKey!] = remote.id;
+      if (remoteDedupeKey != null && remoteDedupeKey.isNotEmpty) {
+        mergedByDedupe[remoteDedupeKey] = remote.id;
       }
     }
 
     _notifications
       ..clear()
       ..addAll(mergedById.values);
+    _deduplicateInMemory();
     _notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return added;
+  }
+
+  void _deduplicateInMemory() {
+    if (_notifications.length <= 1) return;
+
+    _notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    final seenIds = <String>{};
+    final seenDedupe = <String>{};
+    final unique = <AppNotificationModel>[];
+
+    for (final item in _notifications) {
+      final id = item.id.trim();
+      if (id.isNotEmpty && seenIds.contains(id)) {
+        continue;
+      }
+      final dedupe = item.dedupeKey?.trim() ?? '';
+      if (dedupe.isNotEmpty && seenDedupe.contains(dedupe)) {
+        continue;
+      }
+
+      unique.add(item);
+      if (id.isNotEmpty) {
+        seenIds.add(id);
+      }
+      if (dedupe.isNotEmpty) {
+        seenDedupe.add(dedupe);
+      }
+    }
+
+    _notifications
+      ..clear()
+      ..addAll(unique);
   }
 
   AppNotificationModel _prefer(

@@ -14,6 +14,7 @@ import '../../features/doctor/screens/doctor_schedule_settings_screen.dart';
 import '../../features/entry/screens/pro_entry_screen.dart';
 import '../../features/onboarding/screens/pro_onboarding_screen.dart';
 import '../../features/provider/screens/provider_availability_screen.dart';
+import '../../features/provider/screens/provider_job_detail_screen.dart';
 import '../../features/provider/screens/provider_jobs_queue_screen.dart';
 import '../../features/provider/screens/provider_schedule_settings_screen.dart';
 import '../../features/rider/screens/rider_active_delivery_screen.dart';
@@ -26,6 +27,12 @@ import '../providers/pro_auth_provider.dart';
 import 'pro_route_paths.dart';
 
 final GlobalKey<NavigatorState> _proNavigatorKey = GlobalKey<NavigatorState>();
+
+void openProAppRoute(String route) {
+  final context = _proNavigatorKey.currentContext;
+  if (context == null) return;
+  context.push(route);
+}
 
 Widget _withProfile(
   BuildContext context,
@@ -128,6 +135,20 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
             businessName: profile.businessName,
             initialModule: state.uri.queryParameters['module'] ?? 'all',
             activeModules: profile.activeModules,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: ProRoutePaths.providerJobDetail,
+        builder: (context, state) => _withProfile(
+          context,
+          (profile) => ProviderJobDetailScreen(
+            userId: profile.userId,
+            businessName: profile.businessName,
+            queueItem: {
+              'id': state.pathParameters['id'] ?? '',
+              'module': 'services',
+            },
           ),
         ),
       ),

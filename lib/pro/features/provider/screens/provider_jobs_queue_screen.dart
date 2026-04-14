@@ -332,8 +332,8 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
                   if (_allowedModules.length > 1) 'all',
                   ..._allowedModules,
                 ])
-                  ChoiceChip(
-                    label: Text(_moduleLabel(module)),
+                  _buildFilterChip(
+                    label: _moduleLabel(module),
                     selected: _selectedModule == module,
                     onSelected: (_) => setState(() => _selectedModule = module),
                   ),
@@ -345,8 +345,8 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
               runSpacing: 8,
               children: [
                 for (final status in ['active', 'completed', 'all'])
-                  ChoiceChip(
-                    label: Text(_queueFilterLabel(status)),
+                  _buildFilterChip(
+                    label: _queueFilterLabel(status),
                     selected: _selectedStatus == status,
                     onSelected: (_) => setState(() => _selectedStatus = status),
                   ),
@@ -385,6 +385,28 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
               ...filteredItems.map(_buildJobCard),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required bool selected,
+    required ValueChanged<bool> onSelected,
+  }) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: onSelected,
+      showCheckmark: false,
+      backgroundColor: AppColors.white,
+      selectedColor: AppColors.homeServices.withValues(alpha: 0.14),
+      side: BorderSide(
+        color: selected ? AppColors.homeServices : AppColors.lightGrey,
+      ),
+      labelStyle: TextStyle(
+        color: selected ? AppColors.homeServices : AppColors.darkGrey,
+        fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
       ),
     );
   }

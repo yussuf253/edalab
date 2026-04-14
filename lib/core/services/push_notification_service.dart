@@ -26,6 +26,7 @@ class PushNotificationService {
       FlutterLocalNotificationsPlugin();
 
   static NotificationProvider? _provider;
+  static void Function(String route)? _routeOpener;
   static bool _firebaseReady = false;
   static bool _localReady = false;
   static String? _token;
@@ -53,6 +54,10 @@ class PushNotificationService {
     _provider = provider;
   }
 
+  static void setRouteOpener(void Function(String route)? opener) {
+    _routeOpener = opener;
+  }
+
   static Future<bool> _initializeFirebase() async {
     try {
       if (Firebase.apps.isEmpty) {
@@ -77,7 +82,7 @@ class PushNotificationService {
       onDidReceiveNotificationResponse: (response) async {
         final payload = response.payload;
         if (payload == null || payload.isEmpty) return;
-        openAppRoute(payload);
+        _openRoute(payload);
       },
     );
 
@@ -112,11 +117,12 @@ class PushNotificationService {
 
   static Future<void> _configureForegroundPresentation() async {
     if (!Platform.isIOS && !Platform.isMacOS) return;
-    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
   }
 
   static Future<void> _captureToken() async {
@@ -150,7 +156,7 @@ class PushNotificationService {
       if (notification == null) return;
       await _provider?.addNotification(notification, allowDuplicate: false);
       if (notification.route != null) {
-        openAppRoute(notification.route!);
+        _openRoute(notification.route!);
       }
     });
   }
@@ -164,7 +170,7 @@ class PushNotificationService {
     if (notification == null) return;
     await _provider?.addNotification(notification, allowDuplicate: false);
     if (notification.route != null) {
-      openAppRoute(notification.route!);
+      _openRoute(notification.route!);
     }
   }
 
@@ -181,7 +187,16 @@ class PushNotificationService {
     final route = data['route']?.toString();
     final module = _moduleFromRaw(data['module']?.toString());
     final priority = _priorityFromRaw(data['priority']?.toString());
-    final dedupeKey = data['dedupeKey']?.toString() ?? message.messageId;
+    final dedupeRaw = data['dedupeKey']?.toString().trim();
+    final notificationId = data['notificationId']?.toString().trim();
+    final orderId = data['orderId']?.toString().trim();
+    final dedupeKey = (dedupeRaw != null && dedupeRaw.isNotEmpty)
+        ? dedupeRaw
+        : (notificationId != null && notificationId.isNotEmpty)
+        ? 'notification:$notificationId'
+        : (orderId != null && orderId.isNotEmpty)
+        ? 'order:$orderId:${route ?? ''}'
+        : message.messageId;
 
     return NotificationService.reminder(
       title: title,
@@ -190,10 +205,7 @@ class PushNotificationService {
       route: route,
       priority: priority,
       dedupeKey: dedupeKey,
-      metadata: {
-        'remoteMessageId': message.messageId,
-        ...data,
-      },
+      metadata: {'remoteMessageId': message.messageId, ...data},
     );
   }
 
@@ -239,5 +251,14 @@ class PushNotificationService {
     AppNotificationModel notification,
   ) async {
     await _showLocalNotification(notification);
+  }
+
+  static void _openRoute(String route) {
+    final opener = _routeOpener;
+    if (opener != null) {
+      opener(route);
+      return;
+    }
+    openAppRoute(route);
   }
 }
