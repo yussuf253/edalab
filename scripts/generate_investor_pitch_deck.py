@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Sequence
 
 from PIL import Image
 from reportlab.lib.colors import Color, HexColor, white
@@ -12,38 +12,39 @@ from reportlab.pdfgen import canvas
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT_PDF = ROOT / "docs" / "EdaLab_Investor_Pitch_Deck_2026_v2.pdf"
-BUILD_DIR = ROOT / "build" / "pitch_deck_assets"
-BUILD_DIR.mkdir(parents=True, exist_ok=True)
+OUT_MAIN = ROOT / "docs" / "EdaLab_Investor_Pitch_Deck_2026.pdf"
+OUT_V3 = ROOT / "docs" / "EdaLab_Investor_Pitch_Deck_2026_v3_superapp.pdf"
+BUILD = ROOT / "build" / "pitch_deck_assets"
+BUILD.mkdir(parents=True, exist_ok=True)
 
-PAGE_W = 13.333 * inch
-PAGE_H = 7.5 * inch
-SAFE_X = 42
-SAFE_BOTTOM = 34
-HEADER_H = 132
-CONTENT_GAP = 14
+W = 13.333 * inch
+H = 7.5 * inch
+MARGIN = 42
+HEADER_H = 118
+FOOTER_H = 24
 
-PALETTE = {
-    "midnight": HexColor("#051726"),
-    "navy": HexColor("#0C2740"),
-    "indigo": HexColor("#283593"),
-    "teal": HexColor("#0EA5A0"),
-    "mint": HexColor("#10B981"),
-    "sky": HexColor("#0284C7"),
-    "amber": HexColor("#F59E0B"),
-    "rose": HexColor("#E11D48"),
+C = {
+    "bg_dark_1": HexColor("#041827"),
+    "bg_dark_2": HexColor("#0B2D45"),
+    "bg_light_1": HexColor("#F8FAFC"),
+    "bg_light_2": HexColor("#E2E8F0"),
     "ink": HexColor("#0F172A"),
     "slate": HexColor("#334155"),
     "muted": HexColor("#64748B"),
-    "paper": HexColor("#F8FAFC"),
+    "teal": HexColor("#0EA5A0"),
+    "green": HexColor("#10B981"),
+    "lime": HexColor("#84CC16"),
+    "amber": HexColor("#F59E0B"),
+    "sky": HexColor("#0284C7"),
+    "panel": HexColor("#FFFFFF"),
     "soft": HexColor("#E2E8F0"),
 }
 
 
 @dataclass
-class SlideCtx:
+class Slide:
     c: canvas.Canvas
-    page: int
+    n: int
     total: int
 
 
@@ -55,7 +56,7 @@ class Box:
     h: float
 
 
-def lerp(a: Color, b: Color, t: float) -> Color:
+def mix(a: Color, b: Color, t: float) -> Color:
     return Color(
         a.red + (b.red - a.red) * t,
         a.green + (b.green - a.green) * t,
@@ -63,20 +64,20 @@ def lerp(a: Color, b: Color, t: float) -> Color:
     )
 
 
-def gradient_bg(c: canvas.Canvas, top: Color, bottom: Color) -> None:
-    steps = 140
-    h = PAGE_H / steps
+def grad(c: canvas.Canvas, top: Color, bottom: Color) -> None:
+    steps = 130
+    band = H / steps
     for i in range(steps):
         t = i / max(steps - 1, 1)
-        c.setFillColor(lerp(top, bottom, t))
-        c.rect(0, PAGE_H - (i + 1) * h, PAGE_W, h + 1, stroke=0, fill=1)
+        c.setFillColor(mix(top, bottom, t))
+        c.rect(0, H - (i + 1) * band, W, band + 1, stroke=0, fill=1)
 
 
-def fit_line(text: str, font: str, size: float, width: float) -> list[str]:
+def wrap(text: str, font: str, size: float, width: float) -> list[str]:
     words = text.split()
     if not words:
         return []
-    lines: list[str] = []
+    lines = []
     line = words[0]
     for w in words[1:]:
         trial = f"{line} {w}"
@@ -89,327 +90,320 @@ def fit_line(text: str, font: str, size: float, width: float) -> list[str]:
     return lines
 
 
-def text_block(
-    c: canvas.Canvas,
-    text: str,
-    box: Box,
-    *,
-    font: str = "Helvetica",
-    size: float = 12,
-    color: Color = PALETTE["ink"],
-    leading: float | None = None,
-    max_lines: int | None = None,
-) -> float:
-    lines = fit_line(text, font, size, box.w)
-    if max_lines is not None and len(lines) > max_lines:
-        lines = lines[:max_lines]
-        if lines:
-            line = lines[-1]
-            while line and pdfmetrics.stringWidth(line + "…", font, size) > box.w:
-                line = line[:-1]
-            lines[-1] = (line + "…") if line else "…"
-    if leading is None:
-        leading = size * 1.3
+def draw_text(c: canvas.Canvas, text: str, box: Box, *, font="Helvetica", size=12, color=C["ink"]) -> float:
+    lines = wrap(text, font, size, box.w)
+    leading = size * 1.32
     y = box.y + box.h
     c.setFillColor(color)
     c.setFont(font, size)
-    for line in lines:
+    for ln in lines:
         if y - leading < box.y:
             break
-        c.drawString(box.x, y - leading, line)
+        c.drawString(box.x, y - leading, ln)
         y -= leading
     return y
 
 
-def bullet_height(items: Sequence[str], width: float, size: float) -> float:
+def bullets_height(items: Sequence[str], width: float, size: float) -> float:
     leading = size * 1.28
     h = 0.0
-    for item in items:
-        lines = fit_line(item, "Helvetica", size, width - 18)
-        count = max(1, len(lines))
-        h += count * leading + size * 0.45
+    for it in items:
+        h += len(wrap(it, "Helvetica", size, width - 16)) * leading + size * 0.5
     return h
 
 
-def bullets_fit(
-    c: canvas.Canvas,
-    items: Sequence[str],
-    box: Box,
-    *,
-    max_size: float = 14,
-    min_size: float = 10.5,
-    bullet_color: Color = PALETTE["teal"],
-    text_color: Color = PALETTE["ink"],
-) -> float:
+def draw_bullets(c: canvas.Canvas, items: Sequence[str], box: Box, *, max_size=14.0, min_size=10.5, bullet=C["teal"], color=C["ink"]) -> float:
     size = max_size
-    while size >= min_size:
-        if bullet_height(items, box.w, size) <= box.h:
-            break
+    while size >= min_size and bullets_height(items, box.w, size) > box.h:
         size -= 0.5
-
-    y = box.y + box.h
     leading = size * 1.28
+    y = box.y + box.h
     c.setFont("Helvetica", size)
 
-    for item in items:
-        lines = fit_line(item, "Helvetica", size, box.w - 18)
+    for it in items:
+        lines = wrap(it, "Helvetica", size, box.w - 16)
         if not lines:
             continue
-        needed = len(lines) * leading + size * 0.45
-        if y - needed < box.y:
+        need = len(lines) * leading + size * 0.5
+        if y - need < box.y:
             break
-
-        c.setFillColor(bullet_color)
-        c.circle(box.x + 4, y - size * 0.55, 2.6, stroke=0, fill=1)
-        c.setFillColor(text_color)
-        c.drawString(box.x + 13, y - size, lines[0])
+        c.setFillColor(bullet)
+        c.circle(box.x + 4, y - size * 0.55, 2.8, stroke=0, fill=1)
+        c.setFillColor(color)
+        c.drawString(box.x + 12, y - size, lines[0])
         yy = y - leading
-        for line in lines[1:]:
-            c.drawString(box.x + 13, yy - size, line)
+        for ln in lines[1:]:
+            c.drawString(box.x + 12, yy - size, ln)
             yy -= leading
-        y = yy - size * 0.45
+        y = yy - size * 0.5
     return size
 
 
-def header(
-    ctx: SlideCtx,
-    title: str,
-    subtitle: str,
-    *,
-    bg_top: Color,
-    bg_bottom: Color,
-    accent: Color,
-    dark: bool = True,
-    tag: str | None = None,
-) -> Box:
-    c = ctx.c
-    gradient_bg(c, bg_top, bg_bottom)
-
-    # Soft decorative shapes
-    c.setFillColor(Color(1, 1, 1, alpha=0.06) if dark else Color(1, 1, 1, alpha=0.35))
-    c.circle(PAGE_W - 52, PAGE_H - 18, 76, stroke=0, fill=1)
-    c.circle(PAGE_W - 134, PAGE_H - 42, 48, stroke=0, fill=1)
-
-    text_main = white if dark else PALETTE["ink"]
-    text_sub = Color(1, 1, 1, alpha=0.9) if dark else PALETTE["slate"]
-
-    if tag:
-        c.setFillColor(Color(1, 1, 1, alpha=0.16) if dark else HexColor("#DBEAFE"))
-        c.roundRect(SAFE_X, PAGE_H - 34, 300, 20, 8, stroke=0, fill=1)
-        c.setFillColor(text_main if dark else PALETTE["sky"])
-        c.setFont("Helvetica-Bold", 9)
-        c.drawString(SAFE_X + 10, PAGE_H - 27, tag.upper())
-
-    c.setFillColor(text_main)
-    c.setFont("Helvetica-Bold", 30)
-    c.drawString(SAFE_X, PAGE_H - 70, title)
-    c.setFillColor(text_sub)
-    c.setFont("Helvetica", 13)
-    c.drawString(SAFE_X, PAGE_H - 92, subtitle)
-
-    c.setFillColor(accent)
-    c.rect(SAFE_X, PAGE_H - 102, 220, 4, stroke=0, fill=1)
-
-    # Footer
-    c.setFillColor(Color(1, 1, 1, alpha=0.10) if dark else Color(0, 0, 0, alpha=0.05))
-    c.rect(0, 0, PAGE_W, 22, stroke=0, fill=1)
-    c.setFillColor(Color(1, 1, 1, alpha=0.82) if dark else PALETTE["muted"])
-    c.setFont("Helvetica", 9)
-    c.drawString(16, 7, "EdaLab | Confidential Investor Deck | April 2026")
-    c.drawRightString(PAGE_W - 16, 7, f"{ctx.page}/{ctx.total}")
-
-    return Box(SAFE_X, SAFE_BOTTOM, PAGE_W - SAFE_X * 2, PAGE_H - HEADER_H - SAFE_BOTTOM - CONTENT_GAP)
-
-
-def card(c: canvas.Canvas, box: Box, fill: Color = white, radius: float = 12, stroke: Color | None = None) -> None:
+def card(c: canvas.Canvas, b: Box, *, fill=white, radius=12) -> None:
     c.setFillColor(fill)
-    if stroke:
-        c.setStrokeColor(stroke)
-        c.setLineWidth(0.8)
-        c.roundRect(box.x, box.y, box.w, box.h, radius, stroke=1, fill=1)
-    else:
-        c.roundRect(box.x, box.y, box.w, box.h, radius, stroke=0, fill=1)
+    c.roundRect(b.x, b.y, b.w, b.h, radius, stroke=0, fill=1)
 
 
-def crop_to_ratio(src: Path, dst: Path, ratio: float) -> None:
-    with Image.open(src) as img:
-        img = img.convert("RGB")
-        w, h = img.size
-        cur = w / h
-        if cur > ratio:
+def crop_to(src: Path, dst: Path, ratio: float) -> None:
+    with Image.open(src) as im:
+        im = im.convert("RGB")
+        w, h = im.size
+        r = w / h
+        if r > ratio:
             nw = int(h * ratio)
             x = (w - nw) // 2
-            img = img.crop((x, 0, x + nw, h))
+            im = im.crop((x, 0, x + nw, h))
         else:
             nh = int(w / ratio)
             y = (h - nh) // 2
-            img = img.crop((0, y, w, y + nh))
-        img.save(dst, "PNG")
+            im = im.crop((0, y, w, y + nh))
+        im.save(dst, "PNG")
 
 
-def draw_image_cover(c: canvas.Canvas, src: Path, box: Box) -> None:
-    tmp = BUILD_DIR / f"crop_{src.stem}_{int(box.w)}x{int(box.h)}.png"
-    crop_to_ratio(src, tmp, box.w / box.h)
-    c.drawImage(str(tmp), box.x, box.y, width=box.w, height=box.h, preserveAspectRatio=False, mask="auto")
+def draw_cover_img(c: canvas.Canvas, src: Path, b: Box) -> None:
+    tmp = BUILD / f"crop_{src.stem}_{int(b.w)}x{int(b.h)}.png"
+    crop_to(src, tmp, b.w / b.h)
+    c.drawImage(str(tmp), b.x, b.y, width=b.w, height=b.h, preserveAspectRatio=False, mask="auto")
 
 
-def slide_01_cover(ctx: SlideCtx) -> None:
-    c = ctx.c
-    gradient_bg(c, PALETTE["midnight"], PALETTE["navy"])
+def header(sl: Slide, title: str, subtitle: str, *, dark: bool, accent: Color, tag: str, top: Color, bottom: Color) -> Box:
+    c = sl.c
+    grad(c, top, bottom)
+
+    deco = Color(1, 1, 1, alpha=0.08) if dark else Color(1, 1, 1, alpha=0.35)
+    c.setFillColor(deco)
+    c.circle(W - 90, H - 35, 72, stroke=0, fill=1)
+    c.circle(W - 155, H - 82, 40, stroke=0, fill=1)
+
+    c.setFillColor(Color(1, 1, 1, alpha=0.16) if dark else HexColor("#DBEAFE"))
+    c.roundRect(MARGIN, H - 33, 250, 18, 7, stroke=0, fill=1)
+    c.setFillColor(white if dark else C["sky"])
+    c.setFont("Helvetica-Bold", 8.5)
+    c.drawString(MARGIN + 9, H - 26, tag.upper())
+
+    c.setFillColor(white if dark else C["ink"])
+    c.setFont("Helvetica-Bold", 31)
+    c.drawString(MARGIN, H - 66, title)
+    c.setFillColor(Color(1, 1, 1, alpha=0.9) if dark else C["slate"])
+    c.setFont("Helvetica", 13)
+    c.drawString(MARGIN, H - 88, subtitle)
+
+    c.setFillColor(accent)
+    c.rect(MARGIN, H - 98, 220, 4, stroke=0, fill=1)
+
+    c.setFillColor(Color(1, 1, 1, alpha=0.10) if dark else Color(0, 0, 0, alpha=0.05))
+    c.rect(0, 0, W, FOOTER_H, stroke=0, fill=1)
+    c.setFillColor(Color(1, 1, 1, alpha=0.82) if dark else C["muted"])
+    c.setFont("Helvetica", 9)
+    c.drawString(16, 8, "EdaLab | Confidential | April 2026")
+    c.drawRightString(W - 16, 8, f"{sl.n}/{sl.total}")
+
+    return Box(MARGIN, FOOTER_H + 10, W - MARGIN * 2, H - HEADER_H - FOOTER_H - 14)
+
+
+def s1(sl: Slide) -> None:
+    c = sl.c
+    grad(c, C["bg_dark_1"], C["bg_dark_2"])
 
     c.setFillColor(Color(1, 1, 1, alpha=0.08))
-    c.circle(PAGE_W - 70, PAGE_H - 18, 84, stroke=0, fill=1)
-    c.circle(PAGE_W - 160, PAGE_H - 92, 56, stroke=0, fill=1)
+    c.circle(W - 65, H - 18, 84, stroke=0, fill=1)
+    c.circle(W - 170, H - 92, 58, stroke=0, fill=1)
 
     c.setFillColor(white)
-    c.setFont("Helvetica-Bold", 46)
-    c.drawString(54, PAGE_H - 96, "EdaLab")
-    c.setFont("Helvetica-Bold", 26)
-    c.drawString(54, PAGE_H - 130, "The Multi-Vertical Services OS for African Cities")
-
+    c.setFont("Helvetica-Bold", 48)
+    c.drawString(52, H - 98, "EdaLab")
+    c.setFont("Helvetica-Bold", 25)
+    c.drawString(52, H - 132, "Africa's Grab/Gojek-Style Super App Opportunity")
     c.setFont("Helvetica", 14)
-    c.drawString(54, PAGE_H - 154, "Investor Pitch Deck | Built for VCs and Angel Networks in Africa")
+    c.drawString(52, H - 156, "Built for high-frequency services + trusted local fulfillment")
 
     banner = ROOT / "assets/images/banners/banner.png"
     if banner.exists():
-        box = Box(54, 120, 520, 240)
+        b = Box(52, 120, 530, 240)
         c.setFillColor(Color(1, 1, 1, alpha=0.12))
-        c.roundRect(box.x - 3, box.y - 3, box.w + 6, box.h + 6, 14, stroke=0, fill=1)
-        draw_image_cover(c, banner, box)
+        c.roundRect(b.x - 4, b.y - 4, b.w + 8, b.h + 8, 14, stroke=0, fill=1)
+        draw_cover_img(c, banner, b)
 
     shot = ROOT / "flutter_01.png"
-    phone_frame = Box(PAGE_W - 290, 68, 208, 468)
-    c.setFillColor(Color(1, 1, 1, alpha=0.12))
-    c.roundRect(phone_frame.x - 10, phone_frame.y - 10, phone_frame.w + 20, phone_frame.h + 20, 30, stroke=0, fill=1)
+    frame = Box(W - 290, 66, 210, 470)
+    c.setFillColor(Color(1, 1, 1, alpha=0.10))
+    c.roundRect(frame.x - 9, frame.y - 9, frame.w + 18, frame.h + 18, 28, stroke=0, fill=1)
     c.setFillColor(white)
-    c.roundRect(phone_frame.x, phone_frame.y, phone_frame.w, phone_frame.h, 24, stroke=0, fill=1)
+    c.roundRect(frame.x, frame.y, frame.w, frame.h, 24, stroke=0, fill=1)
     if shot.exists():
-        draw_image_cover(c, shot, Box(phone_frame.x + 9, phone_frame.y + 9, phone_frame.w - 18, phone_frame.h - 18))
+        draw_cover_img(c, shot, Box(frame.x + 10, frame.y + 10, frame.w - 20, frame.h - 20))
 
-    c.setFillColor(Color(1, 1, 1, alpha=0.18))
-    c.roundRect(54, 56, 560, 46, 10, stroke=0, fill=1)
+    c.setFillColor(Color(1, 1, 1, alpha=0.16))
+    c.roundRect(52, 56, 570, 46, 10, stroke=0, fill=1)
     c.setFillColor(white)
-    c.setFont("Helvetica", 12)
-    c.drawString(68, 73, "From discovery to dispatch across home services, health, mobility, food, and local commerce.")
+    c.setFont("Helvetica", 12.5)
+    c.drawString(66, 73, "Investor deck strategy: adapt proven Asian super app playbooks to African city dynamics")
 
     c.setFillColor(Color(1, 1, 1, alpha=0.10))
-    c.rect(0, 0, PAGE_W, 22, stroke=0, fill=1)
+    c.rect(0, 0, W, FOOTER_H, stroke=0, fill=1)
     c.setFillColor(Color(1, 1, 1, alpha=0.82))
     c.setFont("Helvetica", 9)
-    c.drawString(16, 7, "EdaLab | Confidential Investor Deck | April 2026")
-    c.drawRightString(PAGE_W - 16, 7, f"{ctx.page}/{ctx.total}")
+    c.drawString(16, 8, "EdaLab | Confidential | April 2026")
+    c.drawRightString(W - 16, 8, f"{sl.n}/{sl.total}")
 
 
-def slide_02_narrative(ctx: SlideCtx) -> None:
-    c = ctx.c
-    area = header(
-        ctx,
-        "Investor Narrative Architecture",
-        "Built on structures used in high-conviction startup decks.",
-        bg_top=HexColor("#0F172A"),
-        bg_bottom=HexColor("#1E293B"),
-        accent=PALETTE["teal"],
-        dark=True,
-        tag="design principle",
-    )
+def s2(sl: Slide) -> None:
+    c = sl.c
+    area = header(sl, "What We Borrowed From Grab & Gojek", "Playbook principles, adapted for African markets.", dark=False, accent=C["green"], tag="superapp dna", top=HexColor("#F0FDF4"), bottom=HexColor("#DCFCE7"))
 
-    left = Box(area.x, area.y, area.w * 0.58, area.h)
-    right = Box(area.x + area.w * 0.60, area.y, area.w * 0.40, area.h)
-
-    card(c, left, fill=white)
-    c.setFillColor(PALETTE["ink"])
-    c.setFont("Helvetica-Bold", 21)
-    c.drawString(left.x + 18, left.y + left.h - 30, "Slide flow used in this deck")
-
-    flow = [
-        "Problem -> Why now -> Product -> Moat -> Ask (Airbnb-style clarity)",
-        "Company purpose + problem + solution + market + business model + team + vision (Sequoia framework)",
-        "Legible, simple, obvious slides with one core takeaway per slide (YC guidance)",
-        "12-14 slide format optimized for fast VC review behavior",
+    card(c, Box(area.x, area.y, area.w, area.h), fill=white)
+    pillars = [
+        "Start with a high-frequency wedge, then layer adjacent services.",
+        "Win on reliability, not just discounts: ETA clarity + service trust.",
+        "Build dense city zones before expanding geography.",
+        "Unify consumer demand and provider operations in one system.",
+        "Turn transactions into a retention flywheel across verticals.",
     ]
-    bullets_fit(c, flow, Box(left.x + 18, left.y + 20, left.w - 36, left.h - 70), max_size=13.5)
-
-    card(c, right, fill=HexColor("#ECFEFF"))
-    c.setFillColor(PALETTE["sky"])
-    c.setFont("Helvetica-Bold", 19)
-    c.drawString(right.x + 18, right.y + right.h - 34, "What changed vs v1")
-
-    bullets_fit(
-        c,
-        [
-            "Hard safe-area system prevents any card/title overlap.",
-            "Auto-fit text engine scales bullet size by available space.",
-            "Stronger visual rhythm and section hierarchy.",
-            "Data-led market slide with source-timestamped references.",
-        ],
-        Box(right.x + 18, right.y + 20, right.w - 36, right.h - 70),
-        max_size=12.5,
-    )
+    c.setFillColor(C["ink"])
+    c.setFont("Helvetica-Bold", 22)
+    c.drawString(area.x + 20, area.y + area.h - 34, "Super App Playbook")
+    draw_bullets(c, pillars, Box(area.x + 20, area.y + 20, area.w - 40, area.h - 68), max_size=15)
 
 
-def slide_03_problem(ctx: SlideCtx) -> None:
-    c = ctx.c
-    area = header(
-        ctx,
-        "The Problem",
-        "Urban African consumers and providers still operate in fragmented service stacks.",
-        bg_top=HexColor("#F8FAFC"),
-        bg_bottom=HexColor("#E2E8F0"),
-        accent=PALETTE["rose"],
-        dark=False,
-        tag="market pain",
-    )
+def s3(sl: Slide) -> None:
+    c = sl.c
+    area = header(sl, "The African Gap", "Essential services remain fragmented, inconsistent, and hard to trust.", dark=False, accent=C["amber"], tag="problem", top=C["bg_light_1"], bottom=C["bg_light_2"])
 
-    col_w = (area.w - 16) / 2
-    a = Box(area.x, area.y, col_w, area.h)
-    b = Box(area.x + col_w + 16, area.y, col_w, area.h)
+    w = (area.w - 14) / 2
+    left = Box(area.x, area.y, w, area.h)
+    right = Box(area.x + w + 14, area.y, w, area.h)
+    card(c, left)
+    card(c, right)
 
-    card(c, a, fill=white)
-    card(c, b, fill=white)
-
-    c.setFillColor(PALETTE["ink"])
+    c.setFillColor(C["ink"])
     c.setFont("Helvetica-Bold", 20)
-    c.drawString(a.x + 18, a.y + a.h - 30, "Consumer pain")
-    bullets_fit(
-        c,
-        [
-            "Too many disconnected apps and channels for essential daily services.",
-            "Low trust in quality, pricing, and on-time fulfillment.",
-            "Weak visibility on status and ETA creates booking anxiety.",
-            "High switching friction lowers repeat behavior.",
-        ],
-        Box(a.x + 18, a.y + 18, a.w - 36, a.h - 60),
-    )
+    c.drawString(left.x + 18, left.y + left.h - 30, "Consumers")
+    draw_bullets(c, [
+        "Too many apps/channels for daily services.",
+        "Price and service quality are inconsistent.",
+        "Weak visibility from booking to completion.",
+        "Low confidence reduces repeat usage.",
+    ], Box(left.x + 18, left.y + 18, left.w - 36, left.h - 60))
 
-    c.setFillColor(PALETTE["ink"])
+    c.setFillColor(C["ink"])
     c.setFont("Helvetica-Bold", 20)
-    c.drawString(b.x + 18, b.y + b.h - 30, "Provider pain")
-    bullets_fit(
-        c,
-        [
-            "Demand discovery is inconsistent and often offline.",
-            "Workflows from quote to completion are operationally messy.",
-            "No unified queue to move orders from pending to done.",
-            "Idle time and failed dispatches reduce provider earnings.",
-        ],
-        Box(b.x + 18, b.y + 18, b.w - 36, b.h - 60),
-    )
+    c.drawString(right.x + 18, right.y + right.h - 30, "Providers")
+    draw_bullets(c, [
+        "Demand is fragmented and unpredictable.",
+        "Operations are mostly manual.",
+        "No robust queue to manage job lifecycles.",
+        "Idle time is high, earnings are volatile.",
+    ], Box(right.x + 18, right.y + 18, right.w - 36, right.h - 60))
 
 
-def slide_04_why_now(ctx: SlideCtx) -> None:
-    c = ctx.c
-    area = header(
-        ctx,
-        "Why Now: Africa is at an Inflection Point",
-        "Connectivity, payments and policy are converging for platform-scale outcomes.",
-        bg_top=HexColor("#ECFEFF"),
-        bg_bottom=HexColor("#CCFBF1"),
-        accent=PALETTE["teal"],
-        dark=False,
-        tag="timing",
-    )
+def s4(sl: Slide) -> None:
+    c = sl.c
+    area = header(sl, "EdaLab Solution", "One brand, many everyday needs, with operational depth.", dark=False, accent=C["teal"], tag="solution", top=HexColor("#ECFEFF"), bottom=HexColor("#E0F2FE"))
 
-    gap = 12
+    top = Box(area.x, area.y + area.h * 0.38, area.w, area.h * 0.62)
+    bottom = Box(area.x, area.y, area.w, area.h * 0.34)
+    card(c, top)
+    card(c, bottom)
+
+    c.setFillColor(C["ink"])
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(top.x + 18, top.y + top.h - 30, "Current product surface")
+
+    icons = ["home.png", "food.png", "laundry.png", "car.png", "doctor.png", "hotel.png", "pharmacy.png", "shopping.png"]
+    labels = ["Home", "Food", "Laundry", "Ride", "Doctor", "Hotel", "Pharmacy", "Shopping"]
+    x0 = top.x + 18
+    cell_w = (top.w - 36 - 7 * 8) / 8
+    y = top.y + 26
+    for i, (ic, lb) in enumerate(zip(icons, labels)):
+        x = x0 + i * (cell_w + 8)
+        card(c, Box(x, y, cell_w, top.h - 60), fill=HexColor("#F8FAFC"), radius=10)
+        p = ROOT / "assets/icons" / ic
+        if p.exists():
+            c.drawImage(str(p), x + (cell_w - 46) / 2, y + 34, width=46, height=46, mask="auto")
+        c.setFillColor(C["ink"])
+        c.setFont("Helvetica-Bold", 10)
+        c.drawCentredString(x + cell_w / 2, y + 18, lb)
+
+    draw_bullets(c, [
+        "Consumer app + Pro app architecture gives both demand and execution control.",
+        "Designed to scale like Asian super apps, but tuned for local African operational realities.",
+        "Category expansion is modular once trust and reliability are established in a city.",
+    ], Box(bottom.x + 18, bottom.y + 14, bottom.w - 36, bottom.h - 28), max_size=12.5)
+
+
+def s5(sl: Slide) -> None:
+    c = sl.c
+    area = header(sl, "Product Proof", "Real codebase workflows already implemented.", dark=True, accent=C["teal"], tag="execution", top=HexColor("#082F49"), bottom=HexColor("#0C4A6E"))
+
+    left = Box(area.x, area.y, area.w * 0.40, area.h)
+    right = Box(area.x + area.w * 0.42, area.y, area.w * 0.58, area.h)
+    card(c, left)
+    card(c, right)
+
+    shot = ROOT / "flutter_01.png"
+    if shot.exists():
+        draw_cover_img(c, shot, Box(left.x + 12, left.y + 12, left.w - 24, left.h - 24))
+
+    c.setFillColor(C["ink"])
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(right.x + 18, right.y + right.h - 30, "Implemented today")
+    draw_bullets(c, [
+        "Geo-enabled booking flow with map/location support.",
+        "Scheduling, urgency, and service option controls in booking UI.",
+        "Provider dispatch/fallback logic for better fill rates.",
+        "Pro queue status transitions from pending to completed.",
+        "Role-specific routing for provider, delivery, rider, doctor, and shop.",
+    ], Box(right.x + 18, right.y + 16, right.w - 36, right.h - 56), max_size=12.8)
+
+
+def s6(sl: Slide) -> None:
+    c = sl.c
+    area = header(sl, "Why This Can Win", "Super app economics improve with density and repeat behavior.", dark=False, accent=C["lime"], tag="moat", top=HexColor("#F0FDF4"), bottom=HexColor("#DCFCE7"))
+
+    a = Box(area.x, area.y, area.w * 0.52, area.h)
+    b = Box(area.x + area.w * 0.54, area.y, area.w * 0.46, area.h)
+    card(c, a)
+    card(c, b)
+
+    c.setFillColor(C["ink"])
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(a.x + 18, a.y + a.h - 30, "Compounding advantages")
+    draw_bullets(c, [
+        "More orders -> better dispatch -> faster ETA -> higher retention.",
+        "Shared infra across categories lowers marginal expansion cost.",
+        "Provider tools raise service quality and reduce churn on supply side.",
+        "Cross-vertical user behavior improves recommendations and LTV.",
+    ], Box(a.x + 18, a.y + 18, a.w - 36, a.h - 60))
+
+    c.setFillColor(C["ink"])
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(b.x + 18, b.y + b.h - 30, "Monetization lanes")
+    draw_bullets(c, [
+        "Commission on completed services/orders.",
+        "Delivery and convenience fees.",
+        "Pro subscriptions and premium placement.",
+        "Future fintech/payment layers.",
+    ], Box(b.x + 18, b.y + 120, b.w - 36, b.h - 162), max_size=12)
+
+    # mini bars
+    y = b.y + 92
+    bars = [("Frequency", 0.80, C["teal"]), ("Retention", 0.74, C["sky"]), ("Utilization", 0.68, C["green"])]
+    for label, v, col in bars:
+        c.setFillColor(C["slate"])
+        c.setFont("Helvetica", 10)
+        c.drawString(b.x + 18, y + 6, label)
+        c.setFillColor(C["soft"])
+        c.roundRect(b.x + 78, y, b.w - 110, 9, 4, stroke=0, fill=1)
+        c.setFillColor(col)
+        c.roundRect(b.x + 78, y, (b.w - 110) * v, 9, 4, stroke=0, fill=1)
+        y -= 22
+
+
+def s7(sl: Slide) -> None:
+    c = sl.c
+    area = header(sl, "Africa Market Timing", "Macro conditions now support super app scale-up.", dark=False, accent=C["sky"], tag="market", top=HexColor("#EEF2FF"), bottom=HexColor("#DBEAFE"))
+
+    gap = 10
     w = (area.w - gap) / 2
     h = (area.h - gap) / 2
     boxes = [
@@ -418,484 +412,203 @@ def slide_04_why_now(ctx: SlideCtx) -> None:
         Box(area.x, area.y, w, h),
         Box(area.x + w + gap, area.y, w, h),
     ]
-
-    facts = [
-        (
-            "416M users",
-            "Mobile internet users across Africa (28% penetration) in 2024.",
-            "GSMA Mobile Economy Africa 2025",
-            PALETTE["sky"],
-        ),
-        (
-            "$220B",
-            "Mobile technologies' GDP contribution in Africa in 2024.",
-            "GSMA Mobile Economy Africa 2025",
-            PALETTE["teal"],
-        ),
-        (
-            "$2T + 2.3B",
-            "Mobile money annual transaction value and registered accounts in 2025.",
-            "GSMA Mobile Money SOI 2026 (Mar 24, 2026)",
-            PALETTE["mint"],
-        ),
-        (
-            "1.3B / $3.4T",
-            "AfCFTA connected market across 55 countries and combined GDP.",
-            "World Bank AfCFTA overview",
-            PALETTE["amber"],
-        ),
+    data = [
+        ("416M", "Mobile internet users in Africa (2024).", "GSMA Mobile Economy Africa 2025", C["sky"]),
+        ("$220B", "Mobile tech contribution to African GDP (2024).", "GSMA Mobile Economy Africa 2025", C["teal"]),
+        ("$2T", "Mobile money transaction value (2025).", "GSMA SOI Mobile Money 2026", C["green"]),
+        ("1.3B", "AfCFTA market population context.", "World Bank AfCFTA", C["amber"]),
     ]
-
-    for box, (value, desc, src, accent) in zip(boxes, facts):
-        card(c, box, fill=white)
-        c.setFillColor(accent)
-        c.rect(box.x, box.y + box.h - 7, box.w, 7, stroke=0, fill=1)
-        c.setFillColor(PALETTE["ink"])
+    for b, (val, txt, src, col) in zip(boxes, data):
+        card(c, b)
+        c.setFillColor(col)
+        c.rect(b.x, b.y + b.h - 6, b.w, 6, stroke=0, fill=1)
+        c.setFillColor(C["ink"])
         c.setFont("Helvetica-Bold", 24)
-        c.drawString(box.x + 14, box.y + box.h - 37, value)
-        text_block(c, desc, Box(box.x + 14, box.y + 34, box.w - 24, box.h - 68), size=12, color=PALETTE["slate"])
-        c.setFillColor(PALETTE["muted"])
+        c.drawString(b.x + 14, b.y + b.h - 36, val)
+        draw_text(c, txt, Box(b.x + 14, b.y + 34, b.w - 24, b.h - 66), size=12, color=C["slate"])
+        c.setFillColor(C["muted"])
         c.setFont("Helvetica", 9)
-        c.drawString(box.x + 14, box.y + 11, src)
+        c.drawString(b.x + 14, b.y + 12, src)
 
 
-def slide_05_solution(ctx: SlideCtx) -> None:
-    c = ctx.c
-    area = header(
-        ctx,
-        "Our Solution",
-        "One platform, two engines: consumer demand + pro operations.",
-        bg_top=HexColor("#F8FAFC"),
-        bg_bottom=HexColor("#EEF2FF"),
-        accent=PALETTE["indigo"],
-        dark=False,
-        tag="product",
-    )
+def s8(sl: Slide) -> None:
+    c = sl.c
+    area = header(sl, "Go-To-Market", "Density-first rollout, then category expansion.", dark=False, accent=C["amber"], tag="gtm", top=HexColor("#FFF7ED"), bottom=HexColor("#FFEDD5"))
 
-    top = Box(area.x, area.y + area.h * 0.40, area.w, area.h * 0.60)
-    bottom = Box(area.x, area.y, area.w, area.h * 0.36)
-
-    card(c, top, fill=white)
-    c.setFillColor(PALETTE["ink"])
-    c.setFont("Helvetica-Bold", 20)
-    c.drawString(top.x + 18, top.y + top.h - 28, "Consumer modules (visuals from codebase assets)")
-
-    icon_map = [
-        ("Home", "home.png"),
-        ("Food", "food.png"),
-        ("Laundry", "laundry.png"),
-        ("Ride", "car.png"),
-        ("Doctor", "doctor.png"),
-        ("Hotel", "hotel.png"),
-        ("Pharmacy", "pharmacy.png"),
-        ("Shopping", "shopping.png"),
-    ]
-
-    start_x = top.x + 20
-    y = top.y + 22
-    cell_w = (top.w - 40 - 7 * 8) / 8
-    for i, (label, icon) in enumerate(icon_map):
-        x = start_x + i * (cell_w + 8)
-        card(c, Box(x, y, cell_w, top.h - 58), fill=HexColor("#F8FAFC"), radius=10)
-        p = ROOT / "assets" / "icons" / icon
-        if p.exists():
-            c.drawImage(str(p), x + (cell_w - 44) / 2, y + 38, width=44, height=44, mask="auto")
-        c.setFillColor(PALETTE["ink"])
-        c.setFont("Helvetica-Bold", 10)
-        c.drawCentredString(x + cell_w / 2, y + 20, label)
-
-    card(c, bottom, fill=white)
-    c.setFillColor(PALETTE["ink"])
-    c.setFont("Helvetica-Bold", 19)
-    c.drawString(bottom.x + 18, bottom.y + bottom.h - 26, "What this enables")
-    bullets_fit(
-        c,
-        [
-            "Cross-category service discovery and booking in one app shell.",
-            "Queue-based operational execution for providers, delivery teams and riders.",
-            "A single brand experience that can scale city-by-city with shared infrastructure.",
-        ],
-        Box(bottom.x + 18, bottom.y + 16, bottom.w - 36, bottom.h - 50),
-        max_size=12.5,
-    )
-
-
-def slide_06_product_proof(ctx: SlideCtx) -> None:
-    c = ctx.c
-    area = header(
-        ctx,
-        "Product Proof from the Codebase",
-        "Real implemented workflows, not concept-only mockups.",
-        bg_top=HexColor("#082F49"),
-        bg_bottom=HexColor("#0C4A6E"),
-        accent=PALETTE["teal"],
-        dark=True,
-        tag="execution",
-    )
-
-    left = Box(area.x, area.y, area.w * 0.40, area.h)
-    right = Box(area.x + area.w * 0.42, area.y, area.w * 0.58, area.h)
-
-    card(c, left, fill=white)
-    shot = ROOT / "flutter_01.png"
-    if shot.exists():
-        draw_image_cover(c, shot, Box(left.x + 12, left.y + 12, left.w - 24, left.h - 24))
-
-    card(c, right, fill=white)
-    c.setFillColor(PALETTE["ink"])
-    c.setFont("Helvetica-Bold", 20)
-    c.drawString(right.x + 18, right.y + right.h - 30, "Implemented capabilities")
-    bullets_fit(
-        c,
-        [
-            "Geo-enabled home service booking flow with map/location support.",
-            "Structured booking parameters: date/time, urgency, shift durations, and service options.",
-            "Dispatch-aware provider fallback logic to reduce booking failure.",
-            "Pro queue state machine for service order progression and action labels.",
-            "Role-specific route architecture for shop, provider, doctor, delivery, and rider personas.",
-            "Hybrid backend pattern defined: Firebase + PostgreSQL for scalable transactional integrity.",
-        ],
-        Box(right.x + 18, right.y + 18, right.w - 36, right.h - 60),
-        max_size=12.5,
-    )
-
-
-def slide_07_business_model(ctx: SlideCtx) -> None:
-    c = ctx.c
-    area = header(
-        ctx,
-        "Business Model",
-        "Multiple monetization lanes designed for margin expansion over time.",
-        bg_top=HexColor("#F0FDF4"),
-        bg_bottom=HexColor("#DCFCE7"),
-        accent=PALETTE["mint"],
-        dark=False,
-        tag="revenue",
-    )
-
-    a = Box(area.x, area.y, area.w * 0.52, area.h)
-    b = Box(area.x + area.w * 0.54, area.y, area.w * 0.46, area.h)
-
-    card(c, a, fill=white)
-    c.setFillColor(PALETTE["ink"])
-    c.setFont("Helvetica-Bold", 21)
-    c.drawString(a.x + 18, a.y + a.h - 30, "Revenue stack")
-    bullets_fit(
-        c,
-        [
-            "Take-rate commissions on completed orders/bookings.",
-            "Delivery and service fulfillment fees.",
-            "Pro subscription layers for enhanced visibility and workflow tooling.",
-            "Sponsored placement and in-app partner promotion.",
-            "Future fintech monetization through payment-linked services.",
-        ],
-        Box(a.x + 18, a.y + 18, a.w - 36, a.h - 60),
-    )
-
-    card(c, b, fill=white)
-    c.setFillColor(PALETTE["ink"])
-    c.setFont("Helvetica-Bold", 21)
-    c.drawString(b.x + 18, b.y + b.h - 30, "Economics logic")
-
-    points = [
-        ("Higher order frequency", 0.82, PALETTE["teal"]),
-        ("Higher basket value", 0.64, PALETTE["sky"]),
-        ("Lower idle time", 0.71, PALETTE["mint"]),
-        ("Retention lift", 0.77, PALETTE["indigo"]),
-    ]
-
-    y = b.y + b.h - 70
-    for label, pct, color in points:
-        c.setFillColor(PALETTE["slate"])
-        c.setFont("Helvetica", 11)
-        c.drawString(b.x + 18, y + 6, label)
-        c.setFillColor(PALETTE["soft"])
-        c.roundRect(b.x + 18, y - 8, b.w - 52, 10, 4, stroke=0, fill=1)
-        c.setFillColor(color)
-        c.roundRect(b.x + 18, y - 8, (b.w - 52) * pct, 10, 4, stroke=0, fill=1)
-        y -= 58
-
-    c.setFillColor(PALETTE["muted"])
-    c.setFont("Helvetica-Oblique", 9)
-    c.drawString(b.x + 18, b.y + 14, "Bars show model directionality; replace with audited KPIs before final investor send.")
-
-
-def slide_08_gtm(ctx: SlideCtx) -> None:
-    c = ctx.c
-    area = header(
-        ctx,
-        "Go-To-Market",
-        "Density-first city launch playbook tailored to African urban operations.",
-        bg_top=HexColor("#FFF7ED"),
-        bg_bottom=HexColor("#FFEDD5"),
-        accent=PALETTE["amber"],
-        dark=False,
-        tag="growth",
-    )
-
-    card(c, Box(area.x, area.y, area.w, area.h), fill=white)
-
-    cols = 4
-    gap = 12
-    cw = (area.w - (cols + 1) * gap) / cols
-    titles = [
-        "1. Launch Zone",
-        "2. Supply Reliability",
-        "3. Demand Growth",
-        "4. Replication",
-    ]
+    card(c, Box(area.x, area.y, area.w, area.h))
+    titles = ["1. Wedge", "2. Reliability", "3. Retention", "4. Replicate"]
     lines = [
-        ["Start with one dense zone per city.", "Focus on high-frequency categories first."],
-        ["Onboard verified providers.", "Use queue tooling to enforce SLA behavior."],
-        ["Referral + neighborhood activation.", "Retention through reliability and transparency."],
-        ["Expand categories after utilization proof.", "Copy operating playbook into new cities."],
+        ["Launch high-frequency categories first.", "Own one dense zone before scaling out."],
+        ["Train and verify supply-side partners.", "SLA-focused queue ops and status discipline."],
+        ["Build habit loops with consistency.", "Cross-category nudges and bundled use cases."],
+        ["Expand to adjacent cities.", "Reuse proven launch + ops playbook."],
     ]
-
+    gap = 10
+    cw = (area.w - 5 * gap) / 4
     x = area.x + gap
-    for i in range(cols):
-        box = Box(x, area.y + gap, cw, area.h - 2 * gap)
-        card(c, box, fill=HexColor("#F8FAFC"), radius=10)
-        c.setFillColor(PALETTE["amber"])
+    for i in range(4):
+        b = Box(x, area.y + gap, cw, area.h - 2 * gap)
+        card(c, b, fill=HexColor("#F8FAFC"), radius=10)
+        c.setFillColor(C["amber"])
         c.setFont("Helvetica-Bold", 14)
-        c.drawString(box.x + 10, box.y + box.h - 22, titles[i])
-        bullets_fit(c, lines[i], Box(box.x + 10, box.y + 14, box.w - 20, box.h - 42), max_size=11.5)
+        c.drawString(b.x + 10, b.y + b.h - 21, titles[i])
+        draw_bullets(c, lines[i], Box(b.x + 10, b.y + 14, b.w - 20, b.h - 42), max_size=11.2)
         x += cw + gap
 
 
-def slide_09_moat(ctx: SlideCtx) -> None:
-    c = ctx.c
-    area = header(
-        ctx,
-        "Competitive Edge & Defensibility",
-        "Our advantage compounds as transactions and provider operations scale.",
-        bg_top=HexColor("#ECFEFF"),
-        bg_bottom=HexColor("#E0F2FE"),
-        accent=PALETTE["sky"],
-        dark=False,
-        tag="moat",
-    )
+def s9(sl: Slide) -> None:
+    c = sl.c
+    area = header(sl, "Operating Model", "Consumer app + Pro stack + hybrid backend data architecture.", dark=False, accent=C["teal"], tag="architecture", top=HexColor("#ECFEFF"), bottom=HexColor("#CCFBF1"))
 
-    left = Box(area.x, area.y, area.w * 0.48, area.h)
-    right = Box(area.x + area.w * 0.50, area.y, area.w * 0.50, area.h)
-
-    card(c, left, fill=white)
-    c.setFillColor(PALETTE["ink"])
-    c.setFont("Helvetica-Bold", 19)
-    c.drawString(left.x + 18, left.y + left.h - 28, "Why a generic app cannot copy this fast")
-    bullets_fit(
-        c,
-        [
-            "Multi-vertical demand aggregation improves dispatch efficiency.",
-            "Provider-side workflow lock-in via queue operations and schedules.",
-            "Localized trust system (verification + predictable status progression).",
-            "Shared infrastructure lowers expansion cost per new category/city.",
-        ],
-        Box(left.x + 18, left.y + 18, left.w - 36, left.h - 58),
-    )
-
-    card(c, right, fill=white)
-    c.setFillColor(PALETTE["ink"])
-    c.setFont("Helvetica-Bold", 19)
-    c.drawString(right.x + 18, right.y + right.h - 28, "Operating system view")
-
+    card(c, Box(area.x, area.y, area.w, area.h))
     layers = [
-        ("Demand Layer", "Consumer app and category entry points", HexColor("#DBEAFE")),
-        ("Execution Layer", "Provider and delivery queue operations", HexColor("#DCFCE7")),
-        ("Data Layer", "Transactions, preferences, and dispatch intelligence", HexColor("#FCE7F3")),
+        ("Consumer App", "Multi-module user journeys and bookings", HexColor("#DBEAFE")),
+        ("Pro Operations", "Queue handling, scheduling, execution, status transitions", HexColor("#DCFCE7")),
+        ("Backend Core", "PostgreSQL truth + Firebase realtime projection", HexColor("#FCE7F3")),
     ]
-    y = right.y + right.h - 80
-    for title, desc, bg in layers:
-        b = Box(right.x + 18, y, right.w - 36, 70)
-        card(c, b, fill=bg, radius=10)
-        c.setFillColor(PALETTE["ink"])
-        c.setFont("Helvetica-Bold", 13)
-        c.drawString(b.x + 12, b.y + 44, title)
-        c.setFont("Helvetica", 11)
-        c.setFillColor(PALETTE["slate"])
-        c.drawString(b.x + 12, b.y + 24, desc)
-        y -= 90
+    y = area.y + area.h - 86
+    for title, desc, col in layers:
+        b = Box(area.x + 60, y, area.w - 120, 72)
+        card(c, b, fill=col, radius=10)
+        c.setFillColor(C["ink"])
+        c.setFont("Helvetica-Bold", 15)
+        c.drawString(b.x + 14, b.y + 45, title)
+        c.setFont("Helvetica", 12)
+        c.setFillColor(C["slate"])
+        c.drawString(b.x + 14, b.y + 24, desc)
+        y -= 94
+
+    c.setStrokeColor(C["muted"])
+    c.setLineWidth(1.4)
+    c.line(area.x + area.w / 2, area.y + area.h - 14, area.x + area.w / 2, area.y + 20)
 
 
-def slide_10_roadmap(ctx: SlideCtx) -> None:
-    c = ctx.c
-    area = header(
-        ctx,
-        "18-Month Roadmap",
-        "Milestones aligned to product depth, reliability, and city expansion.",
-        bg_top=HexColor("#EEF2FF"),
-        bg_bottom=HexColor("#E0E7FF"),
-        accent=PALETTE["indigo"],
-        dark=False,
-        tag="milestones",
-    )
+def s10(sl: Slide) -> None:
+    c = sl.c
+    area = header(sl, "Roadmap", "12-18 month milestones toward institutional growth metrics.", dark=False, accent=C["lime"], tag="roadmap", top=HexColor("#F0FDF4"), bottom=HexColor("#DCFCE7"))
 
-    card(c, Box(area.x, area.y, area.w, area.h), fill=white)
-    periods = [
-        ("Q2-Q3 2026", "Execution hardening", ["Stabilize booking->dispatch->completion quality.", "Launch provider reliability scorecards."]),
-        ("Q4 2026", "Category depth", ["Scale top-performing categories.", "Improve repeat order mechanics."]),
-        ("H1 2027", "City expansion", ["Replicate playbook in 2-3 target cities.", "Strengthen partner acquisition channels."]),
-        ("H2 2027", "Efficiency", ["Push margin optimization and retention gains.", "Prepare for follow-on financing narrative."]),
+    card(c, Box(area.x, area.y, area.w, area.h))
+    steps = [
+        ("Q2-Q3 2026", "Core city reliability", ["Improve dispatch completion rates", "Operational SLA dashboards"]),
+        ("Q4 2026", "Category depth", ["Scale top-performing modules", "Strengthen repeat behavior"]),
+        ("H1 2027", "Geographic expansion", ["Roll into 2-3 additional cities", "Partner-led growth channels"]),
+        ("H2 2027", "Efficiency & scale", ["Margin improvement programs", "Prepare for next financing"]),
     ]
-
-    gap = 12
-    w = (area.w - 5 * gap) / 4
+    gap = 10
+    cw = (area.w - 5 * gap) / 4
     x = area.x + gap
-    for i, (period, title, pts) in enumerate(periods):
-        b = Box(x, area.y + gap, w, area.h - 2 * gap)
+    for i, (p, t, pts) in enumerate(steps):
+        b = Box(x, area.y + gap, cw, area.h - 2 * gap)
         card(c, b, fill=HexColor("#F8FAFC"), radius=10)
-        c.setFillColor(PALETTE["indigo"])
-        c.setFont("Helvetica-Bold", 11)
-        c.drawString(b.x + 10, b.y + b.h - 20, period)
-        c.setFillColor(PALETTE["ink"])
+        c.setFillColor(C["green"])
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(b.x + 10, b.y + b.h - 20, p)
+        c.setFillColor(C["ink"])
         c.setFont("Helvetica-Bold", 14)
-        c.drawString(b.x + 10, b.y + b.h - 42, title)
-        bullets_fit(c, pts, Box(b.x + 10, b.y + 16, b.w - 20, b.h - 62), max_size=11.0)
-        if i < 3:
-            c.setStrokeColor(PALETTE["muted"])
-            c.setLineWidth(1.2)
-            c.line(b.x + b.w + 2, b.y + b.h / 2, b.x + b.w + 10, b.y + b.h / 2)
-        x += w + gap
+        c.drawString(b.x + 10, b.y + b.h - 40, t)
+        draw_bullets(c, pts, Box(b.x + 10, b.y + 14, b.w - 20, b.h - 58), max_size=11.0)
+        x += cw + gap
 
 
-def slide_11_finance_ask(ctx: SlideCtx) -> None:
-    c = ctx.c
-    area = header(
-        ctx,
-        "Fundraise Ask",
-        "Capital to convert product readiness into scaled city operations.",
-        bg_top=HexColor("#082F49"),
-        bg_bottom=HexColor("#0E7490"),
-        accent=PALETTE["mint"],
-        dark=True,
-        tag="funding",
-    )
+def s11(sl: Slide) -> None:
+    c = sl.c
+    area = header(sl, "Fundraising Ask", "Capital to accelerate city density and expansion.", dark=True, accent=C["green"], tag="ask", top=HexColor("#052E2B"), bottom=HexColor("#0F766E"))
 
     left = Box(area.x, area.y, area.w * 0.38, area.h)
     right = Box(area.x + area.w * 0.40, area.y, area.w * 0.60, area.h)
+    card(c, left)
+    card(c, right)
 
-    card(c, left, fill=white)
-    c.setFillColor(PALETTE["ink"])
+    c.setFillColor(C["ink"])
     c.setFont("Helvetica-Bold", 22)
-    c.drawString(left.x + 18, left.y + left.h - 32, "Target Raise")
-    c.setFillColor(PALETTE["teal"])
+    c.drawString(left.x + 18, left.y + left.h - 34, "Target Round")
+    c.setFillColor(C["teal"])
     c.setFont("Helvetica-Bold", 40)
-    c.drawString(left.x + 18, left.y + left.h - 84, "US$1.2M")
-    c.setFillColor(PALETTE["muted"])
+    c.drawString(left.x + 18, left.y + left.h - 86, "US$1.2M")
+    c.setFillColor(C["muted"])
     c.setFont("Helvetica", 11)
-    c.drawString(left.x + 18, left.y + left.h - 106, "Pre-seed / Seed (editable)")
+    c.drawString(left.x + 18, left.y + left.h - 108, "Pre-seed / Seed (editable)")
+    draw_bullets(c, [
+        "Runway target: 18 months.",
+        "Focus: reliability, retention, and expansion readiness.",
+        "Round terms to be finalized with advisors.",
+    ], Box(left.x + 18, left.y + 16, left.w - 36, left.h - 132), max_size=11.4)
 
-    bullets_fit(
-        c,
-        [
-            "Runway objective: 18 months.",
-            "Primary KPI focus: reliability, retention, and city-level density.",
-            "Round terms and valuation to be finalized with advisors.",
-        ],
-        Box(left.x + 18, left.y + 16, left.w - 36, left.h - 130),
-        max_size=11.5,
-    )
-
-    card(c, right, fill=white)
-    c.setFillColor(PALETTE["ink"])
-    c.setFont("Helvetica-Bold", 22)
-    c.drawString(right.x + 18, right.y + right.h - 32, "Use of funds")
-
-    uses = [
-        ("City operations + supply onboarding", 40, PALETTE["teal"]),
-        ("Product and engineering", 27, PALETTE["sky"]),
-        ("Demand growth + retention", 21, PALETTE["mint"]),
-        ("Compliance, finance, contingency", 12, PALETTE["amber"]),
+    c.setFillColor(C["ink"])
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(right.x + 18, right.y + right.h - 34, "Use of funds")
+    use = [
+        ("City operations + supply", 40, C["teal"]),
+        ("Product & engineering", 27, C["sky"]),
+        ("Growth & retention", 21, C["green"]),
+        ("Legal/compliance buffer", 12, C["amber"]),
     ]
     y = right.y + right.h - 70
-    for label, pct, color in uses:
-        c.setFillColor(PALETTE["slate"])
+    for label, pct, col in use:
+        c.setFillColor(C["slate"])
         c.setFont("Helvetica", 11)
         c.drawString(right.x + 18, y + 8, label)
-        c.setFillColor(PALETTE["soft"])
-        c.roundRect(right.x + 18, y - 8, right.w - 120, 12, 5, stroke=0, fill=1)
-        c.setFillColor(color)
-        c.roundRect(right.x + 18, y - 8, (right.w - 120) * (pct / 100), 12, 5, stroke=0, fill=1)
-        c.setFillColor(PALETTE["ink"])
-        c.setFont("Helvetica-Bold", 11)
+        c.setFillColor(C["soft"])
+        c.roundRect(right.x + 18, y - 8, right.w - 120, 11, 5, stroke=0, fill=1)
+        c.setFillColor(col)
+        c.roundRect(right.x + 18, y - 8, (right.w - 120) * (pct / 100), 11, 5, stroke=0, fill=1)
+        c.setFillColor(C["ink"])
+        c.setFont("Helvetica-Bold", 10)
         c.drawRightString(right.x + right.w - 18, y + 8, f"{pct}%")
-        y -= 56
-
-    c.setFillColor(PALETTE["muted"])
-    c.setFont("Helvetica-Oblique", 9)
-    c.drawString(right.x + 18, right.y + 14, "Percent split is a planning baseline and should reflect your final operating model.")
+        y -= 55
 
 
-def slide_12_closing(ctx: SlideCtx) -> None:
-    c = ctx.c
-    gradient_bg(c, PALETTE["midnight"], PALETTE["navy"])
+def s12(sl: Slide) -> None:
+    c = sl.c
+    grad(c, C["bg_dark_1"], C["bg_dark_2"])
 
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 38)
-    c.drawString(54, PAGE_H - 96, "Thank You")
-    c.setFont("Helvetica", 17)
-    c.drawString(54, PAGE_H - 126, "We are building the service infrastructure layer for modern African cities.")
+    c.drawString(54, H - 98, "Thank You")
+    c.setFont("Helvetica", 16)
+    c.drawString(54, H - 128, "Building Africa's next generation super app with operational excellence.")
 
-    panel = Box(54, 190, 520, 220)
+    box = Box(54, 190, 540, 220)
     c.setFillColor(Color(1, 1, 1, alpha=0.10))
-    c.roundRect(panel.x, panel.y, panel.w, panel.h, 14, stroke=0, fill=1)
+    c.roundRect(box.x, box.y, box.w, box.h, 14, stroke=0, fill=1)
     c.setFillColor(white)
     c.setFont("Helvetica-Bold", 15)
-    c.drawString(panel.x + 16, panel.y + panel.h - 28, "Founder contact")
+    c.drawString(box.x + 16, box.y + box.h - 28, "Founder contact")
     c.setFont("Helvetica", 13)
-    c.drawString(panel.x + 16, panel.y + panel.h - 56, "Name: [Founder Name]")
-    c.drawString(panel.x + 16, panel.y + panel.h - 80, "Email: [your.email@company.com]")
-    c.drawString(panel.x + 16, panel.y + panel.h - 104, "Phone/WhatsApp: [+xxx xxx xxx]")
-    c.drawString(panel.x + 16, panel.y + panel.h - 128, "HQ: Djibouti | Expansion: East/West Africa")
+    c.drawString(box.x + 16, box.y + box.h - 56, "Name: [Founder Name]")
+    c.drawString(box.x + 16, box.y + box.h - 80, "Email: [your.email@company.com]")
+    c.drawString(box.x + 16, box.y + box.h - 104, "Phone/WhatsApp: [+xxx xxx xxx]")
+    c.drawString(box.x + 16, box.y + box.h - 128, "Base: Djibouti | Expansion: Pan-Africa")
 
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(panel.x + 16, panel.y + 58, "Reference backbone for this deck")
     c.setFont("Helvetica", 9)
-    c.drawString(panel.x + 16, panel.y + 40, "Sequoia 'Writing a Business Plan'; YC 'How to Design a Better Pitch Deck';")
-    c.drawString(panel.x + 16, panel.y + 26, "GSMA Mobile Economy Africa 2025; GSMA Mobile Money 2026; World Bank AfCFTA overview.")
+    c.drawString(box.x + 16, box.y + 30, "References: GSMA Mobile Economy Africa 2025, GSMA Mobile Money 2026, World Bank AfCFTA,")
+    c.drawString(box.x + 16, box.y + 17, "plus playbook inspiration from Grab/Gojek scaling patterns and Sequoia/YC deck structures.")
 
     img = ROOT / "assets/images/banners/home-service-banner.png"
-    frame = Box(PAGE_W - 360, 88, 300, 430)
-    c.setFillColor(Color(1, 1, 1, alpha=0.10))
-    c.roundRect(frame.x - 8, frame.y - 8, frame.w + 16, frame.h + 16, 16, stroke=0, fill=1)
     if img.exists():
-        draw_image_cover(c, img, frame)
+        draw_cover_img(c, img, Box(W - 344, 88, 288, 430))
 
     c.setFillColor(Color(1, 1, 1, alpha=0.10))
-    c.rect(0, 0, PAGE_W, 22, stroke=0, fill=1)
+    c.rect(0, 0, W, FOOTER_H, stroke=0, fill=1)
     c.setFillColor(Color(1, 1, 1, alpha=0.82))
     c.setFont("Helvetica", 9)
-    c.drawString(16, 7, "EdaLab | Confidential Investor Deck | April 2026")
-    c.drawRightString(PAGE_W - 16, 7, f"{ctx.page}/{ctx.total}")
+    c.drawString(16, 8, "EdaLab | Confidential | April 2026")
+    c.drawRightString(W - 16, 8, f"{sl.n}/{sl.total}")
 
 
-def build() -> Path:
-    OUTPUT_PDF.parent.mkdir(parents=True, exist_ok=True)
-    c = canvas.Canvas(str(OUTPUT_PDF), pagesize=(PAGE_W, PAGE_H))
-
-    slides = [
-        slide_01_cover,
-        slide_02_narrative,
-        slide_03_problem,
-        slide_04_why_now,
-        slide_05_solution,
-        slide_06_product_proof,
-        slide_07_business_model,
-        slide_08_gtm,
-        slide_09_moat,
-        slide_10_roadmap,
-        slide_11_finance_ask,
-        slide_12_closing,
-    ]
-
+def build(out: Path) -> None:
+    c = canvas.Canvas(str(out), pagesize=(W, H))
+    slides = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12]
     total = len(slides)
-    for idx, draw in enumerate(slides, start=1):
-        draw(SlideCtx(c=c, page=idx, total=total))
+    for i, fn in enumerate(slides, start=1):
+        fn(Slide(c, i, total))
         c.showPage()
-
     c.save()
-    return OUTPUT_PDF
 
 
 if __name__ == "__main__":
-    out = build()
-    print(f"Created: {out}")
+    OUT_V3.parent.mkdir(parents=True, exist_ok=True)
+    build(OUT_V3)
+    build(OUT_MAIN)
+    print(f"Created: {OUT_V3}")
+    print(f"Updated: {OUT_MAIN}")

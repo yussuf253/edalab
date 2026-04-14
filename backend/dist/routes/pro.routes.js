@@ -2376,6 +2376,7 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
                             client_1.OrderStatus.IN_PROGRESS,
                             client_1.OrderStatus.PROCESSING,
                             client_1.OrderStatus.DISPATCHED,
+                            client_1.OrderStatus.COMPLETED,
                         ],
                     },
                 },

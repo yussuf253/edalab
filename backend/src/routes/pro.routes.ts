@@ -3168,6 +3168,7 @@ router.get(
                   OrderStatus.IN_PROGRESS,
                   OrderStatus.PROCESSING,
                   OrderStatus.DISPATCHED,
+                  OrderStatus.COMPLETED,
                 ],
               },
             },
