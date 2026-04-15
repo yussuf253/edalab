@@ -698,6 +698,46 @@ function firstImageUrlFromJson(value) {
         .find((entry) => entry.length > 0);
     return url ?? null;
 }
+function normalizeComparableText(value) {
+    return value.trim().toLowerCase();
+}
+function readMetadataMap(value) {
+    if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+        return null;
+    }
+    return value;
+}
+function pharmacyBusinessFromOrderItem(item) {
+    const productMetadata = readMetadataMap(item.product?.metadata);
+    const itemMetadata = readMetadataMap(item.metadata);
+    const candidates = [
+        productMetadata?.sourceBusiness,
+        itemMetadata?.sourceBusiness,
+        itemMetadata?.selectedPharmacy,
+        itemMetadata?.shopName,
+        item.brand,
+    ];
+    for (const entry of candidates) {
+        const value = entry?.toString().trim();
+        if (value != null && value.length > 0) {
+            return value;
+        }
+    }
+    return null;
+}
+function isBoundPharmacyBusiness(businesses, sourceBusiness) {
+    if (sourceBusiness == null || sourceBusiness.trim().length == 0) {
+        return false;
+    }
+    const normalized = normalizeComparableText(sourceBusiness);
+    return businesses.some((value) => normalizeComparableText(value) === normalized);
+}
+function pharmacyOrderMatchesBindings(bindings, items) {
+    if (bindings.pharmacyBusinesses.length === 0) {
+        return false;
+    }
+    return items.some((item) => isBoundPharmacyBusiness(bindings.pharmacyBusinesses, pharmacyBusinessFromOrderItem(item)));
+}
 function hasShopOrderAccess(bindings, order) {
     switch (order.moduleType) {
         case client_1.ModuleType.SHOPPING:
@@ -709,17 +749,7 @@ function hasShopOrderAccess(bindings, order) {
             return (bindings.restaurantNames.length > 0 &&
                 order.items.some((item) => item.brand != null ? bindings.restaurantNames.includes(item.brand) : false));
         case client_1.ModuleType.PHARMACY:
-            return (bindings.pharmacyBusinesses.length > 0 &&
-                order.items.some((item) => {
-                    const metadata = item.product?.metadata &&
-                        typeof item.product.metadata === 'object' &&
-                        !Array.isArray(item.product.metadata)
-                        ? item.product.metadata
-                        : null;
-                    const sourceBusiness = metadata?.sourceBusiness?.toString();
-                    return (sourceBusiness != null &&
-                        bindings.pharmacyBusinesses.includes(sourceBusiness));
-                }));
+            return pharmacyOrderMatchesBindings(bindings, order.items);
         default:
             return false;
     }
@@ -803,6 +833,8 @@ function serializeQueueOrderItem(order, options) {
             ? 'open'
             : 'assigned');
     const categorySlug = firstItemMetadata?.categorySlug?.toString() ?? null;
+    const prescriptionRequest = firstItemMetadata?.prescriptionRequest == true ||
+        firstItem?.name?.toLowerCase().includes('prescription') == true;
     return {
         id: order.id,
         module: queueModuleForOrder(order.moduleType),
@@ -821,6 +853,7 @@ function serializeQueueOrderItem(order, options) {
         customerUserId: order.userId,
         providerId,
         categorySlug,
+        prescriptionRequest,
         queueType,
         distanceKm: options?.distanceKm != null
             ? Number(options.distanceKm.toFixed(1))
@@ -1225,52 +1258,40 @@ async function buildPharmacySummary(todayStart, bindings, businessName) {
         },
     });
     const filteredProducts = allProducts.filter((product) => {
-        const metadata = product.metadata && typeof product.metadata === 'object'
+        const metadata = product.metadata &&
+            typeof product.metadata === 'object' &&
+            !Array.isArray(product.metadata)
             ? product.metadata
             : null;
-        const sourceBusiness = metadata?.sourceBusiness?.toString();
-        return (sourceBusiness != null &&
-            bindings.pharmacyBusinesses.includes(sourceBusiness));
+        return isBoundPharmacyBusiness(bindings.pharmacyBusinesses, metadata?.sourceBusiness?.toString() ?? null);
     });
-    const productIds = filteredProducts.map((product) => product.id);
-    const [pendingOrders, completedToday, recent] = await Promise.all([
-        db_1.prisma.order.count({
-            where: {
-                moduleType: client_1.ModuleType.PHARMACY,
-                items: {
-                    some: {
-                        productId: { in: productIds },
-                    },
-                },
-                status: { in: liveOrderStatuses },
-            },
-        }),
-        db_1.prisma.order.count({
-            where: {
-                moduleType: client_1.ModuleType.PHARMACY,
-                items: {
-                    some: {
-                        productId: { in: productIds },
-                    },
-                },
-                status: client_1.OrderStatus.COMPLETED,
-                updatedAt: { gte: todayStart },
-            },
-        }),
-        db_1.prisma.order.findMany({
-            where: {
-                moduleType: client_1.ModuleType.PHARMACY,
-                items: {
-                    some: {
-                        productId: { in: productIds },
+    const pharmacyOrderCandidates = await db_1.prisma.order.findMany({
+        where: { moduleType: client_1.ModuleType.PHARMACY },
+        select: {
+            id: true,
+            status: true,
+            total: true,
+            createdAt: true,
+            updatedAt: true,
+            items: {
+                select: {
+                    name: true,
+                    brand: true,
+                    quantity: true,
+                    metadata: true,
+                    product: {
+                        select: { metadata: true },
                     },
                 },
             },
-            include: { items: true },
-            orderBy: { createdAt: 'desc' },
-            take: 3,
-        }),
-    ]);
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 300,
+    });
+    const pharmacyOrders = pharmacyOrderCandidates.filter((order) => pharmacyOrderMatchesBindings(bindings, order.items));
+    const pendingOrders = pharmacyOrders.filter((order) => liveOrderStatuses.includes(order.status)).length;
+    const completedToday = pharmacyOrders.filter((order) => order.status === client_1.OrderStatus.COMPLETED && order.updatedAt >= todayStart).length;
+    const recent = pharmacyOrders.slice(0, 3);
     const medicineCount = filteredProducts.length;
     const prescriptionItems = filteredProducts.filter((product) => product.requiresPrescription).length;
     return {
@@ -2324,16 +2345,7 @@ router.get('/:userId/shop-queue', (0, async_handler_1.asyncHandler)(async (req, 
     ]);
     const pharmacyOrders = !canPharmacy || bindings.pharmacyBusinesses.length === 0
         ? []
-        : pharmacyCandidates.filter((order) => order.items.some((item) => {
-            const metadata = item.product?.metadata &&
-                typeof item.product.metadata === 'object' &&
-                !Array.isArray(item.product.metadata)
-                ? item.product.metadata
-                : null;
-            const sourceBusiness = metadata?.sourceBusiness?.toString();
-            return (sourceBusiness != null &&
-                bindings.pharmacyBusinesses.includes(sourceBusiness));
-        }));
+        : pharmacyCandidates.filter((order) => pharmacyOrderMatchesBindings(bindings, order.items));
     const items = [...shoppingOrders, ...foodOrders, ...pharmacyOrders]
         .sort((left, right) => right.createdAt.getTime() - left.createdAt.getTime())
         .map((order) => serializeQueueOrderItem(order));
@@ -2605,7 +2617,7 @@ router.get('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async
     const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
     const bindings = normalizeBindings(hydratedProfile.bindings);
     const todayStart = startOfToday();
-    const [stores, shoppingProducts, shoppingOrders, restaurants, restaurantMenuItems, foodOrders, allPharmacyProducts,] = await Promise.all([
+    const [stores, shoppingProducts, shoppingOrders, restaurants, restaurantMenuItems, foodOrders, allPharmacyProducts, pharmacyOrderCandidates,] = await Promise.all([
         bindings.shoppingStoreIds.length === 0
             ? Promise.resolve([])
             : db_1.prisma.shoppingStore.findMany({
@@ -2729,6 +2741,25 @@ router.get('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async
             },
             orderBy: { name: 'asc' },
         }),
+        db_1.prisma.order.findMany({
+            where: { moduleType: client_1.ModuleType.PHARMACY },
+            select: {
+                status: true,
+                updatedAt: true,
+                items: {
+                    select: {
+                        productId: true,
+                        brand: true,
+                        metadata: true,
+                        product: {
+                            select: {
+                                metadata: true,
+                            },
+                        },
+                    },
+                },
+            },
+        }),
     ]);
     const pharmacyItems = bindings.pharmacyBusinesses.length === 0
         ? []
@@ -2739,31 +2770,11 @@ router.get('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async
                 ? product.metadata
                 : null;
             const sourceBusiness = metadata?.sourceBusiness?.toString();
-            return (sourceBusiness != null &&
-                bindings.pharmacyBusinesses.includes(sourceBusiness));
+            return isBoundPharmacyBusiness(bindings.pharmacyBusinesses, sourceBusiness ?? null);
         });
-    const pharmacyProductIds = pharmacyItems.map((product) => product.id);
-    const pharmacyOrders = pharmacyProductIds.length === 0
+    const pharmacyOrders = bindings.pharmacyBusinesses.length === 0
         ? []
-        : await db_1.prisma.order.findMany({
-            where: {
-                moduleType: client_1.ModuleType.PHARMACY,
-                items: {
-                    some: {
-                        productId: { in: pharmacyProductIds },
-                    },
-                },
-            },
-            select: {
-                status: true,
-                updatedAt: true,
-                items: {
-                    select: {
-                        productId: true,
-                    },
-                },
-            },
-        });
+        : pharmacyOrderCandidates.filter((order) => pharmacyOrderMatchesBindings(bindings, order.items));
     const shoppingProductCountByStore = new Map();
     const shoppingOutOfStockByStore = new Map();
     for (const product of shoppingProducts) {

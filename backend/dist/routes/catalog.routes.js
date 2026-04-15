@@ -92,6 +92,79 @@ function compareNullableNumberAsc(left, right) {
         return -1;
     return left - right;
 }
+const djiboutiPharmacyGeoByName = {
+    'pharmacie dawo': {
+        latitude: 11.5858,
+        longitude: 43.1457,
+        address: 'Quartier 7, Djibouti City',
+    },
+    gpca: {
+        latitude: 11.5897,
+        longitude: 43.1483,
+        address: 'Plateau du Serpent, Djibouti City',
+    },
+    'pharmacie riyadh': {
+        latitude: 11.5798,
+        longitude: 43.1476,
+        address: 'Riyadh District, Djibouti City',
+    },
+    'pharmacie du mall': {
+        latitude: 11.5625,
+        longitude: 43.1498,
+        address: 'Djibouti Mall Area',
+    },
+    "grande pharmacie de la corne d'afrique": {
+        latitude: 11.5719,
+        longitude: 43.1436,
+        address: 'La Plaine, Djibouti City',
+    },
+    'independence pharmacy': {
+        latitude: 11.5727,
+        longitude: 43.1452,
+        address: 'Independence District, Djibouti City',
+    },
+    'pharmacie para': {
+        latitude: 11.5809,
+        longitude: 43.1443,
+        address: 'Near Stadium, Djibouti City',
+    },
+    "pharmacie de l'ocean indien": {
+        latitude: 11.5752,
+        longitude: 43.1462,
+        address: 'Central Djibouti City',
+    },
+    'pharmacie de la mer rouge': {
+        latitude: 11.5689,
+        longitude: 43.1408,
+        address: 'Mer Rouge Area, Djibouti City',
+    },
+    'pharmacie principale': {
+        latitude: 11.5668,
+        longitude: 43.1439,
+        address: 'Rue d Ethiopie, La Plaine',
+    },
+    'pharmacie polyclinique nawil': {
+        latitude: 11.5846,
+        longitude: 43.1524,
+        address: 'Plateau du Serpent',
+    },
+    'pharmacie avicenne': {
+        latitude: 11.5784,
+        longitude: 43.1414,
+        address: 'Avenue 26, Djibouti City',
+    },
+};
+function normalizeBusinessName(value) {
+    return value
+        .trim()
+        .toLowerCase()
+        .replace(/[’']/g, "'")
+        .replace(/\s+/g, ' ');
+}
+function pharmacyGeoForBusiness(value) {
+    const normalized = normalizeBusinessName(value);
+    return djiboutiPharmacyGeoByName[normalized] ?? null;
+}
 function serializeHomeServiceCategory(category) {
     return {
         id: category.id,
@@ -221,6 +294,133 @@ function serializeShoppingStore(store, products) {
         highlights: readJsonStringArray(store.highlightsJson),
     };
 }
+router.get('/pharmacies', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const latitude = toFiniteNumber(req.query.latitude);
+    const longitude = toFiniteNumber(req.query.longitude);
+    const hasSearchLocation = latitude != null && longitude != null;
+    const nearOnly = readBooleanQuery(req.query.nearOnly);
+    const sortBy = req.query.sort?.toString().trim().toLowerCase() ?? 'distance';
+    const radiusRaw = toFiniteNumber(req.query.radiusKm);
+    const radiusKm = radiusRaw != null && radiusRaw > 0 ? Math.min(radiusRaw, 25) : 5;
+    const products = await db_1.prisma.product.findMany({
+        where: {
+            moduleType: client_1.ModuleType.PHARMACY,
+        },
+        select: {
+            id: true,
+            name: true,
+            brand: true,
+            price: true,
+            rating: true,
+            reviewCount: true,
+            requiresPrescription: true,
+            metadata: true,
+        },
+        orderBy: [{ reviewCount: 'desc' }, { rating: 'desc' }],
+    });
+    const grouped = new Map();
+    for (const product of products) {
+        const metadata = product.metadata &&
+            typeof product.metadata === 'object' &&
+            !Array.isArray(product.metadata)
+            ? product.metadata
+            : null;
+        const sourceBusiness = metadata?.sourceBusiness?.toString().trim() ||
+            product.brand?.trim() ||
+            'Pharmacy';
+        const key = normalizeBusinessName(sourceBusiness);
+        const current = grouped.get(key) ??
+            {
+                businessName: sourceBusiness,
+                ratingWeightedSum: 0,
+                ratingWeight: 0,
+                fallbackRatingSum: 0,
+                fallbackCount: 0,
+                reviewCount: 0,
+                prescriptionCount: 0,
+                productCount: 0,
+                minPrice: null,
+            };
+        const rating = (0, serializers_1.toNumber)(product.rating) ?? 0;
+        const reviewCount = product.reviewCount ?? 0;
+        if (reviewCount > 0) {
+            current.ratingWeightedSum += rating * reviewCount;
+            current.ratingWeight += reviewCount;
+        }
+        else {
+            current.fallbackRatingSum += rating;
+            current.fallbackCount += 1;
+        }
+        current.reviewCount += reviewCount;
+        current.productCount += 1;
+        if (product.requiresPrescription) {
+            current.prescriptionCount += 1;
+        }
+        const price = (0, serializers_1.toNumber)(product.price);
+        if (price != null) {
+            current.minPrice =
+                current.minPrice == null ? price : Math.min(current.minPrice, price);
+        }
+        grouped.set(key, current);
+    }
+    const pharmacies = Array.from(grouped.entries())
+        .map(([key, value]) => {
+        const geo = pharmacyGeoForBusiness(value.businessName);
+        const distanceKm = hasSearchLocation && geo != null
+            ? haversineDistanceKm(geo.latitude, geo.longitude, latitude, longitude)
+            : null;
+        const rating = value.ratingWeight > 0
+            ? value.ratingWeightedSum / value.ratingWeight
+            : value.fallbackCount > 0
+                ? value.fallbackRatingSum / value.fallbackCount
+                : 0;
+        return {
+            id: `pharmacy-${slugifyStoreName(key)}`,
+            name: value.businessName,
+            businessKey: key,
+            rating: Number(rating.toFixed(2)),
+            reviewCount: value.reviewCount,
+            productCount: value.productCount,
+            prescriptionCount: value.prescriptionCount,
+            minPrice: value.minPrice == null ? null : Number(value.minPrice.toFixed(2)),
+            location: geo == null
+                ? null
+                : {
+                    latitude: geo.latitude,
+                    longitude: geo.longitude,
+                    address: geo.address ?? null,
+                },
+            distanceKm: distanceKm == null ? null : Number(distanceKm.toFixed(3)),
+        };
+    })
+        .filter((entry) => {
+        if (!nearOnly)
+            return true;
+        return entry.distanceKm != null && entry.distanceKm <= radiusKm;
+    });
+    pharmacies.sort((left, right) => {
+        if (sortBy === 'rating') {
+            const byRating = (right.rating ?? 0) - (left.rating ?? 0);
+            if (byRating !== 0)
+                return byRating;
+            const byReviews = (right.reviewCount ?? 0) - (left.reviewCount ?? 0);
+            if (byReviews !== 0)
+                return byReviews;
+            return compareNullableNumberAsc(left.distanceKm, right.distanceKm);
+        }
+        if (sortBy === 'reviews') {
+            const byReviews = (right.reviewCount ?? 0) - (left.reviewCount ?? 0);
+            if (byReviews !== 0)
+                return byReviews;
+            const byRating = (right.rating ?? 0) - (left.rating ?? 0);
+            if (byRating !== 0)
+                return byRating;
+            return compareNullableNumberAsc(left.distanceKm, right.distanceKm);
+        }
+        return compareNullableNumberAsc(left.distanceKm, right.distanceKm);
+    });
+    res.json(pharmacies);
+}));
 router.get('/shopping-stores', (0, async_handler_1.asyncHandler)(async (_req, res) => {
     const stores = await db_1.prisma.shoppingStore.findMany({
         include: {

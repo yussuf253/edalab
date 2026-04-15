@@ -368,6 +368,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
     final createdAt = _formatDate(item['createdAt']);
     final isBusy = _busyIds.contains(id);
     final nextStatus = _nextStatus(status);
+    final isPrescriptionRequest = item['prescriptionRequest'] == true;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -394,6 +395,27 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
+                if (isPrescriptionRequest) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.pharmacy.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: const Text(
+                      'Prescription',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.pharmacy,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: 6),

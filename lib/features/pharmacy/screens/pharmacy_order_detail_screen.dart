@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -91,6 +92,12 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
     await launchPhoneCall(context, phone);
   }
 
+  Future<void> _openPrescriptionImage(String url) async {
+    final uri = Uri.tryParse(url.trim());
+    if (uri == null) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   @override
   void dispose() {
     _pollTimer?.cancel();
@@ -104,6 +111,17 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
     final items = (data['items'] as List? ?? const [])
         .map((item) => Map<String, dynamic>.from(item as Map))
         .toList();
+    final firstItemMetadata = items.isNotEmpty && items.first['metadata'] is Map
+        ? Map<String, dynamic>.from(items.first['metadata'] as Map)
+        : const <String, dynamic>{};
+    final isPrescriptionRequest =
+        firstItemMetadata['prescriptionRequest'] == true;
+    final prescriptionPharmacy =
+        firstItemMetadata['selectedPharmacy']?.toString() ??
+        firstItemMetadata['sourceBusiness']?.toString();
+    final prescriptionNote = firstItemMetadata['prescriptionNote']?.toString();
+    final prescriptionImageUrl = firstItemMetadata['prescriptionImageUrl']
+        ?.toString();
     final medicineCount = items.fold<int>(
       0,
       (sum, item) => sum + ((item['quantity'] as num?)?.toInt() ?? 0),
@@ -165,6 +183,44 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
                           data['paymentLabel']?.toString() ??
                           l10n.t('pharmacy_tracking.payment_confirmed'),
                     ),
+                    if (isPrescriptionRequest) ...[
+                      const SizedBox(height: 14),
+                      _PharmacySection(
+                        title: l10n.t('pharmacy_tracking.prescription_title'),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (prescriptionPharmacy != null &&
+                                prescriptionPharmacy.trim().isNotEmpty)
+                              _SummaryLine(
+                                label: l10n.t(
+                                  'pharmacy_tracking.pharmacy_label',
+                                ),
+                                value: prescriptionPharmacy.trim(),
+                              ),
+                            if (prescriptionNote != null &&
+                                prescriptionNote.trim().isNotEmpty)
+                              _SummaryLine(
+                                label: l10n.t(
+                                  'pharmacy_tracking.prescription_note',
+                                ),
+                                value: prescriptionNote.trim(),
+                              ),
+                            if (prescriptionImageUrl != null &&
+                                prescriptionImageUrl.trim().isNotEmpty)
+                              _PrescriptionImagePreview(
+                                label: l10n.t(
+                                  'pharmacy_tracking.prescription_image',
+                                ),
+                                imageUrl: prescriptionImageUrl.trim(),
+                                onOpen: () => _openPrescriptionImage(
+                                  prescriptionImageUrl.trim(),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
                     if (courier != null) ...[
                       const SizedBox(height: 14),
                       _PharmacySection(
@@ -564,6 +620,88 @@ class _PharmacySection extends StatelessWidget {
           Text(title, style: AppTextStyles.h4),
           const SizedBox(height: 14),
           child,
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryLine extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _SummaryLine({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: AppTextStyles.labelSmall.copyWith(color: AppColors.grey),
+          ),
+          const SizedBox(height: 2),
+          Text(value, style: AppTextStyles.labelMedium),
+        ],
+      ),
+    );
+  }
+}
+
+class _PrescriptionImagePreview extends StatelessWidget {
+  final String label;
+  final String imageUrl;
+  final VoidCallback onOpen;
+
+  const _PrescriptionImagePreview({
+    required this.label,
+    required this.imageUrl,
+    required this.onOpen,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: AppTextStyles.labelSmall.copyWith(color: AppColors.grey),
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              imageUrl,
+              width: double.infinity,
+              height: 132,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Container(
+                height: 60,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  imageUrl,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.grey,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: onOpen,
+              child: Text(AppLocalizations.of(context).t('orders.open')),
+            ),
+          ),
         ],
       ),
     );

@@ -9,6 +9,9 @@ import {
   ProProfileType,
 } from '@prisma/client';
 import { Router } from 'express';
+import { randomUUID } from 'crypto';
+import fs from 'fs/promises';
+import path from 'path';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
@@ -45,6 +48,23 @@ const createOrderSchema = z.object({
   total: z.coerce.number(),
   notes: z.string().optional(),
   items: z.array(orderItemSchema).default([]),
+});
+
+const createPharmacyPrescriptionOrderSchema = z.object({
+  userId: z.string().min(1),
+  pharmacyName: z.string().min(2),
+  note: z.string().optional(),
+  prescriptionImageUrl: z.string().url().optional(),
+  latitude: z.coerce.number().optional(),
+  longitude: z.coerce.number().optional(),
+  address: z.string().optional(),
+});
+
+const uploadPrescriptionImageSchema = z.object({
+  userId: z.string().optional(),
+  fileName: z.string().min(1).max(180).optional(),
+  mimeType: z.string().max(120).optional(),
+  dataBase64: z.string().min(24),
 });
 
 const createHotelBookingSchema = z
@@ -166,6 +186,18 @@ function bindingsProviderIds(value: unknown) {
   return normalizeStringList(map.providerIds);
 }
 
+function bindingsPharmacyBusinesses(value: unknown) {
+  if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+    return [];
+  }
+  const map = value as Record<string, unknown>;
+  return normalizeStringList(map.pharmacyBusinesses);
+}
+
+function equalsNormalizedText(left: string, right: string) {
+  return left.trim().toLowerCase() === right.trim().toLowerCase();
+}
+
 function firstImageFromJson(value: Prisma.JsonValue | null | undefined) {
   if (!Array.isArray(value)) return null;
   const image = value.find((entry) => typeof entry === 'string');
@@ -179,6 +211,40 @@ function firstNonEmptyString(...values: Array<string | null | undefined>) {
     }
   }
   return null;
+}
+
+function fileExtensionFromMimeType(mimeType: string | null | undefined) {
+  const normalized = mimeType?.trim().toLowerCase();
+  switch (normalized) {
+    case 'image/jpeg':
+    case 'image/jpg':
+      return 'jpg';
+    case 'image/png':
+      return 'png';
+    case 'image/webp':
+      return 'webp';
+    default:
+      return null;
+  }
+}
+
+function fileExtensionFromName(fileName: string | null | undefined) {
+  const trimmed = fileName?.trim();
+  if (trimmed == null || trimmed.length == 0) return null;
+  const extension = trimmed.split('.').pop()?.trim().toLowerCase();
+  if (extension == null || extension.length == 0) return null;
+  if (['jpg', 'jpeg', 'png', 'webp'].includes(extension)) {
+    return extension == 'jpeg' ? 'jpg' : extension;
+  }
+  return null;
+}
+
+function decodedBase64Image(dataBase64: string) {
+  const payload = dataBase64.trim();
+  const withoutPrefix = payload.includes(',')
+    ? payload.substring(payload.indexOf(',') + 1)
+    : payload;
+  return Buffer.from(withoutPrefix, 'base64');
 }
 
 function enrichOrderItemMetadata(item: OrderItemWithProduct) {
@@ -661,6 +727,131 @@ router.get(
 );
 
 router.post(
+  '/pharmacy-prescription',
+  asyncHandler(async (req, res) => {
+    const body: z.infer<typeof createPharmacyPrescriptionOrderSchema> =
+      createPharmacyPrescriptionOrderSchema.parse(req.body);
+
+    const pharmacyName = body.pharmacyName.trim();
+    const metadata: Record<string, unknown> = {
+      sourceBusiness: pharmacyName,
+      selectedPharmacy: pharmacyName,
+      prescriptionRequest: true,
+      prescriptionNote: body.note?.trim() ?? '',
+      ...(((body.prescriptionImageUrl?.trim().length ?? 0) > 0)
+          ? { prescriptionImageUrl: body.prescriptionImageUrl!.trim() }
+          : {}),
+      ...(((body.address?.trim().length ?? 0) > 0)
+          ? { address: body.address!.trim() }
+          : {}),
+      ...((body.latitude != null && body.longitude != null)
+          ? {
+              serviceLocation: {
+                latitude: body.latitude,
+                longitude: body.longitude,
+              },
+            }
+          : {}),
+      uploadedAt: new Date().toISOString(),
+    };
+
+    const order = await prisma.order.create({
+      data: {
+        userId: body.userId,
+        moduleType: ModuleType.PHARMACY,
+        status: OrderStatus.PENDING,
+        subtotal: new Prisma.Decimal(0),
+        tax: new Prisma.Decimal(0),
+        deliveryFee: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(0),
+        notes: body.note?.trim() || null,
+        items: {
+          create: [
+            {
+              productId: null,
+              externalRefId: null,
+              name: 'Prescription request',
+              brand: pharmacyName,
+              quantity: 1,
+              unitPrice: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(0),
+              metadata: metadata as Prisma.InputJsonValue,
+            },
+          ],
+        },
+      },
+      include: {
+        items: {
+          include: {
+            product: {
+              include: {
+                shop: true,
+              },
+            },
+          },
+        },
+        deliveryAssignee: true,
+      },
+    }) as OrderWithItemsAndDelivery;
+
+    await createOrderCreatedNotification({
+      userId: order.userId,
+      orderId: order.id,
+      moduleType: order.moduleType,
+      moduleName: pharmacyName,
+    });
+
+    const shopProfiles = await prisma.proProfile.findMany({
+      where: {
+        type: ProProfileType.SHOP,
+        activeModules: { has: ProModule.PHARMACY },
+      },
+      select: {
+        userId: true,
+        bindings: true,
+      },
+    });
+
+    const recipientUserIds = Array.from(
+      new Set(
+        shopProfiles
+          .filter((profile) =>
+            bindingsPharmacyBusinesses(profile.bindings).some((business) =>
+              equalsNormalizedText(business, pharmacyName),
+            ),
+          )
+          .map((profile) => profile.userId)
+          .filter((id) => id.trim().length > 0),
+      ),
+    );
+
+    await Promise.allSettled(
+      recipientUserIds.map((recipientUserId) =>
+        createBackendNotification({
+          userId: recipientUserId,
+          type: NotificationType.SYSTEM,
+          module: NotificationModule.PHARMACY,
+          title: 'New prescription request',
+          body: `A customer uploaded a prescription request for ${pharmacyName}.`,
+          route: '/pro/shop/queue?module=pharmacy',
+          dedupeKey: `pharmacy-rx:${order.id}:${recipientUserId}`,
+          metadata: {
+            orderId: order.id,
+            moduleType: ModuleType.PHARMACY,
+            source: 'pharmacy_prescription',
+            pharmacyName,
+            prescriptionRequest: true,
+          },
+        }),
+      ),
+    );
+
+    res.status(201).json(serializeOrderDetail(order));
+  }),
+);
+
+router.post(
   '/',
   asyncHandler(async (req, res) => {
     const body: z.infer<typeof createOrderSchema> = createOrderSchema.parse(
@@ -813,6 +1004,59 @@ router.post(
         total: toNumber(item.lineTotal),
         metadata: enrichOrderItemMetadata(item),
       })),
+    });
+  }),
+);
+
+router.post(
+  '/pharmacy-prescription/upload',
+  asyncHandler(async (req, res) => {
+    const body: z.infer<typeof uploadPrescriptionImageSchema> =
+      uploadPrescriptionImageSchema.parse(req.body);
+
+    const fileBuffer = decodedBase64Image(body.dataBase64);
+    if (fileBuffer.length == 0) {
+      return res.status(400).json({ error: 'Uploaded image is empty.' });
+    }
+    const maxSizeBytes = 5 * 1024 * 1024;
+    if (fileBuffer.length > maxSizeBytes) {
+      return res
+        .status(400)
+        .json({ error: 'Image is too large. Maximum size is 5 MB.' });
+    }
+
+    const extension =
+      fileExtensionFromMimeType(body.mimeType) ??
+      fileExtensionFromName(body.fileName) ??
+      'jpg';
+    const fileName = `rx-${Date.now()}-${randomUUID()}.${extension}`;
+    const uploadsDir = path.resolve(
+      process.cwd(),
+      'uploads',
+      'prescriptions',
+    );
+    await fs.mkdir(uploadsDir, { recursive: true });
+    const absoluteFilePath = path.join(uploadsDir, fileName);
+    await fs.writeFile(absoluteFilePath, fileBuffer);
+
+    const relativePath = `/uploads/prescriptions/${fileName}`;
+    const forwardedProto = req
+      .header('x-forwarded-proto')
+      ?.split(',')[0]
+      ?.trim();
+    const protocol = forwardedProto || req.protocol || 'https';
+    const host = req.get('host');
+    const publicUrl =
+      host == null || host.trim().length == 0
+        ? relativePath
+        : `${protocol}://${host}${relativePath}`;
+
+    res.status(201).json({
+      fileName,
+      mimeType: body.mimeType ?? null,
+      sizeBytes: fileBuffer.length,
+      path: relativePath,
+      url: publicUrl,
     });
   }),
 );

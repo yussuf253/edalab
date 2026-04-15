@@ -360,7 +360,10 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                       name: medicine.name,
                       price: medicine.price,
                       moduleType: 'pharmacy',
-                      brand: medicine.category,
+                      brand: medicine.sourceBusiness ?? medicine.category,
+                      shopName: medicine.sourceBusiness,
+                      imageUrl: medicine.imageUrl,
+                      description: medicine.description,
                     ),
                   );
                 },
