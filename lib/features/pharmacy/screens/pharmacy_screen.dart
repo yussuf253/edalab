@@ -19,7 +19,9 @@ import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
 class PharmacyScreen extends StatefulWidget {
-  const PharmacyScreen({super.key});
+  final String? initialSelectedPharmacyName;
+
+  const PharmacyScreen({super.key, this.initialSelectedPharmacyName});
 
   @override
   State<PharmacyScreen> createState() => _PharmacyScreenState();
@@ -36,6 +38,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
   String _searchQuery = '';
   String? _selectedPharmacyName;
   _ResolvedPharmacyLocation? _resolvedLocation;
+  String _prescriptionSubmitStage = '';
 
   _PharmacyDirectoryItem? get _selectedPharmacy {
     final selectedName = _selectedPharmacyName;
@@ -54,6 +57,8 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
   @override
   void initState() {
     super.initState();
+    final initial = widget.initialSelectedPharmacyName?.trim();
+    _selectedPharmacyName = initial == null || initial.isEmpty ? null : initial;
     _bootstrap();
   }
 
@@ -259,12 +264,23 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
     setState(() => _isSubmittingPrescription = true);
     try {
       String? uploadedPrescriptionUrl;
+      setState(
+        () => _prescriptionSubmitStage = l10n.t(
+          'pharmacy.prescription_stage_upload',
+        ),
+      );
       if (draft.imageBytes != null && draft.imageBytes!.isNotEmpty) {
+        final resolvedMimeType = _resolvePrescriptionMimeType(
+          explicitMimeType: draft.imageMimeType,
+          fileName: draft.imageFileName,
+        );
         final uploadResponse =
             await ApiClient.post('/orders/pharmacy-prescription/upload', {
               'userId': userId,
-              'fileName': draft.imageFileName,
-              'mimeType': draft.imageMimeType,
+              if (draft.imageFileName != null &&
+                  draft.imageFileName!.trim().isNotEmpty)
+                'fileName': draft.imageFileName!.trim(),
+              'mimeType': resolvedMimeType,
               'dataBase64': base64Encode(draft.imageBytes!),
             });
         if (!mounted) return;
@@ -272,6 +288,11 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
         uploadedPrescriptionUrl = uploadMap['url']?.toString();
       }
 
+      setState(
+        () => _prescriptionSubmitStage = l10n.t(
+          'pharmacy.prescription_stage_submit',
+        ),
+      );
       final response = await ApiClient.post('/orders/pharmacy-prescription', {
         'userId': userId,
         'pharmacyName': draft.pharmacyName,
@@ -311,9 +332,28 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
       );
     } finally {
       if (mounted) {
-        setState(() => _isSubmittingPrescription = false);
+        setState(() {
+          _isSubmittingPrescription = false;
+          _prescriptionSubmitStage = '';
+        });
       }
     }
+  }
+
+  String _resolvePrescriptionMimeType({
+    required String? explicitMimeType,
+    required String? fileName,
+  }) {
+    final direct = explicitMimeType?.trim().toLowerCase();
+    if (direct != null && direct.isNotEmpty) return direct;
+
+    final normalizedName = fileName?.trim().toLowerCase() ?? '';
+    if (normalizedName.endsWith('.png')) return 'image/png';
+    if (normalizedName.endsWith('.webp')) return 'image/webp';
+    if (normalizedName.endsWith('.heic') || normalizedName.endsWith('.heif')) {
+      return 'image/heic';
+    }
+    return 'image/jpeg';
   }
 
   @override
@@ -405,408 +445,371 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
             ),
           ],
         ),
-        body: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: AppSearchBar(
-                  hint: l10n.t('pharmacy.search_hint'),
-                  controller: _searchController,
-                  onChanged: (value) => setState(() => _searchQuery = value),
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.pharmacy, AppColors.secondaryLight],
+        body: Stack(
+          children: [
+            CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                    child: AppSearchBar(
+                      hint: l10n.t('pharmacy.search_hint'),
+                      controller: _searchController,
+                      onChanged: (value) =>
+                          setState(() => _searchQuery = value),
                     ),
-                    borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.t('pharmacy.hero_title'),
-                              style: AppTextStyles.h4.copyWith(
-                                color: AppColors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              selectedPharmacy == null
-                                  ? l10n.t('pharmacy.hero_subtitle')
-                                  : '${selectedPharmacy.name} • ${selectedPharmacy.distanceLabel(l10n)}',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: Colors.white70,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 12),
-                            GestureDetector(
-                              onTap: _openPrescriptionSheet,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  l10n.t('pharmacy.upload_now'),
-                                  style: AppTextStyles.labelMedium.copyWith(
-                                    color: AppColors.pharmacy,
-                                  ),
-                                ),
-                              ),
-                            ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            AppColors.pharmacy,
+                            AppColors.secondaryLight,
                           ],
                         ),
-                      ),
-                      Container(
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(
-                          Icons.receipt_long_rounded,
-                          color: AppColors.white,
-                          size: 36,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.t('pharmacy.nearby_title'),
-                        style: AppTextStyles.h4,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() => _selectedPharmacyName = null);
-                      },
-                      child: Text(l10n.t('pharmacy.all_pharmacies')),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (_isLoadingPharmacies)
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 112,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-                    itemCount: 2,
-                    itemBuilder: (context, index) =>
-                        const _PharmacyNearbySkeletonCard(),
-                  ),
-                ),
-              )
-            else if (_pharmacies.isEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: AppSpacing.shadowSm,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.t('pharmacy.no_pharmacies_title'),
-                          style: AppTextStyles.labelLarge,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          l10n.t('pharmacy.no_pharmacies_subtitle'),
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.grey,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              )
-            else
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 112,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-                    itemCount: _pharmacies.length,
-                    itemBuilder: (context, index) {
-                      final pharmacy = _pharmacies[index];
-                      final isSelected =
-                          _selectedPharmacyName != null &&
-                          pharmacy.name.trim().toLowerCase() ==
-                              _selectedPharmacyName!.trim().toLowerCase();
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() => _selectedPharmacyName = pharmacy.name);
-                        },
-                        child: Container(
-                          width: 192,
-                          margin: const EdgeInsets.only(right: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.pharmacy.withValues(alpha: 0.08)
-                                : AppColors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppColors.pharmacy.withValues(alpha: 0.44)
-                                  : AppColors.lightGrey.withValues(alpha: 0.55),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                pharmacy.name,
-                                style: AppTextStyles.labelMedium,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                pharmacy.distanceLabel(l10n),
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.grey,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '★ ${pharmacy.rating.toStringAsFixed(1)} • ${l10n.t('pharmacy.reviews_count', params: {'count': '${pharmacy.reviewCount}'})}',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.grey,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 100,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  children: [
-                    _CatIcon(
-                      Icons.medication_rounded,
-                      l10n.t('pharmacy.medicines'),
-                      AppColors.pharmacy,
-                    ),
-                    _CatIcon(
-                      Icons.sanitizer_rounded,
-                      l10n.t('pharmacy.wellness'),
-                      AppColors.secondary,
-                    ),
-                    _CatIcon(
-                      Icons.healing_rounded,
-                      l10n.t('pharmacy.first_aid'),
-                      AppColors.accent,
-                    ),
-                    _CatIcon(
-                      Icons.baby_changing_station_rounded,
-                      l10n.t('pharmacy.baby_care'),
-                      AppColors.food,
-                    ),
-                    _CatIcon(
-                      Icons.face_retouching_natural_rounded,
-                      l10n.t('pharmacy.skin_care'),
-                      AppColors.laundry,
-                    ),
-                    _CatIcon(
-                      Icons.fitness_center_rounded,
-                      l10n.t('pharmacy.fitness'),
-                      AppColors.primary,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-                child: Text(
-                  selectedPharmacy == null
-                      ? l10n.t('pharmacy.popular_medicines')
-                      : '${selectedPharmacy.name} • ${l10n.t('pharmacy.popular_medicines')}',
-                  style: AppTextStyles.h4,
-                ),
-              ),
-            ),
-            if (isLoading)
-              const SliverSectionListShimmer(itemCount: 6)
-            else if (medicines.isEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColors.lightGrey.withValues(alpha: 0.65),
-                      ),
-                    ),
-                    child: Text(
-                      l10n.t('pharmacy.no_results_for_pharmacy'),
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.grey,
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            else
-              SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final medicine = medicines[index];
-                  return GestureDetector(
-                    onTap: () =>
-                        context.push('/pharmacy/medicine/${medicine.id}'),
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: AppSpacing.shadowSm,
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: AppColors.pharmacyBg,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: const Icon(
-                              Icons.medication_rounded,
-                              color: AppColors.pharmacy,
-                              size: 28,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  medicine.name,
-                                  style: AppTextStyles.labelLarge,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  medicine.size,
-                                  style: AppTextStyles.caption,
+                                  l10n.t('pharmacy.hero_title'),
+                                  style: AppTextStyles.h4.copyWith(
+                                    color: AppColors.white,
+                                  ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  medicine.category,
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    color: AppColors.pharmacy,
+                                  selectedPharmacy == null
+                                      ? l10n.t('pharmacy.hero_subtitle')
+                                      : '${selectedPharmacy.name} • ${selectedPharmacy.distanceLabel(l10n)}',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: Colors.white70,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 12),
+                                GestureDetector(
+                                  onTap: _openPrescriptionSheet,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      l10n.t('pharmacy.upload_now'),
+                                      style: AppTextStyles.labelMedium.copyWith(
+                                        color: AppColors.pharmacy,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                '\$${medicine.price.toStringAsFixed(2)}',
-                                style: AppTextStyles.priceSmall.copyWith(
-                                  color: AppColors.pharmacy,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              GestureDetector(
-                                onTap: () {
-                                  cartProvider.addItem(
-                                    CartItem(
-                                      id: medicine.id,
-                                      name: medicine.name,
-                                      price: medicine.price,
-                                      moduleType: 'pharmacy',
-                                      brand:
-                                          medicine.sourceBusiness ??
-                                          medicine.category,
-                                      shopName: medicine.sourceBusiness,
-                                      imageUrl: medicine.imageUrl,
-                                      description: medicine.description,
-                                    ),
-                                  );
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.pharmacy,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    l10n.t('pharmacy.add'),
-                                    style: AppTextStyles.badge.copyWith(
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          Container(
+                            width: 70,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Icon(
+                              Icons.receipt_long_rounded,
+                              color: AppColors.white,
+                              size: 36,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                  );
-                }, childCount: medicines.length),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.t('pharmacy.nearby_title'),
+                            style: AppTextStyles.h4,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            setState(() => _selectedPharmacyName = null);
+                          },
+                          child: Text(l10n.t('pharmacy.all_pharmacies')),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (_isLoadingPharmacies)
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 194,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                        itemCount: 2,
+                        itemBuilder: (context, index) =>
+                            const _PharmacyNearbySkeletonCard(),
+                      ),
+                    ),
+                  )
+                else if (_pharmacies.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: AppSpacing.shadowSm,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.t('pharmacy.no_pharmacies_title'),
+                              style: AppTextStyles.labelLarge,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              l10n.t('pharmacy.no_pharmacies_subtitle'),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 194,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                        itemCount: _pharmacies.length,
+                        itemBuilder: (context, index) {
+                          final pharmacy = _pharmacies[index];
+                          return _PharmacyNearbyCard(
+                            pharmacy: pharmacy,
+                            onViewDetails: () {
+                              context.push(
+                                '/pharmacy/store/${pharmacy.id}',
+                                extra: pharmacy.toMap(),
+                              );
+                            },
+                            l10n: l10n,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                    child: Text(
+                      selectedPharmacy == null
+                          ? l10n.t('pharmacy.popular_medicines')
+                          : '${selectedPharmacy.name} • ${l10n.t('pharmacy.popular_medicines')}',
+                      style: AppTextStyles.h4,
+                    ),
+                  ),
+                ),
+                if (isLoading)
+                  const SliverSectionListShimmer(itemCount: 6)
+                else if (medicines.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppColors.lightGrey.withValues(alpha: 0.65),
+                          ),
+                        ),
+                        child: Text(
+                          l10n.t('pharmacy.no_results_for_pharmacy'),
+                          style: AppTextStyles.bodyMedium.copyWith(
+                            color: AppColors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final medicine = medicines[index];
+                      return GestureDetector(
+                        onTap: () =>
+                            context.push('/pharmacy/medicine/${medicine.id}'),
+                        child: Container(
+                          margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: AppSpacing.shadowSm,
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 60,
+                                height: 60,
+                                decoration: BoxDecoration(
+                                  color: AppColors.pharmacyBg,
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: const Icon(
+                                  Icons.medication_rounded,
+                                  color: AppColors.pharmacy,
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      medicine.name,
+                                      style: AppTextStyles.labelLarge,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      medicine.size,
+                                      style: AppTextStyles.caption,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      medicine.category,
+                                      style: AppTextStyles.labelSmall.copyWith(
+                                        color: AppColors.pharmacy,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '\$${medicine.price.toStringAsFixed(2)}',
+                                    style: AppTextStyles.priceSmall.copyWith(
+                                      color: AppColors.pharmacy,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  GestureDetector(
+                                    onTap: () {
+                                      cartProvider.addItem(
+                                        CartItem(
+                                          id: medicine.id,
+                                          name: medicine.name,
+                                          price: medicine.price,
+                                          moduleType: 'pharmacy',
+                                          brand:
+                                              medicine.sourceBusiness ??
+                                              medicine.category,
+                                          shopName: medicine.sourceBusiness,
+                                          imageUrl: medicine.imageUrl,
+                                          description: medicine.description,
+                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.pharmacy,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        l10n.t('pharmacy.add'),
+                                        style: AppTextStyles.badge.copyWith(
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }, childCount: medicines.length),
+                  ),
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+              ],
+            ),
+            if (_isSubmittingPrescription)
+              Positioned.fill(
+                child: ColoredBox(
+                  color: Colors.black.withValues(alpha: 0.34),
+                  child: Center(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 28),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2.4),
+                          ),
+                          const SizedBox(width: 12),
+                          Flexible(
+                            child: Text(
+                              _prescriptionSubmitStage.isEmpty
+                                  ? l10n.t('pharmacy.prescription_submitting')
+                                  : _prescriptionSubmitStage,
+                              style: AppTextStyles.labelMedium,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ),
         bottomNavigationBar: cartItemCount > 0
@@ -874,31 +877,208 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
   }
 }
 
-class _CatIcon extends StatelessWidget {
-  final IconData icon;
-  final String name;
-  final Color color;
-  const _CatIcon(this.icon, this.name, this.color);
+class _PharmacyNearbySkeletonCard extends StatelessWidget {
+  const _PharmacyNearbySkeletonCard();
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 16),
-      child: Column(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(16),
+    return Container(
+      width: 270,
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: const AppShimmer(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                ShimmerBlock(width: 40, height: 40, radius: 12),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ShimmerBlock(width: 132, height: 12, radius: 8),
+                      SizedBox(height: 6),
+                      ShimmerBlock(width: 160, height: 10, radius: 8),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            child: Icon(icon, color: color, size: 28),
+            SizedBox(height: 8),
+            ShimmerBlock(width: 78, height: 20, radius: 999),
+            SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: ShimmerBlock(
+                    width: double.infinity,
+                    height: 28,
+                    radius: 10,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: ShimmerBlock(
+                    width: double.infinity,
+                    height: 28,
+                    radius: 10,
+                  ),
+                ),
+              ],
+            ),
+            Spacer(),
+            ShimmerBlock(width: double.infinity, height: 34, radius: 10),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PharmacyNearbyCard extends StatelessWidget {
+  const _PharmacyNearbyCard({
+    required this.pharmacy,
+    required this.onViewDetails,
+    required this.l10n,
+  });
+
+  final _PharmacyDirectoryItem pharmacy;
+  final VoidCallback onViewDetails;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 270,
+      margin: const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          ...AppSpacing.shadowSm,
+          BoxShadow(
+            color: AppColors.pharmacy.withValues(alpha: 0.06),
+            blurRadius: 22,
+            offset: const Offset(0, 8),
           ),
-          const SizedBox(height: 6),
-          Text(
-            name,
-            style: AppTextStyles.labelSmall.copyWith(color: AppColors.dark),
+        ],
+        border: Border.all(color: AppColors.lightGrey.withValues(alpha: 0.55)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.pharmacyBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.local_pharmacy_rounded,
+                  color: AppColors.pharmacy,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      pharmacy.name,
+                      style: AppTextStyles.labelLarge,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      pharmacy.address?.trim().isNotEmpty == true
+                          ? pharmacy.address!
+                          : l10n.t('pharmacy.distance_unknown'),
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.grey,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.pharmacyBg,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              pharmacy.distanceLabel(l10n),
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.pharmacy,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _MiniInlineStat(
+                  icon: Icons.star_rounded,
+                  label:
+                      '${pharmacy.rating.toStringAsFixed(1)} • ${pharmacy.reviewCount}',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _MiniInlineStat(
+                  icon: Icons.medication_liquid_rounded,
+                  label: l10n.t(
+                    'pharmacy.medicines_count_short',
+                    params: {'count': '${pharmacy.productCount}'},
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: onViewDetails,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.pharmacy,
+                foregroundColor: AppColors.white,
+                minimumSize: const Size(0, 34),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                visualDensity: VisualDensity.compact,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    l10n.t('pharmacy.view_details'),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.arrow_forward_rounded, size: 16),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -906,30 +1086,34 @@ class _CatIcon extends StatelessWidget {
   }
 }
 
-class _PharmacyNearbySkeletonCard extends StatelessWidget {
-  const _PharmacyNearbySkeletonCard();
+class _MiniInlineStat extends StatelessWidget {
+  const _MiniInlineStat({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 192,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: AppColors.extraLightGrey,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.lightGrey.withValues(alpha: 0.5)),
       ),
-      child: const AppShimmer(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ShimmerBlock(width: 132, height: 12, radius: 8),
-            SizedBox(height: 8),
-            ShimmerBlock(width: 86, height: 10, radius: 8),
-            SizedBox(height: 8),
-            ShimmerBlock(width: 118, height: 10, radius: 8),
-          ],
-        ),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: AppColors.pharmacy),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              label,
+              style: AppTextStyles.caption.copyWith(color: AppColors.grey),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -959,13 +1143,13 @@ class _PrescriptionRequestSheetState extends State<_PrescriptionRequestSheet> {
   String? _selectedImageMimeType;
   bool _isPickingImage = false;
 
-  Future<void> _pickPrescriptionImage() async {
+  Future<void> _pickPrescriptionImage(ImageSource source) async {
     if (_isPickingImage) return;
     setState(() => _isPickingImage = true);
     try {
       final picker = ImagePicker();
       final file = await picker.pickImage(
-        source: ImageSource.gallery,
+        source: source,
         imageQuality: 85,
         maxWidth: 1900,
       );
@@ -1087,87 +1271,115 @@ class _PrescriptionRequestSheetState extends State<_PrescriptionRequestSheet> {
                   style: AppTextStyles.labelMedium,
                 ),
                 const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: _pickPrescriptionImage,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.lightGrey),
-                    ),
-                    child: _selectedImageBytes == null
-                        ? Row(
-                            children: [
-                              const Icon(
-                                Icons.photo_camera_back_outlined,
-                                color: AppColors.pharmacy,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  _isPickingImage
-                                      ? l10n.t(
-                                          'pharmacy.prescription_image_loading',
-                                        )
-                                      : l10n.t(
-                                          'pharmacy.prescription_image_choose',
-                                        ),
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: AppColors.grey,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.memory(
-                                  _selectedImageBytes!,
-                                  width: double.infinity,
-                                  height: 132,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      _selectedImageName ??
-                                          l10n.t(
-                                            'pharmacy.prescription_image_selected',
-                                          ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTextStyles.bodySmall.copyWith(
-                                        color: AppColors.grey,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  TextButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _selectedImageBytes = null;
-                                        _selectedImageName = null;
-                                        _selectedImageMimeType = null;
-                                      });
-                                    },
-                                    child: Text(
-                                      l10n.t(
-                                        'pharmacy.prescription_image_remove',
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.lightGrey),
                   ),
+                  child: _selectedImageBytes == null
+                      ? Row(
+                          children: [
+                            const Icon(
+                              Icons.photo_camera_back_outlined,
+                              color: AppColors.pharmacy,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                _isPickingImage
+                                    ? l10n.t(
+                                        'pharmacy.prescription_image_loading',
+                                      )
+                                    : l10n.t(
+                                        'pharmacy.prescription_image_choose',
+                                      ),
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.grey,
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.memory(
+                                _selectedImageBytes!,
+                                width: double.infinity,
+                                height: 132,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    _selectedImageName ??
+                                        l10n.t(
+                                          'pharmacy.prescription_image_selected',
+                                        ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.grey,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _selectedImageBytes = null;
+                                      _selectedImageName = null;
+                                      _selectedImageMimeType = null;
+                                    });
+                                  },
+                                  child: Text(
+                                    l10n.t(
+                                      'pharmacy.prescription_image_remove',
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _isPickingImage
+                            ? null
+                            : () => _pickPrescriptionImage(ImageSource.camera),
+                        icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                        label: Text(
+                          l10n.t('pharmacy.prescription_image_camera'),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _isPickingImage
+                            ? null
+                            : () => _pickPrescriptionImage(ImageSource.gallery),
+                        icon: const Icon(
+                          Icons.photo_library_outlined,
+                          size: 18,
+                        ),
+                        label: Text(
+                          l10n.t('pharmacy.prescription_image_gallery'),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 if (widget.addressLabel.isNotEmpty) ...[
                   const SizedBox(height: 12),
@@ -1246,25 +1458,46 @@ class _ResolvedPharmacyLocation {
 
 class _PharmacyDirectoryItem {
   const _PharmacyDirectoryItem({
+    required this.id,
     required this.name,
     required this.rating,
     required this.reviewCount,
     required this.distanceKm,
+    required this.productCount,
+    required this.prescriptionCount,
+    this.minPrice,
+    this.address,
   });
 
+  final String id;
   final String name;
   final double rating;
   final int reviewCount;
   final double? distanceKm;
+  final int productCount;
+  final int prescriptionCount;
+  final double? minPrice;
+  final String? address;
 
   factory _PharmacyDirectoryItem.fromApi(Map<String, dynamic> json) {
+    final locationMap = json['location'] is Map
+        ? Map<String, dynamic>.from(json['location'] as Map)
+        : const <String, dynamic>{};
+    final resolvedId = json['id']?.toString().trim();
     return _PharmacyDirectoryItem(
+      id: resolvedId != null && resolvedId.isNotEmpty
+          ? resolvedId
+          : 'pharmacy-${(json['name'] ?? 'unknown').toString().toLowerCase().replaceAll(' ', '-')}',
       name: json['name']?.toString().trim().isNotEmpty == true
           ? json['name'].toString().trim()
           : 'Pharmacy',
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
       distanceKm: (json['distanceKm'] as num?)?.toDouble(),
+      productCount: (json['productCount'] as num?)?.toInt() ?? 0,
+      prescriptionCount: (json['prescriptionCount'] as num?)?.toInt() ?? 0,
+      minPrice: (json['minPrice'] as num?)?.toDouble(),
+      address: locationMap['address']?.toString(),
     );
   }
 
@@ -1274,5 +1507,19 @@ class _PharmacyDirectoryItem {
       'pharmacy.distance_km',
       params: {'distance': distanceKm!.toStringAsFixed(1)},
     );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'rating': rating,
+      'reviewCount': reviewCount,
+      'distanceKm': distanceKm,
+      'productCount': productCount,
+      'prescriptionCount': prescriptionCount,
+      'minPrice': minPrice,
+      'address': address,
+    };
   }
 }

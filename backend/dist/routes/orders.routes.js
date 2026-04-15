@@ -49,9 +49,9 @@ const createPharmacyPrescriptionOrderSchema = zod_1.z.object({
     address: zod_1.z.string().optional(),
 });
 const uploadPrescriptionImageSchema = zod_1.z.object({
-    userId: zod_1.z.string().optional(),
-    fileName: zod_1.z.string().min(1).max(180).optional(),
-    mimeType: zod_1.z.string().max(120).optional(),
+    userId: zod_1.z.string().optional().nullable(),
+    fileName: zod_1.z.string().min(1).max(180).optional().nullable(),
+    mimeType: zod_1.z.string().max(120).optional().nullable(),
     dataBase64: zod_1.z.string().min(24),
 });
 const createHotelBookingSchema = zod_1.z

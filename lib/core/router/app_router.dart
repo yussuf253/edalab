@@ -42,6 +42,7 @@ import '../../features/pharmacy/screens/pharmacy_screen.dart';
 import '../../features/pharmacy/screens/medicine_detail_screen.dart';
 import '../../features/pharmacy/screens/pharmacy_order_detail_screen.dart';
 import '../../features/pharmacy/screens/pharmacy_cart_screen.dart';
+import '../../features/pharmacy/screens/pharmacy_store_detail_screen.dart';
 import '../../features/grocery/screens/grocery_screen.dart';
 import '../../features/grocery/screens/grocery_category_screen.dart';
 import '../../features/grocery/screens/grocery_cart_screen.dart';
@@ -325,7 +326,24 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
       // Pharmacy
       GoRoute(
         path: '/pharmacy',
-        builder: (context, state) => const PharmacyScreen(),
+        builder: (context, state) {
+          final extra = state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : const <String, dynamic>{};
+          return PharmacyScreen(
+            initialSelectedPharmacyName: extra['selectedPharmacyName']
+                ?.toString(),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/pharmacy/store/:id',
+        builder: (context, state) => PharmacyStoreDetailScreen(
+          storeId: state.pathParameters['id']!,
+          initialStore: state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : null,
+        ),
       ),
       GoRoute(
         path: '/pharmacy/medicine/:id',

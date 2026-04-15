@@ -61,9 +61,9 @@ const createPharmacyPrescriptionOrderSchema = z.object({
 });
 
 const uploadPrescriptionImageSchema = z.object({
-  userId: z.string().optional(),
-  fileName: z.string().min(1).max(180).optional(),
-  mimeType: z.string().max(120).optional(),
+  userId: z.string().optional().nullable(),
+  fileName: z.string().min(1).max(180).optional().nullable(),
+  mimeType: z.string().max(120).optional().nullable(),
   dataBase64: z.string().min(24),
 });
 

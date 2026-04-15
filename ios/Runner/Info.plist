@@ -12,6 +12,8 @@
 	<string>Your location is used to set your pickup point for rides.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photos so you can upload prescriptions.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access so you can capture prescription photos.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
