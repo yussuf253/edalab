@@ -57,7 +57,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _error = error.toString();
+        _error = ApiClient.userFacingError(error);
         _isLoading = false;
       });
     }

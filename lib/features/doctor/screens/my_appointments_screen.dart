@@ -50,159 +50,162 @@ class MyAppointmentsScreen extends StatelessWidget {
         }
       },
       child: Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.t('appointments.title')),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/doctor');
-            }
-          },
+        backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: Text(l10n.t('appointments.title')),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/doctor');
+              }
+            },
+          ),
         ),
-      ),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _fetchAppointments(context),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const SimpleListShimmer(itemCount: 4, trailingBadge: true);
-          }
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                l10n.t(
-                  'appointments.error',
-                  params: {'error': snapshot.error.toString()},
-                ),
-              ),
-            );
-          }
-
-          final payload = snapshot.data ?? const {};
-          final appointments = (payload['appointments'] as List?) ?? const [];
-          final doctorsById =
-              (payload['doctors'] as Map<String, DoctorModel>?) ??
-              const <String, DoctorModel>{};
-          if (appointments.isEmpty) {
-            return Center(
-              child: EmptyState(
-                icon: Icons.calendar_today_rounded,
-                title: l10n.t('appointments.empty_title'),
-                subtitle: l10n.t('appointments.empty_subtitle'),
-              ),
-            );
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(20),
-            itemCount: appointments.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final apiAppt = appointments[index];
-              final dId = apiAppt['doctorId'];
-              final doctor = doctorsById[dId];
-              final String name = doctor?.name ??
+        body: FutureBuilder<Map<String, dynamic>>(
+          future: _fetchAppointments(context),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SimpleListShimmer(itemCount: 4, trailingBadge: true);
+            }
+            if (snapshot.hasError) {
+              return Center(
+                child: Text(
                   l10n.t(
-                    'appointments.doctor_fallback',
-                    params: {'id': dId.toString()},
-                  );
-              final String specialty =
-                  doctor?.specialty ?? l10n.t('appointments.specialist');
-              final String status =
-                  apiAppt['status'] ?? l10n.t('appointments.unknown');
-              final dateObj = DateTime.tryParse(apiAppt['date'] ?? '');
-              final dateStr = dateObj != null
-                  ? '${dateObj.month}/${dateObj.day}/${dateObj.year}'
-                  : l10n.t('appointments.unknown_date');
-              final timeStr = apiAppt['timeSlot'] ?? '00:00';
-
-              Color statusColor = AppColors.primary;
-              if (status.toLowerCase().contains('cancel')) {
-                statusColor = AppColors.error;
-              }
-              if (status.toLowerCase().contains('complet')) {
-                statusColor = AppColors.success;
-              }
-
-              return GestureDetector(
-                onTap: () => context.push(
-                  '/doctor/appointments/${apiAppt['id']}',
-                  extra: Map<String, dynamic>.from(apiAppt as Map),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: AppSpacing.shadowSm,
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: AppColors.doctorBg,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: const Icon(
-                              Icons.person_rounded,
-                              color: AppColors.doctor,
-                              size: 26,
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(name, style: AppTextStyles.labelLarge),
-                                const SizedBox(height: 2),
-                                Text(specialty, style: AppTextStyles.caption),
-                              ],
-                            ),
-                          ),
-                          StatusBadge(
-                            text: status.toUpperCase(),
-                            color: statusColor,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.extraLightGrey,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.calendar_today_rounded,
-                              size: 16,
-                              color: AppColors.primary,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '$dateStr, $timeStr',
-                              style: AppTextStyles.labelMedium,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    'appointments.error',
+                    params: {
+                      'error': ApiClient.userFacingError(snapshot.error!),
+                    },
                   ),
                 ),
               );
-            },
-          );
-        },
-      ),
+            }
+
+            final payload = snapshot.data ?? const {};
+            final appointments = (payload['appointments'] as List?) ?? const [];
+            final doctorsById =
+                (payload['doctors'] as Map<String, DoctorModel>?) ??
+                const <String, DoctorModel>{};
+            if (appointments.isEmpty) {
+              return Center(
+                child: EmptyState(
+                  icon: Icons.calendar_today_rounded,
+                  title: l10n.t('appointments.empty_title'),
+                  subtitle: l10n.t('appointments.empty_subtitle'),
+                ),
+              );
+            }
+
+            return ListView.separated(
+              padding: const EdgeInsets.all(20),
+              itemCount: appointments.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final apiAppt = appointments[index];
+                final dId = apiAppt['doctorId'];
+                final doctor = doctorsById[dId];
+                final String name =
+                    doctor?.name ??
+                    l10n.t(
+                      'appointments.doctor_fallback',
+                      params: {'id': dId.toString()},
+                    );
+                final String specialty =
+                    doctor?.specialty ?? l10n.t('appointments.specialist');
+                final String status =
+                    apiAppt['status'] ?? l10n.t('appointments.unknown');
+                final dateObj = DateTime.tryParse(apiAppt['date'] ?? '');
+                final dateStr = dateObj != null
+                    ? '${dateObj.month}/${dateObj.day}/${dateObj.year}'
+                    : l10n.t('appointments.unknown_date');
+                final timeStr = apiAppt['timeSlot'] ?? '00:00';
+
+                Color statusColor = AppColors.primary;
+                if (status.toLowerCase().contains('cancel')) {
+                  statusColor = AppColors.error;
+                }
+                if (status.toLowerCase().contains('complet')) {
+                  statusColor = AppColors.success;
+                }
+
+                return GestureDetector(
+                  onTap: () => context.push(
+                    '/doctor/appointments/${apiAppt['id']}',
+                    extra: Map<String, dynamic>.from(apiAppt as Map),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: AppSpacing.shadowSm,
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: AppColors.doctorBg,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.person_rounded,
+                                color: AppColors.doctor,
+                                size: 26,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(name, style: AppTextStyles.labelLarge),
+                                  const SizedBox(height: 2),
+                                  Text(specialty, style: AppTextStyles.caption),
+                                ],
+                              ),
+                            ),
+                            StatusBadge(
+                              text: status.toUpperCase(),
+                              color: statusColor,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: AppColors.extraLightGrey,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.calendar_today_rounded,
+                                size: 16,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '$dateStr, $timeStr',
+                                style: AppTextStyles.labelMedium,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

@@ -19,8 +19,9 @@ const profileSchema = z.object({
 
 const addressSchema = z.object({
   label: z.string().min(1),
-  address: z.string().min(1),
+  address: z.string().trim().optional().or(z.literal('')),
   city: z.string().trim().optional().or(z.literal('')),
+  quartier: z.string().trim().optional().or(z.literal('')),
   zipCode: z.string().trim().optional().or(z.literal('')),
   latitude: z.number().optional().nullable(),
   longitude: z.number().optional().nullable(),
@@ -189,6 +190,13 @@ router.post(
     await prisma.$transaction(async (tx) => {
       const existingCount = await tx.address.count({ where: { userId } });
       const shouldBeDefault = body.isDefault || existingCount === 0;
+      const city = body.city?.trim() || null;
+      const quartier = body.quartier?.trim() || null;
+      const line1 =
+        body.address?.trim() ||
+        quartier ||
+        city ||
+        body.label.trim();
 
       if (shouldBeDefault) {
         await tx.address.updateMany({
@@ -201,8 +209,9 @@ router.post(
         data: {
           userId,
           label: body.label,
-          line1: body.address,
-          city: body.city?.trim() || null,
+          line1,
+          line2: quartier,
+          city,
           postalCode: body.zipCode?.trim() || null,
           latitude: body.latitude ?? null,
           longitude: body.longitude ?? null,
@@ -232,6 +241,25 @@ router.patch(
     }
 
     await prisma.$transaction(async (tx) => {
+      const hasLatitude = Object.prototype.hasOwnProperty.call(body, 'latitude');
+      const hasLongitude = Object.prototype.hasOwnProperty.call(body, 'longitude');
+      const hasAddress = Object.prototype.hasOwnProperty.call(body, 'address');
+      const nextCity =
+        body.city === undefined
+          ? address.city
+          : body.city === ''
+            ? null
+            : body.city.trim();
+      const nextQuartier =
+        body.quartier === undefined
+          ? address.line2
+          : body.quartier === ''
+            ? null
+            : body.quartier.trim();
+      const nextLine1 = hasAddress
+        ? (body.address?.trim() || nextQuartier || nextCity || address.label)
+        : (address.line1 || nextQuartier || nextCity || address.label);
+
       if (body.isDefault) {
         await tx.address.updateMany({
           where: { userId, isDefault: true },
@@ -243,11 +271,12 @@ router.patch(
         where: { id: addressId },
         data: {
           label: body.label ?? address.label,
-          line1: body.address ?? address.line1,
-          city: body.city === '' ? null : body.city ?? address.city,
+          line1: nextLine1,
+          line2: nextQuartier,
+          city: nextCity,
           postalCode: body.zipCode === '' ? null : body.zipCode ?? address.postalCode,
-          latitude: body.latitude ?? address.latitude,
-          longitude: body.longitude ?? address.longitude,
+          latitude: hasLatitude ? body.latitude ?? null : address.latitude,
+          longitude: hasLongitude ? body.longitude ?? null : address.longitude,
           isDefault: body.isDefault ?? address.isDefault,
         },
       });

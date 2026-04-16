@@ -15,8 +15,15 @@ class AuthProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   bool _isConnectionError(Object error) {
-    final message = error.toString();
-    return message.contains('Could not reach the API at');
+    return ApiClient.isConnectionError(error);
+  }
+
+  String? _firstNonEmptyString(List<dynamic> values) {
+    for (final value in values) {
+      final text = value?.toString().trim() ?? '';
+      if (text.isNotEmpty) return text;
+    }
+    return null;
   }
 
   void _setOfflineSession(String userId) {
@@ -62,6 +69,14 @@ class AuthProvider extends ChangeNotifier {
             label: address['label'] as String? ?? 'Address',
             address: address['address'] as String? ?? '',
             city: address['city'] as String?,
+            quartier: _firstNonEmptyString([
+              address['quartier'],
+              address['district'],
+              address['neighborhood'],
+              address['neighbourhood'],
+              address['suburb'],
+              address['quarter'],
+            ]),
             zipCode: address['zipCode'] as String?,
             latitude: (address['latitude'] as num?)?.toDouble(),
             longitude: (address['longitude'] as num?)?.toDouble(),
@@ -104,7 +119,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       _user = null;
       _isLoggedIn = false;
@@ -144,7 +159,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       _user = null;
       _isLoggedIn = false;
@@ -172,7 +187,7 @@ class AuthProvider extends ChangeNotifier {
       _setUserFromResponse(Map<String, dynamic>.from(response as Map));
       _errorMessage = null;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = ApiClient.userFacingError(e);
       if (userId != null && userId.isNotEmpty && _isConnectionError(e)) {
         _setOfflineSession(userId);
       } else {
@@ -222,7 +237,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -233,7 +248,9 @@ class AuthProvider extends ChangeNotifier {
     required String label,
     required String address,
     String? city,
-    String? zipCode,
+    String? quartier,
+    double? latitude,
+    double? longitude,
     bool isDefault = false,
   }) async {
     if (_user == null) {
@@ -251,7 +268,10 @@ class AuthProvider extends ChangeNotifier {
         'label': label.trim(),
         'address': address.trim(),
         'city': city?.trim() ?? '',
-        'zipCode': zipCode?.trim() ?? '',
+        'quartier': quartier?.trim() ?? '',
+        'zipCode': '',
+        'latitude': latitude,
+        'longitude': longitude,
         'isDefault': isDefault,
       });
 
@@ -260,7 +280,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -272,7 +292,9 @@ class AuthProvider extends ChangeNotifier {
     required String label,
     required String address,
     String? city,
-    String? zipCode,
+    String? quartier,
+    double? latitude,
+    double? longitude,
     bool isDefault = false,
   }) async {
     if (_user == null) {
@@ -291,7 +313,10 @@ class AuthProvider extends ChangeNotifier {
             'label': label.trim(),
             'address': address.trim(),
             'city': city?.trim() ?? '',
-            'zipCode': zipCode?.trim() ?? '',
+            'quartier': quartier?.trim() ?? '',
+            'zipCode': '',
+            'latitude': latitude,
+            'longitude': longitude,
             'isDefault': isDefault,
           });
 
@@ -300,7 +325,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -328,7 +353,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       notifyListeners();
       return false;
@@ -357,7 +382,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return true;
     } catch (e) {
-      _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       notifyListeners();
       return false;

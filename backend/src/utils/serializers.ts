@@ -38,7 +38,9 @@ export function sanitizeUser(user: {
     id: string;
     label: string;
     line1: string;
+    line2: string | null;
     city: string | null;
+    state: string | null;
     postalCode: string | null;
     latitude: number | null;
     longitude: number | null;
@@ -55,6 +57,7 @@ export function sanitizeUser(user: {
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     addresses: (user.addresses ?? []).map((address) => ({
+      quartier: address.line2 ?? address.state,
       id: address.id,
       label: address.label,
       address: address.line1,

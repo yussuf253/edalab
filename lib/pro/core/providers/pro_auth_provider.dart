@@ -26,7 +26,7 @@ class ProAuthProvider extends ChangeNotifier {
       _currentProfile != null && _supportsInbox(_currentProfile!.type);
 
   bool _isConnectionError(Object error) {
-    return error.toString().contains('Could not reach the API at');
+    return ApiClient.isConnectionError(error);
   }
 
   bool _isMissingProSessionError(Object error) {

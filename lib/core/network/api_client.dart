@@ -19,6 +19,14 @@ class ApiClient {
     defaultValue: '127.0.0.1',
   );
   static const Duration _requestTimeout = Duration(seconds: 12);
+  static const String genericErrorMessage =
+      'Something went wrong. Please try again.';
+  static const String connectionErrorMessage =
+      'Unable to connect right now. Please check your internet connection and try again.';
+  static final RegExp _legacyConnectionLeakPattern = RegExp(
+    r'could not reach the api at|original error|confirm the hosted backend url|localhost:\d+|10\.0\.2\.2|onrender\.com',
+    caseSensitive: false,
+  );
   static final http.Client _httpClient = http.Client();
   static final Map<String, _CachedResponse> _getCache = {};
   static final Map<String, Future<dynamic>> _pendingGets = {};
@@ -110,30 +118,38 @@ class ApiClient {
     }
   }
 
-  static String get _connectionHint {
-    if (_configuredBaseUrl.isNotEmpty) {
-      return 'Confirm the hosted backend URL is correct and publicly reachable: $_configuredBaseUrl.';
+  static Exception _connectionException(Object error) {
+    if (kDebugMode) {
+      debugPrint('Network request failed: $error');
     }
-
-    if (kIsWeb) {
-      return 'For web, make sure the backend is running on localhost:$_defaultPort.';
-    }
-
-    if (Platform.isAndroid) {
-      return _configuredHost == '127.0.0.1'
-          ? 'Android emulator uses 10.0.2.2 automatically. If you are on a real phone, run Flutter with --dart-define=API_HOST=YOUR_MAC_IP.'
-          : 'If you are on a real phone, confirm $_configuredHost is your Mac\'s LAN IP and the backend is reachable on port $_defaultPort.';
-    }
-
-    return _configuredHost == '127.0.0.1'
-        ? '127.0.0.1 works for iOS simulator and desktop. If you are on a physical iPhone/iPad, run Flutter with --dart-define=API_HOST=YOUR_MAC_IP.'
-        : 'Confirm $_configuredHost is reachable from this device on port $_defaultPort.';
+    return const _ApiConnectionException(connectionErrorMessage);
   }
 
-  static Exception _connectionException(Object error) {
-    return Exception(
-      'Could not reach the API at $baseUrl. $_connectionHint Original error: $error',
-    );
+  static bool isConnectionError(Object error) =>
+      error is _ApiConnectionException;
+
+  static String userFacingError(Object error) {
+    final rawMessage = error
+        .toString()
+        .replaceFirst(RegExp(r'^Exception:\s*'), '')
+        .trim();
+    if (rawMessage.isEmpty) return genericErrorMessage;
+
+    final messageLower = rawMessage.toLowerCase();
+    final looksLikeConnectionFailure =
+        messageLower.contains('socketexception') ||
+        messageLower.contains('timeoutexception') ||
+        messageLower.contains('failed host lookup') ||
+        messageLower.contains('connection refused') ||
+        messageLower.contains('network is unreachable') ||
+        _legacyConnectionLeakPattern.hasMatch(rawMessage) ||
+        rawMessage.contains(baseUrl);
+
+    if (isConnectionError(error) || looksLikeConnectionFailure) {
+      return connectionErrorMessage;
+    }
+
+    return rawMessage;
   }
 
   static String _cacheKey(String endpoint) =>
@@ -316,6 +332,15 @@ class ApiClient {
       );
     }
   }
+}
+
+class _ApiConnectionException implements Exception {
+  final String message;
+
+  const _ApiConnectionException(this.message);
+
+  @override
+  String toString() => 'Exception: $message';
 }
 
 class _CachedResponse {

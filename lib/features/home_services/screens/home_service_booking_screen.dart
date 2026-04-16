@@ -1340,11 +1340,10 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 final address = entry.value;
                                 final isSelected = _selectedAddress == index;
                                 final subtitle = [
-                                  address.address,
                                   if ((address.city ?? '').isNotEmpty)
                                     address.city!,
-                                  if ((address.zipCode ?? '').isNotEmpty)
-                                    address.zipCode!,
+                                  if ((address.quartier ?? '').isNotEmpty)
+                                    address.quartier!,
                                 ].join(', ');
 
                                 return GestureDetector(

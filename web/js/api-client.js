@@ -23,6 +23,26 @@ class ApiClient {
     localStorage.removeItem('authToken');
   }
 
+  sanitizeErrorMessage(error) {
+    const message = (error?.message || String(error || '')).trim();
+    const lower = message.toLowerCase();
+    const isConnectionError =
+      lower.includes('could not reach the api at') ||
+      lower.includes('failed to fetch') ||
+      lower.includes('networkerror') ||
+      lower.includes('network request failed') ||
+      lower.includes('socketexception') ||
+      lower.includes('timeoutexception') ||
+      lower.includes('failed host lookup') ||
+      message.includes(this.baseURL);
+
+    if (isConnectionError) {
+      return 'Unable to connect right now. Please check your internet connection and try again.';
+    }
+
+    return message || 'Something went wrong. Please try again.';
+  }
+
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
     const headers = {
@@ -77,7 +97,10 @@ class ApiClient {
       return data;
     } catch (error) {
       console.error('API Request Error:', error);
-      throw error;
+      const sanitizedError = new Error(this.sanitizeErrorMessage(error));
+      sanitizedError.status = error?.status;
+      sanitizedError.payload = error?.payload;
+      throw sanitizedError;
     }
   }
 

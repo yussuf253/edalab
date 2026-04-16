@@ -21,6 +21,7 @@ Future<void> main() async {
   final notificationProvider = NotificationProvider();
   final userLocationProvider = UserLocationProvider();
   final proAuthProvider = ProAuthProvider();
+  await languageProvider.initialize();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,

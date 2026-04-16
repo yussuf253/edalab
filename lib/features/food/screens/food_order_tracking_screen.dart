@@ -50,7 +50,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _error = error.toString();
+        _error = ApiClient.userFacingError(error);
         _isLoading = false;
       });
     }

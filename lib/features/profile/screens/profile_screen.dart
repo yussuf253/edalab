@@ -16,6 +16,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final proAuthProvider = context.watch<ProAuthProvider>();
+    final languageProvider = context.watch<LanguageProvider>();
     final user = authProvider.user;
     final l10n = context.l10n;
     final currentProProfile = proAuthProvider.currentProfile;
@@ -47,31 +48,43 @@ class ProfileScreen extends StatelessWidget {
                         useShadow: false,
                         compact: true,
                       ),
-                      const SizedBox(width: 10),
-                      GestureDetector(
-                        onTap: () => context.push('/profile/settings'),
-                        child: Container(
-                          width: 40, height: 40,
-                          decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-                          child: const Icon(Icons.settings_outlined, color: AppColors.white, size: 22),
-                        ),
-                      ),
+                      // const SizedBox(width: 10),
+                      // Settings quick access is intentionally disabled for now.
+                      // GestureDetector(
+                      //   onTap: () => context.push('/profile/settings'),
+                      //   child: Container(
+                      //     width: 40, height: 40,
+                      //     decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+                      //     child: const Icon(Icons.settings_outlined, color: AppColors.white, size: 22),
+                      //   ),
+                      // ),
                     ],
                   ),
                   const SizedBox(height: 16),
                   Container(
-                    width: 80, height: 80,
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 3),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        width: 3,
+                      ),
                     ),
-                    child: user?.avatarUrl != null 
+                    child: user?.avatarUrl != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(21),
-                            child: Image.network(user!.avatarUrl!, fit: BoxFit.cover),
+                            child: Image.network(
+                              user!.avatarUrl!,
+                              fit: BoxFit.cover,
+                            ),
                           )
-                        : const Icon(Icons.person_rounded, color: AppColors.white, size: 40),
+                        : const Icon(
+                            Icons.person_rounded,
+                            color: AppColors.white,
+                            size: 40,
+                          ),
                   ),
                   const SizedBox(height: 14),
                   Text(
@@ -80,15 +93,26 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   if (user != null)
-                    Text(user.email, style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70)),
+                    Text(
+                      user.email,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: Colors.white70,
+                      ),
+                    ),
                   const SizedBox(height: 16),
                   // Stats
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _Stat(user != null ? '12' : '0', l10n.t('profile.orders')),
+                      _Stat(
+                        user != null ? '12' : '0',
+                        l10n.t('profile.orders'),
+                      ),
                       Container(width: 1, height: 30, color: Colors.white24),
-                      _Stat(user != null ? '\$450' : '\$0', l10n.t('profile.spent')),
+                      _Stat(
+                        user != null ? '\$450' : '\$0',
+                        l10n.t('profile.spent'),
+                      ),
                       Container(width: 1, height: 30, color: Colors.white24),
                       _Stat(
                         user != null ? '${user.points}' : '0',
@@ -137,12 +161,20 @@ class ProfileScreen extends StatelessWidget {
                     AppColors.warning,
                     onTap: () => context.push('/notifications'),
                   ),
-                  _MenuItem(
-                    Icons.settings_outlined,
-                    l10n.t('profile.settings'),
-                    AppColors.dark,
-                    onTap: () => context.push('/profile/settings'),
+                  _LanguageMenuItem(
+                    icon: Icons.language_rounded,
+                    title: l10n.t('settings.language'),
+                    value: languageProvider.currentLanguage.nativeName,
+                    color: AppColors.success,
+                    onTap: () => _showLanguagePicker(context, languageProvider),
                   ),
+                  // Settings row intentionally disabled for now.
+                  // _MenuItem(
+                  //   Icons.settings_outlined,
+                  //   l10n.t('profile.settings'),
+                  //   AppColors.dark,
+                  //   onTap: () => context.push('/profile/settings'),
+                  // ),
                   const SizedBox(height: 20),
 
                   Text(l10n.t('profile.support'), style: AppTextStyles.h4),
@@ -152,16 +184,6 @@ class ProfileScreen extends StatelessWidget {
                     l10n.t('profile.help_center'),
                     AppColors.success,
                     onTap: () => context.push('/profile/help'),
-                  ),
-                  _MenuItem(
-                    Icons.chat_bubble_outline_rounded,
-                    l10n.t('profile.contact_us'),
-                    AppColors.doctor,
-                  ),
-                  _MenuItem(
-                    Icons.privacy_tip_outlined,
-                    l10n.t('profile.privacy_policy'),
-                    AppColors.grey,
                   ),
                   const SizedBox(height: 20),
 
@@ -175,7 +197,9 @@ class ProfileScreen extends StatelessWidget {
                         ? 'Open ${ProModuleHelper.getProfileName(currentProProfile.type)}'
                         : 'Join as a Professional',
                     currentProProfile != null
-                        ? ProModuleHelper.getProfileColor(currentProProfile.type)
+                        ? ProModuleHelper.getProfileColor(
+                            currentProProfile.type,
+                          )
                         : AppColors.primary,
                     onTap: () {
                       if (user == null) {
@@ -216,7 +240,11 @@ class ProfileScreen extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.logout_rounded, color: AppColors.accent, size: 22),
+                            const Icon(
+                              Icons.logout_rounded,
+                              color: AppColors.accent,
+                              size: 22,
+                            ),
                             const SizedBox(width: 10),
                             Text(
                               l10n.t('profile.log_out'),
@@ -240,7 +268,11 @@ class ProfileScreen extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.login_rounded, color: AppColors.primary, size: 22),
+                            const Icon(
+                              Icons.login_rounded,
+                              color: AppColors.primary,
+                              size: 22,
+                            ),
                             const SizedBox(width: 10),
                             Text(
                               l10n.t('profile.log_in'),
@@ -252,7 +284,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    
+
                   const SizedBox(height: 20),
                   Center(
                     child: Text('EdaLab v1.0.0', style: AppTextStyles.caption),
@@ -263,6 +295,95 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showLanguagePicker(
+    BuildContext context,
+    LanguageProvider languageProvider,
+  ) async {
+    final l10n = context.l10n;
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.t('settings.language'), style: AppTextStyles.h3),
+                const SizedBox(height: 6),
+                Text(
+                  l10n.t('settings.choose_language'),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.grey,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                ...LanguageProvider.supportedLanguages.map((language) {
+                  final isSelected =
+                      language.locale.languageCode ==
+                      languageProvider.locale.languageCode;
+                  return GestureDetector(
+                    onTap: () async {
+                      await languageProvider.setLocale(language.locale);
+                      if (sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop();
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primary.withValues(alpha: 0.08)
+                            : AppColors.background,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.extraLightGrey,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  language.nativeName,
+                                  style: AppTextStyles.labelLarge,
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  language.englishName,
+                                  style: AppTextStyles.caption,
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (isSelected)
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              color: AppColors.primary,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -276,7 +397,10 @@ class _Stat extends StatelessWidget {
     return Column(
       children: [
         Text(value, style: AppTextStyles.h3.copyWith(color: AppColors.white)),
-        Text(label, style: AppTextStyles.caption.copyWith(color: Colors.white60)),
+        Text(
+          label,
+          style: AppTextStyles.caption.copyWith(color: Colors.white60),
+        ),
       ],
     );
   }
@@ -304,13 +428,74 @@ class _MenuItem extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40, height: 40,
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
               child: Icon(icon, color: color, size: 22),
             ),
             const SizedBox(width: 14),
             Expanded(child: Text(title, style: AppTextStyles.labelMedium)),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: AppColors.mediumGrey),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
+              color: AppColors.mediumGrey,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LanguageMenuItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final Color color;
+  final VoidCallback? onTap;
+
+  const _LanguageMenuItem({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.color,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(child: Text(title, style: AppTextStyles.labelMedium)),
+            Text(value, style: AppTextStyles.caption),
+            const SizedBox(width: 4),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 14,
+              color: AppColors.mediumGrey,
+            ),
           ],
         ),
       ),

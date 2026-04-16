@@ -323,9 +323,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
           content: Text(
             l10n.t(
               'pharmacy.prescription_failed',
-              params: {
-                'error': error.toString().replaceFirst('Exception: ', ''),
-              },
+              params: {'error': ApiClient.userFacingError(error)},
             ),
           ),
         ),

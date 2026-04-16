@@ -48,7 +48,10 @@ class LanguageProvider extends ChangeNotifier {
   Future<void> initialize() async {
     final savedCode = await AppPreferences.getLocaleCode();
     if (savedCode == null || savedCode.isEmpty) return;
-    _locale = _normalize(Locale(savedCode));
+    final next = _normalize(Locale(savedCode));
+    if (next.languageCode == _locale.languageCode) return;
+    _locale = next;
+    notifyListeners();
   }
 
   Future<void> setLocale(Locale locale) async {

@@ -47,7 +47,7 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _error = error.toString();
+        _error = ApiClient.userFacingError(error);
         _isLoading = false;
       });
     }
@@ -64,12 +64,13 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
   }
 
   String _itemSummary(Map<String, dynamic>? firstItem) {
-    final metadata =
-        firstItem?['metadata'] is Map
-            ? Map<String, dynamic>.from(firstItem!['metadata'] as Map)
-            : const <String, dynamic>{};
+    final metadata = firstItem?['metadata'] is Map
+        ? Map<String, dynamic>.from(firstItem!['metadata'] as Map)
+        : const <String, dynamic>{};
     final count = (metadata['itemCount'] as num?)?.toInt() ?? 0;
-    return count > 0 ? '$count items' : '${firstItem?['quantity'] ?? 1} item(s)';
+    return count > 0
+        ? '$count items'
+        : '${firstItem?['quantity'] ?? 1} item(s)';
   }
 
   @override
@@ -77,10 +78,9 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
     final l10n = context.l10n;
     final order = _order;
     final status = order?['status']?.toString().toUpperCase() ?? 'PENDING';
-    final items =
-        (order?['items'] as List<dynamic>? ?? const [])
-            .map((item) => Map<String, dynamic>.from(item as Map))
-            .toList(growable: false);
+    final items = (order?['items'] as List<dynamic>? ?? const [])
+        .map((item) => Map<String, dynamic>.from(item as Map))
+        .toList(growable: false);
     final firstItem = items.isNotEmpty ? items.first : null;
 
     return PopScope(
@@ -137,7 +137,9 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                           const SizedBox(height: 12),
                           Text(
                             l10n.t('laundry_tracking.status'),
-                            style: AppTextStyles.h3.copyWith(color: AppColors.white),
+                            style: AppTextStyles.h3.copyWith(
+                              color: AppColors.white,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -232,7 +234,8 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                           ),
                           _DetailRow(
                             l10n.t('laundry_tracking.service'),
-                            order?['moduleName']?.toString() ?? 'Laundry service',
+                            order?['moduleName']?.toString() ??
+                                'Laundry service',
                           ),
                           _DetailRow(
                             l10n.t('laundry_tracking.items'),
@@ -286,9 +289,7 @@ class _Step extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isDone
                     ? AppColors.success
-                    : (isActive
-                          ? AppColors.laundry
-                          : AppColors.extraLightGrey),
+                    : (isActive ? AppColors.laundry : AppColors.extraLightGrey),
                 shape: BoxShape.circle,
               ),
               child: isDone
@@ -301,7 +302,8 @@ class _Step extends StatelessWidget {
                     )
                   : null,
             ),
-            if (title != AppLocalizations.of(context).t('laundry_tracking.delivered'))
+            if (title !=
+                AppLocalizations.of(context).t('laundry_tracking.delivered'))
               Container(
                 width: 2,
                 height: 32,

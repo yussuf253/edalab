@@ -53,6 +53,7 @@ class AddressModel {
   final String label;
   final String address;
   final String? city;
+  final String? quartier;
   final String? zipCode;
   final double? latitude;
   final double? longitude;
@@ -63,6 +64,7 @@ class AddressModel {
     required this.label,
     required this.address,
     this.city,
+    this.quartier,
     this.zipCode,
     this.latitude,
     this.longitude,

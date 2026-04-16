@@ -8,14 +8,38 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/providers/providers.dart';
 
+const Map<String, List<String>> _djiboutiCityQuartiers = {
+  'Djibouti': [
+    'Plateau du Serpent',
+    'Quartier 1',
+    'Quartier 2',
+    'Quartier 3',
+    'Quartier 4',
+    'Quartier 5',
+    'Quartier 6',
+    'Quartier 7',
+    'Balbala',
+    'Haramous',
+  ],
+  'Ali Sabieh': ['Ali Sabieh Centre', 'Holl-Holl', 'Assamo', 'Ali Addé'],
+  'Arta': ['Arta Centre', 'Wea', 'Damerjog', 'Loyada'],
+  'Dikhil': ['Dikhil Centre', 'Yoboki', 'As-Eyla', 'Galafi'],
+  'Obock': ['Obock Centre', 'Khor Angar', 'Alaili Dadda'],
+  'Tadjourah': ['Tadjourah Centre', 'Randa', 'Dorra', 'Balho'],
+};
+
 class AddressesScreen extends StatelessWidget {
   const AddressesScreen({super.key});
 
   IconData _iconForLabel(String label) {
     final normalized = label.toLowerCase();
     if (normalized.contains('home')) return Icons.home_rounded;
-    if (normalized.contains('work') || normalized.contains('office')) return Icons.work_rounded;
-    if (normalized.contains('family') || normalized.contains('mom') || normalized.contains('dad')) {
+    if (normalized.contains('work') || normalized.contains('office')) {
+      return Icons.work_rounded;
+    }
+    if (normalized.contains('family') ||
+        normalized.contains('mom') ||
+        normalized.contains('dad')) {
       return Icons.favorite_rounded;
     }
     return Icons.location_on_rounded;
@@ -98,7 +122,9 @@ class AddressesScreen extends StatelessWidget {
                       isLoggedIn
                           ? l10n.t('addresses.empty_logged_in_subtitle')
                           : l10n.t('addresses.empty_logged_out_subtitle'),
-                      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.grey,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -112,17 +138,22 @@ class AddressesScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final address = addresses[index];
                 final subtitle = [
-                  address.address,
                   if ((address.city ?? '').isNotEmpty) address.city!,
-                  if ((address.zipCode ?? '').isNotEmpty) address.zipCode!,
+                  if ((address.quartier ?? '').isNotEmpty) address.quartier!,
                 ].join(', ');
+                final locationSubtitle =
+                    address.latitude != null && address.longitude != null
+                    ? '${address.latitude!.toStringAsFixed(5)}, ${address.longitude!.toStringAsFixed(5)}'
+                    : null;
 
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: address.isDefault ? Border.all(color: AppColors.primary, width: 1.5) : null,
+                    border: address.isDefault
+                        ? Border.all(color: AppColors.primary, width: 1.5)
+                        : null,
                     boxShadow: AppSpacing.shadowSm,
                   ),
                   child: Row(
@@ -134,7 +165,11 @@ class AddressesScreen extends StatelessWidget {
                           color: AppColors.primarySurface,
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: Icon(_iconForLabel(address.label), color: AppColors.primary, size: 24),
+                        child: Icon(
+                          _iconForLabel(address.label),
+                          color: AppColors.primary,
+                          size: 24,
+                        ),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -144,12 +179,18 @@ class AddressesScreen extends StatelessWidget {
                             Row(
                               children: [
                                 Flexible(
-                                  child: Text(address.label, style: AppTextStyles.labelLarge),
+                                  child: Text(
+                                    address.label,
+                                    style: AppTextStyles.labelLarge,
+                                  ),
                                 ),
                                 if (address.isDefault) ...[
                                   const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: AppColors.primarySurface,
                                       borderRadius: BorderRadius.circular(6),
@@ -166,12 +207,42 @@ class AddressesScreen extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 4),
-                            Text(subtitle, style: AppTextStyles.caption, maxLines: 2),
+                            Text(
+                              subtitle,
+                              style: AppTextStyles.caption,
+                              maxLines: 2,
+                            ),
+                            if (locationSubtitle != null) ...[
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.my_location_rounded,
+                                    size: 12,
+                                    color: AppColors.grey,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      locationSubtitle,
+                                      style: AppTextStyles.caption.copyWith(
+                                        color: AppColors.grey,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),
                       PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert_rounded, color: AppColors.mediumGrey),
+                        icon: const Icon(
+                          Icons.more_vert_rounded,
+                          color: AppColors.mediumGrey,
+                        ),
                         onSelected: (value) async {
                           if (value == 'edit') {
                             await _showAddressSheet(context, address: address);
@@ -179,7 +250,9 @@ class AddressesScreen extends StatelessWidget {
                           }
 
                           if (value == 'default') {
-                            final success = await context.read<AuthProvider>().setDefaultAddress(address.id);
+                            final success = await context
+                                .read<AuthProvider>()
+                                .setDefaultAddress(address.id);
                             if (!context.mounted || success) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -193,7 +266,9 @@ class AddressesScreen extends StatelessWidget {
                           }
 
                           if (value == 'delete') {
-                            final success = await context.read<AuthProvider>().deleteAddress(address.id);
+                            final success = await context
+                                .read<AuthProvider>()
+                                .deleteAddress(address.id);
                             if (!context.mounted || success) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -255,34 +330,180 @@ class _AddressSheet extends StatefulWidget {
 
 class _AddressSheetState extends State<_AddressSheet> {
   late final TextEditingController _labelController;
-  late final TextEditingController _addressController;
-  late final TextEditingController _cityController;
-  late final TextEditingController _zipCodeController;
   late bool _isDefault;
   bool _isSubmitting = false;
+  bool _isFetchingLocation = false;
+  String? _selectedCity;
+  String? _selectedQuartier;
+  double? _latitude;
+  double? _longitude;
+  String? _resolvedLocationLabel;
 
   @override
   void initState() {
     super.initState();
     _labelController = TextEditingController(text: widget.address?.label ?? '');
-    _addressController = TextEditingController(text: widget.address?.address ?? '');
-    _cityController = TextEditingController(text: widget.address?.city ?? '');
-    _zipCodeController = TextEditingController(text: widget.address?.zipCode ?? '');
+    _selectedCity = _normalizeCity(widget.address?.city);
+    _selectedQuartier = _normalizeQuartier(
+      widget.address?.quartier,
+      _selectedCity,
+    );
+    _latitude = widget.address?.latitude;
+    _longitude = widget.address?.longitude;
     _isDefault = widget.address?.isDefault ?? false;
   }
 
   @override
   void dispose() {
     _labelController.dispose();
-    _addressController.dispose();
-    _cityController.dispose();
-    _zipCodeController.dispose();
     super.dispose();
+  }
+
+  List<String> get _cities =>
+      _djiboutiCityQuartiers.keys.toList(growable: false);
+
+  String? _normalizeCity(String? candidate) {
+    final value = candidate?.trim() ?? '';
+    if (value.isEmpty) return null;
+    for (final city in _cities) {
+      if (city.toLowerCase() == value.toLowerCase()) {
+        return city;
+      }
+    }
+    return null;
+  }
+
+  List<String> _quartiersForCity(String? city) {
+    if (city == null || city.isEmpty) return const <String>[];
+    final quartiers = List<String>.from(
+      _djiboutiCityQuartiers[city] ?? const [],
+    );
+    final existing = widget.address?.quartier?.trim() ?? '';
+    final addressCity = widget.address?.city?.trim() ?? '';
+    final shouldKeepExisting = addressCity.toLowerCase() == city.toLowerCase();
+    if (shouldKeepExisting &&
+        existing.isNotEmpty &&
+        !quartiers.any(
+          (entry) => entry.toLowerCase() == existing.toLowerCase(),
+        )) {
+      quartiers.add(existing);
+    }
+    return quartiers;
+  }
+
+  String? _normalizeQuartier(String? candidate, String? city) {
+    final value = candidate?.trim() ?? '';
+    if (value.isEmpty) return null;
+    final quartiers = _quartiersForCity(city);
+    for (final quartier in quartiers) {
+      if (quartier.toLowerCase() == value.toLowerCase()) {
+        return quartier;
+      }
+    }
+    return null;
+  }
+
+  String _locationSummaryText(AppLocalizations l10n) {
+    if (_latitude == null || _longitude == null) {
+      return l10n.t('addresses.location_not_set');
+    }
+
+    final coordinates =
+        '${_latitude!.toStringAsFixed(5)}, ${_longitude!.toStringAsFixed(5)}';
+    final label = _resolvedLocationLabel?.trim() ?? '';
+    if (label.isEmpty) return coordinates;
+    return '$label\n$coordinates';
+  }
+
+  String? _inferCity(UserLocationData location) {
+    final haystack = '${location.title} ${location.subtitle}'.toLowerCase();
+    for (final city in _cities) {
+      if (haystack.contains(city.toLowerCase())) {
+        return city;
+      }
+    }
+    return null;
+  }
+
+  String? _inferQuartier({
+    required UserLocationData location,
+    required String? city,
+  }) {
+    final quartiers = _quartiersForCity(city);
+    if (quartiers.isEmpty) return null;
+    final haystack = '${location.title} ${location.subtitle}'.toLowerCase();
+    for (final quartier in quartiers) {
+      if (haystack.contains(quartier.toLowerCase())) {
+        return quartier;
+      }
+    }
+    return null;
+  }
+
+  Future<void> _useCurrentLocation() async {
+    final l10n = context.l10n;
+    setState(() => _isFetchingLocation = true);
+
+    final locationProvider = context.read<UserLocationProvider>();
+    final success = await locationProvider.ensureCurrentLocation(
+      requestPermission: true,
+    );
+
+    if (!mounted) return;
+    if (!success || locationProvider.location == null) {
+      setState(() => _isFetchingLocation = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t('addresses.location_failed'))),
+      );
+      return;
+    }
+
+    final location = locationProvider.location!;
+    final inferredCity = _inferCity(location);
+    final inferredQuartier = _inferQuartier(
+      location: location,
+      city: inferredCity ?? _selectedCity,
+    );
+
+    setState(() {
+      _latitude = location.latitude;
+      _longitude = location.longitude;
+      _resolvedLocationLabel = location.title;
+      if (inferredCity != null) {
+        _selectedCity = inferredCity;
+      }
+      if (inferredQuartier != null) {
+        _selectedQuartier = inferredQuartier;
+      }
+      _isFetchingLocation = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final cityItems = _cities.toSet().toList(growable: false);
+    final selectedCityValue = cityItems.contains(_selectedCity)
+        ? _selectedCity
+        : null;
+    final quartierItems = _quartiersForCity(
+      selectedCityValue,
+    ).toSet().toList(growable: false);
+    final selectedQuartierValue = quartierItems.contains(_selectedQuartier)
+        ? _selectedQuartier
+        : null;
+
+    if (_selectedCity != selectedCityValue ||
+        _selectedQuartier != selectedQuartierValue) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {
+          _selectedCity = selectedCityValue;
+          _selectedQuartier = selectedQuartierValue;
+        });
+      });
+    }
+
     return SafeArea(
       top: false,
       child: Align(
@@ -314,33 +535,115 @@ class _AddressSheetState extends State<_AddressSheet> {
                       controller: _labelController,
                       decoration: InputDecoration(
                         labelText: l10n.t('addresses.label'),
-                        prefixIcon: Icon(Icons.label_outline_rounded),
+                        prefixIcon: const Icon(Icons.label_outline_rounded),
                         hintText: l10n.t('addresses.label_hint'),
                       ),
                     ),
                     const SizedBox(height: 14),
-                    TextFormField(
-                      controller: _addressController,
-                      maxLines: 2,
-                      decoration: InputDecoration(
-                        labelText: l10n.t('addresses.street'),
-                        prefixIcon: Icon(Icons.location_on_outlined),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    TextFormField(
-                      controller: _cityController,
+                    DropdownButtonFormField<String>(
+                      key: ValueKey('city-$selectedCityValue'),
+                      initialValue: selectedCityValue,
+                      items: cityItems
+                          .map(
+                            (city) => DropdownMenuItem<String>(
+                              value: city,
+                              child: Text(city),
+                            ),
+                          )
+                          .toList(),
                       decoration: InputDecoration(
                         labelText: l10n.t('addresses.city'),
-                        prefixIcon: Icon(Icons.location_city_outlined),
+                        hintText: l10n.t('addresses.city_hint'),
+                        prefixIcon: const Icon(Icons.location_city_outlined),
                       ),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCity = value;
+                          final currentQuartier = _selectedQuartier;
+                          if (currentQuartier == null) return;
+                          final valid = _quartiersForCity(value).any(
+                            (entry) =>
+                                entry.toLowerCase() ==
+                                currentQuartier.toLowerCase(),
+                          );
+                          if (!valid) {
+                            _selectedQuartier = null;
+                          }
+                        });
+                      },
                     ),
                     const SizedBox(height: 14),
-                    TextFormField(
-                      controller: _zipCodeController,
+                    DropdownButtonFormField<String>(
+                      key: ValueKey(
+                        'quartier-$selectedCityValue-$selectedQuartierValue-${quartierItems.length}',
+                      ),
+                      initialValue: selectedQuartierValue,
+                      items: quartierItems
+                          .map(
+                            (quartier) => DropdownMenuItem<String>(
+                              value: quartier,
+                              child: Text(quartier),
+                            ),
+                          )
+                          .toList(),
                       decoration: InputDecoration(
-                        labelText: l10n.t('addresses.zip'),
-                        prefixIcon: Icon(Icons.markunread_mailbox_outlined),
+                        labelText: l10n.t('addresses.quartier'),
+                        hintText: l10n.t('addresses.quartier_hint'),
+                        prefixIcon: const Icon(Icons.map_outlined),
+                      ),
+                      onChanged: selectedCityValue == null
+                          ? null
+                          : (value) =>
+                                setState(() => _selectedQuartier = value),
+                    ),
+                    const SizedBox(height: 14),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.extraLightGrey),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.t('addresses.location'),
+                            style: AppTextStyles.labelMedium,
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            _locationSummaryText(l10n),
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: _isFetchingLocation
+                                  ? null
+                                  : _useCurrentLocation,
+                              icon: _isFetchingLocation
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.my_location_rounded,
+                                      size: 18,
+                                    ),
+                              label: Text(
+                                l10n.t('addresses.use_current_location'),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -359,7 +662,10 @@ class _AddressSheetState extends State<_AddressSheet> {
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.white,
+                                ),
                               )
                             : Text(
                                 widget.address == null
@@ -380,23 +686,44 @@ class _AddressSheetState extends State<_AddressSheet> {
 
   Future<void> _submit() async {
     final l10n = context.l10n;
+    final selectedCity = _selectedCity;
+    final selectedQuartier = _selectedQuartier;
+    final label = _labelController.text.trim();
+
+    if (selectedCity == null || selectedCity.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.t('addresses.invalid_city'))));
+      return;
+    }
+    if (selectedQuartier == null || selectedQuartier.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.t('addresses.invalid_quartier'))),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     final auth = context.read<AuthProvider>();
     final success = widget.address == null
         ? await auth.addAddress(
-            label: _labelController.text,
-            address: _addressController.text,
-            city: _cityController.text,
-            zipCode: _zipCodeController.text,
+            label: label.isEmpty ? selectedQuartier : label,
+            address: selectedQuartier,
+            city: selectedCity,
+            quartier: selectedQuartier,
+            latitude: _latitude,
+            longitude: _longitude,
             isDefault: _isDefault,
           )
         : await auth.updateAddress(
             addressId: widget.address!.id,
-            label: _labelController.text,
-            address: _addressController.text,
-            city: _cityController.text,
-            zipCode: _zipCodeController.text,
+            label: label.isEmpty ? selectedQuartier : label,
+            address: selectedQuartier,
+            city: selectedCity,
+            quartier: selectedQuartier,
+            latitude: _latitude,
+            longitude: _longitude,
             isDefault: _isDefault,
           );
 

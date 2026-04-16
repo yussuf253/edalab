@@ -306,7 +306,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             children: [
                               Text(a.label, style: AppTextStyles.labelLarge),
                               Text(
-                                '${a.address}, ${a.city}',
+                                [
+                                  if ((a.city ?? '').isNotEmpty) a.city!,
+                                  if ((a.quartier ?? '').isNotEmpty)
+                                    a.quartier!,
+                                ].join(', '),
                                 style: AppTextStyles.caption,
                               ),
                             ],
@@ -498,21 +502,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           cartProvider.applyPromo(code);
                           final appliedCode = cartProvider.promoCode;
                           if (appliedCode != null) {
-                            context.read<NotificationProvider>().addNotification(
-                              NotificationService.promotion(
-                                title: l10n.t('checkout.promo_applied_title'),
-                                body: l10n.t(
-                                  'checkout.promo_applied_body',
-                                  params: {'code': appliedCode},
-                                ),
-                                promoCode: appliedCode,
-                                route: '/checkout',
-                              ),
-                            );
+                            context
+                                .read<NotificationProvider>()
+                                .addNotification(
+                                  NotificationService.promotion(
+                                    title: l10n.t(
+                                      'checkout.promo_applied_title',
+                                    ),
+                                    body: l10n.t(
+                                      'checkout.promo_applied_body',
+                                      params: {'code': appliedCode},
+                                    ),
+                                    promoCode: appliedCode,
+                                    route: '/checkout',
+                                  ),
+                                );
                           }
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(l10n.t('checkout.promo_code_applied')),
+                              content: Text(
+                                l10n.t('checkout.promo_code_applied'),
+                              ),
                               backgroundColor: AppColors.success,
                             ),
                           );
@@ -555,15 +565,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               ),
               child: Column(
                 children: [
-                  _SumRow(l10n.t('checkout.subtotal'), '\$${subtotal.toStringAsFixed(2)}'),
+                  _SumRow(
+                    l10n.t('checkout.subtotal'),
+                    '\$${subtotal.toStringAsFixed(2)}',
+                  ),
                   _SumRow(
                     l10n.t('checkout.delivery'),
                     shipping <= 0.0
                         ? l10n.t('checkout.free')
                         : '\$${shipping.toStringAsFixed(2)}',
                   ),
-                  _SumRow(l10n.t('checkout.tax'), '\$${tax.toStringAsFixed(2)}'),
-                  if (tip > 0) _SumRow(l10n.t('checkout.tip'), '\$${tip.toStringAsFixed(2)}'),
+                  _SumRow(
+                    l10n.t('checkout.tax'),
+                    '\$${tax.toStringAsFixed(2)}',
+                  ),
+                  if (tip > 0)
+                    _SumRow(
+                      l10n.t('checkout.tip'),
+                      '\$${tip.toStringAsFixed(2)}',
+                    ),
                   if (discount > 0)
                     _SumRow(
                       l10n.t('checkout.discount'),
@@ -577,7 +597,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       isDiscount: true,
                     ),
                   const Divider(height: 20),
-                  _SumRow(l10n.t('checkout.total'), '\$${total.toStringAsFixed(2)}', bold: true),
+                  _SumRow(
+                    l10n.t('checkout.total'),
+                    '\$${total.toStringAsFixed(2)}',
+                    bold: true,
+                  ),
                 ],
               ),
             ),
@@ -656,7 +680,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       'delivery': l10n.t(
                         _deliveryOptions[_selectedDeliveryOption].$1,
                       ),
-                      'moduleName': moduleName ?? _moduleLabel(context, moduleType),
+                      'moduleName':
+                          moduleName ?? _moduleLabel(context, moduleType),
                       'address': selectedAddress == null
                           ? null
                           : '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
@@ -671,7 +696,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       'trackingExtra': {
                         'id': orderId,
                         'moduleType': moduleType?.toUpperCase(),
-                        'moduleName': moduleName ?? _moduleLabel(context, moduleType),
+                        'moduleName':
+                            moduleName ?? _moduleLabel(context, moduleType),
                         'status': 'PENDING',
                         'subtotal': subtotal,
                         'tax': tax,
