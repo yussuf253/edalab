@@ -29,6 +29,8 @@ class PharmacyStoreDetailScreen extends StatefulWidget {
 class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
   _PharmacyStoreInfo? _store;
   List<PharmacyModel> _medicines = const [];
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
   bool _isLoadingStore = true;
   bool _isLoadingMedicines = true;
 
@@ -160,6 +162,12 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
   }
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
@@ -169,6 +177,21 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
     final store = _store;
     final hasAddress = store?.address?.trim().isNotEmpty == true;
     final hasDistance = (store?.distanceKm ?? 0) > 0;
+    final normalizedQuery = _searchQuery.trim().toLowerCase();
+    final visibleMedicines = normalizedQuery.isEmpty
+        ? _medicines
+        : _medicines
+              .where((medicine) {
+                final haystack = [
+                  medicine.name,
+                  medicine.category,
+                  medicine.size,
+                  medicine.description,
+                  medicine.sourceBusiness ?? '',
+                ].join(' ').toLowerCase();
+                return haystack.contains(normalizedQuery);
+              })
+              .toList(growable: false);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -328,40 +351,6 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                           children: [
                             Expanded(
                               child: _StoreStatCard(
-                                icon: Icons.medication_liquid_outlined,
-                                title: l10n.t(
-                                  'pharmacy.products_count',
-                                  params: {
-                                    'count': '${store?.productCount ?? 0}',
-                                  },
-                                ),
-                                subtitle: l10n.t(
-                                  'pharmacy.store_catalog_subtitle',
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _StoreStatCard(
-                                icon: Icons.receipt_long_outlined,
-                                title: l10n.t(
-                                  'pharmacy.store_requests_count',
-                                  params: {
-                                    'count': '${store?.prescriptionCount ?? 0}',
-                                  },
-                                ),
-                                subtitle: l10n.t(
-                                  'pharmacy.store_requests_subtitle',
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _StoreStatCard(
                                 icon: Icons.star_rate_rounded,
                                 title: (store?.rating ?? 0).toStringAsFixed(1),
                                 subtitle: l10n.t(
@@ -385,6 +374,18 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                               ),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 10),
+                        _StoreSearchCard(
+                          controller: _searchController,
+                          hint: l10n.t('pharmacy.search_hint'),
+                          hasValue: _searchQuery.trim().isNotEmpty,
+                          onChanged: (value) =>
+                              setState(() => _searchQuery = value),
+                          onClear: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
                         ),
                       ],
                     ),
@@ -414,7 +415,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
-                            '${_medicines.length}',
+                            '${visibleMedicines.length}',
                             style: AppTextStyles.labelSmall.copyWith(
                               color: AppColors.pharmacy,
                               fontWeight: FontWeight.w700,
@@ -425,7 +426,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                     ),
                   ),
                 ),
-                if (_medicines.isEmpty)
+                if (visibleMedicines.isEmpty)
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -450,7 +451,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                 else
                   SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
-                      final medicine = _medicines[index];
+                      final medicine = visibleMedicines[index];
                       return GestureDetector(
                         onTap: () {
                           context.push('/pharmacy/medicine/${medicine.id}');
@@ -555,7 +556,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                           ),
                         ),
                       );
-                    }, childCount: _medicines.length),
+                    }, childCount: visibleMedicines.length),
                   ),
                 const SliverToBoxAdapter(child: SizedBox(height: 24)),
               ],
@@ -709,6 +710,80 @@ class _StoreStatCard extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StoreSearchCard extends StatelessWidget {
+  const _StoreSearchCard({
+    required this.controller,
+    required this.hint,
+    required this.onChanged,
+    required this.hasValue,
+    required this.onClear,
+  });
+
+  final TextEditingController controller;
+  final String hint;
+  final ValueChanged<String> onChanged;
+  final bool hasValue;
+  final VoidCallback onClear;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: AppSpacing.shadowSm,
+        border: Border.all(color: AppColors.lightGrey.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppColors.pharmacyBg,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.search_rounded,
+              color: AppColors.pharmacy,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              onChanged: onChanged,
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: hint,
+                hintStyle: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.mediumGrey,
+                ),
+                border: InputBorder.none,
+              ),
+              style: AppTextStyles.bodyMedium,
+            ),
+          ),
+          if (hasValue)
+            IconButton(
+              onPressed: onClear,
+              splashRadius: 18,
+              icon: const Icon(
+                Icons.close_rounded,
+                size: 18,
+                color: AppColors.mediumGrey,
+              ),
+              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+              padding: EdgeInsets.zero,
+            ),
         ],
       ),
     );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
@@ -177,6 +178,12 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
         setState(() => _busyIds.remove(id));
       }
     }
+  }
+
+  Future<void> _openPrescription(String url) async {
+    final uri = Uri.tryParse(url.trim());
+    if (uri == null) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   @override
@@ -369,6 +376,12 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
     final isBusy = _busyIds.contains(id);
     final nextStatus = _nextStatus(status);
     final isPrescriptionRequest = item['prescriptionRequest'] == true;
+    final prescription = item['prescription'] is Map
+        ? Map<String, dynamic>.from(item['prescription'] as Map)
+        : const <String, dynamic>{};
+    final prescriptionImageUrl = prescription['imageUrl']?.toString() ?? '';
+    final prescriptionPharmacy = prescription['pharmacy']?.toString() ?? '';
+    final prescriptionNote = prescription['note']?.toString() ?? '';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -437,6 +450,24 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
               const SizedBox(height: 4),
               Text(notes, style: TextStyle(color: Colors.grey.shade700)),
             ],
+            if (isPrescriptionRequest &&
+                (prescriptionPharmacy.isNotEmpty ||
+                    prescriptionNote.isNotEmpty ||
+                    prescriptionImageUrl.isNotEmpty)) ...[
+              const SizedBox(height: 8),
+              if (prescriptionPharmacy.isNotEmpty)
+                Text(
+                  'Pharmacy: $prescriptionPharmacy',
+                  style: TextStyle(color: Colors.grey.shade700),
+                ),
+              if (prescriptionNote.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  'Note: $prescriptionNote',
+                  style: TextStyle(color: Colors.grey.shade700),
+                ),
+              ],
+            ],
             const SizedBox(height: 12),
             Text(
               '${status.replaceAll('_', ' ')}${amount.isEmpty ? '' : ' • $amount'}',
@@ -485,6 +516,12 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                       foregroundColor: Colors.white,
                     ),
                     child: Text(isBusy ? 'Updating...' : _actionLabel(status)),
+                  ),
+                if (prescriptionImageUrl.isNotEmpty)
+                  OutlinedButton.icon(
+                    onPressed: () => _openPrescription(prescriptionImageUrl),
+                    icon: const Icon(Icons.description_outlined, size: 18),
+                    label: const Text('View Rx'),
                   ),
               ],
             ),

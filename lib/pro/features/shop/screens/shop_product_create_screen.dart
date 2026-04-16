@@ -5,15 +5,18 @@ import '../../../../core/network/api_client.dart';
 class ShopProductCreateScreen extends StatefulWidget {
   final String userId;
   final List<Map<String, dynamic>> stores;
+  final String module;
 
   const ShopProductCreateScreen({
     super.key,
     required this.userId,
     required this.stores,
+    this.module = 'shopping',
   });
 
   @override
-  State<ShopProductCreateScreen> createState() => _ShopProductCreateScreenState();
+  State<ShopProductCreateScreen> createState() =>
+      _ShopProductCreateScreenState();
 }
 
 class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
@@ -27,6 +30,8 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
   final _originalPriceController = TextEditingController();
   final _unitController = TextEditingController();
   final _badgeController = TextEditingController();
+  final _dosageController = TextEditingController();
+  final _packageSizeController = TextEditingController();
   final _imageUrlController = TextEditingController();
   final _galleryImageUrlsController = TextEditingController();
   final _colorsController = TextEditingController();
@@ -35,7 +40,10 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
   final _featuresController = TextEditingController();
   bool _inStock = true;
   bool _isOrganic = false;
+  bool _requiresPrescription = false;
   bool _isSubmitting = false;
+
+  bool get _isPharmacy => widget.module == 'pharmacy';
 
   @override
   void initState() {
@@ -43,6 +51,7 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
     _selectedStoreId = widget.stores.isNotEmpty
         ? widget.stores.first['id']?.toString()
         : null;
+    _unitController.text = _isPharmacy ? 'box' : '';
   }
 
   @override
@@ -55,6 +64,8 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
     _originalPriceController.dispose();
     _unitController.dispose();
     _badgeController.dispose();
+    _dosageController.dispose();
+    _packageSizeController.dispose();
     _imageUrlController.dispose();
     _galleryImageUrlsController.dispose();
     _colorsController.dispose();
@@ -78,13 +89,28 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedStoreId == null || _selectedStoreId!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select a store first.')),
+        SnackBar(
+          content: Text(
+            _isPharmacy
+                ? 'Select a pharmacy business first.'
+                : 'Select a store first.',
+          ),
+        ),
       );
       return;
     }
 
+    final selectedStore = widget.stores.firstWhere(
+      (store) => store['id']?.toString() == _selectedStoreId,
+      orElse: () => const <String, dynamic>{},
+    );
+
     final payload = <String, dynamic>{
-      'storeId': _selectedStoreId,
+      'module': widget.module,
+      if (_isPharmacy)
+        'businessName': (selectedStore['name']?.toString() ?? _selectedStoreId)
+      else
+        'storeId': _selectedStoreId,
       'categoryName': _categoryController.text.trim(),
       'name': _nameController.text.trim(),
       'brand': _brandController.text.trim(),
@@ -94,10 +120,13 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
       'badge': _badgeController.text.trim(),
       'imageUrl': _imageUrlController.text.trim(),
       'imageUrls': _parseTextList(_galleryImageUrlsController.text),
-      'colors': _parseTextList(_colorsController.text),
-      'sizes': _parseTextList(_sizesController.text),
       'tags': _parseTextList(_tagsController.text),
       'features': _parseTextList(_featuresController.text),
+      if (!_isPharmacy) 'colors': _parseTextList(_colorsController.text),
+      if (!_isPharmacy) 'sizes': _parseTextList(_sizesController.text),
+      if (_isPharmacy) 'dosage': _dosageController.text.trim(),
+      if (_isPharmacy) 'packageSize': _packageSizeController.text.trim(),
+      if (_isPharmacy) 'requiresPrescription': _requiresPrescription,
       'isOrganic': _isOrganic,
       'inStock': _inStock,
     };
@@ -113,7 +142,13 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
       await ApiClient.post('/pro/${widget.userId}/shopping-products', payload);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Product added to your catalog.')),
+        SnackBar(
+          content: Text(
+            _isPharmacy
+                ? 'Medicine added to your pharmacy catalog.'
+                : 'Product added to your catalog.',
+          ),
+        ),
       );
       Navigator.of(context).pop(true);
     } catch (error) {
@@ -134,8 +169,10 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final title = _isPharmacy ? 'Add Medicine' : 'Add Shopping Product';
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Shopping Product')),
+      appBar: AppBar(title: Text(title)),
       body: widget.stores.isEmpty
           ? Center(
               child: Padding(
@@ -145,8 +182,10 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                   children: [
                     const Icon(Icons.store_mall_directory_outlined, size: 42),
                     const SizedBox(height: 12),
-                    const Text(
-                      'No store is connected yet. Create a store first to add products.',
+                    Text(
+                      _isPharmacy
+                          ? 'No pharmacy business is connected yet. Connect one first to add medicines.'
+                          : 'No store is connected yet. Create a store first to add products.',
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
@@ -166,9 +205,11 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                     child: ListView(
                       padding: const EdgeInsets.all(16),
                       children: [
-                        const _FormSectionTitle(
+                        _FormSectionTitle(
                           title: 'Basic details',
-                          subtitle: 'Core catalog identity and description.',
+                          subtitle: _isPharmacy
+                              ? 'Medicine identity and pharmacy binding.'
+                              : 'Core catalog identity and description.',
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
@@ -178,20 +219,27 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                                 (store) => DropdownMenuItem<String>(
                                   value: store['id']?.toString(),
                                   child: Text(
-                                    store['name']?.toString() ?? 'Store',
+                                    store['name']?.toString() ??
+                                        (_isPharmacy ? 'Pharmacy' : 'Store'),
                                   ),
                                 ),
                               )
                               .toList(),
                           onChanged: (value) =>
                               setState(() => _selectedStoreId = value),
-                          decoration: const InputDecoration(labelText: 'Store'),
+                          decoration: InputDecoration(
+                            labelText: _isPharmacy
+                                ? 'Pharmacy business'
+                                : 'Store',
+                          ),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _categoryController,
-                          decoration: const InputDecoration(
-                            labelText: 'Catalog category',
+                          decoration: InputDecoration(
+                            labelText: _isPharmacy
+                                ? 'Medicine category'
+                                : 'Catalog category',
                           ),
                           validator: (value) =>
                               (value == null || value.trim().length < 2)
@@ -201,26 +249,32 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Product name',
+                          decoration: InputDecoration(
+                            labelText: _isPharmacy
+                                ? 'Medicine name'
+                                : 'Product name',
                           ),
                           validator: (value) =>
                               (value == null || value.trim().length < 2)
-                              ? 'Enter a product name'
+                              ? 'Enter a name'
                               : null,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _brandController,
-                          decoration: const InputDecoration(
-                            labelText: 'Brand (optional)',
+                          decoration: InputDecoration(
+                            labelText: _isPharmacy
+                                ? 'Lab / Brand (optional)'
+                                : 'Brand (optional)',
                           ),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _descriptionController,
-                          decoration: const InputDecoration(
-                            labelText: 'Description',
+                          decoration: InputDecoration(
+                            labelText: _isPharmacy
+                                ? 'Medicine details'
+                                : 'Description',
                           ),
                           minLines: 3,
                           maxLines: 4,
@@ -229,10 +283,43 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                               ? 'Enter a description'
                               : null,
                         ),
+                        if (_isPharmacy) ...[
+                          const SizedBox(height: 18),
+                          const _FormSectionTitle(
+                            title: 'Medical specification',
+                            subtitle:
+                                'Dosage, package details, and prescription need.',
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _dosageController,
+                            decoration: const InputDecoration(
+                              labelText: 'Dosage (optional)',
+                              hintText: '1 tablet every 8 hours',
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _packageSizeController,
+                            decoration: const InputDecoration(
+                              labelText: 'Package size (optional)',
+                              hintText: '20 tablets / 100ml / 1 tube',
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            value: _requiresPrescription,
+                            onChanged: (value) =>
+                                setState(() => _requiresPrescription = value),
+                            title: const Text('Requires prescription'),
+                          ),
+                        ],
                         const SizedBox(height: 18),
                         const _FormSectionTitle(
                           title: 'Pricing',
-                          subtitle: 'Commercial fields used in listing and checkout.',
+                          subtitle:
+                              'Commercial fields used in listing and checkout.',
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
@@ -259,9 +346,11 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _unitController,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Unit (optional)',
-                            hintText: 'piece, box, pair...',
+                            hintText: _isPharmacy
+                                ? 'box, bottle, strip...'
+                                : 'piece, box, pair...',
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -275,7 +364,7 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                         const SizedBox(height: 18),
                         const _FormSectionTitle(
                           title: 'Media and attributes',
-                          subtitle: 'Images and variant metadata.',
+                          subtitle: 'Images and metadata.',
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
@@ -295,28 +384,32 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                           minLines: 2,
                           maxLines: 3,
                         ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _colorsController,
-                          decoration: const InputDecoration(
-                            labelText: 'Colors',
-                            hintText: 'Black, White, Blue',
+                        if (!_isPharmacy) ...[
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _colorsController,
+                            decoration: const InputDecoration(
+                              labelText: 'Colors',
+                              hintText: 'Black, White, Blue',
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: _sizesController,
-                          decoration: const InputDecoration(
-                            labelText: 'Sizes',
-                            hintText: 'S, M, L or 40, 41, 42',
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _sizesController,
+                            decoration: const InputDecoration(
+                              labelText: 'Sizes',
+                              hintText: 'S, M, L or 40, 41, 42',
+                            ),
                           ),
-                        ),
+                        ],
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _tagsController,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: 'Tags',
-                            hintText: 'Sport, Casual, Trending',
+                            hintText: _isPharmacy
+                                ? 'Pain relief, Cold, Antibiotic'
+                                : 'Sport, Casual, Trending',
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -324,7 +417,8 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                           controller: _featuresController,
                           decoration: const InputDecoration(
                             labelText: 'Features',
-                            hintText: 'Breathable mesh, Lightweight',
+                            hintText:
+                                'Fast action, Child-safe cap, Lightweight',
                           ),
                           minLines: 2,
                           maxLines: 3,
@@ -332,16 +426,18 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                         const SizedBox(height: 18),
                         const _FormSectionTitle(
                           title: 'Availability',
-                          subtitle: 'Current stock state for storefront visibility.',
+                          subtitle:
+                              'Current stock state for storefront visibility.',
                         ),
                         const SizedBox(height: 8),
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          value: _isOrganic,
-                          onChanged: (value) =>
-                              setState(() => _isOrganic = value),
-                          title: const Text('Mark as organic'),
-                        ),
+                        if (!_isPharmacy)
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            value: _isOrganic,
+                            onChanged: (value) =>
+                                setState(() => _isOrganic = value),
+                            title: const Text('Mark as organic'),
+                          ),
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
                           value: _inStock,
@@ -363,7 +459,13 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                       onPressed: _isSubmitting ? null : _submit,
                       icon: const Icon(Icons.add_box_outlined),
                       label: Text(
-                        _isSubmitting ? 'Saving product...' : 'Create Product',
+                        _isSubmitting
+                            ? (_isPharmacy
+                                  ? 'Saving medicine...'
+                                  : 'Saving product...')
+                            : (_isPharmacy
+                                  ? 'Create Medicine'
+                                  : 'Create Product'),
                       ),
                     ),
                   ),
@@ -378,10 +480,7 @@ class _FormSectionTitle extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _FormSectionTitle({
-    required this.title,
-    required this.subtitle,
-  });
+  const _FormSectionTitle({required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -395,10 +494,7 @@ class _FormSectionTitle extends StatelessWidget {
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }

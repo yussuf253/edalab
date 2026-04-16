@@ -119,6 +119,8 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
           (profile) => ShopProductsScreen(
             userId: profile.userId,
             businessName: profile.businessName,
+            activeModules: profile.activeModules,
+            initialModule: state.uri.queryParameters['module'] ?? 'shopping',
           ),
         ),
       ),

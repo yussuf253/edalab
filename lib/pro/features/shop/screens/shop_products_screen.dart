@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../core/models/pro_profile.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../widgets/shop_module_bottom_nav.dart';
 import 'shop_product_create_screen.dart';
@@ -11,11 +12,15 @@ import 'shop_store_setup_screen.dart';
 class ShopProductsScreen extends StatefulWidget {
   final String userId;
   final String businessName;
+  final List<ProModule> activeModules;
+  final String initialModule;
 
   const ShopProductsScreen({
     super.key,
     required this.userId,
     required this.businessName,
+    this.activeModules = const [],
+    this.initialModule = 'shopping',
   });
 
   @override
@@ -28,6 +33,8 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
   String _selectedStoreId = 'all';
   String _selectedStockFilter = 'all';
   String _searchQuery = '';
+  late final List<String> _allowedModules = _resolveAllowedModules();
+  late String _selectedModule = _normalizeSelectedModule(widget.initialModule);
 
   @override
   void initState() {
@@ -35,9 +42,46 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
     _productsFuture = _loadProducts();
   }
 
+  List<String> _resolveAllowedModules() {
+    final modules = <String>[];
+    for (final module in widget.activeModules) {
+      switch (module) {
+        case ProModule.shopping:
+          modules.add('shopping');
+          break;
+        case ProModule.pharmacy:
+          modules.add('pharmacy');
+          break;
+        default:
+          break;
+      }
+    }
+    if (modules.isEmpty) {
+      return const ['shopping'];
+    }
+    return modules.toSet().toList(growable: false);
+  }
+
+  String _normalizeSelectedModule(String requested) {
+    if (_allowedModules.contains(requested)) {
+      return requested;
+    }
+    return _allowedModules.first;
+  }
+
+  Color _moduleColor(String module) {
+    return module == 'pharmacy' ? AppColors.pharmacy : AppColors.shopping;
+  }
+
+  String _moduleLabel(String module) {
+    return module == 'pharmacy' ? 'Pharmacy' : 'Shopping';
+  }
+
+  bool get _isPharmacyModule => _selectedModule == 'pharmacy';
+
   Future<Map<String, dynamic>> _loadProducts() async {
     final response = await ApiClient.get(
-      '/pro/${widget.userId}/shopping-products',
+      '/pro/${widget.userId}/shopping-products?module=$_selectedModule',
       forceRefresh: true,
     );
     return Map<String, dynamic>.from(response as Map);
@@ -57,7 +101,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
     try {
       await ApiClient.patch(
         '/pro/${widget.userId}/shopping-products/$productId',
-        {'inStock': inStock},
+        {'module': _selectedModule, 'inStock': inStock},
       );
       if (!mounted) return;
       await _refresh();
@@ -77,18 +121,22 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
 
   Future<void> _openCreateProduct(List<Map<String, dynamic>> stores) async {
     if (stores.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Create a store first before adding products.'),
-        ),
-      );
+      final message = _isPharmacyModule
+          ? 'Connect a pharmacy business before adding medicines.'
+          : 'Create a store first before adding products.';
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
       return;
     }
 
     final created = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) =>
-            ShopProductCreateScreen(userId: widget.userId, stores: stores),
+        builder: (_) => ShopProductCreateScreen(
+          userId: widget.userId,
+          stores: stores,
+          module: _selectedModule,
+        ),
       ),
     );
     if (created != true || !mounted) return;
@@ -110,7 +158,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
   }
 
   Future<void> _openOrders() async {
-    await context.push('${ProRoutePaths.shopQueue}?module=shopping');
+    await context.push('${ProRoutePaths.shopQueue}?module=$_selectedModule');
     if (!mounted) return;
     await _refresh();
   }
@@ -136,6 +184,8 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
       product['unit']?.toString() ?? '',
       product['badge']?.toString() ?? '',
       product['description']?.toString() ?? '',
+      product['dosage']?.toString() ?? '',
+      product['packageSize']?.toString() ?? '',
     ].join(' ').toLowerCase();
     return haystack.contains(query);
   }
@@ -146,12 +196,29 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
     return '\$${parsed.toStringAsFixed(2)}';
   }
 
+  void _changeModule(String module) {
+    if (_selectedModule == module) return;
+    setState(() {
+      _selectedModule = module;
+      _selectedStoreId = 'all';
+      _selectedStockFilter = 'all';
+      _searchQuery = '';
+      _productsFuture = _loadProducts();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final moduleColor = _moduleColor(_selectedModule);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.businessName} Products'),
-        backgroundColor: AppColors.shopping,
+        title: Text(
+          _isPharmacyModule
+              ? '${widget.businessName} Medicines'
+              : '${widget.businessName} Products',
+        ),
+        backgroundColor: moduleColor,
         foregroundColor: Colors.white,
       ),
       body: FutureBuilder<Map<String, dynamic>>(
@@ -208,21 +275,63 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
+                if (_allowedModules.length > 1) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.black12),
+                    ),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _allowedModules
+                          .map(
+                            (module) => ChoiceChip(
+                              label: Text(
+                                _moduleLabel(module),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: _selectedModule == module
+                                      ? _moduleColor(module)
+                                      : Colors.black87,
+                                ),
+                              ),
+                              selected: _selectedModule == module,
+                              selectedColor: _moduleColor(
+                                module,
+                              ).withValues(alpha: 0.16),
+                              backgroundColor: Colors.white,
+                              side: BorderSide(
+                                color: _selectedModule == module
+                                    ? _moduleColor(module)
+                                    : Colors.black26,
+                              ),
+                              showCheckmark: false,
+                              onSelected: (_) => _changeModule(module),
+                            ),
+                          )
+                          .toList(growable: false),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppColors.shopping.withValues(alpha: 0.08),
+                    color: moduleColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Row(
                     children: [
                       _QueueMetric(
-                        label: 'Products',
+                        label: _isPharmacyModule ? 'Medicines' : 'Products',
                         value: '${products.length}',
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       _QueueMetric(label: 'In Stock', value: '$inStockCount'),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       _QueueMetric(label: 'Out', value: '$outOfStockCount'),
                     ],
                   ),
@@ -237,27 +346,35 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                               .map(
                                 (store) => {
                                   'id': store['id']?.toString(),
-                                  'name': store['name']?.toString() ?? 'Store',
+                                  'name':
+                                      store['name']?.toString() ??
+                                      (_isPharmacyModule
+                                          ? 'Pharmacy'
+                                          : 'Store'),
                                 },
                               )
                               .toList(growable: false),
                         ),
                         icon: const Icon(Icons.add_box_outlined),
-                        label: const Text('Add Product'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _openStoreSetup(
-                          stores.isEmpty ? null : stores.first,
-                        ),
-                        icon: const Icon(Icons.store_mall_directory_outlined),
                         label: Text(
-                          stores.isEmpty ? 'Create Store' : 'Store Setup',
+                          _isPharmacyModule ? 'Add Medicine' : 'Add Product',
                         ),
                       ),
                     ),
+                    if (!_isPharmacyModule) ...[
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _openStoreSetup(
+                            stores.isEmpty ? null : stores.first,
+                          ),
+                          icon: const Icon(Icons.store_mall_directory_outlined),
+                          label: Text(
+                            stores.isEmpty ? 'Create Store' : 'Store Setup',
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -274,22 +391,22 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                     children: [
                       ChoiceChip(
                         label: Text(
-                          'All Stores (${products.length})',
+                          _isPharmacyModule
+                              ? 'All Pharmacies (${products.length})'
+                              : 'All Stores (${products.length})',
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
                             color: selectedStoreId == 'all'
-                                ? AppColors.shopping
+                                ? moduleColor
                                 : Colors.black87,
                           ),
                         ),
                         selected: selectedStoreId == 'all',
-                        selectedColor: AppColors.shopping.withValues(
-                          alpha: 0.16,
-                        ),
+                        selectedColor: moduleColor.withValues(alpha: 0.16),
                         backgroundColor: Colors.white,
                         side: BorderSide(
                           color: selectedStoreId == 'all'
-                              ? AppColors.shopping
+                              ? moduleColor
                               : Colors.black26,
                         ),
                         showCheckmark: false,
@@ -301,23 +418,17 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                         final selected = selectedStoreId == id;
                         return ChoiceChip(
                           label: Text(
-                            '${store['name']?.toString() ?? 'Store'} (${store['productCount']?.toString() ?? '0'})',
+                            '${store['name']?.toString() ?? (_isPharmacyModule ? 'Pharmacy' : 'Store')} (${store['productCount']?.toString() ?? '0'})',
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
-                              color: selected
-                                  ? AppColors.shopping
-                                  : Colors.black87,
+                              color: selected ? moduleColor : Colors.black87,
                             ),
                           ),
                           selected: selected,
-                          selectedColor: AppColors.shopping.withValues(
-                            alpha: 0.16,
-                          ),
+                          selectedColor: moduleColor.withValues(alpha: 0.16),
                           backgroundColor: Colors.white,
                           side: BorderSide(
-                            color: selected
-                                ? AppColors.shopping
-                                : Colors.black26,
+                            color: selected ? moduleColor : Colors.black26,
                           ),
                           showCheckmark: false,
                           onSelected: (_) => setState(
@@ -351,18 +462,16 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               color: _selectedStockFilter == status
-                                  ? AppColors.shopping
+                                  ? moduleColor
                                   : Colors.black87,
                             ),
                           ),
                           selected: _selectedStockFilter == status,
-                          selectedColor: AppColors.shopping.withValues(
-                            alpha: 0.16,
-                          ),
+                          selectedColor: moduleColor.withValues(alpha: 0.16),
                           backgroundColor: Colors.white,
                           side: BorderSide(
                             color: _selectedStockFilter == status
-                                ? AppColors.shopping
+                                ? moduleColor
                                 : Colors.black26,
                           ),
                           showCheckmark: false,
@@ -375,7 +484,9 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   decoration: InputDecoration(
-                    hintText: 'Search products, stores, or categories',
+                    hintText: _isPharmacyModule
+                        ? 'Search medicines, pharmacies, or dosage'
+                        : 'Search products, stores, or categories',
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -441,6 +552,9 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
     final badge = product['badge']?.toString() ?? '';
     final storeName = product['storeName']?.toString() ?? 'Store';
     final categoryName = product['categoryName']?.toString() ?? 'General';
+    final dosage = product['dosage']?.toString().trim() ?? '';
+    final packageSize = product['packageSize']?.toString().trim() ?? '';
+    final needsPrescription = product['requiresPrescription'] == true;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -495,6 +609,26 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                           if (badge.isNotEmpty) Text(badge),
                         ],
                       ),
+                      if (_isPharmacyModule &&
+                          (dosage.isNotEmpty ||
+                              packageSize.isNotEmpty ||
+                              needsPrescription)) ...[
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 6,
+                          children: [
+                            if (dosage.isNotEmpty) _TagPill(text: dosage),
+                            if (packageSize.isNotEmpty)
+                              _TagPill(text: packageSize),
+                            if (needsPrescription)
+                              const _TagPill(
+                                text: 'Prescription required',
+                                color: AppColors.pharmacy,
+                              ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -549,6 +683,32 @@ class _QueueMetric extends StatelessWidget {
             const SizedBox(height: 2),
             Text(label, style: const TextStyle(fontSize: 12)),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TagPill extends StatelessWidget {
+  final String text;
+  final Color color;
+
+  const _TagPill({required this.text, this.color = Colors.black87});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 11,
+          color: color,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

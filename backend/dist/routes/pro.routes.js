@@ -101,7 +101,9 @@ const createHomeServiceProviderSchema = zod_1.z.object({
         .optional(),
 });
 const createShoppingProductSchema = zod_1.z.object({
-    storeId: zod_1.z.string().min(1),
+    module: zod_1.z.enum(['shopping', 'pharmacy']).optional(),
+    storeId: zod_1.z.string().min(1).optional(),
+    businessName: zod_1.z.string().trim().max(120).optional().or(zod_1.z.literal('')),
     categoryName: zod_1.z.string().trim().min(2).max(80),
     name: zod_1.z.string().trim().min(2).max(120),
     brand: zod_1.z.string().trim().max(120).optional().or(zod_1.z.literal('')),
@@ -116,10 +118,14 @@ const createShoppingProductSchema = zod_1.z.object({
     sizes: zod_1.z.array(zod_1.z.string().trim().min(1).max(40)).max(20).optional(),
     tags: zod_1.z.array(zod_1.z.string().trim().min(1).max(40)).max(20).optional(),
     features: zod_1.z.array(zod_1.z.string().trim().min(1).max(120)).max(30).optional(),
+    dosage: zod_1.z.string().trim().max(120).optional().or(zod_1.z.literal('')),
+    packageSize: zod_1.z.string().trim().max(80).optional().or(zod_1.z.literal('')),
+    requiresPrescription: zod_1.z.boolean().optional(),
     isOrganic: zod_1.z.boolean().optional(),
     inStock: zod_1.z.boolean().optional(),
 });
 const updateShoppingProductStockSchema = zod_1.z.object({
+    module: zod_1.z.enum(['shopping', 'pharmacy']).optional(),
     inStock: zod_1.z.boolean(),
 });
 const updateProviderAvailabilitySchema = zod_1.z.object({
@@ -835,6 +841,11 @@ function serializeQueueOrderItem(order, options) {
     const categorySlug = firstItemMetadata?.categorySlug?.toString() ?? null;
     const prescriptionRequest = firstItemMetadata?.prescriptionRequest == true ||
         firstItem?.name?.toLowerCase().includes('prescription') == true;
+    const prescriptionImageUrl = firstItemMetadata?.prescriptionImageUrl?.toString().trim() ?? '';
+    const prescriptionPharmacy = firstItemMetadata?.selectedPharmacy?.toString().trim() ||
+        firstItemMetadata?.sourceBusiness?.toString().trim() ||
+        '';
+    const prescriptionNote = firstItemMetadata?.prescriptionNote?.toString().trim() ?? '';
     return {
         id: order.id,
         module: queueModuleForOrder(order.moduleType),
@@ -854,6 +865,16 @@ function serializeQueueOrderItem(order, options) {
         providerId,
         categorySlug,
         prescriptionRequest,
+        prescription: prescriptionRequest ||
+            prescriptionImageUrl.length > 0 ||
+            prescriptionPharmacy.length > 0 ||
+            prescriptionNote.length > 0
+            ? {
+                imageUrl: prescriptionImageUrl.length > 0 ? prescriptionImageUrl : null,
+                pharmacy: prescriptionPharmacy.length > 0 ? prescriptionPharmacy : null,
+                note: prescriptionNote.length > 0 ? prescriptionNote : null,
+            }
+            : null,
         queueType,
         distanceKm: options?.distanceKm != null
             ? Number(options.distanceKm.toFixed(1))
@@ -3275,40 +3296,77 @@ router.post('/:userId/home-service-provider', (0, async_handler_1.asyncHandler)(
 router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const userId = (0, http_1.getParam)(req.params.userId, 'userId');
     const body = createShoppingProductSchema.parse(req.body);
+    const requestedModule = body.module === 'pharmacy' ? 'pharmacy' : 'shopping';
     const profile = await db_1.prisma.proProfile.findUnique({ where: { userId } });
     if (!profile || profile.type !== client_1.ProProfileType.SHOP) {
         return res.status(404).json({ error: 'Shop pro profile not found.' });
     }
-    if (!profile.activeModules.includes(client_1.ProModule.SHOPPING)) {
-        return res.status(400).json({
-            error: 'Shopping is not enabled for this shop profile.',
-        });
-    }
-    const store = await db_1.prisma.shoppingStore.findUnique({
-        where: { id: body.storeId },
-        select: {
-            id: true,
-            name: true,
-        },
-    });
-    if (!store) {
-        return res.status(404).json({ error: 'Shopping store not found.' });
-    }
     const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
     const bindings = normalizeBindings(hydratedProfile.bindings);
-    if (bindings.shoppingStoreIds.length === 0 ||
-        !bindings.shoppingStoreIds.includes(store.id)) {
-        return res.status(403).json({
-            error: 'Store is not assigned to this shop profile.',
-        });
+    let moduleType;
+    let shopId = null;
+    let sourceBusiness;
+    if (requestedModule === 'pharmacy') {
+        if (!profile.activeModules.includes(client_1.ProModule.PHARMACY)) {
+            return res.status(400).json({
+                error: 'Pharmacy is not enabled for this shop profile.',
+            });
+        }
+        if (bindings.pharmacyBusinesses.length === 0) {
+            return res.status(400).json({
+                error: 'No pharmacy business is bound to this shop profile yet.',
+            });
+        }
+        const requestedBusiness = body.businessName?.trim() ?? '';
+        const preferredBusiness = requestedBusiness.length > 0
+            ? requestedBusiness
+            : bindings.pharmacyBusinesses[0];
+        const preferredNormalized = normalizeComparableText(preferredBusiness);
+        const boundBusiness = bindings.pharmacyBusinesses.find((value) => normalizeComparableText(value) === preferredNormalized);
+        if (!boundBusiness) {
+            return res.status(403).json({
+                error: 'Pharmacy business is not assigned to this shop profile.',
+            });
+        }
+        moduleType = client_1.ModuleType.PHARMACY;
+        sourceBusiness = boundBusiness;
     }
-    const categorySlug = await ensureUniqueSlug(`${body.categoryName.trim()}-${client_1.ModuleType.SHOPPING.toLowerCase()}`, async (candidate) => Boolean(await db_1.prisma.productCategory.findUnique({
+    else {
+        if (!profile.activeModules.includes(client_1.ProModule.SHOPPING)) {
+            return res.status(400).json({
+                error: 'Shopping is not enabled for this shop profile.',
+            });
+        }
+        if (!body.storeId || body.storeId.trim().length === 0) {
+            return res.status(400).json({ error: 'Store is required.' });
+        }
+        const store = await db_1.prisma.shoppingStore.findUnique({
+            where: { id: body.storeId },
+            select: {
+                id: true,
+                name: true,
+            },
+        });
+        if (!store) {
+            return res.status(404).json({ error: 'Shopping store not found.' });
+        }
+        if (bindings.shoppingStoreIds.length === 0 ||
+            !bindings.shoppingStoreIds.includes(store.id)) {
+            return res.status(403).json({
+                error: 'Store is not assigned to this shop profile.',
+            });
+        }
+        moduleType = client_1.ModuleType.SHOPPING;
+        shopId = store.id;
+        sourceBusiness = store.name;
+    }
+    const categorySlug = await ensureUniqueSlug(`${body.categoryName.trim()}-${moduleType.toLowerCase()}`, async (candidate) => Boolean(await db_1.prisma.productCategory.findUnique({
         where: { slug: candidate },
         select: { id: true },
     })));
     const existingCategory = await db_1.prisma.productCategory.findFirst({
         where: {
-            moduleType: client_1.ModuleType.SHOPPING,
+            moduleType,
             name: {
                 equals: body.categoryName.trim(),
                 mode: 'insensitive',
@@ -3319,7 +3377,7 @@ router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(asyn
         (await db_1.prisma.productCategory.create({
             data: {
                 id: (0, crypto_1.randomUUID)(),
-                moduleType: client_1.ModuleType.SHOPPING,
+                moduleType,
                 name: body.categoryName.trim(),
                 slug: categorySlug,
                 active: true,
@@ -3340,14 +3398,14 @@ router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(asyn
     const sizes = normalizeTextArray(body.sizes);
     const tags = normalizeTextArray(body.tags);
     const features = normalizeTextArray(body.features);
-    const normalizedBrand = body.brand?.trim() || store.name;
+    const normalizedBrand = body.brand?.trim() || sourceBusiness;
     const normalizedBadge = body.badge?.trim() || null;
     const product = await db_1.prisma.product.create({
         data: {
             id: (0, crypto_1.randomUUID)(),
-            moduleType: client_1.ModuleType.SHOPPING,
+            moduleType,
             categoryId: category.id,
-            shopId: store.id,
+            shopId,
             name: body.name.trim(),
             brand: normalizedBrand,
             description: body.description.trim(),
@@ -3360,61 +3418,176 @@ router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(asyn
             tagsJson: tags.length > 0 ? tags : undefined,
             featuresJson: features.length > 0 ? features : undefined,
             badge: normalizedBadge,
+            dosage: body.dosage?.trim() || null,
+            packageSize: body.packageSize?.trim() || null,
+            requiresPrescription: body.requiresPrescription ?? false,
             inStock: body.inStock ?? true,
             isOrganic: body.isOrganic ?? false,
             metadata: {
                 source: 'shop_dashboard',
-                shopId: store.id,
-                shopName: store.name,
+                ...(shopId ? { shopId } : {}),
+                shopName: sourceBusiness,
+                sourceBusiness,
                 categoryName: category.name,
                 createdByProProfile: userId,
             },
         },
     });
-    const storeProducts = await db_1.prisma.product.findMany({
-        where: {
-            moduleType: client_1.ModuleType.SHOPPING,
-            shopId: store.id,
-        },
-        select: {
-            price: true,
-        },
-    });
-    const prices = storeProducts
-        .map((entry) => (0, serializers_1.toNumber)(entry.price))
-        .filter((value) => value != null);
-    await db_1.prisma.shoppingStore.update({
-        where: { id: store.id },
-        data: {
-            minPrice: prices.length === 0 ? null : Math.min(...prices),
-            maxPrice: prices.length === 0 ? null : Math.max(...prices),
-        },
-    });
+    if (shopId != null) {
+        const storeProducts = await db_1.prisma.product.findMany({
+            where: {
+                moduleType: client_1.ModuleType.SHOPPING,
+                shopId,
+            },
+            select: {
+                price: true,
+            },
+        });
+        const prices = storeProducts
+            .map((entry) => (0, serializers_1.toNumber)(entry.price))
+            .filter((value) => value != null);
+        await db_1.prisma.shoppingStore.update({
+            where: { id: shopId },
+            data: {
+                minPrice: prices.length === 0 ? null : Math.min(...prices),
+                maxPrice: prices.length === 0 ? null : Math.max(...prices),
+            },
+        });
+    }
     res.status(201).json({
         id: product.id,
+        module: requestedModule,
         name: product.name,
         shopId: product.shopId,
+        businessName: sourceBusiness,
         category: category.name,
         price: (0, serializers_1.toNumber)(product.price),
+        dosage: product.dosage,
+        packageSize: product.packageSize,
+        requiresPrescription: product.requiresPrescription,
         inStock: product.inStock,
     });
 }));
 router.get('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const userId = (0, http_1.getParam)(req.params.userId, 'userId');
     const requestedStoreId = req.query.storeId?.toString().trim();
+    const requestedModuleRaw = req.query.module?.toString().trim().toLowerCase();
+    const requestedModule = requestedModuleRaw === 'pharmacy' ? 'pharmacy' : 'shopping';
     const profile = await db_1.prisma.proProfile.findUnique({ where: { userId } });
     if (!profile || profile.type !== client_1.ProProfileType.SHOP) {
         return res.status(404).json({ error: 'Shop pro profile not found.' });
+    }
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
+    if (requestedModule === 'pharmacy') {
+        if (!profile.activeModules.includes(client_1.ProModule.PHARMACY)) {
+            return res.status(400).json({
+                error: 'Pharmacy is not enabled for this shop profile.',
+            });
+        }
+        if (bindings.pharmacyBusinesses.length === 0) {
+            return res.json({
+                module: requestedModule,
+                stores: [],
+                products: [],
+            });
+        }
+        let allowedBusinesses = bindings.pharmacyBusinesses;
+        if (requestedStoreId && requestedStoreId.length > 0) {
+            const normalizedRequested = normalizeComparableText(requestedStoreId);
+            const matchedBusiness = bindings.pharmacyBusinesses.find((value) => normalizeComparableText(value) === normalizedRequested);
+            if (!matchedBusiness) {
+                return res.status(403).json({
+                    error: 'Pharmacy business is not assigned to this shop profile.',
+                });
+            }
+            allowedBusinesses = [matchedBusiness];
+        }
+        const allowedBusinessSet = new Set(allowedBusinesses.map((value) => normalizeComparableText(value)));
+        const productsRaw = await db_1.prisma.product.findMany({
+            where: {
+                moduleType: client_1.ModuleType.PHARMACY,
+            },
+            select: {
+                id: true,
+                name: true,
+                brand: true,
+                description: true,
+                price: true,
+                originalPrice: true,
+                inStock: true,
+                unit: true,
+                badge: true,
+                dosage: true,
+                packageSize: true,
+                requiresPrescription: true,
+                imageUrlsJson: true,
+                metadata: true,
+                createdAt: true,
+                updatedAt: true,
+                category: {
+                    select: {
+                        name: true,
+                    },
+                },
+            },
+            orderBy: [{ updatedAt: 'desc' }],
+        });
+        const products = productsRaw
+            .map((product) => {
+            const metadata = product.metadata &&
+                typeof product.metadata === 'object' &&
+                !Array.isArray(product.metadata)
+                ? product.metadata
+                : null;
+            const sourceBusiness = metadata?.sourceBusiness?.toString().trim() ?? '';
+            return { product, sourceBusiness };
+        })
+            .filter(({ sourceBusiness }) => sourceBusiness.length > 0 &&
+            allowedBusinessSet.has(normalizeComparableText(sourceBusiness)));
+        const productCountByBusiness = new Map();
+        for (const { sourceBusiness } of products) {
+            const key = normalizeComparableText(sourceBusiness);
+            productCountByBusiness.set(key, (productCountByBusiness.get(key) ?? 0) + 1);
+        }
+        return res.json({
+            module: requestedModule,
+            stores: allowedBusinesses.map((business) => ({
+                id: business,
+                name: business,
+                isOpen: true,
+                productCount: productCountByBusiness.get(normalizeComparableText(business)) ?? 0,
+            })),
+            products: products.map(({ product, sourceBusiness }) => ({
+                id: product.id,
+                storeId: sourceBusiness,
+                storeName: sourceBusiness,
+                name: product.name,
+                brand: product.brand,
+                description: product.description,
+                categoryName: product.category?.name ?? 'Medicine',
+                price: (0, serializers_1.toNumber)(product.price),
+                originalPrice: (0, serializers_1.toNumber)(product.originalPrice),
+                inStock: product.inStock,
+                unit: product.unit,
+                badge: product.badge,
+                dosage: product.dosage,
+                packageSize: product.packageSize,
+                requiresPrescription: product.requiresPrescription,
+                imageUrl: firstImageUrlFromJson(product.imageUrlsJson),
+                createdAt: product.createdAt,
+                updatedAt: product.updatedAt,
+            })),
+        });
     }
     if (!profile.activeModules.includes(client_1.ProModule.SHOPPING)) {
         return res.status(400).json({
             error: 'Shopping is not enabled for this shop profile.',
         });
     }
-    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
-    const bindings = normalizeBindings(hydratedProfile.bindings);
     if (bindings.shoppingStoreIds.length === 0) {
         return res.json({
+            module: requestedModule,
             stores: [],
             products: [],
         });
@@ -3449,11 +3622,15 @@ router.get('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(async
                 shopId: true,
                 name: true,
                 brand: true,
+                description: true,
                 price: true,
                 originalPrice: true,
                 inStock: true,
                 unit: true,
                 badge: true,
+                dosage: true,
+                packageSize: true,
+                requiresPrescription: true,
                 imageUrlsJson: true,
                 createdAt: true,
                 updatedAt: true,
@@ -3475,6 +3652,7 @@ router.get('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(async
         productCountByStoreId.set(storeId, (productCountByStoreId.get(storeId) ?? 0) + 1);
     }
     res.json({
+        module: requestedModule,
         stores: stores.map((store) => ({
             id: store.id,
             name: store.name,
@@ -3487,12 +3665,16 @@ router.get('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(async
             storeName: product.shopId ? storeNameById.get(product.shopId) : null,
             name: product.name,
             brand: product.brand,
+            description: product.description,
             categoryName: product.category?.name ?? 'General',
             price: (0, serializers_1.toNumber)(product.price),
             originalPrice: (0, serializers_1.toNumber)(product.originalPrice),
             inStock: product.inStock,
             unit: product.unit,
             badge: product.badge,
+            dosage: product.dosage,
+            packageSize: product.packageSize,
+            requiresPrescription: product.requiresPrescription,
             imageUrl: firstImageUrlFromJson(product.imageUrlsJson),
             createdAt: product.createdAt,
             updatedAt: product.updatedAt,
@@ -3503,11 +3685,19 @@ router.patch('/:userId/shopping-products/:productId', (0, async_handler_1.asyncH
     const userId = (0, http_1.getParam)(req.params.userId, 'userId');
     const productId = (0, http_1.getParam)(req.params.productId, 'productId');
     const body = updateShoppingProductStockSchema.parse(req.body);
+    const requestedModule = body.module === 'pharmacy' ? 'pharmacy' : 'shopping';
     const profile = await db_1.prisma.proProfile.findUnique({ where: { userId } });
     if (!profile || profile.type !== client_1.ProProfileType.SHOP) {
         return res.status(404).json({ error: 'Shop pro profile not found.' });
     }
-    if (!profile.activeModules.includes(client_1.ProModule.SHOPPING)) {
+    if (requestedModule === 'pharmacy' &&
+        !profile.activeModules.includes(client_1.ProModule.PHARMACY)) {
+        return res.status(400).json({
+            error: 'Pharmacy is not enabled for this shop profile.',
+        });
+    }
+    if (requestedModule === 'shopping' &&
+        !profile.activeModules.includes(client_1.ProModule.SHOPPING)) {
         return res.status(400).json({
             error: 'Shopping is not enabled for this shop profile.',
         });
@@ -3520,12 +3710,35 @@ router.patch('/:userId/shopping-products/:productId', (0, async_handler_1.asyncH
             id: true,
             moduleType: true,
             shopId: true,
+            metadata: true,
         },
     });
-    if (!product || product.moduleType !== client_1.ModuleType.SHOPPING) {
-        return res.status(404).json({ error: 'Shopping product not found.' });
+    const expectedModuleType = requestedModule === 'pharmacy' ? client_1.ModuleType.PHARMACY : client_1.ModuleType.SHOPPING;
+    if (!product || product.moduleType !== expectedModuleType) {
+        return res.status(404).json({
+            error: requestedModule === 'pharmacy'
+                ? 'Pharmacy medicine not found.'
+                : 'Shopping product not found.',
+        });
     }
-    if (!product.shopId || !bindings.shoppingStoreIds.includes(product.shopId)) {
+    if (requestedModule === 'pharmacy') {
+        const metadata = product.metadata &&
+            typeof product.metadata === 'object' &&
+            !Array.isArray(product.metadata)
+            ? product.metadata
+            : null;
+        const sourceBusiness = metadata?.sourceBusiness?.toString().trim() ?? '';
+        const isBound = sourceBusiness.length > 0 &&
+            bindings.pharmacyBusinesses.some((value) => normalizeComparableText(value) ===
+                normalizeComparableText(sourceBusiness));
+        if (!isBound) {
+            return res
+                .status(403)
+                .json({ error: 'Medicine is not assigned to this shop profile.' });
+        }
+    }
+    else if (!product.shopId ||
+        !bindings.shoppingStoreIds.includes(product.shopId)) {
         return res
             .status(403)
             .json({ error: 'Product is not assigned to this shop profile.' });
@@ -3542,6 +3755,7 @@ router.patch('/:userId/shopping-products/:productId', (0, async_handler_1.asyncH
     });
     res.json({
         id: updated.id,
+        module: requestedModule,
         inStock: updated.inStock,
     });
 }));

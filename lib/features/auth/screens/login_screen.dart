@@ -31,9 +31,9 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
       final authProvider = context.read<AuthProvider>();
-      
+
       final success = await authProvider.login(
-        _emailController.text, 
+        _emailController.text,
         _passwordController.text,
       );
 
@@ -74,13 +74,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
+                      color: AppColors.primarySurface,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Icon(
-                      Icons.all_inclusive_rounded,
-                      color: AppColors.white,
-                      size: 28,
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Image.asset(
+                        'assets/images/logo/logo.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.image_not_supported_outlined,
+                              color: AppColors.primary,
+                              size: 24,
+                            ),
+                      ),
                     ),
                   ),
                 ),
@@ -90,7 +98,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   delay: const Duration(milliseconds: 100),
                   child: Text(
                     l10n.t('auth.login_title'),
-                    style: AppTextStyles.h1.copyWith(fontSize: 28, height: 1.05),
+                    style: AppTextStyles.h1.copyWith(
+                      fontSize: 28,
+                      height: 1.05,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -110,7 +121,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l10n.t('auth.email'), style: AppTextStyles.labelLarge),
+                      Text(
+                        l10n.t('auth.email'),
+                        style: AppTextStyles.labelLarge,
+                      ),
                       const SizedBox(height: 6),
                       TextFormField(
                         controller: _emailController,
@@ -213,47 +227,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                // Divider
-                FadeInDown(
-                  delay: const Duration(milliseconds: 550),
-                  child: Row(
-                    children: [
-                      const Expanded(child: Divider(color: AppColors.lightGrey)),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          l10n.t('auth.or_continue_with'),
-                          style: AppTextStyles.bodySmall,
-                        ),
-                      ),
-                      const Expanded(child: Divider(color: AppColors.lightGrey)),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-                // Social buttons
-                FadeInDown(
-                  delay: const Duration(milliseconds: 600),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _SocialButton(
-                          icon: Icons.g_mobiledata_rounded,
-                          label: 'Google',
-                          onTap: () {},
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _SocialButton(
-                          icon: Icons.apple_rounded,
-                          label: 'Apple',
-                          onTap: () {},
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 20),
                 // Register link
                 FadeInUp(
@@ -282,41 +255,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SocialButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _SocialButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        height: 54,
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.lightGrey),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 24, color: AppColors.dark),
-            const SizedBox(width: 8),
-            Text(label, style: AppTextStyles.labelLarge),
-          ],
         ),
       ),
     );

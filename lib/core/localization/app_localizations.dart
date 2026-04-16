@@ -436,7 +436,7 @@ class AppLocalizations {
       'onboarding.skip': 'Skip',
       'onboarding.next': 'Next',
       'onboarding.get_started': 'Get Started',
-      'onboarding.page1_title': 'All Services\nIn One App',
+      'onboarding.page1_title': 'All Your Needs\nIn One App',
       'onboarding.page1_subtitle':
           'Shop, eat, ride, book hotels, consult doctors, and more - all from a single, beautiful app.',
       'onboarding.page2_title': 'Lightning Fast\nDelivery',
@@ -717,7 +717,7 @@ class AppLocalizations {
       'shopping.title': 'Shopping',
       'shopping.search_hint': 'Search stores, brands, categories...',
       'shopping.all': 'All',
-      'shopping.hero_title': 'Explore shops first',
+      'shopping.hero_title': 'Explore shops',
       'shopping.hero_subtitle': 'Open a store to browse all of its products',
       'shopping.no_shops': 'No shops found.',
       'shopping.items_count': '{count} items',
@@ -1623,9 +1623,9 @@ class AppLocalizations {
       'onboarding.skip': 'Passer',
       'onboarding.next': 'Suivant',
       'onboarding.get_started': 'Commencer',
-      'onboarding.page1_title': 'Tous les services\nDans une seule app',
+      'onboarding.page1_title': 'Tous vos besoins\ndans une seule app',
       'onboarding.page1_subtitle':
-          'Achetez, mangez, voyagez, reservez des hotels, consultez des medecins et plus encore depuis une seule belle application.',
+          'Commandez, reservez des hotels, consultez des medecins et plus encore depuis une seule belle application.',
       'onboarding.page2_title': 'Livraison ultra\nrapide',
       'onboarding.page2_subtitle':
           'Recevez vos commandes en quelques minutes. Suivez chaque etape avec des mises a jour en temps reel.',
@@ -1913,7 +1913,7 @@ class AppLocalizations {
       'shopping.title': 'Shopping',
       'shopping.search_hint': 'Rechercher boutiques, marques, categories...',
       'shopping.all': 'Tout',
-      'shopping.hero_title': 'Explorez d\'abord les boutiques',
+      'shopping.hero_title': 'Explorez les boutiques',
       'shopping.hero_subtitle':
           'Ouvrez une boutique pour parcourir tous ses produits',
       'shopping.no_shops': 'Aucune boutique trouvee.',

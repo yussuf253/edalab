@@ -131,8 +131,11 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
     await _refresh();
   }
 
-  Future<void> _openProductsManager() async {
-    await context.push(ProRoutePaths.shopProducts);
+  Future<void> _openProductsManager({String? module}) async {
+    final path = module == null || module.isEmpty
+        ? ProRoutePaths.shopProducts
+        : '${ProRoutePaths.shopProducts}?module=$module';
+    await context.push(path);
     if (!mounted) return;
     await _refresh();
   }
@@ -308,7 +311,8 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                 selectedModule: selectedModule,
                 onOpenQueue: () =>
                     _openQueue(module: _keyForModule(selectedModule)),
-                onOpenProducts: _openProductsManager,
+                onOpenProducts: () =>
+                    _openProductsManager(module: _keyForModule(selectedModule)),
               ),
               const SizedBox(height: 12),
               _RecentOrdersModuleChips(
@@ -347,6 +351,8 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                 },
                 onAddShoppingProduct: selectedModule == ProModule.shopping
                     ? () => _openCreateShoppingProductScreen(shoppingStores)
+                    : selectedModule == ProModule.pharmacy
+                    ? () => _openProductsManager(module: 'pharmacy')
                     : null,
               ),
             ],
@@ -497,13 +503,15 @@ class _StorefrontModuleTab extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        if (module == ProModule.shopping)
+        if (module == ProModule.shopping || module == ProModule.pharmacy)
           _ShoppingActionsRow(
+            module: module,
             summary: summary,
             onCreateStore: onCreateModule,
             onAddProduct: onAddShoppingProduct,
           ),
-        if (module == ProModule.shopping) const SizedBox(height: 16),
+        if (module == ProModule.shopping || module == ProModule.pharmacy)
+          const SizedBox(height: 16),
         _StorefrontSummaryCard(module: module, summary: summary),
         const SizedBox(height: 16),
         Text(
@@ -626,11 +634,13 @@ class _StorefrontSummaryCard extends StatelessWidget {
 }
 
 class _ShoppingActionsRow extends StatelessWidget {
+  final ProModule module;
   final Map<String, dynamic> summary;
   final Future<void> Function()? onCreateStore;
   final Future<void> Function()? onAddProduct;
 
   const _ShoppingActionsRow({
+    required this.module,
     required this.summary,
     required this.onCreateStore,
     required this.onAddProduct,
@@ -639,6 +649,7 @@ class _ShoppingActionsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasBindings = summary['hasBindings'] as bool? ?? false;
+    final isPharmacy = module == ProModule.pharmacy;
 
     return Row(
       children: [
@@ -646,7 +657,11 @@ class _ShoppingActionsRow extends StatelessWidget {
           child: FilledButton.icon(
             onPressed: onCreateStore,
             icon: const Icon(Icons.add_business_outlined),
-            label: Text(hasBindings ? 'Edit Store Setup' : 'Create Store'),
+            label: Text(
+              hasBindings
+                  ? (isPharmacy ? 'Edit Pharmacy' : 'Edit Store Setup')
+                  : (isPharmacy ? 'Connect Pharmacy' : 'Create Store'),
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -654,7 +669,7 @@ class _ShoppingActionsRow extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: hasBindings ? onAddProduct : null,
             icon: const Icon(Icons.add_box_outlined),
-            label: const Text('Add Product'),
+            label: Text(isPharmacy ? 'Add Medicine' : 'Add Product'),
           ),
         ),
       ],
