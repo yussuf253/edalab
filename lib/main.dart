@@ -19,6 +19,7 @@ Future<void> main() async {
   final cartProvider = CartProvider();
   final languageProvider = LanguageProvider();
   final notificationProvider = NotificationProvider();
+  final userLocationProvider = UserLocationProvider();
   final proAuthProvider = ProAuthProvider();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -45,6 +46,7 @@ Future<void> main() async {
           },
         ),
         ChangeNotifierProvider.value(value: languageProvider),
+        ChangeNotifierProvider.value(value: userLocationProvider),
         ChangeNotifierProvider.value(value: proAuthProvider),
         ChangeNotifierProxyProvider2<
           AuthProvider,
@@ -54,10 +56,7 @@ Future<void> main() async {
           create: (_) => notificationProvider,
           update: (_, auth, cart, notifications) {
             final provider = notifications ?? notificationProvider;
-            provider.syncSession(
-              authProvider: auth,
-              cartProvider: cart,
-            );
+            provider.syncSession(authProvider: auth, cartProvider: cart);
             PushNotificationService.bindProvider(provider);
             NotificationSyncService.instance.updateProvider(provider);
             ProInboxSyncService.instance.updateProviders(

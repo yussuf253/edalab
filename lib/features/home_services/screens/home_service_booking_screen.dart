@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -497,69 +496,24 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
     bool showFailureSnackBar = true,
   }) async {
     try {
-      final servicesEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!servicesEnabled) {
-        if (showFailureSnackBar && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Turn on location services to continue.'),
-            ),
-          );
-        }
-        return null;
-      }
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
+      final locationProvider = context.read<UserLocationProvider>();
+      final hasLocation = await locationProvider.ensureCurrentLocation(
+        requestPermission: false,
+      );
+      if (!mounted) return null;
+      if (!hasLocation || locationProvider.location == null) {
         if (showFailureSnackBar && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Location permission is required for zone matching.',
+                'Current location is unavailable. Enable it from Home and try again.',
               ),
             ),
           );
         }
         return null;
       }
-
-      Position? cachedPosition;
-      try {
-        cachedPosition = await Geolocator.getLastKnownPosition();
-      } catch (_) {}
-
-      Position? position;
-      for (var attempt = 0; attempt < 3 && position == null; attempt++) {
-        final settings = switch (attempt) {
-          0 => const LocationSettings(
-            accuracy: LocationAccuracy.high,
-            timeLimit: Duration(seconds: 10),
-          ),
-          1 => const LocationSettings(
-            accuracy: LocationAccuracy.medium,
-            timeLimit: Duration(seconds: 14),
-          ),
-          _ => const LocationSettings(
-            accuracy: LocationAccuracy.low,
-            timeLimit: Duration(seconds: 18),
-          ),
-        };
-        try {
-          position = await Geolocator.getCurrentPosition(
-            locationSettings: settings,
-          );
-        } catch (_) {
-          if (attempt < 2) {
-            await Future<void>.delayed(const Duration(milliseconds: 700));
-          }
-        }
-      }
-      position ??= cachedPosition;
-      if (!mounted || position == null) return null;
-      final resolved = position;
+      final resolved = locationProvider.location!;
       final latLng = LatLng(resolved.latitude, resolved.longitude);
       setState(() {
         _deviceLocation = latLng;
@@ -569,7 +523,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
       if (showFailureSnackBar && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Could not access your location right now.'),
+            content: Text('Could not read your saved location right now.'),
           ),
         );
       }
@@ -1645,7 +1599,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text(
-                                      'Location permission is required to place this booking.',
+                                      'Location is missing. Set it from Home and try again.',
                                     ),
                                   ),
                                 );

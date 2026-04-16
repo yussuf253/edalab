@@ -1,22 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:animate_do/animate_do.dart';
+import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/notification_bell.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<UserLocationProvider>().ensureCurrentLocation(
+        requestPermission: true,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final locationProvider = context.watch<UserLocationProvider>();
+    final locationTitle = locationProvider.location?.title;
+    final locationSubtitle = locationProvider.location?.subtitle;
+    final locationDisplay = locationProvider.isLoading
+        ? 'Detecting your location...'
+        : (locationSubtitle ?? locationTitle ?? l10n.t('ride.current_location'));
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -51,13 +74,18 @@ class HomeScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${l10n.t('home.good_morning')} 👋',
+                              locationDisplay,
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: AppColors.grey,
                               ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
-                            Text('Youssouf Hassan', style: AppTextStyles.h4),
+                            Text(
+                              'Youssouf Hassan',
+                              style: AppTextStyles.h4,
+                            ),
                           ],
                         ),
                       ),

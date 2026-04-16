@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -72,93 +71,41 @@ class _RideScreenState extends State<RideScreen> {
 
   Future<void> _requestLocationAccess({bool showFailureSnackBar = true}) async {
     try {
-      final servicesEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!servicesEnabled) {
-        if (mounted) {
-          setState(() => _hasLocationPermission = false);
-        }
-        if (!mounted) return;
-        if (showFailureSnackBar) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Turn on location services to use your current pickup point.',
-              ),
-            ),
-          );
-        }
-        return;
-      }
-
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        setState(() => _hasLocationPermission = false);
-        if (!mounted) return;
-        if (showFailureSnackBar) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Location permission was not granted. You can still choose a pickup manually.',
-              ),
-            ),
-          );
-        }
-        return;
-      }
-
-      setState(() {
-        _hasLocationPermission = true;
-      });
-
-      Position? position;
-      try {
-        position = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.medium,
-            timeLimit: Duration(seconds: 8),
-          ),
-        );
-      } catch (_) {
-        position = await Geolocator.getLastKnownPosition();
-      }
-
-      if (!mounted || position == null) {
-        if (mounted) {
-          setState(() => _isResolvingPickup = false);
-        }
-        if (showFailureSnackBar && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Could not refresh your current location right now.',
-              ),
-            ),
-          );
-        }
-        return;
-      }
-
-      final resolvedPosition = position;
-      final resolvedAddress = await _resolveDjiboutiAddress(
-        resolvedPosition.latitude,
-        resolvedPosition.longitude,
+      final locationProvider = context.read<UserLocationProvider>();
+      final hasLocation = await locationProvider.ensureCurrentLocation(
+        requestPermission: false,
       );
+      if (!mounted) return;
+
+      if (!hasLocation || locationProvider.location == null) {
+        setState(() {
+          _hasLocationPermission = locationProvider.hasPermission;
+          _isResolvingPickup = false;
+          _pickupPlace ??= _defaultPickupPlace();
+        });
+        if (showFailureSnackBar) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Current location is unavailable. Enable it from Home and try again.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      final resolvedLocation = locationProvider.location!;
       setState(() {
         _pickupPlace = _RidePlace(
-          title: resolvedAddress?.title ?? 'Current Location',
-          address:
-              resolvedAddress?.address ??
-              '${resolvedPosition.latitude.toStringAsFixed(4)}, ${resolvedPosition.longitude.toStringAsFixed(4)}',
+          title: resolvedLocation.title,
+          address: resolvedLocation.subtitle,
           icon: Icons.my_location_rounded,
           distance: 0,
-          latitude: resolvedPosition.latitude,
-          longitude: resolvedPosition.longitude,
+          latitude: resolvedLocation.latitude,
+          longitude: resolvedLocation.longitude,
         );
+        _hasLocationPermission = true;
         _isResolvingPickup = false;
       });
     } catch (_) {
@@ -173,7 +120,7 @@ class _RideScreenState extends State<RideScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Could not access your current location. You can still choose a pickup manually.',
+              'Could not read your saved location. You can still choose pickup manually.',
             ),
           ),
         );
@@ -194,7 +141,8 @@ class _RideScreenState extends State<RideScreen> {
         : pickupPlace.address;
     final destinationLabel =
         destinationPlace?.address ?? l10n.t('ride.where_to');
-    final pickupPoint = pickupPlace?.latitude != null && pickupPlace?.longitude != null
+    final pickupPoint =
+        pickupPlace?.latitude != null && pickupPlace?.longitude != null
         ? RideMapPoint(
             label: l10n.t('ride.current_location'),
             latitude: pickupPlace!.latitude!,
@@ -844,9 +792,10 @@ class _RideScreenState extends State<RideScreen> {
         .toList();
 
     final seen = <String>{};
-    return [currentPickup, ...userPlaces]
-        .where((place) => seen.add(place.address.toLowerCase()))
-        .toList();
+    return [
+      currentPickup,
+      ...userPlaces,
+    ].where((place) => seen.add(place.address.toLowerCase())).toList();
   }
 
   _RidePlace _findPlace(
@@ -871,34 +820,6 @@ class _RideScreenState extends State<RideScreen> {
     if (lower.contains('airport')) return Icons.flight_rounded;
     if (lower.contains('station')) return Icons.train_rounded;
     return Icons.place_rounded;
-  }
-
-  Future<_RidePlace?> _resolveDjiboutiAddress(
-    double latitude,
-    double longitude,
-  ) async {
-    try {
-      final uri = Uri.https('nominatim.openstreetmap.org', '/reverse', {
-        'lat': latitude.toString(),
-        'lon': longitude.toString(),
-        'format': 'jsonv2',
-        'zoom': '18',
-        'addressdetails': '1',
-      });
-      final response = await http.get(
-        uri,
-        headers: const {
-          'User-Agent': 'eDalab/1.0 (Ride reverse geocoding)',
-          'Accept-Language': 'en',
-        },
-      );
-      if (response.statusCode != 200) return null;
-      final decoded = jsonDecode(response.body);
-      if (decoded is! Map) return null;
-      return _ridePlaceFromNominatim(Map<String, dynamic>.from(decoded));
-    } catch (_) {
-      return null;
-    }
   }
 }
 
@@ -1215,11 +1136,15 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
   }
 }
 
-List<_RidePlace> _mergedPlaces(List<_RidePlace> primary, List<_RidePlace> secondary) {
+List<_RidePlace> _mergedPlaces(
+  List<_RidePlace> primary,
+  List<_RidePlace> secondary,
+) {
   final seen = <String>{};
-  return [...primary, ...secondary]
-      .where((place) => seen.add(place.address.toLowerCase()))
-      .toList();
+  return [
+    ...primary,
+    ...secondary,
+  ].where((place) => seen.add(place.address.toLowerCase())).toList();
 }
 
 _RidePlace? _ridePlaceFromNominatim(Map<String, dynamic> data) {
@@ -1227,8 +1152,7 @@ _RidePlace? _ridePlaceFromNominatim(Map<String, dynamic> data) {
   final longitude = double.tryParse(data['lon']?.toString() ?? '');
   if (latitude == null || longitude == null) return null;
 
-  final name =
-      (data['name']?.toString().trim().isNotEmpty ?? false)
+  final name = (data['name']?.toString().trim().isNotEmpty ?? false)
       ? data['name'].toString().trim()
       : ((data['display_name']?.toString().split(',').isNotEmpty ?? false)
             ? data['display_name'].toString().split(',').first.trim()
