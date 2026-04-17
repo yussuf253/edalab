@@ -9,6 +9,7 @@ import '../../features/auth/screens/pro_signup_screen.dart';
 import '../../features/delivery/screens/delivery_queue_screen.dart';
 import '../../features/doctor/screens/doctor_appointments_queue_screen.dart';
 import '../../features/doctor/screens/doctor_availability_screen.dart';
+import '../../features/doctor/screens/doctor_home_care_queue_screen.dart';
 import '../../features/dashboard/screens/pro_dashboard_screen.dart';
 import '../../features/doctor/screens/doctor_schedule_settings_screen.dart';
 import '../../features/entry/screens/pro_entry_screen.dart';
@@ -185,6 +186,16 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
         builder: (context, state) => _withProfile(
           context,
           (profile) => DoctorAppointmentsQueueScreen(
+            userId: profile.userId,
+            businessName: profile.businessName,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: ProRoutePaths.doctorHomeCare,
+        builder: (context, state) => _withProfile(
+          context,
+          (profile) => DoctorHomeCareQueueScreen(
             userId: profile.userId,
             businessName: profile.businessName,
           ),

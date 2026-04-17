@@ -5,6 +5,7 @@ import '../../../core/models/pro_dashboard_data.dart';
 import '../../../core/models/pro_profile.dart';
 import 'doctor_availability_screen.dart';
 import 'doctor_appointments_queue_screen.dart';
+import 'doctor_home_care_queue_screen.dart';
 import 'doctor_schedule_settings_screen.dart';
 import 'doctor_telemedicine_screen.dart';
 
@@ -89,6 +90,19 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     await _refreshDashboard();
   }
 
+  Future<void> _openHomeCareQueue() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DoctorHomeCareQueueScreen(
+          userId: widget.profile.userId,
+          businessName: widget.profile.businessName,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    await _refreshDashboard();
+  }
+
   Future<void> _openTelemedicine() async {
     await Navigator.of(
       context,
@@ -152,6 +166,10 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
             onPressed: _openAppointmentsQueue,
             icon: const Icon(Icons.event_note_outlined),
           ),
+          IconButton(
+            onPressed: _openHomeCareQueue,
+            icon: const Icon(Icons.home_repair_service_rounded),
+          ),
         ],
       ),
       body: FutureBuilder<ProDashboardData>(
@@ -197,6 +215,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                 const SizedBox(height: 14),
                 _DoctorQuickActions(
                   onQueue: _openAppointmentsQueue,
+                  onHomeCare: _openHomeCareQueue,
                   onAvailability: _openAvailability,
                   onSchedule: _openSchedule,
                   onVideo: _openTelemedicine,
@@ -508,12 +527,14 @@ class _HeroBadge extends StatelessWidget {
 
 class _DoctorQuickActions extends StatelessWidget {
   final VoidCallback onQueue;
+  final VoidCallback onHomeCare;
   final VoidCallback onAvailability;
   final VoidCallback onSchedule;
   final VoidCallback onVideo;
 
   const _DoctorQuickActions({
     required this.onQueue,
+    required this.onHomeCare,
     required this.onAvailability,
     required this.onSchedule,
     required this.onVideo,
@@ -529,6 +550,11 @@ class _DoctorQuickActions extends StatelessWidget {
           icon: Icons.event_note_outlined,
           label: 'Appointments',
           onTap: onQueue,
+        ),
+        _DoctorActionChip(
+          icon: Icons.home_repair_service_outlined,
+          label: 'Home Care',
+          onTap: onHomeCare,
         ),
         _DoctorActionChip(
           icon: Icons.tune,

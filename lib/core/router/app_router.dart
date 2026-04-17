@@ -25,6 +25,7 @@ import '../../features/food/screens/food_dish_detail_screen.dart';
 import '../../features/food/screens/food_cart_screen.dart';
 import '../../features/food/screens/food_order_tracking_screen.dart';
 import '../../features/doctor/screens/doctor_screen.dart';
+import '../../features/doctor/screens/doctor_home_care_screen.dart';
 import '../../features/doctor/screens/doctor_professionals_screen.dart';
 import '../../features/doctor/screens/doctor_detail_screen.dart';
 import '../../features/doctor/screens/doctor_appointment_detail_screen.dart';
@@ -254,6 +255,17 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
                     ?.map((item) => item.toString())
                     .toList() ??
                 const [],
+            initialQuery: extra['searchQuery']?.toString() ?? '',
+          );
+        },
+      ),
+      GoRoute(
+        path: '/doctor/home-care',
+        builder: (context, state) {
+          final extra = state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : <String, dynamic>{};
+          return DoctorHomeCareScreen(
             initialQuery: extra['searchQuery']?.toString() ?? '',
           );
         },

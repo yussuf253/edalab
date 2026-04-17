@@ -1,9 +1,16 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
+const crypto_1 = require("crypto");
+const promises_1 = __importDefault(require("fs/promises"));
+const path_1 = __importDefault(require("path"));
 const db_1 = require("../db");
+const env_1 = require("../config/env");
 const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
 const password_1 = require("../utils/password");
@@ -18,8 +25,9 @@ const profileSchema = zod_1.z.object({
 });
 const addressSchema = zod_1.z.object({
     label: zod_1.z.string().min(1),
-    address: zod_1.z.string().min(1),
+    address: zod_1.z.string().trim().optional().or(zod_1.z.literal('')),
     city: zod_1.z.string().trim().optional().or(zod_1.z.literal('')),
+    quartier: zod_1.z.string().trim().optional().or(zod_1.z.literal('')),
     zipCode: zod_1.z.string().trim().optional().or(zod_1.z.literal('')),
     latitude: zod_1.z.number().optional().nullable(),
     longitude: zod_1.z.number().optional().nullable(),
@@ -32,6 +40,11 @@ const paymentMethodSchema = zod_1.z.object({
     expiryMonth: zod_1.z.number().int().min(1).max(12).optional().nullable(),
     expiryYear: zod_1.z.number().int().min(2024).optional().nullable(),
     isDefault: zod_1.z.boolean().optional().default(false),
+});
+const uploadAvatarSchema = zod_1.z.object({
+    fileName: zod_1.z.string().min(1).max(180).optional().nullable(),
+    mimeType: zod_1.z.string().max(120).optional().nullable(),
+    dataBase64: zod_1.z.string().min(24),
 });
 const wishlistSchema = zod_1.z.object({
     moduleType: zod_1.z.nativeEnum(client_1.ModuleType),
@@ -50,6 +63,92 @@ async function getUserWithAddresses(userId) {
             },
         },
     });
+}
+function fileExtensionFromMimeType(mimeType) {
+    const normalized = mimeType?.trim().toLowerCase();
+    switch (normalized) {
+        case 'image/jpeg':
+        case 'image/jpg':
+            return 'jpg';
+        case 'image/png':
+            return 'png';
+        case 'image/webp':
+            return 'webp';
+        case 'image/heic':
+            return 'heic';
+        case 'image/heif':
+            return 'heif';
+        default:
+            return null;
+    }
+}
+function sanitizedBaseFileName(name) {
+    const trimmed = name?.trim();
+    if (!trimmed)
+        return null;
+    const safe = trimmed
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+    return safe.length > 0 ? safe : null;
+}
+function decodedBase64Image(dataBase64) {
+    const payload = dataBase64.trim();
+    const base64Data = payload.includes(',')
+        ? payload.split(',').pop() ?? payload
+        : payload;
+    return Buffer.from(base64Data, 'base64');
+}
+function buildPublicUrl(req, relativePath) {
+    const configuredPublicBase = env_1.env.PUBLIC_BASE_URL?.trim();
+    if (configuredPublicBase) {
+        return `${configuredPublicBase.replace(/\/+$/g, '')}${relativePath}`;
+    }
+    const forwardedProto = req
+        .get('x-forwarded-proto')
+        ?.split(',')[0]
+        ?.trim();
+    const forwardedHost = req
+        .get('x-forwarded-host')
+        ?.split(',')[0]
+        ?.trim();
+    const host = forwardedHost || req.get('host');
+    const protocol = (forwardedProto || req.protocol || 'https')
+        .trim()
+        .toLowerCase();
+    if (!host)
+        return relativePath;
+    return `${protocol}://${host}${relativePath}`;
+}
+async function uploadAvatarToSupabaseStorage(params) {
+    const supabaseUrl = env_1.env.SUPABASE_URL?.trim();
+    const serviceRoleKey = env_1.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+    if (!supabaseUrl || !serviceRoleKey)
+        return null;
+    const bucket = env_1.env.SUPABASE_STORAGE_BUCKET_AVATARS.trim() || 'avatars';
+    const cleanBaseUrl = supabaseUrl.replace(/\/+$/g, '');
+    const objectPath = `users/${params.userId}/${params.fileName}`;
+    const encodedObjectPath = objectPath
+        .split('/')
+        .map((segment) => encodeURIComponent(segment))
+        .join('/');
+    const uploadUrl = `${cleanBaseUrl}/storage/v1/object/${encodeURIComponent(bucket)}/${encodedObjectPath}`;
+    const response = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${serviceRoleKey}`,
+            apikey: serviceRoleKey,
+            'Content-Type': params.mimeType?.trim() || 'application/octet-stream',
+            'x-upsert': 'true',
+        },
+        body: new Uint8Array(params.buffer),
+    });
+    if (!response.ok) {
+        const rawBody = await response.text().catch(() => '');
+        throw new Error(`Supabase avatar upload failed (${response.status}): ${rawBody.slice(0, 300)}`);
+    }
+    return `${cleanBaseUrl}/storage/v1/object/public/${encodeURIComponent(bucket)}/${encodedObjectPath}`;
 }
 router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const { email, name, phone, password } = zod_1.z
@@ -114,6 +213,69 @@ router.get('/:id', (0, async_handler_1.asyncHandler)(async (req, res) => {
     }
     res.json((0, serializers_1.sanitizeUser)(user));
 }));
+router.post('/:id/avatar-upload', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.id, 'userId');
+    const body = uploadAvatarSchema.parse(req.body);
+    const user = await db_1.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+        return res.status(404).json({ error: 'User not found.' });
+    }
+    const fileBuffer = decodedBase64Image(body.dataBase64);
+    if (!fileBuffer || fileBuffer.length === 0) {
+        return res.status(400).json({ error: 'Invalid image payload.' });
+    }
+    if (fileBuffer.length > 6 * 1024 * 1024) {
+        return res
+            .status(413)
+            .json({ error: 'Image is too large. Max size is 6MB.' });
+    }
+    const extFromName = path_1.default
+        .extname(body.fileName ?? '')
+        .replace('.', '')
+        .toLowerCase();
+    const fallbackExt = fileExtensionFromMimeType(body.mimeType) ||
+        extFromName ||
+        'jpg';
+    const extension = fallbackExt.replace(/[^a-z0-9]/gi, '') || 'jpg';
+    const baseName = sanitizedBaseFileName(body.fileName) ?? (0, crypto_1.randomUUID)();
+    const fileName = `${baseName}-${Date.now()}.${extension}`;
+    let url;
+    let storedPath;
+    try {
+        const supabaseUrl = await uploadAvatarToSupabaseStorage({
+            userId,
+            fileName,
+            mimeType: body.mimeType,
+            buffer: fileBuffer,
+        });
+        if (supabaseUrl != null) {
+            url = supabaseUrl;
+            storedPath = `supabase://${env_1.env.SUPABASE_STORAGE_BUCKET_AVATARS.trim() || 'avatars'}/users/${userId}/${fileName}`;
+        }
+        else {
+            const uploadsDir = path_1.default.resolve(process.cwd(), 'uploads', 'avatars');
+            await promises_1.default.mkdir(uploadsDir, { recursive: true });
+            const absoluteFilePath = path_1.default.join(uploadsDir, fileName);
+            await promises_1.default.writeFile(absoluteFilePath, fileBuffer);
+            storedPath = `/uploads/avatars/${fileName}`;
+            url = buildPublicUrl(req, storedPath);
+        }
+    }
+    catch (error) {
+        console.error('[AVATAR_UPLOAD] Failed to upload avatar.', error);
+        return res.status(503).json({
+            error: 'Image upload is temporarily unavailable. Please try again shortly.',
+        });
+    }
+    res.status(201).json({
+        userId,
+        fileName,
+        path: storedPath,
+        url,
+        mimeType: body.mimeType ?? null,
+        uploadedAt: new Date().toISOString(),
+    });
+}));
 router.patch('/:id', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const userId = (0, http_1.getParam)(req.params.id, 'userId');
     const body = profileSchema.parse(req.body);
@@ -153,6 +315,12 @@ router.post('/:id/addresses', (0, async_handler_1.asyncHandler)(async (req, res)
     await db_1.prisma.$transaction(async (tx) => {
         const existingCount = await tx.address.count({ where: { userId } });
         const shouldBeDefault = body.isDefault || existingCount === 0;
+        const city = body.city?.trim() || null;
+        const quartier = body.quartier?.trim() || null;
+        const line1 = body.address?.trim() ||
+            quartier ||
+            city ||
+            body.label.trim();
         if (shouldBeDefault) {
             await tx.address.updateMany({
                 where: { userId, isDefault: true },
@@ -163,8 +331,9 @@ router.post('/:id/addresses', (0, async_handler_1.asyncHandler)(async (req, res)
             data: {
                 userId,
                 label: body.label,
-                line1: body.address,
-                city: body.city?.trim() || null,
+                line1,
+                line2: quartier,
+                city,
                 postalCode: body.zipCode?.trim() || null,
                 latitude: body.latitude ?? null,
                 longitude: body.longitude ?? null,
@@ -186,6 +355,22 @@ router.patch('/:id/addresses/:addressId', (0, async_handler_1.asyncHandler)(asyn
         return res.status(404).json({ error: 'Address not found.' });
     }
     await db_1.prisma.$transaction(async (tx) => {
+        const hasLatitude = Object.prototype.hasOwnProperty.call(body, 'latitude');
+        const hasLongitude = Object.prototype.hasOwnProperty.call(body, 'longitude');
+        const hasAddress = Object.prototype.hasOwnProperty.call(body, 'address');
+        const nextCity = body.city === undefined
+            ? address.city
+            : body.city === ''
+                ? null
+                : body.city.trim();
+        const nextQuartier = body.quartier === undefined
+            ? address.line2
+            : body.quartier === ''
+                ? null
+                : body.quartier.trim();
+        const nextLine1 = hasAddress
+            ? (body.address?.trim() || nextQuartier || nextCity || address.label)
+            : (address.line1 || nextQuartier || nextCity || address.label);
         if (body.isDefault) {
             await tx.address.updateMany({
                 where: { userId, isDefault: true },
@@ -196,11 +381,12 @@ router.patch('/:id/addresses/:addressId', (0, async_handler_1.asyncHandler)(asyn
             where: { id: addressId },
             data: {
                 label: body.label ?? address.label,
-                line1: body.address ?? address.line1,
-                city: body.city === '' ? null : body.city ?? address.city,
+                line1: nextLine1,
+                line2: nextQuartier,
+                city: nextCity,
                 postalCode: body.zipCode === '' ? null : body.zipCode ?? address.postalCode,
-                latitude: body.latitude ?? address.latitude,
-                longitude: body.longitude ?? address.longitude,
+                latitude: hasLatitude ? body.latitude ?? null : address.latitude,
+                longitude: hasLongitude ? body.longitude ?? null : address.longitude,
                 isDefault: body.isDefault ?? address.isDefault,
             },
         });

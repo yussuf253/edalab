@@ -25,8 +25,12 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   int _selectedDate = 1;
   int _selectedTime = 2;
   int _selectedType = 0;
+  int _selectedCarePlan = 0;
+  int _selectedCareGoal = 0;
+  int _selectedArrival = 0;
   DoctorModel? _doctor;
   bool _isLoading = true;
+  final TextEditingController _notesController = TextEditingController();
 
   final _dates = [
     ('Mon', '22'),
@@ -103,9 +107,30 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
   }
 
   @override
+  void dispose() {
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final doctor = _doctor;
+    final homeCarePlanOptions = [
+      l10n.t('doctor_booking.home_care_plan_one_time'),
+      l10n.t('doctor_booking.home_care_plan_daily'),
+      l10n.t('doctor_booking.home_care_plan_weekly'),
+    ];
+    final homeCareGoalOptions = [
+      l10n.t('doctor_booking.home_care_goal_general'),
+      l10n.t('doctor_booking.home_care_goal_elderly'),
+      l10n.t('doctor_booking.home_care_goal_recovery'),
+    ];
+    final homeCareArrivalOptions = [
+      l10n.t('doctor_booking.home_care_arrival_urgent'),
+      l10n.t('doctor_booking.home_care_arrival_today'),
+      l10n.t('doctor_booking.home_care_arrival_scheduled'),
+    ];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -190,7 +215,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.t('doctor_booking.direct_contact'), style: AppTextStyles.h4),
+                    Text(
+                      l10n.t('doctor_booking.direct_contact'),
+                      style: AppTextStyles.h4,
+                    ),
                     const SizedBox(height: 8),
                     Text(
                       l10n.t('doctor_booking.direct_contact_subtitle'),
@@ -216,13 +244,17 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     _ContactInfoRow(
                       icon: Icons.call_rounded,
                       label: l10n.t('doctor_booking.phone'),
-                      value: doctor.contactPhone ?? l10n.t('doctor_booking.not_available'),
+                      value:
+                          doctor.contactPhone ??
+                          l10n.t('doctor_booking.not_available'),
                     ),
                     const SizedBox(height: 10),
                     _ContactInfoRow(
                       icon: Icons.chat_rounded,
                       label: l10n.t('doctor_booking.whatsapp'),
-                      value: doctor.contactWhatsApp ?? l10n.t('doctor_booking.not_available'),
+                      value:
+                          doctor.contactWhatsApp ??
+                          l10n.t('doctor_booking.not_available'),
                     ),
                     const SizedBox(height: 20),
                     AppButton(
@@ -301,8 +333,71 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                   ),
                 ],
               ),
+              if (!doctor.isDoctorProvider) ...[
+                const SizedBox(height: 24),
+                Text(
+                  l10n.t('doctor_booking.home_care_specifics'),
+                  style: AppTextStyles.h4,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.t('doctor_booking.home_care_plan_label'),
+                  style: AppTextStyles.labelMedium,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: List.generate(homeCarePlanOptions.length, (index) {
+                    return _OptionChip(
+                      label: homeCarePlanOptions[index],
+                      selected: _selectedCarePlan == index,
+                      onTap: () => setState(() => _selectedCarePlan = index),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.t('doctor_booking.home_care_goal_label'),
+                  style: AppTextStyles.labelMedium,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: List.generate(homeCareGoalOptions.length, (index) {
+                    return _OptionChip(
+                      label: homeCareGoalOptions[index],
+                      selected: _selectedCareGoal == index,
+                      onTap: () => setState(() => _selectedCareGoal = index),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.t('doctor_booking.home_care_arrival_label'),
+                  style: AppTextStyles.labelMedium,
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: List.generate(homeCareArrivalOptions.length, (
+                    index,
+                  ) {
+                    return _OptionChip(
+                      label: homeCareArrivalOptions[index],
+                      selected: _selectedArrival == index,
+                      onTap: () => setState(() => _selectedArrival = index),
+                    );
+                  }),
+                ),
+              ],
               const SizedBox(height: 24),
-              Text(l10n.t('doctor_booking.select_date'), style: AppTextStyles.h4),
+              Text(
+                l10n.t('doctor_booking.select_date'),
+                style: AppTextStyles.h4,
+              ),
               const SizedBox(height: 12),
               SizedBox(
                 height: 80,
@@ -353,7 +448,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text(l10n.t('doctor_booking.select_time'), style: AppTextStyles.h4),
+              Text(
+                l10n.t('doctor_booking.select_time'),
+                style: AppTextStyles.h4,
+              ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 10,
@@ -386,9 +484,13 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 }),
               ),
               const SizedBox(height: 24),
-              Text(l10n.t('doctor_booking.notes_optional'), style: AppTextStyles.h4),
+              Text(
+                l10n.t('doctor_booking.notes_optional'),
+                style: AppTextStyles.h4,
+              ),
               const SizedBox(height: 12),
               TextFormField(
+                controller: _notesController,
                 maxLines: 3,
                 decoration: InputDecoration(
                   hintText: l10n.t('doctor_booking.notes_hint'),
@@ -413,7 +515,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       l10n.t('doctor_booking.date'),
                       '${_dates[_selectedDate].$1}, Mar ${_dates[_selectedDate].$2}, 2026',
                     ),
-                    _Row(l10n.t('doctor_booking.time'), '${_times[_selectedTime]} AM'),
+                    _Row(
+                      l10n.t('doctor_booking.time'),
+                      '${_times[_selectedTime]} AM',
+                    ),
                     _Row(
                       doctor.isDoctorProvider
                           ? l10n.t('doctor_booking.type')
@@ -430,6 +535,20 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                               l10n.t('doctor_booking.video_support'),
                             ][_selectedType],
                     ),
+                    if (!doctor.isDoctorProvider) ...[
+                      _Row(
+                        l10n.t('doctor_booking.home_care_plan_label'),
+                        homeCarePlanOptions[_selectedCarePlan],
+                      ),
+                      _Row(
+                        l10n.t('doctor_booking.home_care_goal_label'),
+                        homeCareGoalOptions[_selectedCareGoal],
+                      ),
+                      _Row(
+                        l10n.t('doctor_booking.home_care_arrival_label'),
+                        homeCareArrivalOptions[_selectedArrival],
+                      ),
+                    ],
                     const Divider(height: 20),
                     _Row(
                       l10n.t('doctor_booking.fee'),
@@ -458,7 +577,23 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       3,
                       int.parse(_dates[_selectedDate].$2),
                     );
-                    final appointment = await ApiClient.post('/appointments', {
+                    final endpoint = doctor.isDoctorProvider
+                        ? '/appointments'
+                        : '/appointments/home-care';
+                    final manualNotes = _notesController.text.trim();
+                    final requestNotes = doctor.isDoctorProvider
+                        ? (manualNotes.isEmpty
+                              ? 'Doctor appointment booked via EdaLab Super App'
+                              : manualNotes)
+                        : [
+                            'Home care booking via EdaLab Super App',
+                            'Plan: ${homeCarePlanOptions[_selectedCarePlan]}',
+                            'Goal: ${homeCareGoalOptions[_selectedCareGoal]}',
+                            'Arrival: ${homeCareArrivalOptions[_selectedArrival]}',
+                            if (manualNotes.isNotEmpty)
+                              'Patient notes: $manualNotes',
+                          ].join(' • ');
+                    final appointment = await ApiClient.post(endpoint, {
                       'userId': auth.user!.id,
                       'doctorId': doctor.id,
                       'date': selectedDate.toIso8601String(),
@@ -470,17 +605,19 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                               'phone_advice',
                               'video_support',
                             ][_selectedType],
-                      'notes': doctor.isDoctorProvider
-                          ? 'Doctor appointment booked via EdaLab Super App'
-                          : 'Care service booked via EdaLab Super App',
+                      'notes': requestNotes,
                     });
                     if (!context.mounted) return;
                     context.push(
                       '/checkout/success',
                       extra: {
-                        'orderId': appointment is Map ? appointment['id'] : null,
+                        'orderId': appointment is Map
+                            ? appointment['id']
+                            : null,
                         'amount': doctor.consultationFee,
-                        'payment': l10n.t('home_service_booking.pay_on_confirmation'),
+                        'payment': l10n.t(
+                          'home_service_booking.pay_on_confirmation',
+                        ),
                         'delivery': doctor.isDoctorProvider
                             ? l10n.t('doctor_booking.appointment_scheduled')
                             : l10n.t('doctor_booking.care_service_scheduled'),
@@ -554,6 +691,40 @@ class _TypeCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OptionChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _OptionChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.doctor : AppColors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: selected ? null : Border.all(color: AppColors.lightGrey),
+        ),
+        child: Text(
+          label,
+          style: AppTextStyles.labelSmall.copyWith(
+            color: selected ? AppColors.white : AppColors.dark,
           ),
         ),
       ),

@@ -6,6 +6,7 @@ import apiRoutes from './routes';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 
 const app = express();
+app.set('trust proxy', 1);
 
 app.use((req, res, next) => {
   const startedAt = Date.now();

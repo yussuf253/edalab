@@ -1,10 +1,11 @@
-import { Router } from 'express';
+import { Request, Router } from 'express';
 import { ModuleType, PaymentMethodType } from '@prisma/client';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
 import { prisma } from '../db';
+import { env } from '../config/env';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
 import { hashPassword, verifyPassword } from '../utils/password';
@@ -102,6 +103,70 @@ function decodedBase64Image(dataBase64: string) {
     ? payload.split(',').pop() ?? payload
     : payload;
   return Buffer.from(base64Data, 'base64');
+}
+
+function buildPublicUrl(req: Request, relativePath: string) {
+  const configuredPublicBase = env.PUBLIC_BASE_URL?.trim();
+  if (configuredPublicBase) {
+    return `${configuredPublicBase.replace(/\/+$/g, '')}${relativePath}`;
+  }
+
+  const forwardedProto = req
+    .get('x-forwarded-proto')
+    ?.split(',')[0]
+    ?.trim();
+  const forwardedHost = req
+    .get('x-forwarded-host')
+    ?.split(',')[0]
+    ?.trim();
+  const host = forwardedHost || req.get('host');
+  const protocol = (forwardedProto || req.protocol || 'https')
+    .trim()
+    .toLowerCase();
+
+  if (!host) return relativePath;
+  return `${protocol}://${host}${relativePath}`;
+}
+
+async function uploadAvatarToSupabaseStorage(params: {
+  userId: string;
+  fileName: string;
+  mimeType: string | null | undefined;
+  buffer: Buffer;
+}) {
+  const supabaseUrl = env.SUPABASE_URL?.trim();
+  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+  if (!supabaseUrl || !serviceRoleKey) return null;
+
+  const bucket = env.SUPABASE_STORAGE_BUCKET_AVATARS.trim() || 'avatars';
+  const cleanBaseUrl = supabaseUrl.replace(/\/+$/g, '');
+  const objectPath = `users/${params.userId}/${params.fileName}`;
+  const encodedObjectPath = objectPath
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+  const uploadUrl =
+    `${cleanBaseUrl}/storage/v1/object/${encodeURIComponent(bucket)}/${encodedObjectPath}`;
+
+  const response = await fetch(uploadUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${serviceRoleKey}`,
+      apikey: serviceRoleKey,
+      'Content-Type': params.mimeType?.trim() || 'application/octet-stream',
+      'x-upsert': 'true',
+    },
+    body: new Uint8Array(params.buffer),
+  });
+
+  if (!response.ok) {
+    const rawBody = await response.text().catch(() => '');
+    throw new Error(
+      `Supabase avatar upload failed (${response.status}): ${rawBody.slice(0, 300)}`,
+    );
+  }
+
+  return `${cleanBaseUrl}/storage/v1/object/public/${encodeURIComponent(bucket)}/${encodedObjectPath}`;
 }
 
 router.post(
@@ -223,21 +288,38 @@ router.post(
     const baseName = sanitizedBaseFileName(body.fileName) ?? randomUUID();
     const fileName = `${baseName}-${Date.now()}.${extension}`;
 
-    const uploadsDir = path.resolve(process.cwd(), 'uploads', 'avatars');
-    await fs.mkdir(uploadsDir, { recursive: true });
-    const absoluteFilePath = path.join(uploadsDir, fileName);
-    await fs.writeFile(absoluteFilePath, fileBuffer);
-
-    const relativePath = `/uploads/avatars/${fileName}`;
-    const host = req.get('host');
-    const url = host
-      ? `${req.protocol}://${host}${relativePath}`
-      : relativePath;
+    let url: string;
+    let storedPath: string;
+    try {
+      const supabaseUrl = await uploadAvatarToSupabaseStorage({
+        userId,
+        fileName,
+        mimeType: body.mimeType,
+        buffer: fileBuffer,
+      });
+      if (supabaseUrl != null) {
+        url = supabaseUrl;
+        storedPath = `supabase://${env.SUPABASE_STORAGE_BUCKET_AVATARS.trim() || 'avatars'}/users/${userId}/${fileName}`;
+      } else {
+        const uploadsDir = path.resolve(process.cwd(), 'uploads', 'avatars');
+        await fs.mkdir(uploadsDir, { recursive: true });
+        const absoluteFilePath = path.join(uploadsDir, fileName);
+        await fs.writeFile(absoluteFilePath, fileBuffer);
+        storedPath = `/uploads/avatars/${fileName}`;
+        url = buildPublicUrl(req, storedPath);
+      }
+    } catch (error) {
+      console.error('[AVATAR_UPLOAD] Failed to upload avatar.', error);
+      return res.status(503).json({
+        error:
+          'Image upload is temporarily unavailable. Please try again shortly.',
+      });
+    }
 
     res.status(201).json({
       userId,
       fileName,
-      path: relativePath,
+      path: storedPath,
       url,
       mimeType: body.mimeType ?? null,
       uploadedAt: new Date().toISOString(),

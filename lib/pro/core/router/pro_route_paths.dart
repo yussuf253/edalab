@@ -29,6 +29,7 @@ class ProRoutePaths {
 
   static const doctorHome = '/pro/doctor';
   static const doctorAppointments = '/pro/doctor/appointments';
+  static const doctorHomeCare = '/pro/doctor/home-care';
   static const doctorAvailability = '/pro/doctor/availability';
   static const doctorSchedule = '/pro/doctor/schedule';
 

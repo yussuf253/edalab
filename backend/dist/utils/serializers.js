@@ -33,6 +33,7 @@ function sanitizeUser(user) {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
         addresses: (user.addresses ?? []).map((address) => ({
+            quartier: address.line2 ?? address.state,
             id: address.id,
             label: address.label,
             address: address.line1,

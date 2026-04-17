@@ -19,6 +19,7 @@ import 'core/services/pro_inbox_sync_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ApiClient.initialize(scope: ApiSessionScope.pro);
+  ApiClient.warmUpBackendInBackground();
 
   final hasSeenProOnboarding = await AppPreferences.hasSeenProOnboarding();
   final languageProvider = LanguageProvider();

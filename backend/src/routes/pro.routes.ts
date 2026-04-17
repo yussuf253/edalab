@@ -268,6 +268,23 @@ const liveOrderStatuses: OrderStatus[] = [
   OrderStatus.IN_PROGRESS,
 ];
 const HOUSE_HELP_MAX_MATCH_RADIUS_KM = 1;
+const HOME_CARE_APPOINTMENT_TYPES = [
+  'home_visit',
+  'phone_advice',
+  'video_support',
+  'nursing_visit',
+  'elderly_monitoring',
+  'post_op_care',
+];
+
+function homeCareAppointmentFilter(): Prisma.AppointmentWhereInput {
+  return {
+    OR: [
+      { appointmentType: { startsWith: 'home_' } },
+      { appointmentType: { in: HOME_CARE_APPOINTMENT_TYPES } },
+    ],
+  };
+}
 
 function startOfToday() {
   const now = new Date();
@@ -3433,6 +3450,42 @@ router.get(
         bindings.doctorIds.length === 0
           ? {}
           : { doctorId: { in: bindings.doctorIds } },
+      include: {
+        doctor: {
+          select: { name: true },
+        },
+        user: {
+          select: { firstName: true, lastName: true, phone: true },
+        },
+      },
+      orderBy: { appointmentAt: 'asc' },
+      take: 100,
+    });
+
+    res.json(appointments.map(serializeQueueAppointmentItem));
+  }),
+);
+
+router.get(
+  '/:userId/doctor-home-care-appointments',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const profile = await prisma.proProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile || profile.type !== ProProfileType.DOCTOR) {
+      return res.status(404).json({ error: 'Doctor pro profile not found.' });
+    }
+
+    const bindings = normalizeBindings(profile.bindings);
+    const appointments = await prisma.appointment.findMany({
+      where: {
+        ...(bindings.doctorIds.length === 0
+          ? {}
+          : { doctorId: { in: bindings.doctorIds } }),
+        ...homeCareAppointmentFilter(),
+      },
       include: {
         doctor: {
           select: { name: true },

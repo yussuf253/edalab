@@ -60,7 +60,7 @@ class AuthProvider extends ChangeNotifier {
       lastName: parts.length > 1 ? parts.sublist(1).join(' ') : '',
       email: response['email'] as String? ?? '',
       phone: response['phone'] as String? ?? '',
-      avatarUrl: response['avatarUrl'] as String?,
+      avatarUrl: ApiClient.normalizePublicUrl(response['avatarUrl'] as String?),
       addresses: [
         ...rawAddresses.map((entry) {
           final address = Map<String, dynamic>.from(entry as Map);
@@ -229,7 +229,7 @@ class AuthProvider extends ChangeNotifier {
         'name': fullName,
         'email': email.trim(),
         'phone': phone.trim(),
-        'avatarUrl': avatarUrl?.trim() ?? '',
+        'avatarUrl': ApiClient.normalizePublicUrl(avatarUrl) ?? '',
       });
 
       _setUserFromResponse(Map<String, dynamic>.from(response as Map));

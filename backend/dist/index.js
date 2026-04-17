@@ -10,6 +10,7 @@ const env_1 = require("./config/env");
 const routes_1 = __importDefault(require("./routes"));
 const error_handler_1 = require("./middleware/error-handler");
 const app = (0, express_1.default)();
+app.set('trust proxy', 1);
 app.use((req, res, next) => {
     const startedAt = Date.now();
     console.log(`[API] ${req.method} ${req.originalUrl}`);

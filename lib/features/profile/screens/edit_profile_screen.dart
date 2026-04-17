@@ -27,6 +27,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Uint8List? _pickedAvatarBytes;
   bool _isUploadingAvatar = false;
 
+  void _showLoginRequiredSnackBar() {
+    final l10n = context.l10n;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(l10n.t('profile_edit.login_required')),
+        action: SnackBarAction(
+          label: l10n.t('profile.log_in'),
+          onPressed: () => context.push('/login'),
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -48,8 +61,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _pickAndUploadAvatar() async {
+    if (_isUploadingAvatar) return;
     final user = context.read<AuthProvider>().user;
-    if (user == null) return;
+    if (user == null) {
+      if (!mounted) return;
+      _showLoginRequiredSnackBar();
+      return;
+    }
 
     final picker = ImagePicker();
     final file = await picker.pickImage(
@@ -81,7 +99,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (!mounted) return;
       setState(() {
-        _avatarUrl = uploadedUrl;
+        _avatarUrl = ApiClient.normalizePublicUrl(uploadedUrl);
       });
     } catch (error) {
       if (!mounted) return;
@@ -115,6 +133,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           children: [
             Center(
               child: Stack(
+                clipBehavior: Clip.none,
                 children: [
                   Container(
                     width: 100,
@@ -152,30 +171,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ),
                   ),
                   Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: GestureDetector(
-                      onTap: _isUploadingAvatar ? null : _pickAndUploadAvatar,
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: _isUploadingAvatar
-                            ? const Padding(
-                                padding: EdgeInsets.all(7),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                    bottom: -4,
+                    right: -4,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(14),
+                        onTap: _isUploadingAvatar ? null : _pickAndUploadAvatar,
+                        child: Ink(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: AppColors.white,
+                              width: 2,
+                            ),
+                          ),
+                          child: _isUploadingAvatar
+                              ? const Padding(
+                                  padding: EdgeInsets.all(9),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.white,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.camera_alt_rounded,
                                   color: AppColors.white,
+                                  size: 18,
                                 ),
-                              )
-                            : const Icon(
-                                Icons.camera_alt_rounded,
-                                color: AppColors.white,
-                                size: 16,
-                              ),
+                        ),
                       ),
                     ),
                   ),
@@ -219,6 +246,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               text: l10n.t('profile_edit.save'),
               isLoading: authProvider.isLoading || _isUploadingAvatar,
               onPressed: () async {
+                if (context.read<AuthProvider>().user == null) {
+                  _showLoginRequiredSnackBar();
+                  return;
+                }
                 final success = await context
                     .read<AuthProvider>()
                     .updateProfile(

@@ -18,6 +18,14 @@ services:
         value: 7d
       - key: CORS_ORIGIN
         value: "*"
+      - key: PUBLIC_BASE_URL
+        value: "https://edalab.onrender.com"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_STORAGE_BUCKET_AVATARS
+        value: avatars
       - key: DATABASE_URL
         sync: false
       - key: DIRECT_URL

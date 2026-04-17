@@ -162,6 +162,13 @@ class _DoctorScreenState extends State<DoctorScreen> {
         .length;
   }
 
+  void _openHomeCareBooking() {
+    context.push(
+      '/doctor/home-care',
+      extra: {'searchQuery': _searchQuery.trim()},
+    );
+  }
+
   void _openProfessionals(_CareCategory category) {
     context.push(
       '/doctor/professionals/${category.id}',
@@ -182,6 +189,13 @@ class _DoctorScreenState extends State<DoctorScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final textScale = MediaQuery.textScalerOf(
+      context,
+    ).scale(1.0).clamp(1.0, 1.35);
+    final categoryAspectRatio = (0.84 - ((textScale - 1.0) * 0.16)).clamp(
+      0.72,
+      0.84,
+    );
 
     return PopScope(
       canPop: context.canPop(),
@@ -219,49 +233,102 @@ class _DoctorScreenState extends State<DoctorScreen> {
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.doctor, AppColors.secondaryLight],
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                child: GestureDetector(
+                  onTap: _openHomeCareBooking,
+                  child: Container(
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF0E8E68),
+                          AppColors.homeServices,
+                          Color(0xFF57C49A),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: AppSpacing.shadowSm,
                     ),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.t('doctor.hero_title'),
-                              style: AppTextStyles.labelLarge.copyWith(
-                                color: AppColors.white,
-                                height: 1.25,
-                              ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.t('doctor.home_care_banner_title'),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.h3.copyWith(
+                                    color: AppColors.white,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  l10n.t('doctor.home_care_banner_subtitle'),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: Colors.white.withValues(alpha: 0.86),
+                                    height: 1.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        l10n.t('doctor.home_care_explore'),
+                                        style: AppTextStyles.labelMedium
+                                            .copyWith(
+                                              color: AppColors.homeServices,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      const Icon(
+                                        Icons.arrow_forward_rounded,
+                                        size: 18,
+                                        color: AppColors.homeServices,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 10),
+                          Container(
+                            width: 58,
+                            height: 58,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: const Icon(
+                              Icons.local_hospital_rounded,
+                              color: AppColors.white,
+                              size: 32,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 12),
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.16),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(
-                          Icons.health_and_safety_rounded,
-                          color: AppColors.white,
-                          size: 28,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -282,22 +349,44 @@ class _DoctorScreenState extends State<DoctorScreen> {
                   child: AppShimmer(
                     child: Column(
                       children: [
-                        ShimmerBlock(
-                          width: double.infinity,
-                          height: 54,
-                          radius: 16,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ShimmerBlock(
+                                width: double.infinity,
+                                height: 120,
+                                radius: 16,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: ShimmerBlock(
+                                width: double.infinity,
+                                height: 120,
+                                radius: 16,
+                              ),
+                            ),
+                          ],
                         ),
                         SizedBox(height: 10),
-                        ShimmerBlock(
-                          width: double.infinity,
-                          height: 54,
-                          radius: 16,
-                        ),
-                        SizedBox(height: 10),
-                        ShimmerBlock(
-                          width: double.infinity,
-                          height: 54,
-                          radius: 16,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ShimmerBlock(
+                                width: double.infinity,
+                                height: 120,
+                                radius: 16,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: ShimmerBlock(
+                                width: double.infinity,
+                                height: 120,
+                                radius: 16,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -305,85 +394,82 @@ class _DoctorScreenState extends State<DoctorScreen> {
                 ),
               )
             else
-              SliverList.separated(
-                itemCount: _categories.length,
-                itemBuilder: (context, index) {
-                  final category = _categories[index];
-                  final count = _countForCategory(category);
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                    child: GestureDetector(
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                sliver: SliverGrid.builder(
+                  itemCount: _categories.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: categoryAspectRatio,
+                  ),
+                  itemBuilder: (context, index) {
+                    final category = _categories[index];
+                    final count = _countForCategory(category);
+                    return GestureDetector(
                       onTap: () => _openProfessionals(category),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 12,
-                        ),
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.white,
                           borderRadius: BorderRadius.circular(18),
                           boxShadow: AppSpacing.shadowSm,
                         ),
-                        child: Row(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              width: 38,
-                              height: 38,
+                              width: 42,
+                              height: 42,
                               decoration: BoxDecoration(
                                 color: category.color.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Icon(
                                 category.icon,
-                                size: 20,
+                                size: 23,
                                 color: category.color,
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    l10n.t(category.labelKey),
-                                    style: AppTextStyles.labelLarge,
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    l10n.t(
-                                      'doctor.available_count',
-                                      params: {
-                                        'subtitle': l10n.t(
-                                          category.subtitleKey,
-                                        ),
-                                        'count': '$count',
-                                      },
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.caption.copyWith(
-                                      color: AppColors.grey,
-                                    ),
-                                  ),
-                                ],
+                            const SizedBox(height: 10),
+                            Text(
+                              l10n.t(category.labelKey),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.labelLarge.copyWith(
+                                height: 1.2,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            const Icon(
-                              Icons.chevron_right_rounded,
-                              color: AppColors.grey,
+                            const SizedBox(height: 4),
+                            Expanded(
+                              child: Text(
+                                l10n.t(
+                                  'doctor.available_count',
+                                  params: {
+                                    'subtitle': l10n.t(category.subtitleKey),
+                                    'count': '$count',
+                                  },
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.grey,
+                                  height: 1.3,
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  );
-                },
-                separatorBuilder: (_, _) => const SizedBox.shrink(),
+                    );
+                  },
+                ),
               ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                 child: Text(
                   l10n.t('doctor.tap_service'),
                   style: AppTextStyles.bodySmall.copyWith(

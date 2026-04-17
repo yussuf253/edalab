@@ -208,6 +208,22 @@ const liveOrderStatuses = [
     client_1.OrderStatus.IN_PROGRESS,
 ];
 const HOUSE_HELP_MAX_MATCH_RADIUS_KM = 1;
+const HOME_CARE_APPOINTMENT_TYPES = [
+    'home_visit',
+    'phone_advice',
+    'video_support',
+    'nursing_visit',
+    'elderly_monitoring',
+    'post_op_care',
+];
+function homeCareAppointmentFilter() {
+    return {
+        OR: [
+            { appointmentType: { startsWith: 'home_' } },
+            { appointmentType: { in: HOME_CARE_APPOINTMENT_TYPES } },
+        ],
+    };
+}
 function startOfToday() {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -2557,6 +2573,35 @@ router.get('/:userId/doctor-appointments', (0, async_handler_1.asyncHandler)(asy
         where: bindings.doctorIds.length === 0
             ? {}
             : { doctorId: { in: bindings.doctorIds } },
+        include: {
+            doctor: {
+                select: { name: true },
+            },
+            user: {
+                select: { firstName: true, lastName: true, phone: true },
+            },
+        },
+        orderBy: { appointmentAt: 'asc' },
+        take: 100,
+    });
+    res.json(appointments.map(serializeQueueAppointmentItem));
+}));
+router.get('/:userId/doctor-home-care-appointments', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const profile = await db_1.prisma.proProfile.findUnique({
+        where: { userId },
+    });
+    if (!profile || profile.type !== client_1.ProProfileType.DOCTOR) {
+        return res.status(404).json({ error: 'Doctor pro profile not found.' });
+    }
+    const bindings = normalizeBindings(profile.bindings);
+    const appointments = await db_1.prisma.appointment.findMany({
+        where: {
+            ...(bindings.doctorIds.length === 0
+                ? {}
+                : { doctorId: { in: bindings.doctorIds } }),
+            ...homeCareAppointmentFilter(),
+        },
         include: {
             doctor: {
                 select: { name: true },

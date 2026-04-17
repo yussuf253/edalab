@@ -18,7 +18,8 @@ class ApiClient {
     'API_HOST',
     defaultValue: '127.0.0.1',
   );
-  static const Duration _requestTimeout = Duration(seconds: 12);
+  static const Duration _requestTimeout = Duration(seconds: 20);
+  static const int _maxGetRetries = 2;
   static const String genericErrorMessage =
       'Something went wrong. Please try again.';
   static const String connectionErrorMessage =
@@ -30,6 +31,13 @@ class ApiClient {
   static final http.Client _httpClient = http.Client();
   static final Map<String, _CachedResponse> _getCache = {};
   static final Map<String, Future<dynamic>> _pendingGets = {};
+  static const Duration _connectionLogCooldown = Duration(seconds: 3);
+  static const Duration _warmUpCooldown = Duration(minutes: 2);
+  static const Duration _warmUpTimeout = Duration(seconds: 8);
+  static const int _warmUpAttempts = 2;
+  static DateTime? _lastConnectionLogAt;
+  static DateTime? _lastWarmUpAt;
+  static Future<void>? _warmUpInFlight;
   static String? _token;
   static ApiSessionScope _sessionScope = ApiSessionScope.user;
 
@@ -54,6 +62,56 @@ class ApiClient {
   }) async {
     _sessionScope = scope;
     _token = await _readPersistedToken();
+  }
+
+  static Future<void> warmUpBackend({bool force = false}) async {
+    final now = DateTime.now();
+    final isCoolingDown =
+        !force &&
+        _lastWarmUpAt != null &&
+        now.difference(_lastWarmUpAt!) < _warmUpCooldown;
+    if (isCoolingDown) return;
+
+    final inFlight = _warmUpInFlight;
+    if (inFlight != null) {
+      await inFlight;
+      return;
+    }
+
+    final warmUpFuture = _runWarmUpRequest();
+    _warmUpInFlight = warmUpFuture;
+    try {
+      await warmUpFuture;
+      _lastWarmUpAt = DateTime.now();
+    } finally {
+      _warmUpInFlight = null;
+    }
+  }
+
+  static void warmUpBackendInBackground({bool force = false}) {
+    unawaited(warmUpBackend(force: force));
+  }
+
+  static Future<void> _runWarmUpRequest() async {
+    final uri = Uri.parse('$baseUrl/health');
+    for (var attempt = 0; attempt < _warmUpAttempts; attempt++) {
+      try {
+        final response = await _httpClient.get(uri).timeout(_warmUpTimeout);
+        if (response.statusCode == 200) {
+          return;
+        }
+      } on TimeoutException {
+        // Ignore and retry.
+      } on SocketException {
+        // Ignore and retry.
+      } on http.ClientException {
+        // Ignore and retry.
+      }
+
+      if (attempt < _warmUpAttempts - 1) {
+        await Future.delayed(const Duration(milliseconds: 800));
+      }
+    }
   }
 
   static Future<void> configureSessionScope(ApiSessionScope scope) async {
@@ -120,7 +178,14 @@ class ApiClient {
 
   static Exception _connectionException(Object error) {
     if (kDebugMode) {
-      debugPrint('Network request failed: $error');
+      final now = DateTime.now();
+      final shouldLog =
+          _lastConnectionLogAt == null ||
+          now.difference(_lastConnectionLogAt!) >= _connectionLogCooldown;
+      if (shouldLog) {
+        debugPrint('Network request failed: $error');
+        _lastConnectionLogAt = now;
+      }
     }
     return const _ApiConnectionException(connectionErrorMessage);
   }
@@ -152,8 +217,53 @@ class ApiClient {
     return rawMessage;
   }
 
+  static String? normalizePublicUrl(String? rawUrl) {
+    final trimmed = rawUrl?.trim() ?? '';
+    if (trimmed.isEmpty) return null;
+
+    final parsed = Uri.tryParse(trimmed);
+    if (parsed == null) return trimmed;
+
+    final apiUri = Uri.tryParse(baseUrl);
+    final apiHost = apiUri?.host ?? '';
+    final isRenderHost = parsed.host.endsWith('.onrender.com');
+
+    if (!parsed.hasScheme) {
+      if (trimmed.startsWith('/') && apiUri != null) {
+        final origin = Uri(
+          scheme: apiUri.scheme,
+          host: apiUri.host,
+          port: apiUri.hasPort ? apiUri.port : null,
+        );
+        return origin.resolveUri(Uri.parse(trimmed)).toString();
+      }
+      return trimmed;
+    }
+
+    if (parsed.scheme == 'http' &&
+        (isRenderHost || (apiHost.isNotEmpty && parsed.host == apiHost))) {
+      return parsed.replace(scheme: 'https').toString();
+    }
+
+    return trimmed;
+  }
+
   static String _cacheKey(String endpoint) =>
       '$baseUrl|$endpoint|${_token ?? ''}';
+
+  static bool _isRetryableGetStatus(int statusCode) =>
+      statusCode == 408 || statusCode == 429 || statusCode >= 500;
+
+  static Duration _getRetryBackoff(int attempt) {
+    switch (attempt) {
+      case 0:
+        return const Duration(milliseconds: 700);
+      case 1:
+        return const Duration(seconds: 2);
+      default:
+        return const Duration(seconds: 3);
+    }
+  }
 
   static dynamic _decodeBody(String body) => json.decode(body);
 
@@ -210,21 +320,54 @@ class ApiClient {
 
     try {
       return await future;
+    } catch (error) {
+      if (!forceRefresh && isConnectionError(error)) {
+        final staleCached = _getCache[cacheKey];
+        if (staleCached != null) {
+          if (kDebugMode) {
+            debugPrint('Serving stale cache for GET $endpoint after timeout.');
+          }
+          return _decodeBody(staleCached.body);
+        }
+      }
+      rethrow;
     } finally {
       _pendingGets.remove(cacheKey);
     }
   }
 
   static Future<dynamic> _performGet(String endpoint, String cacheKey) async {
+    final uri = Uri.parse('$baseUrl$endpoint');
+    final requestHeaders = await _headers();
+
     late http.Response response;
-    try {
-      response = await _httpClient
-          .get(Uri.parse('$baseUrl$endpoint'), headers: await _headers())
-          .timeout(_requestTimeout);
-    } on TimeoutException catch (error) {
-      throw _connectionException(error);
-    } on SocketException catch (error) {
-      throw _connectionException(error);
+    for (var attempt = 0; attempt <= _maxGetRetries; attempt++) {
+      try {
+        response = await _httpClient
+            .get(uri, headers: requestHeaders)
+            .timeout(_requestTimeout);
+
+        final shouldRetryStatus =
+            _isRetryableGetStatus(response.statusCode) &&
+            attempt < _maxGetRetries;
+        if (!shouldRetryStatus) {
+          break;
+        }
+      } on TimeoutException catch (error) {
+        if (attempt >= _maxGetRetries) {
+          throw _connectionException(error);
+        }
+      } on SocketException catch (error) {
+        if (attempt >= _maxGetRetries) {
+          throw _connectionException(error);
+        }
+      } on http.ClientException catch (error) {
+        if (attempt >= _maxGetRetries) {
+          throw _connectionException(error);
+        }
+      }
+
+      await Future.delayed(_getRetryBackoff(attempt));
     }
 
     if (response.statusCode == 200) {

@@ -63,7 +63,14 @@ DATABASE_URL=your-supabase-pooled-connection-string
 DIRECT_URL=your-supabase-direct-connection-string
 JWT_SECRET=your-long-random-production-secret
 CORS_ORIGIN=https://your-website-domain.com
+PUBLIC_BASE_URL=https://edalab.onrender.com
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_STORAGE_BUCKET_AVATARS=avatars
 ```
+
+Avatar uploads are persistent only when Supabase Storage variables are set.
+If they are missing, uploads fall back to local `uploads/` files, which are not persistent on Render free instances.
 
 For first deployment, you should also run schema sync and seed once:
 

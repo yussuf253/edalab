@@ -20,6 +20,8 @@ class ProfileScreen extends StatelessWidget {
     final user = authProvider.user;
     final l10n = context.l10n;
     final currentProProfile = proAuthProvider.currentProfile;
+    final avatarUrl = user?.avatarUrl?.trim();
+    final hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -82,12 +84,18 @@ class ProfileScreen extends StatelessWidget {
                           width: 2.5,
                         ),
                       ),
-                      child: user?.avatarUrl != null
+                      child: hasAvatar
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(19),
                               child: Image.network(
-                                user!.avatarUrl!,
+                                avatarUrl,
                                 fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(
+                                      Icons.person_rounded,
+                                      color: AppColors.white,
+                                      size: 36,
+                                    ),
                               ),
                             )
                           : const Icon(

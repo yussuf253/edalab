@@ -160,49 +160,8 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                 onChanged: (value) => setState(() => _searchQuery = value),
               ),
             ),
-            SizedBox(
-              height: 44,
-              child: _isLoading
-                  ? const _ShoppingFiltersShimmer()
-                  : ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                      itemCount: categories.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 8),
-                      itemBuilder: (context, index) {
-                        final category = categories[index];
-                        final isSelected = _selectedCategory == category;
-                        return GestureDetector(
-                          onTap: () =>
-                              setState(() => _selectedCategory = category),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.white,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              category == 'all'
-                                  ? l10n.t('shopping.all')
-                                  : category,
-                              style: AppTextStyles.labelMedium.copyWith(
-                                color: isSelected
-                                    ? AppColors.white
-                                    : AppColors.dark,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
               child: Container(
                 height: 96,
                 decoration: BoxDecoration(
@@ -244,6 +203,47 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                 ),
               ),
             ),
+            SizedBox(
+              height: 52,
+              child: _isLoading
+                  ? const _ShoppingFiltersShimmer()
+                  : ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                      itemCount: categories.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        final isSelected = _selectedCategory == category;
+                        return GestureDetector(
+                          onTap: () =>
+                              setState(() => _selectedCategory = category),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              category == 'all'
+                                  ? l10n.t('shopping.all')
+                                  : category,
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: isSelected
+                                    ? AppColors.white
+                                    : AppColors.dark,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
             Expanded(
               child: _isLoading
                   ? const _ShoppingStoreListShimmer(itemCount: 4)
@@ -255,7 +255,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                       ),
                     )
                   : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                      padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
                       itemCount: stores.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 14),
                       itemBuilder: (context, index) {

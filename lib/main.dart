@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
+import 'core/network/api_client.dart';
 import 'core/providers/providers.dart';
 import 'core/router/app_router.dart';
 import 'core/services/notification_sync_service.dart';
@@ -99,6 +100,8 @@ Future<void> _bootstrapAppServices({
   required NotificationProvider notificationProvider,
   required ProAuthProvider proAuthProvider,
 }) async {
+  ApiClient.warmUpBackendInBackground();
+
   await Future.wait([
     authProvider.initialize(),
     cartProvider.initialize(),
