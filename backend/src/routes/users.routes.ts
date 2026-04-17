@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { ModuleType, PaymentMethodType } from '@prisma/client';
 import { z } from 'zod';
+import { randomUUID } from 'crypto';
+import fs from 'fs/promises';
+import path from 'path';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
@@ -37,6 +40,12 @@ const paymentMethodSchema = z.object({
   isDefault: z.boolean().optional().default(false),
 });
 
+const uploadAvatarSchema = z.object({
+  fileName: z.string().min(1).max(180).optional().nullable(),
+  mimeType: z.string().max(120).optional().nullable(),
+  dataBase64: z.string().min(24),
+});
+
 const wishlistSchema = z.object({
   moduleType: z.nativeEnum(ModuleType),
   entityId: z.string(),
@@ -55,6 +64,44 @@ async function getUserWithAddresses(userId: string) {
       },
     },
   });
+}
+
+function fileExtensionFromMimeType(mimeType: string | null | undefined) {
+  const normalized = mimeType?.trim().toLowerCase();
+  switch (normalized) {
+    case 'image/jpeg':
+    case 'image/jpg':
+      return 'jpg';
+    case 'image/png':
+      return 'png';
+    case 'image/webp':
+      return 'webp';
+    case 'image/heic':
+      return 'heic';
+    case 'image/heif':
+      return 'heif';
+    default:
+      return null;
+  }
+}
+
+function sanitizedBaseFileName(name: string | null | undefined) {
+  const trimmed = name?.trim();
+  if (!trimmed) return null;
+  const safe = trimmed
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+  return safe.length > 0 ? safe : null;
+}
+
+function decodedBase64Image(dataBase64: string) {
+  const payload = dataBase64.trim();
+  const base64Data = payload.includes(',')
+    ? payload.split(',').pop() ?? payload
+    : payload;
+  return Buffer.from(base64Data, 'base64');
 }
 
 router.post(
@@ -137,6 +184,64 @@ router.get(
     }
 
     res.json(sanitizeUser(user));
+  }),
+);
+
+router.post(
+  '/:id/avatar-upload',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.id, 'userId');
+    const body: z.infer<typeof uploadAvatarSchema> = uploadAvatarSchema.parse(
+      req.body,
+    );
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const fileBuffer = decodedBase64Image(body.dataBase64);
+    if (!fileBuffer || fileBuffer.length === 0) {
+      return res.status(400).json({ error: 'Invalid image payload.' });
+    }
+
+    if (fileBuffer.length > 6 * 1024 * 1024) {
+      return res
+        .status(413)
+        .json({ error: 'Image is too large. Max size is 6MB.' });
+    }
+
+    const extFromName = path
+      .extname(body.fileName ?? '')
+      .replace('.', '')
+      .toLowerCase();
+    const fallbackExt =
+      fileExtensionFromMimeType(body.mimeType) ||
+      extFromName ||
+      'jpg';
+    const extension = fallbackExt.replace(/[^a-z0-9]/gi, '') || 'jpg';
+    const baseName = sanitizedBaseFileName(body.fileName) ?? randomUUID();
+    const fileName = `${baseName}-${Date.now()}.${extension}`;
+
+    const uploadsDir = path.resolve(process.cwd(), 'uploads', 'avatars');
+    await fs.mkdir(uploadsDir, { recursive: true });
+    const absoluteFilePath = path.join(uploadsDir, fileName);
+    await fs.writeFile(absoluteFilePath, fileBuffer);
+
+    const relativePath = `/uploads/avatars/${fileName}`;
+    const host = req.get('host');
+    const url = host
+      ? `${req.protocol}://${host}${relativePath}`
+      : relativePath;
+
+    res.status(201).json({
+      userId,
+      fileName,
+      path: relativePath,
+      url,
+      mimeType: body.mimeType ?? null,
+      uploadedAt: new Date().toISOString(),
+    });
   }),
 );
 

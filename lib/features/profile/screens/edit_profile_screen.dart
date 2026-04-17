@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_button.dart';
 
@@ -18,7 +23,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController _lastNameController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
-  late final TextEditingController _avatarUrlController;
+  String? _avatarUrl;
+  Uint8List? _pickedAvatarBytes;
+  bool _isUploadingAvatar = false;
 
   @override
   void initState() {
@@ -28,7 +35,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _lastNameController = TextEditingController(text: user?.lastName ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
     _phoneController = TextEditingController(text: user?.phone ?? '');
-    _avatarUrlController = TextEditingController(text: user?.avatarUrl ?? '');
+    _avatarUrl = user?.avatarUrl;
   }
 
   @override
@@ -37,15 +44,61 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
-    _avatarUrlController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAndUploadAvatar() async {
+    final user = context.read<AuthProvider>().user;
+    if (user == null) return;
+
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1400,
+      imageQuality: 88,
+    );
+    if (file == null) return;
+
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+
+    setState(() {
+      _pickedAvatarBytes = bytes;
+      _isUploadingAvatar = true;
+    });
+
+    try {
+      final response = await ApiClient.post('/users/${user.id}/avatar-upload', {
+        'fileName': file.name,
+        'mimeType': file.mimeType,
+        'dataBase64': base64Encode(bytes),
+      });
+      final payload = Map<String, dynamic>.from(response as Map);
+      final uploadedUrl = payload['url']?.toString().trim() ?? '';
+      if (uploadedUrl.isEmpty) {
+        throw Exception('Avatar upload returned an empty URL.');
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _avatarUrl = uploadedUrl;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(ApiClient.userFacingError(error))));
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingAvatar = false);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final authProvider = context.watch<AuthProvider>();
-    final user = authProvider.user;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -70,32 +123,60 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       color: AppColors.primarySurface,
                       borderRadius: BorderRadius.circular(28),
                     ),
-                    child: user?.avatarUrl != null && user!.avatarUrl!.isNotEmpty
+                    child: _pickedAvatarBytes != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(28),
+                            child: Image.memory(
+                              _pickedAvatarBytes!,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : _avatarUrl != null && _avatarUrl!.isNotEmpty
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(28),
                             child: Image.network(
-                              user.avatarUrl!,
+                              _avatarUrl!,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => const Icon(
-                                Icons.person_rounded,
-                                color: AppColors.primary,
-                                size: 48,
-                              ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.person_rounded,
+                                    color: AppColors.primary,
+                                    size: 48,
+                                  ),
                             ),
                           )
-                        : const Icon(Icons.person_rounded, color: AppColors.primary, size: 48),
+                        : const Icon(
+                            Icons.person_rounded,
+                            color: AppColors.primary,
+                            size: 48,
+                          ),
                   ),
                   Positioned(
                     bottom: 0,
                     right: 0,
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(10),
+                    child: GestureDetector(
+                      onTap: _isUploadingAvatar ? null : _pickAndUploadAvatar,
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: _isUploadingAvatar
+                            ? const Padding(
+                                padding: EdgeInsets.all(7),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.white,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.camera_alt_rounded,
+                                color: AppColors.white,
+                                size: 16,
+                              ),
                       ),
-                      child: const Icon(Icons.camera_alt_rounded, color: AppColors.white, size: 16),
                     ),
                   ),
                 ],
@@ -133,26 +214,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 prefixIcon: Icon(Icons.phone_outlined),
               ),
             ),
-            const SizedBox(height: 14),
-            TextFormField(
-              controller: _avatarUrlController,
-              decoration: InputDecoration(
-                labelText: l10n.t('profile_edit.avatar_url'),
-                prefixIcon: Icon(Icons.image_outlined),
-              ),
-            ),
             const SizedBox(height: 24),
             AppButton(
               text: l10n.t('profile_edit.save'),
-              isLoading: authProvider.isLoading,
+              isLoading: authProvider.isLoading || _isUploadingAvatar,
               onPressed: () async {
-                final success = await context.read<AuthProvider>().updateProfile(
-                  firstName: _firstNameController.text,
-                  lastName: _lastNameController.text,
-                  email: _emailController.text,
-                  phone: _phoneController.text,
-                  avatarUrl: _avatarUrlController.text,
-                );
+                final success = await context
+                    .read<AuthProvider>()
+                    .updateProfile(
+                      firstName: _firstNameController.text,
+                      lastName: _lastNameController.text,
+                      email: _emailController.text,
+                      phone: _phoneController.text,
+                      avatarUrl: _avatarUrl,
+                    );
 
                 if (!context.mounted) return;
 
@@ -165,7 +240,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        authProvider.errorMessage ?? l10n.t('profile_edit.failed'),
+                        authProvider.errorMessage ??
+                            l10n.t('profile_edit.failed'),
                       ),
                     ),
                   );

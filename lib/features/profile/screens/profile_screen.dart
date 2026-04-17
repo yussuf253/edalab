@@ -27,107 +27,143 @@ class ProfileScreen extends StatelessWidget {
         slivers: [
           // Profile header
           SliverToBoxAdapter(
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(20, 60, 20, 24),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppColors.primary, AppColors.secondary],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 56, 16, 8),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.secondary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.22),
+                      blurRadius: 26,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
                 ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      const NotificationBell(
-                        size: 40,
-                        backgroundColor: Color(0x33FFFFFF),
-                        iconColor: AppColors.white,
-                        useShadow: false,
-                        compact: true,
-                      ),
-                      // const SizedBox(width: 10),
-                      // Settings quick access is intentionally disabled for now.
-                      // GestureDetector(
-                      //   onTap: () => context.push('/profile/settings'),
-                      //   child: Container(
-                      //     width: 40, height: 40,
-                      //     decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-                      //     child: const Icon(Icons.settings_outlined, color: AppColors.white, size: 22),
-                      //   ),
-                      // ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        width: 3,
-                      ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        const NotificationBell(
+                          size: 40,
+                          backgroundColor: Color(0x33FFFFFF),
+                          iconColor: AppColors.white,
+                          useShadow: false,
+                          compact: true,
+                        ),
+                        // const SizedBox(width: 10),
+                        // Settings quick access is intentionally disabled for now.
+                        // GestureDetector(
+                        //   onTap: () => context.push('/profile/settings'),
+                        //   child: Container(
+                        //     width: 40, height: 40,
+                        //     decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+                        //     child: const Icon(Icons.settings_outlined, color: AppColors.white, size: 22),
+                        //   ),
+                        // ),
+                      ],
                     ),
-                    child: user?.avatarUrl != null
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(21),
-                            child: Image.network(
-                              user!.avatarUrl!,
-                              fit: BoxFit.cover,
+                    const SizedBox(height: 8),
+                    Container(
+                      width: 74,
+                      height: 74,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.52),
+                          width: 2.5,
+                        ),
+                      ),
+                      child: user?.avatarUrl != null
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(19),
+                              child: Image.network(
+                                user!.avatarUrl!,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.person_rounded,
+                              color: AppColors.white,
+                              size: 36,
                             ),
-                          )
-                        : const Icon(
-                            Icons.person_rounded,
-                            color: AppColors.white,
-                            size: 40,
-                          ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    user?.fullName ?? l10n.t('profile.guest'),
-                    style: AppTextStyles.h2.copyWith(color: AppColors.white),
-                  ),
-                  const SizedBox(height: 4),
-                  if (user != null)
+                    ),
+                    const SizedBox(height: 12),
                     Text(
-                      user.email,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: Colors.white70,
+                      user?.fullName ?? l10n.t('profile.guest'),
+                      style: AppTextStyles.h3.copyWith(color: AppColors.white),
+                    ),
+                    const SizedBox(height: 4),
+                    if (user != null)
+                      Text(
+                        user.email,
+                        style: AppTextStyles.caption.copyWith(
+                          color: Colors.white.withValues(alpha: 0.85),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    const SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _Stat(
+                            user != null ? '12' : '0',
+                            l10n.t('profile.orders'),
+                            valueColor: AppColors.dark,
+                            labelColor: AppColors.grey,
+                          ),
+                          Container(
+                            width: 1,
+                            height: 30,
+                            color: AppColors.extraLightGrey,
+                          ),
+                          _Stat(
+                            user != null ? '\$450' : '\$0',
+                            l10n.t('profile.spent'),
+                            valueColor: AppColors.dark,
+                            labelColor: AppColors.grey,
+                          ),
+                          Container(
+                            width: 1,
+                            height: 30,
+                            color: AppColors.extraLightGrey,
+                          ),
+                          _Stat(
+                            user != null ? '${user.points}' : '0',
+                            l10n.t('profile.rewards'),
+                            valueColor: AppColors.dark,
+                            labelColor: AppColors.grey,
+                          ),
+                        ],
                       ),
                     ),
-                  const SizedBox(height: 16),
-                  // Stats
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _Stat(
-                        user != null ? '12' : '0',
-                        l10n.t('profile.orders'),
-                      ),
-                      Container(width: 1, height: 30, color: Colors.white24),
-                      _Stat(
-                        user != null ? '\$450' : '\$0',
-                        l10n.t('profile.spent'),
-                      ),
-                      Container(width: 1, height: 30, color: Colors.white24),
-                      _Stat(
-                        user != null ? '${user.points}' : '0',
-                        l10n.t('profile.rewards'),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
           // Menu items
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -389,18 +425,24 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class _Stat extends StatelessWidget {
-  final String value, label;
-  const _Stat(this.value, this.label);
+  final String value;
+  final String label;
+  final Color valueColor;
+  final Color labelColor;
+
+  const _Stat(
+    this.value,
+    this.label, {
+    this.valueColor = AppColors.white,
+    this.labelColor = Colors.white60,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(value, style: AppTextStyles.h3.copyWith(color: AppColors.white)),
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(color: Colors.white60),
-        ),
+        Text(value, style: AppTextStyles.h3.copyWith(color: valueColor)),
+        Text(label, style: AppTextStyles.caption.copyWith(color: labelColor)),
       ],
     );
   }

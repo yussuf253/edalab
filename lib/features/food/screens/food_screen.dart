@@ -137,33 +137,23 @@ class _FoodScreenState extends State<FoodScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.t('food.discovery_title'),
-                      style: AppTextStyles.h4,
-                    ),
-                    const SizedBox(height: 12),
-                    AppSearchBar(
-                      hint: l10n.t('food.search_hint'),
-                      controller: _searchController,
-                      onChanged: (value) =>
-                          setState(() => _searchQuery = value.trim()),
-                      suffix: _searchQuery.isEmpty
-                          ? null
-                          : IconButton(
-                              icon: const Icon(
-                                Icons.close_rounded,
-                                color: AppColors.mediumGrey,
-                              ),
-                              onPressed: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                            ),
-                    ),
-                  ],
+                child: AppSearchBar(
+                  hint: l10n.t('food.search_hint'),
+                  controller: _searchController,
+                  onChanged: (value) =>
+                      setState(() => _searchQuery = value.trim()),
+                  suffix: _searchQuery.isEmpty
+                      ? null
+                      : IconButton(
+                          icon: const Icon(
+                            Icons.close_rounded,
+                            color: AppColors.mediumGrey,
+                          ),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        ),
                 ),
               ),
             ),

@@ -34,12 +34,19 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.user;
     final locationProvider = context.watch<UserLocationProvider>();
     final locationTitle = locationProvider.location?.title;
     final locationSubtitle = locationProvider.location?.subtitle;
+    final displayName = user != null && user.fullName.trim().isNotEmpty
+        ? user.fullName
+        : l10n.t('profile.guest');
     final locationDisplay = locationProvider.isLoading
         ? 'Detecting your location...'
-        : (locationSubtitle ?? locationTitle ?? l10n.t('ride.current_location'));
+        : (locationSubtitle ??
+              locationTitle ??
+              l10n.t('ride.current_location'));
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -61,11 +68,27 @@ class _HomeScreenState extends State<HomeScreen> {
                           gradient: AppColors.primaryGradient,
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        child: const Icon(
-                          Icons.person_rounded,
-                          color: AppColors.white,
-                          size: 24,
-                        ),
+                        child:
+                            user?.avatarUrl != null &&
+                                user!.avatarUrl!.trim().isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: Image.network(
+                                  user.avatarUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, error, stackTrace) =>
+                                      const Icon(
+                                        Icons.person_rounded,
+                                        color: AppColors.white,
+                                        size: 24,
+                                      ),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person_rounded,
+                                color: AppColors.white,
+                                size: 24,
+                              ),
                       ),
                       const SizedBox(width: 12),
                       // Greeting
@@ -82,10 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
-                            Text(
-                              'Youssouf Hassan',
-                              style: AppTextStyles.h4,
-                            ),
+                            Text(displayName, style: AppTextStyles.h4),
                           ],
                         ),
                       ),
