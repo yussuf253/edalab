@@ -166,7 +166,7 @@ async function uploadAvatarToSupabaseStorage(params: {
     );
   }
 
-  return `${cleanBaseUrl}/storage/v1/object/public/${encodeURIComponent(bucket)}/${encodedObjectPath}`;
+  return objectPath;
 }
 
 router.post(
@@ -298,7 +298,12 @@ router.post(
         buffer: fileBuffer,
       });
       if (supabaseUrl != null) {
-        url = supabaseUrl;
+        const encodedUserId = encodeURIComponent(userId);
+        const encodedFileName = encodeURIComponent(fileName);
+        url = buildPublicUrl(
+          req,
+          `/uploads/avatars/supabase/${encodedUserId}/${encodedFileName}`,
+        );
         storedPath = `supabase://${env.SUPABASE_STORAGE_BUCKET_AVATARS.trim() || 'avatars'}/users/${userId}/${fileName}`;
       } else {
         const uploadsDir = path.resolve(process.cwd(), 'uploads', 'avatars');

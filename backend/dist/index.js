@@ -26,6 +26,50 @@ app.use((0, cors_1.default)({
     credentials: true,
 }));
 app.use(express_1.default.json({ limit: '8mb' }));
+app.get('/uploads/avatars/supabase/:userId/:fileName', async (req, res) => {
+    const userId = (req.params.userId || '').trim();
+    const fileName = (req.params.fileName || '').trim();
+    const isSafeUserId = /^[a-zA-Z0-9-]+$/.test(userId);
+    const isSafeFileName = /^[a-zA-Z0-9._-]+$/.test(fileName);
+    if (!isSafeUserId || !isSafeFileName) {
+        return res.status(400).end();
+    }
+    const supabaseUrl = env_1.env.SUPABASE_URL?.trim();
+    const serviceRoleKey = env_1.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+    if (!supabaseUrl || !serviceRoleKey) {
+        return res.status(404).end();
+    }
+    const bucket = env_1.env.SUPABASE_STORAGE_BUCKET_AVATARS.trim() || 'avatars';
+    const objectPath = `users/${userId}/${fileName}`;
+    const encodedObjectPath = objectPath
+        .split('/')
+        .map((segment) => encodeURIComponent(segment))
+        .join('/');
+    const objectUrl = `${supabaseUrl.replace(/\/+$/g, '')}/storage/v1/object/${encodeURIComponent(bucket)}/${encodedObjectPath}`;
+    try {
+        const response = await fetch(objectUrl, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${serviceRoleKey}`,
+                apikey: serviceRoleKey,
+            },
+        });
+        if (!response.ok) {
+            throw new Error(`Supabase avatar fetch failed with ${response.status}`);
+        }
+        const imageBytes = Buffer.from(await response.arrayBuffer());
+        const contentType = response.headers.get('content-type') || 'application/octet-stream';
+        res.setHeader('Content-Type', contentType);
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        return res.status(200).send(imageBytes);
+    }
+    catch (_) {
+        const fallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 220 220"><rect width="220" height="220" rx="44" fill="#E8F1FF"/><circle cx="110" cy="92" r="34" fill="#7AA3E8"/><path d="M44 193c12-33 38-54 66-54s54 21 66 54" fill="#7AA3E8"/></svg>`;
+        res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        return res.status(200).send(fallbackSvg);
+    }
+});
 app.get('/uploads/avatars/:fileName', async (req, res, next) => {
     const fileName = (req.params.fileName || '').trim();
     if (!fileName) {

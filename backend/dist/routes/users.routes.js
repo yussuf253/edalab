@@ -148,7 +148,7 @@ async function uploadAvatarToSupabaseStorage(params) {
         const rawBody = await response.text().catch(() => '');
         throw new Error(`Supabase avatar upload failed (${response.status}): ${rawBody.slice(0, 300)}`);
     }
-    return `${cleanBaseUrl}/storage/v1/object/public/${encodeURIComponent(bucket)}/${encodedObjectPath}`;
+    return objectPath;
 }
 router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const { email, name, phone, password } = zod_1.z
@@ -249,7 +249,9 @@ router.post('/:id/avatar-upload', (0, async_handler_1.asyncHandler)(async (req, 
             buffer: fileBuffer,
         });
         if (supabaseUrl != null) {
-            url = supabaseUrl;
+            const encodedUserId = encodeURIComponent(userId);
+            const encodedFileName = encodeURIComponent(fileName);
+            url = buildPublicUrl(req, `/uploads/avatars/supabase/${encodedUserId}/${encodedFileName}`);
             storedPath = `supabase://${env_1.env.SUPABASE_STORAGE_BUCKET_AVATARS.trim() || 'avatars'}/users/${userId}/${fileName}`;
         }
         else {

@@ -227,6 +227,22 @@ class ApiClient {
     final apiUri = Uri.tryParse(baseUrl);
     final apiHost = apiUri?.host ?? '';
     final isRenderHost = parsed.host.endsWith('.onrender.com');
+    final apiOrigin = apiUri == null
+        ? null
+        : Uri(
+            scheme: apiUri.scheme,
+            host: apiUri.host,
+            port: apiUri.hasPort ? apiUri.port : null,
+          ).toString().replaceFirst(RegExp(r'/$'), '');
+
+    final storagePathMatch = RegExp(
+      r'^/storage/v1/object/(?:public/)?([^/]+)/users/([^/]+)/([^/?#]+)$',
+    ).firstMatch(parsed.path);
+    if (storagePathMatch != null && apiOrigin != null) {
+      final userId = Uri.decodeComponent(storagePathMatch.group(2)!);
+      final fileName = Uri.decodeComponent(storagePathMatch.group(3)!);
+      return '$apiOrigin/uploads/avatars/supabase/${Uri.encodeComponent(userId)}/${Uri.encodeComponent(fileName)}';
+    }
 
     if (!parsed.hasScheme) {
       if (trimmed.startsWith('/') && apiUri != null) {
