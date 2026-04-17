@@ -1,16 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
-const crypto_1 = require("crypto");
-const promises_1 = __importDefault(require("fs/promises"));
-const path_1 = __importDefault(require("path"));
 const db_1 = require("../db");
-const env_1 = require("../config/env");
 const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
 const password_1 = require("../utils/password");
@@ -41,11 +34,6 @@ const paymentMethodSchema = zod_1.z.object({
     expiryYear: zod_1.z.number().int().min(2024).optional().nullable(),
     isDefault: zod_1.z.boolean().optional().default(false),
 });
-const uploadAvatarSchema = zod_1.z.object({
-    fileName: zod_1.z.string().min(1).max(180).optional().nullable(),
-    mimeType: zod_1.z.string().max(120).optional().nullable(),
-    dataBase64: zod_1.z.string().min(24),
-});
 const wishlistSchema = zod_1.z.object({
     moduleType: zod_1.z.nativeEnum(client_1.ModuleType),
     entityId: zod_1.z.string(),
@@ -63,92 +51,6 @@ async function getUserWithAddresses(userId) {
             },
         },
     });
-}
-function fileExtensionFromMimeType(mimeType) {
-    const normalized = mimeType?.trim().toLowerCase();
-    switch (normalized) {
-        case 'image/jpeg':
-        case 'image/jpg':
-            return 'jpg';
-        case 'image/png':
-            return 'png';
-        case 'image/webp':
-            return 'webp';
-        case 'image/heic':
-            return 'heic';
-        case 'image/heif':
-            return 'heif';
-        default:
-            return null;
-    }
-}
-function sanitizedBaseFileName(name) {
-    const trimmed = name?.trim();
-    if (!trimmed)
-        return null;
-    const safe = trimmed
-        .toLowerCase()
-        .replace(/[^a-z0-9._-]+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '');
-    return safe.length > 0 ? safe : null;
-}
-function decodedBase64Image(dataBase64) {
-    const payload = dataBase64.trim();
-    const base64Data = payload.includes(',')
-        ? payload.split(',').pop() ?? payload
-        : payload;
-    return Buffer.from(base64Data, 'base64');
-}
-function buildPublicUrl(req, relativePath) {
-    const configuredPublicBase = env_1.env.PUBLIC_BASE_URL?.trim();
-    if (configuredPublicBase) {
-        return `${configuredPublicBase.replace(/\/+$/g, '')}${relativePath}`;
-    }
-    const forwardedProto = req
-        .get('x-forwarded-proto')
-        ?.split(',')[0]
-        ?.trim();
-    const forwardedHost = req
-        .get('x-forwarded-host')
-        ?.split(',')[0]
-        ?.trim();
-    const host = forwardedHost || req.get('host');
-    const protocol = (forwardedProto || req.protocol || 'https')
-        .trim()
-        .toLowerCase();
-    if (!host)
-        return relativePath;
-    return `${protocol}://${host}${relativePath}`;
-}
-async function uploadAvatarToSupabaseStorage(params) {
-    const supabaseUrl = env_1.env.SUPABASE_URL?.trim();
-    const serviceRoleKey = env_1.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-    if (!supabaseUrl || !serviceRoleKey)
-        return null;
-    const bucket = env_1.env.SUPABASE_STORAGE_BUCKET_AVATARS.trim() || 'avatars';
-    const cleanBaseUrl = supabaseUrl.replace(/\/+$/g, '');
-    const objectPath = `users/${params.userId}/${params.fileName}`;
-    const encodedObjectPath = objectPath
-        .split('/')
-        .map((segment) => encodeURIComponent(segment))
-        .join('/');
-    const uploadUrl = `${cleanBaseUrl}/storage/v1/object/${encodeURIComponent(bucket)}/${encodedObjectPath}`;
-    const response = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${serviceRoleKey}`,
-            apikey: serviceRoleKey,
-            'Content-Type': params.mimeType?.trim() || 'application/octet-stream',
-            'x-upsert': 'true',
-        },
-        body: new Uint8Array(params.buffer),
-    });
-    if (!response.ok) {
-        const rawBody = await response.text().catch(() => '');
-        throw new Error(`Supabase avatar upload failed (${response.status}): ${rawBody.slice(0, 300)}`);
-    }
-    return objectPath;
 }
 router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const { email, name, phone, password } = zod_1.z
@@ -212,71 +114,6 @@ router.get('/:id', (0, async_handler_1.asyncHandler)(async (req, res) => {
         return res.status(404).json({ error: 'User not found.' });
     }
     res.json((0, serializers_1.sanitizeUser)(user));
-}));
-router.post('/:id/avatar-upload', (0, async_handler_1.asyncHandler)(async (req, res) => {
-    const userId = (0, http_1.getParam)(req.params.id, 'userId');
-    const body = uploadAvatarSchema.parse(req.body);
-    const user = await db_1.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) {
-        return res.status(404).json({ error: 'User not found.' });
-    }
-    const fileBuffer = decodedBase64Image(body.dataBase64);
-    if (!fileBuffer || fileBuffer.length === 0) {
-        return res.status(400).json({ error: 'Invalid image payload.' });
-    }
-    if (fileBuffer.length > 6 * 1024 * 1024) {
-        return res
-            .status(413)
-            .json({ error: 'Image is too large. Max size is 6MB.' });
-    }
-    const extFromName = path_1.default
-        .extname(body.fileName ?? '')
-        .replace('.', '')
-        .toLowerCase();
-    const fallbackExt = fileExtensionFromMimeType(body.mimeType) ||
-        extFromName ||
-        'jpg';
-    const extension = fallbackExt.replace(/[^a-z0-9]/gi, '') || 'jpg';
-    const baseName = sanitizedBaseFileName(body.fileName) ?? (0, crypto_1.randomUUID)();
-    const fileName = `${baseName}-${Date.now()}.${extension}`;
-    let url;
-    let storedPath;
-    try {
-        const supabaseUrl = await uploadAvatarToSupabaseStorage({
-            userId,
-            fileName,
-            mimeType: body.mimeType,
-            buffer: fileBuffer,
-        });
-        if (supabaseUrl != null) {
-            const encodedUserId = encodeURIComponent(userId);
-            const encodedFileName = encodeURIComponent(fileName);
-            url = buildPublicUrl(req, `/uploads/avatars/supabase/${encodedUserId}/${encodedFileName}`);
-            storedPath = `supabase://${env_1.env.SUPABASE_STORAGE_BUCKET_AVATARS.trim() || 'avatars'}/users/${userId}/${fileName}`;
-        }
-        else {
-            const uploadsDir = path_1.default.resolve(process.cwd(), 'uploads', 'avatars');
-            await promises_1.default.mkdir(uploadsDir, { recursive: true });
-            const absoluteFilePath = path_1.default.join(uploadsDir, fileName);
-            await promises_1.default.writeFile(absoluteFilePath, fileBuffer);
-            storedPath = `/uploads/avatars/${fileName}`;
-            url = buildPublicUrl(req, storedPath);
-        }
-    }
-    catch (error) {
-        console.error('[AVATAR_UPLOAD] Failed to upload avatar.', error);
-        return res.status(503).json({
-            error: 'Image upload is temporarily unavailable. Please try again shortly.',
-        });
-    }
-    res.status(201).json({
-        userId,
-        fileName,
-        path: storedPath,
-        url,
-        mimeType: body.mimeType ?? null,
-        uploadedAt: new Date().toISOString(),
-    });
 }));
 router.patch('/:id', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const userId = (0, http_1.getParam)(req.params.id, 'userId');

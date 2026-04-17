@@ -9,9 +9,6 @@ import {
   ProProfileType,
 } from '@prisma/client';
 import { Router } from 'express';
-import { randomUUID } from 'crypto';
-import fs from 'fs/promises';
-import path from 'path';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
@@ -58,13 +55,6 @@ const createPharmacyPrescriptionOrderSchema = z.object({
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
   address: z.string().optional(),
-});
-
-const uploadPrescriptionImageSchema = z.object({
-  userId: z.string().optional().nullable(),
-  fileName: z.string().min(1).max(180).optional().nullable(),
-  mimeType: z.string().max(120).optional().nullable(),
-  dataBase64: z.string().min(24),
 });
 
 const createHotelBookingSchema = z
@@ -211,40 +201,6 @@ function firstNonEmptyString(...values: Array<string | null | undefined>) {
     }
   }
   return null;
-}
-
-function fileExtensionFromMimeType(mimeType: string | null | undefined) {
-  const normalized = mimeType?.trim().toLowerCase();
-  switch (normalized) {
-    case 'image/jpeg':
-    case 'image/jpg':
-      return 'jpg';
-    case 'image/png':
-      return 'png';
-    case 'image/webp':
-      return 'webp';
-    default:
-      return null;
-  }
-}
-
-function fileExtensionFromName(fileName: string | null | undefined) {
-  const trimmed = fileName?.trim();
-  if (trimmed == null || trimmed.length == 0) return null;
-  const extension = trimmed.split('.').pop()?.trim().toLowerCase();
-  if (extension == null || extension.length == 0) return null;
-  if (['jpg', 'jpeg', 'png', 'webp'].includes(extension)) {
-    return extension == 'jpeg' ? 'jpg' : extension;
-  }
-  return null;
-}
-
-function decodedBase64Image(dataBase64: string) {
-  const payload = dataBase64.trim();
-  const withoutPrefix = payload.includes(',')
-    ? payload.substring(payload.indexOf(',') + 1)
-    : payload;
-  return Buffer.from(withoutPrefix, 'base64');
 }
 
 function enrichOrderItemMetadata(item: OrderItemWithProduct) {
@@ -1004,59 +960,6 @@ router.post(
         total: toNumber(item.lineTotal),
         metadata: enrichOrderItemMetadata(item),
       })),
-    });
-  }),
-);
-
-router.post(
-  '/pharmacy-prescription/upload',
-  asyncHandler(async (req, res) => {
-    const body: z.infer<typeof uploadPrescriptionImageSchema> =
-      uploadPrescriptionImageSchema.parse(req.body);
-
-    const fileBuffer = decodedBase64Image(body.dataBase64);
-    if (fileBuffer.length == 0) {
-      return res.status(400).json({ error: 'Uploaded image is empty.' });
-    }
-    const maxSizeBytes = 5 * 1024 * 1024;
-    if (fileBuffer.length > maxSizeBytes) {
-      return res
-        .status(400)
-        .json({ error: 'Image is too large. Maximum size is 5 MB.' });
-    }
-
-    const extension =
-      fileExtensionFromMimeType(body.mimeType) ??
-      fileExtensionFromName(body.fileName) ??
-      'jpg';
-    const fileName = `rx-${Date.now()}-${randomUUID()}.${extension}`;
-    const uploadsDir = path.resolve(
-      process.cwd(),
-      'uploads',
-      'prescriptions',
-    );
-    await fs.mkdir(uploadsDir, { recursive: true });
-    const absoluteFilePath = path.join(uploadsDir, fileName);
-    await fs.writeFile(absoluteFilePath, fileBuffer);
-
-    const relativePath = `/uploads/prescriptions/${fileName}`;
-    const forwardedProto = req
-      .header('x-forwarded-proto')
-      ?.split(',')[0]
-      ?.trim();
-    const protocol = forwardedProto || req.protocol || 'https';
-    const host = req.get('host');
-    const publicUrl =
-      host == null || host.trim().length == 0
-        ? relativePath
-        : `${protocol}://${host}${relativePath}`;
-
-    res.status(201).json({
-      fileName,
-      mimeType: body.mimeType ?? null,
-      sizeBytes: fileBuffer.length,
-      path: relativePath,
-      url: publicUrl,
     });
   }),
 );

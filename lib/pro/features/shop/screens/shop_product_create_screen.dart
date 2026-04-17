@@ -1,6 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../../core/services/media_upload_service.dart';
 
 class ShopProductCreateScreen extends StatefulWidget {
   final String userId;
@@ -38,6 +42,10 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
   final _sizesController = TextEditingController();
   final _tagsController = TextEditingController();
   final _featuresController = TextEditingController();
+  Uint8List? _primaryImageBytes;
+  bool _isUploadingPrimaryImage = false;
+  final List<Uint8List> _galleryPreviewBytes = <Uint8List>[];
+  bool _isUploadingGalleryImage = false;
   bool _inStock = true;
   bool _isOrganic = false;
   bool _requiresPrescription = false;
@@ -84,8 +92,100 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
         .toList(growable: false);
   }
 
+  Future<void> _pickAndUploadPrimaryImage() async {
+    if (_isUploadingPrimaryImage) return;
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1800,
+      imageQuality: 88,
+    );
+    if (file == null) return;
+
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+    setState(() {
+      _primaryImageBytes = bytes;
+      _isUploadingPrimaryImage = true;
+    });
+
+    try {
+      final uploaded = await MediaUploadService.uploadImage(
+        scope: MediaUploadScope.product,
+        ownerId: widget.userId,
+        fileName: file.name,
+        mimeType: file.mimeType,
+        bytes: bytes,
+      );
+      if (!mounted) return;
+      setState(() {
+        _imageUrlController.text = uploaded.url;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(ApiClient.userFacingError(error))));
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingPrimaryImage = false);
+      }
+    }
+  }
+
+  Future<void> _pickAndUploadGalleryImage() async {
+    if (_isUploadingGalleryImage) return;
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1800,
+      imageQuality: 88,
+    );
+    if (file == null) return;
+
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+    setState(() => _isUploadingGalleryImage = true);
+
+    try {
+      final uploaded = await MediaUploadService.uploadImage(
+        scope: MediaUploadScope.product,
+        ownerId: widget.userId,
+        fileName: file.name,
+        mimeType: file.mimeType,
+        bytes: bytes,
+      );
+      if (!mounted) return;
+      final existing = _parseTextList(_galleryImageUrlsController.text);
+      if (!existing.contains(uploaded.url)) {
+        existing.add(uploaded.url);
+      }
+      setState(() {
+        _galleryPreviewBytes.add(bytes);
+        _galleryImageUrlsController.text = existing.join('\n');
+      });
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(ApiClient.userFacingError(error))));
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingGalleryImage = false);
+      }
+    }
+  }
+
   Future<void> _submit() async {
     if (_isSubmitting) return;
+    if (_isUploadingPrimaryImage || _isUploadingGalleryImage) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Wait for image uploads to finish first.'),
+        ),
+      );
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
     if (_selectedStoreId == null || _selectedStoreId!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -367,6 +467,61 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                           subtitle: 'Images and metadata.',
                         ),
                         const SizedBox(height: 12),
+                        Container(
+                          width: double.infinity,
+                          height: 156,
+                          decoration: BoxDecoration(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: _primaryImageBytes != null
+                              ? Image.memory(
+                                  _primaryImageBytes!,
+                                  fit: BoxFit.cover,
+                                )
+                              : (_imageUrlController.text.trim().isNotEmpty
+                                    ? Image.network(
+                                        _imageUrlController.text.trim(),
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            const Center(
+                                              child: Icon(
+                                                Icons.image_outlined,
+                                                size: 42,
+                                              ),
+                                            ),
+                                      )
+                                    : const Center(
+                                        child: Icon(
+                                          Icons.image_outlined,
+                                          size: 42,
+                                        ),
+                                      )),
+                        ),
+                        const SizedBox(height: 10),
+                        OutlinedButton.icon(
+                          onPressed: _isUploadingPrimaryImage
+                              ? null
+                              : _pickAndUploadPrimaryImage,
+                          icon: _isUploadingPrimaryImage
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.photo_library_outlined),
+                          label: Text(
+                            _isUploadingPrimaryImage
+                                ? 'Uploading primary image...'
+                                : 'Upload Primary Image',
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                         TextFormField(
                           controller: _imageUrlController,
                           decoration: const InputDecoration(
@@ -384,6 +539,51 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                           minLines: 2,
                           maxLines: 3,
                         ),
+                        const SizedBox(height: 10),
+                        OutlinedButton.icon(
+                          onPressed: _isUploadingGalleryImage
+                              ? null
+                              : _pickAndUploadGalleryImage,
+                          icon: _isUploadingGalleryImage
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.collections_outlined),
+                          label: Text(
+                            _isUploadingGalleryImage
+                                ? 'Uploading gallery image...'
+                                : 'Add Gallery Image',
+                          ),
+                        ),
+                        if (_galleryPreviewBytes.isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            height: 72,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _galleryPreviewBytes.length,
+                              separatorBuilder: (_, _) =>
+                                  const SizedBox(width: 8),
+                              itemBuilder: (context, index) {
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: SizedBox(
+                                    width: 72,
+                                    height: 72,
+                                    child: Image.memory(
+                                      _galleryPreviewBytes[index],
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                         if (!_isPharmacy) ...[
                           const SizedBox(height: 12),
                           TextFormField(
@@ -456,7 +656,12 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                   child: SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
-                      onPressed: _isSubmitting ? null : _submit,
+                      onPressed:
+                          _isSubmitting ||
+                              _isUploadingPrimaryImage ||
+                              _isUploadingGalleryImage
+                          ? null
+                          : _submit,
                       icon: const Icon(Icons.add_box_outlined),
                       label: Text(
                         _isSubmitting

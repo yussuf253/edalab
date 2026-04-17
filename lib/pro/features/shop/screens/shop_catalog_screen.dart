@@ -1,8 +1,12 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/services/media_upload_service.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
@@ -140,33 +144,229 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
     await _refresh();
   }
 
-  Future<void> _createRestaurant() async {
-    try {
-      final response = Map<String, dynamic>.from(
-        await ApiClient.post('/pro/${widget.userId}/restaurant', {
-              'name': widget.businessName,
-            })
-            as Map,
-      );
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            (response['created'] as bool? ?? false)
-                ? 'Restaurant created and connected to your profile.'
-                : 'Existing restaurant connected to your profile.',
-          ),
-        ),
-      );
-      await _refresh();
-    } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.toString().replaceFirst('Exception: ', '')),
-        ),
-      );
-    }
+  Future<void> _openRestaurantSetupSheet({
+    required Map<String, dynamic>? existingRestaurant,
+  }) async {
+    final nameController = TextEditingController(
+      text: existingRestaurant?['name']?.toString().trim().isNotEmpty == true
+          ? existingRestaurant!['name'].toString().trim()
+          : widget.businessName,
+    );
+    final cuisineController = TextEditingController(
+      text: existingRestaurant?['cuisine']?.toString().trim() ?? '',
+    );
+    var uploadedImageUrl =
+        existingRestaurant?['imageUrl']?.toString().trim() ?? '';
+    Uint8List? pickedImageBytes;
+    var isUploadingImage = false;
+    var isSubmitting = false;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            Future<void> pickAndUploadImage() async {
+              if (isUploadingImage) return;
+              final picker = ImagePicker();
+              final file = await picker.pickImage(
+                source: ImageSource.gallery,
+                maxWidth: 1800,
+                imageQuality: 88,
+              );
+              if (file == null) return;
+
+              final bytes = await file.readAsBytes();
+              if (!mounted) return;
+              setModalState(() {
+                pickedImageBytes = bytes;
+                isUploadingImage = true;
+              });
+
+              try {
+                final uploaded = await MediaUploadService.uploadImage(
+                  scope: MediaUploadScope.restaurant,
+                  ownerId: widget.userId,
+                  fileName: file.name,
+                  mimeType: file.mimeType,
+                  bytes: bytes,
+                );
+                if (!mounted) return;
+                setModalState(() {
+                  uploadedImageUrl = uploaded.url;
+                });
+              } catch (error) {
+                if (!mounted || !sheetContext.mounted) return;
+                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                  SnackBar(content: Text(ApiClient.userFacingError(error))),
+                );
+              } finally {
+                if (mounted) {
+                  setModalState(() => isUploadingImage = false);
+                }
+              }
+            }
+
+            Future<void> submit() async {
+              if (isSubmitting || isUploadingImage) return;
+              if (nameController.text.trim().length < 2) {
+                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                  const SnackBar(
+                    content: Text('Enter a valid restaurant name first.'),
+                  ),
+                );
+                return;
+              }
+              setModalState(() => isSubmitting = true);
+              try {
+                final response = Map<String, dynamic>.from(
+                  await ApiClient.post('/pro/${widget.userId}/restaurant', {
+                        'name': nameController.text.trim(),
+                        'imageUrl': uploadedImageUrl,
+                        if (cuisineController.text.trim().isNotEmpty)
+                          'cuisine': cuisineController.text.trim(),
+                      })
+                      as Map,
+                );
+                if (!mounted || !sheetContext.mounted) return;
+                Navigator.of(sheetContext).pop();
+                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      (response['created'] as bool? ?? false)
+                          ? 'Restaurant created and connected to your profile.'
+                          : 'Restaurant details updated.',
+                    ),
+                  ),
+                );
+                await _refresh();
+              } catch (error) {
+                if (!mounted || !sheetContext.mounted) return;
+                setModalState(() => isSubmitting = false);
+                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                  SnackBar(content: Text(ApiClient.userFacingError(error))),
+                );
+              }
+            }
+
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                18,
+                16,
+                MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      existingRestaurant == null
+                          ? 'Connect Restaurant'
+                          : 'Edit Restaurant',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextFormField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Restaurant name',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: cuisineController,
+                      decoration: const InputDecoration(
+                        labelText: 'Cuisine',
+                        hintText: 'e.g. Djiboutian, Mixed, Seafood',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      height: 156,
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: pickedImageBytes != null
+                          ? Image.memory(pickedImageBytes!, fit: BoxFit.cover)
+                          : (uploadedImageUrl.isNotEmpty
+                                ? Image.network(
+                                    uploadedImageUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => const Center(
+                                      child: Icon(
+                                        Icons.restaurant_outlined,
+                                        size: 38,
+                                      ),
+                                    ),
+                                  )
+                                : const Center(
+                                    child: Icon(
+                                      Icons.restaurant_outlined,
+                                      size: 38,
+                                    ),
+                                  )),
+                    ),
+                    const SizedBox(height: 10),
+                    OutlinedButton.icon(
+                      onPressed: isUploadingImage ? null : pickAndUploadImage,
+                      icon: isUploadingImage
+                          ? const SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.photo_library_outlined),
+                      label: Text(
+                        isUploadingImage
+                            ? 'Uploading image...'
+                            : 'Upload Restaurant Image',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        onPressed: isSubmitting || isUploadingImage
+                            ? null
+                            : submit,
+                        icon: isSubmitting
+                            ? const SizedBox(
+                                height: 16,
+                                width: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.save_outlined),
+                        label: Text(
+                          isSubmitting
+                              ? 'Saving...'
+                              : existingRestaurant == null
+                              ? 'Connect Restaurant'
+                              : 'Save Restaurant',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+    nameController.dispose();
+    cuisineController.dispose();
   }
 
   Future<void> _createPharmacyBusiness() async {
@@ -202,6 +402,13 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
   Map<String, dynamic>? _primaryShoppingStore(Map<String, dynamic> data) {
     final stores = _shoppingStoresFromData(data);
     return stores.isEmpty ? null : stores.first;
+  }
+
+  Map<String, dynamic>? _primaryRestaurant(Map<String, dynamic> data) {
+    final restaurants = (data['food'] as List<dynamic>? ?? const [])
+        .map((entry) => Map<String, dynamic>.from(entry as Map))
+        .toList(growable: false);
+    return restaurants.isEmpty ? null : restaurants.first;
   }
 
   int _ordersInProgressFromSummary(Map<String, dynamic> summary) {
@@ -272,6 +479,7 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
         final data = snapshot.data ?? const <String, dynamic>{};
         final shoppingStores = _shoppingStoresFromData(data);
         final primaryShoppingStore = _primaryShoppingStore(data);
+        final primaryRestaurant = _primaryRestaurant(data);
         final activeSummary = Map<String, dynamic>.from(
           (data['${_keyForModule(selectedModule)}Summary'] as Map?) ??
               const <String, dynamic>{},
@@ -345,7 +553,9 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                   ProModule.shopping => () => _openShoppingStoreSetupScreen(
                     existingStore: primaryShoppingStore,
                   ),
-                  ProModule.food => _createRestaurant,
+                  ProModule.food => () => _openRestaurantSetupSheet(
+                    existingRestaurant: primaryRestaurant,
+                  ),
                   ProModule.pharmacy => _createPharmacyBusiness,
                   _ => null,
                 },
@@ -510,7 +720,14 @@ class _StorefrontModuleTab extends StatelessWidget {
             onCreateStore: onCreateModule,
             onAddProduct: onAddShoppingProduct,
           ),
-        if (module == ProModule.shopping || module == ProModule.pharmacy)
+        if (module == ProModule.food)
+          _FoodActionsRow(
+            summary: summary,
+            onCreateOrEditRestaurant: onCreateModule,
+          ),
+        if (module == ProModule.shopping ||
+            module == ProModule.pharmacy ||
+            module == ProModule.food)
           const SizedBox(height: 16),
         _StorefrontSummaryCard(module: module, summary: summary),
         const SizedBox(height: 16),
@@ -673,6 +890,33 @@ class _ShoppingActionsRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _FoodActionsRow extends StatelessWidget {
+  final Map<String, dynamic> summary;
+  final Future<void> Function()? onCreateOrEditRestaurant;
+
+  const _FoodActionsRow({
+    required this.summary,
+    required this.onCreateOrEditRestaurant,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasBindings = summary['hasBindings'] as bool? ?? false;
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton.icon(
+        onPressed: onCreateOrEditRestaurant,
+        icon: Icon(
+          hasBindings ? Icons.edit_outlined : Icons.add_business_outlined,
+        ),
+        label: Text(
+          hasBindings ? 'Edit Restaurant Setup' : 'Connect Restaurant',
+        ),
+      ),
     );
   }
 }

@@ -67,6 +67,7 @@ PUBLIC_BASE_URL=https://edalab.onrender.com
 SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 SUPABASE_STORAGE_BUCKET_AVATARS=avatars
+SUPABASE_STORAGE_BUCKET_PRESCRIPTIONS=prescriptions
 ```
 
 Avatar uploads are persistent only when Supabase Storage variables are set.

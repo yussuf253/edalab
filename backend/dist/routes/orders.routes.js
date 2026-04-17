@@ -1,13 +1,7 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const express_1 = require("express");
-const crypto_1 = require("crypto");
-const promises_1 = __importDefault(require("fs/promises"));
-const path_1 = __importDefault(require("path"));
 const zod_1 = require("zod");
 const db_1 = require("../db");
 const async_handler_1 = require("../utils/async-handler");
@@ -47,12 +41,6 @@ const createPharmacyPrescriptionOrderSchema = zod_1.z.object({
     latitude: zod_1.z.coerce.number().optional(),
     longitude: zod_1.z.coerce.number().optional(),
     address: zod_1.z.string().optional(),
-});
-const uploadPrescriptionImageSchema = zod_1.z.object({
-    userId: zod_1.z.string().optional().nullable(),
-    fileName: zod_1.z.string().min(1).max(180).optional().nullable(),
-    mimeType: zod_1.z.string().max(120).optional().nullable(),
-    dataBase64: zod_1.z.string().min(24),
 });
 const createHotelBookingSchema = zod_1.z
     .object({
@@ -168,39 +156,6 @@ function firstNonEmptyString(...values) {
         }
     }
     return null;
-}
-function fileExtensionFromMimeType(mimeType) {
-    const normalized = mimeType?.trim().toLowerCase();
-    switch (normalized) {
-        case 'image/jpeg':
-        case 'image/jpg':
-            return 'jpg';
-        case 'image/png':
-            return 'png';
-        case 'image/webp':
-            return 'webp';
-        default:
-            return null;
-    }
-}
-function fileExtensionFromName(fileName) {
-    const trimmed = fileName?.trim();
-    if (trimmed == null || trimmed.length == 0)
-        return null;
-    const extension = trimmed.split('.').pop()?.trim().toLowerCase();
-    if (extension == null || extension.length == 0)
-        return null;
-    if (['jpg', 'jpeg', 'png', 'webp'].includes(extension)) {
-        return extension == 'jpeg' ? 'jpg' : extension;
-    }
-    return null;
-}
-function decodedBase64Image(dataBase64) {
-    const payload = dataBase64.trim();
-    const withoutPrefix = payload.includes(',')
-        ? payload.substring(payload.indexOf(',') + 1)
-        : payload;
-    return Buffer.from(withoutPrefix, 'base64');
 }
 function enrichOrderItemMetadata(item) {
     const metadata = metadataRecord(item.metadata);
@@ -821,44 +776,6 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
             total: (0, serializers_1.toNumber)(item.lineTotal),
             metadata: enrichOrderItemMetadata(item),
         })),
-    });
-}));
-router.post('/pharmacy-prescription/upload', (0, async_handler_1.asyncHandler)(async (req, res) => {
-    const body = uploadPrescriptionImageSchema.parse(req.body);
-    const fileBuffer = decodedBase64Image(body.dataBase64);
-    if (fileBuffer.length == 0) {
-        return res.status(400).json({ error: 'Uploaded image is empty.' });
-    }
-    const maxSizeBytes = 5 * 1024 * 1024;
-    if (fileBuffer.length > maxSizeBytes) {
-        return res
-            .status(400)
-            .json({ error: 'Image is too large. Maximum size is 5 MB.' });
-    }
-    const extension = fileExtensionFromMimeType(body.mimeType) ??
-        fileExtensionFromName(body.fileName) ??
-        'jpg';
-    const fileName = `rx-${Date.now()}-${(0, crypto_1.randomUUID)()}.${extension}`;
-    const uploadsDir = path_1.default.resolve(process.cwd(), 'uploads', 'prescriptions');
-    await promises_1.default.mkdir(uploadsDir, { recursive: true });
-    const absoluteFilePath = path_1.default.join(uploadsDir, fileName);
-    await promises_1.default.writeFile(absoluteFilePath, fileBuffer);
-    const relativePath = `/uploads/prescriptions/${fileName}`;
-    const forwardedProto = req
-        .header('x-forwarded-proto')
-        ?.split(',')[0]
-        ?.trim();
-    const protocol = forwardedProto || req.protocol || 'https';
-    const host = req.get('host');
-    const publicUrl = host == null || host.trim().length == 0
-        ? relativePath
-        : `${protocol}://${host}${relativePath}`;
-    res.status(201).json({
-        fileName,
-        mimeType: body.mimeType ?? null,
-        sizeBytes: fileBuffer.length,
-        path: relativePath,
-        url: publicUrl,
     });
 }));
 exports.default = router;

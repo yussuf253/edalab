@@ -18,6 +18,8 @@ const envSchema = zod_1.z.object({
     SUPABASE_URL: zod_1.z.string().optional(),
     SUPABASE_SERVICE_ROLE_KEY: zod_1.z.string().optional(),
     SUPABASE_STORAGE_BUCKET_AVATARS: zod_1.z.string().default('avatars'),
+    SUPABASE_STORAGE_BUCKET_PRESCRIPTIONS: zod_1.z.string().default('prescriptions'),
+    SUPABASE_STORAGE_BUCKET_MEDIA: zod_1.z.string().default('media'),
     FIREBASE_PROJECT_ID: zod_1.z.string().optional(),
     FIREBASE_CLIENT_EMAIL: zod_1.z.string().optional(),
     FIREBASE_PRIVATE_KEY: zod_1.z.string().optional(),

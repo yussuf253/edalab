@@ -14,6 +14,8 @@ const envSchema = z.object({
   SUPABASE_URL: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   SUPABASE_STORAGE_BUCKET_AVATARS: z.string().default('avatars'),
+  SUPABASE_STORAGE_BUCKET_PRESCRIPTIONS: z.string().default('prescriptions'),
+  SUPABASE_STORAGE_BUCKET_MEDIA: z.string().default('media'),
   FIREBASE_PROJECT_ID: z.string().optional(),
   FIREBASE_CLIENT_EMAIL: z.string().optional(),
   FIREBASE_PRIVATE_KEY: z.string().optional(),

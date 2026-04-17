@@ -1,9 +1,13 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/services/media_upload_service.dart';
 import '../../../core/models/pro_profile.dart';
 
 class ProviderAvailabilityScreen extends StatefulWidget {
@@ -962,6 +966,9 @@ class _ProviderAvailabilityScreenState
     );
     final startingPriceController = TextEditingController(text: '25');
     final phoneController = TextEditingController();
+    String? listingImageUrl;
+    Uint8List? listingImageBytes;
+    var isUploadingListingImage = false;
     var selectedZoneRadius = _zoneRadiusOptionsKm.last;
     final selectedServices = <String>{
       if (selectedPreset.serviceOptions.isNotEmpty)
@@ -1096,6 +1103,12 @@ class _ProviderAvailabilityScreenState
             }
 
             Future<void> save() async {
+              if (isUploadingListingImage) {
+                setModalState(() {
+                  errorText = 'Wait for the listing image upload to finish.';
+                });
+                return;
+              }
               final parsedPrice = double.tryParse(
                 startingPriceController.text.trim(),
               );
@@ -1136,6 +1149,8 @@ class _ProviderAvailabilityScreenState
                   'categoryId': selectedCategoryId,
                   'startingPrice': parsedPrice,
                   'contactPhone': phoneController.text.trim(),
+                  if (listingImageUrl != null && listingImageUrl!.isNotEmpty)
+                    'imageUrl': listingImageUrl,
                   'services': selectedServices.toList(growable: false),
                   'serviceZone': {
                     'enabled': true,
@@ -1170,6 +1185,48 @@ class _ProviderAvailabilityScreenState
               } finally {
                 if (sheetContext.mounted) {
                   setModalState(() => isSaving = false);
+                }
+              }
+            }
+
+            Future<void> pickAndUploadListingImage() async {
+              if (isUploadingListingImage) return;
+              final picker = ImagePicker();
+              final file = await picker.pickImage(
+                source: ImageSource.gallery,
+                maxWidth: 1800,
+                imageQuality: 88,
+              );
+              if (file == null) return;
+
+              final bytes = await file.readAsBytes();
+              if (!sheetContext.mounted) return;
+              setModalState(() {
+                listingImageBytes = bytes;
+                isUploadingListingImage = true;
+                errorText = null;
+              });
+
+              try {
+                final uploaded = await MediaUploadService.uploadImage(
+                  scope: MediaUploadScope.provider,
+                  ownerId: widget.userId,
+                  fileName: file.name,
+                  mimeType: file.mimeType,
+                  bytes: bytes,
+                );
+                if (!sheetContext.mounted) return;
+                setModalState(() {
+                  listingImageUrl = uploaded.url;
+                });
+              } catch (error) {
+                if (!sheetContext.mounted) return;
+                setModalState(() {
+                  errorText = ApiClient.userFacingError(error);
+                });
+              } finally {
+                if (sheetContext.mounted) {
+                  setModalState(() => isUploadingListingImage = false);
                 }
               }
             }
@@ -1319,6 +1376,55 @@ class _ProviderAvailabilityScreenState
                     TextFormField(
                       controller: phoneController,
                       decoration: const InputDecoration(labelText: 'Phone'),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          modalContext,
+                        ).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: listingImageBytes != null
+                          ? Image.memory(listingImageBytes!, fit: BoxFit.cover)
+                          : ((listingImageUrl?.isNotEmpty ?? false)
+                                ? Image.network(
+                                    listingImageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => const Center(
+                                      child: Icon(
+                                        Icons.home_repair_service_outlined,
+                                        size: 42,
+                                      ),
+                                    ),
+                                  )
+                                : const Center(
+                                    child: Icon(
+                                      Icons.home_repair_service_outlined,
+                                      size: 42,
+                                    ),
+                                  )),
+                    ),
+                    const SizedBox(height: 10),
+                    OutlinedButton.icon(
+                      onPressed: isSaving || isUploadingListingImage
+                          ? null
+                          : pickAndUploadListingImage,
+                      icon: isUploadingListingImage
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.photo_library_outlined),
+                      label: Text(
+                        isUploadingListingImage
+                            ? 'Uploading listing image...'
+                            : 'Upload Listing Image',
+                      ),
                     ),
                     const SizedBox(height: 16),
                     multiSelectDropdown(

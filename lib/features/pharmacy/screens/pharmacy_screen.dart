@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -14,6 +13,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/services/media_upload_service.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -274,18 +274,17 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
           explicitMimeType: draft.imageMimeType,
           fileName: draft.imageFileName,
         );
-        final uploadResponse =
-            await ApiClient.post('/orders/pharmacy-prescription/upload', {
-              'userId': userId,
-              if (draft.imageFileName != null &&
-                  draft.imageFileName!.trim().isNotEmpty)
-                'fileName': draft.imageFileName!.trim(),
-              'mimeType': resolvedMimeType,
-              'dataBase64': base64Encode(draft.imageBytes!),
-            });
+        final uploaded = await MediaUploadService.uploadImage(
+          scope: MediaUploadScope.prescription,
+          ownerId: userId,
+          fileName: draft.imageFileName?.trim().isNotEmpty == true
+              ? draft.imageFileName!.trim()
+              : null,
+          mimeType: resolvedMimeType,
+          bytes: draft.imageBytes!,
+        );
         if (!mounted) return;
-        final uploadMap = Map<String, dynamic>.from(uploadResponse as Map);
-        uploadedPrescriptionUrl = uploadMap['url']?.toString();
+        uploadedPrescriptionUrl = uploaded.url;
       }
 
       setState(

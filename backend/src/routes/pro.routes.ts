@@ -67,6 +67,10 @@ const updateOnlineStatusSchema = z.object({
   isOnline: z.boolean(),
 });
 
+const updateProAvatarSchema = z.object({
+  avatarUrl: z.string().trim().url().optional().or(z.literal('')),
+});
+
 const updateShopAvailabilitySchema = z.object({
   module: z.enum(['shopping', 'food', 'pharmacy']),
   targetId: z.string().min(1),
@@ -83,6 +87,7 @@ const createShoppingStoreSchema = z.object({
 const createRestaurantSchema = z.object({
   name: z.string().trim().min(2).max(120).optional(),
   cuisine: z.string().trim().min(2).max(80).optional(),
+  imageUrl: z.string().trim().url().optional().or(z.literal('')),
 });
 
 const createPharmacyBusinessSchema = z.object({
@@ -215,6 +220,7 @@ const updateDoctorSettingsSchema = z.object({
   location: z.string().trim().max(120).optional(),
   contactPhone: z.string().trim().max(40).optional(),
   contactWhatsApp: z.string().trim().max(40).optional(),
+  imageUrl: z.string().trim().url().optional().or(z.literal('')),
   careModes: settingsModesSchema.optional(),
   workingHours: hoursSchema.optional(),
 });
@@ -4164,9 +4170,30 @@ router.post(
           id: randomUUID(),
           name: restaurantName,
           cuisine: body.cuisine?.trim() || 'General',
+          imageUrl: body.imageUrl?.trim() || null,
           isOpen: true,
         },
       }));
+
+    if (matchingRestaurant) {
+      const nextCuisine = body.cuisine?.trim();
+      const shouldUpdateCuisine =
+        nextCuisine != null &&
+        nextCuisine.length > 0 &&
+        nextCuisine !== matchingRestaurant.cuisine;
+      const shouldUpdateImage = body.imageUrl != null;
+
+      if (shouldUpdateCuisine || shouldUpdateImage) {
+        await prisma.restaurant.update({
+          where: { id: matchingRestaurant.id },
+          data: {
+            cuisine: shouldUpdateCuisine ? nextCuisine : undefined,
+            imageUrl:
+              shouldUpdateImage ? body.imageUrl?.trim() || null : undefined,
+          },
+        });
+      }
+    }
 
     const resolvedBindings = await resolveBindings(
       profile.businessName,
@@ -5606,6 +5633,7 @@ router.get(
         id: true,
         name: true,
         specialty: true,
+        imageUrl: true,
         location: true,
         contactPhone: true,
         contactWhatsApp: true,
@@ -5620,6 +5648,7 @@ router.get(
         id: doctor.id,
         name: doctor.name,
         specialty: doctor.specialty,
+        imageUrl: doctor.imageUrl,
         location: doctor.location,
         contactPhone: doctor.contactPhone,
         contactWhatsApp: doctor.contactWhatsApp,
@@ -5656,6 +5685,8 @@ router.post(
     const doctor = await prisma.doctor.update({
       where: { id: body.doctorId },
       data: {
+        imageUrl:
+          body.imageUrl == null ? undefined : body.imageUrl.trim() || null,
         location:
           body.location == null ? undefined : body.location.trim() || null,
         contactPhone:
@@ -5683,6 +5714,7 @@ router.post(
         id: true,
         name: true,
         specialty: true,
+        imageUrl: true,
         location: true,
         contactPhone: true,
         contactWhatsApp: true,
@@ -5695,6 +5727,7 @@ router.post(
       id: doctor.id,
       name: doctor.name,
       specialty: doctor.specialty,
+      imageUrl: doctor.imageUrl,
       location: doctor.location,
       contactPhone: doctor.contactPhone,
       contactWhatsApp: doctor.contactWhatsApp,
@@ -5705,6 +5738,46 @@ router.post(
         sunday: 'Closed',
       }),
     });
+  }),
+);
+
+router.post(
+  '/:userId/avatar',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const body = updateProAvatarSchema.parse(req.body);
+    const profile = await prisma.proProfile.findUnique({
+      where: { userId },
+      select: { id: true, accountId: true },
+    });
+
+    if (!profile) {
+      return res.status(404).json({ error: 'Pro profile not found.' });
+    }
+
+    const avatarUrl = body.avatarUrl?.trim() || null;
+    const updatedProfile = await prisma.$transaction(async (tx) => {
+      const nextProfile = await tx.proProfile.update({
+        where: { userId },
+        data: { avatarUrl },
+      });
+
+      if (profile.accountId != null) {
+        await tx.proAccount.update({
+          where: { id: profile.accountId },
+          data: { avatarUrl },
+        });
+      }
+
+      await tx.user.update({
+        where: { id: userId },
+        data: { avatarUrl },
+      });
+
+      return nextProfile;
+    });
+
+    res.json(serializeProProfile(updatedProfile));
   }),
 );
 

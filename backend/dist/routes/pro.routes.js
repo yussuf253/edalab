@@ -51,6 +51,9 @@ const updateDoctorAppointmentStatusSchema = zod_1.z.object({
 const updateOnlineStatusSchema = zod_1.z.object({
     isOnline: zod_1.z.boolean(),
 });
+const updateProAvatarSchema = zod_1.z.object({
+    avatarUrl: zod_1.z.string().trim().url().optional().or(zod_1.z.literal('')),
+});
 const updateShopAvailabilitySchema = zod_1.z.object({
     module: zod_1.z.enum(['shopping', 'food', 'pharmacy']),
     targetId: zod_1.z.string().min(1),
@@ -65,6 +68,7 @@ const createShoppingStoreSchema = zod_1.z.object({
 const createRestaurantSchema = zod_1.z.object({
     name: zod_1.z.string().trim().min(2).max(120).optional(),
     cuisine: zod_1.z.string().trim().min(2).max(80).optional(),
+    imageUrl: zod_1.z.string().trim().url().optional().or(zod_1.z.literal('')),
 });
 const createPharmacyBusinessSchema = zod_1.z.object({
     name: zod_1.z.string().trim().min(2).max(120).optional(),
@@ -182,6 +186,7 @@ const updateDoctorSettingsSchema = zod_1.z.object({
     location: zod_1.z.string().trim().max(120).optional(),
     contactPhone: zod_1.z.string().trim().max(40).optional(),
     contactWhatsApp: zod_1.z.string().trim().max(40).optional(),
+    imageUrl: zod_1.z.string().trim().url().optional().or(zod_1.z.literal('')),
     careModes: settingsModesSchema.optional(),
     workingHours: hoursSchema.optional(),
 });
@@ -3124,9 +3129,26 @@ router.post('/:userId/restaurant', (0, async_handler_1.asyncHandler)(async (req,
                 id: (0, crypto_1.randomUUID)(),
                 name: restaurantName,
                 cuisine: body.cuisine?.trim() || 'General',
+                imageUrl: body.imageUrl?.trim() || null,
                 isOpen: true,
             },
         }));
+    if (matchingRestaurant) {
+        const nextCuisine = body.cuisine?.trim();
+        const shouldUpdateCuisine = nextCuisine != null &&
+            nextCuisine.length > 0 &&
+            nextCuisine !== matchingRestaurant.cuisine;
+        const shouldUpdateImage = body.imageUrl != null;
+        if (shouldUpdateCuisine || shouldUpdateImage) {
+            await db_1.prisma.restaurant.update({
+                where: { id: matchingRestaurant.id },
+                data: {
+                    cuisine: shouldUpdateCuisine ? nextCuisine : undefined,
+                    imageUrl: shouldUpdateImage ? body.imageUrl?.trim() || null : undefined,
+                },
+            });
+        }
+    }
     const resolvedBindings = await resolveBindings(profile.businessName, profile.activeModules);
     const ownedLaundryServiceIds = await syncLaundryOwnership(profile.userId, profile.type, profile.activeModules, resolvedBindings);
     const bindings = {
@@ -4274,6 +4296,7 @@ router.get('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async (
             id: true,
             name: true,
             specialty: true,
+            imageUrl: true,
             location: true,
             contactPhone: true,
             contactWhatsApp: true,
@@ -4286,6 +4309,7 @@ router.get('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async (
         id: doctor.id,
         name: doctor.name,
         specialty: doctor.specialty,
+        imageUrl: doctor.imageUrl,
         location: doctor.location,
         contactPhone: doctor.contactPhone,
         contactWhatsApp: doctor.contactWhatsApp,
@@ -4312,6 +4336,7 @@ router.post('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async 
     const doctor = await db_1.prisma.doctor.update({
         where: { id: body.doctorId },
         data: {
+            imageUrl: body.imageUrl == null ? undefined : body.imageUrl.trim() || null,
             location: body.location == null ? undefined : body.location.trim() || null,
             contactPhone: body.contactPhone == null
                 ? undefined
@@ -4334,6 +4359,7 @@ router.post('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async 
             id: true,
             name: true,
             specialty: true,
+            imageUrl: true,
             location: true,
             contactPhone: true,
             contactWhatsApp: true,
@@ -4345,6 +4371,7 @@ router.post('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async 
         id: doctor.id,
         name: doctor.name,
         specialty: doctor.specialty,
+        imageUrl: doctor.imageUrl,
         location: doctor.location,
         contactPhone: doctor.contactPhone,
         contactWhatsApp: doctor.contactWhatsApp,
@@ -4355,6 +4382,36 @@ router.post('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async 
             sunday: 'Closed',
         }),
     });
+}));
+router.post('/:userId/avatar', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const body = updateProAvatarSchema.parse(req.body);
+    const profile = await db_1.prisma.proProfile.findUnique({
+        where: { userId },
+        select: { id: true, accountId: true },
+    });
+    if (!profile) {
+        return res.status(404).json({ error: 'Pro profile not found.' });
+    }
+    const avatarUrl = body.avatarUrl?.trim() || null;
+    const updatedProfile = await db_1.prisma.$transaction(async (tx) => {
+        const nextProfile = await tx.proProfile.update({
+            where: { userId },
+            data: { avatarUrl },
+        });
+        if (profile.accountId != null) {
+            await tx.proAccount.update({
+                where: { id: profile.accountId },
+                data: { avatarUrl },
+            });
+        }
+        await tx.user.update({
+            where: { id: userId },
+            data: { avatarUrl },
+        });
+        return nextProfile;
+    });
+    res.json(serializeProProfile(updatedProfile));
 }));
 router.post('/:userId/online-status', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const userId = (0, http_1.getParam)(req.params.userId, 'userId');

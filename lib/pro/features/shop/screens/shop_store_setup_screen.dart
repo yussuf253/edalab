@@ -1,6 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../../core/services/media_upload_service.dart';
 
 class ShopStoreSetupScreen extends StatefulWidget {
   final String userId;
@@ -23,7 +27,9 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _taglineController;
   late final TextEditingController _descriptionController;
-  late final TextEditingController _imageUrlController;
+  String? _uploadedImageUrl;
+  Uint8List? _pickedImageBytes;
+  bool _isUploadingImage = false;
   bool _isSubmitting = false;
 
   @override
@@ -38,9 +44,7 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
       text: widget.initialStore?['subtitle']?.toString() ?? '',
     );
     _descriptionController = TextEditingController();
-    _imageUrlController = TextEditingController(
-      text: widget.initialStore?['imageUrl']?.toString() ?? '',
-    );
+    _uploadedImageUrl = widget.initialStore?['imageUrl']?.toString().trim();
   }
 
   @override
@@ -48,8 +52,48 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
     _nameController.dispose();
     _taglineController.dispose();
     _descriptionController.dispose();
-    _imageUrlController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAndUploadStoreImage() async {
+    if (_isUploadingImage) return;
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1800,
+      imageQuality: 88,
+    );
+    if (file == null) return;
+
+    final bytes = await file.readAsBytes();
+    if (!mounted) return;
+    setState(() {
+      _pickedImageBytes = bytes;
+      _isUploadingImage = true;
+    });
+
+    try {
+      final uploaded = await MediaUploadService.uploadImage(
+        scope: MediaUploadScope.store,
+        ownerId: widget.userId,
+        fileName: file.name,
+        mimeType: file.mimeType,
+        bytes: bytes,
+      );
+      if (!mounted) return;
+      setState(() {
+        _uploadedImageUrl = uploaded.url;
+      });
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(ApiClient.userFacingError(error))));
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingImage = false);
+      }
+    }
   }
 
   Future<void> _submit() async {
@@ -60,7 +104,7 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
       'name': _nameController.text.trim(),
       'tagline': _taglineController.text.trim(),
       'description': _descriptionController.text.trim(),
-      'imageUrl': _imageUrlController.text.trim(),
+      'imageUrl': _uploadedImageUrl?.trim() ?? '',
     };
 
     setState(() => _isSubmitting = true);
@@ -147,11 +191,40 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _imageUrlController,
-              decoration: const InputDecoration(
-                labelText: 'Store image URL',
-                hintText: 'https://...',
+            Container(
+              width: double.infinity,
+              height: 160,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: _pickedImageBytes != null
+                  ? Image.memory(_pickedImageBytes!, fit: BoxFit.cover)
+                  : ((_uploadedImageUrl?.isNotEmpty ?? false)
+                        ? Image.network(
+                            _uploadedImageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Center(
+                              child: Icon(Icons.storefront_outlined, size: 42),
+                            ),
+                          )
+                        : const Center(
+                            child: Icon(Icons.storefront_outlined, size: 42),
+                          )),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: _isUploadingImage ? null : _pickAndUploadStoreImage,
+              icon: _isUploadingImage
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.photo_library_outlined),
+              label: Text(
+                _isUploadingImage ? 'Uploading image...' : 'Upload Store Image',
               ),
             ),
           ],

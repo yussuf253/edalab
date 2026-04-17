@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -9,6 +8,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/services/media_upload_service.dart';
 import '../../../core/widgets/app_button.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -86,20 +86,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
 
     try {
-      final response = await ApiClient.post('/users/${user.id}/avatar-upload', {
-        'fileName': file.name,
-        'mimeType': file.mimeType,
-        'dataBase64': base64Encode(bytes),
-      });
-      final payload = Map<String, dynamic>.from(response as Map);
-      final uploadedUrl = payload['url']?.toString().trim() ?? '';
-      if (uploadedUrl.isEmpty) {
-        throw Exception('Avatar upload returned an empty URL.');
-      }
+      final uploaded = await MediaUploadService.uploadImage(
+        scope: MediaUploadScope.userAvatar,
+        ownerId: user.id,
+        fileName: file.name,
+        mimeType: file.mimeType,
+        bytes: bytes,
+      );
 
       if (!mounted) return;
       setState(() {
-        _avatarUrl = ApiClient.normalizePublicUrl(uploadedUrl);
+        _avatarUrl = uploaded.url;
       });
     } catch (error) {
       if (!mounted) return;

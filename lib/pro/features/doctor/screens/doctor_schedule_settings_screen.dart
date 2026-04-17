@@ -1,7 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/services/media_upload_service.dart';
 
 class DoctorScheduleSettingsScreen extends StatefulWidget {
   final String userId;
@@ -56,6 +60,7 @@ class _DoctorScheduleSettingsScreenState
 
   Future<void> _saveSettings({
     required String doctorId,
+    required String imageUrl,
     required String location,
     required String contactPhone,
     required String contactWhatsApp,
@@ -66,6 +71,7 @@ class _DoctorScheduleSettingsScreenState
     try {
       await ApiClient.post('/pro/${widget.userId}/doctor-settings', {
         'doctorId': doctorId,
+        'imageUrl': imageUrl,
         'location': location,
         'contactPhone': contactPhone,
         'contactWhatsApp': contactWhatsApp,
@@ -73,14 +79,16 @@ class _DoctorScheduleSettingsScreenState
         'workingHours': workingHours,
       });
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Doctor settings updated.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Doctor settings updated.')));
       await _refresh();
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
       );
     } finally {
       if (mounted) {
@@ -107,9 +115,13 @@ class _DoctorScheduleSettingsScreenState
           const <String, String>{},
     );
     final selectedModes = <String>{
-      ...(item['careModes'] as List<dynamic>? ?? const <dynamic>[])
-          .map((entry) => entry.toString()),
+      ...(item['careModes'] as List<dynamic>? ?? const <dynamic>[]).map(
+        (entry) => entry.toString(),
+      ),
     };
+    var selectedImageUrl = item['imageUrl']?.toString().trim() ?? '';
+    Uint8List? selectedImageBytes;
+    var isUploadingImage = false;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -117,10 +129,7 @@ class _DoctorScheduleSettingsScreenState
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            Widget scheduleField({
-              required String key,
-              required String label,
-            }) {
+            Widget scheduleField({required String key, required String label}) {
               return TextFormField(
                 initialValue: workingHours[key] ?? '',
                 decoration: InputDecoration(labelText: label),
@@ -150,10 +159,93 @@ class _DoctorScheduleSettingsScreenState
                       const SizedBox(height: 4),
                       Text(item['specialty']!.toString()),
                     ],
+                    const SizedBox(height: 14),
+                    Center(
+                      child: Column(
+                        children: [
+                          _DoctorAvatar(
+                            imageUrl: selectedImageUrl,
+                            pickedImageBytes: selectedImageBytes,
+                            size: 88,
+                          ),
+                          const SizedBox(height: 10),
+                          OutlinedButton.icon(
+                            onPressed: isUploadingImage
+                                ? null
+                                : () async {
+                                    final picker = ImagePicker();
+                                    final file = await picker.pickImage(
+                                      source: ImageSource.gallery,
+                                      maxWidth: 1800,
+                                      imageQuality: 88,
+                                    );
+                                    if (file == null) return;
+
+                                    final bytes = await file.readAsBytes();
+                                    if (!mounted) return;
+                                    setModalState(() {
+                                      selectedImageBytes = bytes;
+                                      isUploadingImage = true;
+                                    });
+
+                                    try {
+                                      final uploaded =
+                                          await MediaUploadService.uploadImage(
+                                            scope: MediaUploadScope.doctor,
+                                            ownerId: widget.userId,
+                                            fileName: file.name,
+                                            mimeType: file.mimeType,
+                                            bytes: bytes,
+                                          );
+                                      if (!mounted) return;
+                                      setModalState(() {
+                                        selectedImageUrl = uploaded.url;
+                                      });
+                                    } catch (error) {
+                                      if (!mounted || !sheetContext.mounted) {
+                                        return;
+                                      }
+                                      ScaffoldMessenger.of(
+                                        sheetContext,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            ApiClient.userFacingError(error),
+                                          ),
+                                        ),
+                                      );
+                                    } finally {
+                                      if (mounted) {
+                                        setModalState(
+                                          () => isUploadingImage = false,
+                                        );
+                                      }
+                                    }
+                                  },
+                            icon: isUploadingImage
+                                ? const SizedBox(
+                                    height: 16,
+                                    width: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.photo_library_outlined),
+                            label: Text(
+                              isUploadingImage
+                                  ? 'Uploading image...'
+                                  : 'Upload doctor photo',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: locationController,
-                      decoration: const InputDecoration(labelText: 'Clinic or service area'),
+                      decoration: const InputDecoration(
+                        labelText: 'Clinic or service area',
+                      ),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -202,20 +294,34 @@ class _DoctorScheduleSettingsScreenState
                         onPressed: _busyIds.contains(doctorId)
                             ? null
                             : () async {
+                                if (isUploadingImage) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Wait for image upload to finish first.',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
                                 Navigator.of(sheetContext).pop();
                                 await _saveSettings(
                                   doctorId: doctorId,
+                                  imageUrl: selectedImageUrl,
                                   location: locationController.text.trim(),
                                   contactPhone: phoneController.text.trim(),
-                                  contactWhatsApp: whatsappController.text.trim(),
-                                  careModes: selectedModes.toList(growable: false),
+                                  contactWhatsApp: whatsappController.text
+                                      .trim(),
+                                  careModes: selectedModes.toList(
+                                    growable: false,
+                                  ),
                                   workingHours: {
-                                    'weekdays':
-                                        (workingHours['weekdays'] ?? '').trim(),
-                                    'saturday':
-                                        (workingHours['saturday'] ?? '').trim(),
-                                    'sunday':
-                                        (workingHours['sunday'] ?? '').trim(),
+                                    'weekdays': (workingHours['weekdays'] ?? '')
+                                        .trim(),
+                                    'saturday': (workingHours['saturday'] ?? '')
+                                        .trim(),
+                                    'sunday': (workingHours['sunday'] ?? '')
+                                        .trim(),
                                   },
                                 );
                               },
@@ -224,7 +330,9 @@ class _DoctorScheduleSettingsScreenState
                           foregroundColor: Colors.white,
                         ),
                         child: Text(
-                          _busyIds.contains(doctorId) ? 'Saving...' : 'Save settings',
+                          _busyIds.contains(doctorId)
+                              ? 'Saving...'
+                              : 'Save settings',
                         ),
                       ),
                     ),
@@ -298,12 +406,8 @@ class _DoctorScheduleSettingsScreenState
                     children: [
                       Row(
                         children: [
-                          CircleAvatar(
-                            backgroundColor: AppColors.doctor.withValues(alpha: 0.12),
-                            child: const Icon(
-                              Icons.local_hospital_outlined,
-                              color: AppColors.doctor,
-                            ),
+                          _DoctorAvatar(
+                            imageUrl: item['imageUrl']?.toString().trim() ?? '',
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -316,7 +420,8 @@ class _DoctorScheduleSettingsScreenState
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                if ((item['specialty']?.toString() ?? '').isNotEmpty)
+                                if ((item['specialty']?.toString() ?? '')
+                                    .isNotEmpty)
                                   Text(item['specialty']!.toString()),
                               ],
                             ),
@@ -351,11 +456,13 @@ class _DoctorScheduleSettingsScreenState
                       ),
                       _DoctorSettingsInfoRow(
                         label: 'Weekdays',
-                        value: workingHours['weekdays']?.toString() ?? 'Not set',
+                        value:
+                            workingHours['weekdays']?.toString() ?? 'Not set',
                       ),
                       _DoctorSettingsInfoRow(
                         label: 'Saturday',
-                        value: workingHours['saturday']?.toString() ?? 'Not set',
+                        value:
+                            workingHours['saturday']?.toString() ?? 'Not set',
                       ),
                       _DoctorSettingsInfoRow(
                         label: 'Sunday',
@@ -368,6 +475,58 @@ class _DoctorScheduleSettingsScreenState
             },
           );
         },
+      ),
+    );
+  }
+}
+
+class _DoctorAvatar extends StatelessWidget {
+  final String imageUrl;
+  final Uint8List? pickedImageBytes;
+  final double size;
+
+  const _DoctorAvatar({
+    required this.imageUrl,
+    this.pickedImageBytes,
+    this.size = 42,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasImageUrl = imageUrl.trim().isNotEmpty;
+    final radius = size / 2;
+    if (pickedImageBytes != null) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundImage: MemoryImage(pickedImageBytes!),
+      );
+    }
+    if (hasImageUrl) {
+      return CircleAvatar(
+        radius: radius,
+        backgroundColor: AppColors.doctor.withValues(alpha: 0.1),
+        child: ClipOval(
+          child: Image.network(
+            imageUrl,
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => _fallbackIcon(radius),
+          ),
+        ),
+      );
+    }
+    return _fallbackIcon(radius);
+  }
+
+  Widget _fallbackIcon(double radius) {
+    return CircleAvatar(
+      radius: radius,
+      backgroundColor: AppColors.doctor.withValues(alpha: 0.12),
+      child: Icon(
+        Icons.local_hospital_outlined,
+        color: AppColors.doctor,
+        size: radius,
       ),
     );
   }
@@ -393,10 +552,7 @@ class _DoctorSettingsInfoRow extends StatelessWidget {
   final String label;
   final String value;
 
-  const _DoctorSettingsInfoRow({
-    required this.label,
-    required this.value,
-  });
+  const _DoctorSettingsInfoRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {

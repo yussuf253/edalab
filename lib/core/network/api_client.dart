@@ -236,12 +236,19 @@ class ApiClient {
           ).toString().replaceFirst(RegExp(r'/$'), '');
 
     final storagePathMatch = RegExp(
-      r'^/storage/v1/object/(?:public/)?([^/]+)/users/([^/]+)/([^/?#]+)$',
+      r'^/storage/v1/object/(?:public/)?([^/]+)/(.+)$',
     ).firstMatch(parsed.path);
     if (storagePathMatch != null && apiOrigin != null) {
-      final userId = Uri.decodeComponent(storagePathMatch.group(2)!);
-      final fileName = Uri.decodeComponent(storagePathMatch.group(3)!);
-      return '$apiOrigin/uploads/avatars/supabase/${Uri.encodeComponent(userId)}/${Uri.encodeComponent(fileName)}';
+      final bucket = Uri.decodeComponent(storagePathMatch.group(1)!);
+      final rawObjectPath = storagePathMatch.group(2)!;
+      final objectSegments = rawObjectPath
+          .split('/')
+          .where((segment) => segment.trim().isNotEmpty)
+          .map((segment) => Uri.encodeComponent(Uri.decodeComponent(segment)))
+          .join('/');
+      if (objectSegments.isNotEmpty) {
+        return '$apiOrigin/uploads/supabase/${Uri.encodeComponent(bucket)}/$objectSegments';
+      }
     }
 
     if (!parsed.hasScheme) {
@@ -264,6 +271,42 @@ class ApiClient {
     return trimmed;
   }
 
+  static bool _looksLikeUrlKey(String? key) {
+    if (key == null || key.trim().isEmpty) return false;
+    final lower = key.toLowerCase();
+    return lower.contains('url') ||
+        lower.contains('uri') ||
+        lower.contains('image') ||
+        lower.contains('avatar') ||
+        lower.contains('thumbnail');
+  }
+
+  static dynamic _normalizeResponseUrls(dynamic value, [String? key]) {
+    if (value is Map) {
+      final normalized = <String, dynamic>{};
+      for (final entry in value.entries) {
+        final entryKey = entry.key.toString();
+        normalized[entryKey] = _normalizeResponseUrls(entry.value, entryKey);
+      }
+      return normalized;
+    }
+
+    if (value is List) {
+      return value.map((item) => _normalizeResponseUrls(item, key)).toList();
+    }
+
+    if (value is String) {
+      final trimmed = value.trim();
+      final likelyPath = trimmed.startsWith('/uploads/');
+      final likelySupabaseStorage = trimmed.contains('/storage/v1/object/');
+      if (_looksLikeUrlKey(key) || likelyPath || likelySupabaseStorage) {
+        return normalizePublicUrl(trimmed) ?? trimmed;
+      }
+    }
+
+    return value;
+  }
+
   static String _cacheKey(String endpoint) =>
       '$baseUrl|$endpoint|${_token ?? ''}';
 
@@ -281,7 +324,8 @@ class ApiClient {
     }
   }
 
-  static dynamic _decodeBody(String body) => json.decode(body);
+  static dynamic _decodeBody(String body) =>
+      _normalizeResponseUrls(json.decode(body));
 
   static dynamic _cloneDecodedData(dynamic value) {
     if (value is Map || value is List) {
@@ -426,7 +470,7 @@ class ApiClient {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       clearCache();
-      return json.decode(response.body);
+      return _decodeBody(response.body);
     } else {
       final errorDecoded = json.decode(response.body);
       throw Exception(
@@ -456,7 +500,7 @@ class ApiClient {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       clearCache();
-      return json.decode(response.body);
+      return _decodeBody(response.body);
     } else {
       final errorDecoded = json.decode(response.body);
       throw Exception(
@@ -482,7 +526,7 @@ class ApiClient {
       if (response.body.isEmpty) {
         return null;
       }
-      return json.decode(response.body);
+      return _decodeBody(response.body);
     } else {
       final errorDecoded = json.decode(response.body);
       throw Exception(
