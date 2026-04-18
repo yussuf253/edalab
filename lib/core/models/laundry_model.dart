@@ -2,11 +2,18 @@ class LaundryServiceItemConfig {
   final String id;
   final String label;
   final double price;
+  final String category;
+  final String spec;
+
+  bool get isGroup => category == 'group';
+  bool get isUnit => !isGroup;
 
   LaundryServiceItemConfig({
     required this.id,
     required this.label,
     required this.price,
+    required this.category,
+    required this.spec,
   });
 
   factory LaundryServiceItemConfig.fromApi(Map<String, dynamic> json) {
@@ -16,10 +23,23 @@ class LaundryServiceItemConfig {
         .toLowerCase()
         .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
         .replaceAll(RegExp(r'^_+|_+$'), '');
+    final normalizedId = rawId.isNotEmpty ? rawId : generatedId;
+    final rawCategory = json['category']?.toString().trim().toLowerCase() ?? '';
+    final inferredCategory =
+        normalizedId.contains('wash_fold_') ||
+            label.toLowerCase().contains('wash & fold')
+        ? 'group'
+        : 'unit';
+    final category = rawCategory == 'group' || rawCategory == 'unit'
+        ? rawCategory
+        : inferredCategory;
+    final spec = json['spec']?.toString().trim() ?? '';
     return LaundryServiceItemConfig(
-      id: rawId.isNotEmpty ? rawId : generatedId,
+      id: normalizedId,
       label: label,
       price: (json['price'] as num?)?.toDouble() ?? 0,
+      category: category,
+      spec: category == 'group' ? spec : '',
     );
   }
 }
@@ -50,52 +70,89 @@ class LaundryBookingConfig {
     final washAndFoldBasePrice = fallbackPrice > 0 ? fallbackPrice : 6000.0;
     final defaultConfig = LaundryBookingConfig(
       itemCatalog: [
-        LaundryServiceItemConfig(id: 'shirts', label: 'Shirt', price: 700),
-        LaundryServiceItemConfig(id: 't_shirt', label: 'T-Shirt', price: 500),
-        LaundryServiceItemConfig(id: 'polo', label: 'Polo', price: 500),
-        LaundryServiceItemConfig(id: 'trouser', label: 'Trouser', price: 800),
-        LaundryServiceItemConfig(id: 'blazer', label: 'Blazer', price: 1500),
+        LaundryServiceItemConfig(
+          id: 'shirts',
+          label: 'Shirt',
+          price: 700,
+          category: 'unit',
+          spec: '',
+        ),
+        LaundryServiceItemConfig(
+          id: 't_shirt',
+          label: 'T-Shirt',
+          price: 500,
+          category: 'unit',
+          spec: '',
+        ),
+        LaundryServiceItemConfig(
+          id: 'polo',
+          label: 'Polo',
+          price: 500,
+          category: 'unit',
+          spec: '',
+        ),
+        LaundryServiceItemConfig(
+          id: 'trouser',
+          label: 'Trouser',
+          price: 800,
+          category: 'unit',
+          spec: '',
+        ),
+        LaundryServiceItemConfig(
+          id: 'blazer',
+          label: 'Blazer',
+          price: 1500,
+          category: 'unit',
+          spec: '',
+        ),
         LaundryServiceItemConfig(
           id: 'suit_2_pieces',
           label: 'Suit 2 pieces',
           price: 2000,
+          category: 'unit',
+          spec: '',
         ),
         LaundryServiceItemConfig(
           id: 'suit_3_pieces',
           label: 'Suit 3 pieces',
           price: 2700,
+          category: 'unit',
+          spec: '',
         ),
-        LaundryServiceItemConfig(id: 'jacket', label: 'Jacket', price: 1500),
-        LaundryServiceItemConfig(id: 'dress', label: 'Dress', price: 1200),
+        LaundryServiceItemConfig(
+          id: 'jacket',
+          label: 'Jacket',
+          price: 1500,
+          category: 'unit',
+          spec: '',
+        ),
+        LaundryServiceItemConfig(
+          id: 'dress',
+          label: 'Dress',
+          price: 1200,
+          category: 'unit',
+          spec: '',
+        ),
         LaundryServiceItemConfig(
           id: 'wash_fold_10_20',
           label: 'Wash & Fold 10-20 pieces',
           price: washAndFoldBasePrice,
+          category: 'group',
+          spec: '10 to 20 pieces',
         ),
         LaundryServiceItemConfig(
           id: 'wash_fold_21_30',
           label: 'Wash & Fold 21-30 pieces',
           price: 12000,
+          category: 'group',
+          spec: '21 to 30 pieces',
         ),
         LaundryServiceItemConfig(
           id: 'wash_fold_31_40',
           label: 'Wash & Fold 31-40 pieces',
           price: 14500,
-        ),
-        LaundryServiceItemConfig(
-          id: 'underwear_10_20',
-          label: 'Underwear 10-20 pieces',
-          price: 2500,
-        ),
-        LaundryServiceItemConfig(
-          id: 'underwear_21_30',
-          label: 'Underwear 21-30 pieces',
-          price: 4000,
-        ),
-        LaundryServiceItemConfig(
-          id: 'underwear_31_40',
-          label: 'Underwear 31-40 pieces',
-          price: 5500,
+          category: 'group',
+          spec: '31 to 40 pieces',
         ),
       ],
       pickupSlots: const [
@@ -162,6 +219,7 @@ class LaundryBookingConfig {
 class LaundryService {
   final String id;
   final String name; // e.g., 'Wash & Fold', 'Dry Cleaning', 'Ironing'
+  final String profileName;
   final String description;
   final double price;
   final String unit; // e.g., 'per bag', 'per item'
@@ -171,6 +229,7 @@ class LaundryService {
   LaundryService({
     required this.id,
     required this.name,
+    required this.profileName,
     required this.description,
     required this.price,
     required this.unit,
@@ -183,6 +242,7 @@ class LaundryService {
     return LaundryService(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Laundry Service',
+      profileName: json['profileName']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
       price: price,
       unit: json['unit']?.toString() ?? '',
@@ -202,6 +262,7 @@ class LaundryModel {
     LaundryService(
       id: 'l1',
       name: 'Wash & Fold',
+      profileName: 'Laundry King Djibouti',
       description: 'Laundry service inspired by Djibouti market tariffs.',
       price: 6000.0,
       unit: 'per order',

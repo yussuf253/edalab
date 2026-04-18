@@ -15,7 +15,15 @@ import '../../../core/network/api_client.dart';
 import '../../../core/utils/auth_gate.dart';
 
 class LaundryOrderScreen extends StatefulWidget {
-  const LaundryOrderScreen({super.key});
+  final String? initialServiceId;
+  final bool lockServiceSelection;
+
+  const LaundryOrderScreen({
+    super.key,
+    this.initialServiceId,
+    this.lockServiceSelection = false,
+  });
+
   @override
   State<LaundryOrderScreen> createState() => _LaundryOrderScreenState();
 }
@@ -28,16 +36,57 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
   List<LaundryService> _services = LaundryModel.sampleServices;
   bool _isLoading = true;
 
+  String? get _requestedServiceId {
+    final value = widget.initialServiceId?.trim();
+    if (value == null || value.isEmpty) return null;
+    return value;
+  }
+
   IconData _getIcon(LaundryService _) {
     return Icons.local_laundry_service_rounded;
+  }
+
+  String _serviceDisplayName(LaundryService service) {
+    final profileName = service.profileName.trim();
+    if (profileName.isNotEmpty) return profileName;
+    return service.name;
   }
 
   List<LaundryServiceItemConfig> _bookableItemsFor(LaundryService service) {
     return service.bookingConfig.itemCatalog;
   }
 
+  List<LaundryServiceItemConfig> _unitItemsFor(LaundryService service) {
+    final all = _bookableItemsFor(service);
+    final units = all.where((item) => item.isUnit).toList(growable: false);
+    if (units.isNotEmpty) return units;
+    return all;
+  }
+
+  List<LaundryServiceItemConfig> _groupItemsFor(LaundryService service) {
+    return _bookableItemsFor(
+      service,
+    ).where((item) => item.isGroup).toList(growable: false);
+  }
+
   List<String> _pickupSlotsFor(LaundryService service) {
     return service.bookingConfig.pickupSlots;
+  }
+
+  void _applyInitialServiceSelection(List<LaundryService> services) {
+    final requestedId = _requestedServiceId;
+    if (requestedId == null || services.isEmpty) return;
+    final index = services.indexWhere((service) => service.id == requestedId);
+    if (index >= 0) {
+      _selectedService = index;
+    }
+  }
+
+  bool _showServiceSelector(List<LaundryService> services) {
+    if (!widget.lockServiceSelection) return true;
+    final requestedId = _requestedServiceId;
+    if (requestedId == null) return true;
+    return !services.any((service) => service.id == requestedId);
   }
 
   void _syncServiceState({bool resetDate = false}) {
@@ -78,9 +127,103 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
     return int.tryParse(match.group(2) ?? '') ?? 0;
   }
 
+  Widget _buildBookableItemRow(
+    LaundryServiceItemConfig item,
+    AppLocalizations l10n,
+  ) {
+    final count = _itemCounts[item.id] ?? 0;
+    final spec = item.spec.trim();
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _itemLabel(item.id, item.label, l10n),
+                  style: AppTextStyles.labelMedium,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (spec.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    spec,
+                    style: AppTextStyles.caption,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Text(
+              '\$${item.price.toStringAsFixed(2)}',
+              style: AppTextStyles.caption,
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.extraLightGrey,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.remove, size: 16),
+                    onPressed: () {
+                      setState(() {
+                        if ((_itemCounts[item.id] ?? 0) > 0) {
+                          _itemCounts[item.id] =
+                              (_itemCounts[item.id] ?? 0) - 1;
+                        }
+                      });
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Text('$count', style: AppTextStyles.labelLarge),
+                ),
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.add, size: 16),
+                    onPressed: () {
+                      setState(() {
+                        _itemCounts[item.id] = (_itemCounts[item.id] ?? 0) + 1;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
+    _applyInitialServiceSelection(_services);
     _syncServiceState();
     _loadServices();
   }
@@ -97,6 +240,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
       if (!mounted) return;
       setState(() {
         _services = items.isEmpty ? LaundryModel.sampleServices : items;
+        _applyInitialServiceSelection(_services);
         _syncServiceState(resetDate: true);
         _isLoading = false;
       });
@@ -130,9 +274,13 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
     final l10n = context.l10n;
     final auth = context.watch<AuthProvider>();
     final services = _services;
+    final showServiceSelector = _showServiceSelector(services);
     final selectedIndex = _selectedService.clamp(0, services.length - 1);
     final selectedModel = services[selectedIndex];
+    final selectedLaundryName = _serviceDisplayName(selectedModel);
     final itemOptions = _bookableItemsFor(selectedModel);
+    final unitItemOptions = _unitItemsFor(selectedModel);
+    final groupItemOptions = _groupItemsFor(selectedModel);
     final totalItems = itemOptions.fold<int>(
       0,
       (sum, item) => sum + (_itemCounts[item.id] ?? 0),
@@ -234,118 +382,112 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Service type
-                  Text(
-                    l10n.t('laundry_order.service_type'),
-                    style: AppTextStyles.h4,
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 98,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: services.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 10),
-                      itemBuilder: (context, index) {
-                        final s = services[index];
-                        return SizedBox(
-                          width: 130,
-                          child: _ServiceOption(
-                            s.name,
-                            _getIcon(s),
-                            selectedIndex == index,
-                            () => setState(() {
-                              _selectedService = index;
-                              _syncServiceState(resetDate: true);
-                            }),
-                          ),
-                        );
-                      },
+                  if (showServiceSelector) ...[
+                    Text(
+                      l10n.t('laundry_order.service_type'),
+                      style: AppTextStyles.h4,
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Items
-                  Text(l10n.t('laundry_order.items'), style: AppTextStyles.h4),
-                  const SizedBox(height: 12),
-                  ...itemOptions.map((item) {
-                    final count = _itemCounts[item.id] ?? 0;
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 98,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: services.length,
+                        separatorBuilder: (_, _) => const SizedBox(width: 10),
+                        itemBuilder: (context, index) {
+                          final s = services[index];
+                          return SizedBox(
+                            width: 130,
+                            child: _ServiceOption(
+                              _serviceDisplayName(s),
+                              s.profileName.trim().isNotEmpty ? s.name : null,
+                              _getIcon(s),
+                              selectedIndex == index,
+                              () => setState(() {
+                                _selectedService = index;
+                                _syncServiceState(resetDate: true);
+                              }),
+                            ),
+                          );
+                        },
                       ),
+                    ),
+                    const SizedBox(height: 24),
+                  ] else ...[
+                    Text(
+                      l10n.t('laundry_order.service_type'),
+                      style: AppTextStyles.h4,
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Row(
                         children: [
-                          Text(
-                            _itemLabel(item.id, item.label, l10n),
-                            style: AppTextStyles.labelMedium,
-                          ),
-                          const Spacer(),
-                          Padding(
-                            padding: const EdgeInsets.only(right: 12),
-                            child: Text(
-                              '\$${item.price.toStringAsFixed(2)}',
-                              style: AppTextStyles.caption,
-                            ),
-                          ),
                           Container(
+                            width: 42,
+                            height: 42,
                             decoration: BoxDecoration(
-                              color: AppColors.extraLightGrey,
-                              borderRadius: BorderRadius.circular(10),
+                              color: AppColors.laundry.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Row(
+                            child: const Icon(
+                              Icons.local_laundry_service_rounded,
+                              color: AppColors.laundry,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                SizedBox(
-                                  width: 36,
-                                  height: 36,
-                                  child: IconButton(
-                                    padding: EdgeInsets.zero,
-                                    icon: const Icon(Icons.remove, size: 16),
-                                    onPressed: () {
-                                      setState(() {
-                                        if ((_itemCounts[item.id] ?? 0) > 0) {
-                                          _itemCounts[item.id] =
-                                              (_itemCounts[item.id] ?? 0) - 1;
-                                        }
-                                      });
-                                    },
-                                  ),
+                                Text(
+                                  selectedLaundryName,
+                                  style: AppTextStyles.labelLarge,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                  ),
-                                  child: Text(
-                                    '$count',
-                                    style: AppTextStyles.labelLarge,
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 36,
-                                  height: 36,
-                                  child: IconButton(
-                                    padding: EdgeInsets.zero,
-                                    icon: const Icon(Icons.add, size: 16),
-                                    onPressed: () {
-                                      setState(() {
-                                        _itemCounts[item.id] =
-                                            (_itemCounts[item.id] ?? 0) + 1;
-                                      });
-                                    },
-                                  ),
+                                Text(
+                                  selectedModel.name,
+                                  style: AppTextStyles.caption,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
                           ),
                         ],
                       ),
-                    );
-                  }),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  // Items
+                  Text(l10n.t('laundry_order.items'), style: AppTextStyles.h4),
+                  const SizedBox(height: 12),
+                  if (unitItemOptions.isNotEmpty) ...[
+                    Text(
+                      l10n.t('laundry_order.unit_items'),
+                      style: AppTextStyles.labelLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    ...unitItemOptions.map(
+                      (item) => _buildBookableItemRow(item, l10n),
+                    ),
+                  ],
+                  if (groupItemOptions.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      l10n.t('laundry_order.group_items'),
+                      style: AppTextStyles.labelLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    ...groupItemOptions.map(
+                      (item) => _buildBookableItemRow(item, l10n),
+                    ),
+                  ],
                   const SizedBox(height: 20),
                   // Pickup date
                   Text(
@@ -517,7 +659,9 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       children: [
                         _Row(
                           l10n.t('laundry_order.service'),
-                          selectedModel.name,
+                          selectedLaundryName == selectedModel.name
+                              ? selectedModel.name
+                              : '$selectedLaundryName • ${selectedModel.name}',
                         ),
                         _Row(
                           l10n.t('laundry_order.items'),
@@ -579,7 +723,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                         properties: {
                           'module_type': 'laundry',
                           'service_id': selectedModel.id,
-                          'service_name': selectedModel.name,
+                          'service_name': selectedLaundryName,
                           'item_count': totalItems,
                           'subtotal': subtotal,
                           'tax_rate_percent': taxRatePercent,
@@ -600,13 +744,14 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                           'items': [
                             {
                               'id': selectedModel.id,
-                              'name': selectedModel.name,
+                              'name': selectedLaundryName,
                               'price': selectedModel.price,
                               'quantity': totalItems,
                               'total': subtotal,
                               'metadata': {
                                 'serviceId': selectedModel.id,
                                 'serviceName': selectedModel.name,
+                                'laundryProfileName': selectedLaundryName,
                                 'serviceUnit': selectedModel.unit,
                                 'itemCount': totalItems,
                                 'timeSlot': selectedSlot,
@@ -640,6 +785,9 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                                         'id': entry.id,
                                         'label': entry.label,
                                         'price': entry.price,
+                                        'category': entry.category,
+                                        if (entry.spec.trim().isNotEmpty)
+                                          'spec': entry.spec.trim(),
                                       },
                                     )
                                     .toList(growable: false),
@@ -655,7 +803,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                                 ? order['id']?.toString()
                                 : null,
                             'service_id': selectedModel.id,
-                            'service_name': selectedModel.name,
+                            'service_name': selectedLaundryName,
                             'item_count': totalItems,
                             'subtotal': subtotal,
                             'tax': tax,
@@ -784,10 +932,17 @@ class _LaundryOrderShimmer extends StatelessWidget {
 
 class _ServiceOption extends StatelessWidget {
   final String name;
+  final String? subtitle;
   final IconData icon;
   final bool selected;
   final VoidCallback onTap;
-  const _ServiceOption(this.name, this.icon, this.selected, this.onTap);
+  const _ServiceOption(
+    this.name,
+    this.subtitle,
+    this.icon,
+    this.selected,
+    this.onTap,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -815,8 +970,21 @@ class _ServiceOption extends StatelessWidget {
                 color: selected ? AppColors.white : AppColors.dark,
               ),
               textAlign: TextAlign.center,
-              maxLines: 1,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
+            if (subtitle != null && subtitle!.trim().isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(
+                subtitle!,
+                style: AppTextStyles.caption.copyWith(
+                  color: selected ? Colors.white70 : AppColors.grey,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
           ],
         ),
       ),

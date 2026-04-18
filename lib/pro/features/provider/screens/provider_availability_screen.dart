@@ -1657,6 +1657,19 @@ class _ProviderAvailabilityScreenState
         (rawBookingConfig['itemCatalog'] as List<dynamic>? ?? const [])
             .map((entry) => Map<String, dynamic>.from(entry as Map))
             .toList(growable: false);
+    String resolveLaundryItemCategory(Map<String, dynamic> entry) {
+      final rawCategory = entry['category']?.toString().trim().toLowerCase();
+      if (rawCategory == 'group' || rawCategory == 'unit') {
+        return rawCategory!;
+      }
+      final id = entry['id']?.toString().trim().toLowerCase() ?? '';
+      final label = entry['label']?.toString().trim().toLowerCase() ?? '';
+      if (id.contains('wash_fold_') || label.contains('wash & fold')) {
+        return 'group';
+      }
+      return 'unit';
+    }
+
     final draftCatalog = rawCatalog.isNotEmpty
         ? rawCatalog
               .map(
@@ -1669,6 +1682,8 @@ class _ProviderAvailabilityScreenState
                   priceText: _priceLabel(
                     (entry['price'] as num?) ?? fallbackPrice,
                   ),
+                  category: resolveLaundryItemCategory(entry),
+                  spec: entry['spec']?.toString().trim() ?? '',
                 ),
               )
               .toList(growable: true)
@@ -1676,92 +1691,26 @@ class _ProviderAvailabilityScreenState
             _LaundryItemDraft(
               draftId: 'shirts',
               itemId: 'shirts',
-              label: 'Shirts',
+              label: 'Shirt',
               priceText: _priceLabel(700),
-            ),
-            _LaundryItemDraft(
-              draftId: 't_shirt',
-              itemId: 't_shirt',
-              label: 'T-Shirt',
-              priceText: _priceLabel(500),
-            ),
-            _LaundryItemDraft(
-              draftId: 'polo',
-              itemId: 'polo',
-              label: 'Polo',
-              priceText: _priceLabel(500),
+              category: 'unit',
+              spec: '',
             ),
             _LaundryItemDraft(
               draftId: 'trouser',
               itemId: 'trouser',
               label: 'Trouser',
               priceText: _priceLabel(800),
-            ),
-            _LaundryItemDraft(
-              draftId: 'blazer',
-              itemId: 'blazer',
-              label: 'Blazer',
-              priceText: _priceLabel(1500),
-            ),
-            _LaundryItemDraft(
-              draftId: 'suit_2_pieces',
-              itemId: 'suit_2_pieces',
-              label: 'Suit 2 pieces',
-              priceText: _priceLabel(2000),
-            ),
-            _LaundryItemDraft(
-              draftId: 'suit_3_pieces',
-              itemId: 'suit_3_pieces',
-              label: 'Suit 3 pieces',
-              priceText: _priceLabel(2700),
-            ),
-            _LaundryItemDraft(
-              draftId: 'jacket',
-              itemId: 'jacket',
-              label: 'Jacket',
-              priceText: _priceLabel(1500),
-            ),
-            _LaundryItemDraft(
-              draftId: 'dress',
-              itemId: 'dress',
-              label: 'Dress',
-              priceText: _priceLabel(1200),
+              category: 'unit',
+              spec: '',
             ),
             _LaundryItemDraft(
               draftId: 'wash_fold_10_20',
               itemId: 'wash_fold_10_20',
               label: 'Wash & Fold 10-20 pieces',
               priceText: _priceLabel(6000),
-            ),
-            _LaundryItemDraft(
-              draftId: 'wash_fold_21_30',
-              itemId: 'wash_fold_21_30',
-              label: 'Wash & Fold 21-30 pieces',
-              priceText: _priceLabel(12000),
-            ),
-            _LaundryItemDraft(
-              draftId: 'wash_fold_31_40',
-              itemId: 'wash_fold_31_40',
-              label: 'Wash & Fold 31-40 pieces',
-              priceText: _priceLabel(14500),
-            ),
-            _LaundryItemDraft(
-              draftId: 'underwear_10_20',
-              itemId: 'underwear_10_20',
-              label: 'Underwear 10-20 pieces',
-              priceText: _priceLabel(2500),
-            ),
-            _LaundryItemDraft(
-              draftId: 'underwear_21_30',
-              itemId: 'underwear_21_30',
-              label: 'Underwear 21-30 pieces',
-              priceText: _priceLabel(4000),
-            ),
-            _LaundryItemDraft(
-              draftId: 'underwear_31_40',
-              itemId: 'underwear_31_40',
-              label: 'Underwear 31-40 pieces',
-              priceText: _priceLabel(5500),
+              category: 'group',
+              spec: '10 to 20 pieces',
             ),
           ];
     final pickupSlots =
@@ -1823,6 +1772,7 @@ class _ProviderAvailabilityScreenState
               final itemCatalog = draftCatalog
                   .map((draft) {
                     final label = draft.label.trim();
+                    final spec = draft.spec.trim();
                     final parsedPrice = double.tryParse(draft.priceText.trim());
                     final normalizedId =
                         (draft.itemId.trim().isNotEmpty
@@ -1831,7 +1781,14 @@ class _ProviderAvailabilityScreenState
                             .toLowerCase()
                             .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
                             .replaceAll(RegExp(r'^_+|_+$'), '');
-                    return (id: normalizedId, label: label, price: parsedPrice);
+                    final category = draft.category.trim().toLowerCase();
+                    return (
+                      id: normalizedId,
+                      label: label,
+                      price: parsedPrice,
+                      category: category,
+                      spec: spec,
+                    );
                   })
                   .where((item) => item.label.isNotEmpty)
                   .toList(growable: false);
@@ -1839,7 +1796,9 @@ class _ProviderAvailabilityScreenState
                 (entry) =>
                     entry.id.isEmpty ||
                     entry.price == null ||
-                    entry.price! <= 0,
+                    entry.price! <= 0 ||
+                    (entry.category != 'unit' && entry.category != 'group') ||
+                    (entry.category == 'group' && entry.spec.isEmpty),
               );
               final normalizedSlots = pickupSlots
                   .map((slot) => slot.trim())
@@ -1906,6 +1865,8 @@ class _ProviderAvailabilityScreenState
                             'id': entry.id,
                             'label': entry.label,
                             'price': entry.price,
+                            'category': entry.category,
+                            if (entry.category == 'group') 'spec': entry.spec,
                           },
                         )
                         .toList(growable: false),
@@ -1994,60 +1955,70 @@ class _ProviderAvailabilityScreenState
                     ),
                     const SizedBox(height: 18),
                     Text(
-                      'Bookable items and pricing',
+                      'Unit items',
                       style: Theme.of(modalContext).textTheme.titleMedium
                           ?.copyWith(fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 8),
-                    ...draftCatalog.map(
-                      (draft) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              flex: 2,
-                              child: TextFormField(
-                                key: ValueKey('laundry-item-${draft.draftId}'),
-                                enabled: !isSaving,
-                                initialValue: draft.label,
-                                decoration: const InputDecoration(
-                                  labelText: 'Item',
-                                  hintText: 'Shirts',
-                                ),
-                                onChanged: (value) => draft.label = value,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TextFormField(
-                                key: ValueKey('laundry-price-${draft.draftId}'),
-                                enabled: !isSaving,
-                                initialValue: draft.priceText,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
+                    ...draftCatalog
+                        .where((draft) => draft.category == 'unit')
+                        .map(
+                          (draft) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: TextFormField(
+                                    key: ValueKey(
+                                      'laundry-item-${draft.draftId}',
                                     ),
-                                decoration: const InputDecoration(
-                                  labelText: 'Price',
-                                  hintText: '5',
-                                ),
-                                onChanged: (value) => draft.priceText = value,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            IconButton(
-                              onPressed: isSaving || draftCatalog.length <= 1
-                                  ? null
-                                  : () => setModalState(
-                                      () => draftCatalog.remove(draft),
+                                    enabled: !isSaving,
+                                    initialValue: draft.label,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Item',
+                                      hintText: 'Shirts',
                                     ),
-                              icon: const Icon(Icons.delete_outline_rounded),
-                              tooltip: 'Remove item',
+                                    onChanged: (value) => draft.label = value,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: TextFormField(
+                                    key: ValueKey(
+                                      'laundry-price-${draft.draftId}',
+                                    ),
+                                    enabled: !isSaving,
+                                    initialValue: draft.priceText,
+                                    keyboardType:
+                                        const TextInputType.numberWithOptions(
+                                          decimal: true,
+                                        ),
+                                    decoration: const InputDecoration(
+                                      labelText: 'Price',
+                                      hintText: '5',
+                                    ),
+                                    onChanged: (value) =>
+                                        draft.priceText = value,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                IconButton(
+                                  onPressed:
+                                      isSaving || draftCatalog.length <= 1
+                                      ? null
+                                      : () => setModalState(
+                                          () => draftCatalog.remove(draft),
+                                        ),
+                                  icon: const Icon(
+                                    Icons.delete_outline_rounded,
+                                  ),
+                                  tooltip: 'Remove item',
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: OutlinedButton.icon(
@@ -2062,11 +2033,120 @@ class _ProviderAvailabilityScreenState
                                     itemId: '',
                                     label: '',
                                     priceText: _priceLabel(fallbackPrice),
+                                    category: 'unit',
+                                    spec: '',
                                   ),
                                 ),
                               ),
                         icon: const Icon(Icons.add_rounded),
-                        label: const Text('Add item'),
+                        label: const Text('Add unit item'),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Wash & Fold groups (10+)',
+                      style: Theme.of(modalContext).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    ...draftCatalog
+                        .where((draft) => draft.category == 'group')
+                        .map(
+                          (draft) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      flex: 2,
+                                      child: TextFormField(
+                                        key: ValueKey(
+                                          'laundry-group-item-${draft.draftId}',
+                                        ),
+                                        enabled: !isSaving,
+                                        initialValue: draft.label,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Group',
+                                          hintText: 'Wash & Fold 10-20 pieces',
+                                        ),
+                                        onChanged: (value) =>
+                                            draft.label = value,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: TextFormField(
+                                        key: ValueKey(
+                                          'laundry-group-price-${draft.draftId}',
+                                        ),
+                                        enabled: !isSaving,
+                                        initialValue: draft.priceText,
+                                        keyboardType:
+                                            const TextInputType.numberWithOptions(
+                                              decimal: true,
+                                            ),
+                                        decoration: const InputDecoration(
+                                          labelText: 'Price',
+                                          hintText: '6000',
+                                        ),
+                                        onChanged: (value) =>
+                                            draft.priceText = value,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    IconButton(
+                                      onPressed:
+                                          isSaving || draftCatalog.length <= 1
+                                          ? null
+                                          : () => setModalState(
+                                              () => draftCatalog.remove(draft),
+                                            ),
+                                      icon: const Icon(
+                                        Icons.delete_outline_rounded,
+                                      ),
+                                      tooltip: 'Remove group',
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                TextFormField(
+                                  key: ValueKey(
+                                    'laundry-group-spec-${draft.draftId}',
+                                  ),
+                                  enabled: !isSaving,
+                                  initialValue: draft.spec,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Spec',
+                                    hintText: '10 to 20 pieces',
+                                  ),
+                                  onChanged: (value) => draft.spec = value,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: OutlinedButton.icon(
+                        onPressed: isSaving
+                            ? null
+                            : () => setModalState(
+                                () => draftCatalog.add(
+                                  _LaundryItemDraft(
+                                    draftId: DateTime.now()
+                                        .microsecondsSinceEpoch
+                                        .toString(),
+                                    itemId: '',
+                                    label: '',
+                                    priceText: _priceLabel(fallbackPrice),
+                                    category: 'group',
+                                    spec: '',
+                                  ),
+                                ),
+                              ),
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text('Add group'),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -2480,12 +2560,16 @@ class _LaundryItemDraft {
   String itemId;
   String label;
   String priceText;
+  String category;
+  String spec;
 
   _LaundryItemDraft({
     required this.draftId,
     required this.itemId,
     required this.label,
     required this.priceText,
+    required this.category,
+    required this.spec,
   });
 }
 

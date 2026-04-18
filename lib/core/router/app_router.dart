@@ -446,7 +446,15 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
       ),
       GoRoute(
         path: '/laundry/order',
-        builder: (context, state) => const LaundryOrderScreen(),
+        builder: (context, state) {
+          final query = state.uri.queryParameters;
+          final lockedRaw = query['locked']?.toLowerCase();
+          final lockServiceSelection = lockedRaw == '1' || lockedRaw == 'true';
+          return LaundryOrderScreen(
+            initialServiceId: query['serviceId'],
+            lockServiceSelection: lockServiceSelection,
+          );
+        },
       ),
       GoRoute(
         path: '/laundry/tracking/:id',

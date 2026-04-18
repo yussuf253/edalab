@@ -108,6 +108,8 @@ const laundryServiceConfigItemSchema = zod_1.z.object({
     id: zod_1.z.string().trim().max(40).optional().or(zod_1.z.literal('')),
     label: zod_1.z.string().trim().min(1).max(80),
     price: zod_1.z.coerce.number().positive().max(100000),
+    category: zod_1.z.enum(['unit', 'group']).optional(),
+    spec: zod_1.z.string().trim().max(160).optional().or(zod_1.z.literal('')),
 });
 const laundryServiceBookingConfigSchema = zod_1.z.object({
     itemCatalog: zod_1.z.array(laundryServiceConfigItemSchema).min(1).max(24).optional(),
@@ -608,21 +610,36 @@ function defaultLaundryServiceBookingConfig(basePrice) {
         : 6000;
     return {
         itemCatalog: [
-            { id: 'shirts', label: 'Shirt', price: 700 },
-            { id: 't_shirt', label: 'T-Shirt', price: 500 },
-            { id: 'polo', label: 'Polo', price: 500 },
-            { id: 'trouser', label: 'Trouser', price: 800 },
-            { id: 'blazer', label: 'Blazer', price: 1500 },
-            { id: 'suit_2_pieces', label: 'Suit 2 pieces', price: 2000 },
-            { id: 'suit_3_pieces', label: 'Suit 3 pieces', price: 2700 },
-            { id: 'jacket', label: 'Jacket', price: 1500 },
-            { id: 'dress', label: 'Dress', price: 1200 },
-            { id: 'wash_fold_10_20', label: 'Wash & Fold 10-20 pieces', price: washAndFoldBasePrice },
-            { id: 'wash_fold_21_30', label: 'Wash & Fold 21-30 pieces', price: 12000 },
-            { id: 'wash_fold_31_40', label: 'Wash & Fold 31-40 pieces', price: 14500 },
-            { id: 'underwear_10_20', label: 'Underwear 10-20 pieces', price: 2500 },
-            { id: 'underwear_21_30', label: 'Underwear 21-30 pieces', price: 4000 },
-            { id: 'underwear_31_40', label: 'Underwear 31-40 pieces', price: 5500 },
+            { id: 'shirts', label: 'Shirt', price: 700, category: 'unit' },
+            { id: 't_shirt', label: 'T-Shirt', price: 500, category: 'unit' },
+            { id: 'polo', label: 'Polo', price: 500, category: 'unit' },
+            { id: 'trouser', label: 'Trouser', price: 800, category: 'unit' },
+            { id: 'blazer', label: 'Blazer', price: 1500, category: 'unit' },
+            { id: 'suit_2_pieces', label: 'Suit 2 pieces', price: 2000, category: 'unit' },
+            { id: 'suit_3_pieces', label: 'Suit 3 pieces', price: 2700, category: 'unit' },
+            { id: 'jacket', label: 'Jacket', price: 1500, category: 'unit' },
+            { id: 'dress', label: 'Dress', price: 1200, category: 'unit' },
+            {
+                id: 'wash_fold_10_20',
+                label: 'Wash & Fold 10-20 pieces',
+                price: washAndFoldBasePrice,
+                category: 'group',
+                spec: '10 to 20 pieces',
+            },
+            {
+                id: 'wash_fold_21_30',
+                label: 'Wash & Fold 21-30 pieces',
+                price: 12000,
+                category: 'group',
+                spec: '21 to 30 pieces',
+            },
+            {
+                id: 'wash_fold_31_40',
+                label: 'Wash & Fold 31-40 pieces',
+                price: 14500,
+                category: 'group',
+                spec: '31 to 40 pieces',
+            },
         ],
         pickupSlots: ['08:00 - 10:00', '10:00 - 12:00', '14:00 - 16:00', '16:00 - 18:00'],
         turnaroundHours: 26,
@@ -664,16 +681,27 @@ function normalizeLaundryServiceBookingConfig(value, fallback) {
             const label = entry.label?.toString().trim() ?? '';
             const price = toFiniteNumber(entry.price) ?? 0;
             const id = normalizeItemId(label, entry.id?.toString());
+            const rawCategory = entry.category?.toString().trim().toLowerCase() ?? '';
+            const inferCategory = id.includes('wash_fold_') || label.toLowerCase().includes('wash & fold')
+                ? 'group'
+                : 'unit';
+            const category = rawCategory === 'group' || rawCategory === 'unit'
+                ? rawCategory
+                : inferCategory;
+            const specRaw = entry.spec?.toString().trim() ?? '';
             return {
                 id,
                 label,
                 price,
+                category,
+                spec: category === 'group' && specRaw.length > 0 ? specRaw : null,
             };
         })
             .filter((entry) => entry.id.length > 0 &&
             entry.label.length > 0 &&
             Number.isFinite(entry.price) &&
-            entry.price > 0)
+            entry.price > 0 &&
+            (entry.category === 'unit' || entry.category === 'group'))
             .slice(0, 24);
     const pickupSlotsRaw = Array.isArray(map.pickupSlots) ? map.pickupSlots : null;
     const pickupSlots = pickupSlotsRaw == null
