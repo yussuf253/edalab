@@ -6,6 +6,7 @@ const zod_1 = require("zod");
 const db_1 = require("../db");
 const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
+const module_settings_1 = require("../utils/module-settings");
 const notifications_1 = require("../utils/notifications");
 const router = (0, express_1.Router)();
 const createAppointmentSchema = zod_1.z.object({
@@ -99,6 +100,11 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
 }));
 router.post('/home-care', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const body = createHomeCareAppointmentSchema.parse(req.body);
+    if (!(await (0, module_settings_1.isModuleEnabled)(client_1.ModuleType.DOCTOR))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(client_1.ModuleType.DOCTOR)} module is currently disabled.`,
+        });
+    }
     const appointment = await db_1.prisma.appointment.create({
         data: {
             userId: body.userId,
@@ -123,6 +129,11 @@ router.post('/home-care', (0, async_handler_1.asyncHandler)(async (req, res) => 
 }));
 router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const body = createAppointmentSchema.parse(req.body);
+    if (!(await (0, module_settings_1.isModuleEnabled)(client_1.ModuleType.DOCTOR))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(client_1.ModuleType.DOCTOR)} module is currently disabled.`,
+        });
+    }
     const appointment = await db_1.prisma.appointment.create({
         data: {
             userId: body.userId,

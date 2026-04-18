@@ -1,9 +1,10 @@
-import { AppointmentStatus } from '@prisma/client';
+import { AppointmentStatus, ModuleType } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
+import { isModuleEnabled, moduleName } from '../utils/module-settings';
 import { createAppointmentCreatedNotification } from '../utils/notifications';
 
 const router = Router();
@@ -133,6 +134,12 @@ router.post(
   asyncHandler(async (req, res) => {
     const body = createHomeCareAppointmentSchema.parse(req.body);
 
+    if (!(await isModuleEnabled(ModuleType.DOCTOR))) {
+      return res.status(403).json({
+        error: `${moduleName(ModuleType.DOCTOR)} module is currently disabled.`,
+      });
+    }
+
     const appointment = await prisma.appointment.create({
       data: {
         userId: body.userId,
@@ -163,6 +170,12 @@ router.post(
   '/',
   asyncHandler(async (req, res) => {
     const body = createAppointmentSchema.parse(req.body);
+
+    if (!(await isModuleEnabled(ModuleType.DOCTOR))) {
+      return res.status(403).json({
+        error: `${moduleName(ModuleType.DOCTOR)} module is currently disabled.`,
+      });
+    }
 
     const appointment = await prisma.appointment.create({
       data: {

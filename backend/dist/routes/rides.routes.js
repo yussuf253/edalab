@@ -6,6 +6,7 @@ const zod_1 = require("zod");
 const db_1 = require("../db");
 const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
+const module_settings_1 = require("../utils/module-settings");
 const notifications_1 = require("../utils/notifications");
 const serializers_1 = require("../utils/serializers");
 const router = (0, express_1.Router)();
@@ -118,6 +119,11 @@ router.get('/:rideId', (0, async_handler_1.asyncHandler)(async (req, res) => {
 }));
 router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const body = createRideSchema.parse(req.body);
+    if (!(await (0, module_settings_1.isModuleEnabled)(client_1.ModuleType.RIDE))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(client_1.ModuleType.RIDE)} module is currently disabled.`,
+        });
+    }
     const booking = await db_1.prisma.rideBooking.create({
         data: {
             userId: body.userId,

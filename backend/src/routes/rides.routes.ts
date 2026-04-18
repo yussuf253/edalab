@@ -1,9 +1,10 @@
-import { Prisma, RideStatus } from '@prisma/client';
+import { ModuleType, Prisma, RideStatus } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
+import { isModuleEnabled, moduleName } from '../utils/module-settings';
 import { createRideCreatedNotification } from '../utils/notifications';
 import { toNumber } from '../utils/serializers';
 
@@ -149,6 +150,12 @@ router.post(
   '/',
   asyncHandler(async (req, res) => {
     const body = createRideSchema.parse(req.body);
+
+    if (!(await isModuleEnabled(ModuleType.RIDE))) {
+      return res.status(403).json({
+        error: `${moduleName(ModuleType.RIDE)} module is currently disabled.`,
+      });
+    }
 
     const booking = await prisma.rideBooking.create({
       data: {
