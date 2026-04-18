@@ -162,9 +162,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SectionHeader(
                         title: l10n.t('home.services'),
-                        actionText: l10n.t('common.see_all'),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       _ServicesGrid(enabledModules: enabledModuleIds),
                     ],
                   ),
@@ -176,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (hasEnabledOfferModules)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
                   child: FadeInUp(
                     delay: const Duration(milliseconds: 80),
                     duration: const Duration(milliseconds: 240),
@@ -187,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           actionText: l10n.t('common.see_all'),
                           onAction: () => context.push('/promotions'),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         _SpecialOffers(enabledModules: enabledModuleIds),
                       ],
                     ),
@@ -199,7 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (moduleProvider.isEnabled('food'))
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                   child: FadeInUp(
                     delay: const Duration(milliseconds: 100),
                     duration: const Duration(milliseconds: 240),
@@ -222,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (moduleProvider.isEnabled('doctor'))
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                   child: FadeInUp(
                     delay: const Duration(milliseconds: 120),
                     duration: const Duration(milliseconds: 240),
@@ -245,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (moduleProvider.isEnabled('shopping'))
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 28, 0, 24),
+                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 24),
                   child: FadeInUp(
                     delay: const Duration(milliseconds: 140),
                     duration: const Duration(milliseconds: 240),
@@ -308,10 +307,10 @@ class _ServicesGrid extends StatelessWidget {
       context,
     ).scale(1.0).clamp(1.0, 1.35);
     final serviceGridAspectRatio =
-        (0.8 -
+        (0.82 -
                 (l10n.languageCode == 'en' ? 0.0 : 0.05) -
                 ((textScale - 1.0) * 0.12))
-            .clamp(0.68, 0.8);
+            .clamp(0.72, 0.84);
     final services = [
       _ServiceItem(
         key: 'food',
@@ -393,8 +392,8 @@ class _ServicesGrid extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          mainAxisSpacing: 16,
-          crossAxisSpacing: 12,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 8,
           childAspectRatio: serviceGridAspectRatio,
         ),
         itemCount: services.length,
@@ -404,9 +403,9 @@ class _ServicesGrid extends StatelessWidget {
             onTap: () => context.push(service.route),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final iconSize = constraints.maxHeight >= 96 ? 60.0 : 54.0;
-                final iconPadding = iconSize >= 58 ? 12.0 : 10.0;
-                final gap = constraints.maxHeight >= 96 ? 8.0 : 6.0;
+                final iconSize = constraints.maxHeight >= 92 ? 58.0 : 54.0;
+                final iconPadding = iconSize >= 58 ? 11.0 : 10.0;
+                final gap = constraints.maxHeight >= 92 ? 7.0 : 6.0;
                 return Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
@@ -512,7 +511,7 @@ class _SpecialOffers extends StatelessWidget {
     }
 
     return SizedBox(
-      height: 130,
+      height: 118,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),

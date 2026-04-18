@@ -4,6 +4,8 @@ import '../network/api_client.dart';
 class NotificationRepository {
   const NotificationRepository();
 
+  static final RegExp _localGeneratedIdPattern = RegExp(r'^\d+$');
+
   Future<List<AppNotificationModel>> fetchForUser(String userId) async {
     try {
       final response = await ApiClient.get(
@@ -36,6 +38,12 @@ class NotificationRepository {
   }
 
   Future<void> markRead(String notificationId) async {
+    // Locally generated inbox items (e.g. welcome reminders) use numeric
+    // microsecond IDs and do not exist in backend storage.
+    if (_localGeneratedIdPattern.hasMatch(notificationId)) {
+      return;
+    }
+
     try {
       await ApiClient.patch('/notifications/$notificationId/read', {});
     } catch (_) {}

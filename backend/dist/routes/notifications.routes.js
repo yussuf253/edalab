@@ -194,13 +194,15 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
 }));
 router.patch('/:id/read', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const id = (0, http_1.getParam)(req.params.id, 'notificationId');
-    const notification = await db_1.prisma.notification.update({
+    const readAt = new Date();
+    const result = await db_1.prisma.notification.updateMany({
         where: { id },
-        data: { readAt: new Date() },
+        data: { readAt },
     });
     res.json({
-        id: notification.id,
-        readAt: notification.readAt,
+        id,
+        readAt: result.count > 0 ? readAt : null,
+        updated: result.count > 0,
     });
 }));
 router.post('/device-tokens', (0, async_handler_1.asyncHandler)(async (req, res) => {

@@ -222,14 +222,16 @@ router.patch(
   '/:id/read',
   asyncHandler(async (req, res) => {
     const id = getParam(req.params.id, 'notificationId');
-    const notification = await prisma.notification.update({
+    const readAt = new Date();
+    const result = await prisma.notification.updateMany({
       where: { id },
-      data: { readAt: new Date() },
+      data: { readAt },
     });
 
     res.json({
-      id: notification.id,
-      readAt: notification.readAt,
+      id,
+      readAt: result.count > 0 ? readAt : null,
+      updated: result.count > 0,
     });
   }),
 );
