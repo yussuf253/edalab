@@ -156,6 +156,16 @@ function defaultLaundryCatalogBookingConfig(
   };
 }
 
+function unconfiguredLaundryCatalogBookingConfig(
+  basePrice: number,
+): LaundryCatalogBookingConfig {
+  const defaults = defaultLaundryCatalogBookingConfig(basePrice);
+  return {
+    ...defaults,
+    itemCatalog: [],
+  };
+}
+
 function normalizeLaundryCatalogBookingConfig(
   value: unknown,
   fallback: LaundryCatalogBookingConfig,
@@ -183,6 +193,7 @@ function normalizeLaundryCatalogBookingConfig(
   };
 
   const itemCatalogRaw = Array.isArray(map.itemCatalog) ? map.itemCatalog : null;
+  const hasItemCatalog = itemCatalogRaw != null;
   const itemCatalog =
     itemCatalogRaw == null
       ? fallback.itemCatalog
@@ -240,7 +251,7 @@ function normalizeLaundryCatalogBookingConfig(
   const deliveryFeeRaw = toFiniteNumber(map.deliveryFee);
 
   return {
-    itemCatalog: itemCatalog.length > 0 ? itemCatalog : fallback.itemCatalog,
+    itemCatalog: hasItemCatalog ? itemCatalog : fallback.itemCatalog,
     pickupSlots: pickupSlots.length > 0 ? pickupSlots : fallback.pickupSlots,
     turnaroundHours:
       turnaroundHoursRaw != null &&
@@ -1273,6 +1284,10 @@ router.get(
           : ownerName.length > 0
             ? ownerName
             : null;
+        const bookingFallback =
+          service.bookingConfigJson == null
+            ? unconfiguredLaundryCatalogBookingConfig(price)
+            : defaultLaundryCatalogBookingConfig(price);
         return {
           id: service.id,
           name: service.name,
@@ -1283,7 +1298,7 @@ router.get(
           iconUrl: service.iconUrl,
           bookingConfig: normalizeLaundryCatalogBookingConfig(
             service.bookingConfigJson,
-            defaultLaundryCatalogBookingConfig(price),
+            bookingFallback,
           ),
         };
       }),

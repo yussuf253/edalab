@@ -488,6 +488,22 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       (item) => _buildBookableItemRow(item, l10n),
                     ),
                   ],
+                  if (itemOptions.isEmpty) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Text(
+                        'This laundry has no configured pricing yet.',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.mediumGrey,
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 20),
                   // Pickup date
                   Text(

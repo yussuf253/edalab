@@ -179,6 +179,7 @@ class LaundryBookingConfig {
         )
         .where((entry) => entry.id.isNotEmpty && entry.label.isNotEmpty)
         .toList(growable: false);
+    final hasItemCatalogField = json.containsKey('itemCatalog');
     final pickupSlots = (json['pickupSlots'] as List<dynamic>? ?? const [])
         .map((entry) => entry.toString().trim())
         .where((entry) => entry.isNotEmpty)
@@ -191,7 +192,7 @@ class LaundryBookingConfig {
     final deliveryFee = (json['deliveryFee'] as num?)?.toDouble() ?? -1;
 
     return LaundryBookingConfig(
-      itemCatalog: itemCatalog.isNotEmpty
+      itemCatalog: hasItemCatalogField
           ? itemCatalog
           : defaultConfig.itemCatalog,
       pickupSlots: pickupSlots.isNotEmpty

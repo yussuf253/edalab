@@ -92,6 +92,13 @@ function defaultLaundryCatalogBookingConfig(basePrice) {
         deliveryFee: 0,
     };
 }
+function unconfiguredLaundryCatalogBookingConfig(basePrice) {
+    const defaults = defaultLaundryCatalogBookingConfig(basePrice);
+    return {
+        ...defaults,
+        itemCatalog: [],
+    };
+}
 function normalizeLaundryCatalogBookingConfig(value, fallback) {
     const map = value != null && typeof value === 'object' && !Array.isArray(value)
         ? value
@@ -113,6 +120,7 @@ function normalizeLaundryCatalogBookingConfig(value, fallback) {
             .slice(0, 40);
     };
     const itemCatalogRaw = Array.isArray(map.itemCatalog) ? map.itemCatalog : null;
+    const hasItemCatalog = itemCatalogRaw != null;
     const itemCatalog = itemCatalogRaw == null
         ? fallback.itemCatalog
         : itemCatalogRaw
@@ -156,7 +164,7 @@ function normalizeLaundryCatalogBookingConfig(value, fallback) {
     const taxRatePercentRaw = toFiniteNumber(map.taxRatePercent);
     const deliveryFeeRaw = toFiniteNumber(map.deliveryFee);
     return {
-        itemCatalog: itemCatalog.length > 0 ? itemCatalog : fallback.itemCatalog,
+        itemCatalog: hasItemCatalog ? itemCatalog : fallback.itemCatalog,
         pickupSlots: pickupSlots.length > 0 ? pickupSlots : fallback.pickupSlots,
         turnaroundHours: turnaroundHoursRaw != null &&
             Number.isInteger(turnaroundHoursRaw) &&
@@ -997,6 +1005,9 @@ router.get('/laundry-services', (0, async_handler_1.asyncHandler)(async (_req, r
             : ownerName.length > 0
                 ? ownerName
                 : null;
+        const bookingFallback = service.bookingConfigJson == null
+            ? unconfiguredLaundryCatalogBookingConfig(price)
+            : defaultLaundryCatalogBookingConfig(price);
         return {
             id: service.id,
             name: service.name,
@@ -1005,7 +1016,7 @@ router.get('/laundry-services', (0, async_handler_1.asyncHandler)(async (_req, r
             price,
             unit: service.unit,
             iconUrl: service.iconUrl,
-            bookingConfig: normalizeLaundryCatalogBookingConfig(service.bookingConfigJson, defaultLaundryCatalogBookingConfig(price)),
+            bookingConfig: normalizeLaundryCatalogBookingConfig(service.bookingConfigJson, bookingFallback),
         };
     }));
 }));

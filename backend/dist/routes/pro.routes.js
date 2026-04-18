@@ -649,6 +649,13 @@ function defaultLaundryServiceBookingConfig(basePrice) {
         deliveryFee: 0,
     };
 }
+function unconfiguredLaundryServiceBookingConfig(basePrice) {
+    const defaults = defaultLaundryServiceBookingConfig(basePrice);
+    return {
+        ...defaults,
+        itemCatalog: [],
+    };
+}
 function normalizeLaundryServiceBookingConfig(value, fallback) {
     const map = value != null && typeof value === 'object' && !Array.isArray(value)
         ? value
@@ -670,6 +677,7 @@ function normalizeLaundryServiceBookingConfig(value, fallback) {
             .slice(0, 40);
     };
     const itemCatalogRaw = Array.isArray(map.itemCatalog) ? map.itemCatalog : null;
+    const hasItemCatalog = itemCatalogRaw != null;
     const itemCatalog = itemCatalogRaw == null
         ? fallback.itemCatalog
         : itemCatalogRaw
@@ -713,7 +721,7 @@ function normalizeLaundryServiceBookingConfig(value, fallback) {
     const taxRatePercentRaw = toFiniteNumber(map.taxRatePercent);
     const deliveryFeeRaw = toFiniteNumber(map.deliveryFee);
     return {
-        itemCatalog: itemCatalog.length > 0 ? itemCatalog : fallback.itemCatalog,
+        itemCatalog: hasItemCatalog ? itemCatalog : fallback.itemCatalog,
         pickupSlots: pickupSlots.length > 0 ? pickupSlots : fallback.pickupSlots,
         turnaroundHours: turnaroundHoursRaw != null &&
             Number.isInteger(turnaroundHoursRaw) &&
@@ -3641,7 +3649,9 @@ router.post('/:userId/laundry-services/:serviceId', (0, async_handler_1.asyncHan
         });
     }
     const currentPrice = (0, serializers_1.toNumber)(currentService.price) ?? 5;
-    const existingBookingConfig = normalizeLaundryServiceBookingConfig(currentService.bookingConfigJson, defaultLaundryServiceBookingConfig(currentPrice));
+    const existingBookingConfig = normalizeLaundryServiceBookingConfig(currentService.bookingConfigJson, currentService.bookingConfigJson == null
+        ? unconfiguredLaundryServiceBookingConfig(currentPrice)
+        : defaultLaundryServiceBookingConfig(currentPrice));
     const nextBookingConfig = body.bookingConfig == null
         ? existingBookingConfig
         : normalizeLaundryServiceBookingConfig(body.bookingConfig, existingBookingConfig);
@@ -4380,7 +4390,9 @@ router.get('/:userId/provider-availability', (0, async_handler_1.asyncHandler)(a
                 ? price.toString()
                 : price.toFixed(2);
             const description = service.description.trim();
-            const bookingConfig = normalizeLaundryServiceBookingConfig(service.bookingConfigJson, defaultLaundryServiceBookingConfig(price));
+            const bookingConfig = normalizeLaundryServiceBookingConfig(service.bookingConfigJson, service.bookingConfigJson == null
+                ? unconfiguredLaundryServiceBookingConfig(price)
+                : defaultLaundryServiceBookingConfig(price));
             return {
                 id: service.id,
                 name: service.name,

@@ -823,6 +823,16 @@ function defaultLaundryServiceBookingConfig(
   };
 }
 
+function unconfiguredLaundryServiceBookingConfig(
+  basePrice: number,
+): LaundryServiceBookingConfig {
+  const defaults = defaultLaundryServiceBookingConfig(basePrice);
+  return {
+    ...defaults,
+    itemCatalog: [],
+  };
+}
+
 function normalizeLaundryServiceBookingConfig(
   value: unknown,
   fallback: LaundryServiceBookingConfig,
@@ -850,6 +860,7 @@ function normalizeLaundryServiceBookingConfig(
   };
 
   const itemCatalogRaw = Array.isArray(map.itemCatalog) ? map.itemCatalog : null;
+  const hasItemCatalog = itemCatalogRaw != null;
   const itemCatalog = itemCatalogRaw == null
     ? fallback.itemCatalog
     : itemCatalogRaw
@@ -903,7 +914,7 @@ function normalizeLaundryServiceBookingConfig(
   const deliveryFeeRaw = toFiniteNumber(map.deliveryFee);
 
   return {
-    itemCatalog: itemCatalog.length > 0 ? itemCatalog : fallback.itemCatalog,
+    itemCatalog: hasItemCatalog ? itemCatalog : fallback.itemCatalog,
     pickupSlots: pickupSlots.length > 0 ? pickupSlots : fallback.pickupSlots,
     turnaroundHours:
       turnaroundHoursRaw != null &&
@@ -4838,7 +4849,9 @@ router.post(
     const currentPrice = toNumber(currentService.price) ?? 5;
     const existingBookingConfig = normalizeLaundryServiceBookingConfig(
       currentService.bookingConfigJson,
-      defaultLaundryServiceBookingConfig(currentPrice),
+      currentService.bookingConfigJson == null
+        ? unconfiguredLaundryServiceBookingConfig(currentPrice)
+        : defaultLaundryServiceBookingConfig(currentPrice),
     );
     const nextBookingConfig =
       body.bookingConfig == null
@@ -5740,7 +5753,9 @@ router.get(
         const description = service.description.trim();
         const bookingConfig = normalizeLaundryServiceBookingConfig(
           service.bookingConfigJson,
-          defaultLaundryServiceBookingConfig(price),
+          service.bookingConfigJson == null
+            ? unconfiguredLaundryServiceBookingConfig(price)
+            : defaultLaundryServiceBookingConfig(price),
         );
         return {
           id: service.id,
