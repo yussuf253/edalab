@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_button.dart';
 
-class OrderSuccessScreen extends StatelessWidget {
+class OrderSuccessScreen extends StatefulWidget {
   final Map<String, dynamic>? orderData;
   const OrderSuccessScreen({super.key, this.orderData});
+  @override
+  State<OrderSuccessScreen> createState() => _OrderSuccessScreenState();
+}
+
+class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
   static const _shellRoutes = {
     '/',
     '/messages',
@@ -16,21 +23,49 @@ class OrderSuccessScreen extends StatelessWidget {
     '/profile',
   };
 
+  bool _hasTrackedView = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_hasTrackedView) return;
+      AnalyticsService.instance.track(
+        AnalyticsEvents.orderSuccessViewed,
+        properties: _analyticsProperties(),
+      );
+      _hasTrackedView = true;
+    });
+  }
+
+  Map<String, Object?> _analyticsProperties() {
+    final amount = (widget.orderData?['amount'] as num?)?.toDouble();
+    return {
+      'order_id': widget.orderData?['orderId']?.toString(),
+      'module_name': widget.orderData?['moduleName']?.toString(),
+      'item_count': (widget.orderData?['itemCount'] as int?) ?? 0,
+      'amount': amount,
+      'tracking_route':
+          widget.orderData?['trackingRoute']?.toString() ?? '/orders',
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final rawOrderId =
-        orderData?['orderId'] as String? ??
+        widget.orderData?['orderId'] as String? ??
         'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
     final orderId = rawOrderId.startsWith('#') ? rawOrderId : '#$rawOrderId';
-    final amount = (orderData?['amount'] as num?)?.toDouble() ?? 87.19;
-    final payment = orderData?['payment'] as String? ?? 'Credit Card';
-    final delivery = orderData?['delivery'] as String? ?? 'Standard';
-    final moduleName = orderData?['moduleName'] as String? ?? 'Order';
-    final itemCount = orderData?['itemCount'] as int? ?? 0;
-    final address = orderData?['address'] as String?;
-    final trackingRoute = orderData?['trackingRoute'] as String? ?? '/orders';
-    final trackingExtra = orderData?['trackingExtra'];
+    final amount = (widget.orderData?['amount'] as num?)?.toDouble() ?? 87.19;
+    final payment = widget.orderData?['payment'] as String? ?? 'Credit Card';
+    final delivery = widget.orderData?['delivery'] as String? ?? 'Standard';
+    final moduleName = widget.orderData?['moduleName'] as String? ?? 'Order';
+    final itemCount = widget.orderData?['itemCount'] as int? ?? 0;
+    final address = widget.orderData?['address'] as String?;
+    final trackingRoute =
+        widget.orderData?['trackingRoute'] as String? ?? '/orders';
+    final trackingExtra = widget.orderData?['trackingExtra'];
 
     return PopScope(
       canPop: false,
@@ -128,6 +163,10 @@ class OrderSuccessScreen extends StatelessWidget {
                 AppButton(
                   text: l10n.t('order_success.track_order'),
                   onPressed: () {
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.orderSuccessTrackTapped,
+                      properties: _analyticsProperties(),
+                    );
                     if (_shellRoutes.contains(trackingRoute)) {
                       context.go(trackingRoute);
                     } else {
@@ -137,7 +176,13 @@ class OrderSuccessScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 TextButton(
-                  onPressed: () => context.go('/'),
+                  onPressed: () {
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.orderSuccessBackHomeTapped,
+                      properties: _analyticsProperties(),
+                    );
+                    context.go('/');
+                  },
                   child: Text(
                     l10n.t('order_success.back_home'),
                     style: AppTextStyles.labelMedium.copyWith(

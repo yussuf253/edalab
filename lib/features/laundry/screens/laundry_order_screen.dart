@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
@@ -301,7 +303,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
             ),
             const SizedBox(height: 24),
             // Address
-            Text(l10n.t('laundry_order.pickup_address'), style: AppTextStyles.h4),
+            Text(
+              l10n.t('laundry_order.pickup_address'),
+              style: AppTextStyles.h4,
+            ),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(14),
@@ -321,7 +326,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(l10n.t('ride.home'), style: AppTextStyles.labelMedium),
+                        Text(
+                          l10n.t('ride.home'),
+                          style: AppTextStyles.labelMedium,
+                        ),
                         Text(
                           defaultAddress?.address ??
                               '123 Main Street, Downtown',
@@ -352,7 +360,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                   _Row(l10n.t('laundry_order.service'), selectedModel.name),
                   _Row(
                     l10n.t('laundry_order.items'),
-                    l10n.t('laundry_order.items_count', params: {'count': '$totalItems'}),
+                    l10n.t(
+                      'laundry_order.items_count',
+                      params: {'count': '$totalItems'},
+                    ),
                   ),
                   _Row(
                     l10n.t('laundry_order.pickup'),
@@ -377,8 +388,19 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                   message: l10n.t('laundry_order.login_required'),
                 );
                 if (!context.mounted || !allowed) return;
+                AnalyticsService.instance.track(
+                  AnalyticsEvents.checkoutPlaceOrderTapped,
+                  properties: {
+                    'module_type': 'laundry',
+                    'service_id': selectedModel.id,
+                    'service_name': selectedModel.name,
+                    'item_count': totalItems == 0 ? 1 : totalItems,
+                    'subtotal': estTotal,
+                    'total': estTotal * 1.08,
+                  },
+                );
                 try {
-                  await ApiClient.post('/orders', {
+                  final order = await ApiClient.post('/orders', {
                     'userId': auth.user!.id,
                     'moduleType': 'LAUNDRY',
                     'subtotal': estTotal,
@@ -404,6 +426,19 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       },
                     ],
                   });
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.checkoutCompleted,
+                    properties: {
+                      'module_type': 'laundry',
+                      'order_id': order is Map ? order['id']?.toString() : null,
+                      'service_id': selectedModel.id,
+                      'service_name': selectedModel.name,
+                      'item_count': totalItems == 0 ? 1 : totalItems,
+                      'subtotal': estTotal,
+                      'tax': estTotal * 0.08,
+                      'total': estTotal * 1.08,
+                    },
+                  );
                   if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
@@ -417,10 +452,16 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                   );
                   context.go('/');
                 } catch (e) {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.checkoutValidationFailed,
+                    properties: {
+                      'module_type': 'laundry',
+                      'reason': 'order_submission_failed',
+                      'error': e.toString(),
+                    },
+                  );
                   if (!context.mounted) return;
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(
+                  ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
                         l10n.t('laundry_order.error', params: {'error': '$e'}),

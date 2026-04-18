@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../constants/app_colors.dart';
+import '../modules/module_access_service.dart';
 import '../network/api_client.dart';
 import '../providers/providers.dart';
 import 'auth_gate.dart';
@@ -17,6 +19,17 @@ Future<void> openConversation(
   String? accentColor,
   Map<String, dynamic>? metadata,
 }) async {
+  if (!ModuleAccessService.instance.isEnabled(moduleType)) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('This module is currently unavailable.'),
+        backgroundColor: AppColors.dark,
+      ),
+    );
+    return;
+  }
+
   final allowed = await requireLoggedIn(
     context,
     message: 'Please log in to send messages.',
@@ -43,7 +56,10 @@ Future<void> openConversation(
     payload['accentColor'] = accentColor.trim();
   }
 
-  final response = await ApiClient.post('/messages/conversations/start', payload);
+  final response = await ApiClient.post(
+    '/messages/conversations/start',
+    payload,
+  );
 
   if (!context.mounted) return;
   final conversationId = response['id']?.toString();

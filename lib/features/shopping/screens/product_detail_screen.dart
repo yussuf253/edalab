@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -24,6 +26,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _selectedSize = 0;
   int _quantity = 1;
   bool _isLoading = true;
+  bool _hasTrackedView = false;
 
   late ProductModel _product;
 
@@ -49,10 +52,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         );
         _isLoading = false;
       });
+      _trackProductViewed(source: 'remote');
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
+      _trackProductViewed(source: 'fallback_sample');
     }
+  }
+
+  void _trackProductViewed({required String source}) {
+    if (_hasTrackedView) return;
+    _hasTrackedView = true;
+    AnalyticsService.instance.track(
+      AnalyticsEvents.entityOpened,
+      properties: {
+        'module': 'shopping',
+        'entity_type': 'product',
+        'entity_id': _product.id,
+        'source': source,
+        'price': _product.price,
+        'brand': _product.brand,
+        'in_stock': _product.inStock,
+      },
+    );
   }
 
   // Pre-defined UI colors mapping for mock products
@@ -104,6 +126,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             padding: const EdgeInsets.all(12),
             onPressed: () {
               wishlistProvider.toggleFavorite(_product);
+              AnalyticsService.instance.track(
+                AnalyticsEvents.wishlistToggled,
+                properties: {
+                  'module': 'shopping',
+                  'entity_type': 'product',
+                  'entity_id': _product.id,
+                  'is_favorite': !isFavorite,
+                  'source': 'product_detail',
+                },
+              );
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
@@ -284,7 +316,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               final uicolor =
                                   _colorMap[colorName] ?? AppColors.primary;
                               return GestureDetector(
-                                onTap: () => setState(() => _selectedColor = i),
+                                onTap: () {
+                                  setState(() => _selectedColor = i);
+                                  AnalyticsService.instance.track(
+                                    AnalyticsEvents.filterApplied,
+                                    properties: {
+                                      'module': 'shopping',
+                                      'filter_type': 'color',
+                                      'filter_value': colorName,
+                                      'entity_id': _product.id,
+                                    },
+                                  );
+                                },
                                 child: Container(
                                   width: 36,
                                   height: 36,
@@ -336,7 +379,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             children: List.generate(_product.sizes.length, (i) {
                               final isSelected = _selectedSize == i;
                               return GestureDetector(
-                                onTap: () => setState(() => _selectedSize = i),
+                                onTap: () {
+                                  setState(() => _selectedSize = i);
+                                  AnalyticsService.instance.track(
+                                    AnalyticsEvents.filterApplied,
+                                    properties: {
+                                      'module': 'shopping',
+                                      'filter_type': 'size',
+                                      'filter_value': _product.sizes[i],
+                                      'entity_id': _product.id,
+                                    },
+                                  );
+                                },
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
                                   padding: const EdgeInsets.symmetric(
@@ -507,6 +561,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   onPressed: () {
                     if (isInCart) {
+                      AnalyticsService.instance.track(
+                        AnalyticsEvents.viewCartTapped,
+                        properties: {
+                          'module': 'shopping',
+                          'source': 'product_detail',
+                          'entity_id': _product.id,
+                          'cart_item_count': cartProvider.getModuleItemCount(
+                            'shopping',
+                          ),
+                        },
+                      );
                       context.push('/shopping/cart');
                       return;
                     }
@@ -535,6 +600,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     );
 
                     cartProvider.addItem(cartItem);
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.checkoutEntryTapped,
+                      properties: {
+                        'module': 'shopping',
+                        'source': 'product_detail',
+                        'entity_type': 'product',
+                        'entity_id': _product.id,
+                        'quantity': _quantity,
+                        'unit_price': _product.price,
+                        'line_total': _product.price * _quantity,
+                        'selected_color': _product.colors.isNotEmpty
+                            ? _product.colors[_selectedColor]
+                            : null,
+                        'selected_size': _product.sizes.isNotEmpty
+                            ? _product.sizes[_selectedSize]
+                            : null,
+                      },
+                    );
                   },
                 ),
               ),

@@ -1,16 +1,25 @@
-# edalab
+# EdaLab App
 
-A new Flutter project.
+## Amplitude Analytics Setup
 
-## Getting Started
+Amplitude is integrated in the user app through `lib/core/analytics/analytics_service.dart`.
 
-This project is a starting point for a Flutter application.
+1. Provide your Amplitude API key at runtime:
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+flutter run --dart-define=AMPLITUDE_API_KEY=YOUR_AMPLITUDE_API_KEY
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+2. For release builds, pass the same `--dart-define` in CI/CD build commands.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+3. If `AMPLITUDE_API_KEY` is not provided, analytics is automatically disabled with a safe no-op behavior.
+
+## What Is Tracked
+
+- App lifecycle: open/resume
+- Automatic screen views from GoRouter navigation
+- Auth funnel: login/register/session restore/logout (+ failures)
+- Profile and address management actions (+ failures)
+- Cart lifecycle: hydrate, add/remove items, quantity changes, promo actions
+- Checkout funnel: view, place-order tap, validation failures, completion
+- Conversion completion flows in checkout, ride, hotel, doctor, home services, and laundry

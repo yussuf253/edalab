@@ -5,6 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
@@ -571,6 +573,17 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     message: l10n.t('doctor_booking.login_required'),
                   );
                   if (!context.mounted || !allowed) return;
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.checkoutPlaceOrderTapped,
+                    properties: {
+                      'module_type': doctor.isDoctorProvider
+                          ? 'doctor'
+                          : 'home_care',
+                      'doctor_id': doctor.id,
+                      'consultation_fee': doctor.consultationFee,
+                      'booking_type_index': _selectedType,
+                    },
+                  );
                   try {
                     final selectedDate = DateTime.utc(
                       2026,
@@ -608,6 +621,20 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       'notes': requestNotes,
                     });
                     if (!context.mounted) return;
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.checkoutCompleted,
+                      properties: {
+                        'module_type': doctor.isDoctorProvider
+                            ? 'doctor'
+                            : 'home_care',
+                        'order_id': appointment is Map
+                            ? appointment['id']?.toString()
+                            : null,
+                        'doctor_id': doctor.id,
+                        'amount': doctor.consultationFee,
+                        'item_count': 1,
+                      },
+                    );
                     context.push(
                       '/checkout/success',
                       extra: {
@@ -631,6 +658,16 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       },
                     );
                   } catch (error) {
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.checkoutValidationFailed,
+                      properties: {
+                        'module_type': doctor.isDoctorProvider
+                            ? 'doctor'
+                            : 'home_care',
+                        'reason': 'booking_submission_failed',
+                        'error': error.toString(),
+                      },
+                    );
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

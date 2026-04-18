@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -24,6 +28,8 @@ class _FoodScreenState extends State<FoodScreen> {
   String _searchQuery = '';
   List<RestaurantModel> _restaurants = RestaurantModel.sampleRestaurants;
   bool _isLoading = true;
+  Timer? _searchDebounce;
+  String _lastTrackedSearch = '';
 
   final _sorts = ['top_rated', 'fastest', 'free_delivery'];
   final _quickCategories = const [
@@ -57,17 +63,59 @@ class _FoodScreenState extends State<FoodScreen> {
             : items;
         _isLoading = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'food',
+          'entity_type': 'restaurant',
+          'result_count': _restaurants.length,
+          'source': 'remote',
+        },
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _restaurants = RestaurantModel.sampleRestaurants;
         _isLoading = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'food',
+          'entity_type': 'restaurant',
+          'result_count': _restaurants.length,
+          'source': 'fallback_sample',
+        },
+      );
     }
+  }
+
+  void _onSearchChanged(String value) {
+    final nextQuery = value.trim();
+    setState(() => _searchQuery = nextQuery);
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 450), () {
+      final normalizedQuery = nextQuery.toLowerCase();
+      if (normalizedQuery == _lastTrackedSearch) return;
+      _lastTrackedSearch = normalizedQuery;
+      if (normalizedQuery.isNotEmpty && normalizedQuery.length < 2) return;
+
+      AnalyticsService.instance.track(
+        AnalyticsEvents.searchPerformed,
+        properties: {
+          'module': 'food',
+          'query': normalizedQuery,
+          'query_length': normalizedQuery.length,
+          'sort_key': _selectedSort,
+          'result_count': _filteredRestaurants().length,
+        },
+      );
+    });
   }
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -107,7 +155,17 @@ class _FoodScreenState extends State<FoodScreen> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.shopping_bag_outlined),
-                  onPressed: () => context.push('/food/cart'),
+                  onPressed: () {
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.viewCartTapped,
+                      properties: {
+                        'module': 'food',
+                        'source': 'food_screen',
+                        'cart_item_count': cartItemCount,
+                      },
+                    );
+                    context.push('/food/cart');
+                  },
                 ),
                 if (cartItemCount > 0)
                   Positioned(
@@ -140,8 +198,7 @@ class _FoodScreenState extends State<FoodScreen> {
                 child: AppSearchBar(
                   hint: l10n.t('food.search_hint'),
                   controller: _searchController,
-                  onChanged: (value) =>
-                      setState(() => _searchQuery = value.trim()),
+                  onChanged: _onSearchChanged,
                   suffix: _searchQuery.isEmpty
                       ? null
                       : IconButton(
@@ -152,6 +209,7 @@ class _FoodScreenState extends State<FoodScreen> {
                           onPressed: () {
                             _searchController.clear();
                             setState(() => _searchQuery = '');
+                            _onSearchChanged('');
                           },
                         ),
                 ),
@@ -172,9 +230,20 @@ class _FoodScreenState extends State<FoodScreen> {
                           icon: category.$2,
                           name: l10n.t('food.category_${category.$1}'),
                           color: category.$3,
-                          onTap: () => _pickCuisine(
-                            l10n.t('food.category_${category.$1}'),
-                          ),
+                          onTap: () {
+                            final cuisine = l10n.t(
+                              'food.category_${category.$1}',
+                            );
+                            AnalyticsService.instance.track(
+                              AnalyticsEvents.filterApplied,
+                              properties: {
+                                'module': 'food',
+                                'filter_type': 'quick_cuisine',
+                                'filter_value': cuisine,
+                              },
+                            );
+                            _pickCuisine(cuisine);
+                          },
                         ),
                       )
                       .toList(),
@@ -193,7 +262,18 @@ class _FoodScreenState extends State<FoodScreen> {
                     final sort = _sorts[index];
                     final isSelected = _selectedSort == sort;
                     return GestureDetector(
-                      onTap: () => setState(() => _selectedSort = sort),
+                      onTap: () {
+                        setState(() => _selectedSort = sort);
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.sortApplied,
+                          properties: {
+                            'module': 'food',
+                            'sort_key': sort,
+                            'query': _searchQuery.trim().toLowerCase(),
+                            'result_count': _filteredRestaurants().length,
+                          },
+                        );
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
@@ -288,8 +368,21 @@ class _FoodScreenState extends State<FoodScreen> {
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final restaurant = restaurants[index];
                   return GestureDetector(
-                    onTap: () =>
-                        context.push('/food/restaurant/${restaurant.id}'),
+                    onTap: () {
+                      AnalyticsService.instance.track(
+                        AnalyticsEvents.entityOpened,
+                        properties: {
+                          'module': 'food',
+                          'entity_type': 'restaurant',
+                          'entity_id': restaurant.id,
+                          'position': index + 1,
+                          'result_count': restaurants.length,
+                          'sort_key': _selectedSort,
+                          'query': _searchQuery.trim().toLowerCase(),
+                        },
+                      );
+                      context.push('/food/restaurant/${restaurant.id}');
+                    },
                     child: Container(
                       margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                       padding: const EdgeInsets.all(14),
@@ -520,10 +613,8 @@ class _FoodScreenState extends State<FoodScreen> {
   }
 
   void _pickCuisine(String cuisine) {
-    setState(() {
-      _searchController.text = cuisine;
-      _searchQuery = cuisine;
-    });
+    _searchController.text = cuisine;
+    _onSearchChanged(cuisine);
   }
 
   int _deliveryMinutes(String value) {

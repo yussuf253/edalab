@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -24,6 +28,9 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
   String _searchQuery = '';
   late RestaurantModel _restaurant;
   bool _isLoading = true;
+  Timer? _searchDebounce;
+  String _lastTrackedSearch = '';
+  bool _hasTrackedRestaurantView = false;
 
   @override
   void initState() {
@@ -47,14 +54,98 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
         );
         _isLoading = false;
       });
+      _trackRestaurantViewed(source: 'remote');
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
+      _trackRestaurantViewed(source: 'fallback_sample');
     }
+  }
+
+  void _trackRestaurantViewed({required String source}) {
+    if (_hasTrackedRestaurantView) return;
+    _hasTrackedRestaurantView = true;
+    AnalyticsService.instance.track(
+      AnalyticsEvents.entityOpened,
+      properties: {
+        'module': 'food',
+        'entity_type': 'restaurant',
+        'entity_id': _restaurant.id,
+        'source': source,
+        'menu_category_count': _restaurant.menu.length,
+        'menu_item_count': _restaurant.menu.fold<int>(
+          0,
+          (sum, category) => sum + category.items.length,
+        ),
+      },
+    );
+  }
+
+  int _visibleMenuItemCount({
+    required List<MenuCategory> menu,
+    required String selectedCategory,
+    required String normalizedQuery,
+    required String allCategory,
+  }) {
+    return menu
+        .where((category) {
+          final matchesCategory =
+              selectedCategory == 'All' ||
+              selectedCategory == allCategory ||
+              category.name == selectedCategory;
+          final matchesSearch =
+              normalizedQuery.isEmpty ||
+              category.items.any(
+                (item) =>
+                    item.name.toLowerCase().contains(normalizedQuery) ||
+                    item.description.toLowerCase().contains(normalizedQuery),
+              );
+          return matchesCategory && matchesSearch;
+        })
+        .map(
+          (category) => category.items.where((item) {
+            if (normalizedQuery.isEmpty) return true;
+            return item.name.toLowerCase().contains(normalizedQuery) ||
+                item.description.toLowerCase().contains(normalizedQuery);
+          }).length,
+        )
+        .fold<int>(0, (sum, count) => sum + count);
+  }
+
+  void _onMenuSearchChanged(String value) {
+    setState(() => _searchQuery = value);
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 450), () {
+      final query = value.trim().toLowerCase();
+      if (query == _lastTrackedSearch) return;
+      _lastTrackedSearch = query;
+      if (query.isNotEmpty && query.length < 2) return;
+      final allCategory = context.l10n.t('common.all');
+      final menu = _resolvedMenu(_restaurant);
+      AnalyticsService.instance.track(
+        AnalyticsEvents.searchPerformed,
+        properties: {
+          'module': 'food',
+          'entity_type': 'dish',
+          'context': 'restaurant_detail',
+          'parent_entity_id': _restaurant.id,
+          'query': query,
+          'query_length': query.length,
+          'selected_category': _selectedCategory,
+          'result_count': _visibleMenuItemCount(
+            menu: menu,
+            selectedCategory: _selectedCategory,
+            normalizedQuery: query,
+            allCategory: allCategory,
+          ),
+        },
+      );
+    });
   }
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -285,8 +376,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                           ),
                           child: TextField(
                             controller: _searchController,
-                            onChanged: (value) =>
-                                setState(() => _searchQuery = value),
+                            onChanged: _onMenuSearchChanged,
                             decoration: InputDecoration(
                               icon: const Icon(
                                 Icons.search_rounded,
@@ -317,9 +407,27 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                               final category = categories[index];
                               final isSelected = _selectedCategory == category;
                               return GestureDetector(
-                                onTap: () => setState(
-                                  () => _selectedCategory = category,
-                                ),
+                                onTap: () {
+                                  setState(() => _selectedCategory = category);
+                                  AnalyticsService.instance.track(
+                                    AnalyticsEvents.filterApplied,
+                                    properties: {
+                                      'module': 'food',
+                                      'entity_type': 'dish',
+                                      'context': 'restaurant_detail',
+                                      'parent_entity_id': _restaurant.id,
+                                      'filter_type': 'category',
+                                      'filter_value': category,
+                                      'query': normalizedQuery,
+                                      'result_count': _visibleMenuItemCount(
+                                        menu: menu,
+                                        selectedCategory: category,
+                                        normalizedQuery: normalizedQuery,
+                                        allCategory: allCategory,
+                                      ),
+                                    },
+                                  );
+                                },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 14,
@@ -427,21 +535,60 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                     return _MenuItemCard(
                       item: item,
                       quantity: itemQuantity,
-                      onTap: () => context.push(
-                        '/food/dish/${item.id}',
-                        extra: {
-                          'restaurantName': restaurant.name,
-                          'categoryName': entry.key,
-                          'item': item,
-                        },
-                      ),
+                      onTap: () {
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.entityOpened,
+                          properties: {
+                            'module': 'food',
+                            'entity_type': 'dish',
+                            'entity_id': item.id,
+                            'source': 'restaurant_detail',
+                            'parent_entity_id': restaurant.id,
+                            'category': entry.key,
+                          },
+                        );
+                        context.push(
+                          '/food/dish/${item.id}',
+                          extra: {
+                            'restaurantName': restaurant.name,
+                            'categoryName': entry.key,
+                            'item': item,
+                          },
+                        );
+                      },
                       onAdd: () => _addItem(context, item, restaurant.name),
-                      onIncrement: () => context
-                          .read<CartProvider>()
-                          .updateQuantity(item.id, itemQuantity + 1),
-                      onDecrement: () => context
-                          .read<CartProvider>()
-                          .updateQuantity(item.id, itemQuantity - 1),
+                      onIncrement: () {
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.cartAdjustmentInitiated,
+                          properties: {
+                            'module': 'food',
+                            'source': 'restaurant_detail',
+                            'action': 'increment',
+                            'entity_type': 'dish',
+                            'entity_id': item.id,
+                          },
+                        );
+                        context.read<CartProvider>().updateQuantity(
+                          item.id,
+                          itemQuantity + 1,
+                        );
+                      },
+                      onDecrement: () {
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.cartAdjustmentInitiated,
+                          properties: {
+                            'module': 'food',
+                            'source': 'restaurant_detail',
+                            'action': 'decrement',
+                            'entity_type': 'dish',
+                            'entity_id': item.id,
+                          },
+                        );
+                        context.read<CartProvider>().updateQuantity(
+                          item.id,
+                          itemQuantity - 1,
+                        );
+                      },
                     );
                   }, childCount: entry.value.length),
                 ),
@@ -454,7 +601,19 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
           ? SizedBox(
               width: MediaQuery.of(context).size.width - 40,
               child: FloatingActionButton.extended(
-                onPressed: () => context.push('/food/cart'),
+                onPressed: () {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.viewCartTapped,
+                    properties: {
+                      'module': 'food',
+                      'source': 'restaurant_detail',
+                      'restaurant_id': restaurant.id,
+                      'cart_item_count': cartItemCount,
+                      'cart_total': moduleTotal,
+                    },
+                  );
+                  context.push('/food/cart');
+                },
                 backgroundColor: AppColors.food,
                 label: Row(
                   children: [
@@ -506,6 +665,19 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
       brand: restaurantName,
     );
     context.read<CartProvider>().addItem(cartItem);
+    AnalyticsService.instance.track(
+      AnalyticsEvents.checkoutEntryTapped,
+      properties: {
+        'module': 'food',
+        'source': 'restaurant_detail',
+        'entity_type': 'dish',
+        'entity_id': item.id,
+        'quantity': 1,
+        'unit_price': item.price,
+        'line_total': item.price,
+        'restaurant_name': restaurantName,
+      },
+    );
   }
 
   List<MenuCategory> _resolvedMenu(RestaurantModel restaurant) {

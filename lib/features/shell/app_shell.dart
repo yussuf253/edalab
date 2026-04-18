@@ -6,6 +6,8 @@ import '../../core/constants/app_assets.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_text_styles.dart';
 import '../../core/localization/app_localizations.dart';
+import '../../core/analytics/analytics_events.dart';
+import '../../core/analytics/analytics_service.dart';
 import '../../core/providers/providers.dart';
 
 class AppShell extends StatelessWidget {
@@ -72,6 +74,18 @@ class AppShell extends StatelessWidget {
                   item: item,
                   isActive: currentIndex == index,
                   cartCount: cartCount,
+                  onTap: () {
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.navigationTabTapped,
+                      properties: {
+                        'target_path': item.path,
+                        'current_path': path,
+                        'is_reselect': currentIndex == index,
+                        'cart_count': cartCount,
+                      },
+                    );
+                    context.go(item.path);
+                  },
                 ),
               );
             }),
@@ -105,11 +119,13 @@ class _NavButton extends StatelessWidget {
     required this.item,
     required this.isActive,
     required this.cartCount,
+    required this.onTap,
   });
 
   final _NavItem item;
   final bool isActive;
   final int cartCount;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +135,7 @@ class _NavButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => context.go(item.path),
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
           child: Column(

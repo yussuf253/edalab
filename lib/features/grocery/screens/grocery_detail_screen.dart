@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
@@ -38,12 +40,25 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
 
   Future<void> _loadItem() async {
     try {
-      final response = await ApiClient.get('/catalog/products/${widget.productId}');
+      final response = await ApiClient.get(
+        '/catalog/products/${widget.productId}',
+      );
       if (!mounted) return;
       setState(() {
-        _item = GroceryModel.fromApi(Map<String, dynamic>.from(response as Map));
+        _item = GroceryModel.fromApi(
+          Map<String, dynamic>.from(response as Map),
+        );
         _isLoading = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.entityOpened,
+        properties: {
+          'module': 'grocery',
+          'entity_type': 'product',
+          'entity_id': _item.id,
+          'source': 'grocery_detail',
+        },
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -51,6 +66,17 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
   }
 
   void _addToCart() {
+    AnalyticsService.instance.track(
+      AnalyticsEvents.cartAdjustmentInitiated,
+      properties: {
+        'module': 'grocery',
+        'source': 'grocery_detail',
+        'action': 'add',
+        'entity_type': 'product',
+        'entity_id': _item.id,
+        'quantity': _quantity,
+      },
+    );
     context.read<CartProvider>().addItem(
       CartItem(
         id: _item.id,
@@ -84,7 +110,17 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
             alignment: Alignment.center,
             children: [
               IconButton(
-                onPressed: () => context.push('/grocery/cart'),
+                onPressed: () {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.viewCartTapped,
+                    properties: {
+                      'module': 'grocery',
+                      'source': 'grocery_detail_appbar',
+                      'cart_item_count': cartItemCount,
+                    },
+                  );
+                  context.push('/grocery/cart');
+                },
                 icon: const Icon(Icons.shopping_bag_outlined),
               ),
               if (cartItemCount > 0)
@@ -129,7 +165,9 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                           borderRadius: BorderRadius.circular(36),
                         ),
                         child: Icon(
-                          _groceryCategoryIcon(_item.categoryName ?? _item.categoryId),
+                          _groceryCategoryIcon(
+                            _item.categoryName ?? _item.categoryId,
+                          ),
                           size: 74,
                           color: AppColors.grocery,
                         ),
@@ -246,7 +284,10 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        Text(l10n.t('grocery_detail.description'), style: AppTextStyles.h4),
+                        Text(
+                          l10n.t('grocery_detail.description'),
+                          style: AppTextStyles.h4,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           _item.description,
@@ -256,7 +297,10 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        Text(l10n.t('grocery_detail.quantity'), style: AppTextStyles.labelLarge),
+                        Text(
+                          l10n.t('grocery_detail.quantity'),
+                          style: AppTextStyles.labelLarge,
+                        ),
                         const SizedBox(height: 12),
                         Container(
                           decoration: BoxDecoration(
@@ -268,19 +312,46 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                             children: [
                               IconButton(
                                 onPressed: _quantity > 1
-                                    ? () => setState(() => _quantity--)
+                                    ? () {
+                                        AnalyticsService.instance.track(
+                                          AnalyticsEvents
+                                              .cartAdjustmentInitiated,
+                                          properties: {
+                                            'module': 'grocery',
+                                            'source': 'grocery_detail_quantity',
+                                            'action': 'decrement_selection',
+                                            'entity_type': 'product',
+                                            'entity_id': _item.id,
+                                          },
+                                        );
+                                        setState(() => _quantity--);
+                                      }
                                     : null,
                                 icon: const Icon(Icons.remove_rounded),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                ),
                                 child: Text(
                                   '$_quantity',
                                   style: AppTextStyles.labelLarge,
                                 ),
                               ),
                               IconButton(
-                                onPressed: () => setState(() => _quantity++),
+                                onPressed: () {
+                                  AnalyticsService.instance.track(
+                                    AnalyticsEvents.cartAdjustmentInitiated,
+                                    properties: {
+                                      'module': 'grocery',
+                                      'source': 'grocery_detail_quantity',
+                                      'action': 'increment_selection',
+                                      'entity_type': 'product',
+                                      'entity_id': _item.id,
+                                    },
+                                  );
+                                  setState(() => _quantity++);
+                                },
                                 icon: const Icon(Icons.add_rounded),
                               ),
                             ],
@@ -315,7 +386,10 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(l10n.t('grocery_detail.total'), style: AppTextStyles.caption),
+                          Text(
+                            l10n.t('grocery_detail.total'),
+                            style: AppTextStyles.caption,
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             '\$${(_item.price * _quantity).toStringAsFixed(2)}',
@@ -340,7 +414,17 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
           ? SizedBox(
               width: MediaQuery.of(context).size.width - 40,
               child: FloatingActionButton.extended(
-                onPressed: () => context.push('/grocery/cart'),
+                onPressed: () {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.viewCartTapped,
+                    properties: {
+                      'module': 'grocery',
+                      'source': 'grocery_detail_fab',
+                      'cart_item_count': cartItemCount,
+                    },
+                  );
+                  context.push('/grocery/cart');
+                },
                 backgroundColor: AppColors.grocery,
                 label: Row(
                   children: [
@@ -392,11 +476,7 @@ class _DetailStat extends StatelessWidget {
       children: [
         Icon(icon, color: AppColors.grocery, size: 20),
         const SizedBox(height: 8),
-        Text(
-          label,
-          style: AppTextStyles.caption,
-          textAlign: TextAlign.center,
-        ),
+        Text(label, style: AppTextStyles.caption, textAlign: TextAlign.center),
         const SizedBox(height: 4),
         Text(
           value,

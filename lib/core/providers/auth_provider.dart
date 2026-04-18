@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../analytics/analytics_events.dart';
+import '../analytics/analytics_service.dart';
 import '../models/user_model.dart';
 import '../network/api_client.dart';
 import '../storage/app_preferences.dart';
@@ -40,6 +42,23 @@ class AuthProvider extends ChangeNotifier {
   void _setUserFromResponse(Map<String, dynamic> response) {
     _user = _userFromResponse(response);
     _isLoggedIn = true;
+    _syncAnalyticsIdentity();
+  }
+
+  void _syncAnalyticsIdentity() {
+    final user = _user;
+    AnalyticsService.instance.setUserId(_isLoggedIn ? user?.id : null);
+    AnalyticsService.instance.setUserProperties({
+      'is_logged_in': _isLoggedIn,
+      'address_count': user?.addresses.length ?? 0,
+      'has_saved_address': (user?.addresses.isNotEmpty ?? false),
+    });
+  }
+
+  String _analyticsSafeError(Object error) {
+    final message = ApiClient.userFacingError(error).trim();
+    if (message.isEmpty) return 'unknown';
+    return message.length > 120 ? '${message.substring(0, 120)}...' : message;
   }
 
   Future<void> _persistSession({required String userId, String? token}) async {
@@ -96,6 +115,10 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> login(String email, String password) async {
+    AnalyticsService.instance.track(
+      AnalyticsEvents.authLoginAttempted,
+      properties: {'auth_method': 'password'},
+    );
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -115,14 +138,26 @@ class AuthProvider extends ChangeNotifier {
         userId: _user!.id,
         token: response['token'] as String?,
       );
+      AnalyticsService.instance.track(
+        AnalyticsEvents.authLoginSucceeded,
+        properties: {'auth_method': 'password'},
+      );
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.authLoginFailed,
+        properties: {
+          'auth_method': 'password',
+          'error': _analyticsSafeError(e),
+        },
+      );
       _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       _user = null;
       _isLoggedIn = false;
+      _syncAnalyticsIdentity();
       notifyListeners();
       return false;
     }
@@ -134,6 +169,10 @@ class AuthProvider extends ChangeNotifier {
     String phone,
     String password,
   ) async {
+    AnalyticsService.instance.track(
+      AnalyticsEvents.authRegisterAttempted,
+      properties: {'auth_method': 'password'},
+    );
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -155,14 +194,26 @@ class AuthProvider extends ChangeNotifier {
         userId: _user!.id,
         token: response['token'] as String?,
       );
+      AnalyticsService.instance.track(
+        AnalyticsEvents.authRegisterSucceeded,
+        properties: {'auth_method': 'password'},
+      );
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.authRegisterFailed,
+        properties: {
+          'auth_method': 'password',
+          'error': _analyticsSafeError(e),
+        },
+      );
       _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       _user = null;
       _isLoggedIn = false;
+      _syncAnalyticsIdentity();
       notifyListeners();
       return false;
     }
@@ -185,14 +236,24 @@ class AuthProvider extends ChangeNotifier {
 
       final response = await ApiClient.get('/users/$userId');
       _setUserFromResponse(Map<String, dynamic>.from(response as Map));
+      AnalyticsService.instance.track(
+        AnalyticsEvents.authSessionRestored,
+        properties: {'source': 'stored_session'},
+      );
       _errorMessage = null;
     } catch (e) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.authSessionRestoreFailed,
+        properties: {'error': _analyticsSafeError(e)},
+      );
       _errorMessage = ApiClient.userFacingError(e);
       if (userId != null && userId.isNotEmpty && _isConnectionError(e)) {
         _setOfflineSession(userId);
+        _syncAnalyticsIdentity();
       } else {
         _user = null;
         _isLoggedIn = false;
+        _syncAnalyticsIdentity();
         await AppPreferences.clearCurrentUserId();
         await ApiClient.setToken(null);
       }
@@ -233,10 +294,18 @@ class AuthProvider extends ChangeNotifier {
       });
 
       _setUserFromResponse(Map<String, dynamic>.from(response as Map));
+      AnalyticsService.instance.track(
+        AnalyticsEvents.profileUpdated,
+        properties: {'has_avatar': (avatarUrl?.trim().isNotEmpty ?? false)},
+      );
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.profileUpdateFailed,
+        properties: {'error': _analyticsSafeError(e)},
+      );
       _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       notifyListeners();
@@ -276,10 +345,18 @@ class AuthProvider extends ChangeNotifier {
       });
 
       _setUserFromResponse(Map<String, dynamic>.from(response as Map));
+      AnalyticsService.instance.track(
+        AnalyticsEvents.addressAdded,
+        properties: {'is_default': isDefault},
+      );
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.addressAddFailed,
+        properties: {'error': _analyticsSafeError(e)},
+      );
       _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       notifyListeners();
@@ -321,10 +398,18 @@ class AuthProvider extends ChangeNotifier {
           });
 
       _setUserFromResponse(Map<String, dynamic>.from(response as Map));
+      AnalyticsService.instance.track(
+        AnalyticsEvents.addressUpdated,
+        properties: {'is_default': isDefault},
+      );
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.addressUpdateFailed,
+        properties: {'error': _analyticsSafeError(e)},
+      );
       _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       notifyListeners();
@@ -349,10 +434,18 @@ class AuthProvider extends ChangeNotifier {
         {},
       );
       _setUserFromResponse(Map<String, dynamic>.from(response as Map));
+      AnalyticsService.instance.track(
+        AnalyticsEvents.addressDefaultSet,
+        properties: {'address_id': addressId},
+      );
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.addressDefaultSetFailed,
+        properties: {'error': _analyticsSafeError(e)},
+      );
       _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       notifyListeners();
@@ -378,10 +471,18 @@ class AuthProvider extends ChangeNotifier {
       if (response is Map) {
         _setUserFromResponse(Map<String, dynamic>.from(response));
       }
+      AnalyticsService.instance.track(
+        AnalyticsEvents.addressDeleted,
+        properties: {'address_id': addressId},
+      );
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.addressDeleteFailed,
+        properties: {'error': _analyticsSafeError(e)},
+      );
       _errorMessage = ApiClient.userFacingError(e);
       _isLoading = false;
       notifyListeners();
@@ -390,9 +491,11 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    AnalyticsService.instance.track(AnalyticsEvents.authLoggedOut);
     _user = null;
     _isLoggedIn = false;
     _errorMessage = null;
+    _syncAnalyticsIdentity();
     await AppPreferences.clearCurrentUserId();
     await ApiClient.setToken(null);
     notifyListeners();

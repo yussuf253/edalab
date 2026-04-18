@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -61,7 +63,21 @@ class _GroceryCartScreenState extends State<GroceryCartScreen> {
         actions: [
           if (items.isNotEmpty)
             TextButton(
-              onPressed: () => cartProvider.clearModuleCart('grocery'),
+              onPressed: () {
+                AnalyticsService.instance.track(
+                  AnalyticsEvents.cartAdjustmentInitiated,
+                  properties: {
+                    'module': 'grocery',
+                    'source': 'grocery_cart',
+                    'action': 'clear_module_cart',
+                    'item_count': items.fold<int>(
+                      0,
+                      (sum, item) => sum + item.quantity,
+                    ),
+                  },
+                );
+                cartProvider.clearModuleCart('grocery');
+              },
               child: Text(
                 l10n.t('cart.clear'),
                 style: AppTextStyles.labelMedium.copyWith(
@@ -91,7 +107,18 @@ class _GroceryCartScreenState extends State<GroceryCartScreen> {
                     text: l10n.t('grocery_cart.browse'),
                     width: 200,
                     color: AppColors.grocery,
-                    onPressed: () => context.pop(),
+                    onPressed: () {
+                      AnalyticsService.instance.track(
+                        AnalyticsEvents.entityOpened,
+                        properties: {
+                          'module': 'grocery',
+                          'entity_type': 'catalog',
+                          'entity_id': 'grocery_home',
+                          'source': 'grocery_cart_empty',
+                        },
+                      );
+                      context.pop();
+                    },
                   ),
                 ],
               ),
@@ -117,6 +144,30 @@ class _GroceryCartScreenState extends State<GroceryCartScreen> {
                           item.id,
                           item.quantity - 1,
                         ),
+                        onTrackIncrement: () {
+                          AnalyticsService.instance.track(
+                            AnalyticsEvents.cartAdjustmentInitiated,
+                            properties: {
+                              'module': 'grocery',
+                              'source': 'grocery_cart',
+                              'action': 'increment',
+                              'entity_type': 'product',
+                              'entity_id': item.id,
+                            },
+                          );
+                        },
+                        onTrackDecrement: () {
+                          AnalyticsService.instance.track(
+                            AnalyticsEvents.cartAdjustmentInitiated,
+                            properties: {
+                              'module': 'grocery',
+                              'source': 'grocery_cart',
+                              'action': 'decrement',
+                              'entity_type': 'product',
+                              'entity_id': item.id,
+                            },
+                          );
+                        },
                       );
                     },
                   ),
@@ -140,7 +191,10 @@ class _GroceryCartScreenState extends State<GroceryCartScreen> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _SumRow(l10n.t('cart.subtotal'), '\$${subtotal.toStringAsFixed(2)}'),
+                        _SumRow(
+                          l10n.t('cart.subtotal'),
+                          '\$${subtotal.toStringAsFixed(2)}',
+                        ),
                         _SumRow(
                           l10n.t('cart.delivery'),
                           '\$${deliveryFee.toStringAsFixed(2)}',
@@ -159,12 +213,33 @@ class _GroceryCartScreenState extends State<GroceryCartScreen> {
                           ),
                           color: AppColors.grocery,
                           onPressed: () async {
+                            AnalyticsService.instance.track(
+                              AnalyticsEvents.checkoutEntryTapped,
+                              properties: {
+                                'module': 'grocery',
+                                'source': 'grocery_cart',
+                                'subtotal': subtotal,
+                                'delivery': deliveryFee,
+                                'total': total,
+                                'item_count': items.fold<int>(
+                                  0,
+                                  (sum, item) => sum + item.quantity,
+                                ),
+                              },
+                            );
                             final allowed = await requireLoggedIn(
                               context,
                               message: l10n.t('cart.login_required'),
                             );
                             if (!context.mounted || !allowed) return;
-                            context.push('/checkout');
+                            context.push(
+                              '/checkout',
+                              extra: {
+                                'moduleType': 'grocery',
+                                'moduleName': l10n.t('module.grocery'),
+                                'source': 'grocery_cart',
+                              },
+                            );
                           },
                         ),
                       ],
@@ -183,6 +258,8 @@ class _ItemRow extends StatelessWidget {
   final int quantity;
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
+  final VoidCallback onTrackIncrement;
+  final VoidCallback onTrackDecrement;
 
   const _ItemRow({
     required this.name,
@@ -191,6 +268,8 @@ class _ItemRow extends StatelessWidget {
     required this.quantity,
     required this.onIncrement,
     required this.onDecrement,
+    required this.onTrackIncrement,
+    required this.onTrackDecrement,
   });
 
   @override
@@ -238,7 +317,10 @@ class _ItemRow extends StatelessWidget {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: onDecrement,
+                  onTap: () {
+                    onTrackDecrement();
+                    onDecrement();
+                  },
                   child: const SizedBox(
                     width: 28,
                     height: 28,
@@ -250,7 +332,10 @@ class _ItemRow extends StatelessWidget {
                   child: Text('$quantity', style: AppTextStyles.labelMedium),
                 ),
                 GestureDetector(
-                  onTap: onIncrement,
+                  onTap: () {
+                    onTrackIncrement();
+                    onIncrement();
+                  },
                   child: const SizedBox(
                     width: 28,
                     height: 28,

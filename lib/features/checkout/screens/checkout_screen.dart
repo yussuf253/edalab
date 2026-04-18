@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -22,6 +24,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   int _selectedAddress = 0;
   int _selectedDeliveryOption = 0;
   final TextEditingController _promoController = TextEditingController();
+  bool _hasTrackedCheckoutView = false;
 
   static const _deliveryOptions = [
     ('checkout.standard', 'checkout.standard_eta', 0.0),
@@ -49,6 +52,42 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   void dispose() {
     _promoController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackCheckoutViewed());
+  }
+
+  void _trackCheckoutViewed() {
+    if (_hasTrackedCheckoutView || !mounted) return;
+
+    final cartProvider = context.read<CartProvider>();
+    final moduleType = (widget.checkoutData?['moduleType'] as String?)
+        ?.toLowerCase();
+    final moduleItems = moduleType == null
+        ? cartProvider.items
+        : cartProvider.getModuleItems(moduleType);
+    final subtotal = moduleType == null
+        ? cartProvider.subtotal
+        : cartProvider.getModuleSubtotal(moduleType);
+
+    AnalyticsService.instance.track(
+      AnalyticsEvents.checkoutViewed,
+      properties: {
+        'module_type': moduleType ?? 'mixed',
+        'line_count': moduleItems.length,
+        'item_count': moduleItems.fold<int>(
+          0,
+          (sum, item) => sum + item.quantity,
+        ),
+        'subtotal': subtotal,
+        'source': widget.checkoutData?['source']?.toString() ?? 'direct',
+      },
+    );
+
+    _hasTrackedCheckoutView = true;
   }
 
   @override
@@ -616,12 +655,39 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 },
               ),
               onPressed: () async {
+                AnalyticsService.instance.track(
+                  AnalyticsEvents.checkoutPlaceOrderTapped,
+                  properties: {
+                    'module_type': moduleType ?? 'mixed',
+                    'line_count': moduleItems.length,
+                    'item_count': moduleItems.fold<int>(
+                      0,
+                      (sum, item) => sum + item.quantity,
+                    ),
+                    'subtotal': subtotal,
+                    'shipping': shipping,
+                    'tax': tax,
+                    'tip': tip,
+                    'discount': discount,
+                    'total': total,
+                    'payment_label': paymentName,
+                    'delivery_label':
+                        _deliveryOptions[_selectedDeliveryOption].$1,
+                  },
+                );
                 final allowed = await requireLoggedIn(
                   context,
                   message: l10n.t('checkout.login_required'),
                 );
                 if (!context.mounted || !allowed) return;
                 if (moduleItems.isEmpty) {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.checkoutValidationFailed,
+                    properties: {
+                      'reason': 'empty_cart',
+                      'module_type': moduleType ?? 'mixed',
+                    },
+                  );
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(l10n.t('checkout.cart_empty')),
@@ -629,6 +695,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     ),
                   );
                 } else if (addresses.isEmpty) {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.checkoutValidationFailed,
+                    properties: {
+                      'reason': 'missing_address',
+                      'module_type': moduleType ?? 'mixed',
+                    },
+                  );
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(l10n.t('checkout.add_address_first')),
@@ -671,6 +744,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   final orderId =
                       primaryOrderId ??
                       'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.checkoutCompleted,
+                    properties: {
+                      'order_id': orderId,
+                      'module_type': moduleType ?? 'mixed',
+                      'line_count': moduleItems.length,
+                      'item_count': moduleItems.fold<int>(
+                        0,
+                        (sum, item) => sum + item.quantity,
+                      ),
+                      'subtotal': subtotal,
+                      'shipping': shipping,
+                      'tax': tax,
+                      'tip': tip,
+                      'discount': discount,
+                      'total': total,
+                      'payment_label': paymentName,
+                      'delivery_label':
+                          _deliveryOptions[_selectedDeliveryOption].$1,
+                    },
+                  );
                   context.push(
                     '/checkout/success',
                     extra: {

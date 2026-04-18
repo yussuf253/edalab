@@ -12,6 +12,7 @@ import { prisma } from '../db';
 import { createMessageNotification } from '../utils/notifications';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
+import { isModuleEnabled, moduleName } from '../utils/module-settings';
 
 const router = Router();
 
@@ -936,6 +937,12 @@ router.post(
   asyncHandler(async (req, res) => {
     const body = startConversationSchema.parse(req.body);
 
+    if (!(await isModuleEnabled(body.moduleType))) {
+      return res.status(403).json({
+        error: `${moduleName(body.moduleType)} module is currently disabled.`,
+      });
+    }
+
     if (body.entityType === ConversationEntityType.DOCTOR) {
       const validation = await isDoctorConversationAllowed({
         userId: body.userId,
@@ -1026,6 +1033,12 @@ router.post(
   '/pro/conversations/start',
   asyncHandler(async (req, res) => {
     const body = startProConversationSchema.parse(req.body);
+
+    if (!(await isModuleEnabled(body.moduleType))) {
+      return res.status(403).json({
+        error: `${moduleName(body.moduleType)} module is currently disabled.`,
+      });
+    }
 
     const [customer, participant] = await Promise.all([
       prisma.user.findUnique({
@@ -1133,6 +1146,12 @@ router.post(
 
     if (!conversation) {
       return res.status(404).json({ error: 'Conversation not found.' });
+    }
+
+    if (!(await isModuleEnabled(conversation.moduleType))) {
+      return res.status(403).json({
+        error: `${moduleName(conversation.moduleType)} module is currently disabled.`,
+      });
     }
 
     let viewer: ViewerType;

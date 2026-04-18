@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../analytics/analytics_events.dart';
+import '../analytics/analytics_service.dart';
 import '../localization/app_localizations.dart';
 import '../storage/app_preferences.dart';
 
@@ -55,11 +57,20 @@ class LanguageProvider extends ChangeNotifier {
   }
 
   Future<void> setLocale(Locale locale) async {
+    final previousCode = _locale.languageCode;
     final next = _normalize(locale);
     if (next.languageCode == _locale.languageCode) return;
     _locale = next;
     notifyListeners();
     await AppPreferences.setLocaleCode(next.languageCode);
+    AnalyticsService.instance.setGlobalProperties({
+      'locale': next.languageCode,
+    });
+    AnalyticsService.instance.setUserProperties({'locale': next.languageCode});
+    AnalyticsService.instance.track(
+      AnalyticsEvents.languageChanged,
+      properties: {'from': previousCode, 'to': next.languageCode},
+    );
   }
 
   Locale _normalize(Locale locale) {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
@@ -52,9 +54,27 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
         }
         _isLoading = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'ride',
+          'entity_type': 'ride_category',
+          'result_count': _categories.length,
+          'source': 'booking_screen_remote',
+        },
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'ride',
+          'entity_type': 'ride_category',
+          'result_count': _categories.length,
+          'source': 'booking_screen_fallback',
+        },
+      );
     }
   }
 
@@ -134,8 +154,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
         widget.bookingData?['destinationTitle'] as String? ?? 'City Mall';
     final destination =
         widget.bookingData?['destination'] as String? ?? 'City Mall, Downtown';
-    final paymentMethod =
-        widget.bookingData?['payment'] as String? ?? 'Cash';
+    final paymentMethod = widget.bookingData?['payment'] as String? ?? 'Cash';
     final pickupPoint =
         rideMapPointFromJson(
           widget.bookingData?['pickupPoint'],
@@ -209,13 +228,24 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                     ? 'Route estimate unavailable right now.'
                     : null,
                 actionLabel: 'Open map',
-                onActionTap: () => openRideRouteInMaps(
-                  context,
-                  pickupLabel: pickup,
-                  destinationLabel: destination,
-                  pickupPoint: pickupPoint,
-                  destinationPoint: destinationPoint,
-                ),
+                onActionTap: () {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.entityOpened,
+                    properties: {
+                      'module': 'ride',
+                      'entity_type': 'external_map',
+                      'entity_id': 'ride_route_map',
+                      'source': 'ride_booking_screen',
+                    },
+                  );
+                  openRideRouteInMaps(
+                    context,
+                    pickupLabel: pickup,
+                    destinationLabel: destination,
+                    pickupPoint: pickupPoint,
+                    destinationPoint: destinationPoint,
+                  );
+                },
               ),
             ),
           ),
@@ -334,8 +364,18 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                   (cat.pricePerMile * routeDistance);
                               final sel = _selectedVehicle == index;
                               return GestureDetector(
-                                onTap: () =>
-                                    setState(() => _selectedVehicle = index),
+                                onTap: () {
+                                  setState(() => _selectedVehicle = index);
+                                  AnalyticsService.instance.track(
+                                    AnalyticsEvents.filterApplied,
+                                    properties: {
+                                      'module': 'ride',
+                                      'filter_type': 'vehicle_category',
+                                      'filter_value': cat.name,
+                                      'entity_id': cat.id,
+                                    },
+                                  );
+                                },
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
                                   padding: const EdgeInsets.all(14),
@@ -391,11 +431,12 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                       ),
                                       Text(
                                         '\$${estPrice.toStringAsFixed(2)}',
-                                        style: AppTextStyles.labelLarge.copyWith(
-                                          color: sel
-                                              ? AppColors.ride
-                                              : AppColors.dark,
-                                        ),
+                                        style: AppTextStyles.labelLarge
+                                            .copyWith(
+                                              color: sel
+                                                  ? AppColors.ride
+                                                  : AppColors.dark,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -416,6 +457,17 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                             categories.isEmpty) {
                           return;
                         }
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.checkoutEntryTapped,
+                          properties: {
+                            'module': 'ride',
+                            'source': 'ride_booking_screen',
+                            'entry_type': 'ride_summary',
+                            'ride_category_id': selectedCategory.id,
+                            'ride_category_name': selectedCategory.name,
+                            'route_distance_km': routeDistance,
+                          },
+                        );
                         context.push(
                           '/ride/summary',
                           extra: {
@@ -423,12 +475,17 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                             'payment': paymentMethod,
                             'pickup': pickup,
                             'destination': destination,
-                            'pickupAddressId': widget.bookingData?['pickupAddressId'],
-                            'dropoffAddressId': widget.bookingData?['dropoffAddressId'],
+                            'pickupAddressId':
+                                widget.bookingData?['pickupAddressId'],
+                            'dropoffAddressId':
+                                widget.bookingData?['dropoffAddressId'],
                             'pickupPoint': rideMapPointToJson(pickupPoint),
-                            'destinationPoint': rideMapPointToJson(destinationPoint),
+                            'destinationPoint': rideMapPointToJson(
+                              destinationPoint,
+                            ),
                             'routeDistance': routeDistance,
-                            'routeDurationLabel': routeDurationLabel ?? 'ETA unavailable',
+                            'routeDurationLabel':
+                                routeDurationLabel ?? 'ETA unavailable',
                             'estimatedRidePrice':
                                 selectedCategory.basePrice +
                                 (selectedCategory.pricePerMile * routeDistance),

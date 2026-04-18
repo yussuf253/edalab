@@ -85,6 +85,96 @@ async function seedUsers() {
   });
 }
 
+async function seedAppModules() {
+  const modules = [
+    {
+      id: 'module-shopping',
+      moduleType: ModuleType.SHOPPING,
+      name: 'Shopping',
+      slug: 'shopping',
+      active: true,
+      sortOrder: 1,
+    },
+    {
+      id: 'module-food',
+      moduleType: ModuleType.FOOD,
+      name: 'Food',
+      slug: 'food',
+      active: true,
+      sortOrder: 2,
+    },
+    {
+      id: 'module-doctor',
+      moduleType: ModuleType.DOCTOR,
+      name: 'Doctor',
+      slug: 'doctor',
+      active: true,
+      sortOrder: 3,
+    },
+    {
+      id: 'module-hotel',
+      moduleType: ModuleType.HOTEL,
+      name: 'Hotel',
+      slug: 'hotel',
+      active: true,
+      sortOrder: 4,
+    },
+    {
+      id: 'module-ride',
+      moduleType: ModuleType.RIDE,
+      name: 'Ride',
+      slug: 'ride',
+      active: true,
+      sortOrder: 5,
+    },
+    {
+      id: 'module-pharmacy',
+      moduleType: ModuleType.PHARMACY,
+      name: 'Pharmacy',
+      slug: 'pharmacy',
+      active: true,
+      sortOrder: 6,
+    },
+    {
+      id: 'module-grocery',
+      moduleType: ModuleType.GROCERY,
+      name: 'Grocery',
+      slug: 'grocery',
+      active: true,
+      sortOrder: 7,
+    },
+    {
+      id: 'module-home-services',
+      moduleType: ModuleType.HOME_SERVICES,
+      name: 'Home Services',
+      slug: 'home-services',
+      active: true,
+      sortOrder: 8,
+    },
+    {
+      id: 'module-laundry',
+      moduleType: ModuleType.LAUNDRY,
+      name: 'Laundry',
+      slug: 'laundry',
+      active: true,
+      sortOrder: 9,
+    },
+  ];
+
+  for (const module of modules) {
+    await prisma.appModule.upsert({
+      where: { moduleType: module.moduleType },
+      update: {
+        name: module.name,
+        slug: module.slug,
+        active: module.active,
+        sortOrder: module.sortOrder,
+      },
+      create: module,
+    });
+  }
+}
+
 async function seedCategories() {
   const categories = [
     { id: 'shopping-shoes', moduleType: ModuleType.SHOPPING, name: 'Shoes', slug: 'shopping-shoes', sortOrder: 1 },
@@ -527,6 +617,7 @@ async function seedAccountData() {
 
 async function main() {
   await seedUsers();
+  await seedAppModules();
   await seedCategories();
   await seedShoppingStores();
   await seedProducts();

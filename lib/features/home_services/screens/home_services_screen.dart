@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -100,46 +102,15 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
   HomeServiceCategoryModel get _houseHelpDisplayCategory =>
       _houseHelpCategory ?? _fallbackHouseHelpCategory;
 
-  bool _isHouseHelpProvider(HomeServiceProviderModel provider) {
-    final slug = (provider.categorySlug ?? '').toLowerCase();
-    final categoryName = (provider.categoryName ?? '').toLowerCase();
-    final title = provider.title.toLowerCase();
-    final services = provider.services.join(' ').toLowerCase();
-    return slug.contains('house-help') ||
-        slug.contains('house_help') ||
-        slug.contains('househelp') ||
-        (slug.contains('house') && slug.contains('help')) ||
-        slug.contains('maid') ||
-        categoryName.contains('house help') ||
-        categoryName.contains('maid') ||
-        title.contains('house help') ||
-        title.contains('maid') ||
-        slug.contains('clean') ||
-        categoryName.contains('clean') ||
-        services.contains('house help') ||
-        services.contains('maid') ||
-        services.contains('clean');
-  }
-
-  HomeServiceProviderModel? get _preferredHouseHelpProvider {
-    final candidates = _providers
-        .where(_isHouseHelpProvider)
-        .toList(growable: false);
-    if (candidates.isEmpty) return null;
-    final ranked = [...candidates]
-      ..sort((a, b) {
-        final availabilityOrder = (b.isAvailable ? 1 : 0).compareTo(
-          a.isAvailable ? 1 : 0,
-        );
-        if (availabilityOrder != 0) return availabilityOrder;
-        final ratingOrder = b.rating.compareTo(a.rating);
-        if (ratingOrder != 0) return ratingOrder;
-        return b.reviewCount.compareTo(a.reviewCount);
-      });
-    return ranked.first;
-  }
-
   void _openHouseHelpCategory(BuildContext context) {
+    AnalyticsService.instance.track(
+      AnalyticsEvents.filterApplied,
+      properties: {
+        'module': 'home_services',
+        'filter_type': 'category',
+        'filter_value': 'house_help',
+      },
+    );
     context.push('/home-services/book/house-help-zone');
     return;
   }
@@ -150,6 +121,14 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
       _openHouseHelpCategory(context);
       return;
     }
+    AnalyticsService.instance.track(
+      AnalyticsEvents.filterApplied,
+      properties: {
+        'module': 'home_services',
+        'filter_type': 'category',
+        'filter_value': category.slug,
+      },
+    );
     context.push(
       '/home-services/category/${category.slug}',
       extra: {
@@ -190,9 +169,45 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
         _providers = providers;
         _isLoading = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'home_services',
+          'entity_type': 'category',
+          'result_count': _categories.length,
+          'source': 'remote',
+        },
+      );
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'home_services',
+          'entity_type': 'provider',
+          'result_count': _providers.length,
+          'source': 'remote',
+        },
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'home_services',
+          'entity_type': 'category',
+          'result_count': _categories.length,
+          'source': 'fallback_empty',
+        },
+      );
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'home_services',
+          'entity_type': 'provider',
+          'result_count': _providers.length,
+          'source': 'fallback_empty',
+        },
+      );
     }
   }
 
@@ -245,7 +260,18 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                   hint: l10n.t('home_services.search_hint'),
                   controller: _searchController,
                   readOnly: true,
-                  onTap: () => context.push('/home-services/category/all'),
+                  onTap: () {
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.entityOpened,
+                      properties: {
+                        'module': 'home_services',
+                        'entity_type': 'category_browser',
+                        'entity_id': 'all',
+                        'source': 'home_services_search_bar',
+                      },
+                    );
+                    context.push('/home-services/category/all');
+                  },
                 ),
               ),
             ),
@@ -425,8 +451,18 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () =>
-                          context.push('/home-services/category/all'),
+                      onPressed: () {
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.filterApplied,
+                          properties: {
+                            'module': 'home_services',
+                            'filter_type': 'category',
+                            'filter_value': 'all',
+                            'source': 'popular_categories_see_all',
+                          },
+                        );
+                        context.push('/home-services/category/all');
+                      },
                       child: Text(l10n.t('home_services.see_all')),
                     ),
                   ],
@@ -566,8 +602,18 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                   final provider = _availableNow[index];
                   return _FeaturedProviderCard(
                     provider: provider,
-                    onTap: () =>
-                        context.push('/home-services/provider/${provider.id}'),
+                    onTap: () {
+                      AnalyticsService.instance.track(
+                        AnalyticsEvents.entityOpened,
+                        properties: {
+                          'module': 'home_services',
+                          'entity_type': 'provider',
+                          'entity_id': provider.id,
+                          'source': 'home_services_available_now',
+                        },
+                      );
+                      context.push('/home-services/provider/${provider.id}');
+                    },
                     accentColor: provider.categoryColor,
                   );
                 }, childCount: _availableNow.length),
@@ -586,8 +632,18 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () =>
-                          context.push('/home-services/category/all'),
+                      onPressed: () {
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.filterApplied,
+                          properties: {
+                            'module': 'home_services',
+                            'filter_type': 'category',
+                            'filter_value': 'all',
+                            'source': 'top_professionals_see_all',
+                          },
+                        );
+                        context.push('/home-services/category/all');
+                      },
                       child: Text(l10n.t('home_services.see_all')),
                     ),
                   ],
@@ -602,8 +658,18 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                   final provider = _featuredProviders[index];
                   return _FeaturedProviderCard(
                     provider: provider,
-                    onTap: () =>
-                        context.push('/home-services/provider/${provider.id}'),
+                    onTap: () {
+                      AnalyticsService.instance.track(
+                        AnalyticsEvents.entityOpened,
+                        properties: {
+                          'module': 'home_services',
+                          'entity_type': 'provider',
+                          'entity_id': provider.id,
+                          'source': 'home_services_top_professionals',
+                        },
+                      );
+                      context.push('/home-services/provider/${provider.id}');
+                    },
                     accentColor: provider.categoryColor,
                   );
                 }, childCount: _featuredProviders.length),

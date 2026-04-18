@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -108,7 +110,19 @@ class GroceryCategoryScreen extends StatelessWidget {
                     );
                     return InkWell(
                       borderRadius: BorderRadius.circular(14),
-                      onTap: () => context.push('/grocery/product/${item.id}'),
+                      onTap: () {
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.entityOpened,
+                          properties: {
+                            'module': 'grocery',
+                            'entity_type': 'product',
+                            'entity_id': item.id,
+                            'source': 'grocery_category_grid',
+                            'category_id': categoryId,
+                          },
+                        );
+                        context.push('/grocery/product/${item.id}');
+                      },
                       child: Container(
                         decoration: BoxDecoration(
                           color: AppColors.white,
@@ -153,7 +167,8 @@ class GroceryCategoryScreen extends StatelessWidget {
                                     ),
                                     const Spacer(),
                                     Row(
-                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
                                       children: [
                                         Expanded(
                                           child: Column(
@@ -181,16 +196,31 @@ class GroceryCategoryScreen extends StatelessWidget {
                                         ),
                                         _GroceryAddButton(
                                           onPressed: () {
-                                            context.read<CartProvider>().addItem(
-                                              CartItem(
-                                                id: item.id,
-                                                name: item.name,
-                                                price: item.price,
-                                                moduleType: 'grocery',
-                                                brand: item.unit,
-                                                imageUrl: item.imageUrl,
-                                              ),
+                                            AnalyticsService.instance.track(
+                                              AnalyticsEvents
+                                                  .cartAdjustmentInitiated,
+                                              properties: {
+                                                'module': 'grocery',
+                                                'source':
+                                                    'grocery_category_grid',
+                                                'action': 'add',
+                                                'entity_type': 'product',
+                                                'entity_id': item.id,
+                                                'category_id': categoryId,
+                                              },
                                             );
+                                            context
+                                                .read<CartProvider>()
+                                                .addItem(
+                                                  CartItem(
+                                                    id: item.id,
+                                                    name: item.name,
+                                                    price: item.price,
+                                                    moduleType: 'grocery',
+                                                    brand: item.unit,
+                                                    imageUrl: item.imageUrl,
+                                                  ),
+                                                );
                                           },
                                         ),
                                       ],
@@ -214,7 +244,18 @@ class GroceryCategoryScreen extends StatelessWidget {
           ? SizedBox(
               width: MediaQuery.of(context).size.width - 40,
               child: FloatingActionButton.extended(
-                onPressed: () => context.push('/grocery/cart'),
+                onPressed: () {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.viewCartTapped,
+                    properties: {
+                      'module': 'grocery',
+                      'source': 'grocery_category_screen',
+                      'cart_item_count': cartItemCount,
+                      'category_id': categoryId,
+                    },
+                  );
+                  context.push('/grocery/cart');
+                },
                 backgroundColor: AppColors.grocery,
                 label: Row(
                   children: [
@@ -269,11 +310,7 @@ class _GroceryAddButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Center(
-            child: Icon(
-              Icons.add_rounded,
-              color: AppColors.white,
-              size: 18,
-            ),
+            child: Icon(Icons.add_rounded, color: AppColors.white, size: 18),
           ),
         ),
       ),

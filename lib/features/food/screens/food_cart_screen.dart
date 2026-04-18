@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -92,7 +94,21 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
         actions: [
           if (items.isNotEmpty)
             TextButton(
-              onPressed: () => cartProvider.clearModuleCart('food'),
+              onPressed: () {
+                AnalyticsService.instance.track(
+                  AnalyticsEvents.cartAdjustmentInitiated,
+                  properties: {
+                    'module': 'food',
+                    'source': 'food_cart',
+                    'action': 'clear_module_cart',
+                    'item_count': items.fold<int>(
+                      0,
+                      (sum, item) => sum + item.quantity,
+                    ),
+                  },
+                );
+                cartProvider.clearModuleCart('food');
+              },
               child: Text(
                 l10n.t('cart.clear'),
                 style: AppTextStyles.labelMedium.copyWith(
@@ -122,7 +138,18 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                     text: l10n.t('food_cart.browse'),
                     width: 200,
                     color: AppColors.food,
-                    onPressed: () => context.go('/food'),
+                    onPressed: () {
+                      AnalyticsService.instance.track(
+                        AnalyticsEvents.entityOpened,
+                        properties: {
+                          'module': 'food',
+                          'entity_type': 'catalog',
+                          'entity_id': 'food_home',
+                          'source': 'food_cart_empty',
+                        },
+                      );
+                      context.go('/food');
+                    },
                   ),
                 ],
               ),
@@ -238,14 +265,38 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                           qty: item.quantity,
                           price: item.price,
                           brand: item.brand,
-                          onIncrement: () => cartProvider.updateQuantity(
-                            item.id,
-                            item.quantity + 1,
-                          ),
-                          onDecrement: () => cartProvider.updateQuantity(
-                            item.id,
-                            item.quantity - 1,
-                          ),
+                          onIncrement: () {
+                            AnalyticsService.instance.track(
+                              AnalyticsEvents.cartAdjustmentInitiated,
+                              properties: {
+                                'module': 'food',
+                                'source': 'food_cart',
+                                'action': 'increment',
+                                'entity_type': 'dish',
+                                'entity_id': item.id,
+                              },
+                            );
+                            cartProvider.updateQuantity(
+                              item.id,
+                              item.quantity + 1,
+                            );
+                          },
+                          onDecrement: () {
+                            AnalyticsService.instance.track(
+                              AnalyticsEvents.cartAdjustmentInitiated,
+                              properties: {
+                                'module': 'food',
+                                'source': 'food_cart',
+                                'action': 'decrement',
+                                'entity_type': 'dish',
+                                'entity_id': item.id,
+                              },
+                            );
+                            cartProvider.updateQuantity(
+                              item.id,
+                              item.quantity - 1,
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -320,7 +371,20 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                     : '\$${t.toInt()}';
                                 return Expanded(
                                   child: GestureDetector(
-                                    onTap: () => setState(() => _tip = t),
+                                    onTap: () {
+                                      final previous = _tip;
+                                      setState(() => _tip = t);
+                                      if (previous == t) return;
+                                      AnalyticsService.instance.track(
+                                        AnalyticsEvents.cartTipChanged,
+                                        properties: {
+                                          'module': 'food',
+                                          'source': 'food_cart',
+                                          'previous_tip': previous,
+                                          'selected_tip': t,
+                                        },
+                                      );
+                                    },
                                     child: Container(
                                       margin: const EdgeInsets.only(right: 8),
                                       padding: const EdgeInsets.symmetric(
@@ -375,6 +439,19 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                   brand: restaurantName,
                                 ),
                               );
+                              AnalyticsService.instance.track(
+                                AnalyticsEvents.checkoutEntryTapped,
+                                properties: {
+                                  'module': 'food',
+                                  'source': 'food_cart_recommended',
+                                  'entity_type': 'dish',
+                                  'entity_id': menuItem.id,
+                                  'quantity': 1,
+                                  'unit_price': menuItem.price,
+                                  'line_total': menuItem.price,
+                                  'restaurant_name': restaurantName,
+                                },
+                              );
                             },
                           ),
                         ),
@@ -410,7 +487,10 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                           l10n.t('cart.delivery'),
                           '\$${deliveryFee.toStringAsFixed(2)}',
                         ),
-                        _SummLine(l10n.t('cart.tip'), '\$${tipAmount.toStringAsFixed(2)}'),
+                        _SummLine(
+                          l10n.t('cart.tip'),
+                          '\$${tipAmount.toStringAsFixed(2)}',
+                        ),
                         _SummLine(
                           l10n.t('cart.service_fee'),
                           '\$${serviceFee.toStringAsFixed(2)}',
@@ -429,6 +509,29 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                           ),
                           color: AppColors.food,
                           onPressed: () async {
+                            AnalyticsService.instance.track(
+                              AnalyticsEvents.checkoutEntryTapped,
+                              properties: {
+                                'module': 'food',
+                                'source': 'food_cart',
+                                'subtotal': subtotal,
+                                'delivery_fee': deliveryFee,
+                                'service_fee': serviceFee,
+                                'tip': tipAmount,
+                                'total': total,
+                                'item_count': items.fold<int>(
+                                  0,
+                                  (sum, item) => sum + item.quantity,
+                                ),
+                                'has_instructions': _instructionsController.text
+                                    .trim()
+                                    .isNotEmpty,
+                                'instructions_length': _instructionsController
+                                    .text
+                                    .trim()
+                                    .length,
+                              },
+                            );
                             final allowed = await requireLoggedIn(
                               context,
                               message: l10n.t('cart.login_required'),

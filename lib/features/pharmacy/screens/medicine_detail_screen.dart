@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
-import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
@@ -45,38 +46,19 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
         );
         _isLoading = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.entityOpened,
+        properties: {
+          'module': 'pharmacy',
+          'entity_type': 'medicine',
+          'entity_id': _medicine.id,
+          'source': 'pharmacy_medicine_detail',
+        },
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
     }
-  }
-
-  Future<void> _openPharmacyChat() async {
-    final sourceBusiness = _medicine.sourceBusiness?.trim() ?? '';
-    if (sourceBusiness.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pharmacy contact is not available for this item yet.'),
-        ),
-      );
-      return;
-    }
-
-    await openConversation(
-      context,
-      moduleType: 'PHARMACY',
-      entityType: 'SHOP',
-      entityId: sourceBusiness,
-      title: sourceBusiness,
-      subtitle: _medicine.category,
-      accentColor: '#27AE60',
-      metadata: {
-        'merchantName': sourceBusiness,
-        'sourceBusiness': sourceBusiness,
-        'productId': _medicine.id,
-      },
-    );
   }
 
   @override
@@ -108,7 +90,17 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                 splashRadius: 24,
                 constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
                 padding: const EdgeInsets.all(12),
-                onPressed: () => context.push('/pharmacy/cart'),
+                onPressed: () {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.viewCartTapped,
+                    properties: {
+                      'module': 'pharmacy',
+                      'source': 'medicine_detail_appbar',
+                      'cart_item_count': cartItemCount,
+                    },
+                  );
+                  context.push('/pharmacy/cart');
+                },
                 icon: const Icon(Icons.shopping_bag_outlined, size: 24),
               ),
               if (cartItemCount > 0)
@@ -293,7 +285,17 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
         minimum: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: isInCart
             ? GestureDetector(
-                onTap: () => context.push('/pharmacy/cart'),
+                onTap: () {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.viewCartTapped,
+                    properties: {
+                      'module': 'pharmacy',
+                      'source': 'medicine_detail_bottom',
+                      'cart_item_count': cartItemCount,
+                    },
+                  );
+                  context.push('/pharmacy/cart');
+                },
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,
@@ -354,6 +356,17 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                 ),
                 color: AppColors.pharmacy,
                 onPressed: () {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.cartAdjustmentInitiated,
+                    properties: {
+                      'module': 'pharmacy',
+                      'source': 'medicine_detail',
+                      'action': 'add',
+                      'entity_type': 'medicine',
+                      'entity_id': medicine.id,
+                      'quantity': 1,
+                    },
+                  );
                   cartProvider.addItem(
                     CartItem(
                       id: medicine.id,

@@ -17,6 +17,7 @@ import {
   createBackendNotification,
   createOrderCreatedNotification,
 } from '../utils/notifications';
+import { isModuleEnabled, moduleName } from '../utils/module-settings';
 import { toNumber } from '../utils/serializers';
 
 const router = Router();
@@ -373,6 +374,12 @@ router.post(
     const body: z.infer<typeof createHotelBookingSchema> =
       createHotelBookingSchema.parse(req.body);
 
+    if (!(await isModuleEnabled(ModuleType.HOTEL))) {
+      return res.status(403).json({
+        error: `${moduleName(ModuleType.HOTEL)} module is currently disabled.`,
+      });
+    }
+
     const hotel = await prisma.hotel.findUnique({
       where: { id: body.hotelId },
     });
@@ -688,6 +695,12 @@ router.post(
     const body: z.infer<typeof createPharmacyPrescriptionOrderSchema> =
       createPharmacyPrescriptionOrderSchema.parse(req.body);
 
+    if (!(await isModuleEnabled(ModuleType.PHARMACY))) {
+      return res.status(403).json({
+        error: `${moduleName(ModuleType.PHARMACY)} module is currently disabled.`,
+      });
+    }
+
     const pharmacyName = body.pharmacyName.trim();
     const metadata: Record<string, unknown> = {
       sourceBusiness: pharmacyName,
@@ -813,6 +826,12 @@ router.post(
     const body: z.infer<typeof createOrderSchema> = createOrderSchema.parse(
       req.body,
     );
+
+    if (!(await isModuleEnabled(body.moduleType))) {
+      return res.status(403).json({
+        error: `${moduleName(body.moduleType)} module is currently disabled.`,
+      });
+    }
 
     const order = await prisma.order.create({
       data: {

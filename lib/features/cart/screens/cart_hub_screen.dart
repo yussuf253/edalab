@@ -30,6 +30,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cart = context.watch<CartProvider>();
+    final moduleProvider = context.watch<ModuleProvider>();
 
     final sections = [
       _CartModule(
@@ -74,9 +75,21 @@ class _CartHubScreenState extends State<CartHubScreen> {
       ),
     ];
 
-    final activeSections = sections
+    final visibleSections = sections
+        .where((section) => moduleProvider.isEnabled(section.key))
+        .toList();
+
+    final activeSections = visibleSections
         .where((section) => section.count > 0)
         .toList();
+    final visibleItemCount = activeSections.fold<int>(
+      0,
+      (sum, section) => sum + section.count,
+    );
+    final visibleSubtotal = activeSections.fold<double>(
+      0,
+      (sum, section) => sum + section.subtotal,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -118,7 +131,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
                                 Text(
                                   l10n.t(
                                     'cart.items_waiting',
-                                    params: {'count': '${cart.itemCount}'},
+                                    params: {'count': '$visibleItemCount'},
                                   ),
                                   style: AppTextStyles.labelLarge,
                                 ),
@@ -126,7 +139,9 @@ class _CartHubScreenState extends State<CartHubScreen> {
                                   l10n.t(
                                     'cart.estimated_subtotal',
                                     params: {
-                                      'amount': cart.subtotal.toStringAsFixed(2),
+                                      'amount': visibleSubtotal.toStringAsFixed(
+                                        2,
+                                      ),
                                     },
                                   ),
                                   style: AppTextStyles.bodySmall.copyWith(

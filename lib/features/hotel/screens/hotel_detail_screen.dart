@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -47,6 +49,15 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
         _hotel = HotelModel.fromApi(Map<String, dynamic>.from(response as Map));
         _isLoading = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.entityOpened,
+        properties: {
+          'module': 'hotel',
+          'entity_type': 'hotel',
+          'entity_id': _hotel.id,
+          'source': 'hotel_detail',
+        },
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -329,6 +340,16 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                         text: l10n.t('hotel_detail.book_now'),
                         color: AppColors.hotel,
                         onPressed: () async {
+                          AnalyticsService.instance.track(
+                            AnalyticsEvents.checkoutEntryTapped,
+                            properties: {
+                              'module': 'hotel',
+                              'source': 'hotel_detail',
+                              'entity_type': 'hotel',
+                              'entity_id': h.id,
+                              'price_per_night': h.pricePerNight,
+                            },
+                          );
                           final allowed = await requireLoggedIn(
                             context,
                             message: l10n.t('hotel_detail.login_required'),

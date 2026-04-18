@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
@@ -34,6 +36,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
   String _restaurantName = 'Restaurant';
   String _categoryName = 'Menu';
   bool _isLoading = true;
+  bool _hasTrackedDishView = false;
 
   @override
   void initState() {
@@ -48,6 +51,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
     if (_item != null) {
       if (!mounted) return;
       setState(() => _isLoading = false);
+      _trackDishViewed(source: 'route_extra');
       return;
     }
 
@@ -62,6 +66,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
         _categoryName = localMatch.categoryName;
         _isLoading = false;
       });
+      _trackDishViewed(source: 'local_sample_catalog');
       return;
     }
 
@@ -81,10 +86,32 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
         _categoryName = remoteMatch?.categoryName ?? _categoryName;
         _isLoading = false;
       });
+      _trackDishViewed(
+        source: remoteMatch == null ? 'remote_not_found' : 'remote_catalog',
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
     }
+  }
+
+  void _trackDishViewed({required String source}) {
+    if (_hasTrackedDishView) return;
+    final item = _item;
+    if (item == null) return;
+    _hasTrackedDishView = true;
+    AnalyticsService.instance.track(
+      AnalyticsEvents.entityOpened,
+      properties: {
+        'module': 'food',
+        'entity_type': 'dish',
+        'entity_id': item.id,
+        'source': source,
+        'restaurant_name': _restaurantName,
+        'category': _categoryName,
+        'price': item.price,
+      },
+    );
   }
 
   _DishLookupResult? _findDishInRestaurants(List<RestaurantModel> restaurants) {
@@ -151,6 +178,16 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                       imageUrl: item.imageUrl,
                     );
                     if (!context.mounted) return;
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.wishlistToggled,
+                      properties: {
+                        'module': 'food',
+                        'entity_type': 'dish',
+                        'entity_id': item.id,
+                        'is_favorite': !isFavorite,
+                        'source': 'dish_detail',
+                      },
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
@@ -301,6 +338,17 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                                   IconButton(
                                     onPressed: quantity > 1
                                         ? () {
+                                            AnalyticsService.instance.track(
+                                              AnalyticsEvents
+                                                  .cartAdjustmentInitiated,
+                                              properties: {
+                                                'module': 'food',
+                                                'source': 'dish_detail',
+                                                'action': 'decrement',
+                                                'entity_type': 'dish',
+                                                'entity_id': item.id,
+                                              },
+                                            );
                                             if (existing != null) {
                                               cartProvider.updateQuantity(
                                                 item.id,
@@ -319,6 +367,16 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                                   ),
                                   IconButton(
                                     onPressed: () {
+                                      AnalyticsService.instance.track(
+                                        AnalyticsEvents.cartAdjustmentInitiated,
+                                        properties: {
+                                          'module': 'food',
+                                          'source': 'dish_detail',
+                                          'action': 'increment',
+                                          'entity_type': 'dish',
+                                          'entity_id': item.id,
+                                        },
+                                      );
                                       if (existing != null) {
                                         cartProvider.updateQuantity(
                                           item.id,
@@ -379,8 +437,30 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                     brand: _restaurantName,
                   ),
                 );
+                AnalyticsService.instance.track(
+                  AnalyticsEvents.checkoutEntryTapped,
+                  properties: {
+                    'module': 'food',
+                    'source': 'dish_detail',
+                    'entity_type': 'dish',
+                    'entity_id': item.id,
+                    'quantity': quantity,
+                    'unit_price': item.price,
+                    'line_total': item.price * quantity,
+                    'restaurant_name': _restaurantName,
+                  },
+                );
                 context.pop();
               } else {
+                AnalyticsService.instance.track(
+                  AnalyticsEvents.viewCartTapped,
+                  properties: {
+                    'module': 'food',
+                    'source': 'dish_detail',
+                    'entity_id': item.id,
+                    'cart_item_count': cartProvider.getModuleItemCount('food'),
+                  },
+                );
                 context.push('/food/cart');
               }
             },

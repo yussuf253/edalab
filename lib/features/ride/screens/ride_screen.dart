@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -63,9 +65,27 @@ class _RideScreenState extends State<RideScreen> {
         _rideCategories = items.isEmpty ? RideModel.sampleCategories : items;
         _isLoading = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'ride',
+          'entity_type': 'ride_category',
+          'result_count': _rideCategories.length,
+          'source': 'remote',
+        },
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'ride',
+          'entity_type': 'ride_category',
+          'result_count': _rideCategories.length,
+          'source': 'fallback_sample',
+        },
+      );
     }
   }
 
@@ -436,7 +456,10 @@ class _RideScreenState extends State<RideScreen> {
                           homeQuickRide.icon,
                           homeQuickRide.title,
                           homeQuickRide.address,
-                          onTap: () => _openRideBooking(homeQuickRide),
+                          onTap: () => _openRideBooking(
+                            homeQuickRide,
+                            source: 'quick_home',
+                          ),
                         ),
                       ),
                       SizedBox(
@@ -445,7 +468,10 @@ class _RideScreenState extends State<RideScreen> {
                           workQuickRide.icon,
                           workQuickRide.title,
                           workQuickRide.address,
-                          onTap: () => _openRideBooking(workQuickRide),
+                          onTap: () => _openRideBooking(
+                            workQuickRide,
+                            source: 'quick_work',
+                          ),
                         ),
                       ),
                     ],
@@ -459,7 +485,8 @@ class _RideScreenState extends State<RideScreen> {
                   .skip(2)
                   .map(
                     (place) => GestureDetector(
-                      onTap: () => _openRideBooking(place),
+                      onTap: () =>
+                          _openRideBooking(place, source: 'recent_place'),
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 10),
                         padding: const EdgeInsets.all(14),
@@ -538,6 +565,15 @@ class _RideScreenState extends State<RideScreen> {
                     );
                     final action = GestureDetector(
                       onTap: () {
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.entityOpened,
+                          properties: {
+                            'module': 'ride',
+                            'entity_type': 'promo_offer',
+                            'entity_id': 'ride_promo_claim',
+                            'source': 'ride_screen',
+                          },
+                        );
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(l10n.t('ride.offer_saved'))),
                         );
@@ -596,6 +632,15 @@ class _RideScreenState extends State<RideScreen> {
   }
 
   Future<void> _selectPlace({required bool isPickup}) async {
+    AnalyticsService.instance.track(
+      AnalyticsEvents.entityOpened,
+      properties: {
+        'module': 'ride',
+        'entity_type': 'place_picker',
+        'entity_id': isPickup ? 'pickup' : 'destination',
+        'source': 'ride_screen',
+      },
+    );
     final places = isPickup ? _pickupPlaces(context) : _savedPlaces(context);
     final selected = await showModalBottomSheet<_RidePlace>(
       context: context,
@@ -617,15 +662,42 @@ class _RideScreenState extends State<RideScreen> {
 
     if (isPickup) {
       setState(() => _pickupPlace = selected);
+      AnalyticsService.instance.track(
+        AnalyticsEvents.filterApplied,
+        properties: {
+          'module': 'ride',
+          'filter_type': 'pickup_place',
+          'filter_value': selected.title,
+        },
+      );
       return;
     }
 
     setState(() => _destinationPlace = selected);
-    _openRideBooking(selected);
+    AnalyticsService.instance.track(
+      AnalyticsEvents.filterApplied,
+      properties: {
+        'module': 'ride',
+        'filter_type': 'destination_place',
+        'filter_value': selected.title,
+      },
+    );
+    _openRideBooking(selected, source: 'destination_picker');
   }
 
-  void _openRideBooking(_RidePlace destination) {
+  void _openRideBooking(_RidePlace destination, {required String source}) {
     final pickup = _pickupPlace ?? _defaultPickupPlace();
+    AnalyticsService.instance.track(
+      AnalyticsEvents.checkoutEntryTapped,
+      properties: {
+        'module': 'ride',
+        'source': source,
+        'entry_type': 'ride_booking',
+        'has_pickup_point': pickup.latitude != null && pickup.longitude != null,
+        'has_destination_point':
+            destination.latitude != null && destination.longitude != null,
+      },
+    );
     context.push(
       '/ride/book',
       extra: {

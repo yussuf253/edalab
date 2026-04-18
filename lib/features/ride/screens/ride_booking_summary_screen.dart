@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -150,10 +152,13 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
                   const SizedBox(height: 12),
                   _SummaryLine(
                     icon: Icons.route_rounded,
-                    label: l10n.t('ride_booking.route_summary', params: {
-                      'distance': routeDistance.toStringAsFixed(1),
-                      'duration': routeDurationLabel,
-                    }),
+                    label: l10n.t(
+                      'ride_booking.route_summary',
+                      params: {
+                        'distance': routeDistance.toStringAsFixed(1),
+                        'duration': routeDurationLabel,
+                      },
+                    ),
                     value: '',
                     color: AppColors.ride,
                     hideTrailing: true,
@@ -179,10 +184,7 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
                     l10n.t('ride_summary.capacity'),
                     '${selectedCategory?.capacity ?? 0} seats',
                   ),
-                  _SummaryRow(
-                    l10n.t('ride_summary.payment_method'),
-                    payment,
-                  ),
+                  _SummaryRow(l10n.t('ride_summary.payment_method'), payment),
                 ],
               ),
             ),
@@ -245,19 +247,34 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
     if (!mounted || !allowed) return;
 
     final selectedCategory = _data['selectedCategory'] as RideCategory?;
-    if (selectedCategory == null) return;
+    if (selectedCategory == null) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.checkoutValidationFailed,
+        properties: {'module_type': 'ride', 'reason': 'missing_ride_category'},
+      );
+      return;
+    }
 
     setState(() => _isSubmitting = true);
     try {
       final estimatedFare =
           (_data['estimatedRidePrice'] as num?)?.toDouble() ?? total;
-      final routeDistance =
-          (_data['routeDistance'] as num?)?.toDouble() ?? 0;
+      final routeDistance = (_data['routeDistance'] as num?)?.toDouble() ?? 0;
       final routeDurationLabel =
           _data['routeDurationLabel']?.toString() ?? 'ETA unavailable';
       final pickup = _data['pickup']?.toString() ?? 'Pickup';
       final destination = _data['destination']?.toString() ?? 'Destination';
       final payment = _data['payment']?.toString() ?? 'Cash';
+      AnalyticsService.instance.track(
+        AnalyticsEvents.checkoutPlaceOrderTapped,
+        properties: {
+          'module_type': 'ride',
+          'ride_category_id': selectedCategory.id,
+          'ride_category': selectedCategory.name,
+          'payment': payment,
+          'total': total,
+        },
+      );
       final routeDetails = _data['routeDetails'] is Map
           ? RideRouteDetails.fromJson(
               Map<String, dynamic>.from(_data['routeDetails'] as Map),
@@ -324,6 +341,19 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
 
       if (!mounted) return;
       final ride = Map<String, dynamic>.from(response as Map);
+      AnalyticsService.instance.track(
+        AnalyticsEvents.checkoutCompleted,
+        properties: {
+          'module_type': 'ride',
+          'order_id': ride['id']?.toString(),
+          'ride_category_id': selectedCategory.id,
+          'ride_category': selectedCategory.name,
+          'distance_km': routeDistance,
+          'subtotal': estimatedFare,
+          'tax': tax,
+          'total': total,
+        },
+      );
       setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -337,13 +367,19 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
       );
       context.go('/ride/tracking/${ride['id']}', extra: ride);
     } catch (e) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.checkoutValidationFailed,
+        properties: {
+          'module_type': 'ride',
+          'reason': 'ride_submission_failed',
+          'error': e.toString(),
+        },
+      );
       if (!mounted) return;
       setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            l10n.t('ride_booking.failed', params: {'error': '$e'}),
-          ),
+          content: Text(l10n.t('ride_booking.failed', params: {'error': '$e'})),
           backgroundColor: AppColors.error,
         ),
       );

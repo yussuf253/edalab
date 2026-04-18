@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -39,6 +42,8 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
   String? _selectedPharmacyName;
   _ResolvedPharmacyLocation? _resolvedLocation;
   String _prescriptionSubmitStage = '';
+  Timer? _searchDebounce;
+  String _lastTrackedSearch = '';
 
   _PharmacyDirectoryItem? get _selectedPharmacy {
     final selectedName = _selectedPharmacyName;
@@ -83,9 +88,27 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
         _medicines = items.isEmpty ? PharmacyModel.sampleItems : items;
         _isLoadingMedicines = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'pharmacy',
+          'entity_type': 'medicine',
+          'result_count': _medicines.length,
+          'source': 'remote',
+        },
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoadingMedicines = false);
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'pharmacy',
+          'entity_type': 'medicine',
+          'result_count': _medicines.length,
+          'source': 'fallback_sample',
+        },
+      );
     }
   }
 
@@ -120,9 +143,27 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
             : _selectedPharmacyName;
         _isLoadingPharmacies = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'pharmacy',
+          'entity_type': 'pharmacy',
+          'result_count': _pharmacies.length,
+          'source': 'remote',
+        },
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoadingPharmacies = false);
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'pharmacy',
+          'entity_type': 'pharmacy',
+          'result_count': _pharmacies.length,
+          'source': 'fallback_empty',
+        },
+      );
     }
   }
 
@@ -217,8 +258,53 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
     return '${selected.address}${selected.city != null ? ', ${selected.city}' : ''}';
   }
 
+  int _visibleMedicinesCount({required String query}) {
+    final normalizedQuery = query.trim().toLowerCase();
+    final selectedPharmacyName = _selectedPharmacy?.name.trim().toLowerCase();
+    return _medicines.where((medicine) {
+      if (selectedPharmacyName != null && selectedPharmacyName.isNotEmpty) {
+        final medicineBusiness = medicine.sourceBusiness?.trim().toLowerCase();
+        if (medicineBusiness != selectedPharmacyName) return false;
+      }
+      if (normalizedQuery.isEmpty) return true;
+      return medicine.name.toLowerCase().contains(normalizedQuery) ||
+          medicine.description.toLowerCase().contains(normalizedQuery) ||
+          medicine.category.toLowerCase().contains(normalizedQuery);
+    }).length;
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() => _searchQuery = value);
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 450), () {
+      final normalizedQuery = value.trim().toLowerCase();
+      if (normalizedQuery == _lastTrackedSearch) return;
+      _lastTrackedSearch = normalizedQuery;
+      if (normalizedQuery.isNotEmpty && normalizedQuery.length < 2) return;
+
+      AnalyticsService.instance.track(
+        AnalyticsEvents.searchPerformed,
+        properties: {
+          'module': 'pharmacy',
+          'query': normalizedQuery,
+          'query_length': normalizedQuery.length,
+          'selected_pharmacy': _selectedPharmacyName ?? 'all',
+          'result_count': _visibleMedicinesCount(query: normalizedQuery),
+        },
+      );
+    });
+  }
+
   Future<void> _openPrescriptionSheet() async {
     final l10n = context.l10n;
+    AnalyticsService.instance.track(
+      AnalyticsEvents.checkoutEntryTapped,
+      properties: {
+        'module': 'pharmacy',
+        'source': 'pharmacy_prescription_cta',
+        'entry_type': 'prescription_request',
+      },
+    );
     final allowed = await requireLoggedIn(
       context,
       message: l10n.t('checkout.login_required'),
@@ -227,6 +313,14 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
     if (_isSubmittingPrescription) return;
 
     if (_pharmacies.isEmpty) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.checkoutValidationFailed,
+        properties: {
+          'module': 'pharmacy',
+          'reason': 'no_pharmacies_available',
+          'source': 'pharmacy_prescription_cta',
+        },
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.t('pharmacy.no_pharmacies_subtitle'))),
       );
@@ -264,6 +358,15 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
     setState(() => _isSubmittingPrescription = true);
     try {
       String? uploadedPrescriptionUrl;
+      AnalyticsService.instance.track(
+        AnalyticsEvents.orderSubmitAttempted,
+        properties: {
+          'module': 'pharmacy',
+          'source': 'pharmacy_prescription_sheet',
+          'order_type': 'prescription',
+          'has_image': draft.imageBytes != null && draft.imageBytes!.isNotEmpty,
+        },
+      );
       setState(
         () => _prescriptionSubmitStage = l10n.t(
           'pharmacy.prescription_stage_upload',
@@ -314,8 +417,26 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.t('pharmacy.prescription_success'))),
       );
+      AnalyticsService.instance.track(
+        AnalyticsEvents.orderSubmitSucceeded,
+        properties: {
+          'module': 'pharmacy',
+          'source': 'pharmacy_prescription_sheet',
+          'order_type': 'prescription',
+          'order_id_present': true,
+        },
+      );
       context.push('/pharmacy/order/$orderId', extra: order);
     } catch (error) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.orderSubmitFailed,
+        properties: {
+          'module': 'pharmacy',
+          'source': 'pharmacy_prescription_sheet',
+          'order_type': 'prescription',
+          'reason': error.runtimeType.toString(),
+        },
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -355,6 +476,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -416,7 +538,17 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                   ),
                   padding: const EdgeInsets.all(12),
                   icon: const Icon(Icons.shopping_bag_outlined, size: 24),
-                  onPressed: () => context.push('/pharmacy/cart'),
+                  onPressed: () {
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.viewCartTapped,
+                      properties: {
+                        'module': 'pharmacy',
+                        'source': 'pharmacy_screen_appbar',
+                        'cart_item_count': cartItemCount,
+                      },
+                    );
+                    context.push('/pharmacy/cart');
+                  },
                 ),
                 if (cartItemCount > 0)
                   Positioned(
@@ -452,8 +584,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                     child: AppSearchBar(
                       hint: l10n.t('pharmacy.search_hint'),
                       controller: _searchController,
-                      onChanged: (value) =>
-                          setState(() => _searchQuery = value),
+                      onChanged: _onSearchChanged,
                     ),
                   ),
                 ),
@@ -549,6 +680,14 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                         TextButton(
                           onPressed: () {
                             setState(() => _selectedPharmacyName = null);
+                            AnalyticsService.instance.track(
+                              AnalyticsEvents.filterApplied,
+                              properties: {
+                                'module': 'pharmacy',
+                                'filter_type': 'pharmacy_name',
+                                'filter_value': 'all',
+                              },
+                            );
                           },
                           child: Text(l10n.t('pharmacy.all_pharmacies')),
                         ),
@@ -612,6 +751,15 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                           return _PharmacyNearbyCard(
                             pharmacy: pharmacy,
                             onViewDetails: () {
+                              AnalyticsService.instance.track(
+                                AnalyticsEvents.entityOpened,
+                                properties: {
+                                  'module': 'pharmacy',
+                                  'entity_type': 'pharmacy',
+                                  'entity_id': pharmacy.id,
+                                  'source': 'pharmacy_nearby_card',
+                                },
+                              );
                               context.push(
                                 '/pharmacy/store/${pharmacy.id}',
                                 extra: pharmacy.toMap(),
@@ -663,8 +811,18 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final medicine = medicines[index];
                       return GestureDetector(
-                        onTap: () =>
-                            context.push('/pharmacy/medicine/${medicine.id}'),
+                        onTap: () {
+                          AnalyticsService.instance.track(
+                            AnalyticsEvents.entityOpened,
+                            properties: {
+                              'module': 'pharmacy',
+                              'entity_type': 'medicine',
+                              'entity_id': medicine.id,
+                              'source': 'pharmacy_medicine_list',
+                            },
+                          );
+                          context.push('/pharmacy/medicine/${medicine.id}');
+                        },
                         child: Container(
                           margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                           padding: const EdgeInsets.all(14),
@@ -726,6 +884,16 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                                   const SizedBox(height: 8),
                                   GestureDetector(
                                     onTap: () {
+                                      AnalyticsService.instance.track(
+                                        AnalyticsEvents.cartAdjustmentInitiated,
+                                        properties: {
+                                          'module': 'pharmacy',
+                                          'source': 'pharmacy_medicine_list',
+                                          'action': 'add',
+                                          'entity_type': 'medicine',
+                                          'entity_id': medicine.id,
+                                        },
+                                      );
                                       cartProvider.addItem(
                                         CartItem(
                                           id: medicine.id,
@@ -813,7 +981,17 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
             ? SafeArea(
                 minimum: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 child: GestureDetector(
-                  onTap: () => context.push('/pharmacy/cart'),
+                  onTap: () {
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.viewCartTapped,
+                      properties: {
+                        'module': 'pharmacy',
+                        'source': 'pharmacy_screen_fab',
+                        'cart_item_count': cartItemCount,
+                      },
+                    );
+                    context.push('/pharmacy/cart');
+                  },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 18,

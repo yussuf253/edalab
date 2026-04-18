@@ -68,7 +68,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final auth = context.watch<AuthProvider>();
+    final moduleProvider = context.watch<ModuleProvider>();
     final isLoggedIn = auth.isLoggedIn && auth.user != null;
+    final visibleConversations = _conversations
+        .where(
+          (conversation) => moduleProvider.isEnabled(conversation.moduleType),
+        )
+        .toList();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -83,7 +89,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               buttonText: l10n.t('messages.login_button'),
               onButtonPressed: () => context.push('/login'),
             )
-          : _conversations.isEmpty
+          : visibleConversations.isEmpty
           ? EmptyState(
               icon: Icons.forum_outlined,
               title: l10n.t('messages.empty_title'),
@@ -93,10 +99,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
               onRefresh: _loadConversations,
               child: ListView.separated(
                 padding: const EdgeInsets.all(20),
-                itemCount: _conversations.length,
+                itemCount: visibleConversations.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
-                  final conversation = _conversations[index];
+                  final conversation = visibleConversations[index];
                   return GestureDetector(
                     onTap: () =>
                         context.push('/messages/chat/${conversation.id}'),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -75,12 +77,30 @@ class _OrdersScreenState extends State<OrdersScreen>
         _isLoading = false;
         _error = null;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'orders',
+          'entity_type': 'order',
+          'result_count': _allOrders.length,
+          'source': hasLiveResponse ? 'remote' : 'fallback_empty',
+        },
+      );
     } catch (e) {
       setState(() {
         _allOrders = [];
         _isLoading = false;
         _error = null;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'orders',
+          'entity_type': 'order',
+          'result_count': 0,
+          'source': 'error',
+        },
+      );
     }
   }
 
@@ -230,6 +250,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final moduleProvider = context.watch<ModuleProvider>();
     if (_isLoading) {
       return Scaffold(
         backgroundColor: AppColors.background,
@@ -251,8 +272,21 @@ class _OrdersScreenState extends State<OrdersScreen>
       );
     }
 
+    final enabledOrders = _allOrders.where((entry) {
+      final order = entry as Map;
+      final module = _canonicalOrderModuleType(order['moduleType']?.toString());
+      return moduleProvider.isEnabled(module);
+    }).toList();
+    final availableModules = _availableModules(enabledOrders);
+    if (!availableModules.contains(_selectedModule)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() => _selectedModule = 'ALL');
+      });
+    }
+
     // Split orders by status natively
-    final activeOrders = _allOrders
+    final activeOrders = enabledOrders
         .where(
           (o) => [
             'PENDING',
@@ -272,7 +306,7 @@ class _OrdersScreenState extends State<OrdersScreen>
           ].contains(o['status'].toString().toUpperCase()),
         )
         .toList();
-    final completedOrders = _allOrders
+    final completedOrders = enabledOrders
         .where(
           (o) => [
             'COMPLETED',
@@ -280,7 +314,7 @@ class _OrdersScreenState extends State<OrdersScreen>
           ].contains(o['status'].toString().toUpperCase()),
         )
         .toList();
-    final cancelledOrders = _allOrders
+    final cancelledOrders = enabledOrders
         .where(
           (o) => [
             'CANCELLED',
@@ -313,8 +347,18 @@ class _OrdersScreenState extends State<OrdersScreen>
             padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
             child: _ModuleFilterBar(
               selectedModule: _selectedModule,
-              modules: _availableModules(_allOrders),
-              onSelected: (value) => setState(() => _selectedModule = value),
+              modules: availableModules,
+              onSelected: (value) {
+                setState(() => _selectedModule = value);
+                AnalyticsService.instance.track(
+                  AnalyticsEvents.filterApplied,
+                  properties: {
+                    'module': 'orders',
+                    'filter_type': 'module',
+                    'filter_value': value,
+                  },
+                );
+              },
             ),
           ),
           Expanded(
@@ -847,6 +891,25 @@ class _OrderList extends StatelessWidget {
                                   const Spacer(),
                                   TextButton(
                                     onPressed: () {
+                                      AnalyticsService.instance.track(
+                                        AnalyticsEvents.entityOpened,
+                                        properties: {
+                                          'module': 'orders',
+                                          'entity_type': 'order_action',
+                                          'entity_id':
+                                              o['id']
+                                                      ?.toString()
+                                                      .trim()
+                                                      .isNotEmpty ==
+                                                  true
+                                              ? o['id'].toString().trim()
+                                              : 'unknown',
+                                          'order_module': module,
+                                          'has_tracking_route':
+                                              trackingRoute != null &&
+                                              trackingRoute.isNotEmpty,
+                                        },
+                                      );
                                       if (trackingRoute != null &&
                                           trackingRoute.isNotEmpty) {
                                         if (module == 'RIDE' ||

@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -21,6 +25,8 @@ class _HotelScreenState extends State<HotelScreen> {
   String _searchQuery = '';
   List<HotelModel> _hotels = [];
   bool _isLoading = true;
+  Timer? _searchDebounce;
+  String _lastTrackedSearch = '';
 
   @override
   void initState() {
@@ -42,14 +48,55 @@ class _HotelScreenState extends State<HotelScreen> {
         _hotels = items.isEmpty ? HotelModel.sampleHotels : items;
         _isLoading = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'hotel',
+          'entity_type': 'hotel',
+          'result_count': _hotels.length,
+          'source': 'remote',
+        },
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'hotel',
+          'entity_type': 'hotel',
+          'result_count': _hotels.length,
+          'source': 'fallback_sample',
+        },
+      );
     }
+  }
+
+  void _onSearchChanged(String value) {
+    final nextQuery = value.trim();
+    setState(() => _searchQuery = nextQuery);
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 450), () {
+      final normalizedQuery = nextQuery.toLowerCase();
+      if (normalizedQuery == _lastTrackedSearch) return;
+      _lastTrackedSearch = normalizedQuery;
+      if (normalizedQuery.isNotEmpty && normalizedQuery.length < 2) return;
+
+      AnalyticsService.instance.track(
+        AnalyticsEvents.searchPerformed,
+        properties: {
+          'module': 'hotel',
+          'query': normalizedQuery,
+          'query_length': normalizedQuery.length,
+          'result_count': _filteredHotels().length,
+        },
+      );
+    });
   }
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -89,8 +136,7 @@ class _HotelScreenState extends State<HotelScreen> {
                 child: AppSearchBar(
                   hint: l10n.t('hotel.search_hint'),
                   controller: _searchController,
-                  onChanged: (value) =>
-                      setState(() => _searchQuery = value.trim()),
+                  onChanged: _onSearchChanged,
                   suffix: _searchQuery.isEmpty
                       ? null
                       : IconButton(
@@ -100,7 +146,7 @@ class _HotelScreenState extends State<HotelScreen> {
                           ),
                           onPressed: () {
                             _searchController.clear();
-                            setState(() => _searchQuery = '');
+                            _onSearchChanged('');
                           },
                         ),
                 ),
@@ -235,7 +281,18 @@ class _HotelScreenState extends State<HotelScreen> {
                       ? h.amenities.first
                       : 'Hotel';
                   return GestureDetector(
-                    onTap: () => context.push('/hotel/detail/${h.id}'),
+                    onTap: () {
+                      AnalyticsService.instance.track(
+                        AnalyticsEvents.entityOpened,
+                        properties: {
+                          'module': 'hotel',
+                          'entity_type': 'hotel',
+                          'entity_id': h.id,
+                          'source': 'hotel_list',
+                        },
+                      );
+                      context.push('/hotel/detail/${h.id}');
+                    },
                     child: Container(
                       margin: const EdgeInsets.fromLTRB(20, 0, 20, 14),
                       decoration: BoxDecoration(
@@ -427,6 +484,15 @@ class _HotelScreenState extends State<HotelScreen> {
   }) {
     _searchController.text = displayLabel;
     setState(() => _searchQuery = mappedQuery);
+    AnalyticsService.instance.track(
+      AnalyticsEvents.filterApplied,
+      properties: {
+        'module': 'hotel',
+        'filter_type': 'destination',
+        'filter_value': mappedQuery,
+        'result_count': _filteredHotels().length,
+      },
+    );
   }
 }
 

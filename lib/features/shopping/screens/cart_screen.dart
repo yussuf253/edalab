@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -41,6 +43,20 @@ class _CartScreenState extends State<CartScreen> {
         actions: [
           TextButton(
             onPressed: () {
+              final cart = context.read<CartProvider>();
+              final items = cart.getModuleItems('shopping');
+              AnalyticsService.instance.track(
+                AnalyticsEvents.cartAdjustmentInitiated,
+                properties: {
+                  'module': 'shopping',
+                  'source': 'shopping_cart',
+                  'action': 'clear_module_cart',
+                  'item_count': items.fold<int>(
+                    0,
+                    (sum, item) => sum + item.quantity,
+                  ),
+                },
+              );
               context.read<CartProvider>().clearModuleCart('shopping');
             },
             child: Text(
@@ -79,7 +95,18 @@ class _CartScreenState extends State<CartScreen> {
                   AppButton(
                     text: l10n.t('shopping_cart.start'),
                     width: 200,
-                    onPressed: () => context.pop(),
+                    onPressed: () {
+                      AnalyticsService.instance.track(
+                        AnalyticsEvents.entityOpened,
+                        properties: {
+                          'module': 'shopping',
+                          'entity_type': 'catalog',
+                          'entity_id': 'shopping_home',
+                          'source': 'shopping_cart_empty',
+                        },
+                      );
+                      context.pop();
+                    },
                   ),
                 ],
               ),
@@ -163,8 +190,20 @@ class _CartScreenState extends State<CartScreen> {
                                                 Icons.remove,
                                                 size: 16,
                                               ),
-                                              onPressed: () => cart
-                                                  .decrementQuantity(item.id),
+                                              onPressed: () {
+                                                AnalyticsService.instance.track(
+                                                  AnalyticsEvents
+                                                      .cartAdjustmentInitiated,
+                                                  properties: {
+                                                    'module': 'shopping',
+                                                    'source': 'shopping_cart',
+                                                    'action': 'decrement',
+                                                    'entity_type': 'product',
+                                                    'entity_id': item.id,
+                                                  },
+                                                );
+                                                cart.decrementQuantity(item.id);
+                                              },
                                             ),
                                           ),
                                           Padding(
@@ -185,8 +224,20 @@ class _CartScreenState extends State<CartScreen> {
                                                 Icons.add,
                                                 size: 16,
                                               ),
-                                              onPressed: () => cart
-                                                  .incrementQuantity(item.id),
+                                              onPressed: () {
+                                                AnalyticsService.instance.track(
+                                                  AnalyticsEvents
+                                                      .cartAdjustmentInitiated,
+                                                  properties: {
+                                                    'module': 'shopping',
+                                                    'source': 'shopping_cart',
+                                                    'action': 'increment',
+                                                    'entity_type': 'product',
+                                                    'entity_id': item.id,
+                                                  },
+                                                );
+                                                cart.incrementQuantity(item.id);
+                                              },
                                             ),
                                           ),
                                         ],
@@ -233,7 +284,10 @@ class _CartScreenState extends State<CartScreen> {
                             ? l10n.t('shopping_cart.free_upper')
                             : '\$${shipping.toStringAsFixed(2)}',
                       ),
-                      _summaryRow(l10n.t('cart.tax'), '\$${tax.toStringAsFixed(2)}'),
+                      _summaryRow(
+                        l10n.t('cart.tax'),
+                        '\$${tax.toStringAsFixed(2)}',
+                      ),
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 8),
                         child: Divider(),
@@ -250,6 +304,21 @@ class _CartScreenState extends State<CartScreen> {
                           params: {'amount': total.toStringAsFixed(2)},
                         ),
                         onPressed: () async {
+                          AnalyticsService.instance.track(
+                            AnalyticsEvents.checkoutEntryTapped,
+                            properties: {
+                              'module': 'shopping',
+                              'source': 'shopping_cart',
+                              'subtotal': subtotal,
+                              'shipping': shipping,
+                              'tax': tax,
+                              'total': total,
+                              'item_count': items.fold<int>(
+                                0,
+                                (sum, item) => sum + item.quantity,
+                              ),
+                            },
+                          );
                           final allowed = await requireLoggedIn(
                             context,
                             message: l10n.t('cart.login_required'),

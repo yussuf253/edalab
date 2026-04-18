@@ -37,6 +37,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final authProvider = context.watch<AuthProvider>();
     final user = authProvider.user;
     final locationProvider = context.watch<UserLocationProvider>();
+    final moduleProvider = context.watch<ModuleProvider>();
+    final enabledModuleIds = moduleProvider.enabledModuleIds;
     final locationTitle = locationProvider.location?.title;
     final locationSubtitle = locationProvider.location?.subtitle;
     final displayName = user != null && user.fullName.trim().isNotEmpty
@@ -47,6 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
         : (locationSubtitle ??
               locationTitle ??
               l10n.t('ride.current_location'));
+    final hasEnabledOfferModules =
+        moduleProvider.isEnabled('grocery') ||
+        moduleProvider.isEnabled('pharmacy') ||
+        moduleProvider.isEnabled('ride');
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -159,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         actionText: l10n.t('common.see_all'),
                       ),
                       const SizedBox(height: 16),
-                      _ServicesGrid(),
+                      _ServicesGrid(enabledModules: enabledModuleIds),
                     ],
                   ),
                 ),
@@ -167,92 +173,96 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
 
             // Special Offers
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
-                child: FadeInUp(
-                  delay: const Duration(milliseconds: 80),
-                  duration: const Duration(milliseconds: 240),
-                  child: Column(
-                    children: [
-                      SectionHeader(
-                        title: '${l10n.t('home.special_offers')} 🔥',
-                        actionText: l10n.t('common.see_all'),
-                        onAction: () => context.push('/promotions'),
-                      ),
-                      const SizedBox(height: 16),
-                      _SpecialOffers(),
-                    ],
+            if (hasEnabledOfferModules)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
+                  child: FadeInUp(
+                    delay: const Duration(milliseconds: 80),
+                    duration: const Duration(milliseconds: 240),
+                    child: Column(
+                      children: [
+                        SectionHeader(
+                          title: '${l10n.t('home.special_offers')} 🔥',
+                          actionText: l10n.t('common.see_all'),
+                          onAction: () => context.push('/promotions'),
+                        ),
+                        const SizedBox(height: 16),
+                        _SpecialOffers(enabledModules: enabledModuleIds),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
             // Popular Restaurants
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
-                child: FadeInUp(
-                  delay: const Duration(milliseconds: 100),
-                  duration: const Duration(milliseconds: 240),
-                  child: Column(
-                    children: [
-                      SectionHeader(
-                        title: l10n.t('home.popular_restaurants'),
-                        actionText: l10n.t('common.see_all'),
-                        onAction: () => context.push('/food'),
-                      ),
-                      const SizedBox(height: 16),
-                      _PopularRestaurants(),
-                    ],
+            if (moduleProvider.isEnabled('food'))
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
+                  child: FadeInUp(
+                    delay: const Duration(milliseconds: 100),
+                    duration: const Duration(milliseconds: 240),
+                    child: Column(
+                      children: [
+                        SectionHeader(
+                          title: l10n.t('home.popular_restaurants'),
+                          actionText: l10n.t('common.see_all'),
+                          onAction: () => context.push('/food'),
+                        ),
+                        const SizedBox(height: 16),
+                        _PopularRestaurants(),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
             // Top Doctors
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
-                child: FadeInUp(
-                  delay: const Duration(milliseconds: 120),
-                  duration: const Duration(milliseconds: 240),
-                  child: Column(
-                    children: [
-                      SectionHeader(
-                        title: l10n.t('home.top_doctors'),
-                        actionText: l10n.t('common.see_all'),
-                        onAction: () => context.push('/doctor'),
-                      ),
-                      const SizedBox(height: 16),
-                      _TopDoctors(),
-                    ],
+            if (moduleProvider.isEnabled('doctor'))
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
+                  child: FadeInUp(
+                    delay: const Duration(milliseconds: 120),
+                    duration: const Duration(milliseconds: 240),
+                    child: Column(
+                      children: [
+                        SectionHeader(
+                          title: l10n.t('home.top_doctors'),
+                          actionText: l10n.t('common.see_all'),
+                          onAction: () => context.push('/doctor'),
+                        ),
+                        const SizedBox(height: 16),
+                        _TopDoctors(),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
             // Trending Products
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 28, 0, 24),
-                child: FadeInUp(
-                  delay: const Duration(milliseconds: 140),
-                  duration: const Duration(milliseconds: 240),
-                  child: Column(
-                    children: [
-                      SectionHeader(
-                        title: l10n.t('home.trending_products'),
-                        actionText: l10n.t('common.see_all'),
-                        onAction: () => context.push('/shopping'),
-                      ),
-                      const SizedBox(height: 16),
-                      _TrendingProducts(),
-                    ],
+            if (moduleProvider.isEnabled('shopping'))
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 28, 0, 24),
+                  child: FadeInUp(
+                    delay: const Duration(milliseconds: 140),
+                    duration: const Duration(milliseconds: 240),
+                    child: Column(
+                      children: [
+                        SectionHeader(
+                          title: l10n.t('home.trending_products'),
+                          actionText: l10n.t('common.see_all'),
+                          onAction: () => context.push('/shopping'),
+                        ),
+                        const SizedBox(height: 16),
+                        _TrendingProducts(),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
           ],
@@ -287,6 +297,10 @@ class _PromoBanner extends StatelessWidget {
 }
 
 class _ServicesGrid extends StatelessWidget {
+  const _ServicesGrid({required this.enabledModules});
+
+  final Set<String> enabledModules;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -300,6 +314,7 @@ class _ServicesGrid extends StatelessWidget {
             .clamp(0.68, 0.8);
     final services = [
       _ServiceItem(
+        key: 'food',
         assetPath: 'assets/icons/food.png',
         title: l10n.t('home.food'),
         color: AppColors.food,
@@ -307,6 +322,7 @@ class _ServicesGrid extends StatelessWidget {
         route: '/food',
       ),
       _ServiceItem(
+        key: 'shopping',
         assetPath: 'assets/icons/shopping.png',
         title: l10n.t('home.shopping'),
         color: AppColors.shopping,
@@ -314,6 +330,7 @@ class _ServicesGrid extends StatelessWidget {
         route: '/shopping',
       ),
       _ServiceItem(
+        key: 'doctor',
         assetPath: 'assets/icons/doctor.png',
         title: l10n.t('home.doctor'),
         color: AppColors.doctor,
@@ -321,6 +338,7 @@ class _ServicesGrid extends StatelessWidget {
         route: '/doctor',
       ),
       _ServiceItem(
+        key: 'hotel',
         assetPath: 'assets/icons/hotel.png',
         title: l10n.t('home.hotel'),
         color: AppColors.hotel,
@@ -328,6 +346,7 @@ class _ServicesGrid extends StatelessWidget {
         route: '/hotel',
       ),
       _ServiceItem(
+        key: 'ride',
         assetPath: 'assets/icons/car.png',
         title: l10n.t('home.ride'),
         color: AppColors.ride,
@@ -335,6 +354,7 @@ class _ServicesGrid extends StatelessWidget {
         route: '/ride',
       ),
       _ServiceItem(
+        key: 'pharmacy',
         assetPath: 'assets/icons/pharmacy.png',
         title: l10n.t('home.pharmacy'),
         color: AppColors.pharmacy,
@@ -342,6 +362,7 @@ class _ServicesGrid extends StatelessWidget {
         route: '/pharmacy',
       ),
       _ServiceItem(
+        key: 'home-services',
         assetPath: 'assets/icons/repair-service.png',
         title: l10n.t('home.home_services'),
         color: AppColors.homeServices,
@@ -349,13 +370,21 @@ class _ServicesGrid extends StatelessWidget {
         route: '/home-services',
       ),
       _ServiceItem(
+        key: 'laundry',
         assetPath: 'assets/icons/laundry.png',
         title: l10n.t('home.laundry'),
         color: AppColors.laundry,
         bgColor: AppColors.laundryBg,
         route: '/laundry',
       ),
-    ];
+    ].where((service) => enabledModules.contains(service.key)).toList();
+
+    if (services.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: Center(child: Text('No services are available right now.')),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -427,6 +456,7 @@ class _ServicesGrid extends StatelessWidget {
 }
 
 class _ServiceItem {
+  final String key;
   final String assetPath;
   final String title;
   final Color color;
@@ -434,6 +464,7 @@ class _ServiceItem {
   final String route;
 
   const _ServiceItem({
+    required this.key,
     required this.assetPath,
     required this.title,
     required this.color,
@@ -443,6 +474,10 @@ class _ServiceItem {
 }
 
 class _SpecialOffers extends StatelessWidget {
+  const _SpecialOffers({required this.enabledModules});
+
+  final Set<String> enabledModules;
+
   @override
   Widget build(BuildContext context) {
     final offers = [
@@ -452,6 +487,7 @@ class _SpecialOffers extends StatelessWidget {
         'Free delivery on orders above \$30',
         AppColors.grocery,
         Icons.local_grocery_store_rounded,
+        moduleId: 'grocery',
       ),
       _OfferData(
         '25% OFF',
@@ -459,6 +495,7 @@ class _SpecialOffers extends StatelessWidget {
         'Upload prescription & save more',
         AppColors.pharmacy,
         Icons.medication_rounded,
+        moduleId: 'pharmacy',
       ),
       _OfferData(
         'Free Ride',
@@ -466,8 +503,13 @@ class _SpecialOffers extends StatelessWidget {
         'New user exclusive offer',
         AppColors.ride,
         Icons.directions_car_rounded,
+        moduleId: 'ride',
       ),
-    ];
+    ].where((offer) => enabledModules.contains(offer.moduleId)).toList();
+
+    if (offers.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return SizedBox(
       height: 130,
@@ -544,13 +586,21 @@ class _SpecialOffers extends StatelessWidget {
 }
 
 class _OfferData {
+  final String moduleId;
   final String discount;
   final String title;
   final String subtitle;
   final Color color;
   final IconData icon;
 
-  _OfferData(this.discount, this.title, this.subtitle, this.color, this.icon);
+  _OfferData(
+    this.discount,
+    this.title,
+    this.subtitle,
+    this.color,
+    this.icon, {
+    required this.moduleId,
+  });
 }
 
 class _PopularRestaurants extends StatelessWidget {

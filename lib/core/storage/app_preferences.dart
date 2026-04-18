@@ -15,6 +15,8 @@ class AppPreferences {
   static const _proProfileJsonKey = 'pro_profile_json';
   static const _proAccountJsonKey = 'pro_account_json';
   static const _hasSeenProOnboardingKey = 'has_seen_pro_onboarding';
+  static const _analyticsDeviceIdKey = 'analytics_device_id';
+  static const _moduleConfigJsonKey = 'module_config_json';
 
   static Future<bool> hasSeenOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
@@ -185,5 +187,30 @@ class AppPreferences {
   static Future<void> setHasSeenProOnboarding(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_hasSeenProOnboardingKey, value);
+  }
+
+  static Future<String?> getAnalyticsDeviceId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_analyticsDeviceIdKey);
+  }
+
+  static Future<void> setAnalyticsDeviceId(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_analyticsDeviceIdKey, value);
+  }
+
+  static Future<String?> getModuleConfigJson() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_moduleConfigJsonKey);
+  }
+
+  static Future<void> setModuleConfigJson(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_moduleConfigJsonKey, value);
+  }
+
+  static Future<void> clearModuleConfigJson() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_moduleConfigJsonKey);
   }
 }

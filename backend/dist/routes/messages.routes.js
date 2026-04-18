@@ -7,6 +7,7 @@ const db_1 = require("../db");
 const notifications_1 = require("../utils/notifications");
 const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
+const module_settings_1 = require("../utils/module-settings");
 const router = (0, express_1.Router)();
 const startConversationSchema = zod_1.z.object({
     userId: zod_1.z.string().min(1),
@@ -751,6 +752,11 @@ router.get('/conversations/:conversationId', (0, async_handler_1.asyncHandler)(a
 }));
 router.post('/conversations/start', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const body = startConversationSchema.parse(req.body);
+    if (!(await (0, module_settings_1.isModuleEnabled)(body.moduleType))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(body.moduleType)} module is currently disabled.`,
+        });
+    }
     if (body.entityType === client_1.ConversationEntityType.DOCTOR) {
         const validation = await isDoctorConversationAllowed({
             userId: body.userId,
@@ -830,6 +836,11 @@ router.post('/conversations/start', (0, async_handler_1.asyncHandler)(async (req
 }));
 router.post('/pro/conversations/start', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const body = startProConversationSchema.parse(req.body);
+    if (!(await (0, module_settings_1.isModuleEnabled)(body.moduleType))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(body.moduleType)} module is currently disabled.`,
+        });
+    }
     const [customer, participant] = await Promise.all([
         db_1.prisma.user.findUnique({
             where: { id: body.customerUserId },
@@ -920,6 +931,11 @@ router.post('/conversations/:conversationId/messages', (0, async_handler_1.async
     });
     if (!conversation) {
         return res.status(404).json({ error: 'Conversation not found.' });
+    }
+    if (!(await (0, module_settings_1.isModuleEnabled)(conversation.moduleType))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(conversation.moduleType)} module is currently disabled.`,
+        });
     }
     let viewer;
     try {

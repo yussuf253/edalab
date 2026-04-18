@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -71,6 +73,17 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
         );
         _isLoading = false;
       });
+      if (_provider != null) {
+        AnalyticsService.instance.track(
+          AnalyticsEvents.entityOpened,
+          properties: {
+            'module': 'home_services',
+            'entity_type': 'provider',
+            'entity_id': _provider!.id,
+            'source': 'home_service_provider_screen',
+          },
+        );
+      }
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -140,7 +153,18 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.favorite_border_rounded),
-            onPressed: () {},
+            onPressed: () {
+              AnalyticsService.instance.track(
+                AnalyticsEvents.wishlistToggled,
+                properties: {
+                  'module': 'home_services',
+                  'entity_type': 'provider',
+                  'entity_id': provider?.id ?? widget.providerId,
+                  'source': 'home_service_provider_screen',
+                  'state': 'unknown',
+                },
+              );
+            },
           ),
         ],
       ),
@@ -438,9 +462,21 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                                 child: AppButton(
                                   text: l10n.t('home_provider.book_service'),
                                   color: AppColors.homeServices,
-                                  onPressed: () => context.push(
-                                    '/home-services/book/${provider.id}',
-                                  ),
+                                  onPressed: () {
+                                    AnalyticsService.instance.track(
+                                      AnalyticsEvents.checkoutEntryTapped,
+                                      properties: {
+                                        'module': 'home_services',
+                                        'source':
+                                            'provider_screen_book_service',
+                                        'entity_type': 'provider',
+                                        'entity_id': provider.id,
+                                      },
+                                    );
+                                    context.push(
+                                      '/home-services/book/${provider.id}',
+                                    );
+                                  },
                                 ),
                               ),
                             ),
@@ -461,21 +497,32 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                                   text: l10n.t('home_provider.message'),
                                   isOutlined: true,
                                   color: AppColors.homeServices,
-                                  onPressed: () => openConversation(
-                                    context,
-                                    moduleType: conversationModuleType,
-                                    entityType: 'HOME_SERVICE_PROVIDER',
-                                    entityId: provider.id,
-                                    title: provider.name,
-                                    subtitle: provider.title,
-                                    avatarUrl: provider.imageUrl,
-                                    accentColor: '#0F9D92',
-                                    metadata: {
-                                      'providerId': provider.id,
-                                      'categorySlug': provider.categorySlug,
-                                      'serviceModes': provider.bookingModes,
-                                    },
-                                  ),
+                                  onPressed: () {
+                                    AnalyticsService.instance.track(
+                                      AnalyticsEvents.entityOpened,
+                                      properties: {
+                                        'module': 'home_services',
+                                        'entity_type': 'provider_chat',
+                                        'entity_id': provider.id,
+                                        'source': 'provider_screen',
+                                      },
+                                    );
+                                    openConversation(
+                                      context,
+                                      moduleType: conversationModuleType,
+                                      entityType: 'HOME_SERVICE_PROVIDER',
+                                      entityId: provider.id,
+                                      title: provider.name,
+                                      subtitle: provider.title,
+                                      avatarUrl: provider.imageUrl,
+                                      accentColor: '#0F9D92',
+                                      metadata: {
+                                        'providerId': provider.id,
+                                        'categorySlug': provider.categorySlug,
+                                        'serviceModes': provider.bookingModes,
+                                      },
+                                    );
+                                  },
                                 ),
                               );
                             },
@@ -485,9 +532,20 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                             child: AppButton(
                               text: l10n.t('home_provider.book_again'),
                               color: AppColors.homeServices,
-                              onPressed: () => context.push(
-                                '/home-services/book/${provider.id}',
-                              ),
+                              onPressed: () {
+                                AnalyticsService.instance.track(
+                                  AnalyticsEvents.checkoutEntryTapped,
+                                  properties: {
+                                    'module': 'home_services',
+                                    'source': 'provider_screen_book_again',
+                                    'entity_type': 'provider',
+                                    'entity_id': provider.id,
+                                  },
+                                );
+                                context.push(
+                                  '/home-services/book/${provider.id}',
+                                );
+                              },
                             ),
                           ),
                         ],

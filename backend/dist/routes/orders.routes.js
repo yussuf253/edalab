@@ -7,6 +7,7 @@ const db_1 = require("../db");
 const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
 const notifications_1 = require("../utils/notifications");
+const module_settings_1 = require("../utils/module-settings");
 const serializers_1 = require("../utils/serializers");
 const router = (0, express_1.Router)();
 const orderItemSchema = zod_1.z.object({
@@ -284,6 +285,11 @@ router.get('/hotel-bookings/:bookingId', (0, async_handler_1.asyncHandler)(async
 }));
 router.post('/hotel-bookings', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const body = createHotelBookingSchema.parse(req.body);
+    if (!(await (0, module_settings_1.isModuleEnabled)(client_1.ModuleType.HOTEL))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(client_1.ModuleType.HOTEL)} module is currently disabled.`,
+        });
+    }
     const hotel = await db_1.prisma.hotel.findUnique({
         where: { id: body.hotelId },
     });
@@ -554,6 +560,11 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
 }));
 router.post('/pharmacy-prescription', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const body = createPharmacyPrescriptionOrderSchema.parse(req.body);
+    if (!(await (0, module_settings_1.isModuleEnabled)(client_1.ModuleType.PHARMACY))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(client_1.ModuleType.PHARMACY)} module is currently disabled.`,
+        });
+    }
     const pharmacyName = body.pharmacyName.trim();
     const metadata = {
         sourceBusiness: pharmacyName,
@@ -655,6 +666,11 @@ router.post('/pharmacy-prescription', (0, async_handler_1.asyncHandler)(async (r
 }));
 router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const body = createOrderSchema.parse(req.body);
+    if (!(await (0, module_settings_1.isModuleEnabled)(body.moduleType))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(body.moduleType)} module is currently disabled.`,
+        });
+    }
     const order = await db_1.prisma.order.create({
         data: {
             userId: body.userId,

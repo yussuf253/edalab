@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -25,6 +29,8 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
   String _searchQuery = '';
   bool _isLoading = true;
   List<ShoppingStoreModel> _stores = [];
+  Timer? _searchDebounce;
+  String _lastTrackedSearch = '';
 
   @override
   void initState() {
@@ -54,17 +60,74 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
         }
         _isLoading = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'shopping',
+          'entity_type': 'store',
+          'result_count': _stores.length,
+          'source': 'remote',
+        },
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _stores = ShoppingStoreModel.sampleStores;
         _isLoading = false;
       });
+      AnalyticsService.instance.track(
+        AnalyticsEvents.catalogResultsLoaded,
+        properties: {
+          'module': 'shopping',
+          'entity_type': 'store',
+          'result_count': _stores.length,
+          'source': 'fallback_sample',
+        },
+      );
     }
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() => _searchQuery = value);
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+      final normalizedQuery = value.trim().toLowerCase();
+      if (normalizedQuery == _lastTrackedSearch) return;
+      _lastTrackedSearch = normalizedQuery;
+      if (normalizedQuery.isNotEmpty && normalizedQuery.length < 2) return;
+
+      AnalyticsService.instance.track(
+        AnalyticsEvents.searchPerformed,
+        properties: {
+          'module': 'shopping',
+          'query': normalizedQuery,
+          'query_length': normalizedQuery.length,
+          'selected_category': _selectedCategory,
+          'result_count': _visibleStoreCount(
+            category: _selectedCategory,
+            query: normalizedQuery,
+          ),
+        },
+      );
+    });
+  }
+
+  int _visibleStoreCount({required String category, required String query}) {
+    return _stores.where((store) {
+      final matchesCategory =
+          category == 'all' || store.categories.contains(category);
+      final matchesSearch =
+          query.isEmpty ||
+          store.name.toLowerCase().contains(query) ||
+          store.tagline.toLowerCase().contains(query) ||
+          store.categories.any((entry) => entry.toLowerCase().contains(query));
+      return matchesCategory && matchesSearch;
+    }).length;
   }
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -118,14 +181,35 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
           actions: [
             IconButton(
               icon: const Icon(Icons.favorite_border_rounded),
-              onPressed: () => context.push('/shopping/wishlist'),
+              onPressed: () {
+                AnalyticsService.instance.track(
+                  AnalyticsEvents.entityOpened,
+                  properties: {
+                    'module': 'shopping',
+                    'entity_type': 'wishlist',
+                    'entity_id': 'shopping_wishlist',
+                    'source': 'shopping_screen',
+                  },
+                );
+                context.push('/shopping/wishlist');
+              },
             ),
             Stack(
               alignment: Alignment.center,
               children: [
                 IconButton(
                   icon: const Icon(Icons.shopping_bag_outlined),
-                  onPressed: () => context.push('/shopping/cart'),
+                  onPressed: () {
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.viewCartTapped,
+                      properties: {
+                        'module': 'shopping',
+                        'source': 'shopping_screen',
+                        'cart_item_count': cartItemCount,
+                      },
+                    );
+                    context.push('/shopping/cart');
+                  },
                 ),
                 if (cartItemCount > 0)
                   Positioned(
@@ -157,7 +241,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
               child: AppSearchBar(
                 hint: l10n.t('shopping.search_hint'),
                 controller: _searchController,
-                onChanged: (value) => setState(() => _searchQuery = value),
+                onChanged: _onSearchChanged,
               ),
             ),
             Padding(
@@ -216,8 +300,22 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                         final category = categories[index];
                         final isSelected = _selectedCategory == category;
                         return GestureDetector(
-                          onTap: () =>
-                              setState(() => _selectedCategory = category),
+                          onTap: () {
+                            setState(() => _selectedCategory = category);
+                            AnalyticsService.instance.track(
+                              AnalyticsEvents.filterApplied,
+                              properties: {
+                                'module': 'shopping',
+                                'filter_type': 'category',
+                                'filter_value': category,
+                                'query': normalizedQuery,
+                                'result_count': _visibleStoreCount(
+                                  category: category,
+                                  query: normalizedQuery,
+                                ),
+                              },
+                            );
+                          },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 14,
@@ -260,7 +358,24 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                       separatorBuilder: (_, _) => const SizedBox(height: 14),
                       itemBuilder: (context, index) {
                         final store = stores[index];
-                        return _ShoppingStoreCard(store: store);
+                        return _ShoppingStoreCard(
+                          store: store,
+                          onTap: () {
+                            AnalyticsService.instance.track(
+                              AnalyticsEvents.entityOpened,
+                              properties: {
+                                'module': 'shopping',
+                                'entity_type': 'store',
+                                'entity_id': store.id,
+                                'position': index + 1,
+                                'result_count': stores.length,
+                                'selected_category': _selectedCategory,
+                                'query': normalizedQuery,
+                              },
+                            );
+                            context.push('/shopping/store/${store.id}');
+                          },
+                        );
                       },
                     ),
             ),
@@ -273,13 +388,14 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
 
 class _ShoppingStoreCard extends StatelessWidget {
   final ShoppingStoreModel store;
+  final VoidCallback onTap;
 
-  const _ShoppingStoreCard({required this.store});
+  const _ShoppingStoreCard({required this.store, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/shopping/store/${store.id}'),
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,

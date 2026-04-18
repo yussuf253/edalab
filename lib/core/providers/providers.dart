@@ -5,3 +5,4 @@ export 'notification_provider.dart';
 export 'wishlist_provider.dart';
 export 'theme_provider.dart';
 export 'user_location_provider.dart';
+export 'module_provider.dart';

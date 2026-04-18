@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
@@ -1567,8 +1569,28 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 ),
                               );
                               if (!context.mounted || !allowed) return;
+                              AnalyticsService.instance.track(
+                                AnalyticsEvents.checkoutPlaceOrderTapped,
+                                properties: {
+                                  'module_type': isHouseHelp
+                                      ? 'house_help'
+                                      : 'home_services',
+                                  'service_name':
+                                      serviceOptionsRaw[selectedService],
+                                  'is_zone_dispatch': _isZoneDispatchRoute,
+                                },
+                              );
 
                               if (selectedAddress == null) {
+                                AnalyticsService.instance.track(
+                                  AnalyticsEvents.checkoutValidationFailed,
+                                  properties: {
+                                    'module_type': isHouseHelp
+                                        ? 'house_help'
+                                        : 'home_services',
+                                    'reason': 'missing_address',
+                                  },
+                                );
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
@@ -1595,6 +1617,15 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               }
                               if (serviceLatitude == null ||
                                   serviceLongitude == null) {
+                                AnalyticsService.instance.track(
+                                  AnalyticsEvents.checkoutValidationFailed,
+                                  properties: {
+                                    'module_type': isHouseHelp
+                                        ? 'house_help'
+                                        : 'home_services',
+                                    'reason': 'missing_service_location',
+                                  },
+                                );
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text(
@@ -1638,6 +1669,15 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                   final fallbackProviders =
                                       resolution.fallbackProviders;
                                   if (fallbackProviders.isEmpty) {
+                                    AnalyticsService.instance.track(
+                                      AnalyticsEvents.checkoutValidationFailed,
+                                      properties: {
+                                        'module_type': isHouseHelp
+                                            ? 'house_help'
+                                            : 'home_services',
+                                        'reason': 'zone_no_providers_available',
+                                      },
+                                    );
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
@@ -1687,6 +1727,16 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     );
                                   });
                                   if (effectiveFallbackProvider == null) {
+                                    AnalyticsService.instance.track(
+                                      AnalyticsEvents.checkoutValidationFailed,
+                                      properties: {
+                                        'module_type': isHouseHelp
+                                            ? 'house_help'
+                                            : 'home_services',
+                                        'reason':
+                                            'fallback_provider_not_selected',
+                                      },
+                                    );
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
@@ -1800,39 +1850,76 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 'quantity': 1,
                                 'metadata': bookingMetadata,
                               };
-                              final order = await ApiClient.post('/orders', {
-                                'userId': auth.user!.id,
-                                'moduleType': bookingModuleType,
-                                'subtotal': bookingServiceFee,
-                                'tax': 0,
-                                'deliveryFee': 0,
-                                'discount': 0,
-                                'total': bookingServiceFee,
-                                'notes': '',
-                                'items': [orderItem],
-                              });
-                              if (!context.mounted) return;
-                              context.go(
-                                '/checkout/success',
-                                extra: {
-                                  'orderId': order['id'],
-                                  'amount': bookingServiceFee,
-                                  'payment': l10n.t(
-                                    'home_service_booking.pay_on_confirmation',
+                              try {
+                                final order = await ApiClient.post('/orders', {
+                                  'userId': auth.user!.id,
+                                  'moduleType': bookingModuleType,
+                                  'subtotal': bookingServiceFee,
+                                  'tax': 0,
+                                  'deliveryFee': 0,
+                                  'discount': 0,
+                                  'total': bookingServiceFee,
+                                  'notes': '',
+                                  'items': [orderItem],
+                                });
+                                if (!context.mounted) return;
+                                AnalyticsService.instance.track(
+                                  AnalyticsEvents.checkoutCompleted,
+                                  properties: {
+                                    'module_type': isHouseHelp
+                                        ? 'house_help'
+                                        : 'home_services',
+                                    'order_id': order is Map
+                                        ? order['id']?.toString()
+                                        : null,
+                                    'provider_id': bookingProvider.id,
+                                    'service_name':
+                                        serviceOptionsRaw[selectedService],
+                                    'amount': bookingServiceFee,
+                                    'item_count': 1,
+                                    'is_zone_dispatch': _isZoneDispatchRoute,
+                                  },
+                                );
+                                context.go(
+                                  '/checkout/success',
+                                  extra: {
+                                    'orderId': order['id'],
+                                    'amount': bookingServiceFee,
+                                    'payment': l10n.t(
+                                      'home_service_booking.pay_on_confirmation',
+                                    ),
+                                    'delivery': isInstantHouseHelp
+                                        ? houseHelpArrivalOptionsRaw[selectedHouseHelpArrival]
+                                        : '${_summaryDateLabel(selectedDateValue)}, ${_times[_selectedTime]}',
+                                    'moduleName':
+                                        serviceOptions[selectedService],
+                                    'itemCount': 1,
+                                    'address': addressText,
+                                    'trackingRoute':
+                                        '/home-services/booking/${order['id']}',
+                                    'trackingExtra': order is Map
+                                        ? Map<String, dynamic>.from(order)
+                                        : null,
+                                  },
+                                );
+                              } catch (error) {
+                                AnalyticsService.instance.track(
+                                  AnalyticsEvents.checkoutValidationFailed,
+                                  properties: {
+                                    'module_type': isHouseHelp
+                                        ? 'house_help'
+                                        : 'home_services',
+                                    'reason': 'booking_submission_failed',
+                                    'error': error.toString(),
+                                  },
+                                );
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Booking failed: $error'),
                                   ),
-                                  'delivery': isInstantHouseHelp
-                                      ? houseHelpArrivalOptionsRaw[selectedHouseHelpArrival]
-                                      : '${_summaryDateLabel(selectedDateValue)}, ${_times[_selectedTime]}',
-                                  'moduleName': serviceOptions[selectedService],
-                                  'itemCount': 1,
-                                  'address': addressText,
-                                  'trackingRoute':
-                                      '/home-services/booking/${order['id']}',
-                                  'trackingExtra': order is Map
-                                      ? Map<String, dynamic>.from(order)
-                                      : null,
-                                },
-                              );
+                                );
+                              }
                             },
                           ),
                           const SizedBox(height: 20),

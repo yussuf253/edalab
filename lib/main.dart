@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
+import 'core/analytics/analytics_service.dart';
 import 'core/network/api_client.dart';
 import 'core/providers/providers.dart';
 import 'core/router/app_router.dart';
@@ -21,8 +22,22 @@ Future<void> main() async {
   final languageProvider = LanguageProvider();
   final notificationProvider = NotificationProvider();
   final userLocationProvider = UserLocationProvider();
+  final moduleProvider = ModuleProvider();
   final proAuthProvider = ProAuthProvider();
   await languageProvider.initialize();
+  await moduleProvider.hydrateFromStorage();
+  await AnalyticsService.instance.initialize(
+    localeCode: languageProvider.locale.languageCode,
+    appVariant: 'user',
+  );
+  _bindAnalyticsStateSync(
+    authProvider: authProvider,
+    languageProvider: languageProvider,
+  );
+
+  final router = createAppRouter(hasSeenOnboarding: hasSeenOnboarding);
+  AnalyticsService.instance.attachRouter(router);
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -49,6 +64,7 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider.value(value: languageProvider),
         ChangeNotifierProvider.value(value: userLocationProvider),
+        ChangeNotifierProvider.value(value: moduleProvider),
         ChangeNotifierProvider.value(value: proAuthProvider),
         ChangeNotifierProxyProvider2<
           AuthProvider,
@@ -74,9 +90,7 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: EdaLabApp(
-        router: createAppRouter(hasSeenOnboarding: hasSeenOnboarding),
-      ),
+      child: EdaLabApp(router: router),
     ),
   );
 
@@ -87,10 +101,59 @@ Future<void> main() async {
         cartProvider: cartProvider,
         languageProvider: languageProvider,
         notificationProvider: notificationProvider,
+        moduleProvider: moduleProvider,
         proAuthProvider: proAuthProvider,
       ),
     );
   });
+}
+
+void _bindAnalyticsStateSync({
+  required AuthProvider authProvider,
+  required LanguageProvider languageProvider,
+}) {
+  String? lastSyncedUserId;
+  int? lastAddressCount;
+  bool? lastLoginState;
+  String? lastLocaleCode;
+
+  void syncAuth() {
+    final user = authProvider.user;
+    final userId = user?.id;
+    final addressCount = user?.addresses.length ?? 0;
+    final isLoggedIn = authProvider.isLoggedIn;
+
+    if (userId == lastSyncedUserId &&
+        addressCount == lastAddressCount &&
+        isLoggedIn == lastLoginState) {
+      return;
+    }
+
+    AnalyticsService.instance.setUserId(userId);
+    AnalyticsService.instance.setUserProperties({
+      'is_logged_in': isLoggedIn,
+      'address_count': addressCount,
+      'has_saved_address': addressCount > 0,
+    });
+
+    lastSyncedUserId = userId;
+    lastAddressCount = addressCount;
+    lastLoginState = isLoggedIn;
+  }
+
+  void syncLocale() {
+    final localeCode = languageProvider.locale.languageCode;
+    if (localeCode == lastLocaleCode) return;
+
+    AnalyticsService.instance.setGlobalProperties({'locale': localeCode});
+    AnalyticsService.instance.setUserProperties({'locale': localeCode});
+    lastLocaleCode = localeCode;
+  }
+
+  authProvider.addListener(syncAuth);
+  languageProvider.addListener(syncLocale);
+  syncAuth();
+  syncLocale();
 }
 
 Future<void> _bootstrapAppServices({
@@ -98,6 +161,7 @@ Future<void> _bootstrapAppServices({
   required CartProvider cartProvider,
   required LanguageProvider languageProvider,
   required NotificationProvider notificationProvider,
+  required ModuleProvider moduleProvider,
   required ProAuthProvider proAuthProvider,
 }) async {
   ApiClient.warmUpBackendInBackground();
@@ -107,6 +171,7 @@ Future<void> _bootstrapAppServices({
     cartProvider.initialize(),
     languageProvider.initialize(),
     notificationProvider.initialize(),
+    moduleProvider.initialize(),
   ]);
 
   proAuthProvider.fetchProfile(authProvider.user?.id ?? '');

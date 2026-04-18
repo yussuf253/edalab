@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/analytics/analytics_events.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -243,9 +245,22 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
       message: l10n.t('hotel_booking.login_required'),
     );
     if (!mounted || !allowed) return;
+    AnalyticsService.instance.track(
+      AnalyticsEvents.checkoutPlaceOrderTapped,
+      properties: {
+        'module_type': 'hotel',
+        'hotel_id': _hotel.id,
+        'guest_count': _guestCount,
+        'nights': _nights,
+      },
+    );
 
     final room = _selectedRoom;
     if (room == null) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.checkoutValidationFailed,
+        properties: {'module_type': 'hotel', 'reason': 'room_not_selected'},
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select an available room.')),
       );
@@ -253,6 +268,15 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
     }
 
     if (_guestCount > room.capacity) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.checkoutValidationFailed,
+        properties: {
+          'module_type': 'hotel',
+          'reason': 'guest_over_capacity',
+          'guest_count': _guestCount,
+          'room_capacity': room.capacity,
+        },
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('This room supports up to ${room.capacity} guests.'),
@@ -262,6 +286,10 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
     }
 
     if (!_formKey.currentState!.validate()) {
+      AnalyticsService.instance.track(
+        AnalyticsEvents.checkoutValidationFailed,
+        properties: {'module_type': 'hotel', 'reason': 'invalid_form'},
+      );
       return;
     }
 
@@ -357,6 +385,23 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
               ],
       };
 
+      AnalyticsService.instance.track(
+        AnalyticsEvents.checkoutCompleted,
+        properties: {
+          'module_type': 'hotel',
+          'order_id': booking['id']?.toString(),
+          'hotel_id': _hotel.id,
+          'room_type': room.name,
+          'guest_count': _guestCount,
+          'nights': _nights,
+          'subtotal': roomRate,
+          'tax': tax,
+          'service_fee': serviceFee,
+          'total': total,
+          'item_count': 1,
+        },
+      );
+
       context.push(
         '/checkout/success',
         extra: {
@@ -377,6 +422,16 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
           message.contains('Route not found') ||
           message.contains('404') ||
           message.contains('Failed to post data: 404');
+      AnalyticsService.instance.track(
+        AnalyticsEvents.checkoutValidationFailed,
+        properties: {
+          'module_type': 'hotel',
+          'reason': routeMissing
+              ? 'hotel_route_missing'
+              : 'booking_submission_failed',
+          'error': message,
+        },
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
