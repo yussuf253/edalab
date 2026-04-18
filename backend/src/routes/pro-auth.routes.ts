@@ -271,6 +271,7 @@ router.post(
         ? {}
         : { laundryServiceIds: sanitizedOverrides?.laundryServiceIds ?? [] }),
     };
+    const avatarUrl = body.avatarUrl?.trim() || null;
 
     const payload = await prisma.$transaction(async (tx) => {
       const account = await tx.proAccount.findUnique({
@@ -288,6 +289,7 @@ router.post(
           body.type,
           activeModules,
           mergedBindings,
+          tx,
         );
         const bindings = {
           ...mergedBindings,
@@ -299,7 +301,7 @@ router.post(
             type: body.type,
             activeModules,
             businessName: body.businessName.trim(),
-            avatarUrl: body.avatarUrl?.trim() || null,
+            avatarUrl,
             bindings,
           },
         });
@@ -307,7 +309,7 @@ router.post(
         const updatedAccount = await tx.proAccount.update({
           where: { id: account.id },
           data: {
-            avatarUrl: body.avatarUrl?.trim() || account.avatarUrl,
+            avatarUrl: avatarUrl ?? account.avatarUrl,
           },
         });
 
@@ -332,6 +334,7 @@ router.post(
           body.type,
           activeModules,
           mergedBindings,
+          tx,
         );
         const bindings = {
           ...mergedBindings,
@@ -344,7 +347,7 @@ router.post(
             type: body.type,
             activeModules,
             businessName: body.businessName.trim(),
-            avatarUrl: body.avatarUrl?.trim() || account.avatarUrl,
+            avatarUrl: avatarUrl ?? account.avatarUrl,
             bindings,
           },
         });
@@ -352,7 +355,7 @@ router.post(
         const updatedAccount = await tx.proAccount.update({
           where: { id: account.id },
           data: {
-            avatarUrl: body.avatarUrl?.trim() || account.avatarUrl,
+            avatarUrl: avatarUrl ?? account.avatarUrl,
           },
         });
 
@@ -370,7 +373,7 @@ router.post(
           firstName: name.firstName,
           lastName: name.lastName,
           phone: account.phone,
-          avatarUrl: body.avatarUrl?.trim() || account.avatarUrl,
+          avatarUrl: avatarUrl ?? account.avatarUrl,
           passwordHash: await hashPassword(
             `pro:${account.id}:${Date.now().toString()}`,
           ),
@@ -382,6 +385,7 @@ router.post(
         body.type,
         activeModules,
         mergedBindings,
+        tx,
       );
       const bindings = {
         ...mergedBindings,
@@ -395,7 +399,7 @@ router.post(
           type: body.type,
           activeModules,
           businessName: body.businessName.trim(),
-          avatarUrl: body.avatarUrl?.trim() || account.avatarUrl,
+          avatarUrl: avatarUrl ?? account.avatarUrl,
           bindings,
           isOnline: true,
           isVerified: false,
@@ -405,7 +409,7 @@ router.post(
       const updatedAccount = await tx.proAccount.update({
         where: { id: account.id },
         data: {
-          avatarUrl: body.avatarUrl?.trim() || account.avatarUrl,
+          avatarUrl: avatarUrl ?? account.avatarUrl,
         },
       });
 
@@ -414,7 +418,7 @@ router.post(
         profile,
         created: true,
       };
-    });
+    }, { timeout: 15000, maxWait: 10000 });
 
     res.status(payload.created ? 201 : 200).json({
       account: serializeProAccount(payload.account),

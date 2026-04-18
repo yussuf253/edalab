@@ -1048,17 +1048,17 @@ function normalizeResolvedBindingsForProfileType(type, bindings) {
         laundryServiceIds: [],
     };
 }
-async function syncLaundryOwnership(userId, type, activeModules, bindings) {
+async function syncLaundryOwnership(userId, type, activeModules, bindings, db = db_1.prisma) {
     const ownsLaundry = type === client_1.ProProfileType.PROVIDER &&
         activeModules.includes(client_1.ProModule.LAUNDRY);
     if (!ownsLaundry) {
-        await db_1.prisma.laundryService.updateMany({
+        await db.laundryService.updateMany({
             where: { providerUserId: userId },
             data: { providerUserId: null },
         });
         return [];
     }
-    await db_1.prisma.laundryService.updateMany({
+    await db.laundryService.updateMany({
         where: {
             providerUserId: userId,
             ...(bindings.laundryServiceIds.length === 0
@@ -1068,7 +1068,7 @@ async function syncLaundryOwnership(userId, type, activeModules, bindings) {
         data: { providerUserId: null },
     });
     if (bindings.laundryServiceIds.length > 0) {
-        await db_1.prisma.laundryService.updateMany({
+        await db.laundryService.updateMany({
             where: {
                 id: { in: bindings.laundryServiceIds },
                 OR: [{ providerUserId: null }, { providerUserId: userId }],
@@ -1076,7 +1076,7 @@ async function syncLaundryOwnership(userId, type, activeModules, bindings) {
             data: { providerUserId: userId },
         });
     }
-    const ownedServices = await db_1.prisma.laundryService.findMany({
+    const ownedServices = await db.laundryService.findMany({
         where: { providerUserId: userId },
         select: { id: true },
     });

@@ -1479,20 +1479,21 @@ export async function syncLaundryOwnership(
   type: ProProfileType,
   activeModules: ProModule[],
   bindings: ProBindings,
+  db: Pick<typeof prisma, 'laundryService'> = prisma,
 ) {
   const ownsLaundry =
     type === ProProfileType.PROVIDER &&
     activeModules.includes(ProModule.LAUNDRY);
 
   if (!ownsLaundry) {
-    await prisma.laundryService.updateMany({
+    await db.laundryService.updateMany({
       where: { providerUserId: userId },
       data: { providerUserId: null },
     });
     return [];
   }
 
-  await prisma.laundryService.updateMany({
+  await db.laundryService.updateMany({
     where: {
       providerUserId: userId,
       ...(bindings.laundryServiceIds.length === 0
@@ -1503,7 +1504,7 @@ export async function syncLaundryOwnership(
   });
 
   if (bindings.laundryServiceIds.length > 0) {
-    await prisma.laundryService.updateMany({
+    await db.laundryService.updateMany({
       where: {
         id: { in: bindings.laundryServiceIds },
         OR: [{ providerUserId: null }, { providerUserId: userId }],
@@ -1512,7 +1513,7 @@ export async function syncLaundryOwnership(
     });
   }
 
-  const ownedServices = await prisma.laundryService.findMany({
+  const ownedServices = await db.laundryService.findMany({
     where: { providerUserId: userId },
     select: { id: true },
   });
