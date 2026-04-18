@@ -91,7 +91,10 @@ class OrderDetailScreen extends StatelessWidget {
                 children: [
                   _Row(
                     l10n.t('order_detail.status'),
-                    _pretty(data['status']?.toString() ?? 'Pending'),
+                    _localizedStatusLabel(
+                      l10n,
+                      data['status']?.toString() ?? 'PENDING',
+                    ),
                   ),
                   _Row(
                     l10n.t('order_detail.amount'),
@@ -231,7 +234,32 @@ class OrderDetailScreen extends StatelessWidget {
     }
   }
 
-  String _pretty(String value) => value.replaceAll('_', ' ');
+  String _localizedStatusLabel(AppLocalizations l10n, String rawStatus) {
+    switch (rawStatus.toUpperCase()) {
+      case 'PENDING':
+        return l10n.t('tracking.status_pending');
+      case 'CONFIRMED':
+      case 'SCHEDULED':
+        return l10n.t('tracking.status_confirmed');
+      case 'PROCESSING':
+      case 'CLEANING':
+      case 'PICKED_UP':
+        return l10n.t('tracking.status_processing');
+      case 'DISPATCHED':
+      case 'OUT_FOR_DELIVERY':
+        return l10n.t('tracking.status_dispatched');
+      case 'IN_PROGRESS':
+        return l10n.t('tracking.status_in_progress');
+      case 'COMPLETED':
+      case 'DELIVERED':
+        return l10n.t('tracking.status_completed');
+      case 'CANCELLED':
+      case 'REFUNDED':
+        return l10n.t('tracking.status_cancelled');
+      default:
+        return l10n.t('tracking.status_unknown');
+    }
+  }
 
   String _money(double value) => '\$${value.toStringAsFixed(2)}';
 

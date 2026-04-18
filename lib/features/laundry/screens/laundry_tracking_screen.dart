@@ -103,13 +103,43 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
   }
 
   String _itemSummary(Map<String, dynamic>? firstItem) {
+    final l10n = context.l10n;
     final metadata = firstItem?['metadata'] is Map
         ? Map<String, dynamic>.from(firstItem!['metadata'] as Map)
         : const <String, dynamic>{};
     final count = (metadata['itemCount'] as num?)?.toInt() ?? 0;
-    return count > 0
-        ? '$count items'
-        : '${firstItem?['quantity'] ?? 1} item(s)';
+    if (count > 0) {
+      return l10n.t(
+        'orders.item_count',
+        params: {'count': '$count', 'suffix': count > 1 ? 's' : ''},
+      );
+    }
+    final quantity = (firstItem?['quantity'] as num?)?.toInt() ?? 1;
+    return l10n.t(
+      'orders.item_count',
+      params: {'count': '$quantity', 'suffix': quantity > 1 ? 's' : ''},
+    );
+  }
+
+  String _localizedStatusLabel(AppLocalizations l10n, String status) {
+    switch (_normalizedStatus(status)) {
+      case 'PENDING':
+        return l10n.t('tracking.status_pending');
+      case 'CONFIRMED':
+        return l10n.t('tracking.status_confirmed');
+      case 'PROCESSING':
+        return l10n.t('tracking.status_processing');
+      case 'DISPATCHED':
+        return l10n.t('tracking.status_dispatched');
+      case 'IN_PROGRESS':
+        return l10n.t('tracking.status_in_progress');
+      case 'COMPLETED':
+        return l10n.t('tracking.status_completed');
+      case 'CANCELLED':
+        return l10n.t('tracking.status_cancelled');
+      default:
+        return l10n.t('tracking.status_unknown');
+    }
   }
 
   @override
@@ -199,7 +229,7 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                       const SizedBox(height: 12),
                       TextButton(
                         onPressed: () => _loadOrder(forceRefresh: true),
-                        child: const Text('Retry'),
+                        child: Text(l10n.t('tracking.retry')),
                       ),
                     ],
                   ),
@@ -234,7 +264,7 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            status.replaceAll('_', ' '),
+                            _localizedStatusLabel(l10n, status),
                             style: AppTextStyles.bodySmall.copyWith(
                               color: Colors.white70,
                             ),
@@ -308,7 +338,7 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                           _DetailRow(
                             l10n.t('laundry_tracking.service'),
                             order?['moduleName']?.toString() ??
-                                'Laundry service',
+                                l10n.t('laundry_tracking.service_default'),
                           ),
                           _DetailRow(
                             l10n.t('laundry_tracking.items'),

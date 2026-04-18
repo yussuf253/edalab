@@ -71,6 +71,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
   }
 
   Future<void> _openCourierChat(Map<String, dynamic>? deliveryAssignee) async {
+    final l10n = context.l10n;
     final order = _order;
     final courierName = deliveryAssignee?['name']?.toString();
     final moduleName = (order?['moduleName']?.toString() ?? '').trim();
@@ -85,7 +86,9 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
       entityType: 'DELIVERY',
       entityId: widget.orderId,
       title: courierName,
-      subtitle: moduleName.isNotEmpty ? moduleName : 'Food delivery',
+      subtitle: moduleName.isNotEmpty
+          ? moduleName
+          : l10n.t('food_tracking.delivery_subtitle'),
       accentColor: '#FF6B35',
       metadata: {
         'orderId': widget.orderId,
@@ -104,7 +107,8 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
         ? widget.orderId
         : '#${widget.orderId}';
     final status = order?['status']?.toString().toUpperCase() ?? 'PENDING';
-    final eta = order?['deliveryEta']?.toString() ?? '15-20 minutes';
+    final eta =
+        order?['deliveryEta']?.toString() ?? l10n.t('food_tracking.default_eta');
     final deliveryAssignee = order?['deliveryAssignee'] is Map
         ? Map<String, dynamic>.from(order!['deliveryAssignee'] as Map)
         : null;
@@ -271,7 +275,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                               children: [
                                 Text(
                                   deliveryAssignee?['name']?.toString() ??
-                                      'Courier will be assigned soon',
+                                      l10n.t('food_tracking.courier_pending'),
                                   style: AppTextStyles.labelLarge,
                                 ),
                                 Row(
@@ -284,7 +288,9 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                                     const SizedBox(width: 4),
                                     Text(
                                       deliveryAssignee == null
-                                          ? 'Waiting for assignment'
+                                          ? l10n.t(
+                                              'food_tracking.waiting_assignment',
+                                            )
                                           : '4.9 • ${l10n.t('food_tracking.rider')}',
                                       style: AppTextStyles.caption,
                                     ),
@@ -345,7 +351,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                           ),
                           const Divider(height: 20),
                           _OrderRow(
-                            'Total',
+                            l10n.t('food_tracking.total'),
                             '\$${((order?['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
                             bold: true,
                           ),
