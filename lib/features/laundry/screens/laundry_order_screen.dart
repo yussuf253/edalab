@@ -23,21 +23,65 @@ class LaundryOrderScreen extends StatefulWidget {
 class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
   int _selectedService = 0;
   int _selectedDate = 0;
-  int _selectedTime = 2;
-  final _items = {'shirts': 3, 'pants': 2, 'dresses': 1, 'jackets': 0};
+  String? _selectedTimeSlot;
+  Map<String, int> _itemCounts = <String, int>{};
   List<LaundryService> _services = LaundryModel.sampleServices;
   bool _isLoading = true;
 
-  IconData _getIcon(String id) {
-    if (id == 'l1') return Icons.local_laundry_service_rounded;
-    if (id == 'l2') return Icons.dry_cleaning_rounded;
-    if (id == 'l3') return Icons.iron_rounded;
-    return Icons.auto_awesome_rounded;
+  IconData _getIcon(LaundryService _) {
+    return Icons.local_laundry_service_rounded;
+  }
+
+  List<LaundryServiceItemConfig> _bookableItemsFor(LaundryService service) {
+    return service.bookingConfig.itemCatalog;
+  }
+
+  List<String> _pickupSlotsFor(LaundryService service) {
+    return service.bookingConfig.pickupSlots;
+  }
+
+  void _syncServiceState({bool resetDate = false}) {
+    if (_services.isEmpty) return;
+    if (_selectedService < 0 || _selectedService >= _services.length) {
+      _selectedService = 0;
+    }
+    if (resetDate) {
+      _selectedDate = 0;
+    }
+    final service = _services[_selectedService];
+    final items = _bookableItemsFor(service);
+    final nextCounts = <String, int>{};
+    for (final item in items) {
+      nextCounts[item.id] = _itemCounts[item.id] ?? 0;
+    }
+    _itemCounts = nextCounts;
+
+    final slots = _pickupSlotsFor(service);
+    if (slots.isEmpty) {
+      _selectedTimeSlot = null;
+      return;
+    }
+    if (_selectedTimeSlot == null || !slots.contains(_selectedTimeSlot)) {
+      _selectedTimeSlot = slots.length > 2 ? slots[2] : slots.first;
+    }
+  }
+
+  int _slotStartHour(String slot) {
+    final match = RegExp(r'^(\d{1,2})\s*:\s*(\d{2})').firstMatch(slot.trim());
+    if (match == null) return 8;
+    return int.tryParse(match.group(1) ?? '') ?? 8;
+  }
+
+  int _slotStartMinute(String slot) {
+    final match = RegExp(r'^(\d{1,2})\s*:\s*(\d{2})').firstMatch(slot.trim());
+    if (match == null) return 0;
+    return int.tryParse(match.group(2) ?? '') ?? 0;
   }
 
   @override
   void initState() {
     super.initState();
+    _syncServiceState();
     _loadServices();
   }
 
@@ -53,6 +97,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
       if (!mounted) return;
       setState(() {
         _services = items.isEmpty ? LaundryModel.sampleServices : items;
+        _syncServiceState(resetDate: true);
         _isLoading = false;
       });
     } catch (_) {
@@ -61,7 +106,11 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
     }
   }
 
-  String _itemLabel(String key, AppLocalizations l10n) {
+  String _itemLabel(String key, String fallbackLabel, AppLocalizations l10n) {
+    if (fallbackLabel.trim().isNotEmpty &&
+        !{'shirts', 'pants', 'dresses', 'jackets'}.contains(key)) {
+      return fallbackLabel;
+    }
     switch (key) {
       case 'shirts':
         return l10n.t('laundry_order.item_shirts');
@@ -72,7 +121,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
       case 'jackets':
         return l10n.t('laundry_order.item_jackets');
       default:
-        return key;
+        return fallbackLabel.trim().isNotEmpty ? fallbackLabel : key;
     }
   }
 
@@ -81,34 +130,74 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
     final l10n = context.l10n;
     final auth = context.watch<AuthProvider>();
     final services = _services;
-    final selectedModel = services[_selectedService];
-    final totalItems = _items.values.fold(0, (a, b) => a + b);
-    final estTotal = selectedModel.price * totalItems; // Simplified estimate
-    final localeTag = Localizations.localeOf(context).toLanguageTag();
-    final pickupDates = List.generate(
-      5,
-      (index) => DateTime.now().add(Duration(days: index)),
+    final selectedIndex = _selectedService.clamp(0, services.length - 1);
+    final selectedModel = services[selectedIndex];
+    final itemOptions = _bookableItemsFor(selectedModel);
+    final totalItems = itemOptions.fold<int>(
+      0,
+      (sum, item) => sum + (_itemCounts[item.id] ?? 0),
     );
-    final selectedPickupDate = pickupDates[_selectedDate];
+    final estSubtotal = itemOptions.fold<double>(
+      0,
+      (sum, item) => sum + ((_itemCounts[item.id] ?? 0) * item.price),
+    );
+    final taxRatePercent = selectedModel.bookingConfig.taxRatePercent;
+    final estDeliveryFee = selectedModel.bookingConfig.deliveryFee;
+    final estTax = estSubtotal * (taxRatePercent / 100);
+    final estTotal = estSubtotal + estTax + estDeliveryFee;
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
+    final minNoticeHours = selectedModel.bookingConfig.minNoticeHours;
+    final maxAdvanceDays = selectedModel.bookingConfig.maxAdvanceDays;
+    final firstEligibleMoment = DateTime.now().add(
+      Duration(hours: minNoticeHours),
+    );
+    final firstEligibleDate = DateTime(
+      firstEligibleMoment.year,
+      firstEligibleMoment.month,
+      firstEligibleMoment.day,
+    );
+    final pickupDates = List.generate(
+      maxAdvanceDays,
+      (index) => firstEligibleDate.add(Duration(days: index)),
+    );
+    final selectedDateIndex = _selectedDate.clamp(0, pickupDates.length - 1);
+    final selectedPickupDate = pickupDates[selectedDateIndex];
     final selectedDayLabel = DateFormat(
       'EEE',
       localeTag,
     ).format(selectedPickupDate);
-    final slots = [
-      '08:00 - 10:00',
-      '10:00 - 12:00',
-      '14:00 - 16:00',
-      '16:00 - 18:00',
-    ];
-    final slotStartHour =
-        int.tryParse(slots[_selectedTime].split(':').first.trim()) ?? 8;
+    final allSlots = _pickupSlotsFor(selectedModel);
+    final availableSlots = selectedPickupDate == firstEligibleDate
+        ? allSlots
+              .where((slot) {
+                final startTime = DateTime(
+                  selectedPickupDate.year,
+                  selectedPickupDate.month,
+                  selectedPickupDate.day,
+                  _slotStartHour(slot),
+                  _slotStartMinute(slot),
+                );
+                return !startTime.isBefore(firstEligibleMoment);
+              })
+              .toList(growable: false)
+        : allSlots;
+    final slots = availableSlots.isNotEmpty ? availableSlots : allSlots;
+    final selectedSlot =
+        (_selectedTimeSlot != null && slots.contains(_selectedTimeSlot))
+        ? _selectedTimeSlot!
+        : (slots.isNotEmpty ? slots.first : '08:00 - 10:00');
+    final slotStartHour = _slotStartHour(selectedSlot);
+    final slotStartMinute = _slotStartMinute(selectedSlot);
     final pickupAt = DateTime(
       selectedPickupDate.year,
       selectedPickupDate.month,
       selectedPickupDate.day,
       slotStartHour,
+      slotStartMinute,
     );
-    final etaAt = pickupAt.add(const Duration(days: 1, hours: 2));
+    final etaAt = pickupAt.add(
+      Duration(hours: selectedModel.bookingConfig.turnaroundHours),
+    );
     final defaultAddress = auth.user?.addresses
         .cast<AddressModel?>()
         .firstWhere(
@@ -151,30 +240,35 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                     style: AppTextStyles.h4,
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: List.generate(services.length, (index) {
-                      final s = services[index];
-                      if (index > 2) {
-                        return const SizedBox.shrink();
-                      }
-                      return Expanded(
-                        child: Padding(
-                          padding: EdgeInsets.only(right: index < 2 ? 10 : 0),
+                  SizedBox(
+                    height: 98,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: services.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 10),
+                      itemBuilder: (context, index) {
+                        final s = services[index];
+                        return SizedBox(
+                          width: 130,
                           child: _ServiceOption(
                             s.name,
-                            _getIcon(s.id),
-                            _selectedService == index,
-                            () => setState(() => _selectedService = index),
+                            _getIcon(s),
+                            selectedIndex == index,
+                            () => setState(() {
+                              _selectedService = index;
+                              _syncServiceState(resetDate: true);
+                            }),
                           ),
-                        ),
-                      );
-                    }),
+                        );
+                      },
+                    ),
                   ),
                   const SizedBox(height: 24),
                   // Items
                   Text(l10n.t('laundry_order.items'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
-                  ..._items.entries.map((e) {
+                  ...itemOptions.map((item) {
+                    final count = _itemCounts[item.id] ?? 0;
                     return Container(
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.symmetric(
@@ -188,10 +282,17 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       child: Row(
                         children: [
                           Text(
-                            _itemLabel(e.key, l10n),
+                            _itemLabel(item.id, item.label, l10n),
                             style: AppTextStyles.labelMedium,
                           ),
                           const Spacer(),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: Text(
+                              '\$${item.price.toStringAsFixed(2)}',
+                              style: AppTextStyles.caption,
+                            ),
+                          ),
                           Container(
                             decoration: BoxDecoration(
                               color: AppColors.extraLightGrey,
@@ -207,8 +308,9 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                                     icon: const Icon(Icons.remove, size: 16),
                                     onPressed: () {
                                       setState(() {
-                                        if (_items[e.key]! > 0) {
-                                          _items[e.key] = _items[e.key]! - 1;
+                                        if ((_itemCounts[item.id] ?? 0) > 0) {
+                                          _itemCounts[item.id] =
+                                              (_itemCounts[item.id] ?? 0) - 1;
                                         }
                                       });
                                     },
@@ -219,7 +321,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                                     horizontal: 8,
                                   ),
                                   child: Text(
-                                    '${e.value}',
+                                    '$count',
                                     style: AppTextStyles.labelLarge,
                                   ),
                                 ),
@@ -230,10 +332,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                                     padding: EdgeInsets.zero,
                                     icon: const Icon(Icons.add, size: 16),
                                     onPressed: () {
-                                      setState(
-                                        () =>
-                                            _items[e.key] = _items[e.key]! + 1,
-                                      );
+                                      setState(() {
+                                        _itemCounts[item.id] =
+                                            (_itemCounts[item.id] ?? 0) + 1;
+                                      });
                                     },
                                   ),
                                 ),
@@ -258,7 +360,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       itemCount: pickupDates.length,
                       separatorBuilder: (_, _) => const SizedBox(width: 10),
                       itemBuilder: (context, i) {
-                        final sel = _selectedDate == i;
+                        final sel = selectedDateIndex == i;
                         final date = pickupDates[i];
                         final dayLabel = DateFormat(
                           'EEE',
@@ -317,32 +419,37 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
-                    children: List.generate(4, (i) {
-                      final sel = _selectedTime == i;
-                      return GestureDetector(
-                        onTap: () => setState(() => _selectedTime = i),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: sel ? AppColors.laundry : AppColors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: sel
-                                ? null
-                                : Border.all(color: AppColors.lightGrey),
-                          ),
-                          child: Text(
-                            slots[i],
-                            style: AppTextStyles.labelMedium.copyWith(
-                              color: sel ? AppColors.white : AppColors.dark,
+                    children: slots
+                        .map((slot) {
+                          final sel = selectedSlot == slot;
+                          return GestureDetector(
+                            onTap: () =>
+                                setState(() => _selectedTimeSlot = slot),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: sel
+                                    ? AppColors.laundry
+                                    : AppColors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: sel
+                                    ? null
+                                    : Border.all(color: AppColors.lightGrey),
+                              ),
+                              child: Text(
+                                slot,
+                                style: AppTextStyles.labelMedium.copyWith(
+                                  color: sel ? AppColors.white : AppColors.dark,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      );
-                    }),
+                          );
+                        })
+                        .toList(growable: false),
                   ),
                   const SizedBox(height: 24),
                   // Address
@@ -421,7 +528,18 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                         ),
                         _Row(
                           l10n.t('laundry_order.pickup'),
-                          '$selectedDayLabel, ${DateFormat('MMM d', localeTag).format(selectedPickupDate)} • ${slots[_selectedTime]}',
+                          '$selectedDayLabel, ${DateFormat('MMM d', localeTag).format(selectedPickupDate)} • $selectedSlot',
+                        ),
+                        _Row(
+                          l10n.t('laundry_order.delivery_fee'),
+                          '\$${estDeliveryFee.toStringAsFixed(2)}',
+                        ),
+                        _Row(
+                          l10n.t(
+                            'laundry_order.tax',
+                            params: {'rate': taxRatePercent.toStringAsFixed(2)},
+                          ),
+                          '\$${estTax.toStringAsFixed(2)}',
                         ),
                         const Divider(height: 20),
                         _Row(
@@ -452,9 +570,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                         );
                         return;
                       }
-                      final subtotal = selectedModel.price * totalItems;
-                      final tax = subtotal * 0.08;
-                      final total = subtotal + tax;
+                      final subtotal = estSubtotal;
+                      final deliveryFee = estDeliveryFee;
+                      final tax = estTax;
+                      final total = estTotal;
                       AnalyticsService.instance.track(
                         AnalyticsEvents.checkoutPlaceOrderTapped,
                         properties: {
@@ -463,18 +582,20 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                           'service_name': selectedModel.name,
                           'item_count': totalItems,
                           'subtotal': subtotal,
+                          'tax_rate_percent': taxRatePercent,
+                          'delivery_fee': deliveryFee,
                           'total': total,
                         },
                       );
                       try {
                         final pickupLabel =
-                            '$selectedDayLabel, ${DateFormat('MMM d', localeTag).format(selectedPickupDate)} • ${slots[_selectedTime]}';
+                            '$selectedDayLabel, ${DateFormat('MMM d', localeTag).format(selectedPickupDate)} • $selectedSlot';
                         final order = await ApiClient.post('/orders', {
                           'userId': auth.user!.id,
                           'moduleType': 'LAUNDRY',
                           'subtotal': subtotal,
                           'tax': tax,
-                          'deliveryFee': 0,
+                          'deliveryFee': deliveryFee,
                           'total': total,
                           'items': [
                             {
@@ -488,8 +609,8 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                                 'serviceName': selectedModel.name,
                                 'serviceUnit': selectedModel.unit,
                                 'itemCount': totalItems,
-                                'timeSlot': slots[_selectedTime],
-                                'pickupSlot': slots[_selectedTime],
+                                'timeSlot': selectedSlot,
+                                'pickupSlot': selectedSlot,
                                 'pickupDay': selectedDayLabel,
                                 'pickupDate': DateFormat(
                                   'yyyy-MM-dd',
@@ -507,7 +628,21 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                                 'address': fullAddress,
                                 'addressLabel': addressLabel,
                                 'addressId': defaultAddress?.id,
-                                'items': _items,
+                                'taxRatePercent': taxRatePercent,
+                                'deliveryFee': deliveryFee,
+                                'items': {
+                                  for (final entry in itemOptions)
+                                    entry.id: _itemCounts[entry.id] ?? 0,
+                                },
+                                'itemPricing': itemOptions
+                                    .map(
+                                      (entry) => {
+                                        'id': entry.id,
+                                        'label': entry.label,
+                                        'price': entry.price,
+                                      },
+                                    )
+                                    .toList(growable: false),
                               },
                             },
                           ],
@@ -524,6 +659,8 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                             'item_count': totalItems,
                             'subtotal': subtotal,
                             'tax': tax,
+                            'tax_rate_percent': taxRatePercent,
+                            'delivery_fee': deliveryFee,
                             'total': total,
                           },
                         );

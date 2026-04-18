@@ -101,6 +101,13 @@ class _ProviderAvailabilityScreenState
     return best;
   }
 
+  String _priceLabel(num value) {
+    final normalized = value.toDouble();
+    return normalized % 1 == 0
+        ? normalized.toStringAsFixed(0)
+        : normalized.toStringAsFixed(2);
+  }
+
   _CategoryListingPreset _presetForCategorySlug(String slug) {
     final normalized = slug.toLowerCase().trim();
     if (_isHouseHelpLikeCategorySlug(normalized)) {
@@ -1394,12 +1401,17 @@ class _ProviderAvailabilityScreenState
                                 ? Image.network(
                                     listingImageUrl!,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => const Center(
-                                      child: Icon(
-                                        Icons.home_repair_service_outlined,
-                                        size: 42,
-                                      ),
-                                    ),
+                                    errorBuilder:
+                                        (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                        ) => const Center(
+                                          child: Icon(
+                                            Icons.home_repair_service_outlined,
+                                            size: 42,
+                                          ),
+                                        ),
                                   )
                                 : const Center(
                                     child: Icon(
@@ -1618,7 +1630,605 @@ class _ProviderAvailabilityScreenState
     await _refresh();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Home-service listing created and linked.')),
+      const SnackBar(content: Text('Service listing created and linked.')),
+    );
+  }
+
+  Future<void> _openCreateLaundryService() async {
+    await _openLaundryServiceSheet();
+  }
+
+  Future<void> _openEditLaundryService(Map<String, dynamic> item) async {
+    await _openLaundryServiceSheet(item: item);
+  }
+
+  Future<void> _openLaundryServiceSheet({Map<String, dynamic>? item}) async {
+    final isEdit = item != null;
+    final serviceId = item?['id']?.toString() ?? '';
+    final fallbackPrice = ((item?['price'] as num?)?.toDouble() ?? 6000).clamp(
+      1,
+      100000,
+    );
+    final rawBookingConfig = item?['bookingConfig'] is Map
+        ? Map<String, dynamic>.from(item!['bookingConfig'] as Map)
+        : const <String, dynamic>{};
+
+    final rawCatalog =
+        (rawBookingConfig['itemCatalog'] as List<dynamic>? ?? const [])
+            .map((entry) => Map<String, dynamic>.from(entry as Map))
+            .toList(growable: false);
+    final draftCatalog = rawCatalog.isNotEmpty
+        ? rawCatalog
+              .map(
+                (entry) => _LaundryItemDraft(
+                  draftId: entry['id']?.toString().trim().isNotEmpty == true
+                      ? entry['id']!.toString().trim()
+                      : DateTime.now().microsecondsSinceEpoch.toString(),
+                  itemId: entry['id']?.toString().trim() ?? '',
+                  label: entry['label']?.toString().trim() ?? '',
+                  priceText: _priceLabel(
+                    (entry['price'] as num?) ?? fallbackPrice,
+                  ),
+                ),
+              )
+              .toList(growable: true)
+        : <_LaundryItemDraft>[
+            _LaundryItemDraft(
+              draftId: 'shirts',
+              itemId: 'shirts',
+              label: 'Shirts',
+              priceText: _priceLabel(700),
+            ),
+            _LaundryItemDraft(
+              draftId: 't_shirt',
+              itemId: 't_shirt',
+              label: 'T-Shirt',
+              priceText: _priceLabel(500),
+            ),
+            _LaundryItemDraft(
+              draftId: 'polo',
+              itemId: 'polo',
+              label: 'Polo',
+              priceText: _priceLabel(500),
+            ),
+            _LaundryItemDraft(
+              draftId: 'trouser',
+              itemId: 'trouser',
+              label: 'Trouser',
+              priceText: _priceLabel(800),
+            ),
+            _LaundryItemDraft(
+              draftId: 'blazer',
+              itemId: 'blazer',
+              label: 'Blazer',
+              priceText: _priceLabel(1500),
+            ),
+            _LaundryItemDraft(
+              draftId: 'suit_2_pieces',
+              itemId: 'suit_2_pieces',
+              label: 'Suit 2 pieces',
+              priceText: _priceLabel(2000),
+            ),
+            _LaundryItemDraft(
+              draftId: 'suit_3_pieces',
+              itemId: 'suit_3_pieces',
+              label: 'Suit 3 pieces',
+              priceText: _priceLabel(2700),
+            ),
+            _LaundryItemDraft(
+              draftId: 'jacket',
+              itemId: 'jacket',
+              label: 'Jacket',
+              priceText: _priceLabel(1500),
+            ),
+            _LaundryItemDraft(
+              draftId: 'dress',
+              itemId: 'dress',
+              label: 'Dress',
+              priceText: _priceLabel(1200),
+            ),
+            _LaundryItemDraft(
+              draftId: 'wash_fold_10_20',
+              itemId: 'wash_fold_10_20',
+              label: 'Wash & Fold 10-20 pieces',
+              priceText: _priceLabel(6000),
+            ),
+            _LaundryItemDraft(
+              draftId: 'wash_fold_21_30',
+              itemId: 'wash_fold_21_30',
+              label: 'Wash & Fold 21-30 pieces',
+              priceText: _priceLabel(12000),
+            ),
+            _LaundryItemDraft(
+              draftId: 'wash_fold_31_40',
+              itemId: 'wash_fold_31_40',
+              label: 'Wash & Fold 31-40 pieces',
+              priceText: _priceLabel(14500),
+            ),
+            _LaundryItemDraft(
+              draftId: 'underwear_10_20',
+              itemId: 'underwear_10_20',
+              label: 'Underwear 10-20 pieces',
+              priceText: _priceLabel(2500),
+            ),
+            _LaundryItemDraft(
+              draftId: 'underwear_21_30',
+              itemId: 'underwear_21_30',
+              label: 'Underwear 21-30 pieces',
+              priceText: _priceLabel(4000),
+            ),
+            _LaundryItemDraft(
+              draftId: 'underwear_31_40',
+              itemId: 'underwear_31_40',
+              label: 'Underwear 31-40 pieces',
+              priceText: _priceLabel(5500),
+            ),
+          ];
+    final pickupSlots =
+        (rawBookingConfig['pickupSlots'] as List<dynamic>? ?? const [])
+            .map((entry) => entry.toString().trim())
+            .where((entry) => entry.isNotEmpty)
+            .toSet()
+            .toList(growable: true);
+    if (pickupSlots.isEmpty) {
+      pickupSlots.addAll(const [
+        '08:00 - 10:00',
+        '10:00 - 12:00',
+        '14:00 - 16:00',
+        '16:00 - 18:00',
+      ]);
+    }
+
+    final priceController = TextEditingController(
+      text: _priceLabel((item?['price'] as num?) ?? 6000),
+    );
+    final unitController = TextEditingController(
+      text: item?['unit']?.toString() ?? 'per order',
+    );
+    final turnaroundHours =
+        (rawBookingConfig['turnaroundHours'] as num?)?.toInt() ?? 26;
+    final minNoticeHours =
+        (rawBookingConfig['minNoticeHours'] as num?)?.toInt() ?? 0;
+    final maxAdvanceDays =
+        (rawBookingConfig['maxAdvanceDays'] as num?)?.toInt() ?? 5;
+    final taxRatePercentController = TextEditingController(
+      text: _priceLabel((rawBookingConfig['taxRatePercent'] as num?) ?? 8),
+    );
+    final deliveryFeeController = TextEditingController(
+      text: _priceLabel((rawBookingConfig['deliveryFee'] as num?) ?? 0),
+    );
+    final slotInputController = TextEditingController();
+    var enabled = item?['enabled'] as bool? ?? true;
+    var isSaving = false;
+    String? errorText;
+
+    final didSave = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (modalContext, setModalState) {
+            Future<void> save() async {
+              const name = 'Wash & Fold';
+              final unit = unitController.text.trim();
+              final price = double.tryParse(priceController.text.trim());
+              final taxRatePercent = double.tryParse(
+                taxRatePercentController.text.trim(),
+              );
+              final deliveryFee = double.tryParse(
+                deliveryFeeController.text.trim(),
+              );
+
+              final itemCatalog = draftCatalog
+                  .map((draft) {
+                    final label = draft.label.trim();
+                    final parsedPrice = double.tryParse(draft.priceText.trim());
+                    final normalizedId =
+                        (draft.itemId.trim().isNotEmpty
+                                ? draft.itemId.trim()
+                                : label)
+                            .toLowerCase()
+                            .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+                            .replaceAll(RegExp(r'^_+|_+$'), '');
+                    return (id: normalizedId, label: label, price: parsedPrice);
+                  })
+                  .where((item) => item.label.isNotEmpty)
+                  .toList(growable: false);
+              final hasInvalidCatalog = itemCatalog.any(
+                (entry) =>
+                    entry.id.isEmpty ||
+                    entry.price == null ||
+                    entry.price! <= 0,
+              );
+              final normalizedSlots = pickupSlots
+                  .map((slot) => slot.trim())
+                  .where((slot) => slot.isNotEmpty)
+                  .toSet()
+                  .toList(growable: false);
+
+              if (price == null || price <= 0) {
+                setModalState(
+                  () => errorText = 'Price must be greater than zero.',
+                );
+                return;
+              }
+              if (unit.length < 2) {
+                setModalState(
+                  () => errorText = 'Unit must be at least 2 characters.',
+                );
+                return;
+              }
+              if (itemCatalog.isEmpty || hasInvalidCatalog) {
+                setModalState(
+                  () => errorText =
+                      'Add at least one valid bookable item with a price.',
+                );
+                return;
+              }
+              if (normalizedSlots.isEmpty) {
+                setModalState(
+                  () => errorText = 'Add at least one pickup time slot.',
+                );
+                return;
+              }
+              if (taxRatePercent == null ||
+                  taxRatePercent < 0 ||
+                  taxRatePercent > 40) {
+                setModalState(
+                  () => errorText = 'Tax rate must be between 0% and 40%.',
+                );
+                return;
+              }
+              if (deliveryFee == null ||
+                  deliveryFee < 0 ||
+                  deliveryFee > 100000) {
+                setModalState(
+                  () =>
+                      errorText = 'Delivery fee must be between 0 and 100000.',
+                );
+                return;
+              }
+
+              setModalState(() {
+                errorText = null;
+                isSaving = true;
+              });
+              try {
+                final payload = <String, dynamic>{
+                  'name': name,
+                  'price': price,
+                  'unit': unit,
+                  'bookingConfig': {
+                    'itemCatalog': itemCatalog
+                        .map(
+                          (entry) => {
+                            'id': entry.id,
+                            'label': entry.label,
+                            'price': entry.price,
+                          },
+                        )
+                        .toList(growable: false),
+                    'pickupSlots': normalizedSlots,
+                    'turnaroundHours': turnaroundHours,
+                    'minNoticeHours': minNoticeHours,
+                    'maxAdvanceDays': maxAdvanceDays,
+                    'taxRatePercent': taxRatePercent,
+                    'deliveryFee': deliveryFee,
+                  },
+                  if (isEdit) 'active': enabled,
+                };
+                if (isEdit) {
+                  await ApiClient.post(
+                    '/pro/${widget.userId}/laundry-services/$serviceId',
+                    payload,
+                  );
+                } else {
+                  await ApiClient.post(
+                    '/pro/${widget.userId}/laundry-services',
+                    payload,
+                  );
+                }
+                if (!sheetContext.mounted) return;
+                Navigator.of(sheetContext).pop(true);
+              } catch (error) {
+                if (!sheetContext.mounted) return;
+                setModalState(() {
+                  isSaving = false;
+                  errorText = error.toString().replaceFirst('Exception: ', '');
+                });
+              }
+            }
+
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                16,
+                20,
+                MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isEdit ? 'Edit laundry service' : 'Add laundry service',
+                      style: Theme.of(modalContext).textTheme.titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Service: Wash & Fold',
+                      style: Theme.of(modalContext).textTheme.bodyMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: priceController,
+                            enabled: !isSaving,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: 'Price',
+                              hintText: '25',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: unitController,
+                            enabled: !isSaving,
+                            decoration: const InputDecoration(
+                              labelText: 'Unit',
+                              hintText: 'per bag',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+                    Text(
+                      'Bookable items and pricing',
+                      style: Theme.of(modalContext).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    ...draftCatalog.map(
+                      (draft) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: TextFormField(
+                                key: ValueKey('laundry-item-${draft.draftId}'),
+                                enabled: !isSaving,
+                                initialValue: draft.label,
+                                decoration: const InputDecoration(
+                                  labelText: 'Item',
+                                  hintText: 'Shirts',
+                                ),
+                                onChanged: (value) => draft.label = value,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextFormField(
+                                key: ValueKey('laundry-price-${draft.draftId}'),
+                                enabled: !isSaving,
+                                initialValue: draft.priceText,
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                decoration: const InputDecoration(
+                                  labelText: 'Price',
+                                  hintText: '5',
+                                ),
+                                onChanged: (value) => draft.priceText = value,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            IconButton(
+                              onPressed: isSaving || draftCatalog.length <= 1
+                                  ? null
+                                  : () => setModalState(
+                                      () => draftCatalog.remove(draft),
+                                    ),
+                              icon: const Icon(Icons.delete_outline_rounded),
+                              tooltip: 'Remove item',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: OutlinedButton.icon(
+                        onPressed: isSaving
+                            ? null
+                            : () => setModalState(
+                                () => draftCatalog.add(
+                                  _LaundryItemDraft(
+                                    draftId: DateTime.now()
+                                        .microsecondsSinceEpoch
+                                        .toString(),
+                                    itemId: '',
+                                    label: '',
+                                    priceText: _priceLabel(fallbackPrice),
+                                  ),
+                                ),
+                              ),
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text('Add item'),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Pickup slots',
+                      style: Theme.of(modalContext).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: pickupSlots
+                          .map(
+                            (slot) => Chip(
+                              backgroundColor: AppColors.extraLightGrey,
+                              labelStyle: const TextStyle(
+                                color: AppColors.dark,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              deleteIconColor: AppColors.dark,
+                              label: Text(slot),
+                              onDeleted: isSaving
+                                  ? null
+                                  : () => setModalState(
+                                      () => pickupSlots.remove(slot),
+                                    ),
+                            ),
+                          )
+                          .toList(growable: false),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: slotInputController,
+                            enabled: !isSaving,
+                            decoration: const InputDecoration(
+                              labelText: 'New slot',
+                              hintText: '18:00 - 20:00',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        FilledButton(
+                          onPressed: isSaving
+                              ? null
+                              : () {
+                                  final next = slotInputController.text.trim();
+                                  if (next.isEmpty) return;
+                                  if (pickupSlots.contains(next)) {
+                                    slotInputController.clear();
+                                    return;
+                                  }
+                                  setModalState(() {
+                                    pickupSlots.add(next);
+                                  });
+                                  slotInputController.clear();
+                                },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.laundry,
+                          ),
+                          child: const Text('Add'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Checkout pricing',
+                      style: Theme.of(modalContext).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: taxRatePercentController,
+                            enabled: !isSaving,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: 'Tax rate (%)',
+                              hintText: '8',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: deliveryFeeController,
+                            enabled: !isSaving,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            decoration: const InputDecoration(
+                              labelText: 'Delivery fee',
+                              hintText: '0',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (isEdit) ...[
+                      const SizedBox(height: 12),
+                      SwitchListTile.adaptive(
+                        contentPadding: EdgeInsets.zero,
+                        value: enabled,
+                        onChanged: isSaving
+                            ? null
+                            : (value) => setModalState(() => enabled = value),
+                        title: const Text('Accept bookings'),
+                        subtitle: Text(
+                          enabled ? 'Visible and bookable' : 'Paused',
+                        ),
+                      ),
+                    ],
+                    if (errorText != null) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        errorText!,
+                        style: TextStyle(color: Colors.red.shade700),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isSaving ? null : save,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.laundry,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text(
+                          isSaving
+                              ? (isEdit ? 'Saving...' : 'Creating...')
+                              : (isEdit ? 'Save changes' : 'Create service'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (didSave != true || !mounted) return;
+    await _refresh();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isEdit
+              ? 'Laundry service updated.'
+              : 'Laundry service created and linked.',
+        ),
+      ),
     );
   }
 
@@ -1628,10 +2238,12 @@ class _ProviderAvailabilityScreenState
       tabs.add(
         _AvailabilityModuleTab(
           module: 'services',
-          label: 'Offered Services',
+          label: 'Services',
           color: AppColors.homeServices,
+          icon: Icons.home_repair_service_outlined,
           enabledLabel: 'Active',
           disabledLabel: 'Paused',
+          emptyMessage: 'No service listings found yet. Tap + to add one.',
           items: (data['services'] as List<dynamic>? ?? const [])
               .map((entry) => Map<String, dynamic>.from(entry as Map))
               .toList(growable: false),
@@ -1644,8 +2256,10 @@ class _ProviderAvailabilityScreenState
           module: 'laundry',
           label: 'Laundry',
           color: AppColors.laundry,
+          icon: Icons.local_laundry_service_outlined,
           enabledLabel: 'Accepting laundry orders',
           disabledLabel: 'Laundry service paused',
+          emptyMessage: 'No laundry services found yet. Tap + to add one.',
           items: (data['laundry'] as List<dynamic>? ?? const [])
               .map((entry) => Map<String, dynamic>.from(entry as Map))
               .toList(growable: false),
@@ -1657,17 +2271,58 @@ class _ProviderAvailabilityScreenState
 
   @override
   Widget build(BuildContext context) {
+    final hasServicesOnly = _supportsServices && !_supportsLaundry;
+    final hasLaundryOnly = _supportsLaundry && !_supportsServices;
+    final appBarTitle = hasLaundryOnly
+        ? 'Laundry Availability'
+        : hasServicesOnly
+        ? 'Service Availability'
+        : 'Provider Availability';
+    final appBarColor = hasLaundryOnly
+        ? AppColors.laundry
+        : AppColors.homeServices;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Offered Services'),
-        backgroundColor: AppColors.homeServices,
+        title: Text(appBarTitle),
+        backgroundColor: appBarColor,
         foregroundColor: Colors.white,
         actions: [
-          if (_supportsServices)
+          if (_supportsServices && !_supportsLaundry)
             IconButton(
               onPressed: _openCreateServiceListing,
               icon: const Icon(Icons.add_business_rounded),
-              tooltip: 'Add offered service',
+              tooltip: 'Add service listing',
+            ),
+          if (_supportsLaundry && !_supportsServices)
+            IconButton(
+              onPressed: _openCreateLaundryService,
+              icon: const Icon(Icons.local_laundry_service_outlined),
+              tooltip: 'Add laundry service',
+            ),
+          if (_supportsServices && _supportsLaundry)
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'services') {
+                  _openCreateServiceListing();
+                  return;
+                }
+                if (value == 'laundry') {
+                  _openCreateLaundryService();
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem<String>(
+                  value: 'services',
+                  child: Text('Add service listing'),
+                ),
+                PopupMenuItem<String>(
+                  value: 'laundry',
+                  child: Text('Add laundry service'),
+                ),
+              ],
+              icon: const Icon(Icons.add_rounded),
+              tooltip: 'Add listing',
             ),
         ],
       ),
@@ -1708,11 +2363,18 @@ class _ProviderAvailabilityScreenState
             final tab = tabs.first;
             return _AvailabilityItemsList(
               color: tab.color,
+              icon: tab.icon,
               enabledLabel: tab.enabledLabel,
               disabledLabel: tab.disabledLabel,
+              emptyMessage: tab.emptyMessage,
               items: tab.items,
               busyIds: _busyIds,
-              onEdit: tab.module == 'services' ? _openEditServiceListing : null,
+              onEdit: tab.module == 'services'
+                  ? (item) =>
+                        _openEditServiceListing(item['id']?.toString() ?? '')
+                  : tab.module == 'laundry'
+                  ? _openEditLaundryService
+                  : null,
               onToggle: (targetId, enabled) => _toggle(
                 module: tab.module,
                 targetId: targetId,
@@ -1739,12 +2401,18 @@ class _ProviderAvailabilityScreenState
                         .map(
                           (tab) => _AvailabilityItemsList(
                             color: tab.color,
+                            icon: tab.icon,
                             enabledLabel: tab.enabledLabel,
                             disabledLabel: tab.disabledLabel,
+                            emptyMessage: tab.emptyMessage,
                             items: tab.items,
                             busyIds: _busyIds,
                             onEdit: tab.module == 'services'
-                                ? _openEditServiceListing
+                                ? (item) => _openEditServiceListing(
+                                    item['id']?.toString() ?? '',
+                                  )
+                                : tab.module == 'laundry'
+                                ? _openEditLaundryService
                                 : null,
                             onToggle: (targetId, enabled) => _toggle(
                               module: tab.module,
@@ -1769,16 +2437,20 @@ class _AvailabilityModuleTab {
   final String module;
   final String label;
   final Color color;
+  final IconData icon;
   final String enabledLabel;
   final String disabledLabel;
+  final String emptyMessage;
   final List<Map<String, dynamic>> items;
 
   const _AvailabilityModuleTab({
     required this.module,
     required this.label,
     required this.color,
+    required this.icon,
     required this.enabledLabel,
     required this.disabledLabel,
+    required this.emptyMessage,
     required this.items,
   });
 }
@@ -1803,19 +2475,37 @@ class _CategoryListingPreset {
   });
 }
 
+class _LaundryItemDraft {
+  final String draftId;
+  String itemId;
+  String label;
+  String priceText;
+
+  _LaundryItemDraft({
+    required this.draftId,
+    required this.itemId,
+    required this.label,
+    required this.priceText,
+  });
+}
+
 class _AvailabilityItemsList extends StatelessWidget {
   final Color color;
+  final IconData icon;
   final String enabledLabel;
   final String disabledLabel;
+  final String emptyMessage;
   final List<Map<String, dynamic>> items;
   final Set<String> busyIds;
-  final Future<void> Function(String targetId)? onEdit;
+  final Future<void> Function(Map<String, dynamic> item)? onEdit;
   final Future<void> Function(String targetId, bool enabled) onToggle;
 
   const _AvailabilityItemsList({
     required this.color,
+    required this.icon,
     required this.enabledLabel,
     required this.disabledLabel,
+    required this.emptyMessage,
     required this.items,
     required this.busyIds,
     this.onEdit,
@@ -1825,10 +2515,10 @@ class _AvailabilityItemsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text('No bound availability items found for this module.'),
+          padding: const EdgeInsets.all(24),
+          child: Text(emptyMessage),
         ),
       );
     }
@@ -1849,7 +2539,7 @@ class _AvailabilityItemsList extends StatelessWidget {
           contentPadding: EdgeInsets.zero,
           leading: CircleAvatar(
             backgroundColor: color.withValues(alpha: 0.12),
-            child: Icon(Icons.tune, color: color),
+            child: Icon(icon, color: color),
           ),
           title: Text(
             item['name']?.toString() ?? 'Item',
@@ -1869,7 +2559,7 @@ class _AvailabilityItemsList extends StatelessWidget {
               children: [
                 if (onEdit != null)
                   IconButton(
-                    onPressed: isBusy ? null : () => onEdit!(id),
+                    onPressed: isBusy ? null : () => onEdit!(item),
                     icon: const Icon(Icons.edit_outlined, size: 20),
                     tooltip: 'Edit listing',
                     style: IconButton.styleFrom(

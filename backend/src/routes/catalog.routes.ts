@@ -91,6 +91,161 @@ type ServiceZoneConfig = {
   radiusKm: number;
 };
 
+type LaundryCatalogConfigItem = {
+  id: string;
+  label: string;
+  price: number;
+};
+
+type LaundryCatalogBookingConfig = {
+  itemCatalog: LaundryCatalogConfigItem[];
+  pickupSlots: string[];
+  turnaroundHours: number;
+  minNoticeHours: number;
+  maxAdvanceDays: number;
+  taxRatePercent: number;
+  deliveryFee: number;
+};
+
+function defaultLaundryCatalogBookingConfig(
+  basePrice: number,
+): LaundryCatalogBookingConfig {
+  const washAndFoldBasePrice =
+    Number.isFinite(basePrice) && basePrice > 0 ? basePrice : 6000;
+  return {
+    itemCatalog: [
+      { id: 'shirts', label: 'Shirt', price: 700 },
+      { id: 't_shirt', label: 'T-Shirt', price: 500 },
+      { id: 'polo', label: 'Polo', price: 500 },
+      { id: 'trouser', label: 'Trouser', price: 800 },
+      { id: 'blazer', label: 'Blazer', price: 1500 },
+      { id: 'suit_2_pieces', label: 'Suit 2 pieces', price: 2000 },
+      { id: 'suit_3_pieces', label: 'Suit 3 pieces', price: 2700 },
+      { id: 'jacket', label: 'Jacket', price: 1500 },
+      { id: 'dress', label: 'Dress', price: 1200 },
+      { id: 'wash_fold_10_20', label: 'Wash & Fold 10-20 pieces', price: washAndFoldBasePrice },
+      { id: 'wash_fold_21_30', label: 'Wash & Fold 21-30 pieces', price: 12000 },
+      { id: 'wash_fold_31_40', label: 'Wash & Fold 31-40 pieces', price: 14500 },
+      { id: 'underwear_10_20', label: 'Underwear 10-20 pieces', price: 2500 },
+      { id: 'underwear_21_30', label: 'Underwear 21-30 pieces', price: 4000 },
+      { id: 'underwear_31_40', label: 'Underwear 31-40 pieces', price: 5500 },
+    ],
+    pickupSlots: ['08:00 - 10:00', '10:00 - 12:00', '14:00 - 16:00', '16:00 - 18:00'],
+    turnaroundHours: 26,
+    minNoticeHours: 0,
+    maxAdvanceDays: 5,
+    taxRatePercent: 8,
+    deliveryFee: 0,
+  };
+}
+
+function normalizeLaundryCatalogBookingConfig(
+  value: unknown,
+  fallback: LaundryCatalogBookingConfig,
+): LaundryCatalogBookingConfig {
+  const map =
+    value != null && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
+
+  const normalizeItemId = (label: string, idValue?: string) => {
+    const normalizedId = (idValue ?? '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+    if (normalizedId.length > 0) {
+      return normalizedId.slice(0, 40);
+    }
+    return label
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 40);
+  };
+
+  const itemCatalogRaw = Array.isArray(map.itemCatalog) ? map.itemCatalog : null;
+  const itemCatalog =
+    itemCatalogRaw == null
+      ? fallback.itemCatalog
+      : itemCatalogRaw
+          .map((entry) =>
+            entry != null && typeof entry === 'object' && !Array.isArray(entry)
+              ? (entry as Record<string, unknown>)
+              : null,
+          )
+          .filter((entry): entry is Record<string, unknown> => entry != null)
+          .map((entry) => {
+            const label = entry.label?.toString().trim() ?? '';
+            const price = toFiniteNumber(entry.price) ?? 0;
+            const id = normalizeItemId(label, entry.id?.toString());
+            return { id, label, price };
+          })
+          .filter(
+            (entry) =>
+              entry.id.length > 0 &&
+              entry.label.length > 0 &&
+              Number.isFinite(entry.price) &&
+              entry.price > 0,
+          )
+          .slice(0, 24);
+
+  const pickupSlotsRaw = Array.isArray(map.pickupSlots) ? map.pickupSlots : null;
+  const pickupSlots =
+    pickupSlotsRaw == null
+      ? fallback.pickupSlots
+      : readJsonStringArray(pickupSlotsRaw).map((entry) => entry.trim()).filter(
+          (entry) => entry.length > 0,
+        ).slice(0, 12);
+
+  const turnaroundHoursRaw = toFiniteNumber(map.turnaroundHours);
+  const minNoticeHoursRaw = toFiniteNumber(map.minNoticeHours);
+  const maxAdvanceDaysRaw = toFiniteNumber(map.maxAdvanceDays);
+  const taxRatePercentRaw = toFiniteNumber(map.taxRatePercent);
+  const deliveryFeeRaw = toFiniteNumber(map.deliveryFee);
+
+  return {
+    itemCatalog: itemCatalog.length > 0 ? itemCatalog : fallback.itemCatalog,
+    pickupSlots: pickupSlots.length > 0 ? pickupSlots : fallback.pickupSlots,
+    turnaroundHours:
+      turnaroundHoursRaw != null &&
+      Number.isInteger(turnaroundHoursRaw) &&
+      turnaroundHoursRaw >= 1 &&
+      turnaroundHoursRaw <= 168
+        ? turnaroundHoursRaw
+        : fallback.turnaroundHours,
+    minNoticeHours:
+      minNoticeHoursRaw != null &&
+      Number.isInteger(minNoticeHoursRaw) &&
+      minNoticeHoursRaw >= 0 &&
+      minNoticeHoursRaw <= 72
+        ? minNoticeHoursRaw
+        : fallback.minNoticeHours,
+    maxAdvanceDays:
+      maxAdvanceDaysRaw != null &&
+      Number.isInteger(maxAdvanceDaysRaw) &&
+      maxAdvanceDaysRaw >= 1 &&
+      maxAdvanceDaysRaw <= 30
+        ? maxAdvanceDaysRaw
+        : fallback.maxAdvanceDays,
+    taxRatePercent:
+      taxRatePercentRaw != null &&
+      Number.isFinite(taxRatePercentRaw) &&
+      taxRatePercentRaw >= 0 &&
+      taxRatePercentRaw <= 40
+        ? Number(taxRatePercentRaw.toFixed(2))
+        : fallback.taxRatePercent,
+    deliveryFee:
+      deliveryFeeRaw != null &&
+      Number.isFinite(deliveryFeeRaw) &&
+      deliveryFeeRaw >= 0 &&
+      deliveryFeeRaw <= 100000
+        ? Number(deliveryFeeRaw.toFixed(2))
+        : fallback.deliveryFee,
+  };
+}
+
 function serviceZoneFromAvailabilityJson(value: unknown): ServiceZoneConfig {
   const defaults: ServiceZoneConfig = {
     enabled: false,
@@ -1029,7 +1184,7 @@ router.get(
   asyncHandler(async (_req, res) => {
     const categories = await prisma.rideCategory.findMany({
       where: { active: true },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
     });
 
     res.json(
@@ -1051,18 +1206,34 @@ router.get(
   asyncHandler(async (_req, res) => {
     const services = await prisma.laundryService.findMany({
       where: { active: true },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        unit: true,
+        iconUrl: true,
+        bookingConfigJson: true,
+      },
       orderBy: { createdAt: 'asc' },
     });
 
     res.json(
-      services.map((service) => ({
-        id: service.id,
-        name: service.name,
-        description: service.description,
-        price: toNumber(service.price),
-        unit: service.unit,
-        iconUrl: service.iconUrl,
-      })),
+      services.map((service) => {
+        const price = toNumber(service.price) ?? 0;
+        return {
+          id: service.id,
+          name: service.name,
+          description: service.description,
+          price,
+          unit: service.unit,
+          iconUrl: service.iconUrl,
+          bookingConfig: normalizeLaundryCatalogBookingConfig(
+            service.bookingConfigJson,
+            defaultLaundryCatalogBookingConfig(price),
+          ),
+        };
+      }),
     );
   }),
 );

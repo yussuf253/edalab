@@ -126,6 +126,48 @@ const createHomeServiceProviderSchema = z.object({
     .optional(),
 });
 
+const laundryServiceConfigItemSchema = z.object({
+  id: z.string().trim().max(40).optional().or(z.literal('')),
+  label: z.string().trim().min(1).max(80),
+  price: z.coerce.number().positive().max(100000),
+});
+
+const laundryServiceBookingConfigSchema = z.object({
+  itemCatalog: z.array(laundryServiceConfigItemSchema).min(1).max(24).optional(),
+  pickupSlots: z.array(z.string().trim().min(3).max(40)).min(1).max(12).optional(),
+  turnaroundHours: z.coerce.number().int().min(1).max(168).optional(),
+  minNoticeHours: z.coerce.number().int().min(0).max(72).optional(),
+  maxAdvanceDays: z.coerce.number().int().min(1).max(30).optional(),
+  taxRatePercent: z.coerce.number().min(0).max(40).optional(),
+  deliveryFee: z.coerce.number().min(0).max(100000).optional(),
+});
+
+const createLaundryServiceSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+  description: z.string().trim().max(320).optional().or(z.literal('')),
+  price: z.coerce.number().positive().max(100000),
+  unit: z.string().trim().min(2).max(40),
+  iconUrl: z.string().trim().url().optional().or(z.literal('')),
+  bookingConfig: laundryServiceBookingConfigSchema.optional(),
+});
+
+const updateLaundryServiceSchema = z
+  .object({
+    name: z.string().trim().min(2).max(120).optional(),
+    description: z.string().trim().max(320).optional().or(z.literal('')),
+    price: z.coerce.number().positive().max(100000).optional(),
+    unit: z.string().trim().min(2).max(40).optional(),
+    iconUrl: z.string().trim().url().optional().or(z.literal('')),
+    active: z.boolean().optional(),
+    bookingConfig: laundryServiceBookingConfigSchema.optional(),
+  })
+  .refine(
+    (value) => Object.values(value).some((entry) => entry !== undefined),
+    {
+      message: 'At least one laundry service field must be supplied.',
+    },
+  );
+
 const createShoppingProductSchema = z.object({
   module: z.enum(['shopping', 'pharmacy']).optional(),
   storeId: z.string().min(1).optional(),
@@ -697,6 +739,22 @@ type HouseHelpConfig = {
   supplyModes: string[];
 };
 
+type LaundryServiceConfigItem = {
+  id: string;
+  label: string;
+  price: number;
+};
+
+type LaundryServiceBookingConfig = {
+  itemCatalog: LaundryServiceConfigItem[];
+  pickupSlots: string[];
+  turnaroundHours: number;
+  minNoticeHours: number;
+  maxAdvanceDays: number;
+  taxRatePercent: number;
+  deliveryFee: number;
+};
+
 function toFiniteNumber(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   const parsed = Number(value);
@@ -710,6 +768,146 @@ function defaultHouseHelpConfig(): HouseHelpConfig {
     homeSizes: ['F2', 'F3', 'F4'],
     arrivalTargets: ['Within 30 min', 'Scheduled slot'],
     supplyModes: ['Provider supplies', 'Customer supplies'],
+  };
+}
+
+function defaultLaundryServiceBookingConfig(
+  basePrice: number,
+): LaundryServiceBookingConfig {
+  const washAndFoldBasePrice = Number.isFinite(basePrice) && basePrice > 0
+    ? basePrice
+    : 6000;
+  return {
+    itemCatalog: [
+      { id: 'shirts', label: 'Shirt', price: 700 },
+      { id: 't_shirt', label: 'T-Shirt', price: 500 },
+      { id: 'polo', label: 'Polo', price: 500 },
+      { id: 'trouser', label: 'Trouser', price: 800 },
+      { id: 'blazer', label: 'Blazer', price: 1500 },
+      { id: 'suit_2_pieces', label: 'Suit 2 pieces', price: 2000 },
+      { id: 'suit_3_pieces', label: 'Suit 3 pieces', price: 2700 },
+      { id: 'jacket', label: 'Jacket', price: 1500 },
+      { id: 'dress', label: 'Dress', price: 1200 },
+      { id: 'wash_fold_10_20', label: 'Wash & Fold 10-20 pieces', price: washAndFoldBasePrice },
+      { id: 'wash_fold_21_30', label: 'Wash & Fold 21-30 pieces', price: 12000 },
+      { id: 'wash_fold_31_40', label: 'Wash & Fold 31-40 pieces', price: 14500 },
+      { id: 'underwear_10_20', label: 'Underwear 10-20 pieces', price: 2500 },
+      { id: 'underwear_21_30', label: 'Underwear 21-30 pieces', price: 4000 },
+      { id: 'underwear_31_40', label: 'Underwear 31-40 pieces', price: 5500 },
+    ],
+    pickupSlots: ['08:00 - 10:00', '10:00 - 12:00', '14:00 - 16:00', '16:00 - 18:00'],
+    turnaroundHours: 26,
+    minNoticeHours: 0,
+    maxAdvanceDays: 5,
+    taxRatePercent: 8,
+    deliveryFee: 0,
+  };
+}
+
+function normalizeLaundryServiceBookingConfig(
+  value: unknown,
+  fallback: LaundryServiceBookingConfig,
+): LaundryServiceBookingConfig {
+  const map =
+    value != null && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {};
+
+  const normalizeItemId = (label: string, idValue?: string) => {
+    const normalizedId = (idValue ?? '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+    if (normalizedId.length > 0) {
+      return normalizedId.slice(0, 40);
+    }
+    return label
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 40);
+  };
+
+  const itemCatalogRaw = Array.isArray(map.itemCatalog) ? map.itemCatalog : null;
+  const itemCatalog = itemCatalogRaw == null
+    ? fallback.itemCatalog
+    : itemCatalogRaw
+        .map((entry) =>
+          entry != null && typeof entry === 'object' && !Array.isArray(entry)
+            ? (entry as Record<string, unknown>)
+            : null,
+        )
+        .filter((entry): entry is Record<string, unknown> => entry != null)
+        .map((entry) => {
+          const label = entry.label?.toString().trim() ?? '';
+          const price = toFiniteNumber(entry.price) ?? 0;
+          const id = normalizeItemId(label, entry.id?.toString());
+          return {
+            id,
+            label,
+            price,
+          };
+        })
+        .filter(
+          (entry) =>
+            entry.id.length > 0 &&
+            entry.label.length > 0 &&
+            Number.isFinite(entry.price) &&
+            entry.price > 0,
+        )
+        .slice(0, 24);
+
+  const pickupSlotsRaw = Array.isArray(map.pickupSlots) ? map.pickupSlots : null;
+  const pickupSlots = pickupSlotsRaw == null
+    ? fallback.pickupSlots
+    : normalizeStringList(pickupSlotsRaw).slice(0, 12);
+
+  const turnaroundHoursRaw = toFiniteNumber(map.turnaroundHours);
+  const minNoticeHoursRaw = toFiniteNumber(map.minNoticeHours);
+  const maxAdvanceDaysRaw = toFiniteNumber(map.maxAdvanceDays);
+  const taxRatePercentRaw = toFiniteNumber(map.taxRatePercent);
+  const deliveryFeeRaw = toFiniteNumber(map.deliveryFee);
+
+  return {
+    itemCatalog: itemCatalog.length > 0 ? itemCatalog : fallback.itemCatalog,
+    pickupSlots: pickupSlots.length > 0 ? pickupSlots : fallback.pickupSlots,
+    turnaroundHours:
+      turnaroundHoursRaw != null &&
+          Number.isInteger(turnaroundHoursRaw) &&
+          turnaroundHoursRaw >= 1 &&
+          turnaroundHoursRaw <= 168
+        ? turnaroundHoursRaw
+        : fallback.turnaroundHours,
+    minNoticeHours:
+      minNoticeHoursRaw != null &&
+          Number.isInteger(minNoticeHoursRaw) &&
+          minNoticeHoursRaw >= 0 &&
+          minNoticeHoursRaw <= 72
+        ? minNoticeHoursRaw
+        : fallback.minNoticeHours,
+    maxAdvanceDays:
+      maxAdvanceDaysRaw != null &&
+          Number.isInteger(maxAdvanceDaysRaw) &&
+          maxAdvanceDaysRaw >= 1 &&
+          maxAdvanceDaysRaw <= 30
+        ? maxAdvanceDaysRaw
+        : fallback.maxAdvanceDays,
+    taxRatePercent:
+      taxRatePercentRaw != null &&
+          Number.isFinite(taxRatePercentRaw) &&
+          taxRatePercentRaw >= 0 &&
+          taxRatePercentRaw <= 40
+        ? Number(taxRatePercentRaw.toFixed(2))
+        : fallback.taxRatePercent,
+    deliveryFee:
+      deliveryFeeRaw != null &&
+          Number.isFinite(deliveryFeeRaw) &&
+          deliveryFeeRaw >= 0 &&
+          deliveryFeeRaw <= 100000
+        ? Number(deliveryFeeRaw.toFixed(2))
+        : fallback.deliveryFee,
   };
 }
 
@@ -4475,6 +4673,192 @@ router.post(
 );
 
 router.post(
+  '/:userId/laundry-services',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const body = createLaundryServiceSchema.parse(req.body);
+    const profile = await prisma.proProfile.findUnique({ where: { userId } });
+
+    if (!profile || profile.type !== ProProfileType.PROVIDER) {
+      return res.status(404).json({ error: 'Provider pro profile not found.' });
+    }
+    if (!profile.activeModules.includes(ProModule.LAUNDRY)) {
+      return res.status(400).json({
+        error: 'Laundry is not enabled for this provider profile.',
+      });
+    }
+
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const existingBindings = normalizeBindings(hydratedProfile.bindings);
+    const bookingConfig = normalizeLaundryServiceBookingConfig(
+      body.bookingConfig,
+      defaultLaundryServiceBookingConfig(body.price),
+    );
+    const service = await prisma.laundryService.create({
+      data: {
+        id: randomUUID(),
+        providerUserId: hydratedProfile.userId,
+        name: body.name.trim(),
+        description:
+          body.description?.trim() ||
+          'Professional laundry pickup, cleaning, and delivery service.',
+        price: new Prisma.Decimal(body.price),
+        unit: body.unit.trim(),
+        iconUrl: body.iconUrl?.trim() || null,
+        bookingConfigJson: bookingConfig,
+        active: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        unit: true,
+        iconUrl: true,
+        bookingConfigJson: true,
+        active: true,
+      },
+    });
+
+    const nextBindings: ProBindings = {
+      ...existingBindings,
+      laundryServiceIds: mergeStringLists(existingBindings.laundryServiceIds, [
+        service.id,
+      ]),
+    };
+    const ownedLaundryServiceIds = await syncLaundryOwnership(
+      hydratedProfile.userId,
+      hydratedProfile.type,
+      hydratedProfile.activeModules,
+      nextBindings,
+    );
+    const bindings = {
+      ...nextBindings,
+      laundryServiceIds: ownedLaundryServiceIds,
+    };
+
+    await prisma.proProfile.update({
+      where: { id: hydratedProfile.id },
+      data: { bindings },
+    });
+
+    res.status(201).json({
+      id: service.id,
+      name: service.name,
+      description: service.description,
+      price: toNumber(service.price) ?? 0,
+      unit: service.unit,
+      iconUrl: service.iconUrl,
+      bookingConfig: normalizeLaundryServiceBookingConfig(
+        service.bookingConfigJson,
+        bookingConfig,
+      ),
+      enabled: service.active,
+      bindings,
+    });
+  }),
+);
+
+router.post(
+  '/:userId/laundry-services/:serviceId',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const serviceId = getParam(req.params.serviceId, 'serviceId');
+    const body = updateLaundryServiceSchema.parse(req.body);
+    const profile = await prisma.proProfile.findUnique({ where: { userId } });
+
+    if (!profile || profile.type !== ProProfileType.PROVIDER) {
+      return res.status(404).json({ error: 'Provider pro profile not found.' });
+    }
+    if (!profile.activeModules.includes(ProModule.LAUNDRY)) {
+      return res.status(400).json({
+        error: 'Laundry is not enabled for this provider profile.',
+      });
+    }
+
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
+    if (
+      bindings.laundryServiceIds.length === 0 ||
+      !bindings.laundryServiceIds.includes(serviceId)
+    ) {
+      return res.status(403).json({
+        error: 'Laundry service is not assigned to this profile.',
+      });
+    }
+
+    const currentService = await prisma.laundryService.findUnique({
+      where: { id: serviceId },
+      select: { providerUserId: true, bookingConfigJson: true, price: true },
+    });
+    if (!currentService) {
+      return res.status(404).json({ error: 'Laundry service not found.' });
+    }
+    if (
+      currentService.providerUserId != null &&
+      currentService.providerUserId !== hydratedProfile.userId
+    ) {
+      return res.status(403).json({
+        error: 'Laundry service is managed by another provider profile.',
+      });
+    }
+
+    const currentPrice = toNumber(currentService.price) ?? 5;
+    const existingBookingConfig = normalizeLaundryServiceBookingConfig(
+      currentService.bookingConfigJson,
+      defaultLaundryServiceBookingConfig(currentPrice),
+    );
+    const nextBookingConfig =
+      body.bookingConfig == null
+        ? existingBookingConfig
+        : normalizeLaundryServiceBookingConfig(
+            body.bookingConfig,
+            existingBookingConfig,
+          );
+
+    const updatedService = await prisma.laundryService.update({
+      where: { id: serviceId },
+      data: {
+        providerUserId: hydratedProfile.userId,
+        name: body.name == null ? undefined : body.name.trim(),
+        description:
+          body.description == null ? undefined : body.description.trim(),
+        price:
+          body.price == null ? undefined : new Prisma.Decimal(body.price),
+        unit: body.unit == null ? undefined : body.unit.trim(),
+        iconUrl: body.iconUrl == null ? undefined : body.iconUrl.trim() || null,
+        bookingConfigJson: body.bookingConfig == null ? undefined : nextBookingConfig,
+        active: body.active,
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        unit: true,
+        iconUrl: true,
+        bookingConfigJson: true,
+        active: true,
+      },
+    });
+
+    res.json({
+      id: updatedService.id,
+      name: updatedService.name,
+      description: updatedService.description,
+      price: toNumber(updatedService.price) ?? 0,
+      unit: updatedService.unit,
+      iconUrl: updatedService.iconUrl,
+      bookingConfig: normalizeLaundryServiceBookingConfig(
+        updatedService.bookingConfigJson,
+        nextBookingConfig,
+      ),
+      enabled: updatedService.active,
+    });
+  }),
+);
+
+router.post(
   '/:userId/shopping-products',
   asyncHandler(async (req, res) => {
     const userId = getParam(req.params.userId, 'userId');
@@ -5283,6 +5667,11 @@ router.get(
             select: {
               id: true,
               name: true,
+              description: true,
+              price: true,
+              unit: true,
+              iconUrl: true,
+              bookingConfigJson: true,
               active: true,
             },
             orderBy: { name: 'asc' },
@@ -5311,11 +5700,31 @@ router.get(
           enabled: provider.isAvailable,
         };
       }),
-      laundry: laundryServices.map((service) => ({
-        id: service.id,
-        name: service.name,
-        enabled: service.active,
-      })),
+      laundry: laundryServices.map((service) => {
+        const price = toNumber(service.price) ?? 0;
+        const priceLabel = Number.isInteger(price)
+          ? price.toString()
+          : price.toFixed(2);
+        const description = service.description.trim();
+        const bookingConfig = normalizeLaundryServiceBookingConfig(
+          service.bookingConfigJson,
+          defaultLaundryServiceBookingConfig(price),
+        );
+        return {
+          id: service.id,
+          name: service.name,
+          description,
+          price,
+          unit: service.unit,
+          iconUrl: service.iconUrl,
+          bookingConfig,
+          details:
+            description.length > 0
+              ? `$${priceLabel} / ${service.unit} • ${bookingConfig.itemCatalog.length} items • ${bookingConfig.pickupSlots.length} slots • ${description}`
+              : `$${priceLabel} / ${service.unit} • ${bookingConfig.itemCatalog.length} items • ${bookingConfig.pickupSlots.length} slots`,
+          enabled: service.active,
+        };
+      }),
     });
   }),
 );

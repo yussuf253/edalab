@@ -1,3 +1,164 @@
+class LaundryServiceItemConfig {
+  final String id;
+  final String label;
+  final double price;
+
+  LaundryServiceItemConfig({
+    required this.id,
+    required this.label,
+    required this.price,
+  });
+
+  factory LaundryServiceItemConfig.fromApi(Map<String, dynamic> json) {
+    final rawId = json['id']?.toString().trim() ?? '';
+    final label = json['label']?.toString().trim() ?? '';
+    final generatedId = label
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+        .replaceAll(RegExp(r'^_+|_+$'), '');
+    return LaundryServiceItemConfig(
+      id: rawId.isNotEmpty ? rawId : generatedId,
+      label: label,
+      price: (json['price'] as num?)?.toDouble() ?? 0,
+    );
+  }
+}
+
+class LaundryBookingConfig {
+  final List<LaundryServiceItemConfig> itemCatalog;
+  final List<String> pickupSlots;
+  final int turnaroundHours;
+  final int minNoticeHours;
+  final int maxAdvanceDays;
+  final double taxRatePercent;
+  final double deliveryFee;
+
+  LaundryBookingConfig({
+    required this.itemCatalog,
+    required this.pickupSlots,
+    required this.turnaroundHours,
+    required this.minNoticeHours,
+    required this.maxAdvanceDays,
+    required this.taxRatePercent,
+    required this.deliveryFee,
+  });
+
+  factory LaundryBookingConfig.fromApi(
+    Map<String, dynamic>? json, {
+    required double fallbackPrice,
+  }) {
+    final washAndFoldBasePrice = fallbackPrice > 0 ? fallbackPrice : 6000.0;
+    final defaultConfig = LaundryBookingConfig(
+      itemCatalog: [
+        LaundryServiceItemConfig(id: 'shirts', label: 'Shirt', price: 700),
+        LaundryServiceItemConfig(id: 't_shirt', label: 'T-Shirt', price: 500),
+        LaundryServiceItemConfig(id: 'polo', label: 'Polo', price: 500),
+        LaundryServiceItemConfig(id: 'trouser', label: 'Trouser', price: 800),
+        LaundryServiceItemConfig(id: 'blazer', label: 'Blazer', price: 1500),
+        LaundryServiceItemConfig(
+          id: 'suit_2_pieces',
+          label: 'Suit 2 pieces',
+          price: 2000,
+        ),
+        LaundryServiceItemConfig(
+          id: 'suit_3_pieces',
+          label: 'Suit 3 pieces',
+          price: 2700,
+        ),
+        LaundryServiceItemConfig(id: 'jacket', label: 'Jacket', price: 1500),
+        LaundryServiceItemConfig(id: 'dress', label: 'Dress', price: 1200),
+        LaundryServiceItemConfig(
+          id: 'wash_fold_10_20',
+          label: 'Wash & Fold 10-20 pieces',
+          price: washAndFoldBasePrice,
+        ),
+        LaundryServiceItemConfig(
+          id: 'wash_fold_21_30',
+          label: 'Wash & Fold 21-30 pieces',
+          price: 12000,
+        ),
+        LaundryServiceItemConfig(
+          id: 'wash_fold_31_40',
+          label: 'Wash & Fold 31-40 pieces',
+          price: 14500,
+        ),
+        LaundryServiceItemConfig(
+          id: 'underwear_10_20',
+          label: 'Underwear 10-20 pieces',
+          price: 2500,
+        ),
+        LaundryServiceItemConfig(
+          id: 'underwear_21_30',
+          label: 'Underwear 21-30 pieces',
+          price: 4000,
+        ),
+        LaundryServiceItemConfig(
+          id: 'underwear_31_40',
+          label: 'Underwear 31-40 pieces',
+          price: 5500,
+        ),
+      ],
+      pickupSlots: const [
+        '08:00 - 10:00',
+        '10:00 - 12:00',
+        '14:00 - 16:00',
+        '16:00 - 18:00',
+      ],
+      turnaroundHours: 26,
+      minNoticeHours: 0,
+      maxAdvanceDays: 5,
+      taxRatePercent: 8,
+      deliveryFee: 0,
+    );
+    if (json == null) {
+      return defaultConfig;
+    }
+
+    final itemCatalog = (json['itemCatalog'] as List<dynamic>? ?? const [])
+        .map(
+          (entry) => LaundryServiceItemConfig.fromApi(
+            Map<String, dynamic>.from(entry as Map),
+          ),
+        )
+        .where((entry) => entry.id.isNotEmpty && entry.label.isNotEmpty)
+        .toList(growable: false);
+    final pickupSlots = (json['pickupSlots'] as List<dynamic>? ?? const [])
+        .map((entry) => entry.toString().trim())
+        .where((entry) => entry.isNotEmpty)
+        .toList(growable: false);
+
+    final turnaroundHours = (json['turnaroundHours'] as num?)?.toInt() ?? -1;
+    final minNoticeHours = (json['minNoticeHours'] as num?)?.toInt() ?? -1;
+    final maxAdvanceDays = (json['maxAdvanceDays'] as num?)?.toInt() ?? -1;
+    final taxRatePercent = (json['taxRatePercent'] as num?)?.toDouble() ?? -1;
+    final deliveryFee = (json['deliveryFee'] as num?)?.toDouble() ?? -1;
+
+    return LaundryBookingConfig(
+      itemCatalog: itemCatalog.isNotEmpty
+          ? itemCatalog
+          : defaultConfig.itemCatalog,
+      pickupSlots: pickupSlots.isNotEmpty
+          ? pickupSlots
+          : defaultConfig.pickupSlots,
+      turnaroundHours: turnaroundHours >= 1 && turnaroundHours <= 168
+          ? turnaroundHours
+          : defaultConfig.turnaroundHours,
+      minNoticeHours: minNoticeHours >= 0 && minNoticeHours <= 72
+          ? minNoticeHours
+          : defaultConfig.minNoticeHours,
+      maxAdvanceDays: maxAdvanceDays >= 1 && maxAdvanceDays <= 30
+          ? maxAdvanceDays
+          : defaultConfig.maxAdvanceDays,
+      taxRatePercent: taxRatePercent >= 0 && taxRatePercent <= 40
+          ? taxRatePercent
+          : defaultConfig.taxRatePercent,
+      deliveryFee: deliveryFee >= 0 && deliveryFee <= 100000
+          ? deliveryFee
+          : defaultConfig.deliveryFee,
+    );
+  }
+}
+
 class LaundryService {
   final String id;
   final String name; // e.g., 'Wash & Fold', 'Dry Cleaning', 'Ironing'
@@ -5,6 +166,7 @@ class LaundryService {
   final double price;
   final String unit; // e.g., 'per bag', 'per item'
   final String iconUrl;
+  final LaundryBookingConfig bookingConfig;
 
   LaundryService({
     required this.id,
@@ -13,16 +175,24 @@ class LaundryService {
     required this.price,
     required this.unit,
     required this.iconUrl,
+    required this.bookingConfig,
   });
 
   factory LaundryService.fromApi(Map<String, dynamic> json) {
+    final price = (json['price'] as num?)?.toDouble() ?? 0;
     return LaundryService(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Laundry Service',
       description: json['description']?.toString() ?? '',
-      price: (json['price'] as num?)?.toDouble() ?? 0,
+      price: price,
       unit: json['unit']?.toString() ?? '',
       iconUrl: json['iconUrl']?.toString() ?? '',
+      bookingConfig: LaundryBookingConfig.fromApi(
+        json['bookingConfig'] is Map
+            ? Map<String, dynamic>.from(json['bookingConfig'] as Map)
+            : null,
+        fallbackPrice: price,
+      ),
     );
   }
 }
@@ -32,26 +202,11 @@ class LaundryModel {
     LaundryService(
       id: 'l1',
       name: 'Wash & Fold',
-      description: 'Standard washing and folding for regular clothes.',
-      price: 25.0,
-      unit: 'per bag',
+      description: 'Laundry service inspired by Djibouti market tariffs.',
+      price: 6000.0,
+      unit: 'per order',
       iconUrl: 'wash',
-    ),
-    LaundryService(
-      id: 'l2',
-      name: 'Dry Cleaning',
-      description: 'Professional dry cleaning for delicate fabrics.',
-      price: 15.0,
-      unit: 'per item',
-      iconUrl: 'dry',
-    ),
-    LaundryService(
-      id: 'l3',
-      name: 'Ironing Only',
-      description: 'Professional pressing and ironing service.',
-      price: 5.0,
-      unit: 'per item',
-      iconUrl: 'iron',
+      bookingConfig: LaundryBookingConfig.fromApi(null, fallbackPrice: 6000),
     ),
   ];
 }

@@ -65,6 +65,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
             .map((entry) => Map<String, dynamic>.from(entry as Map))
             .toList(growable: false),
         availability: availabilityResponse,
+        activeModules: widget.profile.activeModules,
       ),
     );
   }
@@ -969,120 +970,160 @@ class _ProviderDashboardViewData {
 }
 
 class _ProviderSetupState {
+  final bool supportsServices;
+  final bool supportsLaundry;
+  final bool hasHouseHelpListing;
   final bool hasServiceListing;
   final bool hasOfferConfigured;
   final bool hasZoneConfigured;
   final bool hasScheduleConfigured;
   final bool hasEnabledService;
+  final bool hasLaundryBinding;
+  final bool hasEnabledLaundry;
 
   const _ProviderSetupState({
+    required this.supportsServices,
+    required this.supportsLaundry,
+    required this.hasHouseHelpListing,
     required this.hasServiceListing,
     required this.hasOfferConfigured,
     required this.hasZoneConfigured,
     required this.hasScheduleConfigured,
     required this.hasEnabledService,
+    required this.hasLaundryBinding,
+    required this.hasEnabledLaundry,
   });
 
   factory _ProviderSetupState.fromApi({
     required List<Map<String, dynamic>> settings,
     required Map<String, dynamic> availability,
+    required List<ProModule> activeModules,
   }) {
+    final supportsServices =
+        activeModules.isEmpty || activeModules.contains(ProModule.services);
+    final supportsLaundry = activeModules.contains(ProModule.laundry);
     final hasServiceListing = settings.isNotEmpty;
-    final firstSetting = hasServiceListing
-        ? settings.first
-        : const <String, dynamic>{};
-    final services = _toStringList(firstSetting['services']);
-    final houseHelpConfig = Map<String, dynamic>.from(
-      (firstSetting['houseHelpConfig'] as Map?) ?? const <String, dynamic>{},
+    final hasHouseHelpListing = settings.any(
+      (setting) => _isHouseHelpCategorySlug(setting['categorySlug']),
     );
-    final hasOfferConfigured =
-        services.isNotEmpty &&
-        _toStringList(houseHelpConfig['bookingTypes']).isNotEmpty &&
-        _toStringList(houseHelpConfig['shiftDurations']).isNotEmpty &&
-        _toStringList(houseHelpConfig['homeSizes']).isNotEmpty &&
-        _toStringList(houseHelpConfig['arrivalTargets']).isNotEmpty &&
-        _toStringList(houseHelpConfig['supplyModes']).isNotEmpty;
-    final serviceZone = Map<String, dynamic>.from(
-      (firstSetting['serviceZone'] as Map?) ?? const <String, dynamic>{},
-    );
-    final zoneEnabled = serviceZone['enabled'] as bool? ?? false;
-    final zoneLat = (serviceZone['centerLatitude'] as num?)?.toDouble();
-    final zoneLng = (serviceZone['centerLongitude'] as num?)?.toDouble();
-    final zoneRadius = (serviceZone['radiusKm'] as num?)?.toDouble();
-    final hasZoneConfigured =
-        zoneEnabled &&
-        zoneLat != null &&
-        zoneLng != null &&
-        zoneRadius != null &&
-        zoneRadius > 0;
-    final availabilityHours = Map<String, dynamic>.from(
-      (firstSetting['availability'] as Map?) ?? const <String, dynamic>{},
-    );
-    final hasScheduleConfigured = <String>['weekdays', 'saturday', 'sunday']
-        .every(
-          (key) => availabilityHours[key]?.toString().trim().isNotEmpty == true,
-        );
+    final hasOfferConfigured = !supportsServices
+        ? true
+        : settings.any((setting) => _isServiceOfferConfigured(setting));
+    final hasZoneConfigured = !supportsServices
+        ? true
+        : !hasHouseHelpListing
+        ? true
+        : settings.any((setting) => _hasValidServiceZone(setting));
+    final hasScheduleConfigured = !supportsServices
+        ? true
+        : settings.any((setting) => _hasCompleteSchedule(setting));
     final servicesAvailability =
         (availability['services'] as List<dynamic>? ?? const <dynamic>[])
+            .map((entry) => Map<String, dynamic>.from(entry as Map))
+            .toList(growable: false);
+    final laundryAvailability =
+        (availability['laundry'] as List<dynamic>? ?? const <dynamic>[])
             .map((entry) => Map<String, dynamic>.from(entry as Map))
             .toList(growable: false);
     final hasEnabledService = servicesAvailability.any(
       (item) => item['enabled'] as bool? ?? false,
     );
+    final hasLaundryBinding = laundryAvailability.isNotEmpty;
+    final hasEnabledLaundry = laundryAvailability.any(
+      (item) => item['enabled'] as bool? ?? false,
+    );
 
     return _ProviderSetupState(
+      supportsServices: supportsServices,
+      supportsLaundry: supportsLaundry,
+      hasHouseHelpListing: hasHouseHelpListing,
       hasServiceListing: hasServiceListing,
       hasOfferConfigured: hasOfferConfigured,
       hasZoneConfigured: hasZoneConfigured,
       hasScheduleConfigured: hasScheduleConfigured,
       hasEnabledService: hasEnabledService,
+      hasLaundryBinding: hasLaundryBinding,
+      hasEnabledLaundry: hasEnabledLaundry,
     );
   }
 
   int completedStepCount(bool onlineState) {
-    var completed = 0;
-    if (hasServiceListing) completed++;
-    if (hasOfferConfigured) completed++;
-    if (hasZoneConfigured && hasScheduleConfigured) completed++;
-    if (hasEnabledService) completed++;
-    if (onlineState) completed++;
-    return completed;
+    return steps(onlineState).where((step) => step.done).length;
   }
 
   bool isReadyForLiveOperations(bool onlineState) {
-    return completedStepCount(onlineState) >= 5;
+    final checklist = steps(onlineState);
+    return checklist.isNotEmpty && checklist.every((step) => step.done);
   }
 
   List<_ProviderSetupStep> steps(bool onlineState) {
-    return <_ProviderSetupStep>[
-      _ProviderSetupStep(
-        title: 'Create a listing',
-        subtitle: 'Set up your House Help listing before receiving requests.',
-        done: hasServiceListing,
-      ),
-      _ProviderSetupStep(
-        title: 'Configure offered services',
-        subtitle:
-            'Select booking types, shifts, home sizes, arrival and supply modes.',
-        done: hasOfferConfigured,
-      ),
-      _ProviderSetupStep(
-        title: 'Configure zone and schedule',
-        subtitle:
-            'Set your service-zone center/radius and weekly working schedule.',
-        done: hasZoneConfigured && hasScheduleConfigured,
-      ),
-      _ProviderSetupStep(
-        title: 'Enable booking intake',
-        subtitle: 'Turn your listing availability on.',
-        done: hasEnabledService,
-      ),
+    final steps = <_ProviderSetupStep>[];
+
+    if (supportsServices) {
+      steps.add(
+        _ProviderSetupStep(
+          title: 'Create a service listing',
+          subtitle:
+              'Set up at least one service listing before receiving service requests.',
+          done: hasServiceListing,
+        ),
+      );
+      steps.add(
+        _ProviderSetupStep(
+          title: 'Configure service details',
+          subtitle: hasHouseHelpListing
+              ? 'Set offered services, booking types, shifts, home sizes, arrival, and supply modes.'
+              : 'Set offered services and booking preferences.',
+          done: hasOfferConfigured,
+        ),
+      );
+      steps.add(
+        _ProviderSetupStep(
+          title: hasHouseHelpListing
+              ? 'Configure zone and schedule'
+              : 'Configure schedule',
+          subtitle: hasHouseHelpListing
+              ? 'Set your service-zone center/radius and weekly working schedule.'
+              : 'Set your weekly working schedule for service requests.',
+          done: hasZoneConfigured && hasScheduleConfigured,
+        ),
+      );
+      steps.add(
+        _ProviderSetupStep(
+          title: 'Enable service intake',
+          subtitle: 'Turn your service listing availability on.',
+          done: hasEnabledService,
+        ),
+      );
+    }
+
+    if (supportsLaundry) {
+      steps.add(
+        _ProviderSetupStep(
+          title: 'Link laundry services',
+          subtitle:
+              'Make sure your laundry services are linked to this provider profile.',
+          done: hasLaundryBinding,
+        ),
+      );
+      steps.add(
+        _ProviderSetupStep(
+          title: 'Enable laundry intake',
+          subtitle: 'Turn on laundry availability to receive orders.',
+          done: hasEnabledLaundry,
+        ),
+      );
+    }
+
+    steps.add(
       _ProviderSetupStep(
         title: 'Go online',
         subtitle: 'Switch your pro profile online to start receiving requests.',
         done: onlineState,
       ),
-    ];
+    );
+
+    return steps;
   }
 
   static List<String> _toStringList(dynamic value) {
@@ -1091,6 +1132,59 @@ class _ProviderSetupState {
         .map((entry) => entry?.toString().trim() ?? '')
         .where((entry) => entry.isNotEmpty)
         .toList(growable: false);
+  }
+
+  static bool _isHouseHelpCategorySlug(dynamic slug) {
+    final normalized = slug?.toString().toLowerCase().trim() ?? '';
+    return normalized.contains('house-help') ||
+        normalized.contains('house_help') ||
+        normalized.contains('househelp') ||
+        normalized == 'cleaning' ||
+        normalized.contains('maid');
+  }
+
+  static bool _isServiceOfferConfigured(Map<String, dynamic> setting) {
+    final services = _toStringList(setting['services']);
+    if (services.isEmpty) {
+      return false;
+    }
+
+    if (!_isHouseHelpCategorySlug(setting['categorySlug'])) {
+      return true;
+    }
+
+    final houseHelpConfig = Map<String, dynamic>.from(
+      (setting['houseHelpConfig'] as Map?) ?? const <String, dynamic>{},
+    );
+    return _toStringList(houseHelpConfig['bookingTypes']).isNotEmpty &&
+        _toStringList(houseHelpConfig['shiftDurations']).isNotEmpty &&
+        _toStringList(houseHelpConfig['homeSizes']).isNotEmpty &&
+        _toStringList(houseHelpConfig['arrivalTargets']).isNotEmpty &&
+        _toStringList(houseHelpConfig['supplyModes']).isNotEmpty;
+  }
+
+  static bool _hasValidServiceZone(Map<String, dynamic> setting) {
+    final serviceZone = Map<String, dynamic>.from(
+      (setting['serviceZone'] as Map?) ?? const <String, dynamic>{},
+    );
+    final zoneEnabled = serviceZone['enabled'] as bool? ?? false;
+    final zoneLat = (serviceZone['centerLatitude'] as num?)?.toDouble();
+    final zoneLng = (serviceZone['centerLongitude'] as num?)?.toDouble();
+    final zoneRadius = (serviceZone['radiusKm'] as num?)?.toDouble();
+    return zoneEnabled &&
+        zoneLat != null &&
+        zoneLng != null &&
+        zoneRadius != null &&
+        zoneRadius > 0;
+  }
+
+  static bool _hasCompleteSchedule(Map<String, dynamic> setting) {
+    final availabilityHours = Map<String, dynamic>.from(
+      (setting['availability'] as Map?) ?? const <String, dynamic>{},
+    );
+    return <String>['weekdays', 'saturday', 'sunday'].every(
+      (key) => availabilityHours[key]?.toString().trim().isNotEmpty == true,
+    );
   }
 }
 
@@ -1131,23 +1225,47 @@ class _ProviderSetupOnboardingCard extends StatelessWidget {
     final completed = setup.completedStepCount(onlineState);
     final total = steps.length;
     final progress = completed / total;
+    final hasServicesOnly = setup.supportsServices && !setup.supportsLaundry;
+    final hasLaundryOnly = setup.supportsLaundry && !setup.supportsServices;
+    final cardColor = hasLaundryOnly
+        ? AppColors.laundry
+        : AppColors.homeServices;
+
+    final cardTitle = hasLaundryOnly
+        ? 'Complete setup before accepting laundry jobs'
+        : hasServicesOnly
+        ? 'Complete setup before accepting service requests'
+        : 'Complete setup before accepting requests';
+    final cardSubtitle = hasLaundryOnly
+        ? 'Finish your laundry module setup so customers can discover and book your services.'
+        : hasServicesOnly
+        ? 'Finish your service module setup so nearby users can book you smoothly.'
+        : 'Finish your provider modules setup so nearby users can book you smoothly.';
 
     VoidCallback? primaryAction;
     String primaryLabel;
     IconData primaryIcon;
-    if (!setup.hasServiceListing) {
+    if (setup.supportsServices && !setup.hasServiceListing) {
       primaryAction = () => onOpenAvailability();
-      primaryLabel = 'Create listing';
+      primaryLabel = 'Create service listing';
       primaryIcon = Icons.add_business_rounded;
-    } else if (!setup.hasOfferConfigured ||
-        !setup.hasZoneConfigured ||
-        !setup.hasScheduleConfigured) {
-      primaryAction = () => onOpenSchedule();
-      primaryLabel = 'Configure listing details';
-      primaryIcon = Icons.tune;
-    } else if (!setup.hasEnabledService) {
+    } else if (setup.supportsLaundry && !setup.hasLaundryBinding) {
       primaryAction = () => onOpenAvailability();
-      primaryLabel = 'Enable booking intake';
+      primaryLabel = 'Review laundry links';
+      primaryIcon = Icons.local_laundry_service_rounded;
+    } else if (setup.supportsServices &&
+        (!setup.hasOfferConfigured ||
+            !setup.hasZoneConfigured ||
+            !setup.hasScheduleConfigured)) {
+      primaryAction = () => onOpenSchedule();
+      primaryLabel = setup.hasHouseHelpListing
+          ? 'Configure service details'
+          : 'Configure schedule';
+      primaryIcon = Icons.tune;
+    } else if ((setup.supportsServices && !setup.hasEnabledService) ||
+        (setup.supportsLaundry && !setup.hasEnabledLaundry)) {
+      primaryAction = () => onOpenAvailability();
+      primaryLabel = 'Enable intake';
       primaryIcon = Icons.toggle_on_rounded;
     } else {
       primaryAction = isUpdatingOnline ? null : () => onSetOnline();
@@ -1164,14 +1282,14 @@ class _ProviderSetupOnboardingCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Complete setup before accepting bookings',
+            cardTitle,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: ProDesignSystem.spacing6),
           Text(
-            'Let’s finish your provider onboarding so nearby users can book you smoothly.',
+            cardSubtitle,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF4B5563)),
@@ -1184,19 +1302,14 @@ class _ProviderSetupOnboardingCard extends StatelessWidget {
                   value: progress,
                   minHeight: 8,
                   borderRadius: BorderRadius.circular(999),
-                  color: AppColors.homeServices,
-                  backgroundColor: AppColors.homeServices.withValues(
-                    alpha: 0.15,
-                  ),
+                  color: cardColor,
+                  backgroundColor: cardColor.withValues(alpha: 0.15),
                 ),
               ),
               const SizedBox(width: 10),
               Text(
                 '$completed/$total',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.homeServices,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w700, color: cardColor),
               ),
             ],
           ),
@@ -1247,7 +1360,7 @@ class _ProviderSetupOnboardingCard extends StatelessWidget {
                   icon: Icon(primaryIcon),
                   label: Text(primaryLabel),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.homeServices,
+                    backgroundColor: cardColor,
                     foregroundColor: Colors.white,
                   ),
                 ),
@@ -1260,10 +1373,17 @@ class _ProviderSetupOnboardingCard extends StatelessWidget {
               ),
             ],
           ),
-          if (!setup.hasServiceListing) ...[
+          if (setup.supportsServices && !setup.hasServiceListing) ...[
             const SizedBox(height: ProDesignSystem.spacing8),
             const Text(
-              'Tip: open Availability, then tap the + button to create your first House Help listing.',
+              'Tip: open Availability, then tap the + button to create your first service listing.',
+              style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+            ),
+          ],
+          if (setup.supportsLaundry && !setup.hasLaundryBinding) ...[
+            const SizedBox(height: ProDesignSystem.spacing8),
+            const Text(
+              'Tip: if no laundry service appears, make sure your business name matches your laundry listing so it can be linked.',
               style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
             ),
           ],

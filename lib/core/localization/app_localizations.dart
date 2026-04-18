@@ -1226,6 +1226,8 @@ class AppLocalizations {
       'laundry_order.item_jackets': 'Jackets',
       'laundry_order.items_count': '{count} items',
       'laundry_order.pickup': 'Pickup',
+      'laundry_order.delivery_fee': 'Delivery fee',
+      'laundry_order.tax': 'Tax ({rate}%)',
       'laundry_order.estimated_total': 'Estimated Total',
       'laundry_order.schedule_pickup': 'Schedule Pickup',
       'laundry_order.login_required':
@@ -2320,6 +2322,8 @@ class AppLocalizations {
       'laundry_order.item_jackets': 'Vestes',
       'laundry_order.items_count': '{count} articles',
       'laundry_order.pickup': 'Ramassage',
+      'laundry_order.delivery_fee': 'Frais de livraison',
+      'laundry_order.tax': 'Taxe ({rate}%)',
       'laundry_order.estimated_total': 'Total estimé',
       'laundry_order.schedule_pickup': 'Planifier le ramassage',
       'laundry_order.login_required':
@@ -3336,6 +3340,8 @@ class AppLocalizations {
       'laundry_order.item_jackets': 'سترات',
       'laundry_order.items_count': '{count} قطعة',
       'laundry_order.pickup': 'الاستلام',
+      'laundry_order.delivery_fee': 'رسوم التوصيل',
+      'laundry_order.tax': 'الضريبة ({rate}٪)',
       'laundry_order.estimated_total': 'الإجمالي التقديري',
       'laundry_order.schedule_pickup': 'جدولة الاستلام',
       'laundry_order.login_required': 'يرجى تسجيل الدخول لجدولة استلام الغسيل.',
