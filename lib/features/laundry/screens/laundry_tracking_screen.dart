@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/widgets/app_shimmer.dart';
 
 class LaundryTrackingScreen extends StatefulWidget {
   final String orderId;
@@ -59,8 +61,45 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
     super.dispose();
   }
 
-  bool _statusReached(String currentStatus, List<String> statuses) {
-    return statuses.contains(currentStatus);
+  String _normalizedStatus(String value) {
+    switch (value.toUpperCase()) {
+      case 'SCHEDULED':
+        return 'CONFIRMED';
+      case 'PICKED_UP':
+      case 'CLEANING':
+        return 'PROCESSING';
+      case 'OUT_FOR_DELIVERY':
+        return 'IN_PROGRESS';
+      default:
+        return value.toUpperCase();
+    }
+  }
+
+  int _statusProgressIndex(String status) {
+    switch (_normalizedStatus(status)) {
+      case 'PENDING':
+        return 0;
+      case 'CONFIRMED':
+        return 1;
+      case 'PROCESSING':
+        return 2;
+      case 'DISPATCHED':
+        return 3;
+      case 'IN_PROGRESS':
+        return 4;
+      case 'COMPLETED':
+        return 5;
+      default:
+        return 0;
+    }
+  }
+
+  String _formatDateLabel(dynamic value) {
+    final raw = value?.toString().trim() ?? '';
+    if (raw.isEmpty) return '-';
+    final parsed = DateTime.tryParse(raw);
+    if (parsed == null) return raw;
+    return DateFormat('MMM d, yyyy • HH:mm').format(parsed.toLocal());
   }
 
   String _itemSummary(Map<String, dynamic>? firstItem) {
@@ -77,11 +116,28 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final order = _order;
-    final status = order?['status']?.toString().toUpperCase() ?? 'PENDING';
+    final status = _normalizedStatus(
+      order?['status']?.toString().toUpperCase() ?? 'PENDING',
+    );
+    final progressIndex = _statusProgressIndex(status);
     final items = (order?['items'] as List<dynamic>? ?? const [])
         .map((item) => Map<String, dynamic>.from(item as Map))
         .toList(growable: false);
     final firstItem = items.isNotEmpty ? items.first : null;
+    final firstMetadata = firstItem?['metadata'] is Map
+        ? Map<String, dynamic>.from(firstItem!['metadata'] as Map)
+        : const <String, dynamic>{};
+    final pickupLabel =
+        order?['deliveryLabel']?.toString() ??
+        firstMetadata['deliveryLabel']?.toString() ??
+        firstMetadata['scheduledDate']?.toString() ??
+        firstMetadata['pickupAt']?.toString() ??
+        order?['createdAt']?.toString() ??
+        '-';
+    final deliveryEta =
+        order?['deliveryEta']?.toString() ??
+        firstMetadata['deliveryEta']?.toString() ??
+        '-';
 
     return PopScope(
       canPop: context.canPop(),
@@ -106,12 +162,47 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
           ),
         ),
         body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Padding(
+                padding: EdgeInsets.all(20),
+                child: AppShimmer(
+                  child: Column(
+                    children: [
+                      ShimmerBlock(
+                        width: double.infinity,
+                        height: 180,
+                        radius: 20,
+                      ),
+                      SizedBox(height: 16),
+                      ShimmerBlock(
+                        width: double.infinity,
+                        height: 230,
+                        radius: 16,
+                      ),
+                      SizedBox(height: 16),
+                      ShimmerBlock(
+                        width: double.infinity,
+                        height: 180,
+                        radius: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              )
             : _error != null
             ? Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Text(_error!, textAlign: TextAlign.center),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_error!, textAlign: TextAlign.center),
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: () => _loadOrder(forceRefresh: true),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
                 ),
               )
             : SingleChildScrollView(
@@ -164,50 +255,32 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                           _Step(
                             l10n.t('laundry_tracking.pickup_confirmed'),
                             '',
-                            _statusReached(status, const [
-                              'CONFIRMED',
-                              'PROCESSING',
-                              'DISPATCHED',
-                              'IN_PROGRESS',
-                              'COMPLETED',
-                            ]),
-                            status == 'CONFIRMED',
+                            progressIndex >= 1,
+                            progressIndex <= 1,
                           ),
                           _Step(
                             l10n.t('laundry_tracking.picked_up'),
                             '',
-                            _statusReached(status, const [
-                              'PROCESSING',
-                              'DISPATCHED',
-                              'IN_PROGRESS',
-                              'COMPLETED',
-                            ]),
-                            status == 'PROCESSING',
+                            progressIndex >= 2,
+                            progressIndex == 2,
                           ),
                           _Step(
                             l10n.t('laundry_tracking.cleaning'),
                             '',
-                            _statusReached(status, const [
-                              'DISPATCHED',
-                              'IN_PROGRESS',
-                              'COMPLETED',
-                            ]),
-                            status == 'DISPATCHED',
+                            progressIndex >= 3,
+                            progressIndex == 3,
                           ),
                           _Step(
                             l10n.t('laundry_tracking.ready_for_delivery'),
                             '',
-                            _statusReached(status, const [
-                              'IN_PROGRESS',
-                              'COMPLETED',
-                            ]),
-                            status == 'IN_PROGRESS',
+                            progressIndex >= 4,
+                            progressIndex == 4,
                           ),
                           _Step(
                             l10n.t('laundry_tracking.delivered'),
                             '',
-                            status == 'COMPLETED',
-                            status == 'COMPLETED',
+                            progressIndex >= 5,
+                            progressIndex == 5,
                           ),
                         ],
                       ),
@@ -243,13 +316,11 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                           ),
                           _DetailRow(
                             l10n.t('laundry_tracking.pickup'),
-                            order?['deliveryLabel']?.toString() ??
-                                order?['createdAt']?.toString() ??
-                                '-',
+                            _formatDateLabel(pickupLabel),
                           ),
                           _DetailRow(
                             l10n.t('tracking.delivery'),
-                            order?['deliveryEta']?.toString() ?? '-',
+                            _formatDateLabel(deliveryEta),
                           ),
                           const Divider(height: 20),
                           _DetailRow(

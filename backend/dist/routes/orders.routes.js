@@ -245,6 +245,81 @@ function serializeOrderDetail(order) {
         })),
     };
 }
+function mapLaundryOrderStatus(status) {
+    switch (status) {
+        case client_1.LaundryOrderStatus.SCHEDULED:
+            return client_1.OrderStatus.CONFIRMED;
+        case client_1.LaundryOrderStatus.PICKED_UP:
+        case client_1.LaundryOrderStatus.CLEANING:
+            return client_1.OrderStatus.PROCESSING;
+        case client_1.LaundryOrderStatus.OUT_FOR_DELIVERY:
+            return client_1.OrderStatus.IN_PROGRESS;
+        case client_1.LaundryOrderStatus.COMPLETED:
+            return client_1.OrderStatus.COMPLETED;
+        case client_1.LaundryOrderStatus.CANCELLED:
+            return client_1.OrderStatus.CANCELLED;
+        case client_1.LaundryOrderStatus.PENDING:
+            return client_1.OrderStatus.PENDING;
+    }
+}
+function serializeLaundryOrderDetail(order) {
+    const status = mapLaundryOrderStatus(order.status);
+    const customerName = `${order.user.firstName} ${order.user.lastName}`.trim();
+    const pickupLabel = `${order.timeSlot} • ${order.pickupAt.toISOString()}`;
+    return {
+        id: order.id,
+        userId: order.userId,
+        moduleType: client_1.ModuleType.LAUNDRY,
+        moduleName: order.service.name,
+        status,
+        subtotal: (0, serializers_1.toNumber)(order.subtotal),
+        tax: (0, serializers_1.toNumber)(order.tax),
+        deliveryFee: 0,
+        discount: 0,
+        total: (0, serializers_1.toNumber)(order.total),
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        customerName: customerName.length > 0 ? customerName : null,
+        customerPhone: order.user.phone ?? null,
+        address: order.address?.line1 ?? null,
+        deliveryLabel: pickupLabel,
+        deliveryEta: null,
+        notes: null,
+        deliveryAssignee: null,
+        items: [
+            {
+                id: order.id,
+                productId: null,
+                externalRefId: order.serviceId,
+                name: order.service.name,
+                brand: null,
+                quantity: order.itemCount,
+                price: (0, serializers_1.toNumber)(order.subtotal),
+                total: (0, serializers_1.toNumber)(order.total),
+                color: null,
+                size: null,
+                metadata: {
+                    serviceId: order.serviceId,
+                    serviceName: order.service.name,
+                    itemCount: order.itemCount,
+                    itemBreakdown: order.itemBreakdown,
+                    pickupAt: order.pickupAt,
+                    timeSlot: order.timeSlot,
+                    address: order.address?.line1 ?? null,
+                    legacyLaundryOrder: true,
+                    legacyLaundryStatus: order.status,
+                },
+            },
+        ],
+    };
+}
+function bindingsLaundryServiceIds(value) {
+    if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+        return [];
+    }
+    const map = value;
+    return normalizeStringList(map.laundryServiceIds);
+}
 router.get('/detail/:orderId', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const orderId = (0, http_1.getParam)(req.params.orderId, 'orderId');
     const order = await db_1.prisma.order.findUnique({
@@ -266,7 +341,20 @@ router.get('/detail/:orderId', (0, async_handler_1.asyncHandler)(async (req, res
         },
     });
     if (!order) {
-        return res.status(404).json({ error: 'Order not found.' });
+        const laundryOrder = await db_1.prisma.laundryOrder.findUnique({
+            where: { id: orderId },
+            include: {
+                service: true,
+                address: true,
+                user: {
+                    select: { firstName: true, lastName: true, phone: true },
+                },
+            },
+        });
+        if (!laundryOrder) {
+            return res.status(404).json({ error: 'Order not found.' });
+        }
+        return res.json(serializeLaundryOrderDetail(laundryOrder));
     }
     res.json(serializeOrderDetail(order));
 }));
@@ -531,7 +619,7 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
             userId: order.userId,
             moduleType: client_1.ModuleType.LAUNDRY,
             moduleName: order.service.name,
-            status: order.status,
+            status: mapLaundryOrderStatus(order.status),
             subtotal: (0, serializers_1.toNumber)(order.subtotal),
             tax: (0, serializers_1.toNumber)(order.tax),
             deliveryFee: 0,
@@ -539,7 +627,7 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
             total: (0, serializers_1.toNumber)(order.total),
             createdAt: order.createdAt,
             updatedAt: order.updatedAt,
-            trackingRoute: null,
+            trackingRoute: `/laundry/tracking/${order.id}`,
             items: [
                 {
                     id: order.id,
@@ -768,6 +856,47 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
                     moduleType: order.moduleType,
                     source: 'order_created',
                     queueType: poolProviderIds.length > 0 ? 'open' : 'assigned',
+                },
+            })));
+        }
+    }
+    if (order.moduleType === client_1.ModuleType.LAUNDRY) {
+        const firstItem = order.items[0];
+        const firstMetadata = firstItem
+            ? enrichOrderItemMetadata(firstItem)
+            : {};
+        const metadataServiceId = typeof firstMetadata.serviceId === 'string'
+            ? firstMetadata.serviceId.trim()
+            : '';
+        const targetServiceId = firstItem?.externalRefId?.trim() || metadataServiceId;
+        if (targetServiceId.length > 0) {
+            const providerProfiles = await db_1.prisma.proProfile.findMany({
+                where: {
+                    type: client_1.ProProfileType.PROVIDER,
+                    activeModules: { has: client_1.ProModule.LAUNDRY },
+                },
+                select: {
+                    userId: true,
+                    bindings: true,
+                },
+            });
+            const recipientUserIds = Array.from(new Set(providerProfiles
+                .filter((profile) => bindingsLaundryServiceIds(profile.bindings).includes(targetServiceId))
+                .map((profile) => profile.userId)
+                .filter((id) => id.trim().length > 0)));
+            await Promise.allSettled(recipientUserIds.map((providerUserId) => (0, notifications_1.createBackendNotification)({
+                userId: providerUserId,
+                type: client_1.NotificationType.SYSTEM,
+                module: client_1.NotificationModule.LAUNDRY,
+                title: 'New laundry pickup request',
+                body: 'A new laundry order is waiting for provider action.',
+                route: `/pro/provider/job/${order.id}`,
+                dedupeKey: `provider-laundry:${order.id}:${providerUserId}`,
+                metadata: {
+                    orderId: order.id,
+                    moduleType: order.moduleType,
+                    source: 'order_created',
+                    laundryServiceId: targetServiceId,
                 },
             })));
         }

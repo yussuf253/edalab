@@ -1225,6 +1225,7 @@ class AppLocalizations {
       'laundry_order.schedule_pickup': 'Schedule Pickup',
       'laundry_order.login_required':
           'Please log in to schedule your laundry pickup.',
+      'laundry_order.items_required': 'Add at least one item to continue.',
       'laundry_order.success': 'Pickup scheduled! 🧺',
       'laundry_order.error': 'Error: {error}',
       'cart.title': 'Cart',

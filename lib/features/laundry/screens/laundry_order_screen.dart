@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../../core/analytics/analytics_events.dart';
 import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
@@ -21,7 +22,7 @@ class LaundryOrderScreen extends StatefulWidget {
 
 class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
   int _selectedService = 0;
-  int _selectedDate = 1;
+  int _selectedDate = 0;
   int _selectedTime = 2;
   final _items = {'Shirts': 3, 'Pants': 2, 'Dresses': 1, 'Jackets': 0};
   List<LaundryService> _services = LaundryModel.sampleServices;
@@ -68,14 +69,31 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
     final selectedModel = services[_selectedService];
     final totalItems = _items.values.fold(0, (a, b) => a + b);
     final estTotal = selectedModel.price * totalItems; // Simplified estimate
-    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-    final dates = ['22', '23', '24', '25', '26'];
+    final localeTag = Localizations.localeOf(context).toLanguageTag();
+    final pickupDates = List.generate(
+      5,
+      (index) => DateTime.now().add(Duration(days: index)),
+    );
+    final selectedPickupDate = pickupDates[_selectedDate];
+    final selectedDayLabel = DateFormat(
+      'EEE',
+      localeTag,
+    ).format(selectedPickupDate);
     final slots = [
       '08:00 - 10:00',
       '10:00 - 12:00',
-      '02:00 - 04:00',
-      '04:00 - 06:00',
+      '14:00 - 16:00',
+      '16:00 - 18:00',
     ];
+    final slotStartHour =
+        int.tryParse(slots[_selectedTime].split(':').first.trim()) ?? 8;
+    final pickupAt = DateTime(
+      selectedPickupDate.year,
+      selectedPickupDate.month,
+      selectedPickupDate.day,
+      slotStartHour,
+    );
+    final etaAt = pickupAt.add(const Duration(days: 1, hours: 2));
     final defaultAddress = auth.user?.addresses
         .cast<AddressModel?>()
         .firstWhere(
@@ -228,10 +246,13 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
               height: 80,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
-                itemCount: 5,
+                itemCount: pickupDates.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (context, i) {
                   final sel = _selectedDate == i;
+                  final date = pickupDates[i];
+                  final dayLabel = DateFormat('EEE', localeTag).format(date);
+                  final dateLabel = DateFormat('d', localeTag).format(date);
                   return GestureDetector(
                     onTap: () => setState(() => _selectedDate = i),
                     child: AnimatedContainer(
@@ -248,14 +269,14 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            days[i],
+                            dayLabel,
                             style: AppTextStyles.caption.copyWith(
                               color: sel ? Colors.white60 : AppColors.grey,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            dates[i],
+                            dateLabel,
                             style: AppTextStyles.h4.copyWith(
                               color: sel ? AppColors.white : AppColors.dark,
                             ),
@@ -367,7 +388,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                   ),
                   _Row(
                     l10n.t('laundry_order.pickup'),
-                    '${days[_selectedDate]}, Mar ${dates[_selectedDate]} • ${slots[_selectedTime]}',
+                    '$selectedDayLabel, ${DateFormat('MMM d', localeTag).format(selectedPickupDate)} • ${slots[_selectedTime]}',
                   ),
                   const Divider(height: 20),
                   _Row(
@@ -388,39 +409,68 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                   message: l10n.t('laundry_order.login_required'),
                 );
                 if (!context.mounted || !allowed) return;
+                if (totalItems <= 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(l10n.t('laundry_order.items_required')),
+                    ),
+                  );
+                  return;
+                }
+                final subtotal = selectedModel.price * totalItems;
+                final tax = subtotal * 0.08;
+                final total = subtotal + tax;
                 AnalyticsService.instance.track(
                   AnalyticsEvents.checkoutPlaceOrderTapped,
                   properties: {
                     'module_type': 'laundry',
                     'service_id': selectedModel.id,
                     'service_name': selectedModel.name,
-                    'item_count': totalItems == 0 ? 1 : totalItems,
-                    'subtotal': estTotal,
-                    'total': estTotal * 1.08,
+                    'item_count': totalItems,
+                    'subtotal': subtotal,
+                    'total': total,
                   },
                 );
                 try {
+                  final pickupLabel =
+                      '$selectedDayLabel, ${DateFormat('MMM d', localeTag).format(selectedPickupDate)} • ${slots[_selectedTime]}';
                   final order = await ApiClient.post('/orders', {
                     'userId': auth.user!.id,
                     'moduleType': 'LAUNDRY',
-                    'subtotal': estTotal,
-                    'tax': estTotal * 0.08,
+                    'subtotal': subtotal,
+                    'tax': tax,
                     'deliveryFee': 0,
-                    'total': estTotal * 1.08,
+                    'total': total,
                     'items': [
                       {
                         'id': selectedModel.id,
                         'name': selectedModel.name,
                         'price': selectedModel.price,
-                        'quantity': totalItems == 0 ? 1 : totalItems,
-                        'total': estTotal == 0 ? selectedModel.price : estTotal,
+                        'quantity': totalItems,
+                        'total': subtotal,
                         'metadata': {
                           'serviceId': selectedModel.id,
+                          'serviceName': selectedModel.name,
                           'serviceUnit': selectedModel.unit,
                           'itemCount': totalItems,
+                          'timeSlot': slots[_selectedTime],
                           'pickupSlot': slots[_selectedTime],
-                          'pickupDay': days[_selectedDate],
-                          'pickupDate': dates[_selectedDate],
+                          'pickupDay': selectedDayLabel,
+                          'pickupDate': DateFormat(
+                            'yyyy-MM-dd',
+                          ).format(selectedPickupDate),
+                          'pickupAt': pickupAt.toIso8601String(),
+                          'scheduledDate': DateFormat(
+                            'MMM d, yyyy',
+                            localeTag,
+                          ).format(selectedPickupDate),
+                          'deliveryLabel': pickupLabel,
+                          'deliveryEta': DateFormat(
+                            'MMM d, yyyy • HH:mm',
+                            localeTag,
+                          ).format(etaAt),
+                          'address': defaultAddress?.address,
+                          'addressId': defaultAddress?.id,
                           'items': _items,
                         },
                       },
@@ -433,10 +483,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       'order_id': order is Map ? order['id']?.toString() : null,
                       'service_id': selectedModel.id,
                       'service_name': selectedModel.name,
-                      'item_count': totalItems == 0 ? 1 : totalItems,
-                      'subtotal': estTotal,
-                      'tax': estTotal * 0.08,
-                      'total': estTotal * 1.08,
+                      'item_count': totalItems,
+                      'subtotal': subtotal,
+                      'tax': tax,
+                      'total': total,
                     },
                   );
                   if (!context.mounted) return;
@@ -450,7 +500,12 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       ),
                     ),
                   );
-                  context.go('/');
+                  final orderId = order is Map ? order['id']?.toString() : null;
+                  if (orderId != null && orderId.isNotEmpty) {
+                    context.go('/laundry/tracking/$orderId');
+                  } else {
+                    context.go('/orders');
+                  }
                 } catch (e) {
                   AnalyticsService.instance.track(
                     AnalyticsEvents.checkoutValidationFailed,
@@ -464,7 +519,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        l10n.t('laundry_order.error', params: {'error': '$e'}),
+                        l10n.t(
+                          'laundry_order.error',
+                          params: {'error': ApiClient.userFacingError(e)},
+                        ),
                       ),
                     ),
                   );
