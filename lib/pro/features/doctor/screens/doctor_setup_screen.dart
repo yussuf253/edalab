@@ -25,6 +25,9 @@ class DoctorSetupScreen extends StatefulWidget {
 
 class _DoctorSetupScreenState extends State<DoctorSetupScreen> {
   final _locationController = TextEditingController();
+  final _specialtyController = TextEditingController();
+  final _servicesController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   final Set<String> _selectedModes = {};
   bool _isLoading = false;
   String? _errorMessage;
@@ -32,10 +35,14 @@ class _DoctorSetupScreenState extends State<DoctorSetupScreen> {
   @override
   void dispose() {
     _locationController.dispose();
+    _specialtyController.dispose();
+    _servicesController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
     if (_selectedModes.isEmpty) {
       setState(() => _errorMessage = 'Please select at least one care mode.');
       return;
@@ -60,9 +67,15 @@ class _DoctorSetupScreenState extends State<DoctorSetupScreen> {
         'location': _locationController.text.trim(),
         'contactPhone': '',
         'contactWhatsApp': '',
+        'specialty': _specialtyController.text.trim(),
+        'services': _servicesController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
         'careModes': _selectedModes.toList(growable: false),
         'workingHours': {
-          'weekdays': '9:00 AM - 5:00 PM',
+          'monday': '9:00 AM - 5:00 PM',
+          'tuesday': '9:00 AM - 5:00 PM',
+          'wednesday': '9:00 AM - 5:00 PM',
+          'thursday': '9:00 AM - 5:00 PM',
+          'friday': '9:00 AM - 5:00 PM',
           'saturday': 'Closed',
           'sunday': 'Closed',
         },
@@ -139,6 +152,41 @@ class _DoctorSetupScreenState extends State<DoctorSetupScreen> {
                 "Let's configure how you will provide care and consult with patients on EdaLab.",
               ),
               const SizedBox(height: ProDesignSystem.spacing24),
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Basic Info',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: ProDesignSystem.spacing12),
+                    TextFormField(
+                      controller: _specialtyController,
+                      decoration: InputDecoration(
+                        labelText: 'Specialty (e.g. General Practice, Cardiology)',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(ProDesignSystem.radiusSmall),
+                        ),
+                      ),
+                      validator: (val) => val == null || val.trim().isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: ProDesignSystem.spacing16),
+                    TextFormField(
+                      controller: _servicesController,
+                      decoration: InputDecoration(
+                        labelText: 'Services Offered (comma-separated)',
+                        hintText: 'e.g. Consultations, Checkups, ECG',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(ProDesignSystem.radiusSmall),
+                        ),
+                      ),
+                      validator: (val) => val == null || val.trim().isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: ProDesignSystem.spacing24),
               if (_errorMessage != null) ...[
                 ModernInfoBox(
                   message: _errorMessage!,

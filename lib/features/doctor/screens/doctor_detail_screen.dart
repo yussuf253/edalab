@@ -300,10 +300,11 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                         ),
                         const SizedBox(height: 12),
                         ...[
-                          (
-                            l10n.t('doctor_detail.weekdays'),
-                            doctor.workingHours.weekdays,
-                          ),
+                          ('Monday', doctor.workingHours.monday),
+                          ('Tuesday', doctor.workingHours.tuesday),
+                          ('Wednesday', doctor.workingHours.wednesday),
+                          ('Thursday', doctor.workingHours.thursday),
+                          ('Friday', doctor.workingHours.friday),
                           (
                             l10n.t('doctor_detail.saturday'),
                             doctor.workingHours.saturday,

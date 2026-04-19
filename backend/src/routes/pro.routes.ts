@@ -266,7 +266,9 @@ const updateDoctorSettingsSchema = z.object({
   contactWhatsApp: z.string().trim().max(40).optional(),
   imageUrl: z.string().trim().url().optional().or(z.literal('')),
   careModes: settingsModesSchema.optional(),
-  workingHours: hoursSchema.optional(),
+  services: settingsModesSchema.optional(),
+  specialty: z.string().trim().min(2).max(100).optional(),
+  workingHours: z.record(z.string()).optional(),
 });
 
 type ProBindings = {
@@ -6150,7 +6152,9 @@ router.post(
         contactPhone: body.contactPhone == null ? null : body.contactPhone.trim() || null,
         contactWhatsApp: body.contactWhatsApp == null ? null : body.contactWhatsApp.trim() || null,
         careModesJson: body.careModes == null ? undefined : normalizeStringList(body.careModes),
-        workingHoursJson: body.workingHours == null ? undefined : normalizeHours(body.workingHours, { weekdays: '09:00 AM - 05:00 PM', saturday: '10:00 AM - 02:00 PM', sunday: 'Closed' }),
+        servicesJson: body.services == null ? undefined : normalizeStringList(body.services),
+        specialty: body.specialty == null ? 'General Practice' : body.specialty.trim() || 'General Practice',
+        workingHoursJson: body.workingHours == null ? undefined : normalizeHours(body.workingHours, { monday: '09:00 AM - 05:00 PM', tuesday: '09:00 AM - 05:00 PM', wednesday: '09:00 AM - 05:00 PM', thursday: '09:00 AM - 05:00 PM', friday: '09:00 AM - 05:00 PM', saturday: '10:00 AM - 02:00 PM', sunday: 'Closed' }),
       },
       update: {
         imageUrl:
@@ -6169,11 +6173,23 @@ router.post(
           body.careModes == null
             ? undefined
             : normalizeStringList(body.careModes),
+        servicesJson:
+          body.services == null
+            ? undefined
+            : normalizeStringList(body.services),
+        specialty:
+          body.specialty == null
+            ? undefined
+            : body.specialty.trim() || undefined,
         workingHoursJson:
           body.workingHours == null
             ? undefined
             : normalizeHours(body.workingHours, {
-                weekdays: '09:00 AM - 05:00 PM',
+                monday: '09:00 AM - 05:00 PM',
+                tuesday: '09:00 AM - 05:00 PM',
+                wednesday: '09:00 AM - 05:00 PM',
+                thursday: '09:00 AM - 05:00 PM',
+                friday: '09:00 AM - 05:00 PM',
                 saturday: '10:00 AM - 02:00 PM',
                 sunday: 'Closed',
               }),

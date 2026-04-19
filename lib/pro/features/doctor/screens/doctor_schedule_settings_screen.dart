@@ -282,7 +282,15 @@ class _DoctorScheduleSettingsScreenState
                     const SizedBox(height: 20),
                     const _DoctorSettingsSectionLabel('Working hours'),
                     const SizedBox(height: 8),
-                    scheduleField(key: 'weekdays', label: 'Weekdays'),
+                    scheduleField(key: 'monday', label: 'Monday'),
+                    const SizedBox(height: 12),
+                    scheduleField(key: 'tuesday', label: 'Tuesday'),
+                    const SizedBox(height: 12),
+                    scheduleField(key: 'wednesday', label: 'Wednesday'),
+                    const SizedBox(height: 12),
+                    scheduleField(key: 'thursday', label: 'Thursday'),
+                    const SizedBox(height: 12),
+                    scheduleField(key: 'friday', label: 'Friday'),
                     const SizedBox(height: 12),
                     scheduleField(key: 'saturday', label: 'Saturday'),
                     const SizedBox(height: 12),
@@ -316,12 +324,13 @@ class _DoctorScheduleSettingsScreenState
                                     growable: false,
                                   ),
                                   workingHours: {
-                                    'weekdays': (workingHours['weekdays'] ?? '')
-                                        .trim(),
-                                    'saturday': (workingHours['saturday'] ?? '')
-                                        .trim(),
-                                    'sunday': (workingHours['sunday'] ?? '')
-                                        .trim(),
+                                    'monday': (workingHours['monday'] ?? '').trim(),
+                                    'tuesday': (workingHours['tuesday'] ?? '').trim(),
+                                    'wednesday': (workingHours['wednesday'] ?? '').trim(),
+                                    'thursday': (workingHours['thursday'] ?? '').trim(),
+                                    'friday': (workingHours['friday'] ?? '').trim(),
+                                    'saturday': (workingHours['saturday'] ?? '').trim(),
+                                    'sunday': (workingHours['sunday'] ?? '').trim(),
                                   },
                                 );
                               },
@@ -455,9 +464,8 @@ class _DoctorScheduleSettingsScreenState
                             : careModes.join(', '),
                       ),
                       _DoctorSettingsInfoRow(
-                        label: 'Weekdays',
-                        value:
-                            workingHours['weekdays']?.toString() ?? 'Not set',
+                        label: 'Mon-Fri',
+                        value: workingHours['monday']?.toString() ?? 'Not set',
                       ),
                       _DoctorSettingsInfoRow(
                         label: 'Saturday',

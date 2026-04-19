@@ -366,19 +366,32 @@ class DoctorModel {
 }
 
 class WorkingHours {
-  final String weekdays;
+  final String monday;
+  final String tuesday;
+  final String wednesday;
+  final String thursday;
+  final String friday;
   final String saturday;
   final String sunday;
 
   WorkingHours({
-    this.weekdays = '09:00 AM - 05:00 PM',
+    this.monday = '09:00 AM - 05:00 PM',
+    this.tuesday = '09:00 AM - 05:00 PM',
+    this.wednesday = '09:00 AM - 05:00 PM',
+    this.thursday = '09:00 AM - 05:00 PM',
+    this.friday = '09:00 AM - 05:00 PM',
     this.saturday = '10:00 AM - 02:00 PM',
     this.sunday = 'Closed',
   });
 
   factory WorkingHours.fromApi(Map<String, dynamic> json) {
+    final weekdaysFallback = json['weekdays']?.toString() ?? '09:00 AM - 05:00 PM';
     return WorkingHours(
-      weekdays: json['weekdays']?.toString() ?? '09:00 AM - 05:00 PM',
+      monday: json['monday']?.toString() ?? weekdaysFallback,
+      tuesday: json['tuesday']?.toString() ?? weekdaysFallback,
+      wednesday: json['wednesday']?.toString() ?? weekdaysFallback,
+      thursday: json['thursday']?.toString() ?? weekdaysFallback,
+      friday: json['friday']?.toString() ?? weekdaysFallback,
       saturday: json['saturday']?.toString() ?? '10:00 AM - 02:00 PM',
       sunday: json['sunday']?.toString() ?? 'Closed',
     );
