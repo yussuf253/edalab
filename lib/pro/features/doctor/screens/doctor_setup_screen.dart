@@ -24,25 +24,61 @@ class DoctorSetupScreen extends StatefulWidget {
 }
 
 class _DoctorSetupScreenState extends State<DoctorSetupScreen> {
+  static const List<String> _specialtyOptions = [
+    'General Practice',
+    'Cardiology',
+    'Dermatology',
+    'Neurology',
+    'Orthopedics',
+    'Pediatrics',
+    'Home Nursing',
+    'Physiotherapy',
+    'Mental Therapy',
+    'Dental Care',
+    'Optometry',
+    'Other',
+  ];
+
+  static const List<String> _serviceOptions = [
+    'General Checkup',
+    'ECG',
+    'Blood Test',
+    'Vaccination',
+    'Wound Dressing',
+    'Injection',
+    'Post-surgery Rehab',
+    'Physical Therapy',
+    'Psychological Counseling',
+    'Emergency Care',
+    'Routine Monitoring',
+    'Prescription Refill',
+  ];
+
   final _locationController = TextEditingController();
-  final _specialtyController = TextEditingController();
-  final _servicesController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final Set<String> _selectedModes = {};
+  final Set<String> _selectedServices = {};
+  String? _selectedSpecialty;
   bool _isLoading = false;
   String? _errorMessage;
 
   @override
   void dispose() {
     _locationController.dispose();
-    _specialtyController.dispose();
-    _servicesController.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    if (_selectedSpecialty == null) {
+      setState(() => _errorMessage = 'Please select a specialty.');
+      return;
+    }
+    if (_selectedServices.isEmpty) {
+      setState(() => _errorMessage = 'Please select at least one service.');
+      return;
+    }
     if (_selectedModes.isEmpty) {
       setState(() => _errorMessage = 'Please select at least one care mode.');
       return;
@@ -67,8 +103,8 @@ class _DoctorSetupScreenState extends State<DoctorSetupScreen> {
         'location': _locationController.text.trim(),
         'contactPhone': '',
         'contactWhatsApp': '',
-        'specialty': _specialtyController.text.trim(),
-        'services': _servicesController.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
+        'specialty': _selectedSpecialty ?? 'General Practice',
+        'services': _selectedServices.toList(growable: false),
         'careModes': _selectedModes.toList(growable: false),
         'workingHours': {
           'monday': '9:00 AM - 5:00 PM',
@@ -164,27 +200,62 @@ class _DoctorSetupScreenState extends State<DoctorSetupScreen> {
                       ),
                     ),
                     const SizedBox(height: ProDesignSystem.spacing12),
-                    TextFormField(
-                      controller: _specialtyController,
+                    DropdownButtonFormField<String>(
+                      value: _selectedSpecialty,
                       decoration: InputDecoration(
-                        labelText: 'Specialty (e.g. General Practice, Cardiology)',
+                        labelText: 'Specialty',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(ProDesignSystem.radiusSmall),
                         ),
                       ),
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Required' : null,
+                      items: _specialtyOptions.map((specialty) {
+                        return DropdownMenuItem(
+                          value: specialty,
+                          child: Text(specialty),
+                        );
+                      }).toList(),
+                      onChanged: (val) => setState(() => _selectedSpecialty = val),
+                      validator: (val) => val == null ? 'Required' : null,
                     ),
                     const SizedBox(height: ProDesignSystem.spacing16),
-                    TextFormField(
-                      controller: _servicesController,
-                      decoration: InputDecoration(
-                        labelText: 'Services Offered (comma-separated)',
-                        hintText: 'e.g. Consultations, Checkups, ECG',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(ProDesignSystem.radiusSmall),
-                        ),
+                    Text(
+                      'Services Offered',
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
                       ),
-                      validator: (val) => val == null || val.trim().isEmpty ? 'Required' : null,
+                    ),
+                    const SizedBox(height: ProDesignSystem.spacing8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _serviceOptions.map((service) {
+                        final isSelected = _selectedServices.contains(service);
+                        return FilterChip(
+                          label: Text(service),
+                          selected: isSelected,
+                          selectedColor: AppColors.doctor.withValues(alpha: 0.15),
+                          checkmarkColor: AppColors.doctor,
+                          labelStyle: TextStyle(
+                            color: isSelected ? AppColors.doctor : Colors.grey.shade800,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 13,
+                          ),
+                          backgroundColor: Colors.grey.shade100,
+                          side: BorderSide(
+                            color: isSelected ? AppColors.doctor : Colors.grey.shade300,
+                            width: 1,
+                          ),
+                          onSelected: (selected) {
+                            setState(() {
+                              if (selected) {
+                                _selectedServices.add(service);
+                              } else {
+                                _selectedServices.remove(service);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
                     ),
                     const SizedBox(height: ProDesignSystem.spacing24),
               if (_errorMessage != null) ...[
@@ -254,6 +325,9 @@ class _DoctorSetupScreenState extends State<DoctorSetupScreen> {
                 onPressed: _submit,
                 color: AppColors.doctor,
               ),
+            ],
+          ),
+        ),
             ],
           ),
         ),

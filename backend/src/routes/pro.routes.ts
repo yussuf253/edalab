@@ -714,18 +714,18 @@ export async function sanitizeProviderBindingOverrides(
 
 function normalizeHours(
   value: unknown,
-  defaults: { weekdays: string; saturday: string; sunday: string },
-) {
+  defaults: Record<string, string>,
+): Record<string, string> {
   const map =
     value != null && typeof value === 'object' && !Array.isArray(value)
       ? (value as Record<string, unknown>)
       : {};
 
-  return {
-    weekdays: map.weekdays?.toString().trim() || defaults.weekdays,
-    saturday: map.saturday?.toString().trim() || defaults.saturday,
-    sunday: map.sunday?.toString().trim() || defaults.sunday,
-  };
+  const result: Record<string, string> = {};
+  for (const key of Object.keys(defaults)) {
+    result[key] = map[key]?.toString().trim() || defaults[key];
+  }
+  return result;
 }
 
 type ServiceZoneConfig = {
