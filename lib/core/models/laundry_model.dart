@@ -240,6 +240,30 @@ class LaundryService {
 
   factory LaundryService.fromApi(Map<String, dynamic> json) {
     final price = (json['price'] as num?)?.toDouble() ?? 0;
+    String readIconUrl() {
+      String? pick(dynamic value) {
+        final text = value?.toString().trim();
+        if (text == null || text.isEmpty) return null;
+        return text;
+      }
+
+      final providerUser = json['providerUser'] is Map
+          ? Map<String, dynamic>.from(json['providerUser'] as Map)
+          : const <String, dynamic>{};
+      final proProfile = providerUser['proProfile'] is Map
+          ? Map<String, dynamic>.from(providerUser['proProfile'] as Map)
+          : const <String, dynamic>{};
+
+      return pick(json['iconUrl']) ??
+          pick(json['imageUrl']) ??
+          pick(json['profileImageUrl']) ??
+          pick(json['profileAvatarUrl']) ??
+          pick(json['avatarUrl']) ??
+          pick(providerUser['avatarUrl']) ??
+          pick(proProfile['avatarUrl']) ??
+          '';
+    }
+
     return LaundryService(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Laundry Service',
@@ -247,7 +271,7 @@ class LaundryService {
       description: json['description']?.toString() ?? '',
       price: price,
       unit: json['unit']?.toString() ?? '',
-      iconUrl: json['iconUrl']?.toString() ?? '',
+      iconUrl: readIconUrl(),
       bookingConfig: LaundryBookingConfig.fromApi(
         json['bookingConfig'] is Map
             ? Map<String, dynamic>.from(json['bookingConfig'] as Map)

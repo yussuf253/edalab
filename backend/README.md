@@ -46,6 +46,38 @@ npm run db:seed
 npm run dev
 ```
 
+## Import Fresh Google Places Data (Djibouti)
+
+When you have a Google Places crawler export, use the dedicated importer to:
+
+- classify places into app modules (shopping, food, doctor, hotel, pharmacy)
+- enforce quality filters (closed/low-signal handling)
+- generate app-required fields for Prisma models
+- output a full extraction audit JSON
+- upsert data idempotently into PostgreSQL
+
+Dry run (extract only, no DB changes):
+
+```bash
+GOOGLE_PLACES_INPUT="/absolute/path/to/dataset.json" npm run db:google-places:extract
+```
+
+Apply import to DB + prune stale previously imported `gps-*` records:
+
+```bash
+GOOGLE_PLACES_INPUT="/absolute/path/to/dataset.json" npm run db:google-places:apply
+```
+
+Optional direct flags:
+
+```bash
+tsx prisma/importGooglePlaces.ts \
+  --input "/absolute/path/to/dataset.json" \
+  --output "prisma/generated/google_places_extracted.json" \
+  --apply \
+  --prune
+```
+
 ## Deploy To Render
 
 This backend is ready for Render.

@@ -13,7 +13,9 @@
     "prisma:deploy": "prisma db push",
     "prisma:push": "prisma db push",
     "db:sync": "prisma db push && prisma generate",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:google-places:extract": "tsx prisma/importGooglePlaces.ts --dry-run",
+    "db:google-places:apply": "tsx prisma/importGooglePlaces.ts --apply --prune"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

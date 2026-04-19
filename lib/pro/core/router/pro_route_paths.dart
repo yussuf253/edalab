@@ -14,11 +14,13 @@ class ProRoutePaths {
   static const inbox = '/pro/inbox';
   static const insights = '/pro/insights';
   static const account = '/pro/account';
+  static const profileManagement = '/pro/profile/manage';
 
   static const shopHome = '/pro/shop';
   static const shopQueue = '/pro/shop/queue';
   static const shopCatalog = '/pro/shop/catalog';
   static const shopProducts = '/pro/shop/products';
+  static const shopStoreSetup = '/pro/shop/store-setup';
 
   static const providerHome = '/pro/provider';
   static const providerQueue = '/pro/provider/queue';

@@ -29,6 +29,29 @@ class RestaurantModel {
 
   factory RestaurantModel.fromApi(Map<String, dynamic> json) {
     final menuJson = (json['menu'] as List?)?.cast<dynamic>() ?? const [];
+    String? readImageUrl() {
+      String? pick(dynamic value) {
+        final text = value?.toString().trim();
+        if (text == null || text.isEmpty) return null;
+        return text;
+      }
+
+      final proProfile = json['proProfile'] is Map
+          ? Map<String, dynamic>.from(json['proProfile'] as Map)
+          : const <String, dynamic>{};
+      final profile = json['profile'] is Map
+          ? Map<String, dynamic>.from(json['profile'] as Map)
+          : const <String, dynamic>{};
+
+      return pick(json['imageUrl']) ??
+          pick(json['profileImageUrl']) ??
+          pick(json['profileAvatarUrl']) ??
+          pick(json['avatarUrl']) ??
+          pick(profile['imageUrl']) ??
+          pick(profile['avatarUrl']) ??
+          pick(proProfile['imageUrl']) ??
+          pick(proProfile['avatarUrl']);
+    }
 
     return RestaurantModel(
       id: json['id']?.toString() ?? '',
@@ -38,7 +61,7 @@ class RestaurantModel {
       reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
       deliveryTime: json['deliveryTime']?.toString() ?? '20-30',
       deliveryFee: _formatDeliveryFee(json['deliveryFee']),
-      imageUrl: json['imageUrl']?.toString(),
+      imageUrl: readImageUrl(),
       isOpen: json['isOpen'] as bool? ?? true,
       distance: (json['distance'] as num?)?.toDouble() ?? 0,
       menu: menuJson

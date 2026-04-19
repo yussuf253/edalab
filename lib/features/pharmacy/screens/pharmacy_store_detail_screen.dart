@@ -287,11 +287,26 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                                   color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(14),
                                 ),
-                                child: const Icon(
-                                  Icons.local_pharmacy_rounded,
-                                  color: AppColors.white,
-                                  size: 24,
-                                ),
+                                child:
+                                    store?.imageUrl != null &&
+                                        store!.imageUrl!.trim().isNotEmpty
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(14),
+                                        child: Image.network(
+                                          store.imageUrl!,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, _, _) => const Icon(
+                                            Icons.local_pharmacy_rounded,
+                                            color: AppColors.white,
+                                            size: 24,
+                                          ),
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.local_pharmacy_rounded,
+                                        color: AppColors.white,
+                                        size: 24,
+                                      ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -800,6 +815,7 @@ class _PharmacyStoreInfo {
     required this.prescriptionCount,
     this.distanceKm,
     this.address,
+    this.imageUrl,
   });
 
   final String id;
@@ -810,6 +826,7 @@ class _PharmacyStoreInfo {
   final int prescriptionCount;
   final double? distanceKm;
   final String? address;
+  final String? imageUrl;
 
   factory _PharmacyStoreInfo.fromMap(Map<String, dynamic> map) {
     final locationMap = map['location'] is Map
@@ -824,6 +841,11 @@ class _PharmacyStoreInfo {
       prescriptionCount: (map['prescriptionCount'] as num?)?.toInt() ?? 0,
       distanceKm: (map['distanceKm'] as num?)?.toDouble(),
       address: map['address']?.toString() ?? locationMap['address']?.toString(),
+      imageUrl:
+          map['imageUrl']?.toString() ??
+          map['profileImageUrl']?.toString() ??
+          map['profileAvatarUrl']?.toString() ??
+          map['avatarUrl']?.toString(),
     );
   }
 
@@ -845,6 +867,7 @@ class _PharmacyStoreInfo {
       prescriptionCount: prescriptionCount,
       distanceKm: distanceKm ?? this.distanceKm,
       address: address,
+      imageUrl: imageUrl,
     );
   }
 }

@@ -275,11 +275,26 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                             ),
                             borderRadius: BorderRadius.circular(18),
                           ),
-                          child: Icon(
-                            provider.categoryIcon,
-                            color: provider.categoryColor,
-                            size: 30,
-                          ),
+                          child:
+                              provider.imageUrl != null &&
+                                  provider.imageUrl!.trim().isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: Image.network(
+                                    provider.imageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => Icon(
+                                      provider.categoryIcon,
+                                      color: provider.categoryColor,
+                                      size: 30,
+                                    ),
+                                  ),
+                                )
+                              : Icon(
+                                  provider.categoryIcon,
+                                  color: provider.categoryColor,
+                                  size: 30,
+                                ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(

@@ -821,7 +821,22 @@ class _FeaturedProviderCard extends StatelessWidget {
                 color: accentColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: Icon(provider.categoryIcon, color: accentColor, size: 30),
+              child:
+                  provider.imageUrl != null &&
+                      provider.imageUrl!.trim().isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: Image.network(
+                        provider.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Icon(
+                          provider.categoryIcon,
+                          color: accentColor,
+                          size: 30,
+                        ),
+                      ),
+                    )
+                  : Icon(provider.categoryIcon, color: accentColor, size: 30),
             ),
             const SizedBox(width: 14),
             Expanded(

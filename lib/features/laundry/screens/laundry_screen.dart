@@ -174,8 +174,12 @@ class _LaundryScreenState extends State<LaundryScreen> {
               if (_isLoading)
                 const InlineSectionListShimmer(itemCount: 4)
               else
-                ...services.map(
-                  (s) => GestureDetector(
+                ...services.map((s) {
+                  final hasServiceImage = s.iconUrl
+                      .trim()
+                      .toLowerCase()
+                      .startsWith('http');
+                  return GestureDetector(
                     onTap: () => context.push(
                       '/laundry/order?serviceId=${Uri.encodeComponent(s.id)}&locked=1',
                     ),
@@ -196,11 +200,24 @@ class _LaundryScreenState extends State<LaundryScreen> {
                               color: _getColor(s.id).withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: Icon(
-                              _getIcon(s.id),
-                              color: _getColor(s.id),
-                              size: 28,
-                            ),
+                            child: hasServiceImage
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Image.network(
+                                      s.iconUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, _, _) => Icon(
+                                        _getIcon(s.id),
+                                        color: _getColor(s.id),
+                                        size: 28,
+                                      ),
+                                    ),
+                                  )
+                                : Icon(
+                                    _getIcon(s.id),
+                                    color: _getColor(s.id),
+                                    size: 28,
+                                  ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
@@ -244,8 +261,8 @@ class _LaundryScreenState extends State<LaundryScreen> {
                         ],
                       ),
                     ),
-                  ),
-                ),
+                  );
+                }),
               const SizedBox(height: 20),
               // How it works
               Text(l10n.t('laundry.how_it_works'), style: AppTextStyles.h4),

@@ -394,6 +394,7 @@ class _ShoppingStoreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasImage = store.imageUrl.trim().isNotEmpty;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -422,6 +423,37 @@ class _ShoppingStoreCard extends StatelessWidget {
               ),
               child: Stack(
                 children: [
+                  if (hasImage)
+                    Positioned.fill(
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(20),
+                        ),
+                        child: Image.network(
+                          store.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
+                  if (hasImage)
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.08),
+                              Colors.black.withValues(alpha: 0.28),
+                            ],
+                          ),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ),
                   Positioned(
                     top: 18,
                     right: 18,
@@ -462,12 +494,19 @@ class _ShoppingStoreCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(store.name, style: AppTextStyles.h3),
+                        Text(
+                          store.name,
+                          style: AppTextStyles.h3.copyWith(
+                            color: hasImage ? AppColors.white : AppColors.dark,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         Text(
                           store.tagline,
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.grey,
+                            color: hasImage
+                                ? Colors.white.withValues(alpha: 0.86)
+                                : AppColors.grey,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,

@@ -239,6 +239,43 @@ class ProAuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> updateProfileSettings({
+    required String businessName,
+    required List<ProModule> activeModules,
+  }) async {
+    final profile = _currentProfile;
+    if (profile == null) {
+      throw Exception('No active pro profile found.');
+    }
+
+    final normalizedName = businessName.trim();
+    if (normalizedName.length < 2) {
+      throw Exception('Business name must be at least 2 characters.');
+    }
+
+    final normalizedModules = ProModuleHelper.sanitizeModules(
+      profile.type,
+      activeModules,
+    );
+
+    final response = Map<String, dynamic>.from(
+      await ApiClient.post('/pro', {
+            'userId': profile.userId,
+            'type': _typeToApi(profile.type),
+            'activeModules': normalizedModules.map(_moduleToApi).toList(),
+            'businessName': normalizedName,
+            'avatarUrl': profile.avatarUrl ?? '',
+            'isOnline': profile.isOnline,
+            'isVerified': profile.isVerified,
+          })
+          as Map,
+    );
+
+    _currentProfile = _profileFromApi(response);
+    await _persistLocalSession();
+    notifyListeners();
+  }
+
   Future<void> logout() async {
     await _clearLocalSession(clearToken: true);
     notifyListeners();

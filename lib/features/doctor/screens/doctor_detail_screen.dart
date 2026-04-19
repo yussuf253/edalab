@@ -120,13 +120,30 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(24),
                           ),
-                          child: Icon(
-                            doctor.isHomeCareProvider
-                                ? Icons.health_and_safety_rounded
-                                : Icons.person_rounded,
-                            color: AppColors.white,
-                            size: 48,
-                          ),
+                          child:
+                              doctor.imageUrl != null &&
+                                  doctor.imageUrl!.trim().isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: Image.network(
+                                    doctor.imageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => Icon(
+                                      doctor.isHomeCareProvider
+                                          ? Icons.health_and_safety_rounded
+                                          : Icons.person_rounded,
+                                      color: AppColors.white,
+                                      size: 48,
+                                    ),
+                                  ),
+                                )
+                              : Icon(
+                                  doctor.isHomeCareProvider
+                                      ? Icons.health_and_safety_rounded
+                                      : Icons.person_rounded,
+                                  color: AppColors.white,
+                                  size: 48,
+                                ),
                         ),
                         const SizedBox(height: 16),
                         Text(

@@ -197,11 +197,26 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                             color: Colors.white.withValues(alpha: 0.16),
                             borderRadius: BorderRadius.circular(24),
                           ),
-                          child: Icon(
-                            provider.categoryIcon,
-                            color: AppColors.white,
-                            size: 42,
-                          ),
+                          child:
+                              provider.imageUrl != null &&
+                                  provider.imageUrl!.trim().isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: Image.network(
+                                    provider.imageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => Icon(
+                                      provider.categoryIcon,
+                                      color: AppColors.white,
+                                      size: 42,
+                                    ),
+                                  ),
+                                )
+                              : Icon(
+                                  provider.categoryIcon,
+                                  color: AppColors.white,
+                                  size: 42,
+                                ),
                         ),
                         const SizedBox(height: 16),
                         Text(

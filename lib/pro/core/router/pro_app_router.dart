@@ -6,6 +6,7 @@ import '../../../features/messages/screens/chat_screen.dart';
 import '../../features/auth/screens/pro_login_screen.dart';
 import '../../features/auth/screens/pro_register_screen.dart';
 import '../../features/auth/screens/pro_signup_screen.dart';
+import '../../features/account/screens/pro_profile_management_screen.dart';
 import '../../features/delivery/screens/delivery_queue_screen.dart';
 import '../../features/doctor/screens/doctor_appointments_queue_screen.dart';
 import '../../features/doctor/screens/doctor_availability_screen.dart';
@@ -23,6 +24,7 @@ import '../../features/rider/screens/rider_active_trip_screen.dart';
 import '../../features/rider/screens/rider_queue_screen.dart';
 import '../../features/shop/screens/shop_orders_queue_screen.dart';
 import '../../features/shop/screens/shop_products_screen.dart';
+import '../../features/shop/screens/shop_store_setup_screen.dart';
 import '../models/pro_profile.dart';
 import '../providers/pro_auth_provider.dart';
 import 'pro_route_paths.dart';
@@ -94,8 +96,25 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
         builder: (context, state) => const ProDashboardScreen(initialIndex: 4),
       ),
       GoRoute(
+        path: ProRoutePaths.profileManagement,
+        builder: (context, state) => _withProfile(
+          context,
+          (profile) => ProProfileManagementScreen(profile: profile),
+        ),
+      ),
+      GoRoute(
         path: ProRoutePaths.shopHome,
         builder: (context, state) => const ProDashboardScreen(),
+      ),
+      GoRoute(
+        path: ProRoutePaths.shopStoreSetup,
+        builder: (context, state) => _withProfile(
+          context,
+          (profile) => ShopStoreSetupScreen(
+            userId: profile.userId,
+            businessName: profile.businessName,
+          ),
+        ),
       ),
       GoRoute(
         path: ProRoutePaths.shopQueue,

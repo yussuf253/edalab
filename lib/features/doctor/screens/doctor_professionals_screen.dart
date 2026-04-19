@@ -213,13 +213,30 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
                             color: AppColors.doctorBg,
                             borderRadius: BorderRadius.circular(18),
                           ),
-                          child: Icon(
-                            provider.isHomeCareProvider
-                                ? Icons.health_and_safety_rounded
-                                : Icons.local_hospital_rounded,
-                            color: AppColors.doctor,
-                            size: 32,
-                          ),
+                          child:
+                              provider.imageUrl != null &&
+                                  provider.imageUrl!.trim().isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(18),
+                                  child: Image.network(
+                                    provider.imageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, _, _) => Icon(
+                                      provider.isHomeCareProvider
+                                          ? Icons.health_and_safety_rounded
+                                          : Icons.local_hospital_rounded,
+                                      color: AppColors.doctor,
+                                      size: 32,
+                                    ),
+                                  ),
+                                )
+                              : Icon(
+                                  provider.isHomeCareProvider
+                                      ? Icons.health_and_safety_rounded
+                                      : Icons.local_hospital_rounded,
+                                  color: AppColors.doctor,
+                                  size: 32,
+                                ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -286,8 +303,12 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
                                     ),
                                     Text(
                                       provider.isDoctorProvider
-                                          ? l10n.t('doctor_professionals.consult')
-                                          : l10n.t('doctor_professionals.service'),
+                                          ? l10n.t(
+                                              'doctor_professionals.consult',
+                                            )
+                                          : l10n.t(
+                                              'doctor_professionals.service',
+                                            ),
                                       style: AppTextStyles.caption,
                                     ),
                                   ],
@@ -363,7 +384,10 @@ class _ProfessionalsEmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Text(l10n.t('doctor_professionals.empty_title'), style: AppTextStyles.h3),
+          Text(
+            l10n.t('doctor_professionals.empty_title'),
+            style: AppTextStyles.h3,
+          ),
           const SizedBox(height: 8),
           Text(
             l10n.t('doctor_professionals.empty_subtitle'),

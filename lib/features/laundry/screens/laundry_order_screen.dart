@@ -278,6 +278,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
     final selectedIndex = _selectedService.clamp(0, services.length - 1);
     final selectedModel = services[selectedIndex];
     final selectedLaundryName = _serviceDisplayName(selectedModel);
+    final selectedServiceImageUrl = selectedModel.iconUrl.trim();
+    final hasSelectedServiceImage = selectedServiceImageUrl
+        .toLowerCase()
+        .startsWith('http');
     final itemOptions = _bookableItemsFor(selectedModel);
     final unitItemOptions = _unitItemsFor(selectedModel);
     final groupItemOptions = _groupItemsFor(selectedModel);
@@ -402,6 +406,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                               _serviceDisplayName(s),
                               s.profileName.trim().isNotEmpty ? s.name : null,
                               _getIcon(s),
+                              s.iconUrl,
                               selectedIndex == index,
                               () => setState(() {
                                 _selectedService = index;
@@ -434,10 +439,22 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                               color: AppColors.laundry.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(
-                              Icons.local_laundry_service_rounded,
-                              color: AppColors.laundry,
-                            ),
+                            child: hasSelectedServiceImage
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      selectedServiceImageUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, _, _) => const Icon(
+                                        Icons.local_laundry_service_rounded,
+                                        color: AppColors.laundry,
+                                      ),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.local_laundry_service_rounded,
+                                    color: AppColors.laundry,
+                                  ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -950,18 +967,21 @@ class _ServiceOption extends StatelessWidget {
   final String name;
   final String? subtitle;
   final IconData icon;
+  final String imageUrl;
   final bool selected;
   final VoidCallback onTap;
   const _ServiceOption(
     this.name,
     this.subtitle,
     this.icon,
+    this.imageUrl,
     this.selected,
     this.onTap,
   );
 
   @override
   Widget build(BuildContext context) {
+    final hasServiceImage = imageUrl.trim().toLowerCase().startsWith('http');
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -974,11 +994,29 @@ class _ServiceOption extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              color: selected ? AppColors.white : AppColors.laundry,
-              size: 28,
-            ),
+            if (hasServiceImage)
+              SizedBox(
+                width: 32,
+                height: 32,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Icon(
+                      icon,
+                      color: selected ? AppColors.white : AppColors.laundry,
+                      size: 28,
+                    ),
+                  ),
+                ),
+              )
+            else
+              Icon(
+                icon,
+                color: selected ? AppColors.white : AppColors.laundry,
+                size: 28,
+              ),
             const SizedBox(height: 6),
             Text(
               name,

@@ -150,9 +150,21 @@ class ProAccountScreen extends StatelessWidget {
   }
 
   List<Widget> _buildManagementTiles(BuildContext context, ProProfile profile) {
+    final baseTiles = <Widget>[
+      _AccountActionTile(
+        icon: Icons.manage_accounts_outlined,
+        color: AppColors.primary,
+        title: 'Profile Management',
+        subtitle:
+            'Manage business name, modules, and profile frontend sections.',
+        onTap: () => _open(context, ProRoutePaths.profileManagement),
+      ),
+    ];
+
     switch (profile.type) {
       case ProProfileType.shop:
         return [
+          ...baseTiles,
           _AccountActionTile(
             icon: Icons.receipt_long_outlined,
             color: AppColors.shopping,
@@ -165,7 +177,7 @@ class ProAccountScreen extends StatelessWidget {
             color: AppColors.shopping,
             title: 'Store Setup',
             subtitle: 'Configure storefront identity and availability.',
-            onTap: () => _open(context, ProRoutePaths.shopProducts),
+            onTap: () => _open(context, ProRoutePaths.shopStoreSetup),
           ),
           _AccountActionTile(
             icon: Icons.inventory_2_outlined,
@@ -177,6 +189,7 @@ class ProAccountScreen extends StatelessWidget {
         ];
       case ProProfileType.provider:
         return [
+          ...baseTiles,
           _AccountActionTile(
             icon: Icons.toggle_on_outlined,
             color: AppColors.homeServices,
@@ -194,6 +207,7 @@ class ProAccountScreen extends StatelessWidget {
         ];
       case ProProfileType.doctor:
         return [
+          ...baseTiles,
           _AccountActionTile(
             icon: Icons.local_hospital_outlined,
             color: AppColors.doctor,
@@ -211,6 +225,7 @@ class ProAccountScreen extends StatelessWidget {
         ];
       case ProProfileType.delivery:
         return [
+          ...baseTiles,
           _AccountActionTile(
             icon: Icons.local_shipping_outlined,
             color: AppColors.food,
@@ -221,6 +236,7 @@ class ProAccountScreen extends StatelessWidget {
         ];
       case ProProfileType.rider:
         return [
+          ...baseTiles,
           _AccountActionTile(
             icon: Icons.local_taxi_outlined,
             color: AppColors.ride,
@@ -345,13 +361,14 @@ class _ProAccountHeaderCardState extends State<_ProAccountHeaderCard> {
                                 ? Image.network(
                                     _displayAvatarUrl!,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Icon(
-                                      ProModuleHelper.getProfileIcon(
-                                        widget.profile.type,
-                                      ),
-                                      color: Colors.white,
-                                      size: 28,
-                                    ),
+                                    errorBuilder:
+                                        (context, error, stackTrace) => Icon(
+                                          ProModuleHelper.getProfileIcon(
+                                            widget.profile.type,
+                                          ),
+                                          color: Colors.white,
+                                          size: 28,
+                                        ),
                                   )
                                 : Icon(
                                     ProModuleHelper.getProfileIcon(

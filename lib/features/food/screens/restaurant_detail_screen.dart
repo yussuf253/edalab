@@ -228,25 +228,53 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Positioned(
-                      top: 45,
-                      right: -20,
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
+                    if (restaurant.imageUrl != null &&
+                        restaurant.imageUrl!.trim().isNotEmpty)
+                      Positioned.fill(
+                        child: Image.network(
+                          restaurant.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
                         ),
                       ),
-                    ),
-                    Center(
-                      child: Icon(
-                        Icons.restaurant_rounded,
-                        size: 72,
-                        color: AppColors.food.withValues(alpha: 0.35),
+                    if (restaurant.imageUrl != null &&
+                        restaurant.imageUrl!.trim().isNotEmpty)
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.08),
+                                Colors.black.withValues(alpha: 0.24),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
+                    if (restaurant.imageUrl == null ||
+                        restaurant.imageUrl!.trim().isEmpty) ...[
+                      Positioned(
+                        top: 45,
+                        right: -20,
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                      Center(
+                        child: Icon(
+                          Icons.restaurant_rounded,
+                          size: 72,
+                          color: AppColors.food.withValues(alpha: 0.35),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

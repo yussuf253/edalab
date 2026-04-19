@@ -267,19 +267,46 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Positioned(
-                      top: 44,
-                      right: -10,
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
+                    if (_store.imageUrl.trim().isNotEmpty)
+                      Positioned.fill(
+                        child: Image.network(
+                          _store.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
                         ),
                       ),
-                    ),
-                    if (!_isLoading && _store.categories.isNotEmpty)
+                    if (_store.imageUrl.trim().isNotEmpty)
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.08),
+                                Colors.black.withValues(alpha: 0.24),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (_store.imageUrl.trim().isEmpty) ...[
+                      Positioned(
+                        top: 44,
+                        right: -10,
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (!_isLoading &&
+                        _store.categories.isNotEmpty &&
+                        _store.imageUrl.trim().isEmpty)
                       Center(
                         child: Icon(
                           _storeIcon(_store.categories),

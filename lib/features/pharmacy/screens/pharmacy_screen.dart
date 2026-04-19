@@ -1159,11 +1159,26 @@ class _PharmacyNearbyCard extends StatelessWidget {
                   color: AppColors.pharmacyBg,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.local_pharmacy_rounded,
-                  color: AppColors.pharmacy,
-                  size: 22,
-                ),
+                child:
+                    pharmacy.imageUrl != null &&
+                        pharmacy.imageUrl!.trim().isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          pharmacy.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const Icon(
+                            Icons.local_pharmacy_rounded,
+                            color: AppColors.pharmacy,
+                            size: 22,
+                          ),
+                        ),
+                      )
+                    : const Icon(
+                        Icons.local_pharmacy_rounded,
+                        color: AppColors.pharmacy,
+                        size: 22,
+                      ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -1642,6 +1657,7 @@ class _PharmacyDirectoryItem {
     required this.prescriptionCount,
     this.minPrice,
     this.address,
+    this.imageUrl,
   });
 
   final String id;
@@ -1653,6 +1669,7 @@ class _PharmacyDirectoryItem {
   final int prescriptionCount;
   final double? minPrice;
   final String? address;
+  final String? imageUrl;
 
   factory _PharmacyDirectoryItem.fromApi(Map<String, dynamic> json) {
     final locationMap = json['location'] is Map
@@ -1673,6 +1690,11 @@ class _PharmacyDirectoryItem {
       prescriptionCount: (json['prescriptionCount'] as num?)?.toInt() ?? 0,
       minPrice: (json['minPrice'] as num?)?.toDouble(),
       address: locationMap['address']?.toString(),
+      imageUrl:
+          json['imageUrl']?.toString() ??
+          json['profileImageUrl']?.toString() ??
+          json['profileAvatarUrl']?.toString() ??
+          json['avatarUrl']?.toString(),
     );
   }
 
@@ -1695,6 +1717,7 @@ class _PharmacyDirectoryItem {
       'prescriptionCount': prescriptionCount,
       'minPrice': minPrice,
       'address': address,
+      'imageUrl': imageUrl,
     };
   }
 }

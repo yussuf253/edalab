@@ -35,11 +35,36 @@ class ShoppingStoreModel {
       return const [];
     }
 
+    String readImageUrl() {
+      String? pick(dynamic value) {
+        final text = value?.toString().trim();
+        if (text == null || text.isEmpty) return null;
+        return text;
+      }
+
+      final proProfile = json['proProfile'] is Map
+          ? Map<String, dynamic>.from(json['proProfile'] as Map)
+          : const <String, dynamic>{};
+      final profile = json['profile'] is Map
+          ? Map<String, dynamic>.from(json['profile'] as Map)
+          : const <String, dynamic>{};
+
+      return pick(json['imageUrl']) ??
+          pick(json['profileImageUrl']) ??
+          pick(json['profileAvatarUrl']) ??
+          pick(json['avatarUrl']) ??
+          pick(profile['imageUrl']) ??
+          pick(profile['avatarUrl']) ??
+          pick(proProfile['imageUrl']) ??
+          pick(proProfile['avatarUrl']) ??
+          '';
+    }
+
     return ShoppingStoreModel(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Store',
       tagline: json['tagline']?.toString() ?? 'Curated picks for you',
-      imageUrl: json['imageUrl']?.toString() ?? '',
+      imageUrl: readImageUrl(),
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
       productCount: (json['productCount'] as num?)?.toInt() ?? 0,

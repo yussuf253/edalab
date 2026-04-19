@@ -483,11 +483,26 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                               color: AppColors.doctorBg,
                               borderRadius: BorderRadius.circular(16),
                             ),
-                            child: const Icon(
-                              Icons.health_and_safety_rounded,
-                              color: AppColors.doctor,
-                              size: 30,
-                            ),
+                            child:
+                                provider.imageUrl != null &&
+                                    provider.imageUrl!.trim().isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Image.network(
+                                      provider.imageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, _, _) => const Icon(
+                                        Icons.health_and_safety_rounded,
+                                        color: AppColors.doctor,
+                                        size: 30,
+                                      ),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.health_and_safety_rounded,
+                                    color: AppColors.doctor,
+                                    size: 30,
+                                  ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(

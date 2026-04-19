@@ -160,9 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   duration: const Duration(milliseconds: 240),
                   child: Column(
                     children: [
-                      SectionHeader(
-                        title: l10n.t('home.services'),
-                      ),
+                      SectionHeader(title: l10n.t('home.services')),
                       const SizedBox(height: 14),
                       _ServicesGrid(enabledModules: enabledModuleIds),
                     ],
@@ -653,13 +651,36 @@ class _PopularRestaurants extends StatelessWidget {
                             top: Radius.circular(16),
                           ),
                         ),
-                        child: Center(
-                          child: Icon(
-                            Icons.restaurant_rounded,
-                            size: 40,
-                            color: AppColors.food.withValues(alpha: 0.5),
-                          ),
-                        ),
+                        child:
+                            restaurant.imageUrl != null &&
+                                restaurant.imageUrl!.trim().isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(16),
+                                ),
+                                child: Image.network(
+                                  restaurant.imageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) {
+                                    return Center(
+                                      child: Icon(
+                                        Icons.restaurant_rounded,
+                                        size: 40,
+                                        color: AppColors.food.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              )
+                            : Center(
+                                child: Icon(
+                                  Icons.restaurant_rounded,
+                                  size: 40,
+                                  color: AppColors.food.withValues(alpha: 0.5),
+                                ),
+                              ),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(12),
@@ -772,11 +793,26 @@ class _TopDoctors extends StatelessWidget {
                           color: AppColors.doctor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Icon(
-                          Icons.person_rounded,
-                          color: AppColors.doctor,
-                          size: 28,
-                        ),
+                        child:
+                            doctor.imageUrl != null &&
+                                doctor.imageUrl!.trim().isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.network(
+                                  doctor.imageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => const Icon(
+                                    Icons.person_rounded,
+                                    color: AppColors.doctor,
+                                    size: 28,
+                                  ),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.person_rounded,
+                                color: AppColors.doctor,
+                                size: 28,
+                              ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(

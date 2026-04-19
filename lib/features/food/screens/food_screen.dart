@@ -405,11 +405,30 @@ class _FoodScreenState extends State<FoodScreen> {
                               ),
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            child: Icon(
-                              Icons.restaurant_rounded,
-                              color: AppColors.food.withValues(alpha: 0.5),
-                              size: 36,
-                            ),
+                            child:
+                                restaurant.imageUrl != null &&
+                                    restaurant.imageUrl!.trim().isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(14),
+                                    child: Image.network(
+                                      restaurant.imageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, _, _) => Icon(
+                                        Icons.restaurant_rounded,
+                                        color: AppColors.food.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        size: 36,
+                                      ),
+                                    ),
+                                  )
+                                : Icon(
+                                    Icons.restaurant_rounded,
+                                    color: AppColors.food.withValues(
+                                      alpha: 0.5,
+                                    ),
+                                    size: 36,
+                                  ),
                           ),
                           const SizedBox(width: 14),
                           Expanded(

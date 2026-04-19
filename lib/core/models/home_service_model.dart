@@ -126,6 +126,30 @@ class HomeServiceProviderModel {
     final category = json['category'] is Map
         ? Map<String, dynamic>.from(json['category'] as Map)
         : null;
+    String? readImageUrl() {
+      String? pick(dynamic value) {
+        final text = value?.toString().trim();
+        if (text == null || text.isEmpty) return null;
+        return text;
+      }
+
+      final proProfile = json['proProfile'] is Map
+          ? Map<String, dynamic>.from(json['proProfile'] as Map)
+          : const <String, dynamic>{};
+      final profile = json['profile'] is Map
+          ? Map<String, dynamic>.from(json['profile'] as Map)
+          : const <String, dynamic>{};
+
+      return pick(json['imageUrl']) ??
+          pick(json['profileImageUrl']) ??
+          pick(json['profileAvatarUrl']) ??
+          pick(json['avatarUrl']) ??
+          pick(profile['imageUrl']) ??
+          pick(profile['avatarUrl']) ??
+          pick(proProfile['imageUrl']) ??
+          pick(proProfile['avatarUrl']);
+    }
+
     return HomeServiceProviderModel(
       id: json['id']?.toString() ?? '',
       categoryId: json['categoryId']?.toString() ?? '',
@@ -142,7 +166,7 @@ class HomeServiceProviderModel {
       isAvailable: json['isAvailable'] as bool? ?? true,
       isVerified: json['isVerified'] as bool? ?? false,
       responseTime: json['responseTime']?.toString(),
-      imageUrl: json['imageUrl']?.toString(),
+      imageUrl: readImageUrl(),
       about: json['about']?.toString(),
       location: json['location']?.toString(),
       contactPhone: json['contactPhone']?.toString(),
