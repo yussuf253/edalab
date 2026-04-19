@@ -234,151 +234,170 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
             ),
           ],
         ),
-        body: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-              child: AppSearchBar(
-                hint: l10n.t('shopping.search_hint'),
-                controller: _searchController,
-                onChanged: _onSearchChanged,
+        body: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: AppSearchBar(
+                  hint: l10n.t('shopping.search_hint'),
+                  controller: _searchController,
+                  onChanged: _onSearchChanged,
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-              child: Container(
-                height: 96,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.shopping, AppColors.secondaryLight],
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                child: Container(
+                  height: 96,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [AppColors.shopping, AppColors.secondaryLight],
+                    ),
+                    borderRadius: BorderRadius.circular(18),
                   ),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.storefront_rounded,
-                      color: AppColors.white,
-                      size: 34,
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.t('shopping.hero_title'),
-                            style: AppTextStyles.h4.copyWith(
-                              color: AppColors.white,
-                            ),
-                          ),
-                          Text(
-                            l10n.t('shopping.hero_subtitle'),
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ],
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.storefront_rounded,
+                        color: AppColors.white,
+                        size: 34,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 52,
-              child: _isLoading
-                  ? const _ShoppingFiltersShimmer()
-                  : ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                      itemCount: categories.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 8),
-                      itemBuilder: (context, index) {
-                        final category = categories[index];
-                        final isSelected = _selectedCategory == category;
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() => _selectedCategory = category);
-                            AnalyticsService.instance.track(
-                              AnalyticsEvents.filterApplied,
-                              properties: {
-                                'module': 'shopping',
-                                'filter_type': 'category',
-                                'filter_value': category,
-                                'query': normalizedQuery,
-                                'result_count': _visibleStoreCount(
-                                  category: category,
-                                  query: normalizedQuery,
-                                ),
-                              },
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.white,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              category == 'all'
-                                  ? l10n.t('shopping.all')
-                                  : category,
-                              style: AppTextStyles.labelMedium.copyWith(
-                                color: isSelected
-                                    ? AppColors.white
-                                    : AppColors.dark,
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.t('shopping.hero_title'),
+                              style: AppTextStyles.h4.copyWith(
+                                color: AppColors.white,
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-            ),
-            Expanded(
-              child: _isLoading
-                  ? const _ShoppingStoreListShimmer(itemCount: 4)
-                  : stores.isEmpty
-                  ? Center(
-                      child: Text(
-                        l10n.t('shopping.no_shops'),
-                        style: AppTextStyles.bodyMedium,
+                            Text(
+                              l10n.t('shopping.hero_subtitle'),
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
-                      itemCount: stores.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 14),
-                      itemBuilder: (context, index) {
-                        final store = stores[index];
-                        return _ShoppingStoreCard(
-                          store: store,
-                          onTap: () {
-                            AnalyticsService.instance.track(
-                              AnalyticsEvents.entityOpened,
-                              properties: {
-                                'module': 'shopping',
-                                'entity_type': 'store',
-                                'entity_id': store.id,
-                                'position': index + 1,
-                                'result_count': stores.length,
-                                'selected_category': _selectedCategory,
-                                'query': normalizedQuery,
-                              },
-                            );
-                            context.push('/shopping/store/${store.id}');
-                          },
-                        );
-                      },
-                    ),
+                    ],
+                  ),
+                ),
+              ),
             ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 52,
+                child: _isLoading
+                    ? const _ShoppingFiltersShimmer()
+                    : ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                        itemCount: categories.length,
+                        separatorBuilder: (_, _) => const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final category = categories[index];
+                          final isSelected = _selectedCategory == category;
+                          return GestureDetector(
+                            onTap: () {
+                              setState(() => _selectedCategory = category);
+                              AnalyticsService.instance.track(
+                                AnalyticsEvents.filterApplied,
+                                properties: {
+                                  'module': 'shopping',
+                                  'filter_type': 'category',
+                                  'filter_value': category,
+                                  'query': normalizedQuery,
+                                  'result_count': _visibleStoreCount(
+                                    category: category,
+                                    query: normalizedQuery,
+                                  ),
+                                },
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.white,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                category == 'all'
+                                    ? l10n.t('shopping.all')
+                                    : category,
+                                style: AppTextStyles.labelMedium.copyWith(
+                                  color: isSelected
+                                      ? AppColors.white
+                                      : AppColors.dark,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ),
+            if (_isLoading)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20, 14, 20, 24),
+                  child: _ShoppingStoreListShimmer(itemCount: 4),
+                ),
+              )
+            else if (stores.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Text(
+                    l10n.t('shopping.no_shops'),
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                ),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+                sliver: SliverList.builder(
+                  itemCount: stores.length,
+                  itemBuilder: (context, index) {
+                    final store = stores[index];
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom: index == stores.length - 1 ? 0 : 14,
+                      ),
+                      child: _ShoppingStoreCard(
+                        store: store,
+                        onTap: () {
+                          AnalyticsService.instance.track(
+                            AnalyticsEvents.entityOpened,
+                            properties: {
+                              'module': 'shopping',
+                              'entity_type': 'store',
+                              'entity_id': store.id,
+                              'position': index + 1,
+                              'result_count': stores.length,
+                              'selected_category': _selectedCategory,
+                              'query': normalizedQuery,
+                            },
+                          );
+                          context.push('/shopping/store/${store.id}');
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),
@@ -632,96 +651,104 @@ class _ShoppingStoreListShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppShimmer(
-      child: ListView.separated(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-        itemCount: itemCount,
-        separatorBuilder: (_, _) => const SizedBox(height: 14),
-        itemBuilder: (context, index) {
-          return Container(
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  height: 150,
-                  child: Stack(
-                    children: const [
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: Color(0xFFF1F4FA),
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(20),
+      child: Column(
+        children: List.generate(itemCount, (index) {
+          return Padding(
+            padding: EdgeInsets.only(bottom: index == itemCount - 1 ? 0 : 14),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    height: 150,
+                    child: Stack(
+                      children: const [
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Color(0xFFF1F4FA),
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(20),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Positioned(
-                        top: 16,
-                        left: 16,
-                        child: ShimmerBlock(width: 64, height: 26, radius: 999),
-                      ),
-                      Positioned(
-                        top: 18,
-                        right: 18,
-                        child: ShimmerBlock(width: 72, height: 72, radius: 22),
-                      ),
-                      Positioned(
-                        left: 18,
-                        right: 110,
-                        bottom: 18,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Positioned(
+                          top: 16,
+                          left: 16,
+                          child: ShimmerBlock(
+                            width: 64,
+                            height: 26,
+                            radius: 999,
+                          ),
+                        ),
+                        Positioned(
+                          top: 18,
+                          right: 18,
+                          child: ShimmerBlock(
+                            width: 72,
+                            height: 72,
+                            radius: 22,
+                          ),
+                        ),
+                        Positioned(
+                          left: 18,
+                          right: 110,
+                          bottom: 18,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ShimmerBlock(width: 140, height: 24),
+                              SizedBox(height: 8),
+                              ShimmerBlock(
+                                width: double.infinity,
+                                height: 12,
+                                radius: 10,
+                              ),
+                              SizedBox(height: 6),
+                              ShimmerBlock(width: 150, height: 12, radius: 10),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
                           children: [
-                            ShimmerBlock(width: 140, height: 24),
-                            SizedBox(height: 8),
-                            ShimmerBlock(
-                              width: double.infinity,
-                              height: 12,
-                              radius: 10,
-                            ),
-                            SizedBox(height: 6),
-                            ShimmerBlock(width: 150, height: 12, radius: 10),
+                            ShimmerBlock(width: 72, height: 28, radius: 999),
+                            ShimmerBlock(width: 84, height: 28, radius: 999),
+                            ShimmerBlock(width: 96, height: 28, radius: 999),
                           ],
                         ),
-                      ),
-                    ],
+                        SizedBox(height: 14),
+                        Row(
+                          children: [
+                            ShimmerBlock(width: 56, height: 14, radius: 10),
+                            SizedBox(width: 12),
+                            ShimmerBlock(width: 82, height: 14, radius: 10),
+                            Spacer(),
+                            ShimmerBlock(width: 86, height: 16, radius: 10),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          ShimmerBlock(width: 72, height: 28, radius: 999),
-                          ShimmerBlock(width: 84, height: 28, radius: 999),
-                          ShimmerBlock(width: 96, height: 28, radius: 999),
-                        ],
-                      ),
-                      SizedBox(height: 14),
-                      Row(
-                        children: [
-                          ShimmerBlock(width: 56, height: 14, radius: 10),
-                          SizedBox(width: 12),
-                          ShimmerBlock(width: 82, height: 14, radius: 10),
-                          Spacer(),
-                          ShimmerBlock(width: 86, height: 16, radius: 10),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
-        },
+        }),
       ),
     );
   }

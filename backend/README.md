@@ -78,6 +78,15 @@ tsx prisma/importGooglePlaces.ts \
   --prune
 ```
 
+## Import Kikidrop Restaurants CSV
+
+If you scraped restaurant listings from Kikidrop into CSV, import them directly:
+
+```bash
+KIKIDROP_INPUT="/absolute/path/to/kikidrop-com-2026-04-13.csv" npm run db:kikidrop:extract
+KIKIDROP_INPUT="/absolute/path/to/kikidrop-com-2026-04-13.csv" npm run db:kikidrop:apply
+```
+
 ## Deploy To Render
 
 This backend is ready for Render.

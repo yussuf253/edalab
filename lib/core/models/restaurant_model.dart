@@ -1,6 +1,7 @@
 class RestaurantModel {
   final String id;
   final String name;
+  final String category;
   final String cuisine;
   final double rating;
   final int reviewCount;
@@ -15,6 +16,7 @@ class RestaurantModel {
   RestaurantModel({
     required this.id,
     required this.name,
+    this.category = 'International & Other',
     required this.cuisine,
     required this.rating,
     required this.reviewCount,
@@ -56,6 +58,11 @@ class RestaurantModel {
     return RestaurantModel(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Restaurant',
+      category:
+          json['category']?.toString() ??
+          ((json['tags'] as List?)?.isNotEmpty == true
+              ? json['tags'][0]?.toString() ?? 'International & Other'
+              : 'International & Other'),
       cuisine: json['cuisine']?.toString() ?? '',
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       reviewCount: (json['reviewCount'] as num?)?.toInt() ?? 0,
@@ -88,6 +95,7 @@ class RestaurantModel {
     RestaurantModel(
       id: 'r1',
       name: 'Burger Palace',
+      category: 'Burgers & Fast Food',
       cuisine: 'Burgers, Fast Food',
       rating: 4.8,
       reviewCount: 1200,
@@ -164,6 +172,7 @@ class RestaurantModel {
     RestaurantModel(
       id: 'r2',
       name: 'Pizza Royal',
+      category: 'Pizza & Italian',
       cuisine: 'Pizza, Italian',
       rating: 4.6,
       reviewCount: 850,
@@ -175,6 +184,7 @@ class RestaurantModel {
     RestaurantModel(
       id: 'r3',
       name: 'Sushi Master',
+      category: 'Sushi & Asian',
       cuisine: 'Japanese, Sushi',
       rating: 4.9,
       reviewCount: 2100,
@@ -186,6 +196,7 @@ class RestaurantModel {
     RestaurantModel(
       id: 'r4',
       name: 'Taco Fiesta',
+      category: 'Tacos & Mexican',
       cuisine: 'Mexican, Tacos',
       rating: 4.5,
       reviewCount: 670,
@@ -197,6 +208,7 @@ class RestaurantModel {
     RestaurantModel(
       id: 'r5',
       name: 'Dragon Wok',
+      category: 'Sushi & Asian',
       cuisine: 'Chinese, Asian',
       rating: 4.7,
       reviewCount: 1500,
@@ -208,6 +220,7 @@ class RestaurantModel {
     RestaurantModel(
       id: 'r6',
       name: 'Curry House',
+      category: 'Indian',
       cuisine: 'Indian, Curry',
       rating: 4.4,
       reviewCount: 920,

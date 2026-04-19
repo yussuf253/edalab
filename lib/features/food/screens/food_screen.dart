@@ -25,6 +25,7 @@ class FoodScreen extends StatefulWidget {
 class _FoodScreenState extends State<FoodScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedSort = 'top_rated';
+  String _selectedCategoryFilter = 'all';
   String _searchQuery = '';
   List<RestaurantModel> _restaurants = RestaurantModel.sampleRestaurants;
   bool _isLoading = true;
@@ -32,13 +33,20 @@ class _FoodScreenState extends State<FoodScreen> {
   String _lastTrackedSearch = '';
 
   final _sorts = ['top_rated', 'fastest', 'free_delivery'];
-  final _quickCategories = const [
-    ('pizza', Icons.local_pizza_rounded, AppColors.food),
-    ('burger', Icons.lunch_dining_rounded, AppColors.shopping),
-    ('sushi', Icons.set_meal_rounded, AppColors.secondary),
-    ('chinese', Icons.ramen_dining_rounded, AppColors.primary),
-    ('indian', Icons.dinner_dining_rounded, AppColors.pharmacy),
-    ('mexican', Icons.local_fire_department_rounded, AppColors.accent),
+  final _preferredCategoryOrder = const [
+    'Burgers & Fast Food',
+    'Pizza & Italian',
+    'Tacos & Mexican',
+    'Coffee & Cafe',
+    'Bakery & Desserts',
+    'Sushi & Asian',
+    'BBQ, Grill & Kebab',
+    'Middle Eastern',
+    'Healthy & Salad',
+    'Ice Cream & Frozen Treats',
+    'Indian',
+    'General Restaurants',
+    'International & Other',
   ];
 
   @override
@@ -61,6 +69,13 @@ class _FoodScreenState extends State<FoodScreen> {
         _restaurants = items.isEmpty
             ? RestaurantModel.sampleRestaurants
             : items;
+        final categoryKeys = _restaurants
+            .map((restaurant) => _categoryKey(restaurant.category))
+            .toSet();
+        if (_selectedCategoryFilter != 'all' &&
+            !categoryKeys.contains(_selectedCategoryFilter)) {
+          _selectedCategoryFilter = 'all';
+        }
         _isLoading = false;
       });
       AnalyticsService.instance.track(
@@ -127,6 +142,7 @@ class _FoodScreenState extends State<FoodScreen> {
       'food',
     );
     final restaurants = _filteredRestaurants();
+    final quickCategories = _buildFoodCategories(l10n);
 
     return PopScope(
       canPop: context.canPop(),
@@ -224,25 +240,26 @@ class _FoodScreenState extends State<FoodScreen> {
                     horizontal: 20,
                     vertical: 16,
                   ),
-                  children: _quickCategories
+                  children: quickCategories
                       .map(
                         (category) => _FoodCategory(
-                          icon: category.$2,
-                          name: l10n.t('food.category_${category.$1}'),
-                          color: category.$3,
+                          icon: category.icon,
+                          name: category.label,
+                          color: category.color,
+                          isSelected: _selectedCategoryFilter == category.id,
                           onTap: () {
-                            final cuisine = l10n.t(
-                              'food.category_${category.$1}',
+                            setState(
+                              () => _selectedCategoryFilter = category.id,
                             );
                             AnalyticsService.instance.track(
                               AnalyticsEvents.filterApplied,
                               properties: {
                                 'module': 'food',
-                                'filter_type': 'quick_cuisine',
-                                'filter_value': cuisine,
+                                'filter_type': 'quick_category',
+                                'filter_value': category.label,
+                                'result_count': _filteredRestaurants().length,
                               },
                             );
-                            _pickCuisine(cuisine);
                           },
                         ),
                       )
@@ -587,6 +604,9 @@ class _FoodScreenState extends State<FoodScreen> {
       final searchableCuisine = _normalize(restaurant.cuisine);
       final searchableName = _normalize(restaurant.name);
       final searchableTags = restaurant.tags.map(_normalize).toList();
+      final categoryMatches =
+          _selectedCategoryFilter == 'all' ||
+          _categoryKey(restaurant.category) == _selectedCategoryFilter;
 
       final matchesQuery =
           query.isEmpty ||
@@ -597,7 +617,7 @@ class _FoodScreenState extends State<FoodScreen> {
             return _normalize(item.name).contains(query) ||
                 _normalize(item.description).contains(query);
           });
-      return matchesQuery;
+      return categoryMatches && matchesQuery;
     }).toList();
 
     if (_selectedSort == 'fastest') {
@@ -631,11 +651,6 @@ class _FoodScreenState extends State<FoodScreen> {
     }
   }
 
-  void _pickCuisine(String cuisine) {
-    _searchController.text = cuisine;
-    _onSearchChanged(cuisine);
-  }
-
   int _deliveryMinutes(String value) {
     final match = RegExp(r'\d+').firstMatch(value);
     return int.tryParse(match?.group(0) ?? '') ?? 999;
@@ -653,18 +668,159 @@ class _FoodScreenState extends State<FoodScreen> {
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
   }
+
+  String _categoryKey(String value) => _normalize(value);
+
+  List<_FoodCategoryOption> _buildFoodCategories(AppLocalizations l10n) {
+    final counts = <String, int>{};
+    for (final restaurant in _restaurants) {
+      final label = restaurant.category.trim().isEmpty
+          ? 'International & Other'
+          : restaurant.category.trim();
+      counts[label] = (counts[label] ?? 0) + 1;
+    }
+
+    final entries = counts.entries.toList();
+    if (entries.isEmpty) {
+      return [
+        _FoodCategoryOption(
+          id: 'all',
+          label: l10n.t('common.all'),
+          icon: Icons.restaurant_rounded,
+          color: AppColors.food,
+        ),
+      ];
+    }
+
+    final order = <String, int>{
+      for (var i = 0; i < _preferredCategoryOrder.length; i += 1)
+        _preferredCategoryOrder[i].toLowerCase(): i,
+    };
+
+    entries.sort((left, right) {
+      final leftOrder = order[left.key.toLowerCase()] ?? 999;
+      final rightOrder = order[right.key.toLowerCase()] ?? 999;
+      if (leftOrder != rightOrder) return leftOrder.compareTo(rightOrder);
+      return right.value.compareTo(left.value);
+    });
+
+    final dynamicOptions = entries
+        .take(10)
+        .map(
+          (entry) => _FoodCategoryOption(
+            id: _categoryKey(entry.key),
+            label: entry.key,
+            icon: _iconForCategory(entry.key),
+            color: _colorForCategory(entry.key),
+          ),
+        )
+        .toList();
+
+    return [
+      _FoodCategoryOption(
+        id: 'all',
+        label: l10n.t('common.all'),
+        icon: Icons.restaurant_menu_rounded,
+        color: AppColors.primary,
+      ),
+      ...dynamicOptions,
+    ];
+  }
+
+  IconData _iconForCategory(String label) {
+    final normalized = _normalize(label);
+    if (normalized.contains('burger') || normalized.contains('fast food')) {
+      return Icons.lunch_dining_rounded;
+    }
+    if (normalized.contains('pizza') || normalized.contains('italian')) {
+      return Icons.local_pizza_rounded;
+    }
+    if (normalized.contains('taco') || normalized.contains('mexican')) {
+      return Icons.local_fire_department_rounded;
+    }
+    if (normalized.contains('coffee') || normalized.contains('cafe')) {
+      return Icons.coffee_rounded;
+    }
+    if (normalized.contains('bakery') || normalized.contains('dessert')) {
+      return Icons.cake_rounded;
+    }
+    if (normalized.contains('sushi') || normalized.contains('asian')) {
+      return Icons.set_meal_rounded;
+    }
+    if (normalized.contains('bbq') || normalized.contains('grill')) {
+      return Icons.outdoor_grill_rounded;
+    }
+    if (normalized.contains('healthy') || normalized.contains('salad')) {
+      return Icons.spa_rounded;
+    }
+    if (normalized.contains('ice cream') || normalized.contains('frozen')) {
+      return Icons.icecream_rounded;
+    }
+    if (normalized.contains('indian')) {
+      return Icons.dinner_dining_rounded;
+    }
+    return Icons.restaurant_rounded;
+  }
+
+  Color _colorForCategory(String label) {
+    final normalized = _normalize(label);
+    if (normalized.contains('burger') || normalized.contains('fast food')) {
+      return AppColors.shopping;
+    }
+    if (normalized.contains('pizza') || normalized.contains('italian')) {
+      return AppColors.food;
+    }
+    if (normalized.contains('taco') || normalized.contains('mexican')) {
+      return AppColors.accent;
+    }
+    if (normalized.contains('coffee') || normalized.contains('cafe')) {
+      return AppColors.secondary;
+    }
+    if (normalized.contains('bakery') || normalized.contains('dessert')) {
+      return AppColors.warning;
+    }
+    if (normalized.contains('sushi') || normalized.contains('asian')) {
+      return AppColors.primary;
+    }
+    if (normalized.contains('bbq') || normalized.contains('grill')) {
+      return AppColors.error;
+    }
+    if (normalized.contains('healthy') || normalized.contains('salad')) {
+      return AppColors.success;
+    }
+    if (normalized.contains('ice cream') || normalized.contains('frozen')) {
+      return AppColors.pharmacy;
+    }
+    return AppColors.food;
+  }
+}
+
+class _FoodCategoryOption {
+  final String id;
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  const _FoodCategoryOption({
+    required this.id,
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
 }
 
 class _FoodCategory extends StatelessWidget {
   final IconData icon;
   final String name;
   final Color color;
+  final bool isSelected;
   final VoidCallback onTap;
 
   const _FoodCategory({
     required this.icon,
     required this.name,
     required this.color,
+    required this.isSelected,
     required this.onTap,
   });
 
@@ -680,7 +836,12 @@ class _FoodCategory extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
+                color: isSelected
+                    ? color.withValues(alpha: 0.2)
+                    : color.withValues(alpha: 0.12),
+                border: isSelected
+                    ? Border.all(color: color.withValues(alpha: 0.55))
+                    : null,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(icon, color: color, size: 28),
@@ -688,6 +849,9 @@ class _FoodCategory extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: AppTextStyles.labelSmall.copyWith(color: AppColors.dark),
             ),
           ],

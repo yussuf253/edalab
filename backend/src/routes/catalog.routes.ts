@@ -1094,32 +1094,36 @@ router.get(
     });
 
     res.json(
-      restaurants.map((restaurant) => ({
-        id: restaurant.id,
-        name: restaurant.name,
-        cuisine: restaurant.cuisine,
-        rating: toNumber(restaurant.rating),
-        reviewCount: restaurant.reviewCount,
-        deliveryTime: restaurant.deliveryTime,
-        deliveryFee: toNumber(restaurant.deliveryFee),
-        imageUrl: restaurant.imageUrl,
-        isOpen: restaurant.isOpen,
-        distance: toNumber(restaurant.distanceKm),
-        tags: restaurant.tagsJson ?? [],
-        menu: restaurant.menuCategories.map((category) => ({
-          name: category.name,
-          items: category.items.map((item) => ({
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            price: toNumber(item.price),
-            imageUrl: item.imageUrl,
-            isPopular: item.isPopular,
-            isAvailable: item.isAvailable,
-            customizations: item.customizationsJson ?? [],
+      restaurants.map((restaurant) => {
+        const tags = readJsonStringArray(restaurant.tagsJson);
+        return {
+          id: restaurant.id,
+          name: restaurant.name,
+          cuisine: restaurant.cuisine,
+          category: tags[0] ?? 'International & Other',
+          rating: toNumber(restaurant.rating),
+          reviewCount: restaurant.reviewCount,
+          deliveryTime: restaurant.deliveryTime,
+          deliveryFee: toNumber(restaurant.deliveryFee),
+          imageUrl: restaurant.imageUrl,
+          isOpen: restaurant.isOpen,
+          distance: toNumber(restaurant.distanceKm),
+          tags,
+          menu: restaurant.menuCategories.map((category) => ({
+            name: category.name,
+            items: category.items.map((item) => ({
+              id: item.id,
+              name: item.name,
+              description: item.description,
+              price: toNumber(item.price),
+              imageUrl: item.imageUrl,
+              isPopular: item.isPopular,
+              isAvailable: item.isAvailable,
+              customizations: item.customizationsJson ?? [],
+            })),
           })),
-        })),
-      })),
+        };
+      }),
     );
   }),
 );
@@ -1142,10 +1146,12 @@ router.get(
       return res.status(404).json({ error: 'Restaurant not found.' });
     }
 
+    const tags = readJsonStringArray(restaurant.tagsJson);
     res.json({
       id: restaurant.id,
       name: restaurant.name,
       cuisine: restaurant.cuisine,
+      category: tags[0] ?? 'International & Other',
       rating: toNumber(restaurant.rating),
       reviewCount: restaurant.reviewCount,
       deliveryTime: restaurant.deliveryTime,
@@ -1153,7 +1159,7 @@ router.get(
       imageUrl: restaurant.imageUrl,
       isOpen: restaurant.isOpen,
       distance: toNumber(restaurant.distanceKm),
-      tags: restaurant.tagsJson ?? [],
+      tags,
       menu: restaurant.menuCategories.map((category) => ({
         name: category.name,
         items: category.items.map((item) => ({

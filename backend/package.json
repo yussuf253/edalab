@@ -15,7 +15,9 @@
     "db:sync": "prisma db push && prisma generate",
     "db:seed": "tsx prisma/seed.ts",
     "db:google-places:extract": "tsx prisma/importGooglePlaces.ts --dry-run",
-    "db:google-places:apply": "tsx prisma/importGooglePlaces.ts --apply --prune"
+    "db:google-places:apply": "tsx prisma/importGooglePlaces.ts --apply --prune",
+    "db:kikidrop:extract": "tsx prisma/importKikiDropRestaurants.ts --dry-run",
+    "db:kikidrop:apply": "tsx prisma/importKikiDropRestaurants.ts --apply --prune"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

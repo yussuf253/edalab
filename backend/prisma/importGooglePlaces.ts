@@ -845,6 +845,7 @@ function extractData(records: RawGooglePlace[], options: ImportOptions): Extract
     const reviewCount = readReviewCount(place.reviewsCount);
     const imageUrls = extractImageUrls(place);
     const categoryTokens = collectCategoryTokens(place);
+    const primaryCategory = bestPrimaryCategory(place);
     const isOpen = !(place.temporarilyClosed || place.permanentlyClosed);
     const parsedPrice = parsePrice(place.price);
 
@@ -859,8 +860,8 @@ function extractData(records: RawGooglePlace[], options: ImportOptions): Extract
         placeId: place.placeId ?? placeKey,
         name,
         slug,
-        tagline: `${bestPrimaryCategory(place)} in ${city}`,
-        description: `Google Places business listing for ${name} in ${city}.`,
+        tagline: `${primaryCategory} in ${city}`,
+        description: `${name} offers ${primaryCategory.toLowerCase()} and everyday essentials in ${city}.`,
         imageUrl: imageUrls[0] ?? null,
         isOpen,
         rating,
@@ -884,9 +885,9 @@ function extractData(records: RawGooglePlace[], options: ImportOptions): Extract
         moduleType: ModuleType.SHOPPING,
         categoryId,
         shopId: id,
-        name: `${toTitleCase(bestPrimaryCategory(place))} Essentials`,
+        name: `${primaryCategory} Essentials`,
         brand: name,
-        description: `Representative catalog item for ${name}, extracted from Google Places store data.`,
+        description: `Popular item from ${name} curated for everyday shopping in ${city}.`,
         price: Number(basePrice.toFixed(2)),
         originalPrice: null,
         rating,
@@ -897,7 +898,7 @@ function extractData(records: RawGooglePlace[], options: ImportOptions): Extract
         imageUrlsJson: imageUrls,
         colorsJson: [],
         sizesJson: [],
-        tagsJson: ['Google Places', city],
+        tagsJson: [city, 'Local Business'],
         featuresJson: categoryTokens.slice(0, 3).map((token) => toTitleCase(token)),
         badge: store.badge,
         inStock: true,
@@ -936,7 +937,7 @@ function extractData(records: RawGooglePlace[], options: ImportOptions): Extract
         isAvailable: isOpen,
         isSignedUp: true,
         imageUrl: imageUrls[0] ?? null,
-        about: `${name} is listed on Google Places as ${specialty.toLowerCase()} in ${city}.`,
+        about: `${name} provides ${specialty.toLowerCase()} services in ${city}.`,
         location: address,
         contactPhone: place.phoneUnformatted ?? place.phone ?? null,
         contactWhatsApp: place.phoneUnformatted ?? place.phone ?? null,
@@ -980,7 +981,7 @@ function extractData(records: RawGooglePlace[], options: ImportOptions): Extract
         menuItem: {
           id: buildStableId(PREFIXES.restaurantMenuItem, placeKey),
           name: `${toTitleCase(cuisine.split(',')[0] ?? 'House')} Special`,
-          description: `Representative menu item for ${name}, based on Google Places restaurant profile.`,
+          description: `Signature dish from ${name}, prepared with local taste in mind.`,
           price: Number((parsedPrice ?? 12).toFixed(2)),
           imageUrl: imageUrls[1] ?? imageUrls[0] ?? null,
           isPopular: true,
@@ -1003,7 +1004,7 @@ function extractData(records: RawGooglePlace[], options: ImportOptions): Extract
         reviewsCount: reviewCount,
         pricePerNight: Number((parsedPrice ?? fallbackPrice).toFixed(2)),
         amenitiesJson: hotelAmenities(place),
-        description: `Hotel listing imported from Google Places for ${name} in ${city}.`,
+        description: `Comfort-focused stay in ${city} with convenient access to nearby services.`,
         imageUrlsJson: imageUrls,
       });
       continue;
@@ -1019,7 +1020,7 @@ function extractData(records: RawGooglePlace[], options: ImportOptions): Extract
         shopId: null,
         name: `${name} Essentials`,
         brand: name,
-        description: `Pharmacy profile imported from Google Places for ${name}.`,
+        description: `Trusted pharmacy selection from ${name} for daily care needs.`,
         price: Number(basePrice.toFixed(2)),
         originalPrice: null,
         rating,
@@ -1030,7 +1031,7 @@ function extractData(records: RawGooglePlace[], options: ImportOptions): Extract
         imageUrlsJson: imageUrls,
         colorsJson: [],
         sizesJson: [],
-        tagsJson: ['Google Places', city],
+        tagsJson: [city, 'Pharmacy'],
         featuresJson: ['Pharmacy', 'In-store assistance'],
         badge: badgeFromSignals(rating, reviewCount),
         inStock: true,
