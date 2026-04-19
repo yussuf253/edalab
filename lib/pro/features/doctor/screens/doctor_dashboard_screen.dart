@@ -208,30 +208,64 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   videoCount: videoCount,
                   onOpenQueue: _openAppointmentsQueue,
                 ),
-                if (data?.scopeNote?.isNotEmpty == true) ...[
-                  const SizedBox(height: 12),
-                  _ScopeNote(message: data!.scopeNote!),
-                ],
-                const SizedBox(height: 14),
-                _DoctorQuickActions(
-                  onQueue: _openAppointmentsQueue,
-                  onHomeCare: _openHomeCareQueue,
-                  onAvailability: _openAvailability,
-                  onSchedule: _openSchedule,
-                  onVideo: _openTelemedicine,
+                const SizedBox(height: 24),
+                Text(
+                  'Quick Actions',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-                const SizedBox(height: 14),
-                _DoctorTriageStrip(
-                  pendingCount: pendingCount,
-                  approvedCount: approvedCount,
-                  videoCount: videoCount,
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 110,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: [
+                      _QuickActionCard(
+                        icon: Icons.event_note_outlined,
+                        label: 'Appointments',
+                        color: AppColors.doctor,
+                        onTap: _openAppointmentsQueue,
+                      ),
+                      _QuickActionCard(
+                        icon: Icons.video_call_outlined,
+                        label: 'Telemedicine',
+                        color: Colors.purple,
+                        onTap: _openTelemedicine,
+                      ),
+                      _QuickActionCard(
+                        icon: Icons.home_repair_service_outlined,
+                        label: 'Home Care',
+                        color: AppColors.info,
+                        onTap: _openHomeCareQueue,
+                      ),
+                      _QuickActionCard(
+                        icon: Icons.tune,
+                        label: 'Availability',
+                        color: Colors.orange,
+                        onTap: _openAvailability,
+                      ),
+                      _QuickActionCard(
+                        icon: Icons.schedule_outlined,
+                        label: 'Schedule',
+                        color: Colors.teal,
+                        onTap: _openSchedule,
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 24),
                 _DoctorMetricsGrid(
                   stats: stats,
                   fallbackPatients: recentItems.length,
                   fallbackVideo: videoCount,
                   fallbackUpcoming: approvedCount,
+                ),
+                const SizedBox(height: 16),
+                _DoctorTriageStrip(
+                  pendingCount: pendingCount,
+                  approvedCount: approvedCount,
+                  videoCount: videoCount,
                 ),
                 const SizedBox(height: 24),
                 Text(
@@ -401,23 +435,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   }
 }
 
-class _ScopeNote extends StatelessWidget {
-  final String message;
-
-  const _ScopeNote({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.infoLight,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(message),
-    );
-  }
-}
+// ScopeNote removed by user request
 
 class _DoctorClinicalHero extends StatelessWidget {
   final String doctorName;
@@ -525,76 +543,53 @@ class _HeroBadge extends StatelessWidget {
   }
 }
 
-class _DoctorQuickActions extends StatelessWidget {
-  final VoidCallback onQueue;
-  final VoidCallback onHomeCare;
-  final VoidCallback onAvailability;
-  final VoidCallback onSchedule;
-  final VoidCallback onVideo;
-
-  const _DoctorQuickActions({
-    required this.onQueue,
-    required this.onHomeCare,
-    required this.onAvailability,
-    required this.onSchedule,
-    required this.onVideo,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        _DoctorActionChip(
-          icon: Icons.event_note_outlined,
-          label: 'Appointments',
-          onTap: onQueue,
-        ),
-        _DoctorActionChip(
-          icon: Icons.home_repair_service_outlined,
-          label: 'Home Care',
-          onTap: onHomeCare,
-        ),
-        _DoctorActionChip(
-          icon: Icons.tune,
-          label: 'Availability',
-          onTap: onAvailability,
-        ),
-        _DoctorActionChip(
-          icon: Icons.schedule_outlined,
-          label: 'Schedule',
-          onTap: onSchedule,
-        ),
-        _DoctorActionChip(
-          icon: Icons.video_call_outlined,
-          label: 'Telemedicine',
-          onTap: onVideo,
-        ),
-      ],
-    );
-  }
-}
-
-class _DoctorActionChip extends StatelessWidget {
+class _QuickActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
+  final Color color;
   final VoidCallback onTap;
 
-  const _DoctorActionChip({
+  const _QuickActionCard({
     required this.icon,
     required this.label,
+    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ActionChip(
-      avatar: Icon(icon, size: 18, color: AppColors.doctor),
-      label: Text(label),
-      onPressed: onTap,
-      backgroundColor: AppColors.doctor.withValues(alpha: 0.08),
-      side: BorderSide(color: AppColors.doctor.withValues(alpha: 0.12)),
+    return Container(
+      width: 104,
+      margin: const EdgeInsets.only(right: 12),
+      child: Material(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: color, size: 28),
+                const SizedBox(height: 12),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: color.withValues(alpha: 0.9),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

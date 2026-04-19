@@ -848,32 +848,36 @@ router.get('/restaurants', (0, async_handler_1.asyncHandler)(async (_req, res) =
         },
         orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
     });
-    res.json(restaurants.map((restaurant) => ({
-        id: restaurant.id,
-        name: restaurant.name,
-        cuisine: restaurant.cuisine,
-        rating: (0, serializers_1.toNumber)(restaurant.rating),
-        reviewCount: restaurant.reviewCount,
-        deliveryTime: restaurant.deliveryTime,
-        deliveryFee: (0, serializers_1.toNumber)(restaurant.deliveryFee),
-        imageUrl: restaurant.imageUrl,
-        isOpen: restaurant.isOpen,
-        distance: (0, serializers_1.toNumber)(restaurant.distanceKm),
-        tags: restaurant.tagsJson ?? [],
-        menu: restaurant.menuCategories.map((category) => ({
-            name: category.name,
-            items: category.items.map((item) => ({
-                id: item.id,
-                name: item.name,
-                description: item.description,
-                price: (0, serializers_1.toNumber)(item.price),
-                imageUrl: item.imageUrl,
-                isPopular: item.isPopular,
-                isAvailable: item.isAvailable,
-                customizations: item.customizationsJson ?? [],
+    res.json(restaurants.map((restaurant) => {
+        const tags = readJsonStringArray(restaurant.tagsJson);
+        return {
+            id: restaurant.id,
+            name: restaurant.name,
+            cuisine: restaurant.cuisine,
+            category: tags[0] ?? 'International & Other',
+            rating: (0, serializers_1.toNumber)(restaurant.rating),
+            reviewCount: restaurant.reviewCount,
+            deliveryTime: restaurant.deliveryTime,
+            deliveryFee: (0, serializers_1.toNumber)(restaurant.deliveryFee),
+            imageUrl: restaurant.imageUrl,
+            isOpen: restaurant.isOpen,
+            distance: (0, serializers_1.toNumber)(restaurant.distanceKm),
+            tags,
+            menu: restaurant.menuCategories.map((category) => ({
+                name: category.name,
+                items: category.items.map((item) => ({
+                    id: item.id,
+                    name: item.name,
+                    description: item.description,
+                    price: (0, serializers_1.toNumber)(item.price),
+                    imageUrl: item.imageUrl,
+                    isPopular: item.isPopular,
+                    isAvailable: item.isAvailable,
+                    customizations: item.customizationsJson ?? [],
+                })),
             })),
-        })),
-    })));
+        };
+    }));
 }));
 router.get('/restaurants/:id', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const restaurantId = (0, http_1.getParam)(req.params.id, 'restaurantId');
@@ -889,10 +893,12 @@ router.get('/restaurants/:id', (0, async_handler_1.asyncHandler)(async (req, res
     if (!restaurant) {
         return res.status(404).json({ error: 'Restaurant not found.' });
     }
+    const tags = readJsonStringArray(restaurant.tagsJson);
     res.json({
         id: restaurant.id,
         name: restaurant.name,
         cuisine: restaurant.cuisine,
+        category: tags[0] ?? 'International & Other',
         rating: (0, serializers_1.toNumber)(restaurant.rating),
         reviewCount: restaurant.reviewCount,
         deliveryTime: restaurant.deliveryTime,
@@ -900,7 +906,7 @@ router.get('/restaurants/:id', (0, async_handler_1.asyncHandler)(async (req, res
         imageUrl: restaurant.imageUrl,
         isOpen: restaurant.isOpen,
         distance: (0, serializers_1.toNumber)(restaurant.distanceKm),
-        tags: restaurant.tagsJson ?? [],
+        tags,
         menu: restaurant.menuCategories.map((category) => ({
             name: category.name,
             items: category.items.map((item) => ({

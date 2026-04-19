@@ -77,9 +77,13 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
       await AppPreferences.setHasSeenProOnboarding(true);
       if (!mounted) return;
 
-      context.go(
-        ProRoutePaths.homeForProfileType(proAuth.currentProfile!.type),
-      );
+      if (_selectedProfileType == ProProfileType.doctor) {
+        context.go(ProRoutePaths.doctorSetup);
+      } else {
+        context.go(
+          ProRoutePaths.homeForProfileType(proAuth.currentProfile!.type),
+        );
+      }
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -322,6 +326,17 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                           backgroundColor: Colors.blue.withValues(alpha: 0.08),
                           textColor: Colors.blue[700]!,
                           borderColor: Colors.blue[200]!,
+                        ),
+                      ],
+                      if (_selectedProfileType == ProProfileType.doctor) ...[
+                        const SizedBox(height: ProDesignSystem.spacing12),
+                        ModernInfoBox(
+                          message:
+                              'After sign-up, you will configure your practice including clinic visits, telemedicine, and home care services.',
+                          icon: Icons.medical_services_outlined,
+                          backgroundColor: Colors.teal.withValues(alpha: 0.08),
+                          textColor: Colors.teal[700]!,
+                          borderColor: Colors.teal[200]!,
                         ),
                       ],
                       const SizedBox(height: ProDesignSystem.spacing24),

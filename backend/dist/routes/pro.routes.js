@@ -4462,10 +4462,11 @@ router.get('/:userId/doctor-availability', (0, async_handler_1.asyncHandler)(asy
         return res.status(404).json({ error: 'Doctor pro profile not found.' });
     }
     const bindings = normalizeBindings(profile.bindings);
+    if (bindings.doctorIds.length === 0) {
+        return res.json([]);
+    }
     const doctors = await db_1.prisma.doctor.findMany({
-        where: bindings.doctorIds.length === 0
-            ? undefined
-            : { id: { in: bindings.doctorIds } },
+        where: { id: { in: bindings.doctorIds } },
         select: {
             id: true,
             name: true,
@@ -4640,10 +4641,11 @@ router.get('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async (
         return res.status(404).json({ error: 'Doctor pro profile not found.' });
     }
     const bindings = normalizeBindings(profile.bindings);
+    if (bindings.doctorIds.length === 0) {
+        return res.json([]);
+    }
     const doctors = await db_1.prisma.doctor.findMany({
-        where: bindings.doctorIds.length === 0
-            ? undefined
-            : { id: { in: bindings.doctorIds } },
+        where: { id: { in: bindings.doctorIds } },
         select: {
             id: true,
             name: true,
@@ -4681,13 +4683,23 @@ router.post('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async 
         return res.status(404).json({ error: 'Doctor pro profile not found.' });
     }
     const bindings = normalizeBindings(profile.bindings);
-    if (bindings.doctorIds.length === 0 ||
-        !bindings.doctorIds.includes(body.doctorId)) {
-        return res.status(403).json({ error: 'Doctor is not assigned to this profile.' });
-    }
-    const doctor = await db_1.prisma.doctor.update({
+    const isNewDoctor = bindings.doctorIds.length === 0 ||
+        !bindings.doctorIds.includes(body.doctorId);
+    const doctor = await db_1.prisma.doctor.upsert({
         where: { id: body.doctorId },
-        data: {
+        create: {
+            id: body.doctorId,
+            name: profile.businessName,
+            specialty: 'General Practice',
+            consultationFee: 0,
+            imageUrl: body.imageUrl == null ? null : body.imageUrl.trim() || null,
+            location: body.location == null ? null : body.location.trim() || null,
+            contactPhone: body.contactPhone == null ? null : body.contactPhone.trim() || null,
+            contactWhatsApp: body.contactWhatsApp == null ? null : body.contactWhatsApp.trim() || null,
+            careModesJson: body.careModes == null ? undefined : normalizeStringList(body.careModes),
+            workingHoursJson: body.workingHours == null ? undefined : normalizeHours(body.workingHours, { weekdays: '09:00 AM - 05:00 PM', saturday: '10:00 AM - 02:00 PM', sunday: 'Closed' }),
+        },
+        update: {
             imageUrl: body.imageUrl == null ? undefined : body.imageUrl.trim() || null,
             location: body.location == null ? undefined : body.location.trim() || null,
             contactPhone: body.contactPhone == null
@@ -4719,6 +4731,17 @@ router.post('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async 
             workingHoursJson: true,
         },
     });
+    if (isNewDoctor) {
+        await db_1.prisma.proProfile.update({
+            where: { id: profile.id },
+            data: {
+                bindings: {
+                    ...bindings,
+                    doctorIds: [...bindings.doctorIds, doctor.id],
+                },
+            },
+        });
+    }
     res.json({
         id: doctor.id,
         name: doctor.name,

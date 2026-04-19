@@ -30,6 +30,7 @@ class ProRoutePaths {
   static String providerJob(String orderId) => '/pro/provider/job/$orderId';
 
   static const doctorHome = '/pro/doctor';
+  static const doctorSetup = '/pro/doctor/setup';
   static const doctorAppointments = '/pro/doctor/appointments';
   static const doctorHomeCare = '/pro/doctor/home-care';
   static const doctorAvailability = '/pro/doctor/availability';
