@@ -516,6 +516,54 @@ class _ServicesGrid extends StatelessWidget {
       );
     }
 
+    // ── 2 modules: two wide cards side-by-side (each spans 2 normal slots) ──
+    if (services.length == 2) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: _WideServiceCard(service: services[0])),
+              const SizedBox(width: 10),
+              Expanded(child: _WideServiceCard(service: services[1])),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // ── 3 modules: two normal cards + one wide card filling remaining space ──
+    if (services.length == 3) {
+      const cardHeight = 80.0;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: SizedBox(
+          height: cardHeight,
+          child: Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: _NarrowServiceCard(service: services[0]),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 1,
+                child: _NarrowServiceCard(service: services[1]),
+              ),
+              const SizedBox(width: 8),
+              // Third card spans 2 normal slots → wide horizontal layout
+              Expanded(
+                flex: 2,
+                child: _WideServiceCard(service: services[2]),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // ── 4+ modules: original 4-column grid ───────────────────────────────────
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: GridView.builder(
@@ -580,6 +628,112 @@ class _ServicesGrid extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+// ── Wide card: horizontal layout (icon left, label right) ────────────────────
+// Used for 2-module layout (each card) and 3-module layout (third card).
+class _WideServiceCard extends StatelessWidget {
+  const _WideServiceCard({required this.service});
+  final _ServiceItem service;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(service.route),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.secondary.withValues(alpha: 0.10),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Image.asset(
+                  service.assetPath,
+                  fit: BoxFit.contain,
+                  color: AppColors.primary,
+                  colorBlendMode: BlendMode.srcIn,
+                  errorBuilder: (_, __, ___) => Icon(
+                    Icons.widgets_rounded,
+                    color: AppColors.primary,
+                    size: 22,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                service.title,
+                style: AppTextStyles.labelMedium,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Narrow card: vertical layout matching original grid cell ─────────────────
+// Used for the first two cards in the 3-module layout.
+class _NarrowServiceCard extends StatelessWidget {
+  const _NarrowServiceCard({required this.service});
+  final _ServiceItem service;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(service.route),
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: AppColors.secondary.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(11),
+              child: Image.asset(
+                service.assetPath,
+                fit: BoxFit.contain,
+                color: AppColors.primary,
+                colorBlendMode: BlendMode.srcIn,
+                errorBuilder: (_, __, ___) => Icon(
+                  Icons.widgets_rounded,
+                  color: AppColors.primary,
+                  size: 26,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            service.title,
+            style: AppTextStyles.labelMedium,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
