@@ -211,23 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: _handleLogin,
                   ),
                 ),
-                const SizedBox(height: 4),
-                FadeInDown(
-                  delay: const Duration(milliseconds: 520),
-                  child: Center(
-                    child: TextButton(
-                      onPressed: () => context.go('/'),
-                      child: Text(
-                        l10n.t('common.continue_as_guest'),
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                const SizedBox(height: 20),
+                const SizedBox(height: 26),
                 // Register link
                 FadeInUp(
                   delay: const Duration(milliseconds: 700),

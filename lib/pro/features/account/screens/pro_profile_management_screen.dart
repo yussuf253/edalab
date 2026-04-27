@@ -3080,7 +3080,7 @@ class _ProProfileManagementScreenState
                                     const [])
                                 .length;
                         final detailParts = <String>[
-                          '\$${price.toStringAsFixed(price % 1 == 0 ? 0 : 2)} ${unit.isNotEmpty ? '/ $unit' : ''}',
+                          'DJF${price.toStringAsFixed(price % 1 == 0 ? 0 : 2)} ${unit.isNotEmpty ? '/ $unit' : ''}',
                           '$itemCatalogCount items',
                           '$pickupSlotsCount slots',
                         ];

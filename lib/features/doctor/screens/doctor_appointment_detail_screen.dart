@@ -115,14 +115,20 @@ class _DoctorAppointmentDetailScreenState
           params: {'id': appointment?['doctorId']?.toString() ?? ''},
         );
     final specialty = doctor?.specialty ?? l10n.t('appointments.specialist');
-    final status = appointment?['status']?.toString() ?? l10n.t('appointments.unknown');
-    final date = appointment?['date']?.toString() ?? l10n.t('appointments.unknown_date');
+    final status =
+        appointment?['status']?.toString() ?? l10n.t('appointments.unknown');
+    final date =
+        appointment?['date']?.toString() ?? l10n.t('appointments.unknown_date');
     final time = appointment?['timeSlot']?.toString() ?? '--:--';
-    final type = appointment?['appointmentType']?.toString() ?? appointment?['type']?.toString() ?? specialty;
+    final type =
+        appointment?['appointmentType']?.toString() ??
+        appointment?['type']?.toString() ??
+        specialty;
     final notes = appointment?['notes']?.toString();
-    final fee = ((appointment?['consultationFee'] as num?)?.toDouble() ??
-            (doctor?.consultationFee ?? 0))
-        .toStringAsFixed(0);
+    final fee =
+        ((appointment?['consultationFee'] as num?)?.toDouble() ??
+                (doctor?.consultationFee ?? 0))
+            .toStringAsFixed(0);
 
     return PopScope(
       canPop: context.canPop(),
@@ -155,7 +161,9 @@ class _DoctorAppointmentDetailScreenState
             ? Center(
                 child: Text(
                   l10n.t('appointments.empty_subtitle'),
-                  style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.grey,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               )
@@ -232,13 +240,16 @@ class _DoctorAppointmentDetailScreenState
                     _DetailCard(
                       title: l10n.t('appointments.summary'),
                       children: [
-                        _DetailRow(l10n.t('appointments.booking_id'), '#${appointment['id']}'),
+                        _DetailRow(
+                          l10n.t('appointments.booking_id'),
+                          '#${appointment['id']}',
+                        ),
                         _DetailRow(l10n.t('appointments.doctor'), doctorName),
                         _DetailRow(l10n.t('appointments.status'), status),
                         _DetailRow(l10n.t('appointments.date'), date),
                         _DetailRow(l10n.t('appointments.time'), time),
                         _DetailRow(l10n.t('appointments.type'), type),
-                        _DetailRow(l10n.t('appointments.fee'), '\$$fee'),
+                        _DetailRow(l10n.t('appointments.fee'), 'DJF$fee'),
                       ],
                     ),
                     const SizedBox(height: 16),

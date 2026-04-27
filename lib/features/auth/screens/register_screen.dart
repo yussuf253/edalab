@@ -69,7 +69,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          authProvider.errorMessage ?? context.l10n.t('auth.registration_failed'),
+          authProvider.errorMessage ??
+              context.l10n.t('auth.registration_failed'),
         ),
         backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
@@ -102,7 +103,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 FadeInDown(
                   child: Text(
                     l10n.t('auth.register_title'),
-                    style: AppTextStyles.h1.copyWith(fontSize: 28, height: 1.05),
+                    style: AppTextStyles.h1.copyWith(
+                      fontSize: 28,
+                      height: 1.05,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -110,7 +114,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   delay: const Duration(milliseconds: 100),
                   child: Text(
                     l10n.t('auth.register_subtitle'),
-                    style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.grey,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 22),
@@ -173,7 +179,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   : Icons.visibility_outlined,
                             ),
                             onPressed: () {
-                              setState(() => _obscurePassword = !_obscurePassword);
+                              setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              );
                             },
                           ),
                         ),
@@ -247,22 +255,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     onPressed: _handleRegister,
                   ),
                 ),
-                const SizedBox(height: 4),
-                FadeInUp(
-                  delay: const Duration(milliseconds: 720),
-                  child: Center(
-                    child: TextButton(
-                      onPressed: () => context.go('/'),
-                      child: Text(
-                        l10n.t('common.continue_as_guest'),
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
+
+                const SizedBox(height: 26),
                 // Login Link
                 FadeInUp(
                   delay: const Duration(milliseconds: 800),
@@ -271,7 +265,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     children: [
                       Text(
                         l10n.t('auth.already_have_account'),
-                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.grey,
+                        ),
                       ),
                       GestureDetector(
                         onTap: () => context.pop(),
@@ -308,10 +304,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
-          decoration: InputDecoration(
-            hintText: hint,
-            prefixIcon: Icon(icon),
-          ),
+          decoration: InputDecoration(hintText: hint, prefixIcon: Icon(icon)),
           validator: (value) {
             if (value == null || value.isEmpty) {
               return context.l10n.t('auth.field_required');

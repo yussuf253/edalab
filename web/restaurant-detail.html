@@ -50,7 +50,7 @@
                             <div class="detail-chip detail-skel-pill"><strong id="rating">4.5★</strong></div>
                             <div class="detail-chip detail-skel-pill"><strong id="deliveryTime">30-40 min</strong></div>
                             <div class="detail-chip detail-skel-pill"><strong id="distance">2.5 km</strong></div>
-                            <div class="detail-chip detail-skel-pill"><strong id="minOrder">$5 min order</strong></div>
+                            <div class="detail-chip detail-skel-pill"><strong id="minOrder">DJF 5 min order</strong></div>
                         </div>
                     </div>
                 </div>
@@ -72,7 +72,7 @@
                         <div class="restaurant-summary-item"><span>Rating</span><strong id="summaryRating">4.5★</strong></div>
                         <div class="restaurant-summary-item"><span>Delivery</span><strong id="summaryDeliveryTime">30-40 min</strong></div>
                         <div class="restaurant-summary-item"><span>Distance</span><strong id="summaryDistance">2.5 km</strong></div>
-                        <div class="restaurant-summary-item"><span>Minimum</span><strong id="summaryMinOrder">$5 min order</strong></div>
+                        <div class="restaurant-summary-item"><span>Minimum</span><strong id="summaryMinOrder">DJF 5 min order</strong></div>
                     </div>
                     <a href="cart.html" class="detail-btn-primary" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;">Open Cart</a>
                 </aside>
@@ -236,14 +236,14 @@
                 document.getElementById('restaurantName').textContent = this.restaurant.name;
                 document.getElementById('restaurantImage').src = restaurantImage;
                 document.getElementById('restaurantDescription').textContent = this.restaurant.description || '';
-                document.getElementById('rating').textContent = `${this.restaurant.rating || 4.5}★`;
-                document.getElementById('deliveryTime').textContent = `${this.restaurant.deliveryTime || '30-40'} min`;
-                document.getElementById('distance').textContent = `${this.restaurant.distance || 2.5} km`;
-                document.getElementById('minOrder').textContent = `$${this.restaurant.minOrder || 5} min order`;
-                document.getElementById('summaryRating').textContent = `${this.restaurant.rating || 4.5}★`;
-                document.getElementById('summaryDeliveryTime').textContent = `${this.restaurant.deliveryTime || '30-40'} min`;
-                document.getElementById('summaryDistance').textContent = `${this.restaurant.distance || 2.5} km`;
-                document.getElementById('summaryMinOrder').textContent = `$${this.restaurant.minOrder || 5} min order`;
+                document.getElementById('rating').textContent = `DJF ${this.restaurant.rating || 4.5}★`;
+                document.getElementById('deliveryTime').textContent = `DJF ${this.restaurant.deliveryTime || '30-40'} min`;
+                document.getElementById('distance').textContent = `DJF ${this.restaurant.distance || 2.5} km`;
+                document.getElementById('minOrder').textContent = `DJF $${this.restaurant.minOrder || 5} min order`;
+                document.getElementById('summaryRating').textContent = `DJF ${this.restaurant.rating || 4.5}★`;
+                document.getElementById('summaryDeliveryTime').textContent = `DJF ${this.restaurant.deliveryTime || '30-40'} min`;
+                document.getElementById('summaryDistance').textContent = `DJF ${this.restaurant.distance || 2.5} km`;
+                document.getElementById('summaryMinOrder').textContent = `DJF $${this.restaurant.minOrder || 5} min order`;
                 this.updateSeo();
 
                 // Render menu sections

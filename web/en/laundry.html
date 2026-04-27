@@ -389,19 +389,19 @@
             <div class="checkbox-group">
                 <div class="checkbox-item">
                     <input type="checkbox" id="ironing" onchange="laundryModule.updatePrice()">
-                    <label for="ironing" data-i18n="laundry.ironing">Ironing (+$5)</label>
+                    <label for="ironing" data-i18n="laundry.ironing">Ironing (+ DJF 5)</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="drying" onchange="laundryModule.updatePrice()">
-                    <label for="drying" data-i18n="laundry.drying">Machine Dry (+$3)</label>
+                    <label for="drying" data-i18n="laundry.drying">Machine Dry (+ DJF 3)</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="folding" onchange="laundryModule.updatePrice()">
-                    <label for="folding" data-i18n="laundry.folding">Folding (+$4)</label>
+                    <label for="folding" data-i18n="laundry.folding">Folding (+ DJF 4)</label>
                 </div>
                 <div class="checkbox-item">
                     <input type="checkbox" id="starch" onchange="laundryModule.updatePrice()">
-                    <label for="starch" data-i18n="laundry.starch">Starch (+$2)</label>
+                    <label for="starch" data-i18n="laundry.starch">Starch (+ DJF 2)</label>
                 </div>
             </div>
 
@@ -452,19 +452,19 @@
             <div class="price-estimate">
                 <div class="price-row">
                     <span id="selectedServiceLabel">Base Service</span>
-                    <span id="baseServicePrice">$15.00</span>
+                    <span id="baseServicePrice"> DJF 15.00</span>
                 </div>
                 <div class="price-row" id="serviceChargesRow" style="display: none;">
                     <span data-i18n="laundry.additionalServices">Additional Services</span>
-                    <span id="serviceCharges">$0.00</span>
+                    <span id="serviceCharges"> DJF 0.00</span>
                 </div>
                 <div class="price-row">
                     <span data-i18n="laundry.pickupDelivery">Pickup & Delivery</span>
-                    <span>$5.00</span>
+                    <span> DJF 5.00</span>
                 </div>
                 <div class="price-total">
                     <span data-i18n="laundry.totalEstimate">Total Estimate</span>
-                    <span id="estimatedTotal">$20.00</span>
+                    <span id="estimatedTotal"> DJF 20.00</span>
                 </div>
             </div>
 
@@ -670,7 +670,7 @@
                     <div class="service-option ${service.id === this.selectedService ? 'active' : ''}" onclick="laundryModule.selectService('${service.id}', event)">
                         <div class="service-icon"><img src="../${this.getServiceIcon(service)}" alt="${service.name}"></div>
                         <div class="service-name">${service.name}</div>
-                        <div class="service-price">$${Number(service.price || 0).toFixed(2)}${service.unit ? ` / ${service.unit}` : ''}</div>
+                        <div class="service-price">DJF $DJF ${Number(service.price || 0).toFixed(2)}${service.unit ? ` / ${service.unit}` : ''}</div>
                     </div>
                 `).join('');
             }
@@ -706,16 +706,16 @@
                 // Update display
                 const total = this.basePrice + this.serviceCharges + this.deliveryFee;
                 document.getElementById('selectedServiceLabel').textContent = selectedService?.name || this.t('laundry.baseService', 'Base Service');
-                document.getElementById('baseServicePrice').textContent = `$${this.basePrice.toFixed(2)}`;
+                document.getElementById('baseServicePrice').textContent = `DJF $DJF ${this.basePrice.toFixed(2)}`;
                 
                 if (this.serviceCharges > 0) {
                     document.getElementById('serviceChargesRow').style.display = 'flex';
-                    document.getElementById('serviceCharges').textContent = `$${this.serviceCharges.toFixed(2)}`;
+                    document.getElementById('serviceCharges').textContent = `DJF $DJF ${this.serviceCharges.toFixed(2)}`;
                 } else {
                     document.getElementById('serviceChargesRow').style.display = 'none';
                 }
 
-                document.getElementById('estimatedTotal').textContent = `$${total.toFixed(2)}`;
+                document.getElementById('estimatedTotal').textContent = `DJF $DJF ${total.toFixed(2)}`;
             }
 
             async submitOrder() {
@@ -838,7 +838,7 @@
                             id: entry.id,
                             date: new Date(entry.createdAt).toLocaleDateString(),
                             status: entry.status || 'processing',
-                            total: `$${Number(entry.total || 0).toFixed(2)}`
+                            total: `$DJF ${Number(entry.total || 0).toFixed(2)}`
                         }));
 
                     this.renderOrders(orders);

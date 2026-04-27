@@ -170,7 +170,7 @@ class _CartScreenState extends State<CartScreen> {
                                 Row(
                                   children: [
                                     Text(
-                                      '\$${item.price}',
+                                      'DJF${item.price}',
                                       style: AppTextStyles.priceSmall,
                                     ),
                                     const Spacer(),
@@ -276,17 +276,17 @@ class _CartScreenState extends State<CartScreen> {
                     children: [
                       _summaryRow(
                         l10n.t('cart.subtotal'),
-                        '\$${subtotal.toStringAsFixed(2)}',
+                        'DJF${subtotal.toStringAsFixed(2)}',
                       ),
                       _summaryRow(
                         l10n.t('cart.shipping'),
                         shipping == 0
                             ? l10n.t('shopping_cart.free_upper')
-                            : '\$${shipping.toStringAsFixed(2)}',
+                            : 'DJF${shipping.toStringAsFixed(2)}',
                       ),
                       _summaryRow(
                         l10n.t('cart.tax'),
-                        '\$${tax.toStringAsFixed(2)}',
+                        'DJF${tax.toStringAsFixed(2)}',
                       ),
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 8),
@@ -294,7 +294,7 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                       _summaryRow(
                         l10n.t('cart.total'),
-                        '\$${total.toStringAsFixed(2)}',
+                        'DJF${total.toStringAsFixed(2)}',
                         isTotal: true,
                       ),
                       const SizedBox(height: 16),

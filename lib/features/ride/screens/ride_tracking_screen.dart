@@ -78,10 +78,13 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
       return;
     }
 
-    final pickup = ride['pickup'] as String? ?? 'Pickup';
-    final destination = ride['destination'] as String? ?? 'Destination';
-    final vehicle = ride['vehicle'] as String? ?? 'Assigned vehicle';
-    final driverName = ride['driverName'] as String? ?? 'Assigned driver';
+    final pickup = ride['pickup'] as String? ?? context.l10n.t('ride.pickup');
+    final destination =
+        ride['destination'] as String? ?? context.l10n.t('ride.destination');
+    final vehicle =
+        ride['vehicle'] as String? ?? context.l10n.t('ride.assigned_vehicle');
+    final driverName =
+        ride['driverName'] as String? ?? context.l10n.t('ride.assigned_driver');
 
     await openConversation(
       context,
@@ -114,7 +117,8 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
         ride?['destination'] as String? ?? 'City Mall, Downtown';
     final vehicle = ride?['vehicle'] as String? ?? 'Toyota Camry';
     final driverName =
-        ride?['driverName'] as String? ?? 'Driver assignment pending';
+        ride?['driverName'] as String? ??
+        l10n.t('ride.driver_assignment_pending');
     final driverAssigned =
         (ride?['driverUserId'] as String?)?.isNotEmpty == true;
     final driverPhone = ride?['driverPhone'] as String?;
@@ -190,7 +194,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                   driver: driverPoint,
                   badgeLabel: eta,
                   routePolyline: routeDetails?.polylinePoints,
-                  actionLabel: 'Open map',
+                  actionLabel: l10n.t('ride.open_map'),
                   onActionTap: () => openRideRouteInMaps(
                     context,
                     pickupLabel: pickup,
@@ -375,8 +379,8 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                             Expanded(
                                               child: Text(
                                                 driverAssigned
-                                                    ? '$vehicle • Assigned driver'
-                                                    : '$vehicle • Waiting for a rider',
+                                                    ? '$vehicle • ${l10n.t('ride.assigned_driver')}'
+                                                    : '$vehicle • ${l10n.t('ride.waiting_for_rider')}',
                                                 style: AppTextStyles.caption,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,

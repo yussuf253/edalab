@@ -46,9 +46,10 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final selectedCategory = _data['selectedCategory'] as RideCategory?;
-    final payment = _data['payment']?.toString() ?? 'Cash';
-    final pickup = _data['pickup']?.toString() ?? 'Pickup';
-    final destination = _data['destination']?.toString() ?? 'Destination';
+    final payment = _data['payment']?.toString() ?? l10n.t('common.cash');
+    final pickup = _data['pickup']?.toString() ?? l10n.t('ride.pickup');
+    final destination =
+        _data['destination']?.toString() ?? l10n.t('ride.destination');
     final pickupPoint =
         rideMapPointFromJson(
           _data['pickupPoint'],
@@ -87,7 +88,7 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
     final routeDurationLabel =
         routeDetails?.durationLabel ??
         _data['routeDurationLabel']?.toString() ??
-        'ETA unavailable';
+        l10n.t('ride.eta_unavailable');
     final estimatedFare =
         (_data['estimatedRidePrice'] as num?)?.toDouble() ??
         ((selectedCategory?.basePrice ?? 0) +
@@ -117,7 +118,7 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
               showTitleChip: false,
               showLegend: false,
               routePolyline: routeDetails?.polylinePoints,
-              actionLabel: 'Open map',
+              actionLabel: l10n.t('ride.open_map'),
               onActionTap: () => openRideRouteInMaps(
                 context,
                 pickupLabel: pickup,
@@ -178,11 +179,14 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
                   const SizedBox(height: 14),
                   _SummaryRow(
                     l10n.t('ride_summary.vehicle'),
-                    selectedCategory?.name ?? 'Ride',
+                    selectedCategory?.name ?? l10n.t('module.ride'),
                   ),
                   _SummaryRow(
                     l10n.t('ride_summary.capacity'),
-                    '${selectedCategory?.capacity ?? 0} seats',
+                    l10n.t(
+                      'ride.seat_count',
+                      params: {'count': '${selectedCategory?.capacity ?? 0}'},
+                    ),
                   ),
                   _SummaryRow(l10n.t('ride_summary.payment_method'), payment),
                 ],
@@ -200,16 +204,16 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
                   const SizedBox(height: 14),
                   _SummaryRow(
                     l10n.t('ride_summary.base_fare'),
-                    '\$${estimatedFare.toStringAsFixed(2)}',
+                    'DJF ${estimatedFare.toStringAsFixed(2)}',
                   ),
                   _SummaryRow(
                     l10n.t('ride_summary.tax'),
-                    '\$${tax.toStringAsFixed(2)}',
+                    'DJF ${tax.toStringAsFixed(2)}',
                   ),
                   const Divider(height: 24),
                   _SummaryRow(
                     l10n.t('ride_summary.total'),
-                    '\$${total.toStringAsFixed(2)}',
+                    'DJF ${total.toStringAsFixed(2)}',
                     isTotal: true,
                   ),
                 ],
@@ -261,10 +265,12 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
           (_data['estimatedRidePrice'] as num?)?.toDouble() ?? total;
       final routeDistance = (_data['routeDistance'] as num?)?.toDouble() ?? 0;
       final routeDurationLabel =
-          _data['routeDurationLabel']?.toString() ?? 'ETA unavailable';
-      final pickup = _data['pickup']?.toString() ?? 'Pickup';
-      final destination = _data['destination']?.toString() ?? 'Destination';
-      final payment = _data['payment']?.toString() ?? 'Cash';
+          _data['routeDurationLabel']?.toString() ??
+          l10n.t('ride.eta_unavailable');
+      final pickup = _data['pickup']?.toString() ?? l10n.t('ride.pickup');
+      final destination =
+          _data['destination']?.toString() ?? l10n.t('ride.destination');
+      final payment = _data['payment']?.toString() ?? l10n.t('common.cash');
       AnalyticsService.instance.track(
         AnalyticsEvents.checkoutPlaceOrderTapped,
         properties: {

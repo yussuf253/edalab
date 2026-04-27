@@ -286,7 +286,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     ),
                     _Row(
                       l10n.t('doctor_booking.consultation_fee'),
-                      '\$${doctor.consultationFee.toInt()}',
+                      'DJF${doctor.consultationFee.toInt()}',
                       bold: true,
                     ),
                   ],
@@ -554,7 +554,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     const Divider(height: 20),
                     _Row(
                       l10n.t('doctor_booking.fee'),
-                      '\$${doctor.consultationFee.toInt()}',
+                      'DJF${doctor.consultationFee.toInt()}',
                       bold: true,
                     ),
                   ],

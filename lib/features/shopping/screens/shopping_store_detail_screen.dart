@@ -387,7 +387,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                             _StoreDetailChip(
                               icon: Icons.payments_outlined,
                               label:
-                                  '\$${_store.minPrice.toStringAsFixed(0)}-\$${_store.maxPrice.toStringAsFixed(0)}',
+                                  'DJF${_store.minPrice.toStringAsFixed(0)}-\$${_store.maxPrice.toStringAsFixed(0)}',
                               color: AppColors.shopping,
                             ),
                           ],
@@ -591,7 +591,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          '\$${product.price.toStringAsFixed(2)}',
+                                          'DJF${product.price.toStringAsFixed(2)}',
                                           style: AppTextStyles.priceSmall,
                                         ),
                                       ),
@@ -694,7 +694,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      '\$${moduleTotal.toStringAsFixed(2)}',
+                      'DJF${moduleTotal.toStringAsFixed(2)}',
                       style: AppTextStyles.button,
                     ),
                   ],

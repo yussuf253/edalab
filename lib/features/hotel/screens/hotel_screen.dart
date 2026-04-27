@@ -412,7 +412,7 @@ class _HotelScreenState extends State<HotelScreen> {
                                     ),
                                     const Spacer(),
                                     Text(
-                                      '\$${h.pricePerNight.toInt()}',
+                                      'DJF${h.pricePerNight.toInt()}',
                                       style: AppTextStyles.priceSmall.copyWith(
                                         color: AppColors.hotel,
                                       ),

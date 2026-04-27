@@ -154,7 +154,8 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
         widget.bookingData?['destinationTitle'] as String? ?? 'City Mall';
     final destination =
         widget.bookingData?['destination'] as String? ?? 'City Mall, Downtown';
-    final paymentMethod = widget.bookingData?['payment'] as String? ?? 'Cash';
+    final paymentMethod =
+        widget.bookingData?['payment'] as String? ?? l10n.t('common.cash');
     final pickupPoint =
         rideMapPointFromJson(
           widget.bookingData?['pickupPoint'],
@@ -223,11 +224,11 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                     ? Icons.info_outline_rounded
                     : null,
                 overlayStatusMessage: _isLoadingRoute
-                    ? 'Calculating route and travel time...'
+                    ? l10n.t('ride_booking.calculating_route_time')
                     : routeDurationLabel == null
-                    ? 'Route estimate unavailable right now.'
+                    ? l10n.t('ride_booking.route_estimate_unavailable')
                     : null,
-                actionLabel: 'Open map',
+                actionLabel: l10n.t('ride.open_map'),
                 onActionTap: () {
                   AnalyticsService.instance.track(
                     AnalyticsEvents.entityOpened,
@@ -329,9 +330,11 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                     ),
                     child: Text(
                       _isLoadingRoute
-                          ? 'Calculating route...'
+                          ? l10n.t('ride_booking.calculating_route')
                           : routeDurationLabel == null
-                          ? 'Route estimate unavailable'
+                          ? l10n.t(
+                              'ride_booking.route_estimate_unavailable_short',
+                            )
                           : l10n.t(
                               'ride_booking.route_summary',
                               params: {
@@ -412,9 +415,17 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                             ),
                                             Text(
                                               _isLoadingRoute
-                                                  ? 'Calculating route...'
+                                                  ? l10n.t(
+                                                      'ride_booking.calculating_route',
+                                                    )
                                                   : routeDurationLabel == null
-                                                  ? '${cat.capacity} seats'
+                                                  ? l10n.t(
+                                                      'ride.seat_count',
+                                                      params: {
+                                                        'count':
+                                                            '${cat.capacity}',
+                                                      },
+                                                    )
                                                   : l10n.t(
                                                       'ride_booking.arrival_seats',
                                                       params: {
@@ -430,7 +441,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                         ),
                                       ),
                                       Text(
-                                        '\$${estPrice.toStringAsFixed(2)}',
+                                        'DJF${estPrice.toStringAsFixed(2)}',
                                         style: AppTextStyles.labelLarge
                                             .copyWith(
                                               color: sel
@@ -485,7 +496,8 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                             ),
                             'routeDistance': routeDistance,
                             'routeDurationLabel':
-                                routeDurationLabel ?? 'ETA unavailable',
+                                routeDurationLabel ??
+                                l10n.t('ride.eta_unavailable'),
                             'estimatedRidePrice':
                                 selectedCategory.basePrice +
                                 (selectedCategory.pricePerMile * routeDistance),

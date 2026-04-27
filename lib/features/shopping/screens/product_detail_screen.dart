@@ -265,7 +265,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              '\$${_product.price}',
+                              'DJF${_product.price}',
                               style: AppTextStyles.price.copyWith(fontSize: 28),
                             ),
                             const SizedBox(width: 8),
@@ -273,7 +273,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 4),
                                 child: Text(
-                                  '\$${_product.originalPrice}',
+                                  'DJF${_product.originalPrice}',
                                   style: AppTextStyles.priceOld.copyWith(
                                     fontSize: 16,
                                   ),
@@ -541,7 +541,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '\$${(_product.price * _quantity).toStringAsFixed(2)}',
+                      'DJF${(_product.price * _quantity).toStringAsFixed(2)}',
                       style: AppTextStyles.price,
                     ),
                   ],

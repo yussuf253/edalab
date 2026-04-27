@@ -882,7 +882,7 @@ class _OrderList extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 1),
                                       Text(
-                                        '\$${amount.toStringAsFixed(2)}',
+                                        'DJF${amount.toStringAsFixed(2)}',
                                         style: AppTextStyles.priceSmall
                                             .copyWith(color: _getColor(module)),
                                       ),

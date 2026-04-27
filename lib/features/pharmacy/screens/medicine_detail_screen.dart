@@ -165,7 +165,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        '\$${medicine.price.toStringAsFixed(2)}',
+                        'DJF ${medicine.price.toStringAsFixed(2)}',
                         style: AppTextStyles.price.copyWith(
                           color: AppColors.pharmacy,
                           fontSize: 24,
@@ -340,7 +340,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                         ),
                       ),
                       Text(
-                        '\$${moduleTotal.toStringAsFixed(2)}',
+                        'DJF${moduleTotal.toStringAsFixed(2)}',
                         style: AppTextStyles.labelLarge.copyWith(
                           color: AppColors.white,
                         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../core/localization/app_localizations.dart';
 import '../widgets/ride_route_preview.dart';
 
 Future<void> openRideRouteInMaps(
@@ -26,7 +27,7 @@ Future<void> openRideRouteInMaps(
   final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
   if (!context.mounted || launched) return;
 
-  ScaffoldMessenger.of(
-    context,
-  ).showSnackBar(const SnackBar(content: Text('Could not open the maps app.')));
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(context.l10n.t('ride.map_open_failed'))),
+  );
 }

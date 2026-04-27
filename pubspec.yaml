@@ -1,7 +1,7 @@
 name: edalab
 description: "EdaLab - Your All-in-One Super App"
 publish_to: 'none'
-version: 1.2.0+2
+version: 1.3.0+3
 
 environment:
   sdk: ^3.10.3

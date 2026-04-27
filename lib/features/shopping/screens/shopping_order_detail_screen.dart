@@ -468,7 +468,7 @@ class _ShoppingHero extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '\$${total.toStringAsFixed(2)}',
+                  'DJF${total.toStringAsFixed(2)}',
                   style: AppTextStyles.h4.copyWith(color: AppColors.white),
                 ),
               ],
@@ -624,7 +624,7 @@ class _ShoppingItemCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Text('\$$price', style: AppTextStyles.labelLarge),
+          Text('DJF$price', style: AppTextStyles.labelLarge),
         ],
       ),
     );

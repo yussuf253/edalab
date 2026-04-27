@@ -54,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ? user.fullName
         : l10n.t('profile.guest');
     final locationDisplay = locationProvider.isLoading
-        ? 'Detecting your location...'
+        ? l10n.t('home.detecting_location')
         : (locationSubtitle ??
               locationTitle ??
               l10n.t('ride.current_location'));
@@ -93,19 +93,14 @@ class _HomeScreenState extends State<HomeScreen> {
       if (moduleScreen != null) {
         return Scaffold(
           backgroundColor: AppColors.background,
-          appBar: _buildHomeAppBar(
-            context,
-            user,
-            displayName,
-            locationDisplay,
-          ),
+          appBar: _buildHomeAppBar(context, user, displayName, locationDisplay),
           body: Theme(
             // Collapse the inner module screen's AppBar to 0 height so its
             // title and back button are invisible without touching each screen.
             data: Theme.of(context).copyWith(
-              appBarTheme: Theme.of(context).appBarTheme.copyWith(
-                toolbarHeight: 0,
-              ),
+              appBarTheme: Theme.of(
+                context,
+              ).appBarTheme.copyWith(toolbarHeight: 0),
             ),
             child: moduleScreen,
           ),
@@ -354,8 +349,7 @@ class _HomeScreenState extends State<HomeScreen> {
               gradient: AppColors.primaryGradient,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: user?.avatarUrl != null &&
-                    user!.avatarUrl!.trim().isNotEmpty
+            child: user?.avatarUrl != null && user!.avatarUrl!.trim().isNotEmpty
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(14),
                     child: Image.network(
@@ -510,9 +504,11 @@ class _ServicesGrid extends StatelessWidget {
     ].where((service) => enabledModules.contains(service.key)).toList();
 
     if (services.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: Center(child: Text('No services are available right now.')),
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: Center(
+          child: Text(context.l10n.t('home.no_services_available')),
+        ),
       );
     }
 
@@ -553,10 +549,7 @@ class _ServicesGrid extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               // Third card spans 2 normal slots → wide horizontal layout
-              Expanded(
-                flex: 2,
-                child: _WideServiceCard(service: services[2]),
-              ),
+              Expanded(flex: 2, child: _WideServiceCard(service: services[2])),
             ],
           ),
         ),
@@ -1253,13 +1246,13 @@ class _TrendingProducts extends StatelessWidget {
                             Row(
                               children: [
                                 Text(
-                                  '\$${product.price.toStringAsFixed(0)}',
+                                  'DJF${product.price.toStringAsFixed(0)}',
                                   style: AppTextStyles.priceSmall,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
                                   product.originalPrice != null
-                                      ? '\$${product.originalPrice!.toStringAsFixed(0)}'
+                                      ? 'DJF${product.originalPrice!.toStringAsFixed(0)}'
                                       : '',
                                   style: AppTextStyles.priceOld,
                                 ),

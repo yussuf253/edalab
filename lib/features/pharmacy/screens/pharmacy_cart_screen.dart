@@ -193,16 +193,16 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
                       children: [
                         _SumRow(
                           l10n.t('cart.subtotal'),
-                          '\$${subtotal.toStringAsFixed(2)}',
+                          'DJF${subtotal.toStringAsFixed(2)}',
                         ),
                         _SumRow(
                           l10n.t('cart.delivery'),
-                          '\$${deliveryFee.toStringAsFixed(2)}',
+                          'DJF${deliveryFee.toStringAsFixed(2)}',
                         ),
                         const Divider(height: 20),
                         _SumRow(
                           l10n.t('cart.total'),
-                          '\$${total.toStringAsFixed(2)}',
+                          'DJF${total.toStringAsFixed(2)}',
                           bold: true,
                         ),
                         const SizedBox(height: 16),
@@ -312,7 +312,7 @@ class _ItemRow extends StatelessWidget {
                 Text(desc, style: AppTextStyles.caption),
                 const SizedBox(height: 4),
                 Text(
-                  '\$${price.toStringAsFixed(2)}',
+                  'DJF ${price.toStringAsFixed(2)}',
                   style: AppTextStyles.priceSmall.copyWith(
                     color: AppColors.pharmacy,
                     fontSize: 13,

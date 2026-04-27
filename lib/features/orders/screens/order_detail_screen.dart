@@ -11,11 +11,7 @@ class OrderDetailScreen extends StatelessWidget {
   final String orderId;
   final Map<String, dynamic>? order;
 
-  const OrderDetailScreen({
-    super.key,
-    required this.orderId,
-    this.order,
-  });
+  const OrderDetailScreen({super.key, required this.orderId, this.order});
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +45,10 @@ class OrderDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [_moduleColor(module), _moduleColor(module).withValues(alpha: 0.78)],
+                  colors: [
+                    _moduleColor(module),
+                    _moduleColor(module).withValues(alpha: 0.78),
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(22),
               ),
@@ -190,18 +189,22 @@ class OrderDetailScreen extends StatelessWidget {
           _Row(
             l10n.t('order_detail.check_in'),
             _formatDate(
-              metadata['checkInAt']?.toString() ?? metadata['checkIn']?.toString(),
+              metadata['checkInAt']?.toString() ??
+                  metadata['checkIn']?.toString(),
             ),
           ),
           _Row(
             l10n.t('order_detail.check_out'),
             _formatDate(
-              metadata['checkOutAt']?.toString() ?? metadata['checkOut']?.toString(),
+              metadata['checkOutAt']?.toString() ??
+                  metadata['checkOut']?.toString(),
             ),
           ),
           _Row(
             l10n.t('order_detail.guests'),
-            metadata['guestCount']?.toString() ?? metadata['guests']?.toString() ?? '1',
+            metadata['guestCount']?.toString() ??
+                metadata['guests']?.toString() ??
+                '1',
           ),
         ];
       case 'SHOPPING':
@@ -261,7 +264,7 @@ class OrderDetailScreen extends StatelessWidget {
     }
   }
 
-  String _money(double value) => '\$${value.toStringAsFixed(2)}';
+  String _money(double value) => 'DJF ${value.toStringAsFixed(2)}';
 
   String _formatDate(String? raw) {
     if (raw == null || raw.trim().isEmpty) return '-';

@@ -525,7 +525,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    '\$${medicine.price.toStringAsFixed(2)}',
+                                    'DJF${medicine.price.toStringAsFixed(2)}',
                                     style: AppTextStyles.priceSmall.copyWith(
                                       color: AppColors.pharmacy,
                                     ),
@@ -625,7 +625,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                         ),
                       ),
                       Text(
-                        '\$${moduleTotal.toStringAsFixed(2)}',
+                        'DJF${moduleTotal.toStringAsFixed(2)}',
                         style: AppTextStyles.labelLarge.copyWith(
                           color: AppColors.white,
                         ),

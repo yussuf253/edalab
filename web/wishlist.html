@@ -86,7 +86,7 @@
                 <div class="wishlist-body">
                   <div class="wishlist-name">${item.name}</div>
                   <div class="wishlist-desc">${item.description || UIComponents.t('wishlist.savedForLater', 'Saved for later.')}</div>
-                  <div class="wishlist-price">$${Number(item.price || 0).toFixed(2)}</div>
+                  <div class="wishlist-price">$DJF ${Number(item.price || 0).toFixed(2)}</div>
                   <div class="wishlist-buttons">
                     <button class="n-solid" onclick="wishlistPage.addToCart('${item.id}')">${UIComponents.t('wishlist.addToCart', 'Add to Cart')}</button>
                     <button class="n-ghost" onclick="wishlistPage.remove('${item.id}')">${UIComponents.t('wishlist.remove', 'Remove')}</button>

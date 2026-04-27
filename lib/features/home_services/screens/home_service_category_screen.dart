@@ -378,7 +378,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                                   ),
                                   const Spacer(),
                                   Text(
-                                    '\$${provider.startingPrice.toInt()}',
+                                    'DJF ${provider.startingPrice.toInt()}',
                                     style: AppTextStyles.priceSmall.copyWith(
                                       color: provider.categoryColor,
                                     ),

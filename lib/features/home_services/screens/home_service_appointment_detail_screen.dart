@@ -478,7 +478,7 @@ class _HomeServiceAppointmentDetailScreenState
                         ),
                         _DetailRow(
                           l10n.t('home_service_detail.price'),
-                          '\$${((order['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(0)}',
+                          'DJF${((order['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(0)}',
                         ),
                         _DetailRow(
                           l10n.t('order_detail.status'),

@@ -344,7 +344,7 @@ function startOfToday() {
 }
 
 function formatCurrency(value: number | null | undefined) {
-  return `\$${(value ?? 0).toFixed(2)}`;
+  return `DJF ${(value ?? 0).toFixed(2)}`;
 }
 
 function formatModule(value: string) {

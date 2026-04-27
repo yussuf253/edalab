@@ -355,7 +355,7 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                           const Divider(height: 20),
                           _DetailRow(
                             l10n.t('laundry_tracking.total'),
-                            '\$${((order?['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                            'DJF${((order?['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
                             bold: true,
                           ),
                         ],

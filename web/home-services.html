@@ -321,9 +321,9 @@
                 <label data-i18n="services.priceRange">Price Range</label>
                 <select id="priceFilter" onchange="homeServicesModule.applyFilters()">
                     <option value="" data-i18n="services.allPrices">All Prices</option>
-                    <option value="0-50">$0 - $50</option>
-                    <option value="50-100">$50 - $100</option>
-                    <option value="100+">$100+</option>
+                    <option value="0-50">DJF 0 - DJF 50</option>
+                    <option value="50-100">DJF 50 - DJF 100</option>
+                    <option value="100+">DJF 100+</option>
                 </select>
             </div>
             <div class="filter-item">
@@ -527,7 +527,7 @@
                              onclick="homeServicesModule.selectService('${serviceKey}')">
                             <div class="service-icon"><img src="${this.getServiceIcon(service)}" alt="${service.name}"></div>
                             <div class="service-name">${service.name}</div>
-                            <div class="service-price">${startingPrice > 0 ? `${this.t('services.fromPrice', 'From')} $${startingPrice.toFixed(2)}` : `${service.providerCount || matchingProviders.length} ${this.t('services.providersCount', 'providers')}`}</div>
+                            <div class="service-price">DJF ${startingPrice > 0 ? `${this.t('services.fromPrice', 'From')} $DJF ${startingPrice.toFixed(2)}` : `${service.providerCount || matchingProviders.length} ${this.t('services.providersCount', 'providers')}`}</div>
                         </div>
                     `;
                 });
@@ -562,7 +562,7 @@
                                     <span class="stars">${UIComponents.getIconMarkup('star', 'ui-icon ui-icon-xs')} ${provider.rating}</span>
                                     <span>(${provider.reviewCount})</span>
                                 </div>
-                                <div class="provider-price">${price > 0 ? `$${price.toFixed(2)} ${this.t('services.priceStarting', 'starting')}` : this.t('services.priceOnRequest', 'Price on request')}</div>
+                                <div class="provider-price">DJF ${price > 0 ? `$${price.toFixed(2)} ${this.t('services.priceStarting', 'starting')}` : this.t('services.priceOnRequest', 'Price on request')}</div>
                                 <button class="provider-action" onclick="homeServicesModule.bookService('${provider.id}')">
                                     ${this.t('services.bookNow', 'Book Now')}
                                 </button>

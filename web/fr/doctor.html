@@ -396,7 +396,7 @@
         const doctor = this.doctors.find(d => d.id === doctorId);
         if (doctor) {
           const modal = document.getElementById('booking-modal-overlay');
-          modal.querySelector('.modal h2').textContent = `${this.t('doctor.bookWith', 'Book Appointment with')} ${doctor.name}`;
+          modal.querySelector('.modal h2').textContent = `DJF ${this.t('doctor.bookWith', 'Book Appointment with')} ${doctor.name}`;
           this.updateDoctorSeo(doctor);
           UIComponents.showModal('booking-modal');
         }

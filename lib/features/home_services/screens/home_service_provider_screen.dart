@@ -463,7 +463,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                                   style: AppTextStyles.caption,
                                 ),
                                 Text(
-                                  '\$${provider.startingPrice.toInt()}',
+                                  'DJF ${provider.startingPrice.toInt()}',
                                   style: AppTextStyles.price.copyWith(
                                     color: AppColors.homeServices,
                                   ),
@@ -625,7 +625,7 @@ class _StatRow extends StatelessWidget {
             experience ?? l10n.t('home_provider.fast'),
             l10n.t('home_provider.experience'),
           ),
-          _StatItem('\$${price.toInt()}', l10n.t('home_provider.starting')),
+          _StatItem('DJF ${price.toInt()}', l10n.t('home_provider.starting')),
         ],
       ),
     );

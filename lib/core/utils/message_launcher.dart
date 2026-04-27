@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/app_colors.dart';
+import '../localization/app_localizations.dart';
 import '../modules/module_access_service.dart';
 import '../network/api_client.dart';
 import '../providers/providers.dart';
@@ -22,8 +23,8 @@ Future<void> openConversation(
   if (!ModuleAccessService.instance.isEnabled(moduleType)) {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('This module is currently unavailable.'),
+      SnackBar(
+        content: Text(context.l10n.t('common.module_unavailable')),
         backgroundColor: AppColors.dark,
       ),
     );
@@ -32,7 +33,7 @@ Future<void> openConversation(
 
   final allowed = await requireLoggedIn(
     context,
-    message: 'Please log in to send messages.',
+    message: context.l10n.t('messages.login_required_to_send'),
   );
   if (!context.mounted || !allowed) return;
 

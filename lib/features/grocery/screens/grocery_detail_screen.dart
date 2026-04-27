@@ -235,7 +235,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                             ),
                             const Spacer(),
                             Text(
-                              '\$${_item.price.toStringAsFixed(2)}',
+                              'DJF${_item.price.toStringAsFixed(2)}',
                               style: AppTextStyles.price.copyWith(
                                 color: AppColors.grocery,
                               ),
@@ -392,7 +392,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '\$${(_item.price * _quantity).toStringAsFixed(2)}',
+                            'DJF${(_item.price * _quantity).toStringAsFixed(2)}',
                             style: AppTextStyles.price,
                           ),
                         ],
@@ -446,7 +446,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      '\$${moduleTotal.toStringAsFixed(2)}',
+                      'DJF${moduleTotal.toStringAsFixed(2)}',
                       style: AppTextStyles.button,
                     ),
                   ],

@@ -899,7 +899,7 @@ class _FeaturedProviderCard extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        '\$${provider.startingPrice.toInt()}',
+                        'DJF${provider.startingPrice.toInt()}',
                         style: AppTextStyles.priceSmall.copyWith(
                           color: accentColor,
                         ),

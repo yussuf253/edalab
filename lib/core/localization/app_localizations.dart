@@ -367,11 +367,24 @@ class AppLocalizations {
       'common.days_ago': '{count} days ago',
       'common.enabled': 'Enabled',
       'common.ready': 'Ready',
+      'common.login': 'Login',
+      'common.log_in': 'Log In',
+      'common.login_required_continue': 'Please log in to continue.',
+      'common.module_unavailable': 'This module is currently unavailable.',
+      'common.location_access_failed':
+          'Could not access your location right now.',
+      'common.current_location_unavailable':
+          'Current location is unavailable. Enable it from Home and try again.',
+      'common.saved_location_unavailable':
+          'Could not read your saved location right now.',
+      'common.cash': 'Cash',
       'common.search_services': 'Search services, products, restaurants...',
       'common.continue_as_guest': 'Continue as Guest',
       'common.search': 'Search...',
       'home.good_morning': 'Good Morning',
       'home.services': 'Services',
+      'home.detecting_location': 'Detecting your location...',
+      'home.no_services_available': 'No services are available right now.',
       'home.special_offers': 'Special Offers',
       'home.popular_restaurants': 'Popular Restaurants',
       'home.top_doctors': 'Top Doctors',
@@ -401,6 +414,11 @@ class AppLocalizations {
       'profile.privacy_policy': 'Privacy Policy',
       'profile.log_out': 'Log Out',
       'profile.log_in': 'Log In',
+      'profile.professional': 'Professional',
+      'profile.join_professional': 'Join as a Professional',
+      'profile.open_professional_profile': 'Open {name}',
+      'profile.active_business_modules': '{count} active business modules',
+      'profile.app_version_label': 'EdaLab v{version}',
       'auth.login_title': 'Welcome\nBack! 👋',
       'auth.login_subtitle': 'Sign in to continue your journey',
       'auth.register_title': 'Create\nAccount ✨',
@@ -450,6 +468,7 @@ class AppLocalizations {
       'messages.login_subtitle':
           'Your conversations with doctors, providers, and rides will appear here.',
       'messages.login_button': 'Login',
+      'messages.login_required_to_send': 'Please log in to send messages.',
       'messages.empty_title': 'No conversations yet',
       'messages.empty_subtitle':
           'Start a chat from a doctor, home service provider, or an active ride.',
@@ -818,11 +837,32 @@ class AppLocalizations {
       'ride.map_view': 'Map View',
       'ride.current_location': 'Current Location',
       'ride.where_to': 'Where to?',
+      'ride.pickup': 'Pickup',
+      'ride.destination': 'Destination',
       'ride.pickup_reset': 'Pickup reset to current location.',
+      'ride.locating_pickup': 'Locating pickup...',
+      'ride.saved_location_pickup_manual':
+          'Could not read your saved location. You can still choose pickup manually.',
       'ride.available_rides': 'Available Rides',
       'ride.seats_eta': '{count} seats • {eta}',
+      'ride.seat_count': '{count} seats',
       'ride.quick_rides': 'Quick Rides',
       'ride.recent_places': 'Recent Places',
+      'ride.open_map': 'Open map',
+      'ride.map_open_failed': 'Could not open the maps app.',
+      'ride.eta_unavailable': 'ETA unavailable',
+      'ride.assigned_vehicle': 'Assigned vehicle',
+      'ride.assigned_driver': 'Assigned driver',
+      'ride.driver_assignment_pending': 'Driver assignment pending',
+      'ride.waiting_for_rider': 'Waiting for a rider',
+      'ride.loading_popular_places': 'Loading popular Djibouti places...',
+      'ride.popular_places': 'Popular places in Djibouti',
+      'ride.searching_places': 'Searching places in Djibouti...',
+      'ride.search_results_places': 'Results from Djibouti places',
+      'ride.no_pickup_places': 'No pickup places are available right now.',
+      'ride.no_popular_places':
+          'No popular Djibouti places are available right now.',
+      'ride.no_search_match': 'No Djibouti places match your search.',
       'ride.promo_title': 'First 3 Rides Free! 🎉',
       'ride.promo_subtitle': 'New users get first 3 rides completely free',
       'ride.offer_saved': 'Offer saved to your account.',
@@ -857,6 +897,8 @@ class AppLocalizations {
       'hotel.per_night': '/night',
       'hotel.select_guests': 'Select Guests',
       'hotel.apply': 'Apply',
+      'hotel.select_available_room': 'Please select an available room.',
+      'hotel.room_capacity_limit': 'This room supports up to {count} guests.',
       'doctor.title': 'Home Care & Doctors',
       'doctor.search_hint': 'Search services or professionals...',
       'doctor.hero_title':
@@ -999,6 +1041,13 @@ class AppLocalizations {
       'ride_booking.continue': 'Continue',
       'ride_booking.arrival_seats': '{eta} away • {count} seats',
       'ride_booking.change': 'Change',
+      'ride_booking.calculating_route': 'Calculating route...',
+      'ride_booking.calculating_route_time':
+          'Calculating route and travel time...',
+      'ride_booking.route_estimate_unavailable':
+          'Route estimate unavailable right now.',
+      'ride_booking.route_estimate_unavailable_short':
+          'Route estimate unavailable',
       'ride_booking.confirm': 'Confirm Ride • \${amount}',
       'ride_booking.login_required': 'Please log in to confirm your ride.',
       'ride_booking.success': 'Ride confirmed! Driver is on the way.',
@@ -1221,9 +1270,20 @@ class AppLocalizations {
       'laundry_order.change': 'Change',
       'laundry_order.service': 'Service',
       'laundry_order.item_shirts': 'Shirts',
+      'laundry_order.item_t_shirt': 'T-Shirt',
+      'laundry_order.item_polo': 'Polo',
       'laundry_order.item_pants': 'Pants',
+      'laundry_order.item_blazer': 'Blazer',
+      'laundry_order.item_suit_2_pieces': 'Suit 2 pieces',
+      'laundry_order.item_suit_3_pieces': 'Suit 3 pieces',
       'laundry_order.item_dresses': 'Dresses',
       'laundry_order.item_jackets': 'Jackets',
+      'laundry_order.item_wash_fold_10_20': 'Wash & Fold 10-20 pieces',
+      'laundry_order.item_wash_fold_21_30': 'Wash & Fold 21-30 pieces',
+      'laundry_order.item_wash_fold_31_40': 'Wash & Fold 31-40 pieces',
+      'laundry_order.spec_10_20': '10 to 20 pieces',
+      'laundry_order.spec_21_30': '21 to 30 pieces',
+      'laundry_order.spec_31_40': '31 to 40 pieces',
       'laundry_order.items_count': '{count} items',
       'laundry_order.unit_items': 'Unit Items',
       'laundry_order.group_items': 'Wash & Fold Groups (10+)',
@@ -1235,6 +1295,8 @@ class AppLocalizations {
       'laundry_order.login_required':
           'Please log in to schedule your laundry pickup.',
       'laundry_order.items_required': 'Add at least one item to continue.',
+      'laundry_order.no_pricing_configured':
+          'This laundry has no configured pricing yet.',
       'laundry_order.success': 'Pickup scheduled! 🧺',
       'laundry_order.error': 'Error: {error}',
       'cart.title': 'Cart',
@@ -1476,7 +1538,7 @@ class AppLocalizations {
       'hotel_tracking.missing_subtitle':
           'We could not find this hotel booking right now.',
       'hotel_tracking.back': 'Back to Hotels',
-      'hotel_tracking.total_stay': '\${amount} total stay',
+      'hotel_tracking.total_stay': 'DJF{amount} total stay',
       'hotel_tracking.check_in': 'Check-in',
       'hotel_tracking.check_out': 'Check-out',
       'hotel_tracking.nights': '{count} nights',
@@ -1520,7 +1582,7 @@ class AppLocalizations {
       'pharmacy_tracking.prescription_image': 'Prescription image',
       'pharmacy_tracking.medicine_items':
           '{count} medicine item{suffix} in this order',
-      'pharmacy_tracking.total': '\${amount} total',
+      'pharmacy_tracking.total': 'DJF{amount} total',
       'shopping_tracking.title': 'Shopping Order',
       'shopping_tracking.default_title': 'Retail order',
       'shopping_tracking.missing_title': 'Order details unavailable',
@@ -1576,6 +1638,21 @@ class AppLocalizations {
       'notifications.empty_title': 'Nothing to show right now',
       'notifications.empty_subtitle':
           'When orders, bookings, rides, or account reminders arrive, they will appear here.',
+      'notifications.seed_activity_title': 'Your activity updates live here',
+      'notifications.seed_activity_body':
+          'Orders, bookings, rides, promos, and account nudges will appear in one smart inbox.',
+      'notifications.seed_welcome_title': 'Welcome to your smart inbox',
+      'notifications.seed_welcome_body':
+          'We group updates by module so your orders, rides, care bookings, and offers stay easy to scan.',
+      'notifications.seed_add_address_title': 'Add a saved address',
+      'notifications.seed_add_address_body':
+          'Delivery, home services, and laundry will move faster once a default address is added.',
+      'notifications.seed_cart_waiting_title': 'You have {count} items waiting',
+      'notifications.seed_cart_waiting_body':
+          'Your cart is still active. Finish checkout when you are ready and we will keep the order updates here.',
+      'notifications.seed_promo_active_title': 'Promo {code} is active',
+      'notifications.seed_promo_active_body':
+          'Your discount is already applied. Complete checkout before you lose the current basket state.',
       'order_success.title': 'Order Placed! 🎉',
       'order_success.subtitle':
           'Your {moduleName} is confirmed and already moving through the next step. We will keep you updated along the way.',
@@ -1652,6 +1729,11 @@ class AppLocalizations {
       'profile.privacy_policy': 'Politique de confidentialité',
       'profile.log_out': 'Se déconnecter',
       'profile.log_in': 'Se connecter',
+      'profile.professional': 'Professionnel',
+      'profile.join_professional': 'Rejoindre comme professionnel',
+      'profile.open_professional_profile': 'Ouvrir {name}',
+      'profile.active_business_modules': '{count} modules actifs',
+      'profile.app_version_label': 'EdaLab v{version}',
       'auth.login_title': 'Bon retour !',
       'auth.login_subtitle': 'Connectez-vous pour continuer votre parcours',
       'auth.register_title': 'Créer\nun compte ✨',
@@ -1686,7 +1768,22 @@ class AppLocalizations {
       'auth.terms': 'Conditions d\'utilisation',
       'auth.and': ' et la ',
       'auth.privacy': 'Politique de confidentialité',
+      'common.login': 'Connexion',
+      'common.log_in': 'Se connecter',
+      'common.login_required_continue':
+          'Veuillez vous connecter pour continuer.',
+      'common.module_unavailable': 'Ce module est actuellement indisponible.',
+      'common.location_access_failed':
+          'Impossible d\'accéder à votre position pour le moment.',
+      'common.current_location_unavailable':
+          'La position actuelle est indisponible. Activez-la depuis l\'accueil et réessayez.',
+      'common.saved_location_unavailable':
+          'Impossible de lire votre position enregistrée pour le moment.',
+      'common.cash': 'Espèces',
       'common.search': 'Rechercher...',
+      'home.detecting_location': 'Détection de votre position...',
+      'home.no_services_available':
+          'Aucun service n\'est disponible pour le moment.',
       'onboarding.skip': 'Passer',
       'onboarding.next': 'Suivant',
       'onboarding.get_started': 'Commencer',
@@ -1704,6 +1801,8 @@ class AppLocalizations {
       'messages.login_subtitle':
           'Vos conversations avec les médecins, prestataires et trajets apparaîtront ici.',
       'messages.login_button': 'Connexion',
+      'messages.login_required_to_send':
+          'Veuillez vous connecter pour envoyer des messages.',
       'messages.empty_title': 'Aucune conversation',
       'messages.empty_subtitle':
           'Démarrez une discussion depuis un médecin, un prestataire ou un trajet actif.',
@@ -2092,11 +2191,35 @@ class AppLocalizations {
       'ride.map_view': 'Vue carte',
       'ride.current_location': 'Position actuelle',
       'ride.where_to': 'Où aller ?',
+      'ride.pickup': 'Départ',
+      'ride.destination': 'Destination',
       'ride.pickup_reset': 'Le point de départ a été réinitialisé.',
+      'ride.locating_pickup': 'Localisation du départ...',
+      'ride.saved_location_pickup_manual':
+          'Impossible de lire votre position enregistrée. Vous pouvez toujours choisir le point de départ manuellement.',
       'ride.available_rides': 'Trajets disponibles',
       'ride.seats_eta': '{count} places • {eta}',
+      'ride.seat_count': '{count} places',
       'ride.quick_rides': 'Trajets rapides',
       'ride.recent_places': 'Lieux récents',
+      'ride.open_map': 'Ouvrir la carte',
+      'ride.map_open_failed': 'Impossible d\'ouvrir l\'application de cartes.',
+      'ride.eta_unavailable': 'ETA indisponible',
+      'ride.assigned_vehicle': 'Véhicule attribué',
+      'ride.assigned_driver': 'Chauffeur attribué',
+      'ride.driver_assignment_pending': 'Attribution du chauffeur en attente',
+      'ride.waiting_for_rider': 'En attente d\'un chauffeur',
+      'ride.loading_popular_places':
+          'Chargement des lieux populaires à Djibouti...',
+      'ride.popular_places': 'Lieux populaires à Djibouti',
+      'ride.searching_places': 'Recherche de lieux à Djibouti...',
+      'ride.search_results_places': 'Résultats des lieux de Djibouti',
+      'ride.no_pickup_places':
+          'Aucun point de départ n\'est disponible pour le moment.',
+      'ride.no_popular_places':
+          'Aucun lieu populaire à Djibouti n\'est disponible pour le moment.',
+      'ride.no_search_match':
+          'Aucun lieu à Djibouti ne correspond à votre recherche.',
       'ride.promo_title': '3 premiers trajets gratuits ! 🎉',
       'ride.promo_subtitle':
           'Les nouveaux utilisateurs obtiennent leurs 3 premiers trajets gratuitement',
@@ -2114,6 +2237,13 @@ class AppLocalizations {
       'ride_booking.continue': 'Continuer',
       'ride_booking.arrival_seats': '{eta} • {count} places',
       'ride_booking.change': 'Modifier',
+      'ride_booking.calculating_route': 'Calcul du trajet...',
+      'ride_booking.calculating_route_time':
+          'Calcul du trajet et du temps de parcours...',
+      'ride_booking.route_estimate_unavailable':
+          'Estimation du trajet indisponible pour le moment.',
+      'ride_booking.route_estimate_unavailable_short':
+          'Estimation du trajet indisponible',
       'ride_booking.confirm': 'Confirmer le trajet • \${amount}',
       'ride_booking.login_required':
           'Veuillez vous connecter pour confirmer votre trajet.',
@@ -2154,6 +2284,10 @@ class AppLocalizations {
       'hotel.per_night': '/nuit',
       'hotel.select_guests': 'Choisir les voyageurs',
       'hotel.apply': 'Appliquer',
+      'hotel.select_available_room':
+          'Veuillez sélectionner une chambre disponible.',
+      'hotel.room_capacity_limit':
+          'Cette chambre peut accueillir jusqu\'à {count} personnes.',
       'doctor.title': 'Soins à domicile et médecins',
       'doctor.search_hint': 'Rechercher des services ou professionnels...',
       'doctor.hero_title':
@@ -2334,9 +2468,20 @@ class AppLocalizations {
       'laundry_order.change': 'Modifier',
       'laundry_order.service': 'Service',
       'laundry_order.item_shirts': 'Chemises',
+      'laundry_order.item_t_shirt': 'T-shirt',
+      'laundry_order.item_polo': 'Polo',
       'laundry_order.item_pants': 'Pantalons',
+      'laundry_order.item_blazer': 'Blazer',
+      'laundry_order.item_suit_2_pieces': 'Costume 2 pièces',
+      'laundry_order.item_suit_3_pieces': 'Costume 3 pièces',
       'laundry_order.item_dresses': 'Robes',
       'laundry_order.item_jackets': 'Vestes',
+      'laundry_order.item_wash_fold_10_20': 'Wash & Fold 10-20 pièces',
+      'laundry_order.item_wash_fold_21_30': 'Wash & Fold 21-30 pièces',
+      'laundry_order.item_wash_fold_31_40': 'Wash & Fold 31-40 pièces',
+      'laundry_order.spec_10_20': '10 à 20 pièces',
+      'laundry_order.spec_21_30': '21 à 30 pièces',
+      'laundry_order.spec_31_40': '31 à 40 pièces',
       'laundry_order.items_count': '{count} articles',
       'laundry_order.unit_items': 'Articles à l\'unité',
       'laundry_order.group_items': 'Groupes Wash & Fold (10+)',
@@ -2348,6 +2493,8 @@ class AppLocalizations {
       'laundry_order.login_required':
           'Veuillez vous connecter pour planifier votre ramassage.',
       'laundry_order.items_required': 'Ajoutez au moins un article.',
+      'laundry_order.no_pricing_configured':
+          'Cette blanchisserie n\'a pas encore de tarification configurée.',
       'laundry_order.success': 'Ramassage planifié ! 🧺',
       'laundry_order.error': 'Erreur : {error}',
       'settings.title': 'Paramètres',
@@ -2474,6 +2621,24 @@ class AppLocalizations {
       'notifications.empty_title': 'Rien à afficher pour le moment',
       'notifications.empty_subtitle':
           'Lorsque des commandes, réservations, trajets ou rappels de compte arriveront, ils apparaîtront ici.',
+      'notifications.seed_activity_title':
+          'Vos mises à jour d\'activité apparaissent ici',
+      'notifications.seed_activity_body':
+          'Commandes, réservations, trajets, promos et rappels de compte apparaîtront dans une seule boîte intelligente.',
+      'notifications.seed_welcome_title':
+          'Bienvenue dans votre boîte intelligente',
+      'notifications.seed_welcome_body':
+          'Nous regroupons les mises à jour par module pour que vos commandes, trajets, réservations de soins et offres restent faciles à parcourir.',
+      'notifications.seed_add_address_title': 'Ajoutez une adresse enregistrée',
+      'notifications.seed_add_address_body':
+          'La livraison, les services à domicile et la blanchisserie iront plus vite une fois une adresse par défaut ajoutée.',
+      'notifications.seed_cart_waiting_title':
+          'Vous avez {count} articles en attente',
+      'notifications.seed_cart_waiting_body':
+          'Votre panier est toujours actif. Terminez la commande quand vous êtes prêt et nous garderons les mises à jour ici.',
+      'notifications.seed_promo_active_title': 'La promo {code} est active',
+      'notifications.seed_promo_active_body':
+          'Votre réduction est déjà appliquée. Terminez la commande avant de perdre l\'état actuel du panier.',
       'cart.title': 'Panier',
       'cart.items_waiting': '{count} articles en attente',
       'cart.estimated_subtotal': 'Sous-total estimé \${amount}',
@@ -2763,6 +2928,11 @@ class AppLocalizations {
       'profile.privacy_policy': 'سياسة الخصوصية',
       'profile.log_out': 'تسجيل الخروج',
       'profile.log_in': 'تسجيل الدخول',
+      'profile.professional': 'المهني',
+      'profile.join_professional': 'انضم كمحترف',
+      'profile.open_professional_profile': 'افتح {name}',
+      'profile.active_business_modules': '{count} أقسام أعمال نشطة',
+      'profile.app_version_label': 'EdaLab v{version}',
       'auth.login_title': 'مرحبا\nبعودتك 👋',
       'auth.login_subtitle': 'سجل الدخول لمتابعة رحلتك',
       'auth.register_title': 'إنشاء\nحساب ✨',
@@ -2795,7 +2965,19 @@ class AppLocalizations {
       'auth.terms': 'شروط الخدمة',
       'auth.and': ' و',
       'auth.privacy': 'سياسة الخصوصية',
+      'common.login': 'تسجيل الدخول',
+      'common.log_in': 'تسجيل الدخول',
+      'common.login_required_continue': 'يرجى تسجيل الدخول للمتابعة.',
+      'common.module_unavailable': 'هذا القسم غير متاح حالياً.',
+      'common.location_access_failed': 'تعذر الوصول إلى موقعك في الوقت الحالي.',
+      'common.current_location_unavailable':
+          'الموقع الحالي غير متاح. فعّله من الصفحة الرئيسية ثم حاول مرة أخرى.',
+      'common.saved_location_unavailable':
+          'تعذر قراءة موقعك المحفوظ في الوقت الحالي.',
+      'common.cash': 'نقداً',
       'common.search': 'بحث...',
+      'home.detecting_location': 'جارٍ تحديد موقعك...',
+      'home.no_services_available': 'لا توجد خدمات متاحة الآن.',
       'onboarding.skip': 'تخطي',
       'onboarding.next': 'التالي',
       'onboarding.get_started': 'ابدأ',
@@ -2813,6 +2995,7 @@ class AppLocalizations {
       'messages.login_subtitle':
           'ستظهر هنا محادثاتك مع الأطباء والمزودين والمشاوير.',
       'messages.login_button': 'تسجيل الدخول',
+      'messages.login_required_to_send': 'يرجى تسجيل الدخول لإرسال الرسائل.',
       'messages.empty_title': 'لا توجد محادثات بعد',
       'messages.empty_subtitle':
           'ابدأ محادثة من طبيب أو مزود خدمة منزلية أو مشوار نشط.',
@@ -3179,11 +3362,31 @@ class AppLocalizations {
       'ride.map_view': 'عرض الخريطة',
       'ride.current_location': 'الموقع الحالي',
       'ride.where_to': 'إلى أين؟',
+      'ride.pickup': 'الانطلاق',
+      'ride.destination': 'الوجهة',
       'ride.pickup_reset': 'تمت إعادة نقطة الانطلاق إلى موقعك الحالي.',
+      'ride.locating_pickup': 'جارٍ تحديد نقطة الانطلاق...',
+      'ride.saved_location_pickup_manual':
+          'تعذر قراءة موقعك المحفوظ. لا يزال بإمكانك اختيار نقطة الانطلاق يدوياً.',
       'ride.available_rides': 'المشاوير المتاحة',
       'ride.seats_eta': '{count} مقاعد • {eta}',
+      'ride.seat_count': '{count} مقاعد',
       'ride.quick_rides': 'مشاوير سريعة',
       'ride.recent_places': 'الأماكن الأخيرة',
+      'ride.open_map': 'افتح الخريطة',
+      'ride.map_open_failed': 'تعذر فتح تطبيق الخرائط.',
+      'ride.eta_unavailable': 'وقت الوصول غير متاح',
+      'ride.assigned_vehicle': 'المركبة المعيّنة',
+      'ride.assigned_driver': 'السائق المعيّن',
+      'ride.driver_assignment_pending': 'تعيين السائق قيد الانتظار',
+      'ride.waiting_for_rider': 'بانتظار سائق',
+      'ride.loading_popular_places': 'جارٍ تحميل الأماكن الشائعة في جيبوتي...',
+      'ride.popular_places': 'أماكن شائعة في جيبوتي',
+      'ride.searching_places': 'جارٍ البحث عن أماكن في جيبوتي...',
+      'ride.search_results_places': 'نتائج أماكن جيبوتي',
+      'ride.no_pickup_places': 'لا توجد نقاط انطلاق متاحة الآن.',
+      'ride.no_popular_places': 'لا توجد أماكن شائعة متاحة في جيبوتي الآن.',
+      'ride.no_search_match': 'لا توجد أماكن في جيبوتي تطابق بحثك.',
       'ride.promo_title': 'أول 3 مشاوير مجانا! 🎉',
       'ride.promo_subtitle': 'يحصل المستخدمون الجدد على أول 3 مشاوير مجانا',
       'ride.offer_saved': 'تم حفظ العرض في حسابك.',
@@ -3200,6 +3403,11 @@ class AppLocalizations {
       'ride_booking.continue': 'متابعة',
       'ride_booking.arrival_seats': '{eta} • {count} مقاعد',
       'ride_booking.change': 'تغيير',
+      'ride_booking.calculating_route': 'جارٍ حساب المسار...',
+      'ride_booking.calculating_route_time': 'جارٍ حساب المسار ووقت الرحلة...',
+      'ride_booking.route_estimate_unavailable':
+          'تقدير المسار غير متاح حالياً.',
+      'ride_booking.route_estimate_unavailable_short': 'تقدير المسار غير متاح',
       'ride_booking.confirm': 'تأكيد المشوار • \${amount}',
       'ride_booking.login_required': 'يرجى تسجيل الدخول لتأكيد المشوار.',
       'ride_booking.success': 'تم تأكيد المشوار! السائق في الطريق.',
@@ -3238,6 +3446,8 @@ class AppLocalizations {
       'hotel.per_night': '/ليلة',
       'hotel.select_guests': 'اختر الضيوف',
       'hotel.apply': 'تطبيق',
+      'hotel.select_available_room': 'يرجى اختيار غرفة متاحة.',
+      'hotel.room_capacity_limit': 'هذه الغرفة تستوعب حتى {count} ضيوف.',
       'doctor.title': 'الرعاية المنزلية والأطباء',
       'doctor.search_hint': 'ابحث عن الخدمات أو المختصين...',
       'doctor.hero_title': 'اختر خدمة رعاية ثم تصفح المختصين المتاحين.',
@@ -3403,9 +3613,20 @@ class AppLocalizations {
       'laundry_order.change': 'تغيير',
       'laundry_order.service': 'الخدمة',
       'laundry_order.item_shirts': 'قمصان',
+      'laundry_order.item_t_shirt': 'تي شيرت',
+      'laundry_order.item_polo': 'بولو',
       'laundry_order.item_pants': 'بناطيل',
+      'laundry_order.item_blazer': 'بليزر',
+      'laundry_order.item_suit_2_pieces': 'بدلة قطعتان',
+      'laundry_order.item_suit_3_pieces': 'بدلة ثلاث قطع',
       'laundry_order.item_dresses': 'فساتين',
       'laundry_order.item_jackets': 'سترات',
+      'laundry_order.item_wash_fold_10_20': 'غسيل وطي 10-20 قطعة',
+      'laundry_order.item_wash_fold_21_30': 'غسيل وطي 21-30 قطعة',
+      'laundry_order.item_wash_fold_31_40': 'غسيل وطي 31-40 قطعة',
+      'laundry_order.spec_10_20': 'من 10 إلى 20 قطعة',
+      'laundry_order.spec_21_30': 'من 21 إلى 30 قطعة',
+      'laundry_order.spec_31_40': 'من 31 إلى 40 قطعة',
       'laundry_order.items_count': '{count} قطعة',
       'laundry_order.unit_items': 'قطع فردية',
       'laundry_order.group_items': 'مجموعات غسيل وطي (10+)',
@@ -3416,6 +3637,8 @@ class AppLocalizations {
       'laundry_order.schedule_pickup': 'جدولة الاستلام',
       'laundry_order.login_required': 'يرجى تسجيل الدخول لجدولة استلام الغسيل.',
       'laundry_order.items_required': 'أضف قطعة واحدة على الأقل للمتابعة.',
+      'laundry_order.no_pricing_configured':
+          'لا توجد تسعيرة مهيأة لهذه المغسلة بعد.',
       'laundry_order.success': 'تمت جدولة الاستلام! 🧺',
       'laundry_order.error': 'خطأ: {error}',
       'settings.title': 'الإعدادات',
@@ -3539,6 +3762,21 @@ class AppLocalizations {
       'notifications.empty_title': 'لا يوجد شيء الآن',
       'notifications.empty_subtitle':
           'عندما تصل الطلبات أو الحجوزات أو المشاوير أو تذكيرات الحساب ستظهر هنا.',
+      'notifications.seed_activity_title': 'تحديثات نشاطك تظهر هنا',
+      'notifications.seed_activity_body':
+          'ستظهر الطلبات والحجوزات والمشاوير والعروض وتذكيرات الحساب في صندوق ذكي واحد.',
+      'notifications.seed_welcome_title': 'مرحباً بك في صندوقك الذكي',
+      'notifications.seed_welcome_body':
+          'نجمع التحديثات حسب القسم حتى تبقى طلباتك ومشاويرك وحجوزات الرعاية والعروض سهلة التصفح.',
+      'notifications.seed_add_address_title': 'أضف عنواناً محفوظاً',
+      'notifications.seed_add_address_body':
+          'سيصبح التوصيل والخدمات المنزلية والغسيل أسرع بعد إضافة عنوان افتراضي.',
+      'notifications.seed_cart_waiting_title': 'لديك {count} عناصر بانتظارك',
+      'notifications.seed_cart_waiting_body':
+          'سلتك لا تزال نشطة. أكمل الدفع عندما تكون جاهزاً وسنحتفظ بالتحديثات هنا.',
+      'notifications.seed_promo_active_title': 'العرض {code} مفعّل',
+      'notifications.seed_promo_active_body':
+          'تم تطبيق الخصم بالفعل. أكمل الدفع قبل فقدان حالة السلة الحالية.',
       'cart.title': 'السلة',
       'cart.items_waiting': '{count} عناصر بانتظارك',
       'cart.estimated_subtotal': 'المجموع الفرعي التقديري \${amount}',

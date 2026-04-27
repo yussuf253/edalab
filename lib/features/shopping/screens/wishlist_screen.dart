@@ -151,7 +151,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                               children: [
                                 Text(
                                   item['price'] != null
-                                      ? '\$${(item['price'] as num).toStringAsFixed(2)}'
+                                      ? 'DJF${(item['price'] as num).toStringAsFixed(2)}'
                                       : l10n.t('wishlist.saved'),
                                   style: AppTextStyles.priceSmall,
                                 ),

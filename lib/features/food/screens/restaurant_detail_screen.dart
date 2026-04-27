@@ -663,7 +663,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      '\$${moduleTotal.toStringAsFixed(2)}',
+                      'DJF${moduleTotal.toStringAsFixed(2)}',
                       style: AppTextStyles.button,
                     ),
                   ],
@@ -877,7 +877,7 @@ class _MenuItemCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '\$${item.price.toStringAsFixed(2)}',
+                    'DJF${item.price.toStringAsFixed(2)}',
                     style: AppTextStyles.priceSmall,
                   ),
                 ],

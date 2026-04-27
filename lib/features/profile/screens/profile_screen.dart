@@ -144,7 +144,7 @@ class ProfileScreen extends StatelessWidget {
                             color: AppColors.extraLightGrey,
                           ),
                           _Stat(
-                            user != null ? '\$450' : '\$0',
+                            user != null ? 'DJF450' : 'DJF0',
                             l10n.t('profile.spent'),
                             valueColor: AppColors.dark,
                             labelColor: AppColors.grey,
@@ -231,15 +231,22 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  Text('Professional', style: AppTextStyles.h4),
+                  Text(l10n.t('profile.professional'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
                   _MenuItem(
                     currentProProfile != null
                         ? ProModuleHelper.getProfileIcon(currentProProfile.type)
                         : Icons.store_mall_directory_outlined,
                     currentProProfile != null
-                        ? 'Open ${ProModuleHelper.getProfileName(currentProProfile.type)}'
-                        : 'Join as a Professional',
+                        ? l10n.t(
+                            'profile.open_professional_profile',
+                            params: {
+                              'name': ProModuleHelper.getProfileName(
+                                currentProProfile.type,
+                              ),
+                            },
+                          )
+                        : l10n.t('profile.join_professional'),
                     currentProProfile != null
                         ? ProModuleHelper.getProfileColor(
                             currentProProfile.type,
@@ -261,7 +268,12 @@ class ProfileScreen extends StatelessWidget {
                   if (currentProProfile != null)
                     _MenuItem(
                       Icons.badge_outlined,
-                      '${currentProProfile.activeModules.length} active business modules',
+                      l10n.t(
+                        'profile.active_business_modules',
+                        params: {
+                          'count': '${currentProProfile.activeModules.length}',
+                        },
+                      ),
                       AppColors.secondary,
                       onTap: () => context.push('/pro/dashboard'),
                     ),
@@ -331,7 +343,13 @@ class ProfileScreen extends StatelessWidget {
 
                   const SizedBox(height: 20),
                   Center(
-                    child: Text('EdaLab v1.0.0', style: AppTextStyles.caption),
+                    child: Text(
+                      l10n.t(
+                        'profile.app_version_label',
+                        params: {'version': '1.0.0'},
+                      ),
+                      style: AppTextStyles.caption,
+                    ),
                   ),
                 ],
               ),

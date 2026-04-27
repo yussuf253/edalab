@@ -265,19 +265,19 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
                         ),
                         _HotelRowData(
                           l10n.t('hotel_tracking.subtotal'),
-                          '\$${((data['subtotal'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                          'DJF${((data['subtotal'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
                         ),
                         _HotelRowData(
                           l10n.t('hotel_tracking.taxes'),
-                          '\$${((data['tax'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                          'DJF${((data['tax'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
                         ),
                         _HotelRowData(
                           l10n.t('hotel_tracking.fees'),
-                          '\$${((data['deliveryFee'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                          'DJF${((data['deliveryFee'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
                         ),
                         _HotelRowData(
                           l10n.t('hotel_tracking.total'),
-                          '\$${((data['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                          'DJF${((data['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
                         ),
                       ],
                     ),

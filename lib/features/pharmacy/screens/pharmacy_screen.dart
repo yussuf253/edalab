@@ -238,8 +238,8 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
     } catch (_) {
       if (showFailureSnackBar && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not access your location right now.'),
+          SnackBar(
+            content: Text(context.l10n.t('common.location_access_failed')),
           ),
         );
       }
@@ -876,7 +876,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    '\$${medicine.price.toStringAsFixed(2)}',
+                                    'DJF${medicine.price.toStringAsFixed(2)}',
                                     style: AppTextStyles.priceSmall.copyWith(
                                       color: AppColors.pharmacy,
                                     ),
@@ -1036,7 +1036,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                           ),
                         ),
                         Text(
-                          '\$${moduleTotal.toStringAsFixed(2)}',
+                          'DJF${moduleTotal.toStringAsFixed(2)}',
                           style: AppTextStyles.labelLarge.copyWith(
                             color: AppColors.white,
                           ),

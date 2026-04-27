@@ -321,7 +321,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                         Row(
                           children: [
                             Text(
-                              '\$${h.pricePerNight.toInt()}',
+                              'DJF${h.pricePerNight.toInt()}',
                               style: AppTextStyles.price.copyWith(
                                 color: AppColors.hotel,
                               ),
@@ -591,7 +591,7 @@ class _RoomCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      '\$$price',
+                      'DJF$price',
                       style: AppTextStyles.priceSmall.copyWith(
                         color: AppColors.hotel,
                       ),

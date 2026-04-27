@@ -506,9 +506,9 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
       if (!hasLocation || locationProvider.location == null) {
         if (showFailureSnackBar && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(
-                'Current location is unavailable. Enable it from Home and try again.',
+                context.l10n.t('common.current_location_unavailable'),
               ),
             ),
           );
@@ -524,8 +524,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
     } catch (_) {
       if (showFailureSnackBar && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not read your saved location right now.'),
+          SnackBar(
+            content: Text(context.l10n.t('common.saved_location_unavailable')),
           ),
         );
       }
@@ -1173,7 +1173,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                         ),
                                         const SizedBox(height: 6),
                                         Text(
-                                          '\$${_formatAmount(entry.startingPrice)}',
+                                          'DJF${_formatAmount(entry.startingPrice)}',
                                           style: AppTextStyles.labelMedium
                                               .copyWith(
                                                 color: AppColors.homeServices,
@@ -1549,7 +1549,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                           'home_service_booking.house_help_estimated_first_visit',
                                         )
                                       : l10n.t('home_service_booking.fee'),
-                                  '\$${_formatAmount(serviceFee)}',
+                                  'DJF${_formatAmount(serviceFee)}',
                                   bold: true,
                                 ),
                               ],
@@ -1916,7 +1916,12 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 if (!context.mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Booking failed: $error'),
+                                    content: Text(
+                                      context.l10n.t(
+                                        'home_service_booking.failed',
+                                        params: {'error': '$error'},
+                                      ),
+                                    ),
                                   ),
                                 );
                               }

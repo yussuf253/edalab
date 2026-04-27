@@ -132,7 +132,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
     AppLocalizations l10n,
   ) {
     final count = _itemCounts[item.id] ?? 0;
-    final spec = item.spec.trim();
+    final spec = _itemSpec(item, l10n);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -168,7 +168,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: Text(
-              '\$${item.price.toStringAsFixed(2)}',
+              'DJF${item.price.toStringAsFixed(2)}',
               style: AppTextStyles.caption,
             ),
           ),
@@ -251,21 +251,50 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
   }
 
   String _itemLabel(String key, String fallbackLabel, AppLocalizations l10n) {
-    if (fallbackLabel.trim().isNotEmpty &&
-        !{'shirts', 'pants', 'dresses', 'jackets'}.contains(key)) {
-      return fallbackLabel;
-    }
     switch (key) {
       case 'shirts':
+      case 'shirt':
         return l10n.t('laundry_order.item_shirts');
+      case 't_shirt':
+        return l10n.t('laundry_order.item_t_shirt');
+      case 'polo':
+        return l10n.t('laundry_order.item_polo');
       case 'pants':
+      case 'trouser':
         return l10n.t('laundry_order.item_pants');
+      case 'blazer':
+        return l10n.t('laundry_order.item_blazer');
+      case 'suit_2_pieces':
+        return l10n.t('laundry_order.item_suit_2_pieces');
+      case 'suit_3_pieces':
+        return l10n.t('laundry_order.item_suit_3_pieces');
       case 'dresses':
+      case 'dress':
         return l10n.t('laundry_order.item_dresses');
       case 'jackets':
+      case 'jacket':
         return l10n.t('laundry_order.item_jackets');
+      case 'wash_fold_10_20':
+        return l10n.t('laundry_order.item_wash_fold_10_20');
+      case 'wash_fold_21_30':
+        return l10n.t('laundry_order.item_wash_fold_21_30');
+      case 'wash_fold_31_40':
+        return l10n.t('laundry_order.item_wash_fold_31_40');
       default:
         return fallbackLabel.trim().isNotEmpty ? fallbackLabel : key;
+    }
+  }
+
+  String _itemSpec(LaundryServiceItemConfig item, AppLocalizations l10n) {
+    switch (item.id) {
+      case 'wash_fold_10_20':
+        return l10n.t('laundry_order.spec_10_20');
+      case 'wash_fold_21_30':
+        return l10n.t('laundry_order.spec_21_30');
+      case 'wash_fold_31_40':
+        return l10n.t('laundry_order.spec_31_40');
+      default:
+        return item.spec.trim();
     }
   }
 
@@ -514,7 +543,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Text(
-                        'This laundry has no configured pricing yet.',
+                        l10n.t('laundry_order.no_pricing_configured'),
                         style: AppTextStyles.bodySmall.copyWith(
                           color: AppColors.mediumGrey,
                         ),
@@ -709,19 +738,19 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                         ),
                         _Row(
                           l10n.t('laundry_order.delivery_fee'),
-                          '\$${estDeliveryFee.toStringAsFixed(2)}',
+                          'DJF${estDeliveryFee.toStringAsFixed(2)}',
                         ),
                         _Row(
                           l10n.t(
                             'laundry_order.tax',
                             params: {'rate': taxRatePercent.toStringAsFixed(2)},
                           ),
-                          '\$${estTax.toStringAsFixed(2)}',
+                          'DJF${estTax.toStringAsFixed(2)}',
                         ),
                         const Divider(height: 20),
                         _Row(
                           l10n.t('laundry_order.estimated_total'),
-                          '\$${estTotal.toStringAsFixed(2)}',
+                          'DJF${estTotal.toStringAsFixed(2)}',
                           bold: true,
                         ),
                       ],

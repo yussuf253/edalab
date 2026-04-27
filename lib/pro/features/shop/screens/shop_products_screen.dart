@@ -193,7 +193,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
   String _formatPrice(dynamic value) {
     final parsed = double.tryParse(value?.toString() ?? '');
     if (parsed == null) return '';
-    return '\$${parsed.toStringAsFixed(2)}';
+    return 'DJF${parsed.toStringAsFixed(2)}';
   }
 
   void _changeModule(String module) {

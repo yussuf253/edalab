@@ -296,7 +296,7 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
                                   if (!provider.usesDirectContactOnly) ...[
                                     const Spacer(),
                                     Text(
-                                      '\$${provider.consultationFee.toInt()}',
+                                      'DJF${provider.consultationFee.toInt()}',
                                       style: AppTextStyles.priceSmall.copyWith(
                                         color: AppColors.doctor,
                                       ),

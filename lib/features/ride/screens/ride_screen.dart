@@ -105,9 +105,9 @@ class _RideScreenState extends State<RideScreen> {
         });
         if (showFailureSnackBar) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            SnackBar(
               content: Text(
-                'Current location is unavailable. Enable it from Home and try again.',
+                context.l10n.t('common.current_location_unavailable'),
               ),
             ),
           );
@@ -138,10 +138,8 @@ class _RideScreenState extends State<RideScreen> {
       if (!mounted) return;
       if (showFailureSnackBar) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Could not read your saved location. You can still choose pickup manually.',
-            ),
+          SnackBar(
+            content: Text(context.l10n.t('ride.saved_location_pickup_manual')),
           ),
         );
       }
@@ -155,7 +153,7 @@ class _RideScreenState extends State<RideScreen> {
     final pickupPlace = _pickupPlace;
     final destinationPlace = _destinationPlace;
     final currentLocationLabel = pickupPlace == null
-        ? 'Locating pickup...'
+        ? l10n.t('ride.locating_pickup')
         : pickupPlace.title == 'Current Location'
         ? l10n.t('ride.current_location')
         : pickupPlace.address;
@@ -399,7 +397,7 @@ class _RideScreenState extends State<RideScreen> {
                                 ),
                                 const Spacer(),
                                 Text(
-                                  '\$${ride.basePrice.toStringAsFixed(0)}+',
+                                  'DJF${ride.basePrice.toStringAsFixed(0)}+',
                                   style: AppTextStyles.labelMedium.copyWith(
                                     color: AppColors.ride,
                                   ),
@@ -1130,8 +1128,8 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Text(
                     _isLoadingPopular
-                        ? 'Loading popular Djibouti places...'
-                        : 'Popular places in Djibouti',
+                        ? l10n.t('ride.loading_popular_places')
+                        : l10n.t('ride.popular_places'),
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.mediumGrey,
                     ),
@@ -1144,8 +1142,8 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Text(
                     _isSearching
-                        ? 'Searching places in Djibouti...'
-                        : 'Results from Djibouti places',
+                        ? l10n.t('ride.searching_places')
+                        : l10n.t('ride.search_results_places'),
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.mediumGrey,
                     ),
@@ -1155,7 +1153,7 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
                 child: !widget.isPickup && query.isEmpty && _isLoadingPopular
                     ? _PlacePickerStatus(
                         icon: Icons.travel_explore_rounded,
-                        message: 'Loading popular Djibouti places...',
+                        message: l10n.t('ride.loading_popular_places'),
                       )
                     : filteredPlaces.isEmpty
                     ? _PlacePickerStatus(
@@ -1165,11 +1163,11 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
                                   : Icons.location_city_rounded)
                             : Icons.search_off_rounded,
                         message: widget.isPickup
-                            ? 'No pickup places are available right now.'
+                            ? l10n.t('ride.no_pickup_places')
                             : query.isEmpty
-                            ? 'No popular Djibouti places are available right now.'
+                            ? l10n.t('ride.no_popular_places')
                             : query.isNotEmpty || _remotePlaces.isNotEmpty
-                            ? 'No Djibouti places match your search.'
+                            ? l10n.t('ride.no_search_match')
                             : l10n.t('ride.no_saved_places'),
                       )
                     : ListView(

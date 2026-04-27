@@ -150,7 +150,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
                       ),
                       _InfoRow(
                         l10n.t('order_success.amount'),
-                        '\$${amount.toStringAsFixed(2)}',
+                        'DJF${amount.toStringAsFixed(2)}',
                       ),
                       _InfoRow(l10n.t('order_success.payment'), payment),
                       _InfoRow(l10n.t('order_success.delivery'), delivery),

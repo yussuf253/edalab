@@ -272,7 +272,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                     ),
                                     if (fare != null)
                                       Text(
-                                        '\$${fare.toStringAsFixed(2)}',
+                                        'DJF${fare.toStringAsFixed(2)}',
                                         style: AppTextStyles.h4.copyWith(
                                           color: AppColors.ride,
                                         ),
@@ -306,7 +306,8 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                   child: Column(
                                     children: [
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Icon(
                                             Icons.my_location_rounded,
@@ -323,7 +324,8 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                       ),
                                       const SizedBox(height: 14),
                                       Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           const Icon(
                                             Icons.location_on_rounded,
@@ -355,7 +357,9 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                         height: 48,
                                         decoration: BoxDecoration(
                                           color: AppColors.rideBg,
-                                          borderRadius: BorderRadius.circular(14),
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
                                         ),
                                         child: const Icon(
                                           Icons.directions_car_rounded,
@@ -365,7 +369,8 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               vehicle,
@@ -405,7 +410,8 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                             : () => openProConversation(
                                                 context,
                                                 customerUserId: customerUserId,
-                                                participantUserId: widget.userId,
+                                                participantUserId:
+                                                    widget.userId,
                                                 moduleType: 'RIDE',
                                                 entityType: 'RIDE',
                                                 entityId: widget.rideId,
@@ -414,11 +420,14 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                                 accentColor: '#1D9070',
                                                 metadata: {
                                                   'rideId': widget.rideId,
-                                                  'passengerPhone': passengerPhone,
+                                                  'passengerPhone':
+                                                      passengerPhone,
                                                   'destination': destination,
                                                 },
                                               ),
-                                        icon: const Icon(Icons.chat_bubble_outline),
+                                        icon: const Icon(
+                                          Icons.chat_bubble_outline,
+                                        ),
                                         label: const Text('Message'),
                                       ),
                                     ),
@@ -453,10 +462,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: AppSpacing.shadowMd,
                 ),
-                child: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 18,
-                ),
+                child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
               ),
             ),
           ),

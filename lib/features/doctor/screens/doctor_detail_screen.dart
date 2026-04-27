@@ -543,7 +543,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                                 style: AppTextStyles.caption,
                               ),
                               Text(
-                                '\$${doctor.consultationFee.toInt()}',
+                                'DJF${doctor.consultationFee.toInt()}',
                                 style: AppTextStyles.price.copyWith(
                                   color: AppColors.doctor,
                                 ),

@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
+import '../localization/app_localizations.dart';
 import '../models/app_notification_model.dart';
 import '../repositories/notification_repository.dart';
 import '../services/notification_service.dart';
@@ -180,7 +182,7 @@ class NotificationProvider extends ChangeNotifier {
       ..clear()
       ..addAll(
         raw == null || raw.isEmpty
-            ? _defaultInbox()
+            ? await _defaultInbox()
             : AppNotificationModel.decodeList(raw),
       );
     _deduplicateInMemory();
@@ -224,6 +226,7 @@ class NotificationProvider extends ChangeNotifier {
     required CartProvider cartProvider,
   }) async {
     if (!_preferences.pushEnabled) return;
+    final l10n = await _l10n();
 
     final user = authProvider.user;
     final cartItems = cartProvider.itemCount;
@@ -232,9 +235,8 @@ class NotificationProvider extends ChangeNotifier {
     if (_notifications.isEmpty) {
       await addNotification(
         NotificationService.reminder(
-          title: 'Your activity updates live here',
-          body:
-              'Orders, bookings, rides, promos, and account nudges will appear in one smart inbox.',
+          title: l10n.t('notifications.seed_activity_title'),
+          body: l10n.t('notifications.seed_activity_body'),
           module: NotificationModule.system,
           route: '/notifications',
           dedupeKey: 'system:inbox:intro',
@@ -245,9 +247,8 @@ class NotificationProvider extends ChangeNotifier {
     if (user != null && !hasAddress) {
       await addNotification(
         NotificationService.account(
-          title: 'Add a saved address',
-          body:
-              'Delivery, home services, and laundry will move faster once a default address is added.',
+          title: l10n.t('notifications.seed_add_address_title'),
+          body: l10n.t('notifications.seed_add_address_body'),
           route: '/profile/addresses',
           dedupeKey: 'account:missing_address:${user.id}',
         ),
@@ -257,9 +258,11 @@ class NotificationProvider extends ChangeNotifier {
     if (user != null && cartItems > 0) {
       await addNotification(
         NotificationService.reminder(
-          title: 'You have $cartItems item${cartItems == 1 ? '' : 's'} waiting',
-          body:
-              'Your cart is still active. Finish checkout when you are ready and we will keep the order updates here.',
+          title: l10n.t(
+            'notifications.seed_cart_waiting_title',
+            params: {'count': '$cartItems'},
+          ),
+          body: l10n.t('notifications.seed_cart_waiting_body'),
           module: NotificationModule.orders,
           route: '/cart',
           dedupeKey: 'cart:active:${user.id}:$cartItems',
@@ -273,9 +276,11 @@ class NotificationProvider extends ChangeNotifier {
         promoCode.isNotEmpty) {
       await addNotification(
         NotificationService.promotion(
-          title: 'Promo $promoCode is active',
-          body:
-              'Your discount is already applied. Complete checkout before you lose the current basket state.',
+          title: l10n.t(
+            'notifications.seed_promo_active_title',
+            params: {'code': promoCode},
+          ),
+          body: l10n.t('notifications.seed_promo_active_body'),
           promoCode: promoCode,
           route: '/checkout',
         ),
@@ -408,12 +413,12 @@ class NotificationProvider extends ChangeNotifier {
     );
   }
 
-  List<AppNotificationModel> _defaultInbox() {
+  Future<List<AppNotificationModel>> _defaultInbox() async {
+    final l10n = await _l10n();
     return [
       NotificationService.reminder(
-        title: 'Welcome to your smart inbox',
-        body:
-            'We group updates by module so your orders, rides, care bookings, and offers stay easy to scan.',
+        title: l10n.t('notifications.seed_welcome_title'),
+        body: l10n.t('notifications.seed_welcome_body'),
         module: NotificationModule.system,
         route: '/notifications',
         dedupeKey: 'system:welcome',
@@ -430,5 +435,12 @@ class NotificationProvider extends ChangeNotifier {
 
   Future<void> _persistPreferences() async {
     await AppPreferences.setNotificationsPreferencesJson(_preferences.encode());
+  }
+
+  Future<AppLocalizations> _l10n() async {
+    final localeCode = await AppPreferences.getLocaleCode();
+    return AppLocalizations(
+      Locale(localeCode ?? AppLocalizations.fallbackLocale.languageCode),
+    );
   }
 }

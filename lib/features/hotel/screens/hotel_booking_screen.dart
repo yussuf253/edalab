@@ -262,7 +262,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
         properties: {'module_type': 'hotel', 'reason': 'room_not_selected'},
       );
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an available room.')),
+        SnackBar(content: Text(context.l10n.t('hotel.select_available_room'))),
       );
       return;
     }
@@ -279,7 +279,12 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
       );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('This room supports up to ${room.capacity} guests.'),
+          content: Text(
+            context.l10n.t(
+              'hotel.room_capacity_limit',
+              params: {'count': '${room.capacity}'},
+            ),
+          ),
         ),
       );
       return;
@@ -680,20 +685,20 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                               'hotel_booking.room_rate',
                               params: {'count': '$_nights'},
                             ),
-                            '\$${roomRate.toStringAsFixed(2)}',
+                            'DJF${roomRate.toStringAsFixed(2)}',
                           ),
                           _HotelSummaryRow(
                             l10n.t('hotel_booking.service_fee'),
-                            '\$${serviceFee.toStringAsFixed(2)}',
+                            'DJF${serviceFee.toStringAsFixed(2)}',
                           ),
                           _HotelSummaryRow(
                             l10n.t('hotel_booking.tax'),
-                            '\$${tax.toStringAsFixed(2)}',
+                            'DJF${tax.toStringAsFixed(2)}',
                           ),
                           const Divider(height: 20),
                           _HotelSummaryRow(
                             l10n.t('hotel_booking.total'),
-                            '\$${total.toStringAsFixed(2)}',
+                            'DJF${total.toStringAsFixed(2)}',
                             bold: true,
                           ),
                         ],
@@ -854,7 +859,7 @@ class _SelectableRoomCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '\$${option.pricePerNight.toStringAsFixed(0)}${l10n.t('hotel.per_night')}',
+                    'DJF${option.pricePerNight.toStringAsFixed(0)}${l10n.t('hotel.per_night')}',
                     style: AppTextStyles.priceSmall.copyWith(
                       color: AppColors.hotel,
                     ),

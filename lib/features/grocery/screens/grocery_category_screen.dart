@@ -177,7 +177,7 @@ class GroceryCategoryScreen extends StatelessWidget {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Text(
-                                                '\$${item.price.toStringAsFixed(2)}',
+                                                'DJF${item.price.toStringAsFixed(2)}',
                                                 style: AppTextStyles.priceSmall
                                                     .copyWith(
                                                       color: AppColors.grocery,
@@ -277,7 +277,7 @@ class GroceryCategoryScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      '\$${moduleTotal.toStringAsFixed(2)}',
+                      'DJF${moduleTotal.toStringAsFixed(2)}',
                       style: AppTextStyles.button,
                     ),
                   ],

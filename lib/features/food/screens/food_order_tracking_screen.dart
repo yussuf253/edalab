@@ -108,7 +108,8 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
         : '#${widget.orderId}';
     final status = order?['status']?.toString().toUpperCase() ?? 'PENDING';
     final eta =
-        order?['deliveryEta']?.toString() ?? l10n.t('food_tracking.default_eta');
+        order?['deliveryEta']?.toString() ??
+        l10n.t('food_tracking.default_eta');
     final deliveryAssignee = order?['deliveryAssignee'] is Map
         ? Map<String, dynamic>.from(order!['deliveryAssignee'] as Map)
         : null;
@@ -346,13 +347,13 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                           ...items.map(
                             (item) => _OrderRow(
                               '${item['quantity']}x ${item['name']}',
-                              '\$${((item['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                              'DJF${((item['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
                             ),
                           ),
                           const Divider(height: 20),
                           _OrderRow(
                             l10n.t('food_tracking.total'),
-                            '\$${((order?['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                            'DJF${((order?['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
                             bold: true,
                           ),
                         ],

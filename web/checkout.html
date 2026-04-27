@@ -621,7 +621,7 @@
                         <div style="flex: 1;">
                             <div class="delivery-header">
                                 <span class="delivery-name">${this.getDeliveryName(opt)}</span>
-                                <span class="delivery-price">${opt.price === 0 ? this.t('checkout.free', 'FREE') : '$' + opt.price.toFixed(2)}</span>
+                                <span class="delivery-price">DJF ${opt.price === 0 ? this.t('checkout.free', 'FREE') : '$' + opt.price.toFixed(2)}</span>
                             </div>
                             <div class="delivery-time">${this.getDeliveryTime(opt)}</div>
                         </div>
@@ -669,7 +669,7 @@
                         ${this.cartItems.map(item => `
                             <div class="order-item">
                                 <span>${item.name} × ${item.quantity}</span>
-                                <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                                <span>$DJF ${(item.price * item.quantity).toFixed(2)}</span>
                             </div>
                         `).join('')}
                     </div>
@@ -678,20 +678,20 @@
                         <div class="summary-title">${this.t('checkout.pricing', 'Pricing')}</div>
                         <div class="cost-row">
                             <span class="cost-label">${this.t('checkout.subtotal', 'Subtotal')}</span>
-                            <span class="cost-value">$${subtotal.toFixed(2)}</span>
+                            <span class="cost-value">$DJF ${subtotal.toFixed(2)}</span>
                         </div>
                         <div class="cost-row">
                             <span class="cost-label">${this.t('checkout.delivery', 'Delivery')}</span>
-                            <span class="cost-value">${delivery === 0 ? this.t('checkout.free', 'FREE') : '$' + delivery.toFixed(2)}</span>
+                            <span class="cost-value">DJF ${delivery === 0 ? this.t('checkout.free', 'FREE') : '$' + delivery.toFixed(2)}</span>
                         </div>
                         <div class="cost-row">
                             <span class="cost-label">${this.t('checkout.tax', 'Tax')} (8%)</span>
-                            <span class="cost-value">$${tax.toFixed(2)}</span>
+                            <span class="cost-value">$DJF ${tax.toFixed(2)}</span>
                         </div>
                         ${discount > 0 ? `
                             <div class="cost-row">
                                 <span class="cost-label">${this.t('checkout.discount', 'Discount')}</span>
-                                <span class="cost-value discount">-$${discount.toFixed(2)}</span>
+                                <span class="cost-value discount">-$DJF ${discount.toFixed(2)}</span>
                             </div>
                         ` : ''}
                     </div>
@@ -699,7 +699,7 @@
                     <div class="summary-section">
                         <div class="cost-row">
                             <span style="font-size: 16px; font-weight: 700;">${this.t('checkout.totalAmount', 'Total Amount')}</span>
-                            <span style="font-size: 20px; font-weight: 700; color: #667eea;">$${total.toFixed(2)}</span>
+                            <span style="font-size: 20px; font-weight: 700; color: #667eea;">$DJF ${total.toFixed(2)}</span>
                         </div>
                     </div>
 

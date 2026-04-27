@@ -547,7 +547,7 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                           ),
                           const Spacer(),
                           Text(
-                            '\$${provider.consultationFee.toInt()}',
+                            'DJF${provider.consultationFee.toInt()}',
                             style: AppTextStyles.priceSmall.copyWith(
                               color: AppColors.doctor,
                             ),

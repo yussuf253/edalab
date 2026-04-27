@@ -244,7 +244,7 @@
                     <div class="stat-label">Orders</div>
                 </div>
                 <div class="stat">
-                    <div class="stat-value" id="totalSpent">$0</div>
+                    <div class="stat-value" id="totalSpent"># DJF 0</div>
                     <div class="stat-label">Spent</div>
                 </div>
                 <div class="stat">
@@ -385,7 +385,7 @@
                 // Update user info
                 const firstName = this.user.firstName || UIComponents.t('account.guestUser', 'Guest User');
                 const lastName = this.user.lastName || '';
-                document.getElementById('profileName').textContent = `${firstName} ${lastName}`.trim();
+                document.getElementById('profileName').textContent = `DJF ${firstName} ${lastName}`.trim();
                 document.getElementById('profileEmail').textContent = this.user.email || UIComponents.t('account.noEmail', 'No email');
                 
                 // Avatar
@@ -400,7 +400,7 @@
                     const total = (order.subtotal || 0) + (order.tax || 0) + (order.deliveryFee || 0) - (order.discount || 0);
                     return sum + total;
                 }, 0);
-                document.getElementById('totalSpent').textContent = `$${totalSpent.toFixed(2)}`;
+                document.getElementById('totalSpent').textContent = `DJF $DJF ${totalSpent.toFixed(2)}`;
                 
                 document.getElementById('rewardPoints').textContent = (this.user.rewardPoints || 0).toLocaleString();
             }

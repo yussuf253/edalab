@@ -161,7 +161,7 @@
                                 ${order.items.map(item => item.name).join(', ')}
                             </div>
                             <div class="order-footer">
-                                <span class="order-total">$${((order.subtotal || 0) + (order.tax || 0) + (order.deliveryFee || 0) - (order.discount || 0)).toFixed(2)}</span>
+                                <span class="order-total">$DJF ${((order.subtotal || 0) + (order.tax || 0) + (order.deliveryFee || 0) - (order.discount || 0)).toFixed(2)}</span>
                                 <div class="order-actions">
                                     <button class="btn-small" onclick="orders.viewOrder('${order.id}'); event.stopPropagation();">${UIComponents.t('orders.view', 'View')}</button>
                                     <button class="btn-small" onclick="orders.trackOrder('${order.id}'); event.stopPropagation();">${UIComponents.t('orders.track', 'Track')}</button>

@@ -255,7 +255,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 ),
                               ),
                               Text(
-                                '\$${item.total.toStringAsFixed(2)}',
+                                'DJF ${item.total.toStringAsFixed(2)}',
                                 style: AppTextStyles.labelMedium,
                               ),
                             ],
@@ -386,7 +386,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         l10n.t(option.$2),
                         option.$3 == 0
                             ? l10n.t('checkout.free')
-                            : '\$${option.$3.toStringAsFixed(2)}',
+                            : 'DJF ${option.$3.toStringAsFixed(2)}',
                         _selectedDeliveryOption == i,
                       ),
                     ),
@@ -606,27 +606,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 children: [
                   _SumRow(
                     l10n.t('checkout.subtotal'),
-                    '\$${subtotal.toStringAsFixed(2)}',
+                    'DJF ${subtotal.toStringAsFixed(2)}',
                   ),
                   _SumRow(
                     l10n.t('checkout.delivery'),
                     shipping <= 0.0
                         ? l10n.t('checkout.free')
-                        : '\$${shipping.toStringAsFixed(2)}',
+                        : 'DJF ${shipping.toStringAsFixed(2)}',
                   ),
                   _SumRow(
                     l10n.t('checkout.tax'),
-                    '\$${tax.toStringAsFixed(2)}',
+                    'DJF ${tax.toStringAsFixed(2)}',
                   ),
                   if (tip > 0)
                     _SumRow(
                       l10n.t('checkout.tip'),
-                      '\$${tip.toStringAsFixed(2)}',
+                      'DJF ${tip.toStringAsFixed(2)}',
                     ),
                   if (discount > 0)
                     _SumRow(
                       l10n.t('checkout.discount'),
-                      '-\$${discount.toStringAsFixed(2)}',
+                      '-DJF ${discount.toStringAsFixed(2)}',
                       isDiscount: true,
                     ),
                   if (cartProvider.promoCode != null)
@@ -638,7 +638,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   const Divider(height: 20),
                   _SumRow(
                     l10n.t('checkout.total'),
-                    '\$${total.toStringAsFixed(2)}',
+                    'DJF ${total.toStringAsFixed(2)}',
                     bold: true,
                   ),
                 ],

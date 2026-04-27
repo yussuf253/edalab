@@ -771,7 +771,7 @@ class _MedicineLine extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Text('\$$total', style: AppTextStyles.labelLarge),
+          Text('DJF$total', style: AppTextStyles.labelLarge),
         ],
       ),
     );

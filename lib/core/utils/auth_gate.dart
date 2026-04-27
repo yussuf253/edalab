@@ -5,16 +5,15 @@ import 'package:provider/provider.dart';
 import '../analytics/analytics_events.dart';
 import '../analytics/analytics_service.dart';
 import '../constants/app_colors.dart';
+import '../localization/app_localizations.dart';
 import '../providers/auth_provider.dart';
 
-Future<bool> requireLoggedIn(
-  BuildContext context, {
-  String message = 'Please log in to continue.',
-}) async {
+Future<bool> requireLoggedIn(BuildContext context, {String? message}) async {
   final auth = context.read<AuthProvider>();
   if (auth.isLoggedIn && auth.user != null) {
     return true;
   }
+  final l10n = context.l10n;
 
   final path = GoRouterState.of(context).uri.path;
   AnalyticsService.instance.track(
@@ -31,10 +30,10 @@ Future<bool> requireLoggedIn(
 
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text(message),
+      content: Text(message ?? l10n.t('common.login_required_continue')),
       backgroundColor: AppColors.dark,
       action: SnackBarAction(
-        label: 'Login',
+        label: l10n.t('common.login'),
         textColor: AppColors.white,
         onPressed: () => context.push('/login'),
       ),
@@ -59,6 +58,7 @@ class LoginRequiredView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -95,7 +95,9 @@ class LoginRequiredView extends StatelessWidget {
             FilledButton.icon(
               onPressed: () => context.push('/login'),
               icon: const Icon(Icons.login_rounded),
-              label: Text(actionLabel),
+              label: Text(
+                actionLabel == 'Log In' ? l10n.t('common.log_in') : actionLabel,
+              ),
               style: FilledButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: AppColors.white,

@@ -424,11 +424,11 @@
             <div class="estimate-section">
                 <div class="estimate-item">
                     <span data-i18n="ride.baseFare">Base Fare</span>
-                    <span id="baseFare">$5.00</span>
+                    <span id="baseFare"> DJF 5.00</span>
                 </div>
                 <div class="estimate-item">
                     <span data-i18n="ride.distanceEstimate">Distance Estimate</span>
-                    <span id="distanceFare">$0.00</span>
+                    <span id="distanceFare"> DJF 0.00</span>
                 </div>
                 <div class="estimate-item">
                     <span data-i18n="ride.surgePricing">Surge Pricing</span>
@@ -436,7 +436,7 @@
                 </div>
                 <div class="estimate-total">
                     <span data-i18n="ride.estimatedTotal">Estimated Total</span>
-                    <span id="estimatedTotal">$5.00</span>
+                    <span id="estimatedTotal"> DJF 5.00</span>
                 </div>
             </div>
 
@@ -635,7 +635,7 @@
                                 onclick="rideModule.selectRideType('${rideType.id}')">
                             <div class="ride-type-icon"><img src="${this.getRideIcon(rideType)}" alt="${rideType.name}"></div>
                             <div class="ride-type-name">${rideType.name}</div>
-                            <div class="ride-type-price">$${Number(rideType.basePrice || 0).toFixed(2)}</div>
+                            <div class="ride-type-price">$DJF ${Number(rideType.basePrice || 0).toFixed(2)}</div>
                         </button>
                     `).join('');
             }
@@ -677,10 +677,10 @@
                 const surgeAmount = subtotal * surgePricing;
                 const total = subtotal + surgeAmount;
 
-                document.getElementById('baseFare').textContent = `$${basePrice.toFixed(2)}`;
-                document.getElementById('distanceFare').textContent = `$${distanceFare.toFixed(2)} (${distanceKm}km)`;
-                document.getElementById('surgeFare').textContent = surgePricing > 0 ? `+${(surgePricing * 100).toFixed(0)}%` : this.t('ride.none', 'None');
-                document.getElementById('estimatedTotal').textContent = `$${total.toFixed(2)}`;
+                document.getElementById('baseFare').textContent = `DJF $DJF ${basePrice.toFixed(2)}`;
+                document.getElementById('distanceFare').textContent = `DJF $DJF ${distanceFare.toFixed(2)} (${distanceKm}km)`;
+                document.getElementById('surgeFare').textContent = surgePricing > 0 ? `+DJF ${(surgePricing * 100).toFixed(0)}%` : this.t('ride.none', 'None');
+                document.getElementById('estimatedTotal').textContent = `DJF $DJF ${total.toFixed(2)}`;
             }
 
             async bookRide() {

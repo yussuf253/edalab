@@ -88,7 +88,7 @@ class RestaurantModel {
     if (value == null) return 'Free';
     final amount = (value as num?)?.toDouble();
     if (amount == null || amount <= 0) return 'Free';
-    return '\$${amount.toStringAsFixed(2)}';
+    return 'DJF${amount.toStringAsFixed(2)}';
   }
 
   static List<RestaurantModel> sampleRestaurants = [
@@ -177,7 +177,7 @@ class RestaurantModel {
       rating: 4.6,
       reviewCount: 850,
       deliveryTime: '20-30',
-      deliveryFee: '\$2.99',
+      deliveryFee: 'DJF2.99',
       distance: 2.1,
       tags: ['Italian', 'Pizza'],
     ),
@@ -189,7 +189,7 @@ class RestaurantModel {
       rating: 4.9,
       reviewCount: 2100,
       deliveryTime: '25-35',
-      deliveryFee: '\$3.99',
+      deliveryFee: 'DJF3.99',
       distance: 3.5,
       tags: ['Top Rated', 'Japanese'],
     ),
@@ -213,7 +213,7 @@ class RestaurantModel {
       rating: 4.7,
       reviewCount: 1500,
       deliveryTime: '30-40',
-      deliveryFee: '\$1.99',
+      deliveryFee: 'DJF1.99',
       distance: 4.2,
       tags: ['Chinese', 'Asian'],
     ),
@@ -225,7 +225,7 @@ class RestaurantModel {
       rating: 4.4,
       reviewCount: 920,
       deliveryTime: '25-35',
-      deliveryFee: '\$2.49',
+      deliveryFee: 'DJF2.49',
       distance: 2.8,
       tags: ['Indian', 'Spicy'],
     ),

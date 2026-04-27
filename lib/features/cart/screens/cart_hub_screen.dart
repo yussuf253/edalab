@@ -301,7 +301,7 @@ class _CartModuleTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '\$${section.subtotal.toStringAsFixed(2)}',
+                  'DJF ${section.subtotal.toStringAsFixed(2)}',
                   style: AppTextStyles.priceSmall.copyWith(
                     color: section.accent,
                   ),

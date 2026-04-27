@@ -54,8 +54,8 @@
                         <p class="detail-subtitle detail-skel-line" id="description">Product description will appear here.</p>
 
                         <div class="detail-price-row">
-                            <div class="detail-current-price detail-skel-line" id="currentPrice">$0</div>
-                            <div class="detail-original-price detail-skel-line" id="originalPrice" style="display: none;">$0</div>
+                            <div class="detail-current-price detail-skel-line" id="currentPrice"># DJF 0</div>
+                            <div class="detail-original-price detail-skel-line" id="originalPrice" style="display: none;"># DJF 0</div>
                             <div class="detail-discount-pill detail-skel-pill" id="discountBadge" style="display: none;">0% OFF</div>
                         </div>
 
@@ -190,14 +190,14 @@
                 // Pricing
                 const currentPrice = this.product.price;
                 const originalPrice = this.product.originalPrice;
-                document.getElementById('currentPrice').textContent = `$${currentPrice}`;
+                document.getElementById('currentPrice').textContent = `DJF ${currentPrice}`;
 
                 if (originalPrice && originalPrice > currentPrice) {
                     const discount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
                     document.getElementById('originalPrice').style.display = 'block';
-                    document.getElementById('originalPrice').textContent = `$${originalPrice}`;
+                    document.getElementById('originalPrice').textContent = `DJF ${originalPrice}`;
                     document.getElementById('discountBadge').style.display = 'block';
-                    document.getElementById('discountBadge').textContent = `${discount}% OFF`;
+                    document.getElementById('discountBadge').textContent = `DJF ${discount}% OFF`;
                 }
 
                 // Rating and reviews
@@ -290,8 +290,8 @@
                 document.getElementById('qtyDisplay').textContent = this.quantity;
                 if (this.product) {
                     const total = (this.product.price || 0) * this.quantity;
-                    document.getElementById('addCartBtn').textContent = `${UIComponents.t('detail.addToCart', 'Add to Cart')} • $${total.toFixed(2)}`;
-                    document.getElementById('buyNowBtn').textContent = `${UIComponents.t('detail.buyNow', 'Buy Now')} • $${total.toFixed(2)}`;
+                    document.getElementById('addCartBtn').textContent = `DJF ${UIComponents.t('detail.addToCart', 'Add to Cart')} • $DJF ${total.toFixed(2)}`;
+                    document.getElementById('buyNowBtn').textContent = `DJF ${UIComponents.t('detail.buyNow', 'Buy Now')} • $DJF ${total.toFixed(2)}`;
                 }
             }
 

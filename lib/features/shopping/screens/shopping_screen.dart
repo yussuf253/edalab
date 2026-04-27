@@ -582,7 +582,7 @@ class _ShoppingStoreCard extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        '\$${store.minPrice.toStringAsFixed(0)} - \$${store.maxPrice.toStringAsFixed(0)}',
+                        'DJF${store.minPrice.toStringAsFixed(0)} - \$${store.maxPrice.toStringAsFixed(0)}',
                         style: AppTextStyles.labelMedium.copyWith(
                           color: AppColors.shopping,
                         ),

@@ -217,20 +217,20 @@
 
         <div class="summary-row">
           <span>Subtotal</span>
-          <span id="subtotal">$0.00</span>
+          <span id="subtotal"> DJF 0.00</span>
         </div>
         <div class="summary-row">
           <span>Delivery Fee</span>
-          <span id="delivery-fee">$0.00</span>
+          <span id="delivery-fee"> DJF 0.00</span>
         </div>
         <div class="summary-row" id="discount-row" style="display: none;">
           <span>Discount</span>
-          <span id="discount" style="color: #059669;">-$0.00</span>
+          <span id="discount" style="color: #059669;">-DJF 0.00</span>
         </div>
 
         <div class="summary-row-total">
           <span>Total</span>
-          <span id="total">$0.00</span>
+          <span id="total"> DJF 0.00</span>
         </div>
 
         <button class="checkout-btn" onclick="cartModule.checkout()">
@@ -378,13 +378,13 @@
         const deliveryFee = items.length > 0 ? 2.99 : 0;
         const total = subtotal + deliveryFee - this.discount;
 
-        document.getElementById('subtotal').textContent = `$${subtotal.toFixed(2)}`;
-        document.getElementById('delivery-fee').textContent = `$${deliveryFee.toFixed(2)}`;
-        document.getElementById('total').textContent = `$${total.toFixed(2)}`;
+        document.getElementById('subtotal').textContent = `DJF $DJF ${subtotal.toFixed(2)}`;
+        document.getElementById('delivery-fee').textContent = `DJF $DJF ${deliveryFee.toFixed(2)}`;
+        document.getElementById('total').textContent = `DJF $DJF ${total.toFixed(2)}`;
 
         if (this.discount > 0) {
           document.getElementById('discount-row').style.display = 'flex';
-          document.getElementById('discount').textContent = `-$${this.discount.toFixed(2)}`;
+          document.getElementById('discount').textContent = `-$DJF ${this.discount.toFixed(2)}`;
         } else {
           document.getElementById('discount-row').style.display = 'none';
         }
@@ -408,7 +408,7 @@
               : Number(coupon.discountValue || 0)
             : 0;
           stateManager.setDiscount(this.discount);
-          UIComponents.showToast(`${UIComponents.t('cart.promoAppliedPrefix', 'Promo code applied! You saved')} $${this.discount.toFixed(2)}`, 'success');
+          UIComponents.showToast(`${UIComponents.t('cart.promoAppliedPrefix', 'Promo code applied! You saved')} $DJF ${this.discount.toFixed(2)}`, 'success');
           this.updateSummary();
         } catch (error) {
           UIComponents.showToast(UIComponents.t('cart.invalidPromo', 'Invalid promo code'), 'error');

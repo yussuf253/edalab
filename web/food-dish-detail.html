@@ -77,7 +77,7 @@
                         <p class="detail-subtitle detail-skel-line" id="dishDescription">Loading dish details...</p>
 
                         <div class="detail-price-row">
-                            <div class="detail-current-price detail-skel-line" id="dishPrice">$0</div>
+                            <div class="detail-current-price detail-skel-line" id="dishPrice"># DJF 0</div>
                         </div>
 
                         <div class="detail-meta-row">
@@ -266,16 +266,16 @@
                     this.dish.imageUrl ||
                     (this.dish.images && this.dish.images[0]) ||
                     DISH_DETAIL_FALLBACK_IMAGE;
-                document.getElementById('dishPrice').textContent = `$${this.dish.price}`;
+                document.getElementById('dishPrice').textContent = `DJF $${this.dish.price}`;
                 document.getElementById('dishDescription').textContent = this.dish.description || UIComponents.t('detail.deliciousDish', 'A delicious dish');
-                document.getElementById('dishCalories').textContent = `${this.dish.calories || 0} cal`;
-                document.getElementById('dishCookTime').textContent = `${this.dish.cookTime || 15} min`;
-                document.getElementById('dishRating').textContent = `${this.dish.rating || 4.5}★`;
+                document.getElementById('dishCalories').textContent = `DJF ${this.dish.calories || 0} cal`;
+                document.getElementById('dishCookTime').textContent = `DJF ${this.dish.cookTime || 15} min`;
+                document.getElementById('dishRating').textContent = `DJF ${this.dish.rating || 4.5}★`;
                 document.getElementById('ratingStars').textContent = '★'.repeat(Math.floor(this.dish.rating || 4.5)).padEnd(5, '☆');
                 document.getElementById('reviewCount').textContent = this.dish.reviewCount || this.restaurant?.reviewCount || 0;
-                document.getElementById('dishContext').textContent = `${this.restaurant?.name || UIComponents.t('detail.restaurant', 'Restaurant')} · ${this.categoryName}`;
+                document.getElementById('dishContext').textContent = `DJF ${this.restaurant?.name || UIComponents.t('detail.restaurant', 'Restaurant')} · ${this.categoryName}`;
                 this.updateSeo();
-                document.getElementById('addCartBtn').textContent = `${UIComponents.t('detail.addToCart', 'Add to Cart')} • $${(this.dish.price * this.quantity).toFixed(2)}`;
+                document.getElementById('addCartBtn').textContent = `DJF ${UIComponents.t('detail.addToCart', 'Add to Cart')} • $DJF ${(this.dish.price * this.quantity).toFixed(2)}`;
 
                 // Render customization options if available
                 if (this.dish.customizations && this.dish.customizations.length > 0) {
@@ -351,8 +351,8 @@
             updateTotal() {
                 const total = this.dish.price * this.quantity;
                 document.getElementById('qtyDisplay').textContent = this.quantity;
-                document.getElementById('addCartBtn').textContent = `${UIComponents.t('detail.addToCart', 'Add to Cart')} • $${total.toFixed(2)}`;
-                document.getElementById('buyNowBtn').textContent = `${UIComponents.t('detail.orderNow', 'Order Now')} • $${total.toFixed(2)}`;
+                document.getElementById('addCartBtn').textContent = `DJF ${UIComponents.t('detail.addToCart', 'Add to Cart')} • $DJF ${total.toFixed(2)}`;
+                document.getElementById('buyNowBtn').textContent = `DJF ${UIComponents.t('detail.orderNow', 'Order Now')} • $DJF ${total.toFixed(2)}`;
             }
 
             checkWishlistStatus() {

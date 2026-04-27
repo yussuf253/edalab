@@ -368,7 +368,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                 final isSelected = t == _tip;
                                 final label = t == 0.0
                                     ? l10n.t('food_cart.none')
-                                    : '\$${t.toInt()}';
+                                    : 'DJF ${t.toInt()}';
                                 return Expanded(
                                   child: GestureDetector(
                                     onTap: () {
@@ -481,24 +481,24 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                       children: [
                         _SummLine(
                           l10n.t('cart.subtotal'),
-                          '\$${subtotal.toStringAsFixed(2)}',
+                          'DJF ${subtotal.toStringAsFixed(2)}',
                         ),
                         _SummLine(
                           l10n.t('cart.delivery'),
-                          '\$${deliveryFee.toStringAsFixed(2)}',
+                          'DJF ${deliveryFee.toStringAsFixed(2)}',
                         ),
                         _SummLine(
                           l10n.t('cart.tip'),
-                          '\$${tipAmount.toStringAsFixed(2)}',
+                          'DJF ${tipAmount.toStringAsFixed(2)}',
                         ),
                         _SummLine(
                           l10n.t('cart.service_fee'),
-                          '\$${serviceFee.toStringAsFixed(2)}',
+                          'DJF ${serviceFee.toStringAsFixed(2)}',
                         ),
                         const Divider(height: 24),
                         _SummLine(
                           l10n.t('cart.total'),
-                          '\$${total.toStringAsFixed(2)}',
+                          'DJF ${total.toStringAsFixed(2)}',
                           bold: true,
                         ),
                         const SizedBox(height: 16),
@@ -614,7 +614,7 @@ class _CartRow extends StatelessWidget {
                 ),
                 if (brand != null) Text(brand!, style: AppTextStyles.caption),
                 Text(
-                  '\$${price.toStringAsFixed(2)}',
+                  'DJF ${price.toStringAsFixed(2)}',
                   style: AppTextStyles.priceSmall.copyWith(fontSize: 13),
                 ),
               ],
@@ -707,7 +707,7 @@ class _RecommendedFoodCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                '\$${item.price.toStringAsFixed(2)}',
+                'DJF ${item.price.toStringAsFixed(2)}',
                 style: AppTextStyles.priceSmall,
               ),
               const SizedBox(height: 8),

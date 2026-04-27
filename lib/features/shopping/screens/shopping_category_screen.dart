@@ -50,9 +50,17 @@ class ShoppingCategoryScreen extends StatelessWidget {
                     child: Container(
                       decoration: BoxDecoration(
                         color: AppColors.extraLightGrey,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
                       ),
-                      child: Center(child: Icon(Icons.devices_rounded, size: 40, color: AppColors.lightGrey)),
+                      child: Center(
+                        child: Icon(
+                          Icons.devices_rounded,
+                          size: 40,
+                          color: AppColors.lightGrey,
+                        ),
+                      ),
                     ),
                   ),
                   Expanded(
@@ -70,9 +78,15 @@ class ShoppingCategoryScreen extends StatelessWidget {
                             style: AppTextStyles.labelMedium,
                           ),
                           const SizedBox(height: 2),
-                          Text(l10n.t('shopping_category.brand'), style: AppTextStyles.caption),
+                          Text(
+                            l10n.t('shopping_category.brand'),
+                            style: AppTextStyles.caption,
+                          ),
                           const Spacer(),
-                          Text('\$${(index + 1) * 99}', style: AppTextStyles.priceSmall),
+                          Text(
+                            'DJF${(index + 1) * 99}',
+                            style: AppTextStyles.priceSmall,
+                          ),
                         ],
                       ),
                     ),
