@@ -45,7 +45,7 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
           assetPath: 'assets/icons/pharmacy.png',
           alignment: Alignment(0.82, -0.56),
           size: 56,
-          backgroundColor: Color(0xFFE6F1FF),
+          backgroundColor: Color(0xFFDEF7ED),
         ),
         _OrbitNodeData(
           assetPath: 'assets/icons/orders.png',
@@ -57,7 +57,7 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
           assetPath: 'assets/icons/messages.png',
           alignment: Alignment(-0.82, 0.52),
           size: 60,
-          backgroundColor: Color(0xFFEAEDFF),
+          backgroundColor: Color(0xFFE4F8EC),
         ),
       ],
     ),
@@ -80,9 +80,9 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
       subtitle:
           'See performance snapshots, urgent priorities, and customer activity in real time so nothing slips through.',
       centerIcon: Icons.insights_rounded,
-      ctaColor: Color(0xFF3759C8),
+      ctaColor: AppColors.primary,
       backgroundGradient: LinearGradient(
-        colors: [Color(0xFFF5F9FF), Color(0xFFE6EEFF)],
+        colors: [Color(0xFFF4FFFC), Color(0xFFDDFBF0)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
@@ -225,32 +225,6 @@ class _TopBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: Colors.white.withValues(alpha: 0.95)),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 24,
-                height: 24,
-                decoration: const BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.bolt_rounded,
-                  color: Colors.white,
-                  size: 15,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'EdaLab Pro',
-                style: AppTextStyles.labelLarge.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.dark,
-                ),
-              ),
-            ],
-          ),
         ),
         const Spacer(),
         TextButton(
@@ -383,7 +357,7 @@ class _OrbitHero extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: const LinearGradient(
-                colors: [Colors.white, Color(0xFFF4FAFF)],
+                colors: [Colors.white, Color(0xFFF4FDF8)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -500,7 +474,7 @@ class _FlowHero extends StatelessWidget {
             label: 'Assigned',
             detail: 'Auto-routed by availability',
             icon: icon,
-            color: const Color(0xFF2A7DD2),
+            color: const Color(0xFF039D55),
           ),
           const _FlowConnector(),
           _FlowStep(
@@ -629,9 +603,9 @@ class _InsightsHero extends StatelessWidget {
                 height: 36,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFFE8F0FF),
+                  color: Color(0xFFDDF5EB),
                 ),
-                child: Icon(icon, color: Color(0xFF3A62C8), size: 18),
+                child: Icon(icon, color: Color(0xFF039D55), size: 18),
               ),
               const SizedBox(width: 10),
               Text(
@@ -651,15 +625,15 @@ class _InsightsHero extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: const [
-                _InsightBar(height: 0.42, color: Color(0xFFCEE0FF)),
+                _InsightBar(height: 0.42, color: Color(0xFFB8ECCD)),
                 SizedBox(width: 8),
-                _InsightBar(height: 0.68, color: Color(0xFFAEC9FF)),
+                _InsightBar(height: 0.68, color: Color(0xFF90DDB0)),
                 SizedBox(width: 8),
-                _InsightBar(height: 0.90, color: Color(0xFF6E98F7)),
+                _InsightBar(height: 0.90, color: Color(0xFF3BBB79)),
                 SizedBox(width: 8),
-                _InsightBar(height: 0.64, color: Color(0xFFAEC9FF)),
+                _InsightBar(height: 0.64, color: Color(0xFF90DDB0)),
                 SizedBox(width: 8),
-                _InsightBar(height: 0.78, color: Color(0xFF88AEFF)),
+                _InsightBar(height: 0.78, color: Color(0xFF60CC95)),
               ],
             ),
           ),
@@ -718,13 +692,13 @@ class _InsightPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8EEFF),
+        color: const Color(0xFFDDF5EB),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
         style: AppTextStyles.labelMedium.copyWith(
-          color: const Color(0xFF3D63C7),
+          color: const Color(0xFF027A42),
           fontWeight: FontWeight.w700,
         ),
       ),
@@ -743,7 +717,7 @@ class _StatTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F8FF),
+        color: const Color(0xFFF2FBF6),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(

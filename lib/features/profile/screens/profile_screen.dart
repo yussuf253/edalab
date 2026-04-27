@@ -247,7 +247,7 @@ class ProfileScreen extends StatelessWidget {
                         : AppColors.primary,
                     onTap: () {
                       if (user == null) {
-                        context.go('/login');
+                        context.push('/pro/signup');
                         return;
                       }
 

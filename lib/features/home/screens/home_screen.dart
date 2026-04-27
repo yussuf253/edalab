@@ -12,6 +12,15 @@ import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/notification_bell.dart';
+import '../../food/screens/food_screen.dart';
+import '../../doctor/screens/doctor_screen.dart';
+import '../../shopping/screens/shopping_screen.dart';
+import '../../ride/screens/ride_screen.dart';
+import '../../pharmacy/screens/pharmacy_screen.dart';
+import '../../hotel/screens/hotel_screen.dart';
+import '../../home_services/screens/home_services_screen.dart';
+import '../../laundry/screens/laundry_screen.dart';
+import '../../grocery/screens/grocery_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -53,6 +62,58 @@ class _HomeScreenState extends State<HomeScreen> {
         moduleProvider.isEnabled('grocery') ||
         moduleProvider.isEnabled('pharmacy') ||
         moduleProvider.isEnabled('ride');
+
+    // ── Single-module fast-path ──────────────────────────────────────────────
+    // When exactly one module is active, render its screen directly so the
+    // user lands straight into the service without an extra tap.
+    // The home app bar is preserved; the module screen's own AppBar (including
+    // its back button) is hidden by collapsing toolbarHeight to 0 via Theme.
+    if (enabledModuleIds.length == 1) {
+      Widget? moduleScreen;
+      switch (enabledModuleIds.first) {
+        case 'food':
+          moduleScreen = const FoodScreen();
+        case 'doctor':
+          moduleScreen = const DoctorScreen();
+        case 'shopping':
+          moduleScreen = const ShoppingScreen();
+        case 'ride':
+          moduleScreen = const RideScreen();
+        case 'pharmacy':
+          moduleScreen = const PharmacyScreen();
+        case 'hotel':
+          moduleScreen = const HotelScreen();
+        case 'home-services':
+          moduleScreen = const HomeServicesScreen();
+        case 'laundry':
+          moduleScreen = const LaundryScreen();
+        case 'grocery':
+          moduleScreen = const GroceryScreen();
+      }
+      if (moduleScreen != null) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: _buildHomeAppBar(
+            context,
+            user,
+            displayName,
+            locationDisplay,
+          ),
+          body: Theme(
+            // Collapse the inner module screen's AppBar to 0 height so its
+            // title and back button are invisible without touching each screen.
+            data: Theme.of(context).copyWith(
+              appBarTheme: Theme.of(context).appBarTheme.copyWith(
+                toolbarHeight: 0,
+              ),
+            ),
+            child: moduleScreen,
+          ),
+        );
+      }
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -169,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            // Special Offers
+            //Special Offers
             if (hasEnabledOfferModules)
               SliverToBoxAdapter(
                 child: Padding(
@@ -181,8 +242,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         SectionHeader(
                           title: '${l10n.t('home.special_offers')} 🔥',
-                          actionText: l10n.t('common.see_all'),
-                          onAction: () => context.push('/promotions'),
+                          //actionText: l10n.t('common.see_all'),
+                          //onAction: () => context.push('/promotions'),
                         ),
                         const SizedBox(height: 12),
                         _SpecialOffers(enabledModules: enabledModuleIds),
@@ -264,6 +325,78 @@ class _HomeScreenState extends State<HomeScreen> {
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Builds the home-style AppBar used both in the normal hub and in
+  /// single-module mode. Matches the greeting row in the regular ScrollView.
+  PreferredSizeWidget _buildHomeAppBar(
+    BuildContext context,
+    dynamic user,
+    String displayName,
+    String locationDisplay,
+  ) {
+    return AppBar(
+      automaticallyImplyLeading: false,
+      toolbarHeight: 72,
+      backgroundColor: AppColors.background,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      titleSpacing: 20,
+      title: Row(
+        children: [
+          // Avatar
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: user?.avatarUrl != null &&
+                    user!.avatarUrl!.trim().isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.network(
+                      user.avatarUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, error, stackTrace) => const Icon(
+                        Icons.person_rounded,
+                        color: AppColors.white,
+                        size: 24,
+                      ),
+                    ),
+                  )
+                : const Icon(
+                    Icons.person_rounded,
+                    color: AppColors.white,
+                    size: 24,
+                  ),
+          ),
+          const SizedBox(width: 12),
+          // Greeting
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  locationDisplay,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.grey,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(displayName, style: AppTextStyles.h4),
+              ],
+            ),
+          ),
+          // Notification bell
+          const NotificationBell(),
+        ],
       ),
     );
   }
