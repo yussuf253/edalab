@@ -60,7 +60,7 @@ const router = Router();
 const prisma = new PrismaClient();
 
 // Check for app updates
-router.get('/version/check', async (req: Request, res: Response) => {
+router.get('/check', async (req: Request, res: Response) => {
   try {
     const { platform } = req.query;
     
@@ -107,7 +107,7 @@ router.get('/version/check', async (req: Request, res: Response) => {
 });
 
 // Report user update action
-router.post('/version/report-action', async (req: Request, res: Response) => {
+router.post('/report-action', async (req: Request, res: Response) => {
   try {
     const { action, currentVersion, timestamp, platform, userId } = req.body;
 

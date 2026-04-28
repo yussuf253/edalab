@@ -16,7 +16,7 @@ app.use(express.json());
 // 👉 Mount the router with the correct prefix
 // If your Flutter client uses baseUrl = https://your‑api.com/api
 // then mount under '/api/version'
-app.use('/api/version', versionRouter);   // <-- important!
+// app.use('/api/version', versionRouter);   // <-- removed duplicate mounting (handled later)
 
 // Optional: health check
 app.get('/api/health', (_, res) => res.send('OK'));
