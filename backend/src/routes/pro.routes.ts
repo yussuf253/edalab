@@ -6149,7 +6149,6 @@ router.post(
       create: {
         id: body.doctorId,
         name: profile.businessName,
-        specialty: 'General Practice',
         consultationFee: 0,
         imageUrl: body.imageUrl == null ? null : body.imageUrl.trim() || null,
         location: body.location == null ? null : body.location.trim() || null,
