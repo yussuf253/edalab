@@ -4,11 +4,25 @@ import fs from 'fs/promises';
 import path from 'path';
 import { env } from './config/env';
 import apiRoutes from './routes';
+import versionRouter from './routes/version.routes';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 
 const app = express();
 app.set('trust proxy', 1);
 const avatarFallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 220 220"><rect width="220" height="220" rx="44" fill="#E8F1FF"/><circle cx="110" cy="92" r="34" fill="#7AA3E8"/><path d="M44 193c12-33 38-54 66-54s54 21 66 54" fill="#7AA3E8"/></svg>`;
+
+app.use(express.json());
+
+// 👉 Mount the router with the correct prefix
+// If your Flutter client uses baseUrl = https://your‑api.com/api
+// then mount under '/api/version'
+app.use('/api/version', versionRouter);   // <-- important!
+
+// Optional: health check
+app.get('/api/health', (_, res) => res.send('OK'));
+
+const PORT = process.env.PORT || 5050;
+app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
 
 app.use((req, res, next) => {
   const startedAt = Date.now();
@@ -151,6 +165,9 @@ app.use(
   }),
 );
 
+// Mount version routes under '/api/version'
+app.use('/api/version', versionRouter);
+// Mount other API routes under '/api'
 app.use('/api', apiRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);

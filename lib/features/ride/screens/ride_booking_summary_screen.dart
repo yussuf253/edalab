@@ -42,6 +42,20 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
     return value;
   }
 
+  String _categoryDisplayName(RideCategory? category, AppLocalizations l10n) {
+    if (category == null) return l10n.t('module.ride');
+    switch (category.id) {
+      case 'r1':
+        return l10n.t('ride.category_economy');
+      case 'r2':
+        return l10n.t('ride.category_premium');
+      case 'r3':
+        return l10n.t('ride.category_xl');
+      default:
+        return category.name;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -179,7 +193,7 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
                   const SizedBox(height: 14),
                   _SummaryRow(
                     l10n.t('ride_summary.vehicle'),
-                    selectedCategory?.name ?? l10n.t('module.ride'),
+                    _categoryDisplayName(selectedCategory, l10n),
                   ),
                   _SummaryRow(
                     l10n.t('ride_summary.capacity'),

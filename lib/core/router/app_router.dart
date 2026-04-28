@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../localization/app_localizations.dart';
 import '../modules/module_access_service.dart';
 import '../models/models.dart';
+import '../widgets/example_version_check.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
 import '../../features/onboarding/screens/onboarding_screen.dart';
@@ -74,6 +75,9 @@ import '../../pro/features/dashboard/screens/pro_dashboard_screen.dart';
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey =
     GlobalKey<NavigatorState>();
+
+// Export for use in main.dart
+GlobalKey<NavigatorState> get rootNavigatorKey => _rootNavigatorKey;
 
 void openAppRoute(String route) {
   final context = _rootNavigatorKey.currentContext;
@@ -191,6 +195,11 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
               ? Map<String, dynamic>.from(state.extra as Map)
               : null,
         ),
+      ),
+      // Demo route for version management example widget
+      GoRoute(
+        path: '/version-demo',
+        builder: (context, state) => const ExampleVersionCheckWidget(),
       ),
 
       // Food

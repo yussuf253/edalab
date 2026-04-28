@@ -616,16 +616,28 @@ class _StatRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: AppSpacing.shadowSm,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+      child: Column(
         children: [
-          _StatItem('$rating', l10n.t('home_provider.rating')),
-          _StatItem('$reviewCount+', l10n.t('home_provider.reviews')),
-          _StatItem(
-            experience ?? l10n.t('home_provider.fast'),
-            l10n.t('home_provider.experience'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Expanded(
+                child: _StatItem('$rating', l10n.t('home_provider.rating')),
+              ),
+              Expanded(
+                child: _StatItem(
+                  '$reviewCount+',
+                  l10n.t('home_provider.reviews'),
+                ),
+              ),
+              Expanded(
+                child: _StatItem(
+                  'DJF ${price.toInt()}',
+                  l10n.t('home_provider.starting'),
+                ),
+              ),
+            ],
           ),
-          _StatItem('DJF ${price.toInt()}', l10n.t('home_provider.starting')),
         ],
       ),
     );
@@ -640,10 +652,15 @@ class _StatItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(value, style: AppTextStyles.labelLarge),
+        Text(
+          value,
+          style: AppTextStyles.labelLarge,
+          textAlign: TextAlign.center,
+        ),
         const SizedBox(height: 4),
-        Text(label, style: AppTextStyles.caption),
+        Text(label, style: AppTextStyles.caption, textAlign: TextAlign.center),
       ],
     );
   }

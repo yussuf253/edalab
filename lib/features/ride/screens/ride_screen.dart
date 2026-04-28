@@ -89,6 +89,25 @@ class _RideScreenState extends State<RideScreen> {
     }
   }
 
+  String _rideCategoryName(RideCategory category, AppLocalizations l10n) {
+    switch (category.id) {
+      case 'r1':
+        return l10n.t('ride.category_economy');
+      case 'r2':
+        return l10n.t('ride.category_premium');
+      case 'r3':
+        return l10n.t('ride.category_xl');
+      default:
+        return category.name;
+    }
+  }
+
+  String _rideEtaLabel(String value, AppLocalizations l10n) {
+    final match = RegExp(r'^(\d+)\s*min$').firstMatch(value.trim());
+    if (match == null) return value;
+    return l10n.t('ride.eta_minutes', params: {'count': match.group(1)!});
+  }
+
   Future<void> _requestLocationAccess({bool showFailureSnackBar = true}) async {
     try {
       final locationProvider = context.read<UserLocationProvider>();
@@ -411,7 +430,7 @@ class _RideScreenState extends State<RideScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    ride.name,
+                                    _rideCategoryName(ride, l10n),
                                     style: AppTextStyles.labelLarge,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -422,7 +441,10 @@ class _RideScreenState extends State<RideScreen> {
                                       'ride.seats_eta',
                                       params: {
                                         'count': '${ride.capacity}',
-                                        'eta': ride.timeToArrive,
+                                        'eta': _rideEtaLabel(
+                                          ride.timeToArrive,
+                                          l10n,
+                                        ),
                                       },
                                     ),
                                     style: AppTextStyles.caption,

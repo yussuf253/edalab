@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../analytics/analytics_events.dart';
 import '../analytics/analytics_service.dart';
+import '../localization/app_localizations.dart';
 import '../models/user_model.dart';
 import '../network/api_client.dart';
 import '../storage/app_preferences.dart';
@@ -39,8 +41,8 @@ class AuthProvider extends ChangeNotifier {
     _isLoggedIn = true;
   }
 
-  void _setUserFromResponse(Map<String, dynamic> response) {
-    _user = _userFromResponse(response);
+  Future<void> _setUserFromResponse(Map<String, dynamic> response) async {
+    _user = await _userFromResponse(response);
     _isLoggedIn = true;
     _syncAnalyticsIdentity();
   }
@@ -68,10 +70,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  UserModel _userFromResponse(Map<String, dynamic> response) {
+  Future<UserModel> _userFromResponse(Map<String, dynamic> response) async {
     final name = (response['name'] as String? ?? '').trim();
     final parts = name.isEmpty ? ['User'] : name.split(RegExp(r'\s+'));
     final rawAddresses = response['addresses'] as List<dynamic>? ?? const [];
+    final l10n = await _storedL10n();
 
     return UserModel(
       id: response['id'] as String,
@@ -85,7 +88,7 @@ class AuthProvider extends ChangeNotifier {
           final address = Map<String, dynamic>.from(entry as Map);
           return AddressModel(
             id: address['id'] as String,
-            label: address['label'] as String? ?? 'Address',
+            label: address['label'] as String? ?? l10n.t('addresses.label'),
             address: address['address'] as String? ?? '',
             city: address['city'] as String?,
             quartier: _firstNonEmptyString([
@@ -106,11 +109,18 @@ class AuthProvider extends ChangeNotifier {
             (response['address'] as String?)?.isNotEmpty == true)
           AddressModel(
             id: 'primary_address',
-            label: 'Primary',
+            label: l10n.t('addresses.default'),
             address: response['address'] as String,
             isDefault: true,
           ),
       ],
+    );
+  }
+
+  Future<AppLocalizations> _storedL10n() async {
+    final localeCode = await AppPreferences.getLocaleCode();
+    return AppLocalizations(
+      Locale(localeCode ?? AppLocalizations.fallbackLocale.languageCode),
     );
   }
 
@@ -133,7 +143,7 @@ class AuthProvider extends ChangeNotifier {
       );
 
       final userResponse = Map<String, dynamic>.from(response['user'] as Map);
-      _setUserFromResponse(userResponse);
+      await _setUserFromResponse(userResponse);
       await _persistSession(
         userId: _user!.id,
         token: response['token'] as String?,
@@ -189,7 +199,7 @@ class AuthProvider extends ChangeNotifier {
       );
 
       final userResponse = Map<String, dynamic>.from(response['user'] as Map);
-      _setUserFromResponse(userResponse);
+      await _setUserFromResponse(userResponse);
       await _persistSession(
         userId: _user!.id,
         token: response['token'] as String?,
@@ -235,7 +245,7 @@ class AuthProvider extends ChangeNotifier {
       }
 
       final response = await ApiClient.get('/users/$userId');
-      _setUserFromResponse(Map<String, dynamic>.from(response as Map));
+      await _setUserFromResponse(Map<String, dynamic>.from(response as Map));
       AnalyticsService.instance.track(
         AnalyticsEvents.authSessionRestored,
         properties: {'source': 'stored_session'},
@@ -293,7 +303,7 @@ class AuthProvider extends ChangeNotifier {
         'avatarUrl': ApiClient.normalizePublicUrl(avatarUrl) ?? '',
       });
 
-      _setUserFromResponse(Map<String, dynamic>.from(response as Map));
+      await _setUserFromResponse(Map<String, dynamic>.from(response as Map));
       AnalyticsService.instance.track(
         AnalyticsEvents.profileUpdated,
         properties: {'has_avatar': (avatarUrl?.trim().isNotEmpty ?? false)},
@@ -344,7 +354,7 @@ class AuthProvider extends ChangeNotifier {
         'isDefault': isDefault,
       });
 
-      _setUserFromResponse(Map<String, dynamic>.from(response as Map));
+      await _setUserFromResponse(Map<String, dynamic>.from(response as Map));
       AnalyticsService.instance.track(
         AnalyticsEvents.addressAdded,
         properties: {'is_default': isDefault},
@@ -397,7 +407,7 @@ class AuthProvider extends ChangeNotifier {
             'isDefault': isDefault,
           });
 
-      _setUserFromResponse(Map<String, dynamic>.from(response as Map));
+      await _setUserFromResponse(Map<String, dynamic>.from(response as Map));
       AnalyticsService.instance.track(
         AnalyticsEvents.addressUpdated,
         properties: {'is_default': isDefault},
@@ -433,7 +443,7 @@ class AuthProvider extends ChangeNotifier {
         '/users/${_user!.id}/addresses/$addressId/default',
         {},
       );
-      _setUserFromResponse(Map<String, dynamic>.from(response as Map));
+      await _setUserFromResponse(Map<String, dynamic>.from(response as Map));
       AnalyticsService.instance.track(
         AnalyticsEvents.addressDefaultSet,
         properties: {'address_id': addressId},
@@ -469,7 +479,7 @@ class AuthProvider extends ChangeNotifier {
         '/users/${_user!.id}/addresses/$addressId',
       );
       if (response is Map) {
-        _setUserFromResponse(Map<String, dynamic>.from(response));
+        await _setUserFromResponse(Map<String, dynamic>.from(response));
       }
       AnalyticsService.instance.track(
         AnalyticsEvents.addressDeleted,

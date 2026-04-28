@@ -7,9 +7,11 @@ import 'app.dart';
 import 'core/analytics/analytics_service.dart';
 import 'core/network/api_client.dart';
 import 'core/providers/providers.dart';
+import 'core/providers/app_version_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/services/notification_sync_service.dart';
 import 'core/services/push_notification_service.dart';
+import 'core/services/app_version_service.dart';
 import 'core/storage/app_preferences.dart';
 import 'pro/core/providers/pro_auth_provider.dart';
 import 'pro/core/services/pro_inbox_sync_service.dart';
@@ -24,6 +26,7 @@ Future<void> main() async {
   final userLocationProvider = UserLocationProvider();
   final moduleProvider = ModuleProvider();
   final proAuthProvider = ProAuthProvider();
+  final appVersionProvider = AppVersionProvider();
   await languageProvider.initialize();
   await moduleProvider.hydrateFromStorage();
   await AnalyticsService.instance.initialize(
@@ -66,6 +69,7 @@ Future<void> main() async {
         ChangeNotifierProvider.value(value: userLocationProvider),
         ChangeNotifierProvider.value(value: moduleProvider),
         ChangeNotifierProvider.value(value: proAuthProvider),
+        ChangeNotifierProvider.value(value: appVersionProvider),
         ChangeNotifierProxyProvider2<
           AuthProvider,
           CartProvider,
@@ -103,6 +107,7 @@ Future<void> main() async {
         notificationProvider: notificationProvider,
         moduleProvider: moduleProvider,
         proAuthProvider: proAuthProvider,
+        appVersionProvider: appVersionProvider,
       ),
     );
   });
@@ -163,6 +168,7 @@ Future<void> _bootstrapAppServices({
   required NotificationProvider notificationProvider,
   required ModuleProvider moduleProvider,
   required ProAuthProvider proAuthProvider,
+  required AppVersionProvider appVersionProvider,
 }) async {
   ApiClient.warmUpBackendInBackground();
 
@@ -190,6 +196,18 @@ Future<void> _bootstrapAppServices({
 
   unawaited(NotificationSyncService.instance.syncNow(showAlerts: false));
   unawaited(_initializePush(notificationProvider));
+
+  // Initialize version checking service (call after brief delay to ensure context is available)
+  Future.delayed(const Duration(milliseconds: 100), () {
+    try {
+      final context = rootNavigatorKey.currentContext;
+      if (context != null && context.mounted) {
+        AppVersionService().initialize(context);
+      }
+    } catch (e) {
+      print('Version service initialization error: $e');
+    }
+  });
 }
 
 Future<void> _initializePush(NotificationProvider notificationProvider) async {

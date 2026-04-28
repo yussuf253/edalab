@@ -84,6 +84,19 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
     return Icons.directions_car_rounded;
   }
 
+  String _categoryDisplayName(RideCategory category, AppLocalizations l10n) {
+    switch (category.id) {
+      case 'r1':
+        return l10n.t('ride.category_economy');
+      case 'r2':
+        return l10n.t('ride.category_premium');
+      case 'r3':
+        return l10n.t('ride.category_xl');
+      default:
+        return category.name;
+    }
+  }
+
   Future<void> _loadRouteDetails() async {
     final existing = widget.bookingData?['routeDetails'];
     if (existing is Map) {
@@ -410,7 +423,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              cat.name,
+                                              _categoryDisplayName(cat, l10n),
                                               style: AppTextStyles.labelLarge,
                                             ),
                                             Text(
