@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edalab/core/providers/app_version_provider.dart';
+import 'package:edalab/core/widgets/app_update_dialog.dart';
 
 /// Service for managing version checks and update prompts
 /// This service handles the logic for when to check for updates and how to handle them
@@ -59,56 +60,10 @@ class AppVersionService {
 
     provider.markForcedUpdate();
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        title: const Text('App Update Required'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: [
-              Text(
-                'A critical update is required to continue using this app.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 16),
-              if (versionInfo.releaseNotes.isNotEmpty) ...[
-                Text(
-                  'What\'s New:',
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  versionInfo.releaseNotes,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-              const SizedBox(height: 16),
-              Text(
-                'Current Version: ${provider.currentAppVersion}',
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
-              Text(
-                'Latest Version: ${versionInfo.latestVersion}',
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                provider.confirmUpdate();
-                _openAppStore(context, versionInfo.storeUrl);
-                Navigator.of(dialogContext).pop();
-              },
-              child: const Text('Update Now'),
-            ),
-          ),
-        ],
-      ),
+    showAppUpdateDialog(
+      context,
+      isForceUpdate: true,
+      onUpdatePressed: () => _openAppStore(context, versionInfo.storeUrl),
     );
   }
 
@@ -119,61 +74,14 @@ class AppVersionService {
 
     if (versionInfo == null || !context.mounted) return;
 
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext dialogContext) => AlertDialog(
-        title: const Text('Update Available'),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: [
-              Text(
-                'A new version of the app is available.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 16),
-              if (versionInfo.releaseNotes.isNotEmpty) ...[
-                Text(
-                  'What\'s New:',
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  versionInfo.releaseNotes,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ],
-              const SizedBox(height: 16),
-              Text(
-                'Current Version: ${provider.currentAppVersion}',
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
-              Text(
-                'Latest Version: ${versionInfo.latestVersion}',
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              provider.skipUpdate();
-              provider.dismissUpdateDialog();
-              Navigator.of(dialogContext).pop();
-            },
-            child: const Text('Later'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              provider.confirmUpdate();
-              _openAppStore(context, versionInfo.storeUrl);
-              Navigator.of(dialogContext).pop();
-            },
-            child: const Text('Update Now'),
-          ),
-        ],
-      ),
+    showAppUpdateDialog(
+      context,
+      isForceUpdate: false,
+      onUpdatePressed: () => _openAppStore(context, versionInfo.storeUrl),
+      onSkipPressed: () {
+        provider.skipUpdate();
+        provider.dismissUpdateDialog();
+      },
     );
   }
 

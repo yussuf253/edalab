@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edalab/core/providers/app_version_provider.dart';
 import 'package:edalab/core/utils/app_store_util.dart';
+import 'package:edalab/core/constants/app_colors.dart';
+import 'package:edalab/core/constants/app_spacing.dart';
+import 'package:edalab/core/constants/app_text_styles.dart';
 
 /// Reusable widget for displaying app update dialogs
-class AppUpdateDialog extends StatelessWidget {
+/// Styled to match the app's card and dialog architecture
+class AppUpdateDialog extends StatefulWidget {
   final bool isForceUpdate;
   final VoidCallback? onUpdatePressed;
   final VoidCallback? onSkipPressed;
@@ -17,6 +21,33 @@ class AppUpdateDialog extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<AppUpdateDialog> createState() => _AppUpdateDialogState();
+}
+
+class _AppUpdateDialogState extends State<AppUpdateDialog>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // When app resumes, check if update was completed
+    if (state == AppLifecycleState.resumed && mounted) {
+      // Re-check version to see if app was updated
+      context.read<AppVersionProvider>().checkForUpdates(forceRefresh: true);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<AppVersionProvider>(
       builder: (context, provider, _) {
@@ -26,124 +57,205 @@ class AppUpdateDialog extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        return AlertDialog(
-          title: Text(
-            isForceUpdate ? 'Update Required' : 'Update Available',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Description
-                Text(
-                  isForceUpdate
-                      ? 'A critical update is required to continue using this app.'
-                      : 'A new version of the app is available.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 20),
-
-                // Release Notes
-                if (versionInfo.releaseNotes.isNotEmpty) ...[
-                  Text(
-                    'What\'s New:',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      versionInfo.releaseNotes,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-
-                // Version Information
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        return WillPopScope(
+          onWillPop: () async => !widget.isForceUpdate,
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: AppSpacing.shadowSm,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Icon + Title row
+                  Row(
                     children: [
-                      _buildVersionRow(
-                        context,
-                        'Current Version',
-                        provider.currentAppVersion,
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFF0E8E68),
+                              AppColors.homeServices,
+                              Color(0xFF57C49A),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(
+                          Icons.system_update_rounded,
+                          color: AppColors.white,
+                          size: 24,
+                        ),
                       ),
-                      const SizedBox(height: 4),
-                      _buildVersionRow(
-                        context,
-                        'Latest Version',
-                        versionInfo.latestVersion,
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.isForceUpdate
+                                  ? 'Update Required'
+                                  : 'Update Available',
+                              style: AppTextStyles.h4,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              widget.isForceUpdate
+                                  ? 'A critical update is required.'
+                                  : 'A new version is available.',
+                              style: AppTextStyles.bodySmall,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  // Release notes
+                  if (versionInfo.releaseNotes.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "What's New",
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: AppColors.homeServices,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            versionInfo.releaseNotes,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  // Version info
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.extraLightGrey,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'v${provider.currentAppVersion}',
+                          style: AppTextStyles.caption,
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 14,
+                          color: AppColors.mediumGrey,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'v${versionInfo.latestVersion}',
+                          style: AppTextStyles.labelMedium.copyWith(
+                            color: AppColors.homeServices,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  // Buttons
+                  Row(
+                    children: [
+                      if (!widget.isForceUpdate &&
+                          provider.isUpdateSkippable) ...[
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              provider.skipUpdate();
+                              Navigator.of(context).pop();
+                              widget.onSkipPressed?.call();
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.grey,
+                              side: const BorderSide(
+                                color: AppColors.lightGrey,
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Later',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                      ],
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            provider.confirmUpdate();
+                            if (versionInfo.storeUrl.isNotEmpty) {
+                              AppStoreUtil.openCustomUrl(versionInfo.storeUrl);
+                            }
+                            widget.onUpdatePressed?.call();
+                            // Don't pop dialog for force updates until update is complete
+                            if (!widget.isForceUpdate) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.homeServices,
+                            foregroundColor: AppColors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Update Now',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
-          actions: [
-            // Skip button (only for optional updates)
-            if (!isForceUpdate && provider.isUpdateSkippable)
-              TextButton(
-                onPressed: () {
-                  provider.skipUpdate();
-                  Navigator.of(context).pop();
-                  onSkipPressed?.call();
-                },
-                child: const Text('Skip'),
-              ),
-
-            // Update button
-            ElevatedButton(
-              onPressed: () {
-                provider.confirmUpdate();
-                Navigator.of(context).pop();
-
-                if (versionInfo.storeUrl.isNotEmpty) {
-                  AppStoreUtil.openCustomUrl(versionInfo.storeUrl);
-                }
-
-                onUpdatePressed?.call();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Update Now'),
-            ),
-          ],
         );
       },
-    );
-  }
-
-  /// Build version info row
-  Widget _buildVersionRow(BuildContext context, String label, String version) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: Theme.of(context).textTheme.labelSmall),
-        Text(
-          version,
-          style: Theme.of(
-            context,
-          ).textTheme.labelSmall?.copyWith(fontWeight: FontWeight.bold),
-        ),
-      ],
     );
   }
 }
@@ -157,6 +269,7 @@ Future<void> showAppUpdateDialog(
 }) {
   return showDialog(
     context: context,
+    barrierDismissible: !isForceUpdate,
     builder: (context) => AppUpdateDialog(
       isForceUpdate: isForceUpdate,
       onUpdatePressed: onUpdatePressed,

@@ -192,9 +192,9 @@ class _DoctorScreenState extends State<DoctorScreen> {
     final textScale = MediaQuery.textScalerOf(
       context,
     ).scale(1.0).clamp(1.0, 1.35);
-    final categoryAspectRatio = (0.84 - ((textScale - 1.0) * 0.16)).clamp(
-      0.72,
-      0.84,
+    final categoryAspectRatio = (1.25 - ((textScale - 1.0) * 0.1)).clamp(
+      1.1,
+      1.25,
     );
 
     return PopScope(
@@ -354,7 +354,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                             Expanded(
                               child: ShimmerBlock(
                                 width: double.infinity,
-                                height: 120,
+                                height: 100,
                                 radius: 16,
                               ),
                             ),
@@ -362,7 +362,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                             Expanded(
                               child: ShimmerBlock(
                                 width: double.infinity,
-                                height: 120,
+                                height: 100,
                                 radius: 16,
                               ),
                             ),
@@ -374,7 +374,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                             Expanded(
                               child: ShimmerBlock(
                                 width: double.infinity,
-                                height: 120,
+                                height: 100,
                                 radius: 16,
                               ),
                             ),
@@ -382,7 +382,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                             Expanded(
                               child: ShimmerBlock(
                                 width: double.infinity,
-                                height: 120,
+                                height: 100,
                                 radius: 16,
                               ),
                             ),
@@ -410,29 +410,29 @@ class _DoctorScreenState extends State<DoctorScreen> {
                     return GestureDetector(
                       onTap: () => _openProfessionals(category),
                       child: Container(
-                        padding: const EdgeInsets.all(14),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(16),
                           boxShadow: AppSpacing.shadowSm,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              width: 42,
-                              height: 42,
+                              width: 38,
+                              height: 38,
                               decoration: BoxDecoration(
                                 color: category.color.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
                                 category.icon,
-                                size: 23,
+                                size: 20,
                                 color: category.color,
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 8),
                             Text(
                               l10n.t(category.labelKey),
                               maxLines: 2,
@@ -442,22 +442,20 @@ class _DoctorScreenState extends State<DoctorScreen> {
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Expanded(
-                              child: Text(
-                                l10n.t(
-                                  'doctor.available_count',
-                                  params: {
-                                    'subtitle': l10n.t(category.subtitleKey),
-                                    'count': '$count',
-                                  },
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.grey,
-                                  height: 1.3,
-                                ),
+                            const SizedBox(height: 3),
+                            Text(
+                              l10n.t(
+                                'doctor.available_count',
+                                params: {
+                                  'subtitle': l10n.t(category.subtitleKey),
+                                  'count': '$count',
+                                },
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.grey,
+                                height: 1.3,
                               ),
                             ),
                           ],

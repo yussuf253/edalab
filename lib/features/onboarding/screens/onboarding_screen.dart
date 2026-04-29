@@ -62,7 +62,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         centerIcon: Icons.widgets_rounded,
         ctaColor: AppColors.primary,
         backgroundGradient: const LinearGradient(
-          colors: [Color(0xFFF4FFF8), Color(0xFFE4FDE9)],
+          colors: [Color(0xFFF2FFFB), Color(0xFFDBFCEB)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -147,7 +147,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         centerIcon: Icons.verified_user_rounded,
         ctaColor: AppColors.primary,
         backgroundGradient: const LinearGradient(
-          colors: [Color(0xFFF4FFF9), Color(0xFFE9FDF1)],
+          colors: [Color(0xFFF2FFFB), Color(0xFFDBFCEB)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -253,9 +253,7 @@ class _TopBar extends StatelessWidget {
         onSelected: (language) {
           languageProvider.setLocale(language.locale);
         },
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         itemBuilder: (context) {
           return LanguageProvider.supportedLanguages.map((language) {
             final isSelected =
