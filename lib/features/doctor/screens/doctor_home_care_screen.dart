@@ -189,9 +189,9 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
     final textScale = MediaQuery.textScalerOf(
       context,
     ).scale(1.0).clamp(1.0, 1.35);
-    final categoryAspectRatio = (5.0 - ((textScale - 1.0) * 0.3)).clamp(
-      4.5,
-      5.0,
+    final categoryAspectRatio = (1.5 - ((textScale - 1.0) * 0.15)).clamp(
+      1.3,
+      1.5,
     );
 
     return Scaffold(
@@ -311,11 +311,11 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
             sliver: SliverGrid.builder(
               itemCount: _categories.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 7.0,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: categoryAspectRatio,
               ),
               itemBuilder: (context, index) {
                 final category = _categories[index];
@@ -326,36 +326,41 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                       setState(() => _selectedCategoryId = category.id),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: selected
                           ? category.color.withValues(alpha: 0.16)
                           : AppColors.white,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: selected
                             ? category.color.withValues(alpha: 0.45)
                             : AppColors.lightGrey,
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(category.icon, color: category.color, size: 14),
-                        const SizedBox(width: 4),
+                        Icon(category.icon, color: category.color, size: 20),
+                        const SizedBox(height: 8),
                         Text(
                           l10n.t(category.labelKey),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppTextStyles.labelSmall.copyWith(
+                          style: AppTextStyles.labelMedium.copyWith(
                             color: selected ? category.color : AppColors.dark,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 10,
-                            height: 0.9,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          l10n.t(
+                            'doctor.home_care_available_count',
+                            params: {'count': count.toString()},
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.grey,
                           ),
                         ),
                       ],
@@ -390,23 +395,26 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
             ),
           ),
           if (_isLoading)
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-              sliver: SliverGrid.builder(
-                itemCount: 6,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  childAspectRatio: 2.5,
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: AppShimmer(
+                  child: Column(
+                    children: [
+                      ShimmerBlock(
+                        width: double.infinity,
+                        height: 100,
+                        radius: 14,
+                      ),
+                      SizedBox(height: 10),
+                      ShimmerBlock(
+                        width: double.infinity,
+                        height: 100,
+                        radius: 14,
+                      ),
+                    ],
+                  ),
                 ),
-                itemBuilder: (context, index) {
-                  return const ShimmerBlock(
-                    width: double.infinity,
-                    height: 50,
-                    radius: 10,
-                  );
-                },
               ),
             )
           else if (filteredProviders.isEmpty)

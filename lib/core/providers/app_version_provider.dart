@@ -21,15 +21,20 @@ class AppVersionProvider extends ChangeNotifier {
   bool get updateDismissed => _updateDismissed;
   bool get updateSkipped => _updateSkipped;
 
-  /// Check if an update is available
-  bool get isUpdateAvailable =>
-      _versionInfo != null && _versionInfo!.isUpdateRequired;
+  /// Check if an update is available (current version < latest version)
+  bool get isUpdateAvailable {
+    if (_versionInfo == null) return false;
+    // Only show update if current app version is less than latest version
+    return _versionInfo!.isUpdateRequired;
+  }
 
   /// Check if update is mandatory (force update)
-  bool get isForceUpdateRequired =>
-      _versionInfo != null &&
-      (_versionInfo!.isForceUpdateRequired ||
-          _versionInfo!.isBelowMinimumVersion);
+  /// Shows popup only if current app version is less than minRequiredVersion
+  bool get isForceUpdateRequired {
+    if (_versionInfo == null) return false;
+    // Force update only if current version is below minimum required version
+    return _versionInfo!.isBelowMinimumVersion;
+  }
 
   /// Check if update can be skipped
   bool get isUpdateSkippable =>

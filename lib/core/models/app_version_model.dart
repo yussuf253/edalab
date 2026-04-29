@@ -71,8 +71,18 @@ class AppVersionModel {
   /// Compare two semantic versions
   /// Returns: 1 if version1 > version2, -1 if version1 < version2, 0 if equal
   static int _compareVersions(String version1, String version2) {
-    final v1Parts = version1.split('.').map(int.parse).toList();
-    final v2Parts = version2.split('.').map(int.parse).toList();
+    // Strip any build metadata (e.g., "1.0.0+1" -> "1.0.0")
+    final v1Clean = version1.split('+').first;
+    final v2Clean = version2.split('+').first;
+
+    final v1Parts = v1Clean
+        .split('.')
+        .map((p) => int.tryParse(p) ?? 0)
+        .toList();
+    final v2Parts = v2Clean
+        .split('.')
+        .map((p) => int.tryParse(p) ?? 0)
+        .toList();
 
     // Pad with zeros if lengths differ
     final maxLength = v1Parts.length > v2Parts.length
