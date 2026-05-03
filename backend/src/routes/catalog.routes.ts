@@ -1312,4 +1312,64 @@ router.get(
   }),
 );
 
+// Health Services Routes
+router.get('/health-services/categories', asyncHandler(async (req, res) => {
+  const categories = await prisma.healthServiceCategory.findMany({
+    where: { active: true },
+    orderBy: { sortOrder: 'asc' },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      iconKey: true,
+      colorHex: true,
+    },
+  });
+
+  res.json(categories);
+}));
+
+router.get('/health-services/tests', asyncHandler(async (req, res) => {
+  const { categoryId } = req.query;
+
+  const where: Prisma.LabTestWhereInput = {
+    active: true,
+    ...(categoryId ? { categoryId: categoryId as string } : {}),
+  };
+
+  const tests = await prisma.labTest.findMany({
+    where,
+    orderBy: { sortOrder: 'asc' },
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+          iconKey: true,
+          colorHex: true,
+        },
+      },
+    },
+  });
+
+  res.json(
+    tests.map((test) => ({
+      id: test.id,
+      categoryId: test.categoryId,
+      name: test.name,
+      description: test.description,
+      fullDescription: test.fullDescription,
+      price: test.price,
+      originalPrice: test.originalPrice,
+      preparationInstructions: test.preparationInstructions,
+      sampleType: test.sampleType,
+      durationLabel: test.durationLabel,
+      imageUrl: test.imageUrl,
+      active: test.active,
+      sortOrder: test.sortOrder,
+    })),
+  );
+}));
+
 export default router;

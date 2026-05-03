@@ -12,6 +12,10 @@ import {
   djiboutiShoppingProducts,
   djiboutiShoppingStores,
 } from './djiboutiSeedData';
+import {
+  djiboutiHealthServiceCategories as healthServiceCategories,
+  djiboutiLabTests as healthServiceLabTests,
+} from './healthServiceSeedData';
 import { hashPassword } from '../src/utils/password';
 
 const prisma = new PrismaClient();
@@ -290,6 +294,26 @@ async function seedDoctors() {
       where: { id: doctor.id },
       update: doctor,
       create: doctor,
+    });
+  }
+}
+
+async function seedHealthServices() {
+  // Seed Health Service Categories
+  for (const category of healthServiceCategories) {
+    await prisma.healthServiceCategory.upsert({
+      where: { id: category.id },
+      update: category,
+      create: category,
+    });
+  }
+
+  // Seed Lab Tests (including physiotherapy services)
+  for (const test of healthServiceLabTests) {
+    await prisma.labTest.upsert({
+      where: { id: test.id },
+      update: test,
+      create: test,
     });
   }
 }
@@ -622,6 +646,7 @@ async function main() {
   await seedShoppingStores();
   await seedProducts();
   await seedDoctors();
+  await seedHealthServices();
   await seedRestaurants();
   await seedHotels();
   await seedRideCategories();

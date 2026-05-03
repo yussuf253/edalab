@@ -1,3 +1,5 @@
+import 'package:edalab/features/doctor/screens/lab_tests_screen.dart';
+import 'package:edalab/features/doctor/screens/physiotherapy_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../localization/app_localizations.dart';
@@ -309,6 +311,30 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
               ? Map<String, dynamic>.from(state.extra as Map)
               : null,
         ),
+      ),
+      GoRoute(
+        path: '/doctor/lab-tests',
+        builder: (context, state) {
+          final extra = state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : <String, dynamic>{};
+          return LabTestsScreen(
+            categoryId: extra['categoryId']?.toString(),
+            categoryLabel: extra['label']?.toString(),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/doctor/physiotherapy',
+        builder: (context, state) {
+          final extra = state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : <String, dynamic>{};
+          return PhysiotherapyScreen(
+            categoryId: extra['categoryId']?.toString(),
+            categoryLabel: extra['label']?.toString(),
+          );
+        },
       ),
 
       // Hotel

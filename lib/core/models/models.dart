@@ -12,3 +12,4 @@ export 'ride_model.dart';
 export 'laundry_model.dart';
 export 'shopping_store_model.dart';
 export 'app_notification_model.dart';
+export 'lab_test_model.dart';

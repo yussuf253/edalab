@@ -5,26 +5,19 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
-import '../../../core/models/models.dart';
-import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
-import '../../../core/widgets/app_shimmer.dart';
 
-class _CareCategory {
+class _HealthServiceCategory {
   final String id;
   final String labelKey;
-  final String subtitleKey;
   final IconData icon;
   final Color color;
-  final List<String> keywords;
 
-  const _CareCategory({
+  const _HealthServiceCategory({
     required this.id,
     required this.labelKey,
-    required this.subtitleKey,
     required this.icon,
     required this.color,
-    required this.keywords,
   });
 }
 
@@ -37,146 +30,59 @@ class DoctorScreen extends StatefulWidget {
 
 class _DoctorScreenState extends State<DoctorScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final List<_CareCategory> _categories = const [
-    _CareCategory(
-      id: 'all',
-      labelKey: 'doctor.all_care',
-      subtitleKey: 'doctor.all_care_subtitle',
-      icon: Icons.favorite_border_rounded,
-      color: AppColors.doctor,
-      keywords: [],
+  final List<_HealthServiceCategory> _categories = const [
+    _HealthServiceCategory(
+      id: 'lab-tests',
+      labelKey: 'doctor.lab_tests',
+      icon: Icons.science_rounded,
+      color: Color(0xFF3B82F6),
     ),
-    _CareCategory(
-      id: 'nursing',
-      labelKey: 'doctor.nursing',
-      subtitleKey: 'doctor.nursing_subtitle',
+    _HealthServiceCategory(
+      id: 'consultation',
+      labelKey: 'doctor.consultation',
       icon: Icons.medical_services_rounded,
-      color: AppColors.primary,
-      keywords: ['nursing', 'wound', 'injection', 'elderly'],
+      color: AppColors.doctor,
     ),
-    _CareCategory(
-      id: 'physio',
-      labelKey: 'doctor.physio',
-      subtitleKey: 'doctor.physio_subtitle',
+    _HealthServiceCategory(
+      id: 'physiotherapy',
+      labelKey: 'doctor.physiotherapy',
       icon: Icons.accessibility_new_rounded,
       color: AppColors.secondary,
-      keywords: ['physio', 'therapy', 'rehab', 'kine', 'back pain'],
-    ),
-    _CareCategory(
-      id: 'mental',
-      labelKey: 'doctor.mental',
-      subtitleKey: 'doctor.mental_subtitle',
-      icon: Icons.psychology_rounded,
-      color: AppColors.homeServices,
-      keywords: ['mental', 'stress', 'counseling', 'emotional'],
-    ),
-    _CareCategory(
-      id: 'child',
-      labelKey: 'doctor.child',
-      subtitleKey: 'doctor.child_subtitle',
-      icon: Icons.child_care_rounded,
-      color: AppColors.shopping,
-      keywords: ['pediatric', 'child', 'vaccination'],
-    ),
-    _CareCategory(
-      id: 'specialist',
-      labelKey: 'doctor.specialists',
-      subtitleKey: 'doctor.specialists_subtitle',
-      icon: Icons.local_hospital_rounded,
-      color: AppColors.ride,
-      keywords: ['cardio', 'derma', 'neuro', 'ortho', 'specialist'],
-    ),
-    _CareCategory(
-      id: 'elderly',
-      labelKey: 'doctor.elderly',
-      subtitleKey: 'doctor.elderly_subtitle',
-      icon: Icons.elderly_rounded,
-      color: AppColors.hotel,
-      keywords: ['elderly', 'home nursing', 'monitoring'],
-    ),
-    _CareCategory(
-      id: 'recovery',
-      labelKey: 'doctor.recovery',
-      subtitleKey: 'doctor.recovery_subtitle',
-      icon: Icons.healing_rounded,
-      color: AppColors.food,
-      keywords: ['rehab', 'recovery', 'wound', 'post', 'pain'],
     ),
   ];
 
   String _searchQuery = '';
-  List<DoctorModel> _providers = DoctorModel.sampleDoctors;
-  bool _isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadProviders();
-  }
-
-  Future<void> _loadProviders() async {
-    try {
-      final response = await ApiClient.get(
-        '/catalog/doctors',
-        forceRefresh: true,
+  void _openService(_HealthServiceCategory category) {
+    if (category.id == 'lab-tests') {
+      context.push(
+        '/doctor/lab-tests',
+        extra: {
+          'categoryId': category.id,
+          'label': context.l10n.t(category.labelKey),
+        },
       );
-      final items = (response as List)
-          .map(
-            (item) =>
-                DoctorModel.fromApi(Map<String, dynamic>.from(item as Map)),
-          )
-          .toList();
-      if (!mounted) return;
-      setState(() {
-        _providers = items.isEmpty ? DoctorModel.sampleDoctors : items;
-        _isLoading = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
+    } else if (category.id == 'physiotherapy') {
+      context.push(
+        '/doctor/physiotherapy',
+        extra: {
+          'categoryId': category.id,
+          'label': context.l10n.t(category.labelKey),
+        },
+      );
+    } else {
+      // For consultation and other services, navigate to professionals
+      context.push(
+        '/doctor/professionals/${category.id}',
+        extra: {'label': context.l10n.t(category.labelKey)},
+      );
     }
-  }
-
-  bool _matchesCategory(DoctorModel provider, _CareCategory category) {
-    if (category.id == 'all') return true;
-
-    final haystack = <String>[
-      provider.name,
-      provider.specialty,
-      provider.providerType,
-      provider.about ?? '',
-      ...provider.services,
-      ...provider.careModes,
-    ].join(' ').toLowerCase();
-
-    if (category.id == 'specialist') {
-      return provider.providerType == 'DOCTOR';
-    }
-
-    return category.keywords.any(haystack.contains);
-  }
-
-  int _countForCategory(_CareCategory category) {
-    return _providers
-        .where((provider) => _matchesCategory(provider, category))
-        .length;
   }
 
   void _openHomeCareBooking() {
     context.push(
       '/doctor/home-care',
       extra: {'searchQuery': _searchQuery.trim()},
-    );
-  }
-
-  void _openProfessionals(_CareCategory category) {
-    context.push(
-      '/doctor/professionals/${category.id}',
-      extra: {
-        'label': context.l10n.t(category.labelKey),
-        'keywords': category.keywords,
-        'searchQuery': _searchQuery.trim(),
-      },
     );
   }
 
@@ -342,142 +248,60 @@ class _DoctorScreenState extends State<DoctorScreen> {
                 ),
               ),
             ),
-            if (_isLoading)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  child: AppShimmer(
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ShimmerBlock(
-                                width: double.infinity,
-                                height: 100,
-                                radius: 16,
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Expanded(
-                              child: ShimmerBlock(
-                                width: double.infinity,
-                                height: 100,
-                                radius: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ShimmerBlock(
-                                width: double.infinity,
-                                height: 100,
-                                radius: 16,
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Expanded(
-                              child: ShimmerBlock(
-                                width: double.infinity,
-                                height: 100,
-                                radius: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+              sliver: SliverGrid.builder(
+                itemCount: _categories.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: categoryAspectRatio,
                 ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                sliver: SliverGrid.builder(
-                  itemCount: _categories.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: categoryAspectRatio,
-                  ),
-                  itemBuilder: (context, index) {
-                    final category = _categories[index];
-                    final count = _countForCategory(category);
-                    return GestureDetector(
-                      onTap: () => _openProfessionals(category),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: AppSpacing.shadowSm,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 38,
-                              height: 38,
-                              decoration: BoxDecoration(
-                                color: category.color.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Icon(
-                                category.icon,
-                                size: 20,
-                                color: category.color,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              l10n.t(category.labelKey),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.labelLarge.copyWith(
-                                height: 1.2,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              l10n.t(
-                                'doctor.available_count',
-                                params: {
-                                  'subtitle': l10n.t(category.subtitleKey),
-                                  'count': '$count',
-                                },
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.grey,
-                                height: 1.3,
-                              ),
-                            ),
-                          ],
-                        ),
+                itemBuilder: (context, index) {
+                  final category = _categories[index];
+                  return GestureDetector(
+                    onTap: () => _openService(category),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: AppSpacing.shadowSm,
                       ),
-                    );
-                  },
-                ),
-              ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                child: Text(
-                  l10n.t('doctor.tap_service'),
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.grey,
-                    height: 1.4,
-                  ),
-                ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: category.color.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(
+                              category.icon,
+                              size: 20,
+                              color: category.color,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.t(category.labelKey),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.labelLarge.copyWith(
+                              height: 1.2,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
         ),
         bottomNavigationBar: SafeArea(
@@ -485,9 +309,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
           child: SizedBox(
             height: 52,
             child: ElevatedButton(
-              onPressed: _isLoading
-                  ? null
-                  : () => _openProfessionals(_categories.first),
+              onPressed: () => _openService(_categories.first),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.doctor,
                 foregroundColor: AppColors.white,
