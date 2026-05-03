@@ -9,10 +9,20 @@ const promises_1 = __importDefault(require("fs/promises"));
 const path_1 = __importDefault(require("path"));
 const env_1 = require("./config/env");
 const routes_1 = __importDefault(require("./routes"));
+const version_routes_1 = __importDefault(require("./routes/version.routes"));
 const error_handler_1 = require("./middleware/error-handler");
 const app = (0, express_1.default)();
 app.set('trust proxy', 1);
 const avatarFallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 220 220"><rect width="220" height="220" rx="44" fill="#E8F1FF"/><circle cx="110" cy="92" r="34" fill="#7AA3E8"/><path d="M44 193c12-33 38-54 66-54s54 21 66 54" fill="#7AA3E8"/></svg>`;
+app.use(express_1.default.json());
+// 👉 Mount the router with the correct prefix
+// If your Flutter client uses baseUrl = https://your‑api.com/api
+// then mount under '/api/version'
+// app.use('/api/version', versionRouter);   // <-- removed duplicate mounting (handled later)
+// Optional: health check
+app.get('/api/health', (_, res) => res.send('OK'));
+const PORT = process.env.PORT || 5050;
+app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
 app.use((req, res, next) => {
     const startedAt = Date.now();
     console.log(`[API] ${req.method} ${req.originalUrl}`);
@@ -128,6 +138,9 @@ app.get('/uploads/avatars/:fileName', async (req, res, next) => {
 app.use('/uploads', express_1.default.static(path_1.default.resolve(process.cwd(), 'uploads'), {
     maxAge: '7d',
 }));
+// Mount version routes under '/api/version'
+app.use('/api/version', version_routes_1.default);
+// Mount other API routes under '/api'
 app.use('/api', routes_1.default);
 app.use(error_handler_1.notFoundHandler);
 app.use(error_handler_1.errorHandler);

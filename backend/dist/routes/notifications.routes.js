@@ -49,6 +49,8 @@ function inferTypeFromModule(module) {
         case client_1.NotificationModule.ACCOUNT:
         case client_1.NotificationModule.SYSTEM:
             return client_1.NotificationType.SYSTEM;
+        default:
+            return client_1.NotificationType.SYSTEM;
     }
 }
 function inferModuleFromType(type) {

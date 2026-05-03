@@ -57,6 +57,8 @@ function inferTypeFromModule(module: NotificationModule): NotificationType {
     case NotificationModule.ACCOUNT:
     case NotificationModule.SYSTEM:
       return NotificationType.SYSTEM;
+    default:
+      return NotificationType.SYSTEM;
   }
 }
 

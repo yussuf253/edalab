@@ -225,7 +225,9 @@ const updateDoctorSettingsSchema = zod_1.z.object({
     contactWhatsApp: zod_1.z.string().trim().max(40).optional(),
     imageUrl: zod_1.z.string().trim().url().optional().or(zod_1.z.literal('')),
     careModes: settingsModesSchema.optional(),
-    workingHours: hoursSchema.optional(),
+    services: settingsModesSchema.optional(),
+    specialty: zod_1.z.string().trim().min(2).max(100).optional(),
+    workingHours: zod_1.z.record(zod_1.z.string()).optional(),
 });
 function serializeProProfile(profile) {
     return {
@@ -271,7 +273,7 @@ function startOfToday() {
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
 function formatCurrency(value) {
-    return `\$${(value ?? 0).toFixed(2)}`;
+    return `DJF ${(value ?? 0).toFixed(2)}`;
 }
 function formatModule(value) {
     return value
@@ -583,11 +585,11 @@ function normalizeHours(value, defaults) {
     const map = value != null && typeof value === 'object' && !Array.isArray(value)
         ? value
         : {};
-    return {
-        weekdays: map.weekdays?.toString().trim() || defaults.weekdays,
-        saturday: map.saturday?.toString().trim() || defaults.saturday,
-        sunday: map.sunday?.toString().trim() || defaults.sunday,
-    };
+    const result = {};
+    for (const key of Object.keys(defaults)) {
+        result[key] = map[key]?.toString().trim() || defaults[key];
+    }
+    return result;
 }
 function toFiniteNumber(value) {
     if (typeof value === 'number' && Number.isFinite(value))
@@ -4669,7 +4671,11 @@ router.get('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async (
         contactWhatsApp: doctor.contactWhatsApp,
         careModes: normalizeStringList(doctor.careModesJson),
         workingHours: normalizeHours(doctor.workingHoursJson, {
-            weekdays: '09:00 AM - 05:00 PM',
+            monday: '09:00 AM - 05:00 PM',
+            tuesday: '09:00 AM - 05:00 PM',
+            wednesday: '09:00 AM - 05:00 PM',
+            thursday: '09:00 AM - 05:00 PM',
+            friday: '09:00 AM - 05:00 PM',
             saturday: '10:00 AM - 02:00 PM',
             sunday: 'Closed',
         }),
@@ -4690,14 +4696,15 @@ router.post('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async 
         create: {
             id: body.doctorId,
             name: profile.businessName,
-            specialty: 'General Practice',
             consultationFee: 0,
             imageUrl: body.imageUrl == null ? null : body.imageUrl.trim() || null,
             location: body.location == null ? null : body.location.trim() || null,
             contactPhone: body.contactPhone == null ? null : body.contactPhone.trim() || null,
             contactWhatsApp: body.contactWhatsApp == null ? null : body.contactWhatsApp.trim() || null,
             careModesJson: body.careModes == null ? undefined : normalizeStringList(body.careModes),
-            workingHoursJson: body.workingHours == null ? undefined : normalizeHours(body.workingHours, { weekdays: '09:00 AM - 05:00 PM', saturday: '10:00 AM - 02:00 PM', sunday: 'Closed' }),
+            servicesJson: body.services == null ? undefined : normalizeStringList(body.services),
+            specialty: body.specialty == null ? 'General Practice' : body.specialty.trim() || 'General Practice',
+            workingHoursJson: body.workingHours == null ? undefined : normalizeHours(body.workingHours, { monday: '09:00 AM - 05:00 PM', tuesday: '09:00 AM - 05:00 PM', wednesday: '09:00 AM - 05:00 PM', thursday: '09:00 AM - 05:00 PM', friday: '09:00 AM - 05:00 PM', saturday: '10:00 AM - 02:00 PM', sunday: 'Closed' }),
         },
         update: {
             imageUrl: body.imageUrl == null ? undefined : body.imageUrl.trim() || null,
@@ -4711,10 +4718,20 @@ router.post('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async 
             careModesJson: body.careModes == null
                 ? undefined
                 : normalizeStringList(body.careModes),
+            servicesJson: body.services == null
+                ? undefined
+                : normalizeStringList(body.services),
+            specialty: body.specialty == null
+                ? undefined
+                : body.specialty.trim() || undefined,
             workingHoursJson: body.workingHours == null
                 ? undefined
                 : normalizeHours(body.workingHours, {
-                    weekdays: '09:00 AM - 05:00 PM',
+                    monday: '09:00 AM - 05:00 PM',
+                    tuesday: '09:00 AM - 05:00 PM',
+                    wednesday: '09:00 AM - 05:00 PM',
+                    thursday: '09:00 AM - 05:00 PM',
+                    friday: '09:00 AM - 05:00 PM',
                     saturday: '10:00 AM - 02:00 PM',
                     sunday: 'Closed',
                 }),
@@ -4752,7 +4769,11 @@ router.post('/:userId/doctor-settings', (0, async_handler_1.asyncHandler)(async 
         contactWhatsApp: doctor.contactWhatsApp,
         careModes: normalizeStringList(doctor.careModesJson),
         workingHours: normalizeHours(doctor.workingHoursJson, {
-            weekdays: '09:00 AM - 05:00 PM',
+            monday: '09:00 AM - 05:00 PM',
+            tuesday: '09:00 AM - 05:00 PM',
+            wednesday: '09:00 AM - 05:00 PM',
+            thursday: '09:00 AM - 05:00 PM',
+            friday: '09:00 AM - 05:00 PM',
             saturday: '10:00 AM - 02:00 PM',
             sunday: 'Closed',
         }),
