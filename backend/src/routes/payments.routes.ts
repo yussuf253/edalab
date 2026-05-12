@@ -32,13 +32,44 @@ function paymentMetadata(value: Prisma.JsonValue | null | undefined) {
 
 function publicApiOrigin(req: Request) {
   const configuredBase = env.PUBLIC_BASE_URL?.replace(/\/+$/, '');
-  if (configuredBase) return configuredBase.endsWith('/api') ? configuredBase : `${configuredBase}/api`;
+  if (configuredBase) {
+    return configuredBase.endsWith('/api')
+      ? configuredBase
+      : `${configuredBase}/api`;
+  }
   return `${req.protocol}://${req.get('host')}/api`;
 }
 
 function decodeWaafiResult(rawToken: string) {
-  const decoded = Buffer.from(rawToken, 'base64').toString('utf8');
-  return JSON.parse(decoded) as Record<string, unknown>;
+  const candidates = [rawToken];
+  if (/^[0-9a-f]+$/i.test(rawToken) && rawToken.length % 2 === 0) {
+    candidates.push(Buffer.from(rawToken, 'hex').toString('utf8'));
+  }
+
+  for (const candidate of candidates) {
+    const trimmed = candidate.trim();
+    if (trimmed.startsWith('{')) {
+      try {
+        return JSON.parse(trimmed) as Record<string, unknown>;
+      } catch {
+        // Try the next decoding strategy.
+      }
+    }
+
+    try {
+      const decoded = Buffer.from(trimmed, 'base64').toString('utf8').trim();
+      if (decoded.startsWith('{')) {
+        return JSON.parse(decoded) as Record<string, unknown>;
+      }
+    } catch {
+      // WaafiPay can send an opaque/encrypted HPP token on failure.
+    }
+  }
+
+  return {
+    opaqueToken: true,
+    tokenPreview: rawToken.slice(0, 32),
+  };
 }
 
 router.post(
@@ -144,6 +175,7 @@ router.post(
 router.all(
   '/waafipay/callback/:result',
   asyncHandler(async (req, res) => {
+    const callbackResult = req.params.result?.toString().toLowerCase();
     const orderId = req.query.orderId?.toString() || req.body?.orderId;
     const referenceId =
       req.query.referenceId?.toString() || req.body?.referenceId;
@@ -162,8 +194,16 @@ router.all(
     const callbackData = decodeWaafiResult(hppResultToken.toString());
     const responseCode = callbackData.responseCode?.toString();
     const responseMsg = callbackData.responseMsg?.toString();
-    const paid = responseCode === '2001' && responseMsg === 'RCS_SUCCESS';
+    const hasParsedResult = responseCode != null || responseMsg != null;
+    const paid =
+      (responseCode === '2001' && responseMsg === 'RCS_SUCCESS') ||
+      (!hasParsedResult && callbackResult === 'success');
     const cancelled = responseCode === '5001' || responseCode === '5002';
+    const paymentStatus = paid
+      ? 'COMPLETED'
+      : cancelled
+        ? 'CANCELLED'
+        : 'FAILED';
 
     await prisma.order.update({
       where: { id: order.id },
@@ -177,11 +217,12 @@ router.all(
           ...paymentMetadata(order.metadata),
           payment: {
             provider: 'WAAFIPAY',
-            status: paid ? 'COMPLETED' : cancelled ? 'CANCELLED' : 'FAILED',
+            status: paymentStatus,
             referenceId:
               callbackData.referenceId?.toString() || referenceId || null,
             responseCode,
             responseMessage: responseMsg,
+            callbackResult,
             callbackData,
             updatedAt: new Date().toISOString(),
           },
@@ -191,7 +232,7 @@ router.all(
 
     res.json({
       success: paid,
-      status: paid ? 'COMPLETED' : cancelled ? 'CANCELLED' : 'FAILED',
+      status: paymentStatus,
       orderId: order.id,
     });
   }),
