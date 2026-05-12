@@ -463,35 +463,98 @@ router.all(
     const callbackResult =
       req.params.result?.toString().toLowerCase();
 
-    const orderId =
-      req.query.orderId?.toString() ||
-      req.body?.orderId;
-
-    const referenceId =
-      req.query.referenceId?.toString() ||
-      req.body?.referenceId;
+    /**
+     * IMPORTANT
+     * WaafiPay may send:
+     *
+     * 1. hppResultToken
+     * 2. direct query params
+     */
 
     const hppResultToken =
       req.query.hppResultToken?.toString() ||
       req.body?.hppResultToken ||
       req.body?.HPP_RESULT_TOKEN;
 
-    if (!orderId || !hppResultToken) {
-      console.error('Missing callback data');
+    let callbackData: Record<string, any> = {};
 
+    if (hppResultToken) {
+      console.log('RAW TOKEN');
+      console.log(hppResultToken);
+
+      callbackData = decodeWaafiResult(
+        hppResultToken.toString(),
+      );
+    } else {
+      /**
+       * DIRECT QUERY PARAMS MODE
+       */
+      callbackData = {
+        responseCode:
+          req.query.responseCode ||
+          req.body?.responseCode,
+
+        responseMsg:
+          req.query.responseMsg ||
+          req.body?.responseMsg,
+
+        referenceId:
+          req.query.referenceId ||
+          req.body?.referenceId,
+
+        transactionId:
+          req.query.transactionId ||
+          req.body?.transactionId,
+
+        state:
+          req.query.state ||
+          req.body?.state,
+
+        procCode:
+          req.query.procCode ||
+          req.body?.procCode,
+
+        procDescription:
+          req.query.procDescription ||
+          req.body?.procDescription,
+
+        amount:
+          req.query.txAmount ||
+          req.body?.txAmount,
+
+        currency:
+          req.query.currency ||
+          req.body?.currency,
+      };
+    }
+
+    console.log('FINAL CALLBACK DATA');
+    console.log(callbackData);
+
+    /**
+     * IMPORTANT
+     * WaafiPay orderId here is THEIR orderId,
+     * not your internal DB order ID.
+     *
+     * So we use referenceId to find our order.
+     */
+
+    const referenceId =
+      callbackData.referenceId?.toString();
+
+    if (!referenceId) {
       return res.status(400).json({
-        error: 'Missing WaafiPay callback data.',
+        error: 'Missing referenceId',
       });
     }
 
-    console.log('RAW TOKEN');
-    console.log(hppResultToken);
-
-    const order = await prisma.order.findUnique({
+    const order = await prisma.order.findFirst({
       where: {
-        id: orderId,
+        metadata: {
+          path: ['payment', 'referenceId'],
+          equals: referenceId,
+        },
       },
-
       include: {
         items: true,
       },
@@ -503,38 +566,37 @@ router.all(
       });
     }
 
-    const callbackData = decodeWaafiResult(
-      hppResultToken.toString(),
-    );
-
-    console.log('DECODED CALLBACK DATA');
-    console.log(callbackData);
-
     const responseCode =
       callbackData.responseCode?.toString();
 
     const responseMsg =
       callbackData.responseMsg?.toString();
 
-    /**
-     * VERY IMPORTANT
-     * WaafiPay callbacks are unreliable.
-     * Never immediately mark failed.
-     */
+    const state =
+      callbackData.state?.toString();
 
+    /**
+     * SUCCESS CONDITIONS
+     */
     const paid =
       responseCode === '2001' ||
       responseMsg === 'RCS_SUCCESS' ||
+      state === 'APPROVED' ||
       callbackResult === 'success';
 
+    /**
+     * FAILURE CONDITIONS
+     */
     const cancelled =
+      state === 'DECLINED' ||
       responseCode === '5001' ||
-      responseCode === '5002';
+      responseCode === '5002' ||
+      responseCode === '5206';
 
     const paymentStatus = paid
       ? 'COMPLETED'
       : cancelled
-        ? 'CANCELLED'
+        ? 'FAILED'
         : 'PENDING';
 
     await prisma.order.update({
@@ -557,10 +619,10 @@ router.all(
 
             status: paymentStatus,
 
-            referenceId:
-              callbackData.referenceId?.toString() ||
-              referenceId ||
-              null,
+            referenceId,
+
+            transactionId:
+              callbackData.transactionId || null,
 
             responseCode,
 
@@ -569,9 +631,6 @@ router.all(
             callbackResult,
 
             callbackData,
-
-            tokenPreview:
-              callbackData.tokenPreview || null,
 
             updatedAt: new Date().toISOString(),
           },
@@ -590,17 +649,10 @@ router.all(
       await notifyProvidersForPaidOrder(order);
     }
 
-    res.json({
+    return res.json({
       success: paid,
-
       status: paymentStatus,
-
       orderId: order.id,
-
-      responseCode,
-
-      responseMessage: responseMsg,
-
       callbackData,
     });
   }),
