@@ -354,9 +354,15 @@ router.all(
     const responseCode = callbackData.responseCode?.toString();
     const responseMsg = callbackData.responseMsg?.toString();
     const hasParsedResult = responseCode != null || responseMsg != null;
+    // Consider the payment successful if the response code indicates success.
+    // WaafiPay may return different success codes (e.g., 2000, 2001). Treat any code
+    // that starts with '200' as a successful payment when the response message
+    // also indicates success, or when the callback result itself is "success"
+    // and no parsed result is available.
+    const isSuccessCode = responseCode != null && responseCode.startsWith('200');
     const paid =
-      (responseCode === '2001' && responseMsg === 'RCS_SUCCESS') ||
-      (!hasParsedResult && callbackResult === 'success');
+      (isSuccessCode && responseMsg == 'RCS_SUCCESS') ||
+      (!hasParsedResult && callbackResult == 'success');
     const cancelled = responseCode === '5001' || responseCode === '5002';
     const paymentStatus = paid
       ? 'COMPLETED'
