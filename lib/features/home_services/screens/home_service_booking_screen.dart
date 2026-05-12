@@ -15,7 +15,6 @@ import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
-import '../../../payment/payment_service.dart';
 import '../widgets/house_help_booking_map.dart';
 
 class HomeServiceBookingScreen extends StatefulWidget {
@@ -494,8 +493,13 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProvider();
-    _requestCurrentLocation(showFailureSnackBar: false);
+    // Defer loading and location requests until after the first frame to avoid
+    // calling setState/notifyListeners during the widget build phase.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _loadProvider();
+      // ignore: use_build_context_synchronously
+      await _requestCurrentLocation(showFailureSnackBar: false);
+    });
   }
 
   Future<LatLng?> _requestCurrentLocation({
@@ -1952,6 +1956,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                   'discount': 0,
                                   'total': bookingServiceFee,
                                   'notes': '',
+                                  'deferNotifications': isWaafiPay,
                                   'items': [orderItem],
                                 });
                                 if (!context.mounted) return;
@@ -1964,9 +1969,8 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     'Order was created without an id.',
                                   );
                                 }
-                                WaafiPaymentResult? waafiResult;
                                 if (isWaafiPay) {
-                                  waafiResult = await context
+                                  final waafiResult = await context
                                       .read<PaymentProvider>()
                                       .initiateWaafiPayment(
                                         orderId: orderId,
@@ -1997,6 +2001,15 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     );
                                     if (!context.mounted) return;
                                   }
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Complete payment in WaafiPay. Your booking will be confirmed after payment.',
+                                      ),
+                                      backgroundColor: AppColors.success,
+                                    ),
+                                  );
+                                  return;
                                 }
                                 AnalyticsService.instance.track(
                                   AnalyticsEvents.checkoutCompleted,
@@ -2032,9 +2045,6 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     'trackingExtra': {
                                       ...orderMap,
                                       'paymentLabel': paymentLabel,
-                                      if (waafiResult?.referenceId != null)
-                                        'paymentReference':
-                                            waafiResult!.referenceId,
                                     },
                                   },
                                 );

@@ -337,6 +337,7 @@ class CartProvider extends ChangeNotifier {
     String userId,
     String moduleType, {
     Map<String, dynamic>? orderMetadata,
+    bool deferNotifications = false,
   }) async {
     final moduleItems = getModuleItems(moduleType);
     if (moduleItems.isEmpty) return null;
@@ -408,6 +409,7 @@ class CartProvider extends ChangeNotifier {
         'tax': modTax,
         'deliveryFee': 0,
         'total': modTotal,
+        'deferNotifications': deferNotifications,
         'items': itemsJson,
       });
 

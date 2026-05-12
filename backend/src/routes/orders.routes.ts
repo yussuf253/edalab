@@ -46,6 +46,7 @@ const createOrderSchema = z.object({
   discount: z.coerce.number().optional().default(0),
   total: z.coerce.number(),
   notes: z.string().optional(),
+  deferNotifications: z.boolean().optional().default(false),
   items: z.array(orderItemSchema).default([]),
 });
 
@@ -978,19 +979,21 @@ router.post(
       },
     }) as OrderWithItemsAndDelivery;
 
-    const primaryLabel = resolveOrderModuleName(order);
-    await createOrderCreatedNotification({
-      userId: order.userId,
-      orderId: order.id,
-      moduleType: order.moduleType,
-      moduleName: primaryLabel,
-    });
+    if (!body.deferNotifications) {
+      const primaryLabel = resolveOrderModuleName(order);
+      await createOrderCreatedNotification({
+        userId: order.userId,
+        orderId: order.id,
+        moduleType: order.moduleType,
+        moduleName: primaryLabel,
+      });
+    }
 
     const serviceRequestModule =
       order.moduleType === ModuleType.HOME_SERVICES ||
       order.moduleType === ModuleType.HOUSE_HELP;
 
-    if (serviceRequestModule) {
+    if (serviceRequestModule && !body.deferNotifications) {
       const firstItem = order.items[0];
       const firstMetadata = firstItem
         ? enrichOrderItemMetadata(firstItem)
@@ -1064,7 +1067,7 @@ router.post(
       }
     }
 
-    if (order.moduleType === ModuleType.LAUNDRY) {
+    if (order.moduleType === ModuleType.LAUNDRY && !body.deferNotifications) {
       const firstItem = order.items[0];
       const firstMetadata = firstItem
         ? enrichOrderItemMetadata(firstItem)

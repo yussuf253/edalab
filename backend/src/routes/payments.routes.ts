@@ -1,10 +1,22 @@
-import { OrderStatus, Prisma } from '@prisma/client';
+import {
+  ModuleType,
+  NotificationModule,
+  NotificationType,
+  OrderStatus,
+  Prisma,
+  ProModule,
+  ProProfileType,
+} from '@prisma/client';
 import { randomUUID } from 'crypto';
 import { Request, Router } from 'express';
 import { z } from 'zod';
 import { env } from '../config/env';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
+import {
+  createBackendNotification,
+  createOrderCreatedNotification,
+} from '../utils/notifications';
 
 const router = Router();
 
@@ -28,6 +40,150 @@ function paymentMetadata(value: Prisma.JsonValue | null | undefined) {
     return { ...(value as Record<string, unknown>) };
   }
   return {};
+}
+
+function normalizeStringList(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
+    .filter((entry): entry is string => entry.length > 0);
+}
+
+function bindingsProviderIds(value: unknown) {
+  if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+    return [];
+  }
+  return normalizeStringList((value as Record<string, unknown>).providerIds);
+}
+
+function bindingsLaundryServiceIds(value: unknown) {
+  if (value == null || typeof value !== 'object' || Array.isArray(value)) {
+    return [];
+  }
+  return normalizeStringList(
+    (value as Record<string, unknown>).laundryServiceIds,
+  );
+}
+
+async function notifyProvidersForPaidOrder(
+  order: Prisma.OrderGetPayload<{ include: { items: true } }>,
+) {
+  const firstItem = order.items[0];
+  const firstMetadata = paymentMetadata(firstItem?.metadata);
+
+  if (
+    order.moduleType === ModuleType.HOME_SERVICES ||
+    order.moduleType === ModuleType.HOUSE_HELP
+  ) {
+    const poolProviderIds = normalizeStringList(firstMetadata.providerPoolIds);
+    const metadataProviderId =
+      typeof firstMetadata.providerId === 'string'
+        ? firstMetadata.providerId.trim()
+        : '';
+    const directProviderId = firstItem?.externalRefId?.trim() || metadataProviderId;
+    const targetProviderIds = Array.from(
+      new Set([
+        ...(directProviderId.length > 0 ? [directProviderId] : []),
+        ...poolProviderIds,
+      ]),
+    );
+    if (targetProviderIds.length === 0) return;
+
+    const providerProfiles = await prisma.proProfile.findMany({
+      where: {
+        type: ProProfileType.PROVIDER,
+        activeModules: { has: ProModule.SERVICES },
+      },
+      select: { userId: true, bindings: true },
+    });
+    const recipientUserIds = Array.from(
+      new Set(
+        providerProfiles
+          .filter((profile) =>
+            bindingsProviderIds(profile.bindings).some((id) =>
+              targetProviderIds.includes(id),
+            ),
+          )
+          .map((profile) => profile.userId)
+          .filter((id) => id.trim().length > 0),
+      ),
+    );
+
+    await Promise.allSettled(
+      recipientUserIds.map((providerUserId) =>
+        createBackendNotification({
+          userId: providerUserId,
+          type: NotificationType.SYSTEM,
+          module: NotificationModule.HOME_SERVICES,
+          title:
+            order.moduleType === ModuleType.HOUSE_HELP
+              ? 'New paid house-help request'
+              : 'New paid home-service request',
+          body:
+            order.moduleType === ModuleType.HOUSE_HELP
+              ? 'A paid house-help booking is waiting for provider action.'
+              : 'A paid home-service booking is waiting for provider action.',
+          route: `/pro/provider/job/${order.id}`,
+          dedupeKey: `provider-request:${order.id}:${providerUserId}`,
+          metadata: {
+            orderId: order.id,
+            moduleType: order.moduleType,
+            source: 'waafipay_confirmed',
+            queueType: poolProviderIds.length > 0 ? 'open' : 'assigned',
+          },
+        }),
+      ),
+    );
+  }
+
+  if (order.moduleType === ModuleType.LAUNDRY) {
+    const metadataServiceId =
+      typeof firstMetadata.serviceId === 'string'
+        ? firstMetadata.serviceId.trim()
+        : '';
+    const targetServiceId = firstItem?.externalRefId?.trim() || metadataServiceId;
+    if (targetServiceId.length === 0) return;
+
+    const providerProfiles = await prisma.proProfile.findMany({
+      where: {
+        type: ProProfileType.PROVIDER,
+        activeModules: { has: ProModule.LAUNDRY },
+      },
+      select: { userId: true, bindings: true },
+    });
+    const recipientUserIds = Array.from(
+      new Set(
+        providerProfiles
+          .filter((profile) =>
+            bindingsLaundryServiceIds(profile.bindings).includes(
+              targetServiceId,
+            ),
+          )
+          .map((profile) => profile.userId)
+          .filter((id) => id.trim().length > 0),
+      ),
+    );
+
+    await Promise.allSettled(
+      recipientUserIds.map((providerUserId) =>
+        createBackendNotification({
+          userId: providerUserId,
+          type: NotificationType.SYSTEM,
+          module: NotificationModule.LAUNDRY,
+          title: 'New paid laundry pickup request',
+          body: 'A paid laundry order is waiting for provider action.',
+          route: `/pro/provider/job/${order.id}`,
+          dedupeKey: `provider-laundry:${order.id}:${providerUserId}`,
+          metadata: {
+            orderId: order.id,
+            moduleType: order.moduleType,
+            source: 'waafipay_confirmed',
+            laundryServiceId: targetServiceId,
+          },
+        }),
+      ),
+    );
+  }
 }
 
 function publicApiOrigin(req: Request) {
@@ -188,7 +344,10 @@ router.all(
       return res.status(400).json({ error: 'Missing WaafiPay callback data.' });
     }
 
-    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: true },
+    });
     if (!order) return res.status(404).json({ error: 'Order not found.' });
 
     const callbackData = decodeWaafiResult(hppResultToken.toString());
@@ -229,6 +388,16 @@ router.all(
         } as Prisma.InputJsonValue,
       },
     });
+
+    if (paid) {
+      await createOrderCreatedNotification({
+        userId: order.userId,
+        orderId: order.id,
+        moduleType: order.moduleType,
+        moduleName: order.items[0]?.name ?? null,
+      });
+      await notifyProvidersForPaidOrder(order);
+    }
 
     res.json({
       success: paid,

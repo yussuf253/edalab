@@ -12,7 +12,6 @@ import '../../../core/providers/providers.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
-import '../../../payment/payment_service.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final Map<String, dynamic>? checkoutData;
@@ -733,6 +732,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       final createdOrderId = await cartProvider.submitModuleOrder(
                         authProvider.user!.id,
                         m,
+                        deferNotifications: isWaafiPay,
                         orderMetadata: {
                           'address': selectedAddress == null
                               ? null
@@ -756,9 +756,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     final orderId =
                         primaryOrderId ??
                         'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
-                    WaafiPaymentResult? waafiResult;
                     if (isWaafiPay) {
-                      waafiResult = await context
+                      final waafiResult = await context
                           .read<PaymentProvider>()
                           .initiateWaafiPayment(
                             orderId: orderId,
@@ -787,6 +786,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         );
                         if (!context.mounted) return;
                       }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Complete payment in WaafiPay. Your order will be confirmed after payment.',
+                          ),
+                          backgroundColor: AppColors.success,
+                        ),
+                      );
+                      return;
                     }
                     AnalyticsService.instance.track(
                       AnalyticsEvents.checkoutCompleted,
@@ -841,8 +849,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           'total': total,
                           'createdAt': DateTime.now().toIso8601String(),
                           'paymentLabel': paymentName,
-                          if (waafiResult?.referenceId != null)
-                            'paymentReference': waafiResult!.referenceId,
                           'deliveryLabel':
                               _deliveryOptions[_selectedDeliveryOption].$1,
                           'deliveryEta':
