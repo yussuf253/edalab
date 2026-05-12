@@ -649,11 +649,33 @@ router.all(
       await notifyProvidersForPaidOrder(order);
     }
 
+    // Build a user-friendly message to avoid exposing raw callback data to users
+    const friendlyMessage = paid
+      ? 'Payment completed successfully.'
+      : cancelled
+        ? (responseMsg || 'Payment was declined.')
+        : 'Payment pending verification.';
+
+    // If caller accepts HTML (likely a browser), redirect to a frontend result page
+    const configuredBase = env.PUBLIC_BASE_URL?.replace(/\/+$/, '');
+    const webOrigin = configuredBase
+      ? configuredBase.replace(/\/api$/i, '').replace(/\/+$/, '')
+      : `${req.protocol}://${req.get('host')}`;
+
+    if (req.accepts && req.accepts('html')) {
+      const redirectUrl = `${webOrigin}/checkout/result?orderId=${encodeURIComponent(order.id)}&status=${encodeURIComponent(paymentStatus)}&message=${encodeURIComponent(friendlyMessage)}`;
+      return res.redirect(302, redirectUrl);
+    }
+
+    // API clients get a sanitized JSON response (no raw callbackData)
     return res.json({
       success: paid,
       status: paymentStatus,
       orderId: order.id,
-      callbackData,
+      message: friendlyMessage,
+      responseCode,
+      // include a token preview only when present for debugging, but avoid full callbackData
+      tokenPreview: callbackData.tokenPreview || null,
     });
   }),
 );
