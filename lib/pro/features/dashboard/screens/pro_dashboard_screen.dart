@@ -15,6 +15,7 @@ import '../../operations/screens/pro_operations_screen.dart';
 import '../../provider/screens/provider_dashboard_screen.dart';
 import '../../rider/screens/rider_dashboard_screen.dart';
 import '../../shop/screens/shop_dashboard_screen.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ProDashboardScreen extends StatefulWidget {
   final int initialIndex;
@@ -146,13 +147,14 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final proAuth = context.watch<ProAuthProvider>();
     final profile = proAuth.currentProfile;
 
     if (profile == null) {
       _inboxPollTimer?.cancel();
       _pollingUserId = null;
-      return const Scaffold(body: Center(child: Text('No Pro Profile found.')));
+      return Scaffold(body: Center(child: Text(l10n.noProProfileFound)));
     }
 
     if (_pollingUserId != profile.userId) {
@@ -203,15 +205,15 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
           ),
           elevation: 0,
           items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              activeIcon: Icon(Icons.dashboard),
-              label: 'Dashboard',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.dashboard_outlined),
+              activeIcon: const Icon(Icons.dashboard),
+              label: l10n.dashboard,
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.widgets_outlined),
-              activeIcon: Icon(Icons.widgets),
-              label: 'Operations',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.widgets_outlined),
+              activeIcon: const Icon(Icons.widgets),
+              label: l10n.operations,
             ),
             BottomNavigationBarItem(
               icon: _buildInboxIcon(
@@ -223,17 +225,17 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
                 unreadCount: proAuth.unreadInboxCount,
                 isActive: true,
               ),
-              label: 'Inbox',
+              label: l10n.inbox,
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.insights_outlined),
-              activeIcon: Icon(Icons.insights),
-              label: 'Insights',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.insights_outlined),
+              activeIcon: const Icon(Icons.insights),
+              label: l10n.insights,
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Account',
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.person_outline),
+              activeIcon: const Icon(Icons.person),
+              label: l10n.account,
             ),
           ],
         ),

@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
@@ -29,6 +30,8 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
   bool _isLoading = true;
   bool _isUpdating = false;
   String? _error;
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -72,13 +75,13 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
   String _actionLabel(String status) {
     switch (status) {
       case 'DRIVER_ARRIVING':
-        return 'Swipe to Start Trip';
+        return l10n.swipeToStartTrip;
       case 'IN_PROGRESS':
-        return 'Swipe to Complete Trip';
+        return l10n.swipeToCompleteTrip;
       case 'COMPLETED':
-        return 'Trip Completed';
+        return l10n.tripCompleted;
       default:
-        return 'Swipe to Arrive';
+        return l10n.swipeToArrive;
     }
   }
 
@@ -114,7 +117,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Ride status updated to ${nextStatus.replaceAll('_', ' ')}.',
+            l10n.rideStatusUpdated(_statusLabel(nextStatus)),
           ),
         ),
       );
@@ -125,7 +128,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Could not update ride: $error')));
+      ).showSnackBar(SnackBar(content: Text(l10n.couldNotUpdateRide(error.toString()))));
     } finally {
       if (mounted) {
         setState(() => _isUpdating = false);
@@ -133,15 +136,32 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
     }
   }
 
+  String _statusLabel(String status) {
+    switch (status.toUpperCase()) {
+      case 'PENDING':
+        return l10n.pending;
+      case 'ACCEPTED':
+        return l10n.approved;
+      case 'DRIVER_ARRIVING':
+        return l10n.upcoming;
+      case 'IN_PROGRESS':
+        return l10n.inProgress;
+      case 'COMPLETED':
+        return l10n.completedLabel;
+      default:
+        return status.replaceAll('_', ' ');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final ride = _ride;
-    final pickup = ride?['pickup']?.toString() ?? 'Pickup location';
-    final destination = ride?['destination']?.toString() ?? 'Dropoff location';
-    final driverName = ride?['driverName']?.toString() ?? 'Assigned rider';
-    final vehicle = ride?['vehicle']?.toString() ?? 'Vehicle';
+    final pickup = ride?['pickup']?.toString() ?? l10n.pickupLocationFallback;
+    final destination = ride?['destination']?.toString() ?? l10n.dropoffLocationFallback;
+    final driverName = ride?['driverName']?.toString() ?? l10n.assignedRiderFallback;
+    final vehicle = ride?['vehicle']?.toString() ?? l10n.vehicleLabel;
     final status = ride?['status']?.toString().toUpperCase() ?? 'ACCEPTED';
-    final passengerName = ride?['customerName']?.toString() ?? 'Passenger';
+    final passengerName = ride?['customerName']?.toString() ?? l10n.passengerLabel;
     final passengerPhone = ride?['customerPhone']?.toString() ?? '';
     final customerUserId = ride?['userId']?.toString() ?? '';
     final trackingData = ride?['trackingData'] is Map
@@ -150,7 +170,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
     final eta =
         trackingData['durationLabel']?.toString() ??
         ride?['eta']?.toString() ??
-        'ETA unavailable';
+        l10n.etaUnavailable;
     final fare = (ride?['total'] as num?)?.toDouble();
     final pickupPoint =
         rideMapPointFromJson(
@@ -215,9 +235,9 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                       ? Icons.error_outline_rounded
                       : null,
                   overlayStatusMessage: _isLoading
-                      ? 'Loading assigned trip...'
+                      ? l10n.loadingAssignedTrip
                       : _error,
-                  actionLabel: 'Open map',
+                  actionLabel: l10n.openMapAction,
                   onActionTap: () => openRideRouteInMaps(
                     context,
                     pickupLabel: pickup,
@@ -272,7 +292,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                     ),
                                     if (fare != null)
                                       Text(
-                                        'DJF${fare.toStringAsFixed(2)}',
+                                        '\$${fare.toStringAsFixed(2)}',
                                         style: AppTextStyles.h4.copyWith(
                                           color: AppColors.ride,
                                         ),
@@ -306,8 +326,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                   child: Column(
                                     children: [
                                       Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           const Icon(
                                             Icons.my_location_rounded,
@@ -324,8 +343,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                       ),
                                       const SizedBox(height: 14),
                                       Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           const Icon(
                                             Icons.location_on_rounded,
@@ -357,9 +375,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                         height: 48,
                                         decoration: BoxDecoration(
                                           color: AppColors.rideBg,
-                                          borderRadius: BorderRadius.circular(
-                                            14,
-                                          ),
+                                          borderRadius: BorderRadius.circular(14),
                                         ),
                                         child: const Icon(
                                           Icons.directions_car_rounded,
@@ -369,8 +385,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               vehicle,
@@ -378,7 +393,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
-                                              'ETA: $eta',
+                                              l10n.etaLabel(eta),
                                               style: AppTextStyles.caption,
                                             ),
                                           ],
@@ -399,7 +414,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                                 passengerPhone,
                                               ),
                                         icon: const Icon(Icons.call_outlined),
-                                        label: const Text('Call passenger'),
+                                        label: Text(l10n.callPassengerAction),
                                       ),
                                     ),
                                     const SizedBox(width: 12),
@@ -410,25 +425,21 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                             : () => openProConversation(
                                                 context,
                                                 customerUserId: customerUserId,
-                                                participantUserId:
-                                                    widget.userId,
+                                                participantUserId: widget.userId,
                                                 moduleType: 'RIDE',
                                                 entityType: 'RIDE',
                                                 entityId: widget.rideId,
                                                 title: passengerName,
-                                                subtitle: 'Ride in progress',
+                                                subtitle: l10n.rideInProgressSupport,
                                                 accentColor: '#1D9070',
                                                 metadata: {
                                                   'rideId': widget.rideId,
-                                                  'passengerPhone':
-                                                      passengerPhone,
+                                                  'passengerPhone': passengerPhone,
                                                   'destination': destination,
                                                 },
                                               ),
-                                        icon: const Icon(
-                                          Icons.chat_bubble_outline,
-                                        ),
-                                        label: const Text('Message'),
+                                        icon: const Icon(Icons.chat_bubble_outline),
+                                        label: Text(l10n.messageAction),
                                       ),
                                     ),
                                   ],
@@ -436,7 +447,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                 const SizedBox(height: 28),
                                 SwipeableButton(
                                   label: _isUpdating
-                                      ? 'Updating...'
+                                      ? l10n.updating
                                       : _actionLabel(status),
                                   baseColor: AppColors.ride,
                                   onSwipe: _advanceStatus,
@@ -462,7 +473,10 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: AppSpacing.shadowMd,
                 ),
-                child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 18,
+                ),
               ),
             ),
           ),

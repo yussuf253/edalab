@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import '/pro/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -23,18 +24,19 @@ class ProAccountScreen extends StatelessWidget {
     return context.push(route);
   }
 
-  String _profileDescriptor(ProProfile profile) {
+  String _profileDescriptor(BuildContext context, ProProfile profile) {
+    final s = AppLocalizations.of(context)!;
     switch (profile.type) {
       case ProProfileType.shop:
-        return 'Store owner workspace';
+        return s.storeOwnerWorkspace;
       case ProProfileType.provider:
-        return 'Service operator workspace';
+        return s.serviceOperatorWorkspace;
       case ProProfileType.doctor:
-        return 'Clinical workspace';
+        return s.clinicalWorkspace;
       case ProProfileType.delivery:
-        return 'Dispatch partner workspace';
+        return s.dispatchPartnerWorkspace;
       case ProProfileType.rider:
-        return 'Ride partner workspace';
+        return s.ridePartnerWorkspace;
     }
   }
 
@@ -78,7 +80,7 @@ class ProAccountScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Account'),
+        title: Text(AppLocalizations.of(context)!.accountTitle),
         backgroundColor: profileColor,
         foregroundColor: Colors.white,
       ),
@@ -87,10 +89,12 @@ class ProAccountScreen extends StatelessWidget {
         children: [
           _ProAccountHeaderCard(
             profile: currentProfile,
-            profileDescriptor: _profileDescriptor(currentProfile),
+            profileDescriptor: _profileDescriptor(context, currentProfile),
             signedInAsText: currentAccount == null
-                ? 'Workspace ID: ${currentProfile.id}'
-                : 'Signed in as ${currentAccount.email}',
+                ? AppLocalizations.of(context)!.workspaceId(currentProfile.id)
+                : AppLocalizations.of(
+                    context,
+                  )!.signedInAs(currentAccount.email),
             profileColor: profileColor,
           ),
           if (currentProfile.type == ProProfileType.delivery ||
@@ -118,11 +122,15 @@ class ProAccountScreen extends StatelessWidget {
                   }
                 },
                 activeThumbColor: profileColor,
-                title: Text(currentProfile.isOnline ? 'Online' : 'Offline'),
+                title: Text(
+                  currentProfile.isOnline
+                      ? AppLocalizations.of(context)!.online
+                      : AppLocalizations.of(context)!.offline,
+                ),
                 subtitle: Text(
                   currentProfile.type == ProProfileType.delivery
-                      ? 'Receive dispatch work when online.'
-                      : 'Receive ride requests when online.',
+                      ? AppLocalizations.of(context)!.receiveDispatchWhenOnline
+                      : AppLocalizations.of(context)!.receiveRideWhenOnline,
                 ),
               ),
             ),
@@ -144,6 +152,67 @@ class ProAccountScreen extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: ProDesignSystem.spacing20),
+          Padding(
+            padding: const EdgeInsets.only(bottom: ProDesignSystem.spacing12),
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                borderRadius: BorderRadius.circular(
+                  ProDesignSystem.radiusSmall,
+                ),
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.logout, color: Colors.red),
+                title: Text(
+                  AppLocalizations.of(context)!.signOut,
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(AppLocalizations.of(context)!.signOutSubtitle),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: Colors.red,
+                ),
+                onTap: () async {
+                  showDialog<bool>(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      title: Text(
+                        AppLocalizations.of(context)!.signOutDialogTitle,
+                      ),
+                      content: Text(
+                        AppLocalizations.of(context)!.signOutDialogContent,
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext, false),
+                          child: Text(AppLocalizations.of(context)!.cancel),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext, true),
+                          child: Text(
+                            AppLocalizations.of(context)!.signOut,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ).then((confirmed) async {
+                    if (confirmed == true && context.mounted) {
+                      await context.read<ProAuthProvider>().logout();
+                      if (!context.mounted) return;
+                      context.go('/');
+                    }
+                  });
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: ProDesignSystem.spacing16),
         ],
       ),
     );
@@ -154,9 +223,8 @@ class ProAccountScreen extends StatelessWidget {
       _AccountActionTile(
         icon: Icons.manage_accounts_outlined,
         color: AppColors.primary,
-        title: 'Profile Management',
-        subtitle:
-            'Manage business name, modules, and profile frontend sections.',
+        title: AppLocalizations.of(context)!.profileManagement,
+        subtitle: AppLocalizations.of(context)!.profileManagementSubtitle,
         onTap: () => _open(context, ProRoutePaths.profileManagement),
       ),
     ];
@@ -168,22 +236,22 @@ class ProAccountScreen extends StatelessWidget {
           _AccountActionTile(
             icon: Icons.receipt_long_outlined,
             color: AppColors.shopping,
-            title: 'Orders Queue',
-            subtitle: 'Review incoming shopping, food, and pharmacy orders.',
+            title: AppLocalizations.of(context)!.ordersQueue,
+            subtitle: AppLocalizations.of(context)!.ordersQueueSubtitle,
             onTap: () => _open(context, ProRoutePaths.shopQueue),
           ),
           _AccountActionTile(
             icon: Icons.store_mall_directory_outlined,
             color: AppColors.shopping,
-            title: 'Store Setup',
-            subtitle: 'Configure storefront identity and availability.',
+            title: AppLocalizations.of(context)!.storeSetup,
+            subtitle: AppLocalizations.of(context)!.storeSetupSubtitle,
             onTap: () => _open(context, ProRoutePaths.shopStoreSetup),
           ),
           _AccountActionTile(
             icon: Icons.inventory_2_outlined,
             color: AppColors.primary,
-            title: 'Products Manager',
-            subtitle: 'Manage products and stock across your stores.',
+            title: AppLocalizations.of(context)!.productsManager,
+            subtitle: AppLocalizations.of(context)!.productsManagerSubtitle,
             onTap: () => _open(context, ProRoutePaths.shopProducts),
           ),
         ];
@@ -193,15 +261,17 @@ class ProAccountScreen extends StatelessWidget {
           _AccountActionTile(
             icon: Icons.toggle_on_outlined,
             color: AppColors.homeServices,
-            title: 'Provider Availability',
-            subtitle: 'Pause or reopen service and laundry lanes.',
+            title: AppLocalizations.of(context)!.providerAvailability,
+            subtitle: AppLocalizations.of(
+              context,
+            )!.providerAvailabilitySubtitle,
             onTap: () => _open(context, ProRoutePaths.providerAvailability),
           ),
           _AccountActionTile(
             icon: Icons.schedule_outlined,
             color: AppColors.warning,
-            title: 'Scheduling Settings',
-            subtitle: 'Update booking modes and weekly availability.',
+            title: AppLocalizations.of(context)!.schedulingSettings,
+            subtitle: AppLocalizations.of(context)!.schedulingSettingsSubtitle,
             onTap: () => _open(context, ProRoutePaths.providerSchedule),
           ),
         ];
@@ -211,15 +281,15 @@ class ProAccountScreen extends StatelessWidget {
           _AccountActionTile(
             icon: Icons.local_hospital_outlined,
             color: AppColors.doctor,
-            title: 'Doctor Availability',
-            subtitle: 'Control who is accepting consultations right now.',
+            title: AppLocalizations.of(context)!.doctorAvailability,
+            subtitle: AppLocalizations.of(context)!.doctorAvailabilitySubtitle,
             onTap: () => _open(context, ProRoutePaths.doctorAvailability),
           ),
           _AccountActionTile(
             icon: Icons.schedule_outlined,
             color: AppColors.warning,
-            title: 'Schedule Settings',
-            subtitle: 'Update working hours and care modes.',
+            title: AppLocalizations.of(context)!.scheduleSettings,
+            subtitle: AppLocalizations.of(context)!.scheduleSettingsSubtitle,
             onTap: () => _open(context, ProRoutePaths.doctorSchedule),
           ),
         ];
@@ -229,8 +299,8 @@ class ProAccountScreen extends StatelessWidget {
           _AccountActionTile(
             icon: Icons.local_shipping_outlined,
             color: AppColors.food,
-            title: 'Dispatch Queue',
-            subtitle: 'Open delivery dispatch and claim jobs.',
+            title: AppLocalizations.of(context)!.dispatchQueue,
+            subtitle: AppLocalizations.of(context)!.dispatchQueueSubtitle,
             onTap: () => _open(context, ProRoutePaths.deliveryQueue),
           ),
         ];
@@ -240,8 +310,8 @@ class ProAccountScreen extends StatelessWidget {
           _AccountActionTile(
             icon: Icons.local_taxi_outlined,
             color: AppColors.ride,
-            title: 'Ride Queue',
-            subtitle: 'Open trip requests and assigned rides.',
+            title: AppLocalizations.of(context)!.rideQueue,
+            subtitle: AppLocalizations.of(context)!.rideQueueSubtitle,
             onTap: () => _open(context, ProRoutePaths.riderQueue),
           ),
         ];
@@ -461,8 +531,8 @@ class _ProAccountHeaderCardState extends State<_ProAccountHeaderCard> {
           const SizedBox(height: ProDesignSystem.spacing16),
           Text(
             widget.profile.isVerified
-                ? '✓ Verified account'
-                : '⏳ Verification pending',
+                ? AppLocalizations.of(context)!.verifiedAccount
+                : AppLocalizations.of(context)!.verificationPending,
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w700,

@@ -9,6 +9,8 @@ import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
 import '../../../core/widgets/pro_stat_card.dart';
 
+import '../../../l10n/app_localizations.dart';
+
 class ProInsightsScreen extends StatefulWidget {
   const ProInsightsScreen({super.key, required this.profile});
 
@@ -19,6 +21,7 @@ class ProInsightsScreen extends StatefulWidget {
 }
 
 class _ProInsightsScreenState extends State<ProInsightsScreen> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
   late Future<ProDashboardData> _dashboardFuture;
 
   @override
@@ -70,7 +73,7 @@ class _ProInsightsScreenState extends State<ProInsightsScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Insights'),
+        title: Text(l10n.insights),
         backgroundColor: profileColor,
         foregroundColor: Colors.white,
       ),
@@ -103,7 +106,7 @@ class _ProInsightsScreenState extends State<ProInsightsScreen> {
                 Text(
                   data.headline.isNotEmpty
                       ? data.headline
-                      : 'Live module insights',
+                      : l10n.liveModuleInsights,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -148,7 +151,7 @@ class _ProInsightsScreenState extends State<ProInsightsScreen> {
                 if (data.moduleSummaries.isNotEmpty) ...[
                   const SizedBox(height: 24),
                   Text(
-                    'Recent Module Activity',
+                    l10n.recentModuleActivity,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -215,7 +218,7 @@ class _HighlightedRequestCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Highlighted Request',
+            AppLocalizations.of(context)!.highlightedRequest,
             style: Theme.of(
               context,
             ).textTheme.labelLarge?.copyWith(color: Colors.white70),

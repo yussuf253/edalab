@@ -70,6 +70,7 @@ Future<void> main() async {
         ChangeNotifierProvider.value(value: moduleProvider),
         ChangeNotifierProvider.value(value: proAuthProvider),
         ChangeNotifierProvider.value(value: appVersionProvider),
+        ChangeNotifierProvider(create: (_) => PaymentProvider()),
         ChangeNotifierProxyProvider2<
           AuthProvider,
           CartProvider,

@@ -6,6 +6,7 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/constants/pro_design_system.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ProLoginScreen extends StatefulWidget {
   const ProLoginScreen({super.key});
@@ -59,9 +60,11 @@ class _ProLoginScreenState extends State<ProLoginScreen> {
   Widget build(BuildContext context) {
     final proAuth = context.watch<ProAuthProvider>();
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pro Sign In'),
+        title: Text(l10n.loginTitle),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
@@ -74,14 +77,14 @@ class _ProLoginScreenState extends State<ProLoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Welcome back to EdaLab Pro',
+                  l10n.welcome,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: ProDesignSystem.spacing8),
                 Text(
-                  'Sign in with your dedicated pro account to continue managing your workspace.',
+                  l10n.loginSubtitle,
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: ProDesignSystem.spacing24),
@@ -99,7 +102,7 @@ class _ProLoginScreenState extends State<ProLoginScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: l10n.email,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(
                         ProDesignSystem.radiusSmall,
@@ -112,7 +115,7 @@ class _ProLoginScreenState extends State<ProLoginScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Email is required';
+                      return l10n.emailRequired;
                     }
                     return null;
                   },
@@ -122,7 +125,7 @@ class _ProLoginScreenState extends State<ProLoginScreen> {
                   controller: _passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: l10n.password,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(
                         ProDesignSystem.radiusSmall,
@@ -135,21 +138,21 @@ class _ProLoginScreenState extends State<ProLoginScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Password is required';
+                      return l10n.passwordRequired;
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: ProDesignSystem.spacing24),
                 AppButton(
-                  text: proAuth.isLoading ? 'Signing in...' : 'Sign In',
+                  text: proAuth.isLoading ? l10n.signingIn : l10n.signIn,
                   isLoading: proAuth.isLoading,
                   onPressed: () => _submit(),
                 ),
                 const SizedBox(height: ProDesignSystem.spacing12),
                 TextButton(
                   onPressed: () => context.go(ProRoutePaths.register),
-                  child: const Text('Create a pro account'),
+                  child: Text(l10n.createProAccount),
                 ),
               ],
             ),

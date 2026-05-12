@@ -13,6 +13,7 @@ import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
 import '../../shop/screens/shop_store_setup_screen.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ProProfileManagementScreen extends StatefulWidget {
   const ProProfileManagementScreen({super.key, required this.profile});
@@ -26,6 +27,8 @@ class ProProfileManagementScreen extends StatefulWidget {
 
 class _ProProfileManagementScreenState
     extends State<ProProfileManagementScreen> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
   late final TextEditingController _businessNameController;
   late Set<ProModule> _selectedModules;
   bool _isSavingProfile = false;
@@ -75,6 +78,7 @@ class _ProProfileManagementScreenState
   Future<void> _pickAndUploadAvatar() async {
     if (_isUploadingAvatar) return;
 
+    final l10n = AppLocalizations.of(context)!;
     final picker = ImagePicker();
     final file = await picker.pickImage(
       source: ImageSource.gallery,
@@ -113,7 +117,7 @@ class _ProProfileManagementScreenState
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Profile photo updated.')));
+      ).showSnackBar(SnackBar(content: Text(l10n.profilePhotoUpdated)));
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -129,20 +133,19 @@ class _ProProfileManagementScreenState
   Future<void> _saveProfile() async {
     if (_isSavingProfile) return;
 
+    final l10n = AppLocalizations.of(context)!;
     final businessName = _businessNameController.text.trim();
     if (businessName.length < 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Business name must be at least 2 characters.'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.businessNameMinChars)));
       return;
     }
 
     if (_selectedModules.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enable at least one module.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.enableAtLeastOneModule)));
       return;
     }
 
@@ -206,9 +209,9 @@ class _ProProfileManagementScreenState
           _rideQueueFuture = null;
         }
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile settings updated.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.profileSettingsUpdated)));
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -371,6 +374,7 @@ class _ProProfileManagementScreenState
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setModalState) {
+            final l10n = AppLocalizations.of(context)!;
             Future<void> pickAndUploadImage() async {
               if (isUploadingImage) return;
               final picker = ImagePicker();
@@ -416,9 +420,7 @@ class _ProProfileManagementScreenState
               if (isSubmitting || isUploadingImage) return;
               if (nameController.text.trim().length < 2) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Enter a valid restaurant name first.'),
-                  ),
+                  SnackBar(content: Text(l10n.enterValidRestaurantName)),
                 );
                 return;
               }
@@ -439,8 +441,8 @@ class _ProProfileManagementScreenState
                   SnackBar(
                     content: Text(
                       (response['created'] as bool? ?? false)
-                          ? 'Restaurant connected to your profile.'
-                          : 'Restaurant details updated.',
+                          ? l10n.restaurantConnectedProfile
+                          : l10n.restaurantDetailsUpdated,
                     ),
                   ),
                 );
@@ -468,8 +470,8 @@ class _ProProfileManagementScreenState
                   children: [
                     Text(
                       existingRestaurant == null
-                          ? 'Connect Restaurant'
-                          : 'Edit Restaurant',
+                          ? l10n.connectRestaurant
+                          : l10n.editRestaurant,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -477,16 +479,16 @@ class _ProProfileManagementScreenState
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Restaurant name',
+                      decoration: InputDecoration(
+                        labelText: l10n.restaurantName,
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: cuisineController,
-                      decoration: const InputDecoration(
-                        labelText: 'Cuisine',
-                        hintText: 'e.g. Djiboutian, Mixed, Seafood',
+                      decoration: InputDecoration(
+                        labelText: l10n.cuisine,
+                        hintText: l10n.cuisineHint,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -534,8 +536,8 @@ class _ProProfileManagementScreenState
                           : const Icon(Icons.photo_library_outlined),
                       label: Text(
                         isUploadingImage
-                            ? 'Uploading image...'
-                            : 'Upload Restaurant Image',
+                            ? l10n.uploadingImage
+                            : l10n.uploadRestaurantImage,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -556,10 +558,10 @@ class _ProProfileManagementScreenState
                             : const Icon(Icons.save_outlined),
                         label: Text(
                           isSubmitting
-                              ? 'Saving...'
+                              ? l10n.saving
                               : existingRestaurant == null
-                              ? 'Connect Restaurant'
-                              : 'Save Restaurant',
+                              ? l10n.connectRestaurant
+                              : l10n.saveRestaurant,
                         ),
                       ),
                     ),
@@ -594,13 +596,12 @@ class _ProProfileManagementScreenState
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setModalState) {
+            final l10n = AppLocalizations.of(context)!;
             Future<void> submit() async {
               if (isSubmitting) return;
               if (nameController.text.trim().length < 2) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Enter a valid pharmacy business name.'),
-                  ),
+                  SnackBar(content: Text(l10n.enterValidPharmacyBusinessName)),
                 );
                 return;
               }
@@ -614,7 +615,7 @@ class _ProProfileManagementScreenState
                 if (!mounted || !sheetContext.mounted) return;
                 Navigator.of(sheetContext).pop();
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(content: Text('Pharmacy business connected.')),
+                  SnackBar(content: Text(l10n.pharmacyBusinessConnected)),
                 );
                 await _refreshInsights();
               } catch (error) {
@@ -639,8 +640,8 @@ class _ProProfileManagementScreenState
                 children: [
                   Text(
                     businesses.isEmpty
-                        ? 'Connect Pharmacy Business'
-                        : 'Update Pharmacy Business',
+                        ? l10n.connectPharmacyBusiness
+                        : l10n.updatePharmacyBusiness,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -648,14 +649,14 @@ class _ProProfileManagementScreenState
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Pharmacy business name',
+                    decoration: InputDecoration(
+                      labelText: l10n.pharmacyBusinessName,
                     ),
                   ),
                   if (businesses.length > 1) ...[
                     const SizedBox(height: 10),
                     Text(
-                      'Connected businesses: ${businesses.join(', ')}',
+                      l10n.connectedBusinesses(businesses.length),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: const Color(0xFF6B7280),
                       ),
@@ -675,10 +676,10 @@ class _ProProfileManagementScreenState
                           : const Icon(Icons.save_outlined),
                       label: Text(
                         isSubmitting
-                            ? 'Saving...'
+                            ? l10n.saving
                             : businesses.isEmpty
-                            ? 'Connect Pharmacy'
-                            : 'Save Pharmacy',
+                            ? l10n.connectPharmacy
+                            : l10n.savePharmacy,
                       ),
                     ),
                   ),
@@ -774,8 +775,8 @@ class _ProProfileManagementScreenState
         .toList(growable: false);
   }
 
-  String _queueStatusLabel(String? raw) {
-    if (raw == null || raw.trim().isEmpty) return 'Unknown';
+  String _queueStatusLabel(String? raw, AppLocalizations l10n) {
+    if (raw == null || raw.trim().isEmpty) return l10n.unknown;
     return raw
         .trim()
         .toLowerCase()
@@ -788,20 +789,21 @@ class _ProProfileManagementScreenState
         .join(' ');
   }
 
-  String _dispatchModuleLabel(String raw) {
+  String _dispatchModuleLabel(String raw, AppLocalizations l10n) {
     switch (raw.trim().toLowerCase()) {
       case 'shopping':
-        return 'Shopping';
+        return l10n.moduleShopping;
       case 'food':
-        return 'Food';
+        return l10n.moduleFood;
       case 'pharmacy':
-        return 'Pharmacy';
+        return l10n.modulePharmacy;
       default:
-        return 'Delivery';
+        return l10n.moduleDelivery(raw);
     }
   }
 
   Future<void> _claimDeliveryQueueItem(Map<String, dynamic> item) async {
+    final l10n = AppLocalizations.of(context)!;
     final profile =
         context.read<ProAuthProvider>().currentProfile ?? widget.profile;
     if (profile.type != ProProfileType.delivery) return;
@@ -818,9 +820,9 @@ class _ProProfileManagementScreenState
         _deliveryQueueFuture = _loadDeliveryQueue();
         _insightsFuture = _loadInsights();
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Delivery request claimed.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.deliveryRequestClaimed)));
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -834,6 +836,7 @@ class _ProProfileManagementScreenState
   }
 
   Future<void> _claimRideQueueItem(Map<String, dynamic> item) async {
+    final l10n = AppLocalizations.of(context)!;
     final profile =
         context.read<ProAuthProvider>().currentProfile ?? widget.profile;
     if (profile.type != ProProfileType.rider) return;
@@ -852,7 +855,7 @@ class _ProProfileManagementScreenState
       });
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Ride request claimed.')));
+      ).showSnackBar(SnackBar(content: Text(l10n.rideRequestClaimed)));
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -866,333 +869,20 @@ class _ProProfileManagementScreenState
   }
 
   Future<void> _openProviderCreateEditor() async {
+    final l10n = AppLocalizations.of(context)!;
     final profile =
         context.read<ProAuthProvider>().currentProfile ?? widget.profile;
     if (profile.type != ProProfileType.provider) return;
     if (!profile.activeModules.contains(ProModule.services)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Enable Services module first to create a provider listing.',
-          ),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.enableServicesModule)));
       return;
     }
 
-    final nameController = TextEditingController(text: profile.businessName);
-    final titleController = TextEditingController();
-    final locationController = TextEditingController();
-    final phoneController = TextEditingController();
-    final responseTimeController = TextEditingController();
-    final yearsExperienceController = TextEditingController();
-    final startingPriceController = TextEditingController();
-    final aboutController = TextEditingController();
-    final servicesController = TextEditingController();
-    var uploadedImageUrl = '';
-    Uint8List? pickedImageBytes;
-    var isUploadingImage = false;
-    var isSubmitting = false;
-
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            Future<void> pickAndUploadImage() async {
-              if (isUploadingImage) return;
-              final picker = ImagePicker();
-              final file = await picker.pickImage(
-                source: ImageSource.gallery,
-                maxWidth: 1800,
-                imageQuality: 88,
-              );
-              if (file == null) return;
-
-              final bytes = await file.readAsBytes();
-              if (!mounted) return;
-              setModalState(() {
-                pickedImageBytes = bytes;
-                isUploadingImage = true;
-              });
-
-              try {
-                final uploaded = await MediaUploadService.uploadImage(
-                  scope: MediaUploadScope.provider,
-                  ownerId: profile.userId,
-                  fileName: file.name,
-                  mimeType: file.mimeType,
-                  bytes: bytes,
-                );
-                if (!mounted) return;
-                setModalState(() {
-                  uploadedImageUrl = uploaded.url;
-                });
-              } catch (error) {
-                if (!mounted || !sheetContext.mounted) return;
-                ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(content: Text(ApiClient.userFacingError(error))),
-                );
-              } finally {
-                if (mounted) {
-                  setModalState(() => isUploadingImage = false);
-                }
-              }
-            }
-
-            Future<void> submit() async {
-              if (isSubmitting || isUploadingImage) return;
-              if (nameController.text.trim().length < 2) {
-                ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Enter a valid provider name first.'),
-                  ),
-                );
-                return;
-              }
-
-              final startingPrice = double.tryParse(
-                startingPriceController.text.trim(),
-              );
-              if (startingPriceController.text.trim().isNotEmpty &&
-                  (startingPrice == null || startingPrice <= 0)) {
-                ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Starting price must be a number greater than zero.',
-                    ),
-                  ),
-                );
-                return;
-              }
-
-              setModalState(() => isSubmitting = true);
-              try {
-                final payload = <String, dynamic>{
-                  'name': nameController.text.trim(),
-                  if (titleController.text.trim().isNotEmpty)
-                    'title': titleController.text.trim(),
-                  if (locationController.text.trim().isNotEmpty)
-                    'location': locationController.text.trim(),
-                  if (phoneController.text.trim().isNotEmpty)
-                    'contactPhone': phoneController.text.trim(),
-                  if (responseTimeController.text.trim().isNotEmpty)
-                    'responseTime': responseTimeController.text.trim(),
-                  if (yearsExperienceController.text.trim().isNotEmpty)
-                    'yearsExperience': yearsExperienceController.text.trim(),
-                  if (aboutController.text.trim().isNotEmpty)
-                    'about': aboutController.text.trim(),
-                  if (servicesController.text.trim().isNotEmpty)
-                    'services': _splitTextList(servicesController.text),
-                  if (uploadedImageUrl.trim().isNotEmpty)
-                    'imageUrl': uploadedImageUrl,
-                  ...?startingPrice == null
-                      ? null
-                      : <String, dynamic>{'startingPrice': startingPrice},
-                };
-                final response = Map<String, dynamic>.from(
-                  await ApiClient.post(
-                        '/pro/${profile.userId}/home-service-provider',
-                        payload,
-                      )
-                      as Map,
-                );
-                if (!mounted || !sheetContext.mounted) return;
-                Navigator.of(sheetContext).pop();
-                ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      (response['created'] as bool? ?? false)
-                          ? 'Provider listing created.'
-                          : 'Provider listing updated.',
-                    ),
-                  ),
-                );
-                await _refreshInsights();
-              } catch (error) {
-                if (!mounted || !sheetContext.mounted) return;
-                setModalState(() => isSubmitting = false);
-                ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(content: Text(ApiClient.userFacingError(error))),
-                );
-              }
-            }
-
-            return Padding(
-              padding: EdgeInsets.fromLTRB(
-                16,
-                18,
-                16,
-                MediaQuery.of(sheetContext).viewInsets.bottom + 20,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Create Provider Listing',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    TextFormField(
-                      controller: nameController,
-                      decoration: const InputDecoration(labelText: 'Name'),
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: titleController,
-                      decoration: const InputDecoration(labelText: 'Title'),
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: locationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Location / service area',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: phoneController,
-                      decoration: const InputDecoration(labelText: 'Phone'),
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: responseTimeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Response time',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: yearsExperienceController,
-                      decoration: const InputDecoration(
-                        labelText: 'Years experience',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: startingPriceController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: const InputDecoration(
-                        labelText: 'Starting price',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: servicesController,
-                      minLines: 2,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Services',
-                        hintText: 'Comma or newline separated',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextFormField(
-                      controller: aboutController,
-                      minLines: 3,
-                      maxLines: 4,
-                      decoration: const InputDecoration(
-                        labelText: 'About',
-                        hintText: 'Public description for customers',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      height: 150,
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: pickedImageBytes != null
-                          ? Image.memory(pickedImageBytes!, fit: BoxFit.cover)
-                          : (uploadedImageUrl.isNotEmpty
-                                ? Image.network(
-                                    uploadedImageUrl,
-                                    fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Center(
-                                              child: Icon(
-                                                Icons.home_repair_service,
-                                                size: 34,
-                                              ),
-                                            ),
-                                  )
-                                : const Center(
-                                    child: Icon(
-                                      Icons.home_repair_service,
-                                      size: 34,
-                                    ),
-                                  )),
-                    ),
-                    const SizedBox(height: 10),
-                    OutlinedButton.icon(
-                      onPressed: isUploadingImage ? null : pickAndUploadImage,
-                      icon: isUploadingImage
-                          ? const SizedBox(
-                              height: 16,
-                              width: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.photo_library_outlined),
-                      label: Text(
-                        isUploadingImage
-                            ? 'Uploading image...'
-                            : 'Upload Provider Image',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: isSubmitting || isUploadingImage
-                            ? null
-                            : submit,
-                        icon: isSubmitting
-                            ? const SizedBox(
-                                height: 16,
-                                width: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.save_outlined),
-                        label: Text(
-                          isSubmitting
-                              ? 'Saving...'
-                              : 'Create Provider Listing',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-
-    nameController.dispose();
-    titleController.dispose();
-    locationController.dispose();
-    phoneController.dispose();
-    responseTimeController.dispose();
-    yearsExperienceController.dispose();
-    startingPriceController.dispose();
-    aboutController.dispose();
-    servicesController.dispose();
+    // Navigate to the provider availability screen where the proper listing creation happens
+    if (!context.mounted) return;
+    context.push(ProRoutePaths.providerAvailability);
   }
 
   Future<void> _openProviderSettingsEditor(Map<String, dynamic> item) async {
@@ -1243,14 +933,13 @@ class _ProProfileManagementScreenState
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (context, setModalState) {
+            final l10n = AppLocalizations.of(context)!;
             Future<void> submit() async {
               if (isSubmitting) return;
               final services = _splitTextList(servicesController.text);
               if (services.isEmpty) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Add at least one service to continue.'),
-                  ),
+                  SnackBar(content: Text(l10n.addAtLeastOneService)),
                 );
                 return;
               }
@@ -1276,7 +965,7 @@ class _ProProfileManagementScreenState
                 if (!mounted || !sheetContext.mounted) return;
                 Navigator.of(sheetContext).pop();
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(content: Text('Provider settings updated.')),
+                  SnackBar(content: Text(l10n.providerSettingsUpdated)),
                 );
                 await _refreshInsights();
               } catch (error) {
@@ -1301,7 +990,7 @@ class _ProProfileManagementScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Edit Provider Profile',
+                      l10n.editProviderProfile,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -1309,30 +998,28 @@ class _ProProfileManagementScreenState
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: locationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Location / service area',
+                      decoration: InputDecoration(
+                        labelText: l10n.locationServiceArea,
                       ),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: phoneController,
-                      decoration: const InputDecoration(labelText: 'Phone'),
+                      decoration: InputDecoration(labelText: l10n.phone),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: responseTimeController,
-                      decoration: const InputDecoration(
-                        labelText: 'Response time',
-                      ),
+                      decoration: InputDecoration(labelText: l10n.responseTime),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: servicesController,
                       minLines: 2,
                       maxLines: 4,
-                      decoration: const InputDecoration(
-                        labelText: 'Services',
-                        hintText: 'Comma or newline separated',
+                      decoration: InputDecoration(
+                        labelText: l10n.services,
+                        hintText: l10n.commaOrNewlineSeparated,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -1340,31 +1027,29 @@ class _ProProfileManagementScreenState
                       controller: bookingModesController,
                       minLines: 2,
                       maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Booking modes',
-                        hintText: 'e.g. Home Visit, Scheduled Slot',
+                      decoration: InputDecoration(
+                        labelText: l10n.bookingModes,
+                        hintText: l10n.bookingModesHint,
                       ),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: weekdaysController,
-                      decoration: const InputDecoration(
-                        labelText: 'Weekdays hours',
+                      decoration: InputDecoration(
+                        labelText: l10n.weekdaysHours,
                       ),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: saturdayController,
-                      decoration: const InputDecoration(
-                        labelText: 'Saturday hours',
+                      decoration: InputDecoration(
+                        labelText: l10n.saturdayHours,
                       ),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: sundayController,
-                      decoration: const InputDecoration(
-                        labelText: 'Sunday hours',
-                      ),
+                      decoration: InputDecoration(labelText: l10n.sundayHours),
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
@@ -1381,7 +1066,7 @@ class _ProProfileManagementScreenState
                               )
                             : const Icon(Icons.save_outlined),
                         label: Text(
-                          isSubmitting ? 'Saving...' : 'Save Provider Settings',
+                          isSubmitting ? l10n.saving : l10n.saveProviderSettings,
                         ),
                       ),
                     ),
@@ -1407,6 +1092,7 @@ class _ProProfileManagementScreenState
   Future<void> _openLaundryServiceEditor({
     Map<String, dynamic>? service,
   }) async {
+    final l10n = AppLocalizations.of(context)!;
     final profile =
         context.read<ProAuthProvider>().currentProfile ?? widget.profile;
     if (profile.type != ProProfileType.provider) return;
@@ -1415,11 +1101,9 @@ class _ProProfileManagementScreenState
     final serviceId = service?['id']?.toString() ?? '';
     final isEdit = serviceId.isNotEmpty;
     if (!supportsLaundry && !isEdit) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Enable Laundry module first to create a listing.'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.enableLaundryModuleFirst)));
       return;
     }
 
@@ -1447,7 +1131,7 @@ class _ProProfileManagementScreenState
     final nameController = TextEditingController(
       text: service?['name']?.toString().trim().isNotEmpty == true
           ? service!['name'].toString().trim()
-          : 'Wash & Fold',
+          : l10n.washAndFold,
     );
     final descriptionController = TextEditingController(
       text: service?['description']?.toString() ?? '',
@@ -1458,7 +1142,7 @@ class _ProProfileManagementScreenState
     final unitController = TextEditingController(
       text: service?['unit']?.toString().trim().isNotEmpty == true
           ? service!['unit'].toString().trim()
-          : 'kg',
+          : l10n.kg,
     );
     final itemCatalogController = TextEditingController(
       text: itemCatalog.isNotEmpty
@@ -1584,24 +1268,24 @@ class _ProProfileManagementScreenState
               final price = double.tryParse(priceController.text.trim());
               if (name.length < 2) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Laundry service name must be valid.'),
+                  SnackBar(
+                    content: Text(l10n.laundryServiceNameMustBeValid),
                   ),
                 );
                 return;
               }
               if (price == null || price <= 0) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Price must be greater than zero.'),
+                  SnackBar(
+                    content: Text(l10n.priceMustBeGreaterThanZero),
                   ),
                 );
                 return;
               }
               if (unit.length < 2) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Unit must be at least 2 characters.'),
+                  SnackBar(
+                    content: Text(l10n.unitMustBeAtLeast2Chars),
                   ),
                 );
                 return;
@@ -1622,7 +1306,7 @@ class _ProProfileManagementScreenState
                   ScaffoldMessenger.of(sheetContext).showSnackBar(
                     SnackBar(
                       content: Text(
-                        'Invalid item catalog line: "$line". Use label|price|category|spec.',
+                        l10n.invalidItemCatalogLine(line),
                       ),
                     ),
                   );
@@ -1642,7 +1326,7 @@ class _ProProfileManagementScreenState
                   ScaffoldMessenger.of(sheetContext).showSnackBar(
                     SnackBar(
                       content: Text(
-                        'Invalid item catalog line: "$line". Label and price are required.',
+                        l10n.invalidItemCatalogRequired(line),
                       ),
                     ),
                   );
@@ -1652,7 +1336,7 @@ class _ProProfileManagementScreenState
                   ScaffoldMessenger.of(sheetContext).showSnackBar(
                     SnackBar(
                       content: Text(
-                        'Group item "$label" needs a spec (4th value).',
+                        l10n.groupItemNeedsSpec(label),
                       ),
                     ),
                   );
@@ -1674,8 +1358,8 @@ class _ProProfileManagementScreenState
               }
               if (parsedCatalog.isEmpty) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Add at least one item catalog entry.'),
+                  SnackBar(
+                    content: Text(l10n.addItemCatalogEntry),
                   ),
                 );
                 return;
@@ -1684,8 +1368,8 @@ class _ProProfileManagementScreenState
               final slots = _splitTextList(pickupSlotsController.text);
               if (slots.isEmpty) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Add at least one pickup slot.'),
+                  SnackBar(
+                    content: Text(l10n.addPickupSlot),
                   ),
                 );
                 return;
@@ -1709,9 +1393,9 @@ class _ProProfileManagementScreenState
                   turnaroundHours < 1 ||
                   turnaroundHours > 168) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
+                  SnackBar(
                     content: Text(
-                      'Turnaround hours must be between 1 and 168.',
+                      l10n.turnaroundHoursRange,
                     ),
                   ),
                 );
@@ -1721,8 +1405,8 @@ class _ProProfileManagementScreenState
                   minNoticeHours < 0 ||
                   minNoticeHours > 72) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Min notice hours must be between 0 and 72.'),
+                  SnackBar(
+                    content: Text(l10n.minNoticeHoursBetween),
                   ),
                 );
                 return;
@@ -1731,16 +1415,16 @@ class _ProProfileManagementScreenState
                   maxAdvanceDays < 1 ||
                   maxAdvanceDays > 30) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Max advance days must be between 1 and 30.'),
+                  SnackBar(
+                    content: Text(l10n.maxAdvanceDaysBetween),
                   ),
                 );
                 return;
               }
               if (taxRate == null || taxRate < 0 || taxRate > 40) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Tax rate must be between 0 and 40.'),
+                  SnackBar(
+                    content: Text(l10n.taxRateMustBeBetween),
                   ),
                 );
                 return;
@@ -1749,8 +1433,8 @@ class _ProProfileManagementScreenState
                   deliveryFee < 0 ||
                   deliveryFee > 100000) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Delivery fee must be between 0 and 100000.'),
+                  SnackBar(
+                    content: Text(l10n.deliveryFeeMustBeBetween),
                   ),
                 );
                 return;
@@ -1785,8 +1469,8 @@ class _ProProfileManagementScreenState
                   SnackBar(
                     content: Text(
                       isEdit
-                          ? 'Laundry service updated.'
-                          : 'Laundry service created.',
+                          ? l10n.laundryServiceUpdated
+                          : l10n.laundryServiceCreated,
                     ),
                   ),
                 );
@@ -1814,8 +1498,8 @@ class _ProProfileManagementScreenState
                   children: [
                     Text(
                       isEdit
-                          ? 'Edit Laundry Service'
-                          : 'Create Laundry Service',
+                          ? l10n.editLaundryService
+                          : l10n.createLaundryService,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -1823,18 +1507,14 @@ class _ProProfileManagementScreenState
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Service name',
-                      ),
+                      decoration: InputDecoration(labelText: l10n.serviceName),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: descriptionController,
                       minLines: 2,
                       maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Description',
-                      ),
+                      decoration: InputDecoration(labelText: l10n.description),
                     ),
                     const SizedBox(height: 10),
                     Row(
@@ -1845,18 +1525,14 @@ class _ProProfileManagementScreenState
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
-                            decoration: const InputDecoration(
-                              labelText: 'Price',
-                            ),
+                            decoration: InputDecoration(labelText: l10n.price),
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: TextFormField(
                             controller: unitController,
-                            decoration: const InputDecoration(
-                              labelText: 'Unit',
-                            ),
+                            decoration: InputDecoration(labelText: l10n.unit),
                           ),
                         ),
                       ],
@@ -1865,7 +1541,7 @@ class _ProProfileManagementScreenState
                       const SizedBox(height: 10),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Service enabled'),
+                        title: Text(l10n.serviceEnabled),
                         value: enabled,
                         onChanged: (value) =>
                             setModalState(() => enabled = value),
@@ -1876,10 +1552,9 @@ class _ProProfileManagementScreenState
                       controller: itemCatalogController,
                       minLines: 3,
                       maxLines: 6,
-                      decoration: const InputDecoration(
-                        labelText: 'Item catalog',
-                        hintText:
-                            'One per line: label|price|category|spec\ncategory: unit or group',
+                      decoration: InputDecoration(
+                        labelText: l10n.itemCatalog,
+                        hintText: l10n.itemCatalogHint,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -1887,9 +1562,9 @@ class _ProProfileManagementScreenState
                       controller: pickupSlotsController,
                       minLines: 2,
                       maxLines: 4,
-                      decoration: const InputDecoration(
-                        labelText: 'Pickup slots',
-                        hintText: 'Comma or newline separated',
+                      decoration: InputDecoration(
+                        labelText: l10n.pickupSlots,
+                        hintText: l10n.commaOrNewlineSeparated,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -1899,8 +1574,8 @@ class _ProProfileManagementScreenState
                           child: TextFormField(
                             controller: turnaroundHoursController,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Turnaround (hrs)',
+                            decoration: InputDecoration(
+                              labelText: l10n.turnaroundHours,
                             ),
                           ),
                         ),
@@ -1909,8 +1584,8 @@ class _ProProfileManagementScreenState
                           child: TextFormField(
                             controller: minNoticeHoursController,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Min notice (hrs)',
+                            decoration: InputDecoration(
+                              labelText: l10n.minNoticeHours,
                             ),
                           ),
                         ),
@@ -1923,8 +1598,8 @@ class _ProProfileManagementScreenState
                           child: TextFormField(
                             controller: maxAdvanceDaysController,
                             keyboardType: TextInputType.number,
-                            decoration: const InputDecoration(
-                              labelText: 'Max advance (days)',
+                            decoration: InputDecoration(
+                              labelText: l10n.maxAdvanceDays,
                             ),
                           ),
                         ),
@@ -1935,8 +1610,8 @@ class _ProProfileManagementScreenState
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
-                            decoration: const InputDecoration(
-                              labelText: 'Tax rate (%)',
+                            decoration: InputDecoration(
+                              labelText: l10n.taxRate,
                             ),
                           ),
                         ),
@@ -1948,9 +1623,7 @@ class _ProProfileManagementScreenState
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: const InputDecoration(
-                        labelText: 'Delivery fee',
-                      ),
+                      decoration: InputDecoration(labelText: l10n.deliveryFee),
                     ),
                     const SizedBox(height: 12),
                     Container(
@@ -1997,8 +1670,8 @@ class _ProProfileManagementScreenState
                           : const Icon(Icons.photo_library_outlined),
                       label: Text(
                         isUploadingImage
-                            ? 'Uploading image...'
-                            : 'Upload Service Image',
+                            ? l10n.uploadingImage
+                            : l10n.uploadServiceImage,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -2019,10 +1692,10 @@ class _ProProfileManagementScreenState
                             : const Icon(Icons.save_outlined),
                         label: Text(
                           isSubmitting
-                              ? 'Saving...'
+                              ? l10n.saving
                               : isEdit
-                              ? 'Save Laundry Service'
-                              : 'Create Laundry Service',
+                              ? l10n.saveLaundryService
+                              : l10n.createLaundryService,
                         ),
                       ),
                     ),
@@ -2049,6 +1722,7 @@ class _ProProfileManagementScreenState
   }
 
   Future<void> _openDoctorSettingsEditor(Map<String, dynamic> item) async {
+    final l10n = AppLocalizations.of(context)!;
     final profile =
         context.read<ProAuthProvider>().currentProfile ?? widget.profile;
     if (profile.type != ProProfileType.doctor) return;
@@ -2155,7 +1829,7 @@ class _ProProfileManagementScreenState
                 if (!mounted || !sheetContext.mounted) return;
                 Navigator.of(sheetContext).pop();
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(content: Text('Doctor profile updated.')),
+                  SnackBar(content: Text(l10n.doctorProfileUpdated)),
                 );
                 await _refreshInsights();
               } catch (error) {
@@ -2180,7 +1854,7 @@ class _ProProfileManagementScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Edit Doctor Profile',
+                      l10n.editDoctorProfile,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -2188,49 +1862,49 @@ class _ProProfileManagementScreenState
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: locationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Clinic or service area',
+                      decoration: InputDecoration(
+                        labelText: l10n.clinicOrServiceArea,
                       ),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: phoneController,
-                      decoration: const InputDecoration(labelText: 'Phone'),
+                      decoration: InputDecoration(labelText: l10n.phone),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: whatsappController,
-                      decoration: const InputDecoration(labelText: 'WhatsApp'),
+                      decoration: InputDecoration(labelText: l10n.whatsapp),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: careModesController,
                       minLines: 2,
                       maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Care modes',
-                        hintText: 'Comma or newline separated',
+                      decoration: InputDecoration(
+                        labelText: l10n.careModesLabel,
+                        hintText: l10n.commaOrNewlineSeparated,
                       ),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: weekdaysController,
-                      decoration: const InputDecoration(
-                        labelText: 'Weekdays hours',
+                      decoration: InputDecoration(
+                        labelText: l10n.weekdaysHoursLabel,
                       ),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: saturdayController,
-                      decoration: const InputDecoration(
-                        labelText: 'Saturday hours',
+                      decoration: InputDecoration(
+                        labelText: l10n.saturdayHoursLabel,
                       ),
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: sundayController,
-                      decoration: const InputDecoration(
-                        labelText: 'Sunday hours',
+                      decoration: InputDecoration(
+                        labelText: l10n.sundayHoursLabel,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -2278,8 +1952,8 @@ class _ProProfileManagementScreenState
                           : const Icon(Icons.photo_library_outlined),
                       label: Text(
                         isUploadingImage
-                            ? 'Uploading image...'
-                            : 'Upload Doctor Image',
+                            ? l10n.uploadingImage
+                            : l10n.uploadDoctorImage,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -2299,7 +1973,7 @@ class _ProProfileManagementScreenState
                               )
                             : const Icon(Icons.save_outlined),
                         label: Text(
-                          isSubmitting ? 'Saving...' : 'Save Doctor Profile',
+                          isSubmitting ? l10n.saving : l10n.saveDoctorProfile,
                         ),
                       ),
                     ),
@@ -2361,17 +2035,16 @@ class _ProProfileManagementScreenState
               (pharmacyData['products'] as List<dynamic>? ?? const []).length;
 
           return _ProfileInsights(
-            title: 'Storefront Snapshot',
-            subtitle:
-                'Manage storefront profile data for shopping, food, and pharmacy lanes.',
+            title: l10n.storefrontSnapshot,
+            subtitle: l10n.storefrontSnapshotSubtitle,
             metrics: [
-              _ProfileMetric(label: 'Stores', value: '$stores'),
-              _ProfileMetric(label: 'Products', value: '$products'),
+              _ProfileMetric(label: l10n.stores, value: '$stores'),
+              _ProfileMetric(label: l10n.products, value: '$products'),
               _ProfileMetric(
-                label: 'Pharmacy Businesses',
+                label: l10n.pharmacyBusinesses,
                 value: '$pharmacyBusinesses',
               ),
-              _ProfileMetric(label: 'Medicines', value: '$medicines'),
+              _ProfileMetric(label: l10n.medicines, value: '$medicines'),
             ],
           );
         case ProProfileType.provider:
@@ -2403,24 +2076,23 @@ class _ProProfileManagementScreenState
               .length;
 
           return _ProfileInsights(
-            title: 'Provider Snapshot',
-            subtitle:
-                'Service and laundry listings connected to this provider profile.',
+            title: l10n.providerSnapshot,
+            subtitle: l10n.providerSnapshotSubtitle,
             metrics: [
               _ProfileMetric(
-                label: 'Service Listings',
+                label: l10n.serviceListings,
                 value: '$serviceListings',
               ),
               _ProfileMetric(
-                label: 'Laundry Listings',
+                label: l10n.laundryListings,
                 value: '$laundryListings',
               ),
               _ProfileMetric(
-                label: 'Listings With Location',
+                label: l10n.listingsWithLocation,
                 value: '$withLocation',
               ),
               _ProfileMetric(
-                label: 'Enabled Modules',
+                label: l10n.enabledModules,
                 value: '${profile.activeModules.length}',
               ),
             ],
@@ -2454,59 +2126,58 @@ class _ProProfileManagementScreenState
               .length;
 
           return _ProfileInsights(
-            title: 'Doctor Snapshot',
-            subtitle:
-                'Consultation profile details currently active for this doctor account.',
+            title: l10n.doctorSnapshot,
+            subtitle: l10n.doctorSnapshotSubtitle,
             metrics: [
-              _ProfileMetric(label: 'Doctors', value: '${settings.length}'),
+              _ProfileMetric(label: l10n.doctors, value: '${settings.length}'),
               _ProfileMetric(
-                label: 'Available Now',
+                label: l10n.availableNow,
                 value: '$availableDoctors',
               ),
               _ProfileMetric(
-                label: 'Profiles With Location',
+                label: l10n.profilesWithLocation,
                 value: '$withLocation',
               ),
               _ProfileMetric(
-                label: 'Care Modes',
+                label: l10n.careModes,
                 value: '${_countDoctorModes(settings)}',
               ),
             ],
           );
         case ProProfileType.delivery:
           return _ProfileInsights(
-            title: 'Dispatch Snapshot',
-            subtitle: 'Manage dispatch profile operations and online status.',
+            title: l10n.dispatchSnapshot,
+            subtitle: l10n.dispatchSnapshotSubtitle,
             metrics: [
               _ProfileMetric(
-                label: 'Online',
-                value: profile.isOnline ? 'Yes' : 'No',
+                label: l10n.online,
+                value: profile.isOnline ? l10n.yes : l10n.no,
               ),
               _ProfileMetric(
-                label: 'Delivery Modules',
+                label: l10n.deliveryModules,
                 value: '${profile.activeModules.length}',
               ),
               _ProfileMetric(
-                label: 'Business Name Length',
+                label: l10n.businessNameLength,
                 value: '${profile.businessName.trim().length}',
               ),
             ],
           );
         case ProProfileType.rider:
           return _ProfileInsights(
-            title: 'Rider Snapshot',
-            subtitle: 'Manage rider profile operations and trip availability.',
+            title: l10n.riderSnapshot,
+            subtitle: l10n.riderSnapshotSubtitle,
             metrics: [
               _ProfileMetric(
-                label: 'Online',
-                value: profile.isOnline ? 'Yes' : 'No',
+                label: l10n.online,
+                value: profile.isOnline ? l10n.yes : l10n.no,
               ),
               _ProfileMetric(
-                label: 'Ride Modules',
+                label: l10n.rideModules,
                 value: '${profile.activeModules.length}',
               ),
               _ProfileMetric(
-                label: 'Business Name Length',
+                label: l10n.businessNameLength,
                 value: '${profile.businessName.trim().length}',
               ),
             ],
@@ -2514,11 +2185,10 @@ class _ProProfileManagementScreenState
       }
     } catch (error) {
       return _ProfileInsights(
-        title: 'Profile Snapshot',
-        subtitle:
-            'Could not load live profile insights right now. You can still update profile settings below.',
+        title: l10n.profileSnapshot,
+        subtitle: l10n.couldNotLoadLiveProfileInsights,
         metrics: [
-          _ProfileMetric(label: 'Status', value: 'Temporarily unavailable'),
+          _ProfileMetric(label: l10n.status, value: l10n.temporarilyUnavailable),
         ],
       );
     }
@@ -2542,83 +2212,81 @@ class _ProProfileManagementScreenState
     switch (profile.type) {
       case ProProfileType.shop:
         return [
-          const _ProfileAction(
-            title: 'Storefront Setup',
-            subtitle: 'Manage store name, description, and storefront image.',
+          _ProfileAction(
+            title: l10n.storefrontSetup,
+            subtitle: l10n.storefrontSetupSubtitle,
             route: ProRoutePaths.shopStoreSetup,
             icon: Icons.store_mall_directory_outlined,
           ),
-          const _ProfileAction(
-            title: 'Products & Medicines',
-            subtitle: 'Manage shopping products and pharmacy medicine catalog.',
+          _ProfileAction(
+            title: l10n.productsMedicines,
+            subtitle: l10n.productsMedicinesSubtitle,
             route: ProRoutePaths.shopProducts,
             icon: Icons.inventory_2_outlined,
           ),
-          const _ProfileAction(
-            title: 'Orders Queue',
-            subtitle: 'Monitor all incoming orders by module lane.',
+          _ProfileAction(
+            title: l10n.ordersQueue,
+            subtitle: l10n.ordersQueueSubtitle,
             route: ProRoutePaths.shopQueue,
             icon: Icons.receipt_long_outlined,
           ),
         ];
       case ProProfileType.provider:
         return [
-          const _ProfileAction(
-            title: 'Service & Laundry Profiles',
-            subtitle:
-                'Update listing location, zone, services, and laundry setup.',
+          _ProfileAction(
+            title: l10n.serviceAndLaundryProfiles,
+            subtitle: l10n.serviceAndLaundryProfilesSubtitle,
             route: ProRoutePaths.providerAvailability,
             icon: Icons.local_laundry_service_outlined,
           ),
-          const _ProfileAction(
-            title: 'Schedule & Booking Modes',
-            subtitle: 'Manage provider schedule and booking preferences.',
+          _ProfileAction(
+            title: l10n.scheduleAndBookingModes,
+            subtitle: l10n.scheduleAndBookingModesSubtitle,
             route: ProRoutePaths.providerSchedule,
             icon: Icons.schedule_outlined,
           ),
-          const _ProfileAction(
-            title: 'Jobs Queue',
-            subtitle: 'Track active and pending provider service jobs.',
+          _ProfileAction(
+            title: l10n.jobsQueue,
+            subtitle: l10n.jobsQueueSubtitle,
             route: ProRoutePaths.providerQueue,
             icon: Icons.work_outline,
           ),
         ];
       case ProProfileType.doctor:
         return [
-          const _ProfileAction(
-            title: 'Doctor Details',
-            subtitle:
-                'Edit doctor location, contacts, and consultation profile image.',
+          _ProfileAction(
+            title: l10n.doctorDetails,
+            subtitle: l10n.doctorDetailsSubtitle,
             route: ProRoutePaths.doctorSchedule,
             icon: Icons.medical_services_outlined,
           ),
-          const _ProfileAction(
-            title: 'Doctor Availability',
-            subtitle: 'Control consultation readiness for each doctor profile.',
+          _ProfileAction(
+            title: l10n.doctorAvailability,
+            subtitle: l10n.doctorAvailabilitySubtitle,
             route: ProRoutePaths.doctorAvailability,
             icon: Icons.toggle_on_outlined,
           ),
-          const _ProfileAction(
-            title: 'Appointments Queue',
-            subtitle: 'Review appointments and home-care requests.',
+          _ProfileAction(
+            title: l10n.appointmentsQueue,
+            subtitle: l10n.appointmentsQueueSubtitle,
             route: ProRoutePaths.doctorAppointments,
             icon: Icons.event_note_outlined,
           ),
         ];
       case ProProfileType.delivery:
         return [
-          const _ProfileAction(
-            title: 'Dispatch Queue',
-            subtitle: 'Manage delivery assignments and dispatch operations.',
+          _ProfileAction(
+            title: l10n.dispatchQueue,
+            subtitle: l10n.dispatchQueueSubtitle,
             route: ProRoutePaths.deliveryQueue,
             icon: Icons.local_shipping_outlined,
           ),
         ];
       case ProProfileType.rider:
         return [
-          const _ProfileAction(
-            title: 'Ride Queue',
-            subtitle: 'Manage rider trip queue and active rides.',
+          _ProfileAction(
+            title: l10n.rideQueue,
+            subtitle: l10n.rideQueueSubtitle,
             route: ProRoutePaths.riderQueue,
             icon: Icons.local_taxi_outlined,
           ),
@@ -2628,6 +2296,7 @@ class _ProProfileManagementScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final currentProfile =
         context.watch<ProAuthProvider>().currentProfile ?? widget.profile;
     final profileColor = ProModuleHelper.getProfileColor(currentProfile.type);
@@ -2658,7 +2327,7 @@ class _ProProfileManagementScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile Management'),
+        title: Text(l10n.profileManagement),
         backgroundColor: profileColor,
         foregroundColor: Colors.white,
       ),
@@ -2670,7 +2339,7 @@ class _ProProfileManagementScreenState
             ModernCard(
               backgroundColor: Colors.white,
               child: Text(
-                'Manage pro profile identity, module access, and frontend profile sections from one place.',
+                l10n.manageProProfileIdentity,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
@@ -2693,9 +2362,9 @@ class _ProProfileManagementScreenState
                   if (_selectedModules.contains(module)) {
                     if (_selectedModules.length == 1) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text(
-                            'At least one module must stay enabled.',
+                            l10n.atLeastOneModuleMustStayEnabled,
                           ),
                         ),
                       );
@@ -2710,7 +2379,7 @@ class _ProProfileManagementScreenState
               onSave: _saveProfile,
             ),
             const SizedBox(height: ProDesignSystem.spacing16),
-            const ModernHeader(title: 'Profile Snapshot'),
+            ModernHeader(title: l10n.profileSnapshot),
             FutureBuilder<_ProfileInsights>(
               future: _insightsFuture,
               builder: (context, snapshot) {
@@ -2730,7 +2399,7 @@ class _ProProfileManagementScreenState
                 if (insights == null) {
                   return ModernCard(
                     child: Text(
-                      'Could not load profile insights.',
+                      l10n.couldNotLoadProfileInsights,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                   );
@@ -2772,7 +2441,7 @@ class _ProProfileManagementScreenState
             ),
             if (currentProfile.type == ProProfileType.shop) ...[
               const SizedBox(height: ProDesignSystem.spacing16),
-              const ModernHeader(title: 'Shop Profile Details'),
+              ModernHeader(title: l10n.shopProfileDetails),
               FutureBuilder<_ShopProfileDetails>(
                 future: _shopProfileFuture,
                 builder: (context, snapshot) {
@@ -2794,14 +2463,14 @@ class _ProProfileManagementScreenState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Could not load shop profile details.',
+                            l10n.couldNotLoadShopProfileDetails,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: ProDesignSystem.spacing12),
                           OutlinedButton.icon(
                             onPressed: _refreshInsights,
                             icon: const Icon(Icons.refresh_rounded),
-                            label: const Text('Retry'),
+                            label: Text(l10n.retry),
                           ),
                         ],
                       ),
@@ -2819,46 +2488,45 @@ class _ProProfileManagementScreenState
                   final restaurant = _primaryRestaurantFromData(
                     details.storefrontData,
                   );
-                  final storeName =
-                      store?['name']?.toString() ?? 'Not connected';
+                   final storeName =
+                      store?['name']?.toString() ?? l10n.notConnected;
                   final restaurantName =
-                      restaurant?['name']?.toString() ?? 'Not connected';
+                      restaurant?['name']?.toString() ?? l10n.notConnected;
                   final restaurantCuisine =
                       restaurant?['subtitle']?.toString() ??
                       restaurant?['cuisine']?.toString() ??
                       '';
-                  final pharmacyName = details.pharmacyBusinesses.isNotEmpty
+                   final pharmacyName = details.pharmacyBusinesses.isNotEmpty
                       ? details.pharmacyBusinesses.first
-                      : 'Not connected';
+                      : l10n.notConnected;
 
                   return Column(
                     children: [
                       _InlineProfileEditorCard(
                         icon: Icons.store_mall_directory_outlined,
-                        title: 'Shopping Store Profile',
+                        title: l10n.shoppingStoreProfile,
                         value: storeName,
-                        subtitle:
-                            'Edit store name, tagline, description, and image.',
+                        subtitle: l10n.editStoreNameTaglineDescription,
                         onTap: () => _openShoppingStoreSetupEditor(store),
                       ),
                       const SizedBox(height: ProDesignSystem.spacing12),
                       _InlineProfileEditorCard(
                         icon: Icons.restaurant_menu_outlined,
-                        title: 'Restaurant Profile',
+                        title: l10n.restaurantProfile,
                         value: restaurantName,
                         subtitle: restaurantCuisine.isNotEmpty
-                            ? 'Cuisine: $restaurantCuisine'
-                            : 'Edit restaurant name, cuisine, and image.',
+                            ? l10n.cuisinePrefix(restaurantCuisine)
+                            : l10n.editRestaurantNameCuisineImage,
                         onTap: () => _openRestaurantEditor(restaurant),
                       ),
                       const SizedBox(height: ProDesignSystem.spacing12),
                       _InlineProfileEditorCard(
                         icon: Icons.local_pharmacy_outlined,
-                        title: 'Pharmacy Profile',
+                        title: l10n.pharmacyProfile,
                         value: pharmacyName,
                         subtitle: details.pharmacyBusinesses.length > 1
-                            ? '${details.pharmacyBusinesses.length} businesses connected'
-                            : 'Edit pharmacy business name for pharmacy listings.',
+                            ? l10n.pharmacyBusinessesConnected(details.pharmacyBusinesses.length)
+                            : l10n.editPharmacyBusinessName,
                         onTap: () => _openPharmacyEditor(
                           businesses: details.pharmacyBusinesses,
                           suggestedName: currentProfile.businessName,
@@ -2871,7 +2539,7 @@ class _ProProfileManagementScreenState
             ],
             if (currentProfile.type == ProProfileType.provider) ...[
               const SizedBox(height: ProDesignSystem.spacing16),
-              const ModernHeader(title: 'Provider Profile Details'),
+              ModernHeader(title: l10n.providerProfileDetails),
               FutureBuilder<List<Map<String, dynamic>>>(
                 future: _providerSettingsFuture,
                 builder: (context, snapshot) {
@@ -2892,14 +2560,14 @@ class _ProProfileManagementScreenState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Could not load provider profile details.',
+                            l10n.couldNotLoadProviderProfileDetails,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: ProDesignSystem.spacing12),
                           OutlinedButton.icon(
                             onPressed: _refreshInsights,
                             icon: const Icon(Icons.refresh_rounded),
-                            label: const Text('Retry'),
+                            label: Text(l10n.retry),
                           ),
                         ],
                       ),
@@ -2916,8 +2584,8 @@ class _ProProfileManagementScreenState
                         children: [
                           Text(
                             supportsServices
-                                ? 'No provider listing is linked yet.'
-                                : 'No provider listing is linked yet. Enable Services module to create one.',
+                                ? l10n.noProviderListingLinkedYet
+                                : l10n.enableServicesModuleToCreateOne,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: ProDesignSystem.spacing12),
@@ -2926,7 +2594,7 @@ class _ProProfileManagementScreenState
                                 ? _openProviderCreateEditor
                                 : null,
                             icon: const Icon(Icons.add_business_outlined),
-                            label: const Text('Create Provider Listing'),
+                            label: Text(l10n.createProviderListing),
                           ),
                         ],
                       ),
@@ -2939,11 +2607,11 @@ class _ProProfileManagementScreenState
                         final name =
                             item['name']?.toString().trim().isNotEmpty == true
                             ? item['name'].toString()
-                            : 'Provider listing';
+                            : l10n.providerListing;
                         final title =
                             item['title']?.toString().trim().isNotEmpty == true
                             ? item['title'].toString()
-                            : 'Provider profile';
+                            : l10n.providerProfile;
                         final servicesCount =
                             (item['services'] as List<dynamic>? ?? const [])
                                 .length;
@@ -2954,7 +2622,7 @@ class _ProProfileManagementScreenState
                         final detailParts = <String>[
                           if (location.isNotEmpty) location,
                           if (responseTime.isNotEmpty) responseTime,
-                          '$servicesCount services',
+                          l10n.servicesCount(servicesCount),
                         ];
                         return Padding(
                           padding: const EdgeInsets.only(
@@ -2976,7 +2644,7 @@ class _ProProfileManagementScreenState
                               ? _openProviderCreateEditor
                               : null,
                           icon: const Icon(Icons.add_business_outlined),
-                          label: const Text('Add Provider Listing'),
+                          label: Text(l10n.addProviderListing),
                         ),
                       ),
                     ],
@@ -2984,7 +2652,7 @@ class _ProProfileManagementScreenState
                 },
               ),
               const SizedBox(height: ProDesignSystem.spacing16),
-              const ModernHeader(title: 'Laundry Profile Details'),
+              ModernHeader(title: l10n.laundryProfileDetails),
               FutureBuilder<Map<String, dynamic>>(
                 future: _providerAvailabilityFuture,
                 builder: (context, snapshot) {
@@ -3005,14 +2673,14 @@ class _ProProfileManagementScreenState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Could not load laundry profile details.',
+                            l10n.couldNotLoadLaundryProfileDetails,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: ProDesignSystem.spacing12),
                           OutlinedButton.icon(
                             onPressed: _refreshInsights,
                             icon: const Icon(Icons.refresh_rounded),
-                            label: const Text('Retry'),
+                            label: Text(l10n.retry),
                           ),
                         ],
                       ),
@@ -3037,8 +2705,8 @@ class _ProProfileManagementScreenState
                         children: [
                           Text(
                             supportsLaundry
-                                ? 'No laundry service listing yet.'
-                                : 'Laundry module is not enabled for this profile.',
+                                ? l10n.noLaundryServiceListingYet
+                                : l10n.laundryModuleNotEnabled,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: ProDesignSystem.spacing12),
@@ -3049,7 +2717,7 @@ class _ProProfileManagementScreenState
                             icon: const Icon(
                               Icons.local_laundry_service_outlined,
                             ),
-                            label: const Text('Create Laundry Service'),
+                            label: Text(l10n.createLaundryService),
                           ),
                         ],
                       ),
@@ -3063,7 +2731,7 @@ class _ProProfileManagementScreenState
                             service['name']?.toString().trim().isNotEmpty ==
                                 true
                             ? service['name'].toString()
-                            : 'Laundry Service';
+                            : l10n.laundryService;
                         final price =
                             (service['price'] as num?)?.toDouble() ?? 0;
                         final unit = service['unit']?.toString().trim() ?? '';
@@ -3080,9 +2748,9 @@ class _ProProfileManagementScreenState
                                     const [])
                                 .length;
                         final detailParts = <String>[
-                          'DJF${price.toStringAsFixed(price % 1 == 0 ? 0 : 2)} ${unit.isNotEmpty ? '/ $unit' : ''}',
-                          '$itemCatalogCount items',
-                          '$pickupSlotsCount slots',
+                          '\$${price.toStringAsFixed(price % 1 == 0 ? 0 : 2)} ${unit.isNotEmpty ? '/ $unit' : ''}',
+                          l10n.itemsCount(itemCatalogCount),
+                          l10n.slotsCount(pickupSlotsCount),
                         ];
                         return Padding(
                           padding: const EdgeInsets.only(
@@ -3092,8 +2760,8 @@ class _ProProfileManagementScreenState
                             icon: Icons.local_laundry_service_outlined,
                             title: name,
                             value: service['enabled'] == true
-                                ? 'Enabled'
-                                : 'Paused',
+                                ? l10n.enabled
+                                : l10n.paused,
                             subtitle: detailParts.join(' • '),
                             onTap: () =>
                                 _openLaundryServiceEditor(service: service),
@@ -3107,7 +2775,7 @@ class _ProProfileManagementScreenState
                               ? () => _openLaundryServiceEditor()
                               : null,
                           icon: const Icon(Icons.add_circle_outline),
-                          label: const Text('Add Laundry Service'),
+                          label: Text(l10n.addLaundryService),
                         ),
                       ),
                     ],
@@ -3117,7 +2785,7 @@ class _ProProfileManagementScreenState
             ],
             if (currentProfile.type == ProProfileType.doctor) ...[
               const SizedBox(height: ProDesignSystem.spacing16),
-              const ModernHeader(title: 'Doctor Profile Details'),
+              ModernHeader(title: l10n.doctorProfileDetails),
               FutureBuilder<List<Map<String, dynamic>>>(
                 future: _doctorSettingsFuture,
                 builder: (context, snapshot) {
@@ -3138,14 +2806,14 @@ class _ProProfileManagementScreenState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Could not load doctor profile details.',
+                            l10n.couldNotLoadDoctorProfileDetails,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: ProDesignSystem.spacing12),
                           OutlinedButton.icon(
                             onPressed: _refreshInsights,
                             icon: const Icon(Icons.refresh_rounded),
-                            label: const Text('Retry'),
+                            label: Text(l10n.retry),
                           ),
                         ],
                       ),
@@ -3156,7 +2824,7 @@ class _ProProfileManagementScreenState
                   if (items.isEmpty) {
                     return ModernCard(
                       child: Text(
-                        'No doctor profile is currently bound to this pro account. Update the business name or use schedule tools to sync doctor binding.',
+                        l10n.noDoctorProfileBound,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     );
@@ -3168,12 +2836,12 @@ class _ProProfileManagementScreenState
                           final name =
                               item['name']?.toString().trim().isNotEmpty == true
                               ? item['name'].toString()
-                              : 'Doctor';
-                          final specialty =
+                              : l10n.moduleDoctor;
+                           final specialty =
                               item['specialty']?.toString().trim().isNotEmpty ==
                                   true
                               ? item['specialty'].toString()
-                              : 'General practice';
+                              : l10n.generalPractice;
                           final location =
                               item['location']?.toString().trim() ?? '';
                           final detail = location.isNotEmpty
@@ -3186,7 +2854,7 @@ class _ProProfileManagementScreenState
                             child: _InlineProfileEditorCard(
                               icon: Icons.medical_services_outlined,
                               title: name,
-                              value: 'Doctor',
+                              value: l10n.moduleDoctor,
                               subtitle: detail,
                               onTap: () => _openDoctorSettingsEditor(item),
                             ),
@@ -3199,7 +2867,7 @@ class _ProProfileManagementScreenState
             ],
             if (currentProfile.type == ProProfileType.delivery) ...[
               const SizedBox(height: ProDesignSystem.spacing16),
-              const ModernHeader(title: 'Delivery Profile Details'),
+              ModernHeader(title: l10n.deliveryProfileDetails),
               FutureBuilder<List<Map<String, dynamic>>>(
                 future: _deliveryQueueFuture,
                 builder: (context, snapshot) {
@@ -3220,14 +2888,14 @@ class _ProProfileManagementScreenState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Could not load dispatch profile details.',
+                            l10n.couldNotLoadDispatchProfileDetails,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: ProDesignSystem.spacing12),
                           OutlinedButton.icon(
                             onPressed: _refreshInsights,
                             icon: const Icon(Icons.refresh_rounded),
-                            label: const Text('Retry'),
+                            label: Text(l10n.retry),
                           ),
                         ],
                       ),
@@ -3260,7 +2928,7 @@ class _ProProfileManagementScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Dispatch snapshot',
+                              l10n.dispatchSnapshot,
                               style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(fontWeight: FontWeight.w700),
                             ),
@@ -3269,15 +2937,15 @@ class _ProProfileManagementScreenState
                               spacing: ProDesignSystem.spacing8,
                               runSpacing: ProDesignSystem.spacing8,
                               children: [
-                                _MetricPill(
-                                  label: 'Open requests',
+                               _MetricPill(
+                                  label: l10n.openRequests,
                                   value: '$openCount',
                                 ),
                                 _MetricPill(
-                                  label: 'Assigned',
+                                  label: l10n.assignedLabel,
                                   value: '$assignedCount',
                                 ),
-                                _MetricPill(label: 'Lanes', value: '$lanes'),
+                                _MetricPill(label: l10n.lanesLabel, value: '$lanes'),
                               ],
                             ),
                             const SizedBox(height: ProDesignSystem.spacing12),
@@ -3285,7 +2953,7 @@ class _ProProfileManagementScreenState
                               onPressed: () =>
                                   context.push(ProRoutePaths.deliveryQueue),
                               icon: const Icon(Icons.local_shipping_outlined),
-                              label: const Text('Open Dispatch Queue'),
+                              label: Text(l10n.openDispatchQueue),
                             ),
                           ],
                         ),
@@ -3296,11 +2964,13 @@ class _ProProfileManagementScreenState
                           final orderId = item['id']?.toString() ?? '';
                           final queueType =
                               item['queueType']?.toString() ?? 'open';
-                          final module = _dispatchModuleLabel(
+                           final module = _dispatchModuleLabel(
                             item['module']?.toString() ?? '',
+                            l10n,
                           );
                           final status = _queueStatusLabel(
                             item['status']?.toString(),
+                            l10n,
                           );
                           final customer =
                               item['customerName']?.toString() ?? '';
@@ -3318,7 +2988,7 @@ class _ProProfileManagementScreenState
                               leadingIcon: Icons.local_shipping_outlined,
                               title:
                                   item['title']?.toString() ??
-                                  'Delivery request',
+                                  l10n.deliveryRequest,
                               subtitle: subtitleParts.join(' • '),
                               trailing: SizedBox(
                                 height: 34,
@@ -3340,8 +3010,8 @@ class _ProProfileManagementScreenState
                                     isBusy
                                         ? '...'
                                         : queueType == 'open'
-                                        ? 'Claim'
-                                        : 'Open',
+                                        ? l10n.claim
+                                        : l10n.openLabel,
                                   ),
                                 ),
                               ),
@@ -3356,7 +3026,7 @@ class _ProProfileManagementScreenState
             ],
             if (currentProfile.type == ProProfileType.rider) ...[
               const SizedBox(height: ProDesignSystem.spacing16),
-              const ModernHeader(title: 'Rider Profile Details'),
+              ModernHeader(title: l10n.riderProfileDetails),
               FutureBuilder<List<Map<String, dynamic>>>(
                 future: _rideQueueFuture,
                 builder: (context, snapshot) {
@@ -3377,14 +3047,14 @@ class _ProProfileManagementScreenState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Could not load rider profile details.',
+                            l10n.couldNotLoadRiderProfileDetails,
                             style: Theme.of(context).textTheme.bodyMedium,
                           ),
                           const SizedBox(height: ProDesignSystem.spacing12),
                           OutlinedButton.icon(
                             onPressed: _refreshInsights,
                             icon: const Icon(Icons.refresh_rounded),
-                            label: const Text('Retry'),
+                            label: Text(l10n.retry),
                           ),
                         ],
                       ),
@@ -3417,7 +3087,7 @@ class _ProProfileManagementScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Ride snapshot',
+                              l10n.rideSnapshot,
                               style: Theme.of(context).textTheme.titleMedium
                                   ?.copyWith(fontWeight: FontWeight.w700),
                             ),
@@ -3426,16 +3096,16 @@ class _ProProfileManagementScreenState
                               spacing: ProDesignSystem.spacing8,
                               runSpacing: ProDesignSystem.spacing8,
                               children: [
-                                _MetricPill(
-                                  label: 'Open requests',
+                                 _MetricPill(
+                                  label: l10n.openRequests,
                                   value: '$openCount',
                                 ),
                                 _MetricPill(
-                                  label: 'Assigned',
+                                  label: l10n.assignedLabel,
                                   value: '$assignedCount',
                                 ),
                                 _MetricPill(
-                                  label: 'Live trips',
+                                  label: l10n.liveTrips,
                                   value: '$liveCount',
                                 ),
                               ],
@@ -3445,7 +3115,7 @@ class _ProProfileManagementScreenState
                               onPressed: () =>
                                   context.push(ProRoutePaths.riderQueue),
                               icon: const Icon(Icons.local_taxi_outlined),
-                              label: const Text('Open Ride Queue'),
+                              label: Text(l10n.openRideQueue),
                             ),
                           ],
                         ),
@@ -3458,6 +3128,7 @@ class _ProProfileManagementScreenState
                               item['queueType']?.toString() ?? 'open';
                           final status = _queueStatusLabel(
                             item['status']?.toString(),
+                            l10n,
                           );
                           final amount =
                               item['amount']?.toString().trim() ?? '';
@@ -3472,7 +3143,7 @@ class _ProProfileManagementScreenState
                             child: ModernTile(
                               leadingIcon: Icons.local_taxi_outlined,
                               title:
-                                  item['title']?.toString() ?? 'Ride request',
+                                  item['title']?.toString() ?? l10n.rideRequest,
                               subtitle: subtitle,
                               trailing: SizedBox(
                                 height: 34,
@@ -3494,8 +3165,8 @@ class _ProProfileManagementScreenState
                                     isBusy
                                         ? '...'
                                         : queueType == 'open'
-                                        ? 'Claim'
-                                        : 'Open',
+                                        ? l10n.claim
+                                        : l10n.openLabel,
                                   ),
                                 ),
                               ),
@@ -3509,7 +3180,7 @@ class _ProProfileManagementScreenState
               ),
             ],
             const SizedBox(height: ProDesignSystem.spacing16),
-            const ModernHeader(title: 'Profile Frontend Sections'),
+            ModernHeader(title: l10n.profileFrontendSections),
             ..._actionsForProfile(currentProfile).map(
               (action) => Padding(
                 padding: const EdgeInsets.only(
@@ -3566,6 +3237,7 @@ class _ProfileIdentityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ModernCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3667,14 +3339,14 @@ class _ProfileIdentityCard extends StatelessWidget {
             controller: businessNameController,
             enabled: !isSavingProfile,
             decoration: ProDesignSystem.inputDecoration(
-              label: 'Business name',
-              hint: 'Name shown to customers across enabled modules',
+              label: l10n.businessName,
+              hint: l10n.nameShownToCustomers,
               prefixIcon: Icons.storefront_outlined,
             ),
           ),
           const SizedBox(height: ProDesignSystem.spacing12),
           Text(
-            'Enabled modules',
+            l10n.enabledModulesLower,
             style: Theme.of(
               context,
             ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
@@ -3711,7 +3383,7 @@ class _ProfileIdentityCard extends StatelessWidget {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.save_outlined),
-              label: Text(isSavingProfile ? 'Saving...' : 'Save Profile'),
+              label: Text(isSavingProfile ? l10n.saving : l10n.saveProfile),
             ),
           ),
         ],
@@ -3813,19 +3485,23 @@ class _InlineProfileEditorCard extends StatelessWidget {
       title: title,
       subtitle: subtitle,
       onTap: onTap,
-      trailing: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 2),
-          const Icon(Icons.edit_outlined, size: 16, color: Color(0xFF6B7280)),
-        ],
+      trailing: Flexible(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 2),
+            const Icon(Icons.edit_outlined, size: 16, color: Color(0xFF6B7280)),
+          ],
+        ),
       ),
     );
   }

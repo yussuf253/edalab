@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -21,6 +22,8 @@ class RiderDashboardScreen extends StatefulWidget {
 class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
   late Future<ProDashboardData> _dashboardFuture;
   bool _isClaiming = false;
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -69,9 +72,9 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
     final isOnline =
         context.read<ProAuthProvider>().currentProfile?.isOnline ?? true;
     if (!isOnline) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Go online before claiming rides.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.goOnlineBeforeClaimingRides)));
       return;
     }
 
@@ -82,7 +85,7 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ride request claimed successfully.')),
+        SnackBar(content: Text(l10n.rideRequestClaimedSuccessfully)),
       );
       await Navigator.of(context).push(
         MaterialPageRoute(
@@ -96,9 +99,9 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
       await _refreshDashboard();
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Could not claim ride: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.couldNotClaimRide(error.toString()))),
+      );
     } finally {
       if (mounted) {
         setState(() => _isClaiming = false);
@@ -216,6 +219,7 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                   isOnline: isOnline,
                   modules: widget.profile.activeModules,
                   onOpenQueue: _openQueue,
+                  l10n: l10n,
                 ),
                 if (data?.scopeNote?.isNotEmpty == true) ...[
                   const SizedBox(height: 12),
@@ -226,11 +230,12 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                   tripsToday: tripsToday,
                   liveRequests: liveRequests,
                   completedToday: completedToday,
+                  l10n: l10n,
                 ),
                 if (highlight != null) ...[
                   const SizedBox(height: 20),
                   Text(
-                    'Next Best Trip',
+                    l10n.nextBestTrip,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -240,12 +245,13 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                     highlight: highlight,
                     isBusy: _isClaiming || !isOnline,
                     onAccept: () => _claimRide(highlight),
-                    buttonLabel: isOnline ? highlight.ctaLabel : 'Offline',
+                    buttonLabel: isOnline ? highlight.ctaLabel : l10n.offShift,
+                    l10n: l10n,
                   ),
                 ],
                 const SizedBox(height: 20),
                 Text(
-                  'Ride Lanes',
+                  l10n.rideLanes,
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -256,12 +262,12 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                     (summary) => _RiderLaneCard(summary: summary),
                   )
                 else
-                  const _FallbackRideState(),
+                  _FallbackRideState(l10n: l10n),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: _openQueue,
                   icon: const Icon(Icons.list_alt_outlined),
-                  label: const Text('Open Full Queue'),
+                  label: Text(l10n.openFullQueueLabel),
                 ),
               ],
             ),
@@ -278,6 +284,7 @@ class _RiderShiftHero extends StatelessWidget {
   final bool isOnline;
   final List<ProModule> modules;
   final VoidCallback onOpenQueue;
+  final AppLocalizations l10n;
 
   const _RiderShiftHero({
     required this.businessName,
@@ -285,6 +292,7 @@ class _RiderShiftHero extends StatelessWidget {
     required this.isOnline,
     required this.modules,
     required this.onOpenQueue,
+    required this.l10n,
   });
 
   @override
@@ -323,7 +331,7 @@ class _RiderShiftHero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  isOnline ? 'ON SHIFT' : 'OFF SHIFT',
+                  isOnline ? l10n.onShift : l10n.offShift,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -336,7 +344,7 @@ class _RiderShiftHero extends StatelessWidget {
           Text(
             headline?.trim().isNotEmpty == true
                 ? headline!
-                : 'Stay online, claim nearby trips, and keep your completion pace.',
+                : l10n.riderDashboardSubtitle,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
@@ -382,7 +390,7 @@ class _RiderShiftHero extends StatelessWidget {
           FilledButton.icon(
             onPressed: onOpenQueue,
             icon: const Icon(Icons.alt_route),
-            label: const Text('Open Rider Queue'),
+            label: Text(l10n.openRiderQueue),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: AppColors.ride,
@@ -398,11 +406,13 @@ class _RiderPerformanceStrip extends StatelessWidget {
   final int tripsToday;
   final int liveRequests;
   final int completedToday;
+  final AppLocalizations l10n;
 
   const _RiderPerformanceStrip({
     required this.tripsToday,
     required this.liveRequests,
     required this.completedToday,
+    required this.l10n,
   });
 
   @override
@@ -411,7 +421,7 @@ class _RiderPerformanceStrip extends StatelessWidget {
       children: [
         Expanded(
           child: _PerformanceTile(
-            label: 'Trips',
+            label: l10n.trips,
             value: '$tripsToday',
             color: Colors.green,
           ),
@@ -419,7 +429,7 @@ class _RiderPerformanceStrip extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _PerformanceTile(
-            label: 'Live',
+            label: l10n.live,
             value: '$liveRequests',
             color: AppColors.ride,
           ),
@@ -427,7 +437,7 @@ class _RiderPerformanceStrip extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _PerformanceTile(
-            label: 'Completed',
+            label: l10n.completedLabel,
             value: '$completedToday',
             color: AppColors.warning,
           ),
@@ -478,17 +488,19 @@ class _UrgentTripCard extends StatelessWidget {
   final bool isBusy;
   final VoidCallback onAccept;
   final String buttonLabel;
+  final AppLocalizations l10n;
 
   const _UrgentTripCard({
     required this.highlight,
     required this.isBusy,
     required this.onAccept,
     required this.buttonLabel,
+    required this.l10n,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isOffline = buttonLabel == 'Offline';
+    final isOffline = buttonLabel == l10n.offShift;
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -549,7 +561,9 @@ class _UrgentTripCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: isBusy ? null : onAccept,
-                child: Text(isBusy && !isOffline ? 'Claiming...' : buttonLabel),
+                child: Text(
+                  isBusy && !isOffline ? l10n.claimingButtonLabel : buttonLabel,
+                ),
               ),
             ),
           ],
@@ -598,14 +612,16 @@ class _RiderLaneCard extends StatelessWidget {
 }
 
 class _FallbackRideState extends StatelessWidget {
-  const _FallbackRideState();
+  final AppLocalizations l10n;
+
+  const _FallbackRideState({required this.l10n});
 
   @override
   Widget build(BuildContext context) {
-    return const Card(
+    return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Text('No live ride lanes yet. New trips will appear here.'),
+        padding: const EdgeInsets.all(16),
+        child: Text(l10n.noLiveRideLanes),
       ),
     );
   }

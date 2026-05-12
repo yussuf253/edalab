@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../../l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -31,6 +32,8 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
   Uint8List? _pickedImageBytes;
   bool _isUploadingImage = false;
   bool _isSubmitting = false;
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -119,8 +122,8 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
         SnackBar(
           content: Text(
             created
-                ? 'Store created and connected to your profile.'
-                : 'Store setup updated.',
+                ? l10n.storeCreatedSuccessfully
+                : l10n.storeUpdatedSuccessfully,
           ),
         ),
       );
@@ -144,7 +147,7 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.initialStore == null ? 'Create Store' : 'Store Setup',
+          widget.initialStore == null ? l10n.createStore : l10n.storeSetup,
         ),
       ),
       body: Form(
@@ -160,24 +163,24 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
                 ).colorScheme.primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Text(
-                'Configure your public storefront details. This setup is used by customers when browsing your store.',
+              child: Text(
+                l10n.storeSetupSubtitle,
               ),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Store name'),
+              decoration: InputDecoration(labelText: l10n.storeNameLabel),
               validator: (value) => (value == null || value.trim().length < 2)
-                  ? 'Enter a valid store name'
+                  ? l10n.enterStoreNameError
                   : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _taglineController,
-              decoration: const InputDecoration(
-                labelText: 'Tagline',
-                hintText: 'Short statement shown under the store name',
+              decoration: InputDecoration(
+                labelText: l10n.taglineLabel,
+                hintText: l10n.taglineHint,
               ),
             ),
             const SizedBox(height: 12),
@@ -185,9 +188,9 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
               controller: _descriptionController,
               minLines: 4,
               maxLines: 5,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                hintText: 'Tell customers about your store',
+              decoration: InputDecoration(
+                labelText: l10n.descriptionLabel,
+                hintText: l10n.storeDescriptionHint,
               ),
             ),
             const SizedBox(height: 12),
@@ -224,7 +227,7 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
                     )
                   : const Icon(Icons.photo_library_outlined),
               label: Text(
-                _isUploadingImage ? 'Uploading image...' : 'Upload Store Image',
+                _isUploadingImage ? l10n.uploadingImage : l10n.uploadStoreImage,
               ),
             ),
           ],
@@ -241,7 +244,7 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.save_outlined),
-          label: Text(_isSubmitting ? 'Saving...' : 'Save Store Setup'),
+          label: Text(_isSubmitting ? l10n.saving : l10n.saveStoreSetup),
         ),
       ),
     );

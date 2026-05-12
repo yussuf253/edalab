@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/pro_message_launcher.dart';
+import '../../../l10n/app_localizations.dart';
 import 'rider_active_trip_screen.dart';
 
 class RiderQueueScreen extends StatefulWidget {
@@ -102,6 +103,7 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final openCount = _items
         .where((item) => (item['queueType']?.toString() ?? '') == 'open')
         .length;
@@ -124,7 +126,7 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.businessName} Ride Queue'),
+        title: Text(l10n.riderQueueTitle(widget.businessName)),
         backgroundColor: AppColors.ride,
         foregroundColor: Colors.white,
       ),
@@ -141,11 +143,11 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
               ),
               child: Row(
                 children: [
-                  _QueueMetric(label: 'Open', value: '$openCount'),
+                  _QueueMetric(label: l10n.openLabel, value: '$openCount'),
                   const SizedBox(width: 8),
-                  _QueueMetric(label: 'Assigned', value: '$assignedCount'),
+                  _QueueMetric(label: l10n.assigned, value: '$assignedCount'),
                   const SizedBox(width: 8),
-                  _QueueMetric(label: 'Live', value: '$liveCount'),
+                  _QueueMetric(label: l10n.live, value: '$liveCount'),
                 ],
               ),
             ),
@@ -156,7 +158,7 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
               children: [
                 for (final lane in ['open', 'assigned', 'all'])
                   ChoiceChip(
-                    label: Text(_laneLabel(lane)),
+                    label: Text(_laneLabel(lane, l10n)),
                     selected: _selectedLane == lane,
                     onSelected: (_) => setState(() => _selectedLane = lane),
                   ),
@@ -174,39 +176,37 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
                   color: AppColors.white,
                   border: Border.all(color: AppColors.lightGrey),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
-                    Icon(Icons.local_taxi_outlined, size: 34),
-                    SizedBox(height: 10),
-                    CircularProgressIndicator(),
-                    SizedBox(height: 10),
-                    Text('Loading ride queue...'),
+                    const Icon(Icons.local_taxi_outlined, size: 34),
+                    const SizedBox(height: 10),
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 10),
+                    Text(l10n.loadingRideQueue),
                   ],
                 ),
               )
             else if (filteredItems.isEmpty)
-              const Card(
+              Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    'No ride requests match the current queue filter.',
-                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Text(l10n.noRideRequests),
                 ),
               )
             else
-              ...filteredItems.map(_buildRideCard),
+              ...filteredItems.map((item) => _buildRideCard(item, l10n)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildRideCard(Map<String, dynamic> item) {
+  Widget _buildRideCard(Map<String, dynamic> item, AppLocalizations l10n) {
     final id = item['id']?.toString() ?? '';
     final queueType = item['queueType']?.toString() ?? 'open';
     final phone = item['customerPhone']?.toString() ?? '';
     final customerUserId = item['customerUserId']?.toString() ?? '';
-    final createdAt = _formatDate(item['createdAt']);
+    final createdAt = _formatDate(item['createdAt'], l10n);
     final isBusy = _busyIds.contains(id);
 
     return Card(
@@ -220,7 +220,7 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    item['title']?.toString() ?? 'Ride',
+                    item['title']?.toString() ?? l10n.rideLabel,
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
@@ -239,14 +239,14 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
             const SizedBox(height: 6),
             Text(item['subtitle']?.toString() ?? ''),
             const SizedBox(height: 8),
-            Text(item['customerName']?.toString() ?? 'Passenger'),
+            Text(item['customerName']?.toString() ?? l10n.passengerLabel),
             if (phone.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(phone, style: TextStyle(color: Colors.grey.shade700)),
             ],
             const SizedBox(height: 4),
             Text(
-              'Requested $createdAt',
+              l10n.requestedDate(createdAt),
               style: TextStyle(color: Colors.grey.shade700),
             ),
             const SizedBox(height: 12),
@@ -266,7 +266,7 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
                   OutlinedButton.icon(
                     onPressed: () => launchPhoneCall(context, phone),
                     icon: const Icon(Icons.call_outlined, size: 18),
-                    label: const Text('Call'),
+                    label: Text(l10n.callAction),
                   ),
                 ],
                 if (customerUserId.isNotEmpty) ...[
@@ -280,12 +280,12 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
                       entityType: 'RIDE',
                       entityId: id,
                       title: widget.businessName,
-                      subtitle: 'Ride support',
+                      subtitle: l10n.rideSupport,
                       accentColor: '#1D9070',
                       metadata: {'rideId': id, 'customerPhone': phone},
                     ),
                     icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                    label: const Text('Message'),
+                    label: Text(l10n.messageAction),
                   ),
                 ],
                 const SizedBox(width: 8),
@@ -301,10 +301,10 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
                   ),
                   child: Text(
                     isBusy
-                        ? 'Working...'
+                        ? l10n.working
                         : queueType == 'assigned'
-                        ? 'Open Trip'
-                        : 'Claim',
+                        ? l10n.openTripAction
+                        : l10n.claimAction,
                   ),
                 ),
               ],
@@ -315,20 +315,20 @@ class _RiderQueueScreenState extends State<RiderQueueScreen> {
     );
   }
 
-  String _laneLabel(String lane) {
+  String _laneLabel(String lane, AppLocalizations l10n) {
     switch (lane) {
       case 'open':
-        return 'Open Requests';
+        return l10n.openRequests;
       case 'assigned':
-        return 'Assigned To Me';
+        return l10n.assignedToMe;
       default:
-        return 'All';
+        return l10n.allLabel;
     }
   }
 
-  String _formatDate(dynamic value) {
+  String _formatDate(dynamic value, AppLocalizations l10n) {
     final raw = value?.toString();
-    if (raw == null || raw.isEmpty) return 'recently';
+    if (raw == null || raw.isEmpty) return l10n.recently;
     final parsed = DateTime.tryParse(raw);
     if (parsed == null) return raw;
     return DateFormat('MMM d, h:mm a').format(parsed.toLocal());

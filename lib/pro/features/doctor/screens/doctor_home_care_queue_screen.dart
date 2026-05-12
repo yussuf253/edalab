@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -26,6 +27,8 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
   List<Map<String, dynamic>> _items = const [];
   bool _isLoading = true;
   String _selectedStatus = 'pending';
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -87,11 +90,7 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Home care booking updated to ${status.replaceAll('_', ' ')}.',
-          ),
-        ),
+        SnackBar(content: Text(l10n.homeCareUpdatedTo(_statusLabel(status)))),
       );
       await _loadQueue();
     } catch (error) {
@@ -130,7 +129,7 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dr. ${widget.businessName} Home Care'),
+        title: Text(l10n.doctorHomeCareTitle(widget.businessName)),
         backgroundColor: AppColors.homeServices,
         foregroundColor: Colors.white,
       ),
@@ -147,11 +146,11 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
               ),
               child: Row(
                 children: [
-                  _QueueMetric(label: 'Pending', value: '$pendingCount'),
+                  _QueueMetric(label: l10n.pending, value: '$pendingCount'),
                   const SizedBox(width: 8),
-                  _QueueMetric(label: 'Approved', value: '$approvedCount'),
+                  _QueueMetric(label: l10n.approved, value: '$approvedCount'),
                   const SizedBox(width: 8),
-                  _QueueMetric(label: 'Done', value: '$completedCount'),
+                  _QueueMetric(label: l10n.done, value: '$completedCount'),
                 ],
               ),
             ),
@@ -185,23 +184,21 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
                   color: AppColors.white,
                   border: Border.all(color: AppColors.lightGrey),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
-                    Icon(Icons.home_repair_service_outlined, size: 34),
-                    SizedBox(height: 10),
-                    CircularProgressIndicator(),
-                    SizedBox(height: 10),
-                    Text('Loading home care bookings...'),
+                    const Icon(Icons.home_repair_service_outlined, size: 34),
+                    const SizedBox(height: 10),
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 10),
+                    Text(l10n.loadingHomeCare),
                   ],
                 ),
               )
             else if (filteredItems.isEmpty)
-              const Card(
+              Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    'No home care bookings match the current filters.',
-                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Text(l10n.noHomeCareMatch),
                 ),
               )
             else
@@ -215,7 +212,7 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
   Widget _buildAppointmentCard(Map<String, dynamic> item) {
     final id = item['id']?.toString() ?? '';
     final status = item['status']?.toString().toUpperCase() ?? '';
-    final title = item['title']?.toString() ?? 'Patient';
+    final title = item['title']?.toString() ?? l10n.patientLabel;
     final subtitle = item['subtitle']?.toString() ?? '';
     final doctorName = item['doctorName']?.toString() ?? '';
     final phone = item['customerPhone']?.toString() ?? '';
@@ -243,7 +240,7 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
                   ),
                 ),
                 Text(
-                  status.replaceAll('_', ' '),
+                  _statusLabel(status),
                   style: const TextStyle(
                     color: AppColors.homeServices,
                     fontWeight: FontWeight.w700,
@@ -273,7 +270,7 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
                   OutlinedButton.icon(
                     onPressed: () => launchPhoneCall(context, phone),
                     icon: const Icon(Icons.call_outlined, size: 18),
-                    label: const Text('Call'),
+                    label: Text(l10n.callAction),
                   ),
                 if (customerUserId.isNotEmpty)
                   OutlinedButton.icon(
@@ -285,7 +282,7 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
                       entityType: 'DOCTOR',
                       entityId: id,
                       title: widget.businessName,
-                      subtitle: 'Home care booking support',
+                      subtitle: l10n.homeCareBookingSupport,
                       accentColor: '#188E68',
                       metadata: {
                         'appointmentId': id,
@@ -295,14 +292,14 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
                       },
                     ),
                     icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                    label: const Text('Message'),
+                    label: Text(l10n.messageAction),
                   ),
                 if (status == 'PENDING') ...[
                   TextButton(
                     onPressed: isBusy
                         ? null
                         : () => _updateStatus(item, 'REJECTED'),
-                    child: const Text('Reject'),
+                    child: Text(l10n.reject),
                   ),
                   ElevatedButton(
                     onPressed: isBusy
@@ -312,7 +309,7 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
                       backgroundColor: AppColors.homeServices,
                       foregroundColor: Colors.white,
                     ),
-                    child: Text(isBusy ? 'Updating...' : 'Approve'),
+                    child: Text(isBusy ? l10n.updating : l10n.approve),
                   ),
                 ] else if (status == 'APPROVED' || status == 'UPCOMING')
                   ElevatedButton(
@@ -323,7 +320,7 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
                       backgroundColor: AppColors.homeServices,
                       foregroundColor: Colors.white,
                     ),
-                    child: Text(isBusy ? 'Updating...' : 'Complete'),
+                    child: Text(isBusy ? l10n.updating : l10n.complete),
                   ),
               ],
             ),
@@ -334,20 +331,24 @@ class _DoctorHomeCareQueueScreenState extends State<DoctorHomeCareQueueScreen> {
   }
 
   String _statusLabel(String status) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'pending':
-        return 'Pending';
+        return l10n.pending;
       case 'approved':
-        return 'Approved';
+        return l10n.approved;
+      case 'upcoming':
+        return l10n.upcoming;
       case 'completed':
-        return 'Completed';
+        return l10n.completedLabel;
+      case 'rejected':
+        return l10n.rejected;
       default:
-        return 'All';
+        return status.replaceAll('_', ' ');
     }
   }
 
   String _formatDate(dynamic value) {
-    if (value == null) return 'Unknown date';
+    if (value == null) return l10n.unknownDate;
     try {
       final parsed = DateTime.parse(value.toString()).toLocal();
       return DateFormat('EEE, d MMM · HH:mm').format(parsed);

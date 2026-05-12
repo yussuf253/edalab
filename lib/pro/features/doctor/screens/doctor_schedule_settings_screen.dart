@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -24,15 +25,17 @@ class DoctorScheduleSettingsScreen extends StatefulWidget {
 
 class _DoctorScheduleSettingsScreenState
     extends State<DoctorScheduleSettingsScreen> {
-  static const List<String> _modeOptions = <String>[
-    'Clinic Visit',
-    'Video Consultation',
-    'Phone Advice',
-    'Home Visit',
+  List<String> get _modeOptions => <String>[
+    l10n.clinicVisit,
+    l10n.videoConsultation,
+    l10n.phoneAdvice,
+    l10n.homeVisit,
   ];
 
   late Future<List<Map<String, dynamic>>> _settingsFuture;
   final Set<String> _busyIds = <String>{};
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -81,7 +84,7 @@ class _DoctorScheduleSettingsScreenState
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Doctor settings updated.')));
+      ).showSnackBar(SnackBar(content: Text(l10n.doctorSettingsUpdated)));
       await _refresh();
     } catch (error) {
       if (!mounted) return;
@@ -150,7 +153,7 @@ class _DoctorScheduleSettingsScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item['name']?.toString() ?? 'Doctor',
+                      item['name']?.toString() ?? l10n.doctorLabel,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -233,8 +236,8 @@ class _DoctorScheduleSettingsScreenState
                                 : const Icon(Icons.photo_library_outlined),
                             label: Text(
                               isUploadingImage
-                                  ? 'Uploading image...'
-                                  : 'Upload doctor photo',
+                                  ? l10n.uploadingImage
+                                  : l10n.uploadDoctorPhoto,
                             ),
                           ),
                         ],
@@ -243,22 +246,20 @@ class _DoctorScheduleSettingsScreenState
                     const SizedBox(height: 20),
                     TextFormField(
                       controller: locationController,
-                      decoration: const InputDecoration(
-                        labelText: 'Clinic or service area',
-                      ),
+                      decoration: InputDecoration(labelText: l10n.clinicArea),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: phoneController,
-                      decoration: const InputDecoration(labelText: 'Phone'),
+                      decoration: InputDecoration(labelText: l10n.phone),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: whatsappController,
-                      decoration: const InputDecoration(labelText: 'WhatsApp'),
+                      decoration: InputDecoration(labelText: l10n.whatsapp),
                     ),
                     const SizedBox(height: 20),
-                    const _DoctorSettingsSectionLabel('Consultation modes'),
+                    _DoctorSettingsSectionLabel(l10n.consultationModes),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -280,21 +281,21 @@ class _DoctorScheduleSettingsScreenState
                       }).toList(),
                     ),
                     const SizedBox(height: 20),
-                    const _DoctorSettingsSectionLabel('Working hours'),
+                    _DoctorSettingsSectionLabel(l10n.workingHours),
                     const SizedBox(height: 8),
-                    scheduleField(key: 'monday', label: 'Monday'),
+                    scheduleField(key: 'monday', label: l10n.monday),
                     const SizedBox(height: 12),
-                    scheduleField(key: 'tuesday', label: 'Tuesday'),
+                    scheduleField(key: 'tuesday', label: l10n.tuesday),
                     const SizedBox(height: 12),
-                    scheduleField(key: 'wednesday', label: 'Wednesday'),
+                    scheduleField(key: 'wednesday', label: l10n.wednesday),
                     const SizedBox(height: 12),
-                    scheduleField(key: 'thursday', label: 'Thursday'),
+                    scheduleField(key: 'thursday', label: l10n.thursday),
                     const SizedBox(height: 12),
-                    scheduleField(key: 'friday', label: 'Friday'),
+                    scheduleField(key: 'friday', label: l10n.friday),
                     const SizedBox(height: 12),
-                    scheduleField(key: 'saturday', label: 'Saturday'),
+                    scheduleField(key: 'saturday', label: l10n.saturday),
                     const SizedBox(height: 12),
-                    scheduleField(key: 'sunday', label: 'Sunday'),
+                    scheduleField(key: 'sunday', label: l10n.sunday),
                     const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
@@ -304,10 +305,8 @@ class _DoctorScheduleSettingsScreenState
                             : () async {
                                 if (isUploadingImage) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Wait for image upload to finish first.',
-                                      ),
+                                    SnackBar(
+                                      content: Text(l10n.waitForImageUpload),
                                     ),
                                   );
                                   return;
@@ -324,13 +323,21 @@ class _DoctorScheduleSettingsScreenState
                                     growable: false,
                                   ),
                                   workingHours: {
-                                    'monday': (workingHours['monday'] ?? '').trim(),
-                                    'tuesday': (workingHours['tuesday'] ?? '').trim(),
-                                    'wednesday': (workingHours['wednesday'] ?? '').trim(),
-                                    'thursday': (workingHours['thursday'] ?? '').trim(),
-                                    'friday': (workingHours['friday'] ?? '').trim(),
-                                    'saturday': (workingHours['saturday'] ?? '').trim(),
-                                    'sunday': (workingHours['sunday'] ?? '').trim(),
+                                    'monday': (workingHours['monday'] ?? '')
+                                        .trim(),
+                                    'tuesday': (workingHours['tuesday'] ?? '')
+                                        .trim(),
+                                    'wednesday':
+                                        (workingHours['wednesday'] ?? '')
+                                            .trim(),
+                                    'thursday': (workingHours['thursday'] ?? '')
+                                        .trim(),
+                                    'friday': (workingHours['friday'] ?? '')
+                                        .trim(),
+                                    'saturday': (workingHours['saturday'] ?? '')
+                                        .trim(),
+                                    'sunday': (workingHours['sunday'] ?? '')
+                                        .trim(),
                                   },
                                 );
                               },
@@ -340,8 +347,8 @@ class _DoctorScheduleSettingsScreenState
                         ),
                         child: Text(
                           _busyIds.contains(doctorId)
-                              ? 'Saving...'
-                              : 'Save settings',
+                              ? l10n.saving
+                              : l10n.saveSettings,
                         ),
                       ),
                     ),
@@ -359,7 +366,7 @@ class _DoctorScheduleSettingsScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.businessName} Scheduling'),
+        title: Text(l10n.doctorSchedulingTitle(widget.businessName)),
         backgroundColor: AppColors.doctor,
         foregroundColor: Colors.white,
       ),
@@ -384,10 +391,10 @@ class _DoctorScheduleSettingsScreenState
 
           final items = snapshot.data ?? const <Map<String, dynamic>>[];
           if (items.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('No doctors are currently bound to this account.'),
+                padding: const EdgeInsets.all(24),
+                child: Text(l10n.noDoctorsFound),
               ),
             );
           }
@@ -424,7 +431,7 @@ class _DoctorScheduleSettingsScreenState
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  item['name']?.toString() ?? 'Doctor',
+                                  item['name']?.toString() ?? l10n.doctorLabel,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -440,41 +447,44 @@ class _DoctorScheduleSettingsScreenState
                                 ? null
                                 : () => _openEditor(item),
                             icon: const Icon(Icons.edit_outlined),
-                            label: const Text('Edit'),
+                            label: Text(l10n.edit),
                           ),
                         ],
                       ),
                       const SizedBox(height: 12),
                       _DoctorSettingsInfoRow(
-                        label: 'Location',
-                        value: item['location']?.toString() ?? 'Not set',
+                        label: l10n.location,
+                        value: item['location']?.toString() ?? l10n.notSet,
                       ),
                       _DoctorSettingsInfoRow(
-                        label: 'Phone',
-                        value: item['contactPhone']?.toString() ?? 'Not set',
+                        label: l10n.phone,
+                        value: item['contactPhone']?.toString() ?? l10n.notSet,
                       ),
                       _DoctorSettingsInfoRow(
-                        label: 'WhatsApp',
-                        value: item['contactWhatsApp']?.toString() ?? 'Not set',
+                        label: l10n.whatsapp,
+                        value:
+                            item['contactWhatsApp']?.toString() ?? l10n.notSet,
                       ),
                       _DoctorSettingsInfoRow(
-                        label: 'Modes',
+                        label: l10n.modes,
                         value: careModes.isEmpty
-                            ? 'No care modes configured'
+                            ? l10n.noModesConfigured
                             : careModes.join(', '),
                       ),
                       _DoctorSettingsInfoRow(
-                        label: 'Mon-Fri',
-                        value: workingHours['monday']?.toString() ?? 'Not set',
-                      ),
-                      _DoctorSettingsInfoRow(
-                        label: 'Saturday',
+                        label: l10n.monFri,
                         value:
-                            workingHours['saturday']?.toString() ?? 'Not set',
+                            workingHours['monday']?.toString() ?? l10n.notSet,
                       ),
                       _DoctorSettingsInfoRow(
-                        label: 'Sunday',
-                        value: workingHours['sunday']?.toString() ?? 'Not set',
+                        label: l10n.saturday,
+                        value:
+                            workingHours['saturday']?.toString() ?? l10n.notSet,
+                      ),
+                      _DoctorSettingsInfoRow(
+                        label: l10n.sunday,
+                        value:
+                            workingHours['sunday']?.toString() ?? l10n.notSet,
                       ),
                     ],
                   ),

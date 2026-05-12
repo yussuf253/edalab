@@ -20,6 +20,10 @@ const envSchema = z.object({
   FIREBASE_CLIENT_EMAIL: z.string().optional(),
   FIREBASE_PRIVATE_KEY: z.string().optional(),
   FIREBASE_SERVICE_ACCOUNT_JSON: z.string().optional(),
+  WAAFIPAY_STORE_ID: z.string().optional(),
+  WAAFIPAY_HPP_KEY: z.string().optional(),
+  WAAFIPAY_MERCHANT_UID: z.string().optional(),
+  WAAFIPAY_PRODUCTION: z.coerce.boolean().default(true),
 });
 
 export const env = envSchema.parse(process.env);

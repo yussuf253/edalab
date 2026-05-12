@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -14,12 +15,15 @@ class DoctorAvailabilityScreen extends StatefulWidget {
   });
 
   @override
-  State<DoctorAvailabilityScreen> createState() => _DoctorAvailabilityScreenState();
+  State<DoctorAvailabilityScreen> createState() =>
+      _DoctorAvailabilityScreenState();
 }
 
 class _DoctorAvailabilityScreenState extends State<DoctorAvailabilityScreen> {
   late Future<List<Map<String, dynamic>>> _availabilityFuture;
   final Set<String> _busyIds = <String>{};
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -60,7 +64,9 @@ class _DoctorAvailabilityScreenState extends State<DoctorAvailabilityScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString().replaceFirst('Exception: ', ''))),
+        SnackBar(
+          content: Text(error.toString().replaceFirst('Exception: ', '')),
+        ),
       );
     } finally {
       if (mounted) {
@@ -73,7 +79,7 @@ class _DoctorAvailabilityScreenState extends State<DoctorAvailabilityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dr. ${widget.businessName} Availability'),
+        title: Text(l10n.doctorAvailabilityTitle(widget.businessName)),
         backgroundColor: AppColors.doctor,
         foregroundColor: Colors.white,
       ),
@@ -89,17 +95,19 @@ class _DoctorAvailabilityScreenState extends State<DoctorAvailabilityScreen> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text(snapshot.error.toString().replaceFirst('Exception: ', '')),
+                child: Text(
+                  snapshot.error.toString().replaceFirst('Exception: ', ''),
+                ),
               ),
             );
           }
 
           final items = snapshot.data ?? const <Map<String, dynamic>>[];
           if (items.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('No doctor profiles are currently bound to this pro account.'),
+                padding: const EdgeInsets.all(24),
+                child: Text(l10n.noDoctorProfilesFound),
               ),
             );
           }
@@ -118,14 +126,17 @@ class _DoctorAvailabilityScreenState extends State<DoctorAvailabilityScreen> {
                 contentPadding: EdgeInsets.zero,
                 leading: CircleAvatar(
                   backgroundColor: AppColors.doctor.withValues(alpha: 0.12),
-                  child: const Icon(Icons.local_hospital, color: AppColors.doctor),
+                  child: const Icon(
+                    Icons.local_hospital,
+                    color: AppColors.doctor,
+                  ),
                 ),
                 title: Text(
-                  item['name']?.toString() ?? 'Doctor',
+                  item['name']?.toString() ?? l10n.doctorLabel,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  '${item['specialty']?.toString() ?? ''}${(item['specialty']?.toString() ?? '').isEmpty ? '' : ' • '}${enabled ? 'Available now' : 'Unavailable'}',
+                  '${item['specialty']?.toString() ?? ''}${(item['specialty']?.toString() ?? '').isEmpty ? '' : ' • '}${enabled ? l10n.availableNow : l10n.unavailable}',
                 ),
                 trailing: Switch(
                   value: enabled,

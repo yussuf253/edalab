@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +25,8 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
   late Future<_ProviderDashboardViewData> _viewFuture;
   final Set<String> _busyItemIds = <String>{};
   bool _isUpdatingOnline = false;
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -101,9 +104,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            isOnline
-                ? 'You are now live and can receive nearby bookings.'
-                : 'You are now offline.',
+            isOnline ? l10n.providerLiveMessage : l10n.providerOfflineMessage,
           ),
         ),
       );
@@ -189,30 +190,30 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
     if (module == 'services') {
       switch (normalizedStatus) {
         case 'PENDING':
-          return 'Confirm';
+          return l10n.confirmAction;
         case 'CONFIRMED':
         case 'PROCESSING':
-          return 'On the way';
+          return l10n.onTheWay;
         case 'DISPATCHED':
         case 'IN_PROGRESS':
-          return 'Work done';
+          return l10n.workDone;
         default:
-          return 'Done';
+          return l10n.done;
       }
     }
     switch (status.toUpperCase()) {
       case 'PENDING':
-        return 'Accept';
+        return l10n.accept;
       case 'CONFIRMED':
-        return 'Start Cleaning';
+        return l10n.startCleaning;
       case 'PROCESSING':
-        return 'Send Out';
+        return l10n.sendOut;
       case 'DISPATCHED':
-        return 'Start Delivery';
+        return l10n.startDelivery;
       case 'IN_PROGRESS':
-        return 'Complete';
+        return l10n.complete;
       default:
-        return 'Done';
+        return l10n.done;
     }
   }
 
@@ -221,16 +222,16 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
     if (module == 'services') {
       switch (normalizedStatus) {
         case 'PENDING':
-          return 'Pending';
+          return l10n.pending;
         case 'CONFIRMED':
-          return 'Confirmed';
+          return l10n.confirmed;
         case 'PROCESSING':
         case 'DISPATCHED':
-          return 'On the way';
+          return l10n.onTheWay;
         case 'IN_PROGRESS':
-          return 'Work in progress';
+          return l10n.workInProgress;
         case 'COMPLETED':
-          return 'Work done';
+          return l10n.workDone;
         default:
           return normalizedStatus.replaceAll('_', ' ');
       }
@@ -255,7 +256,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Request updated to ${nextStatus.replaceAll('_', ' ')}.',
+            '${l10n.request} ${l10n.updatedTo} ${nextStatus.replaceAll('_', ' ')}.',
           ),
         ),
       );
@@ -333,6 +334,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                     onOpenSchedule: _openSchedule,
                     onSetOnline: () => _setOnlineStatus(true),
                     onRefresh: _refreshDashboard,
+                    l10n: l10n,
                   )
                 else ...[
                   _ProviderPipelineHero(
@@ -341,6 +343,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                     modules: activeModules,
                     onOpenSchedule: _openSchedule,
                     onOpenAvailability: _openAvailability,
+                    l10n: l10n,
                   ),
                   const SizedBox(height: ProDesignSystem.spacing16),
                   _ProviderSnapshotStrip(
@@ -350,14 +353,14 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                   ),
                   const SizedBox(height: ProDesignSystem.spacing20),
                   Text(
-                    'Pipeline Workboard',
+                    l10n.pipelineWorkboard,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: ProDesignSystem.spacing12),
                   if (summaries.isNotEmpty)
-                    ...summaries.map(_buildSummaryCard)
+                    ...summaries.map((s) => _buildSummaryCard(s, l10n))
                   else
                     const _FallbackProviderState(),
                 ],
@@ -369,7 +372,10 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
     );
   }
 
-  Widget _buildSummaryCard(ProDashboardModuleSummary summary) {
+  Widget _buildSummaryCard(
+    ProDashboardModuleSummary summary,
+    AppLocalizations l10n,
+  ) {
     final module = summary.module == 'laundry'
         ? ProModule.laundry
         : ProModule.services;
@@ -435,9 +441,12 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
             if (isServicesSummary) ...[
               const SizedBox(height: ProDesignSystem.spacing12),
               if (pendingServiceItems.isEmpty)
-                const Text(
-                  'No pending bookings to accept.',
-                  style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+                Text(
+                  l10n.noPendingBookings,
+                  style: const TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 13,
+                  ),
                 )
               else
                 ...pendingServiceItems
@@ -581,7 +590,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                         border: Border.all(color: const Color(0xFFE5E7EB)),
                       ),
                       child: Text(
-                        '+$hiddenMetricCount more',
+                        l10n.moreCount(hiddenMetricCount),
                         style: const TextStyle(
                           color: Color(0xFF6B7280),
                           fontWeight: FontWeight.w600,
@@ -693,7 +702,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                                     ),
                                     child: Text(
                                       _busyItemIds.contains(item.id)
-                                          ? 'Updating...'
+                                          ? l10n.updating
                                           : _providerActionLabel(
                                               summary.module,
                                               item.status,
@@ -719,7 +728,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                   OutlinedButton.icon(
                     onPressed: () => context.push(ProRoutePaths.inbox),
                     icon: const Icon(Icons.chat_bubble_outline),
-                    label: const Text('Inbox'),
+                    label: Text(l10n.inbox),
                   ),
                   const SizedBox(width: ProDesignSystem.spacing12),
                   ElevatedButton(
@@ -750,6 +759,7 @@ class _ProviderPipelineHero extends StatelessWidget {
   final List<ProModule> modules;
   final VoidCallback onOpenSchedule;
   final VoidCallback onOpenAvailability;
+  final AppLocalizations l10n;
 
   const _ProviderPipelineHero({
     required this.businessName,
@@ -757,6 +767,7 @@ class _ProviderPipelineHero extends StatelessWidget {
     required this.modules,
     required this.onOpenSchedule,
     required this.onOpenAvailability,
+    required this.l10n,
   });
 
   @override
@@ -786,7 +797,7 @@ class _ProviderPipelineHero extends StatelessWidget {
           Text(
             headline?.trim().isNotEmpty == true
                 ? headline!
-                : 'Coordinate live service and laundry pipelines.',
+                : l10n.providerDashboardSubtitle,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
@@ -1209,6 +1220,8 @@ class _ProviderSetupOnboardingCard extends StatelessWidget {
   final Future<void> Function() onSetOnline;
   final Future<void> Function() onRefresh;
 
+  final AppLocalizations l10n;
+
   const _ProviderSetupOnboardingCard({
     required this.setup,
     required this.onlineState,
@@ -1217,6 +1230,7 @@ class _ProviderSetupOnboardingCard extends StatelessWidget {
     required this.onOpenSchedule,
     required this.onSetOnline,
     required this.onRefresh,
+    required this.l10n,
   });
 
   @override

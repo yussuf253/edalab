@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
@@ -21,6 +22,8 @@ class DoctorDashboardScreen extends StatefulWidget {
 class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
   late Future<ProDashboardData> _dashboardFuture;
   final Set<String> _busyAppointmentIds = <String>{};
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -111,6 +114,23 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     await _refreshDashboard();
   }
 
+  String _statusLabel(String status) {
+    switch (status.toUpperCase()) {
+      case 'PENDING':
+        return l10n.pending;
+      case 'APPROVED':
+        return l10n.approved;
+      case 'REJECTED':
+        return l10n.rejected;
+      case 'COMPLETED':
+        return l10n.complete;
+      case 'UPCOMING':
+        return l10n.upcoming;
+      default:
+        return status.replaceAll('_', ' ');
+    }
+  }
+
   Future<void> _updateAppointmentStatus(
     ProDashboardItem item,
     String status,
@@ -125,7 +145,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Appointment updated to ${status.replaceAll('_', ' ')}.',
+            '${l10n.appointment} ${l10n.updatedTo} ${_statusLabel(status)}.',
           ),
         ),
       );
@@ -149,7 +169,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text('Dr. ${widget.profile.businessName}'),
+        title: Text('${l10n.dr} ${widget.profile.businessName}'),
         elevation: 0,
         backgroundColor: AppColors.doctor,
         foregroundColor: AppColors.white,
@@ -207,13 +227,14 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   pendingCount: pendingCount,
                   videoCount: videoCount,
                   onOpenQueue: _openAppointmentsQueue,
+                  l10n: l10n,
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Quick Actions',
+                  l10n.quickActions,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
@@ -223,31 +244,31 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                     children: [
                       _QuickActionCard(
                         icon: Icons.event_note_outlined,
-                        label: 'Appointments',
+                        label: l10n.appointments,
                         color: AppColors.doctor,
                         onTap: _openAppointmentsQueue,
                       ),
                       _QuickActionCard(
                         icon: Icons.video_call_outlined,
-                        label: 'Telemedicine',
+                        label: l10n.telemedicine,
                         color: Colors.purple,
                         onTap: _openTelemedicine,
                       ),
                       _QuickActionCard(
                         icon: Icons.home_repair_service_outlined,
-                        label: 'Home Care',
+                        label: l10n.homeCare,
                         color: AppColors.info,
                         onTap: _openHomeCareQueue,
                       ),
                       _QuickActionCard(
                         icon: Icons.tune,
-                        label: 'Availability',
+                        label: l10n.availability,
                         color: Colors.orange,
                         onTap: _openAvailability,
                       ),
                       _QuickActionCard(
                         icon: Icons.schedule_outlined,
-                        label: 'Schedule',
+                        label: l10n.schedule,
                         color: Colors.teal,
                         onTap: _openSchedule,
                       ),
@@ -260,16 +281,18 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                   fallbackPatients: recentItems.length,
                   fallbackVideo: videoCount,
                   fallbackUpcoming: approvedCount,
+                  l10n: l10n,
                 ),
                 const SizedBox(height: 16),
                 _DoctorTriageStrip(
                   pendingCount: pendingCount,
                   approvedCount: approvedCount,
                   videoCount: videoCount,
+                  l10n: l10n,
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  summary?.title ?? 'Clinical Queue',
+                  summary?.title ?? l10n.clinicalQueue,
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -356,7 +379,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    status.replaceAll('_', ' '),
+                                    _statusLabel(status),
                                     style: TextStyle(
                                       color: Colors.teal.shade700,
                                       fontWeight: FontWeight.w600,
@@ -371,7 +394,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                                             item,
                                             'REJECTED',
                                           ),
-                                    child: const Text('Reject'),
+                                    child: Text(l10n.reject),
                                   ),
                                   const SizedBox(width: 8),
                                   ElevatedButton(
@@ -386,7 +409,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                                       foregroundColor: Colors.white,
                                     ),
                                     child: Text(
-                                      isBusy ? 'Updating...' : 'Approve',
+                                      isBusy ? l10n.updating : l10n.approve,
                                     ),
                                   ),
                                 ] else if (status == 'APPROVED' ||
@@ -403,7 +426,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                                       foregroundColor: Colors.white,
                                     ),
                                     child: Text(
-                                      isBusy ? 'Updating...' : 'Complete',
+                                      isBusy ? l10n.updating : l10n.complete,
                                     ),
                                   ),
                               ],
@@ -414,10 +437,10 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                     );
                   })
                 else
-                  const Card(
+                  Card(
                     child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Text('No live appointments available right now.'),
+                      padding: const EdgeInsets.all(16),
+                      child: Text(l10n.noLiveAppointments),
                     ),
                   ),
               ],
@@ -443,6 +466,7 @@ class _DoctorClinicalHero extends StatelessWidget {
   final int pendingCount;
   final int videoCount;
   final VoidCallback onOpenQueue;
+  final AppLocalizations l10n;
 
   const _DoctorClinicalHero({
     required this.doctorName,
@@ -450,6 +474,7 @@ class _DoctorClinicalHero extends StatelessWidget {
     required this.pendingCount,
     required this.videoCount,
     required this.onOpenQueue,
+    required this.l10n,
   });
 
   @override
@@ -466,7 +491,7 @@ class _DoctorClinicalHero extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Dr. $doctorName',
+            '${l10n.dr} $doctorName',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
@@ -476,7 +501,7 @@ class _DoctorClinicalHero extends StatelessWidget {
           Text(
             headline?.trim().isNotEmpty == true
                 ? headline!
-                : 'Clinical command center for appointments and consultations.',
+                : l10n.doctorDashboardSubtitle,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
@@ -486,18 +511,18 @@ class _DoctorClinicalHero extends StatelessWidget {
             children: [
               _HeroBadge(
                 icon: Icons.priority_high_outlined,
-                label: '$pendingCount pending',
+                label: l10n.pendingCountLabel(pendingCount),
               ),
               const SizedBox(width: 10),
               _HeroBadge(
                 icon: Icons.video_camera_front_outlined,
-                label: '$videoCount video consults',
+                label: l10n.videoConsultsLabel(videoCount),
               ),
               const Spacer(),
               FilledButton.tonalIcon(
                 onPressed: onOpenQueue,
                 icon: const Icon(Icons.event_note_outlined),
-                label: const Text('Open Queue'),
+                label: Text(l10n.openQueue),
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: AppColors.doctor,
@@ -598,11 +623,13 @@ class _DoctorTriageStrip extends StatelessWidget {
   final int pendingCount;
   final int approvedCount;
   final int videoCount;
+  final AppLocalizations l10n;
 
   const _DoctorTriageStrip({
     required this.pendingCount,
     required this.approvedCount,
     required this.videoCount,
+    required this.l10n,
   });
 
   @override
@@ -611,7 +638,7 @@ class _DoctorTriageStrip extends StatelessWidget {
       children: [
         Expanded(
           child: _TriageTile(
-            label: 'Pending',
+            label: l10n.pending,
             value: '$pendingCount',
             color: AppColors.warning,
           ),
@@ -619,7 +646,7 @@ class _DoctorTriageStrip extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _TriageTile(
-            label: 'Upcoming',
+            label: l10n.upcoming,
             value: '$approvedCount',
             color: AppColors.doctor,
           ),
@@ -627,7 +654,7 @@ class _DoctorTriageStrip extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _TriageTile(
-            label: 'Video',
+            label: l10n.video,
             value: '$videoCount',
             color: AppColors.info,
           ),
@@ -679,12 +706,14 @@ class _DoctorMetricsGrid extends StatelessWidget {
   final int fallbackPatients;
   final int fallbackVideo;
   final int fallbackUpcoming;
+  final AppLocalizations l10n;
 
   const _DoctorMetricsGrid({
     required this.stats,
     required this.fallbackPatients,
     required this.fallbackVideo,
     required this.fallbackUpcoming,
+    required this.l10n,
   });
 
   @override
@@ -693,7 +722,7 @@ class _DoctorMetricsGrid extends StatelessWidget {
       children: [
         Expanded(
           child: _DoctorMetricCard(
-            title: stats.elementAtOrNull(0)?.title ?? 'Patients Today',
+            title: stats.elementAtOrNull(0)?.title ?? l10n.patientsToday,
             value: stats.elementAtOrNull(0)?.value ?? '$fallbackPatients',
             icon: Icons.people_outline,
             color: AppColors.doctor,
@@ -702,7 +731,7 @@ class _DoctorMetricsGrid extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _DoctorMetricCard(
-            title: stats.elementAtOrNull(1)?.title ?? 'Video Queue',
+            title: stats.elementAtOrNull(1)?.title ?? l10n.videoQueue,
             value: stats.elementAtOrNull(1)?.value ?? '$fallbackVideo',
             icon: Icons.video_camera_front_outlined,
             color: Colors.purple,
@@ -711,7 +740,7 @@ class _DoctorMetricsGrid extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _DoctorMetricCard(
-            title: stats.elementAtOrNull(2)?.title ?? 'Upcoming',
+            title: stats.elementAtOrNull(2)?.title ?? l10n.upcoming,
             value: stats.elementAtOrNull(2)?.value ?? '$fallbackUpcoming',
             icon: Icons.assignment_outlined,
             color: AppColors.info,

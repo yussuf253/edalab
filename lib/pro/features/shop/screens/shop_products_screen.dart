@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -35,6 +36,8 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
   String _searchQuery = '';
   late final List<String> _allowedModules = _resolveAllowedModules();
   late String _selectedModule = _normalizeSelectedModule(widget.initialModule);
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -74,7 +77,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
   }
 
   String _moduleLabel(String module) {
-    return module == 'pharmacy' ? 'Pharmacy' : 'Shopping';
+    return module == 'pharmacy' ? l10n.pharmacyLabel : l10n.shoppingLabel;
   }
 
   bool get _isPharmacyModule => _selectedModule == 'pharmacy';
@@ -122,8 +125,8 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
   Future<void> _openCreateProduct(List<Map<String, dynamic>> stores) async {
     if (stores.isEmpty) {
       final message = _isPharmacyModule
-          ? 'Connect a pharmacy business before adding medicines.'
-          : 'Create a store first before adding products.';
+          ? l10n.connectPharmacyMessage
+          : l10n.createStoreFirstMessage;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
@@ -193,7 +196,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
   String _formatPrice(dynamic value) {
     final parsed = double.tryParse(value?.toString() ?? '');
     if (parsed == null) return '';
-    return 'DJF${parsed.toStringAsFixed(2)}';
+    return '\$${parsed.toStringAsFixed(2)}';
   }
 
   void _changeModule(String module) {
@@ -215,8 +218,8 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
       appBar: AppBar(
         title: Text(
           _isPharmacyModule
-              ? '${widget.businessName} Medicines'
-              : '${widget.businessName} Products',
+              ? l10n.shopQueueTitle(l10n.medicinesLabel)
+              : l10n.shopQueueTitle(l10n.productsLabel),
         ),
         backgroundColor: moduleColor,
         foregroundColor: Colors.white,
@@ -326,13 +329,18 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                   child: Row(
                     children: [
                       _QueueMetric(
-                        label: _isPharmacyModule ? 'Medicines' : 'Products',
+                        label: _isPharmacyModule
+                            ? l10n.medicinesLabel
+                            : l10n.productsLabel,
                         value: '${products.length}',
                       ),
                       const SizedBox(width: 8),
-                      _QueueMetric(label: 'In Stock', value: '$inStockCount'),
+                      _QueueMetric(label: l10n.inStock, value: '$inStockCount'),
                       const SizedBox(width: 8),
-                      _QueueMetric(label: 'Out', value: '$outOfStockCount'),
+                      _QueueMetric(
+                        label: l10n.outLabel,
+                        value: '$outOfStockCount',
+                      ),
                     ],
                   ),
                 ),
@@ -357,7 +365,9 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                         ),
                         icon: const Icon(Icons.add_box_outlined),
                         label: Text(
-                          _isPharmacyModule ? 'Add Medicine' : 'Add Product',
+                          _isPharmacyModule
+                              ? l10n.addMedicine
+                              : l10n.addProduct,
                         ),
                       ),
                     ),
@@ -370,7 +380,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                           ),
                           icon: const Icon(Icons.store_mall_directory_outlined),
                           label: Text(
-                            stores.isEmpty ? 'Create Store' : 'Store Setup',
+                            stores.isEmpty ? l10n.createStore : l10n.storeSetup,
                           ),
                         ),
                       ),
@@ -392,8 +402,8 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                       ChoiceChip(
                         label: Text(
                           _isPharmacyModule
-                              ? 'All Pharmacies (${products.length})'
-                              : 'All Stores (${products.length})',
+                              ? l10n.allPharmaciesCount(products.length)
+                              : l10n.allStoresCount(products.length),
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
                             color: selectedStoreId == 'all'
@@ -418,7 +428,17 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                         final selected = selectedStoreId == id;
                         return ChoiceChip(
                           label: Text(
-                            '${store['name']?.toString() ?? (_isPharmacyModule ? 'Pharmacy' : 'Store')} (${store['productCount']?.toString() ?? '0'})',
+                            _isPharmacyModule
+                                ? l10n.pharmacyCountLabel(
+                                    store['name']?.toString() ??
+                                        l10n.pharmacyLabel,
+                                    store['productCount']?.toString() ?? '0',
+                                  )
+                                : l10n.storeCountLabel(
+                                    store['name']?.toString() ??
+                                        l10n.storeLabel,
+                                    store['productCount']?.toString() ?? '0',
+                                  ),
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               color: selected ? moduleColor : Colors.black87,
@@ -455,9 +475,9 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                         ChoiceChip(
                           label: Text(
                             switch (status) {
-                              'in_stock' => 'In Stock',
-                              'out_of_stock' => 'Out of Stock',
-                              _ => 'All Status',
+                              'in_stock' => l10n.inStock,
+                              'out_of_stock' => l10n.outOfStock,
+                              _ => l10n.allStatus,
                             },
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
@@ -485,8 +505,8 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                 TextField(
                   decoration: InputDecoration(
                     hintText: _isPharmacyModule
-                        ? 'Search medicines, pharmacies, or dosage'
-                        : 'Search products, stores, or categories',
+                        ? l10n.searchMedicinesHint
+                        : l10n.searchProductsHint,
                     prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
@@ -506,22 +526,22 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                       color: AppColors.white,
                       border: Border.all(color: AppColors.lightGrey),
                     ),
-                    child: const Column(
+                    child: Column(
                       children: [
-                        Icon(Icons.inventory_2_outlined, size: 34),
-                        SizedBox(height: 10),
-                        CircularProgressIndicator(),
-                        SizedBox(height: 10),
-                        Text('Loading products...'),
+                        const Icon(Icons.inventory_2_outlined, size: 34),
+                        const SizedBox(height: 10),
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 10),
+                        Text(l10n.loadingProducts),
                       ],
                     ),
                   )
                 else if (filteredProducts.isEmpty)
-                  const Card(
+                  Card(
                     child: Padding(
-                      padding: EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(20),
                       child: Text(
-                        'No products match the current filters.',
+                        l10n.noProductsMatch,
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -604,7 +624,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                         children: [
                           if (price.isNotEmpty) Text(price),
                           if (originalPrice.isNotEmpty)
-                            Text('was $originalPrice'),
+                            Text(l10n.wasOriginalPrice(originalPrice)),
                           if (unit.isNotEmpty) Text(unit),
                           if (badge.isNotEmpty) Text(badge),
                         ],
@@ -622,8 +642,8 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                             if (packageSize.isNotEmpty)
                               _TagPill(text: packageSize),
                             if (needsPrescription)
-                              const _TagPill(
-                                text: 'Prescription required',
+                              _TagPill(
+                                text: l10n.prescriptionRequired,
                                 color: AppColors.pharmacy,
                               ),
                           ],
@@ -638,7 +658,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
             Row(
               children: [
                 Text(
-                  inStock ? 'In stock' : 'Out of stock',
+                  inStock ? l10n.inStock : l10n.outOfStock,
                   style: TextStyle(
                     color: inStock
                         ? Colors.green.shade700

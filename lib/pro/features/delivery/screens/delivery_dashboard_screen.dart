@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../core/models/pro_dashboard_data.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/providers/pro_auth_provider.dart';
@@ -65,13 +66,32 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
     await _refreshDashboard();
   }
 
+  String _statusLabel(String status) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (status.toUpperCase()) {
+      case 'PENDING':
+        return l10n.pending;
+      case 'ACTIVE':
+        return l10n.activeLabel;
+      case 'QUEUED':
+        return l10n.queued;
+      case 'IN_PROGRESS':
+        return l10n.inProgress;
+      case 'COMPLETED':
+        return l10n.completedLabel;
+      default:
+        return status.replaceAll('_', ' ');
+    }
+  }
+
   Future<void> _claimDelivery(ProDashboardHighlight highlight) async {
     if (_isClaiming || highlight.requestId.isEmpty) return;
     final isOnline =
         context.read<ProAuthProvider>().currentProfile?.isOnline ?? true;
     if (!isOnline) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Go online before claiming deliveries.')),
+        SnackBar(content: Text(l10n.goOnlineBeforeClaimingDeliveries)),
       );
       return;
     }
@@ -82,8 +102,9 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
         'orderId': highlight.requestId,
       });
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Delivery request claimed successfully.')),
+        SnackBar(content: Text(l10n.deliveryRequestClaimedSuccessfully)),
       );
       await Navigator.of(context).push(
         MaterialPageRoute(
@@ -97,8 +118,9 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
       await _refreshDashboard();
     } catch (error) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not claim delivery: $error')),
+        SnackBar(content: Text(l10n.couldNotClaimDelivery(error.toString()))),
       );
     } finally {
       if (mounted) {
@@ -151,6 +173,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isOnline =
         context.watch<ProAuthProvider>().currentProfile?.isOnline ??
         widget.profile.isOnline;
@@ -237,6 +260,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                   isOnline: isOnline,
                   modules: activeModules,
                   onOpenQueue: _openQueue,
+                  l10n: l10n,
                 ),
                 if (data?.scopeNote?.isNotEmpty == true) ...[
                   const SizedBox(height: 12),
@@ -247,11 +271,12 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                   activeRequests: activeRequests,
                   hotJobs: hotJobs,
                   coverageZones: coverage,
+                  l10n: l10n,
                 ),
                 if (highlight != null) ...[
                   const SizedBox(height: 20),
                   Text(
-                    'Priority Dispatch',
+                    l10n.priorityDispatch,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -261,12 +286,15 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                     highlight: highlight,
                     isBusy: _isClaiming || !isOnline,
                     onAccept: () => _claimDelivery(highlight),
-                    buttonLabel: isOnline ? highlight.ctaLabel : 'Offline',
+                    buttonLabel: isOnline
+                        ? highlight.ctaLabel
+                        : l10n.offlineButtonLabel,
+                    l10n: l10n,
                   ),
                 ],
                 const SizedBox(height: 20),
                 Text(
-                  'Dispatch Lanes',
+                  l10n.dispatchLanes,
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -277,15 +305,16 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                     (summary) => _DeliveryLaneCard(
                       summary: summary,
                       onOpenLane: _openQueue,
+                      statusLabel: _statusLabel,
                     ),
                   )
                 else
-                  const _FallbackDispatchState(),
+                  _FallbackDispatchState(l10n: l10n),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: _openQueue,
                   icon: const Icon(Icons.list_alt_outlined),
-                  label: const Text('Open Full Queue'),
+                  label: Text(l10n.openFullQueue),
                 ),
               ],
             ),
@@ -302,6 +331,7 @@ class _DeliveryDispatchHero extends StatelessWidget {
   final bool isOnline;
   final List<ProModule> modules;
   final VoidCallback onOpenQueue;
+  final AppLocalizations l10n;
 
   const _DeliveryDispatchHero({
     required this.businessName,
@@ -309,6 +339,7 @@ class _DeliveryDispatchHero extends StatelessWidget {
     required this.isOnline,
     required this.modules,
     required this.onOpenQueue,
+    required this.l10n,
   });
 
   @override
@@ -347,7 +378,7 @@ class _DeliveryDispatchHero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  isOnline ? 'ONLINE' : 'OFFLINE',
+                  isOnline ? l10n.onlineStatus : l10n.offlineStatus,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -360,7 +391,7 @@ class _DeliveryDispatchHero extends StatelessWidget {
           Text(
             headline?.trim().isNotEmpty == true
                 ? headline!
-                : 'Run shopping, food, and pharmacy dispatch from one board.',
+                : l10n.runDeliveryOperations,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
@@ -395,7 +426,7 @@ class _DeliveryDispatchHero extends StatelessWidget {
           FilledButton.icon(
             onPressed: onOpenQueue,
             icon: const Icon(Icons.route_outlined),
-            label: const Text('Open Dispatch Queue'),
+            label: Text(l10n.openDispatchQueue),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: AppColors.food,
@@ -411,11 +442,13 @@ class _DeliverySnapshotStrip extends StatelessWidget {
   final int activeRequests;
   final int hotJobs;
   final int coverageZones;
+  final AppLocalizations l10n;
 
   const _DeliverySnapshotStrip({
     required this.activeRequests,
     required this.hotJobs,
     required this.coverageZones,
+    required this.l10n,
   });
 
   @override
@@ -424,7 +457,7 @@ class _DeliverySnapshotStrip extends StatelessWidget {
       children: [
         Expanded(
           child: _SnapshotPill(
-            label: 'Active',
+            label: l10n.activeLabel,
             value: '$activeRequests',
             color: AppColors.food,
           ),
@@ -432,7 +465,7 @@ class _DeliverySnapshotStrip extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _SnapshotPill(
-            label: 'Urgent',
+            label: l10n.urgentLabel,
             value: '$hotJobs',
             color: AppColors.warning,
           ),
@@ -440,7 +473,7 @@ class _DeliverySnapshotStrip extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _SnapshotPill(
-            label: 'Zones',
+            label: l10n.zonesLabel,
             value: '$coverageZones',
             color: AppColors.info,
           ),
@@ -489,8 +522,13 @@ class _SnapshotPill extends StatelessWidget {
 class _DeliveryLaneCard extends StatelessWidget {
   final ProDashboardModuleSummary summary;
   final VoidCallback onOpenLane;
+  final String Function(String) statusLabel;
 
-  const _DeliveryLaneCard({required this.summary, required this.onOpenLane});
+  const _DeliveryLaneCard({
+    required this.summary,
+    required this.onOpenLane,
+    required this.statusLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -536,7 +574,7 @@ class _DeliveryLaneCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          '${item.title} • ${item.status.replaceAll('_', ' ')}',
+                          '${item.title} • ${statusLabel(item.status)}',
                         ),
                       ),
                     )
@@ -565,17 +603,19 @@ class _PriorityDispatchCard extends StatelessWidget {
   final bool isBusy;
   final VoidCallback onAccept;
   final String buttonLabel;
+  final AppLocalizations l10n;
 
   const _PriorityDispatchCard({
     required this.highlight,
     required this.isBusy,
     required this.onAccept,
     required this.buttonLabel,
+    required this.l10n,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isOffline = buttonLabel == 'Offline';
+    final isOffline = buttonLabel == l10n.offlineButtonLabel;
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
@@ -637,7 +677,9 @@ class _PriorityDispatchCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 onPressed: isBusy ? null : onAccept,
-                child: Text(isBusy && !isOffline ? 'Claiming...' : buttonLabel),
+                child: Text(
+                  isBusy && !isOffline ? l10n.claimingButtonLabel : buttonLabel,
+                ),
               ),
             ),
           ],
@@ -648,16 +690,16 @@ class _PriorityDispatchCard extends StatelessWidget {
 }
 
 class _FallbackDispatchState extends StatelessWidget {
-  const _FallbackDispatchState();
+  final AppLocalizations l10n;
+
+  const _FallbackDispatchState({required this.l10n});
 
   @override
   Widget build(BuildContext context) {
-    return const Card(
+    return Card(
       child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Text(
-          'No active dispatch lanes yet. New requests will appear here.',
-        ),
+        padding: const EdgeInsets.all(16),
+        child: Text(l10n.noActiveDispatchLanes),
       ),
     );
   }

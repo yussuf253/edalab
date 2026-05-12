@@ -7,6 +7,7 @@ import '../../../core/constants/pro_design_system.dart';
 import '../../../core/models/pro_dashboard_data.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/router/pro_route_paths.dart';
+import '../../../l10n/app_localizations.dart';
 
 int _parseMetricCount(String value) {
   final match = RegExp(r'\d+').firstMatch(value);
@@ -41,14 +42,14 @@ int _attentionCountFromSummary(ProDashboardModuleSummary summary) {
   return 0;
 }
 
-String _moduleLabel(String module) {
+String _moduleLabel(String module, AppLocalizations l10n) {
   switch (module) {
     case 'food':
-      return 'Food';
+      return l10n.foodLabel;
     case 'pharmacy':
-      return 'Pharmacy';
+      return l10n.pharmacyLabel;
     default:
-      return 'Shopping';
+      return l10n.shoppingLabel;
   }
 }
 
@@ -60,6 +61,25 @@ Color _moduleColor(String module) {
       return AppColors.pharmacy;
     default:
       return AppColors.shopping;
+  }
+}
+
+String _statusLabel(String status, AppLocalizations l10n) {
+  switch (status.toUpperCase()) {
+    case 'PENDING':
+      return l10n.pending;
+    case 'CONFIRMED':
+      return l10n.confirmedStatus;
+    case 'PROCESSING':
+      return l10n.processingStatus;
+    case 'DISPATCHED':
+      return l10n.dispatchedStatus;
+    case 'IN_PROGRESS':
+      return l10n.inProgress;
+    case 'COMPLETED':
+      return l10n.completedLabel;
+    default:
+      return status.replaceAll('_', ' ');
   }
 }
 
@@ -92,6 +112,8 @@ class ShopDashboardScreen extends StatefulWidget {
 
 class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
   late Future<ProDashboardData> _dashboardFuture;
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -158,6 +180,7 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -207,12 +230,14 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
                   scopeNote: data?.scopeNote,
                   onOpenOrders: () => _openQueue(),
                   onOpenProducts: _openProducts,
+                  l10n: l10n,
                 ),
                 const SizedBox(height: ProDesignSystem.spacing20),
                 _ShopPulseRow(
                   liveOrders: liveOrders,
                   completedToday: completedToday,
                   attentionCount: attention,
+                  l10n: l10n,
                 ),
                 const SizedBox(height: ProDesignSystem.spacing20),
                 _StoreManagementPanel(
@@ -221,12 +246,14 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
                   onOpenProducts: _openProducts,
                   onOpenModuleQueue: (module) =>
                       _openQueue(initialModule: module),
+                  l10n: l10n,
                 ),
                 const SizedBox(height: ProDesignSystem.spacing20),
                 _RecentOrdersListCard(
                   entries: recentOrders,
                   onOpenAll: () => _openQueue(),
                   onOpenModule: (module) => _openQueue(initialModule: module),
+                  l10n: l10n,
                 ),
               ],
             ),
@@ -242,12 +269,14 @@ class _DashboardHero extends StatelessWidget {
   final String? scopeNote;
   final VoidCallback onOpenOrders;
   final VoidCallback onOpenProducts;
+  final AppLocalizations l10n;
 
   const _DashboardHero({
     required this.businessName,
     required this.scopeNote,
     required this.onOpenOrders,
     required this.onOpenProducts,
+    required this.l10n,
   });
 
   @override
@@ -271,7 +300,7 @@ class _DashboardHero extends StatelessWidget {
           ),
           const SizedBox(height: ProDesignSystem.spacing8),
           Text(
-            'Operate your store, inventory, and order flow from here.',
+            l10n.shopDashboardSubtitle,
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: Colors.white70),
@@ -306,9 +335,9 @@ class _DashboardHero extends StatelessWidget {
                     ),
                   ),
                   icon: const Icon(Icons.receipt_long_outlined, size: 18),
-                  label: const Text(
-                    'Order Queue',
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                  label: Text(
+                    l10n.orderQueue,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -329,9 +358,9 @@ class _DashboardHero extends StatelessWidget {
                     ),
                   ),
                   icon: const Icon(Icons.inventory_2_outlined, size: 18),
-                  label: const Text(
-                    'Products',
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                  label: Text(
+                    l10n.products,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
               ),
@@ -347,11 +376,13 @@ class _ShopPulseRow extends StatelessWidget {
   final int liveOrders;
   final int completedToday;
   final int attentionCount;
+  final AppLocalizations l10n;
 
   const _ShopPulseRow({
     required this.liveOrders,
     required this.completedToday,
     required this.attentionCount,
+    required this.l10n,
   });
 
   @override
@@ -360,7 +391,7 @@ class _ShopPulseRow extends StatelessWidget {
       children: [
         Expanded(
           child: _PulseTile(
-            label: 'Live Orders',
+            label: l10n.liveOrdersLabel,
             value: '$liveOrders',
             color: AppColors.shopping,
             icon: Icons.receipt_long_outlined,
@@ -369,7 +400,7 @@ class _ShopPulseRow extends StatelessWidget {
         const SizedBox(width: ProDesignSystem.spacing12),
         Expanded(
           child: _PulseTile(
-            label: 'Completed',
+            label: l10n.completedLabel,
             value: '$completedToday',
             color: AppColors.info,
             icon: Icons.check_circle_outline,
@@ -378,7 +409,7 @@ class _ShopPulseRow extends StatelessWidget {
         const SizedBox(width: ProDesignSystem.spacing12),
         Expanded(
           child: _PulseTile(
-            label: 'Stock Alerts',
+            label: l10n.stockAlertsLabel,
             value: '$attentionCount',
             color: AppColors.warning,
             icon: Icons.warning_outlined,
@@ -419,12 +450,14 @@ class _StoreManagementPanel extends StatelessWidget {
   final VoidCallback onOpenOrders;
   final VoidCallback onOpenProducts;
   final ValueChanged<String> onOpenModuleQueue;
+  final AppLocalizations l10n;
 
   const _StoreManagementPanel({
     required this.moduleSummaries,
     required this.onOpenOrders,
     required this.onOpenProducts,
     required this.onOpenModuleQueue,
+    required this.l10n,
   });
 
   @override
@@ -437,14 +470,14 @@ class _StoreManagementPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Store Management',
+            l10n.shopManagementTitle,
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: ProDesignSystem.spacing6),
           Text(
-            'Use these controls to run your catalog and order operations.',
+            l10n.shopManagementSubtitle,
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6B7280)),
@@ -454,8 +487,8 @@ class _StoreManagementPanel extends StatelessWidget {
             children: [
               Expanded(
                 child: _ManagementActionTile(
-                  title: 'Order Queue',
-                  subtitle: 'Handle active orders',
+                  title: l10n.orderQueue,
+                  subtitle: l10n.handleActiveOrders,
                   icon: Icons.receipt_long_outlined,
                   color: AppColors.shopping,
                   onTap: onOpenOrders,
@@ -464,8 +497,8 @@ class _StoreManagementPanel extends StatelessWidget {
               const SizedBox(width: ProDesignSystem.spacing12),
               Expanded(
                 child: _ManagementActionTile(
-                  title: 'Products',
-                  subtitle: 'Update catalog',
+                  title: l10n.products,
+                  subtitle: l10n.updateCatalog,
                   icon: Icons.inventory_2_outlined,
                   color: AppColors.success,
                   onTap: onOpenProducts,
@@ -498,7 +531,7 @@ class _StoreManagementPanel extends StatelessWidget {
                         ),
                       ),
                       label: Text(
-                        '${_moduleLabel(summary.module)} ${_orderCountFromSummary(summary)}',
+                        '${_moduleLabel(summary.module, l10n)} ${_orderCountFromSummary(summary)}',
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                       backgroundColor: _moduleColor(
@@ -589,11 +622,13 @@ class _RecentOrdersListCard extends StatelessWidget {
   final List<_ShopRecentOrderEntry> entries;
   final VoidCallback onOpenAll;
   final ValueChanged<String> onOpenModule;
+  final AppLocalizations l10n;
 
   const _RecentOrdersListCard({
     required this.entries,
     required this.onOpenAll,
     required this.onOpenModule,
+    required this.l10n,
   });
 
   @override
@@ -608,7 +643,7 @@ class _RecentOrdersListCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                'Recent Orders',
+                l10n.recentOrders,
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -616,9 +651,9 @@ class _RecentOrdersListCard extends StatelessWidget {
               const Spacer(),
               TextButton(
                 onPressed: onOpenAll,
-                child: const Text(
-                  'Open queue',
-                  style: TextStyle(
+                child: Text(
+                  l10n.openQueue,
+                  style: const TextStyle(
                     color: Color(0xFF039D55),
                     fontWeight: FontWeight.w600,
                   ),
@@ -633,7 +668,7 @@ class _RecentOrdersListCard extends StatelessWidget {
                 vertical: ProDesignSystem.spacing8,
               ),
               child: Text(
-                'No recent orders available for this profile yet.',
+                l10n.noRecentOrders,
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(color: const Color(0xFF6B7280)),
@@ -648,6 +683,7 @@ class _RecentOrdersListCard extends StatelessWidget {
                 child: _RecentOrderTile(
                   entry: entry,
                   onTap: () => onOpenModule(entry.module),
+                  l10n: l10n,
                 ),
               ),
             ),
@@ -660,13 +696,18 @@ class _RecentOrdersListCard extends StatelessWidget {
 class _RecentOrderTile extends StatelessWidget {
   final _ShopRecentOrderEntry entry;
   final VoidCallback onTap;
+  final AppLocalizations l10n;
 
-  const _RecentOrderTile({required this.entry, required this.onTap});
+  const _RecentOrderTile({
+    required this.entry,
+    required this.onTap,
+    required this.l10n,
+  });
 
   @override
   Widget build(BuildContext context) {
     final moduleColor = _moduleColor(entry.module);
-    final statusLabel = entry.item.status.replaceAll('_', ' ');
+    final statusLabel = _statusLabel(entry.item.status, l10n);
     return ModernCard(
       onTap: onTap,
       backgroundColor: const Color(0xFFFAFAFA),

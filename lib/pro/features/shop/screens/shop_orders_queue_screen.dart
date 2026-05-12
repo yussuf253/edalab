@@ -7,6 +7,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/contact_launcher.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/utils/pro_message_launcher.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ShopOrdersQueueScreen extends StatefulWidget {
   final String userId;
@@ -118,19 +119,19 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
     }
   }
 
-  String _actionLabel(String status) {
+  String _actionLabel(String status, AppLocalizations l10n) {
     switch (status.toUpperCase()) {
       case 'PENDING':
-        return 'Confirm';
+        return l10n.confirmAction;
       case 'CONFIRMED':
-        return 'Start Prep';
+        return l10n.startPrepAction;
       case 'PROCESSING':
-        return 'Dispatch';
+        return l10n.dispatchAction;
       case 'DISPATCHED':
       case 'IN_PROGRESS':
-        return 'Complete';
+        return l10n.completeLabel;
       default:
-        return 'Done';
+        return l10n.doneLabel;
     }
   }
 
@@ -148,7 +149,26 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
     }
   }
 
-  Future<void> _advanceItem(Map<String, dynamic> item) async {
+  String _statusLabel(String status, AppLocalizations l10n) {
+    switch (status.toUpperCase()) {
+      case 'PENDING':
+        return l10n.pending;
+      case 'CONFIRMED':
+        return l10n.confirmedStatus;
+      case 'PROCESSING':
+        return l10n.processingStatus;
+      case 'DISPATCHED':
+        return l10n.dispatchedStatus;
+      case 'IN_PROGRESS':
+        return l10n.inProgress;
+      case 'COMPLETED':
+        return l10n.completedLabel;
+      default:
+        return status.replaceAll('_', ' ');
+    }
+  }
+
+  Future<void> _advanceItem(Map<String, dynamic> item, AppLocalizations l10n) async {
     final nextStatus = _nextStatus(item['status']?.toString() ?? '');
     final id = item['id']?.toString() ?? '';
     if (nextStatus == null || id.isEmpty) return;
@@ -162,7 +182,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Order updated to ${nextStatus.replaceAll('_', ' ')}.'),
+          content: Text(l10n.orderUpdatedTo(_statusLabel(nextStatus, l10n))),
         ),
       );
       await _loadQueue();
@@ -188,6 +208,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final activeCount = _items.where((item) {
       final status = item['status']?.toString().toUpperCase() ?? '';
       return !{'COMPLETED', 'CANCELLED', 'REFUNDED'}.contains(status);
@@ -219,7 +240,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.businessName} Queue'),
+        title: Text(l10n.shopQueueTitle(widget.businessName)),
         backgroundColor: AppColors.shopping,
         foregroundColor: Colors.white,
       ),
@@ -236,11 +257,11 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
               ),
               child: Row(
                 children: [
-                  _QueueMetric(label: 'Active', value: '$activeCount'),
+                  _QueueMetric(label: l10n.active, value: '$activeCount'),
                   const SizedBox(width: 8),
-                  _QueueMetric(label: 'Completed', value: '$completedCount'),
+                  _QueueMetric(label: l10n.completedLabel, value: '$completedCount'),
                   const SizedBox(width: 8),
-                  _QueueMetric(label: 'Modules', value: '$moduleCount'),
+                  _QueueMetric(label: l10n.modules, value: '$moduleCount'),
                 ],
               ),
             ),
@@ -262,7 +283,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                   ])
                     ChoiceChip(
                       label: Text(
-                        _moduleLabel(module),
+                        _moduleLabel(module, l10n),
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           color: _selectedModule == module
@@ -302,7 +323,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                   for (final status in ['active', 'completed', 'all'])
                     ChoiceChip(
                       label: Text(
-                        _statusLabel(status),
+                        _filterStatusLabel(status, l10n),
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           color: _selectedStatus == status
@@ -337,42 +358,42 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                   color: AppColors.white,
                   border: Border.all(color: AppColors.lightGrey),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
-                    Icon(Icons.inventory_2_outlined, size: 34),
-                    SizedBox(height: 10),
-                    CircularProgressIndicator(),
-                    SizedBox(height: 10),
-                    Text('Loading order queue...'),
+                    const Icon(Icons.inventory_2_outlined, size: 34),
+                    const SizedBox(height: 10),
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 10),
+                    Text(l10n.loadingOrderQueue),
                   ],
                 ),
               )
             else if (filteredItems.isEmpty)
-              const Card(
+              Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('No orders match the current queue filters.'),
+                  padding: const EdgeInsets.all(16),
+                  child: Text(l10n.noOrdersMatch),
                 ),
               )
             else
-              ...filteredItems.map(_buildOrderCard),
+              ...filteredItems.map((item) => _buildOrderCard(item, l10n)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildOrderCard(Map<String, dynamic> item) {
+  Widget _buildOrderCard(Map<String, dynamic> item, AppLocalizations l10n) {
     final id = item['id']?.toString() ?? '';
     final status = item['status']?.toString() ?? '';
     final module = item['module']?.toString() ?? '';
     final address = item['address']?.toString() ?? '';
-    final customerName = item['customerName']?.toString() ?? 'Customer';
+    final customerName = item['customerName']?.toString() ?? l10n.customerLabel;
     final customerPhone = item['customerPhone']?.toString() ?? '';
     final customerUserId = item['customerUserId']?.toString() ?? '';
     final amount = item['amount']?.toString() ?? '';
     final notes = item['notes']?.toString() ?? '';
-    final createdAt = _formatDate(item['createdAt']);
+    final createdAt = _formatDate(item['createdAt'], l10n);
     final isBusy = _busyIds.contains(id);
     final nextStatus = _nextStatus(status);
     final isPrescriptionRequest = item['prescriptionRequest'] == true;
@@ -394,7 +415,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    item['title']?.toString() ?? 'Order',
+                    item['title']?.toString() ?? l10n.orderLabel,
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
@@ -402,7 +423,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                   ),
                 ),
                 Text(
-                  _moduleLabel(module),
+                  _moduleLabel(module, l10n),
                   style: TextStyle(
                     color: _moduleColor(module),
                     fontWeight: FontWeight.w700,
@@ -419,9 +440,9 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                       color: AppColors.pharmacy.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(999),
                     ),
-                    child: const Text(
-                      'Prescription',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.prescriptionLabel,
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: AppColors.pharmacy,
@@ -439,7 +460,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Created $createdAt',
+              l10n.createdDate(createdAt),
               style: TextStyle(color: Colors.grey.shade700),
             ),
             if (address.isNotEmpty) ...[
@@ -457,20 +478,20 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
               const SizedBox(height: 8),
               if (prescriptionPharmacy.isNotEmpty)
                 Text(
-                  'Pharmacy: $prescriptionPharmacy',
+                  '${l10n.pharmacyLabel}: $prescriptionPharmacy',
                   style: TextStyle(color: Colors.grey.shade700),
                 ),
               if (prescriptionNote.isNotEmpty) ...[
                 const SizedBox(height: 2),
                 Text(
-                  'Note: $prescriptionNote',
+                  '${l10n.noteLabel}: $prescriptionNote',
                   style: TextStyle(color: Colors.grey.shade700),
                 ),
               ],
             ],
             const SizedBox(height: 12),
             Text(
-              '${status.replaceAll('_', ' ')}${amount.isEmpty ? '' : ' • $amount'}',
+              '${_statusLabel(status, l10n)}${amount.isEmpty ? '' : ' • $amount'}',
               style: TextStyle(
                 color: _moduleColor(module),
                 fontWeight: FontWeight.w600,
@@ -485,7 +506,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                   OutlinedButton.icon(
                     onPressed: () => launchPhoneCall(context, customerPhone),
                     icon: const Icon(Icons.call_outlined, size: 18),
-                    label: const Text('Call'),
+                    label: Text(l10n.callAction),
                   ),
                 if (customerUserId.isNotEmpty)
                   OutlinedButton.icon(
@@ -497,7 +518,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                       entityType: 'SHOP',
                       entityId: id,
                       title: widget.businessName,
-                      subtitle: '${_moduleLabel(module)} order',
+                      subtitle: l10n.moduleDeliverySubtitle(_moduleLabel(module, l10n)),
                       accentColor: '#039D55',
                       metadata: {
                         'orderId': id,
@@ -506,22 +527,22 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                       },
                     ),
                     icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                    label: const Text('Message'),
+                    label: Text(l10n.messageAction),
                   ),
                 if (nextStatus != null)
                   ElevatedButton(
-                    onPressed: isBusy ? null : () => _advanceItem(item),
+                    onPressed: isBusy ? null : () => _advanceItem(item, l10n),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _moduleColor(module),
                       foregroundColor: Colors.white,
                     ),
-                    child: Text(isBusy ? 'Updating...' : _actionLabel(status)),
+                    child: Text(isBusy ? l10n.working : _actionLabel(status, l10n)),
                   ),
                 if (prescriptionImageUrl.isNotEmpty)
                   OutlinedButton.icon(
                     onPressed: () => _openPrescription(prescriptionImageUrl),
                     icon: const Icon(Icons.description_outlined, size: 18),
-                    label: const Text('View Rx'),
+                    label: Text(l10n.viewRxAction),
                   ),
               ],
             ),
@@ -531,27 +552,27 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
     );
   }
 
-  String _moduleLabel(String module) {
+  String _moduleLabel(String module, AppLocalizations l10n) {
     switch (module) {
       case 'shopping':
-        return 'Shopping';
+        return l10n.shoppingLabel;
       case 'food':
-        return 'Food';
+        return l10n.foodLabel;
       case 'pharmacy':
-        return 'Pharmacy';
+        return l10n.pharmacyLabel;
       default:
-        return 'All';
+        return l10n.allLabel;
     }
   }
 
-  String _statusLabel(String status) {
+  String _filterStatusLabel(String status, AppLocalizations l10n) {
     switch (status) {
       case 'active':
-        return 'Active';
+        return l10n.active;
       case 'completed':
-        return 'Completed';
+        return l10n.completedLabel;
       default:
-        return 'All';
+        return l10n.allLabel;
     }
   }
 
@@ -566,9 +587,9 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
     }
   }
 
-  String _formatDate(dynamic value) {
+  String _formatDate(dynamic value, AppLocalizations l10n) {
     final raw = value?.toString();
-    if (raw == null || raw.isEmpty) return 'recently';
+    if (raw == null || raw.isEmpty) return l10n.recently;
     final parsed = DateTime.tryParse(raw);
     if (parsed == null) return raw;
     return DateFormat('MMM d, h:mm a').format(parsed.toLocal());

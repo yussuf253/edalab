@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/analytics/analytics_events.dart';
 import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
@@ -11,6 +12,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../payment/payment_service.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final Map<String, dynamic>? checkoutData;
@@ -24,7 +26,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   int _selectedAddress = 0;
   int _selectedDeliveryOption = 0;
   final TextEditingController _promoController = TextEditingController();
+  final TextEditingController _waafiMobileController = TextEditingController();
   bool _hasTrackedCheckoutView = false;
+  bool _isPlacingOrder = false;
 
   static const _deliveryOptions = [
     ('checkout.standard', 'checkout.standard_eta', 0.0),
@@ -51,6 +55,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   void dispose() {
     _promoController.dispose();
+    _waafiMobileController.dispose();
     super.dispose();
   }
 
@@ -117,12 +122,47 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ? subtotal
         : cartProvider.discount;
     final total = subtotal + shipping + tax + tip - discount;
-    final paymentName = [
-      'Credit Card',
-      'Apple Pay',
-      'PayPal',
-      'Cash on Delivery',
-    ][_selectedPayment];
+    final paymentMethods = [
+      (
+        'Credit Card',
+        '•••• 4242',
+        Icons.credit_card_rounded,
+        AppColors.primary,
+      ),
+      (
+        'WaafiPay',
+        'EVC Plus / mobile wallet',
+        Icons.account_balance_wallet_rounded,
+        AppColors.food,
+      ),
+      (
+        'Apple Pay',
+        'john.doe@apple.com',
+        Icons.phone_iphone_rounded,
+        AppColors.dark,
+      ),
+      (
+        'PayPal',
+        'john.doe@paypal.com',
+        Icons.account_balance_wallet_rounded,
+        AppColors.secondary,
+      ),
+      (
+        'Cash on Delivery',
+        'checkout.pay_when_delivered',
+        Icons.attach_money_rounded,
+        AppColors.success,
+      ),
+    ];
+    final paymentName = paymentMethods[_selectedPayment].$1;
+    final isWaafiPay = paymentName == 'WaafiPay';
+    final moduleLabel = moduleName ?? _moduleLabel(context, moduleType);
+    final selectedDeliveryLabel = l10n.t(
+      _deliveryOptions[_selectedDeliveryOption].$1,
+    );
+    final selectedDeliveryEta = l10n.t(
+      _deliveryOptions[_selectedDeliveryOption].$2,
+    );
     final selectedAddress = addresses.isNotEmpty
         ? addresses[_selectedAddress]
         : null;
@@ -415,32 +455,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             // Payment method
             Text(l10n.t('checkout.payment_method'), style: AppTextStyles.h4),
             const SizedBox(height: 12),
-            ...[
-              (
-                'Credit Card',
-                '•••• 4242',
-                Icons.credit_card_rounded,
-                AppColors.primary,
-              ),
-              (
-                'Apple Pay',
-                'john.doe@apple.com',
-                Icons.phone_iphone_rounded,
-                AppColors.dark,
-              ),
-              (
-                'PayPal',
-                'john.doe@paypal.com',
-                Icons.account_balance_wallet_rounded,
-                AppColors.secondary,
-              ),
-              (
-                'Cash on Delivery',
-                'checkout.pay_when_delivered',
-                Icons.attach_money_rounded,
-                AppColors.success,
-              ),
-            ].asMap().entries.map((e) {
+            ...paymentMethods.asMap().entries.map((e) {
               final i = e.key;
               final p = e.value;
               final sel = _selectedPayment == i;
@@ -505,6 +520,23 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               );
             }),
+            if (isWaafiPay) ...[
+              const SizedBox(height: 2),
+              TextField(
+                controller: _waafiMobileController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: AppColors.white,
+                  prefixIcon: const Icon(Icons.phone_rounded),
+                  hintText: 'WaafiPay mobile number',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 20),
 
             // Promo code
@@ -647,6 +679,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             const SizedBox(height: 24),
 
             AppButton(
+              isLoading: _isPlacingOrder,
               text: l10n.t(
                 'checkout.place_order',
                 params: {
@@ -708,122 +741,174 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       backgroundColor: AppColors.error,
                     ),
                   );
+                } else if (isWaafiPay &&
+                    _waafiMobileController.text.trim().isEmpty) {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.checkoutValidationFailed,
+                    properties: {
+                      'reason': 'missing_waafi_mobile',
+                      'module_type': moduleType ?? 'mixed',
+                    },
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Enter your WaafiPay mobile number.'),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
                 } else {
+                  setState(() => _isPlacingOrder = true);
                   final modules = moduleType == null
                       ? cartProvider.items.map((e) => e.moduleType).toSet()
                       : {moduleType};
                   String? primaryOrderId;
-                  for (var m in modules) {
-                    final createdOrderId = await cartProvider.submitModuleOrder(
-                      authProvider.user!.id,
-                      m,
-                      orderMetadata: {
-                        'address': selectedAddress == null
-                            ? null
-                            : '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
-                        'addressLabel': selectedAddress?.label,
-                        'deliveryLabel': l10n.t(
-                          _deliveryOptions[_selectedDeliveryOption].$1,
-                        ),
-                        'deliveryEta': l10n.t(
-                          _deliveryOptions[_selectedDeliveryOption].$2,
-                        ),
-                        'paymentLabel': paymentName,
-                      },
-                    );
-                    if (moduleType == null) {
-                      primaryOrderId ??= createdOrderId;
-                    } else if (m == moduleType) {
-                      primaryOrderId = createdOrderId;
+                  try {
+                    for (var m in modules) {
+                      final createdOrderId = await cartProvider.submitModuleOrder(
+                        authProvider.user!.id,
+                        m,
+                        orderMetadata: {
+                          'address': selectedAddress == null
+                              ? null
+                              : '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
+                          'addressLabel': selectedAddress?.label,
+                          'deliveryLabel': selectedDeliveryLabel,
+                          'deliveryEta': selectedDeliveryEta,
+                          'paymentLabel': paymentName,
+                          if (isWaafiPay)
+                            'waafiMobile': _waafiMobileController.text.trim(),
+                        },
+                      );
+                      if (moduleType == null) {
+                        primaryOrderId ??= createdOrderId;
+                      } else if (m == moduleType) {
+                        primaryOrderId = createdOrderId;
+                      }
                     }
-                  }
-                  if (moduleType == null) {
-                    cartProvider.clearCart();
-                  }
-                  if (!context.mounted) return;
-                  final orderId =
-                      primaryOrderId ??
-                      'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
-                  AnalyticsService.instance.track(
-                    AnalyticsEvents.checkoutCompleted,
-                    properties: {
-                      'order_id': orderId,
-                      'module_type': moduleType ?? 'mixed',
-                      'line_count': moduleItems.length,
-                      'item_count': moduleItems.fold<int>(
-                        0,
-                        (sum, item) => sum + item.quantity,
-                      ),
-                      'subtotal': subtotal,
-                      'shipping': shipping,
-                      'tax': tax,
-                      'tip': tip,
-                      'discount': discount,
-                      'total': total,
-                      'payment_label': paymentName,
-                      'delivery_label':
-                          _deliveryOptions[_selectedDeliveryOption].$1,
-                    },
-                  );
-                  context.push(
-                    '/checkout/success',
-                    extra: {
-                      'orderId': orderId,
-                      'amount': total,
-                      'payment': paymentName,
-                      'delivery': l10n.t(
-                        _deliveryOptions[_selectedDeliveryOption].$1,
-                      ),
-                      'moduleName':
-                          moduleName ?? _moduleLabel(context, moduleType),
-                      'address': selectedAddress == null
-                          ? null
-                          : '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
-                      'itemCount': moduleItems.fold<int>(
-                        0,
-                        (sum, item) => sum + item.quantity,
-                      ),
-                      'trackingRoute': _trackingRouteForModule(
-                        moduleType,
-                        orderId,
-                      ),
-                      'trackingExtra': {
-                        'id': orderId,
-                        'moduleType': moduleType?.toUpperCase(),
-                        'moduleName':
-                            moduleName ?? _moduleLabel(context, moduleType),
-                        'status': 'PENDING',
+                    if (moduleType == null) {
+                      cartProvider.clearCart();
+                    }
+                    if (!context.mounted) return;
+                    final orderId =
+                        primaryOrderId ??
+                        'ORD-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
+                    WaafiPaymentResult? waafiResult;
+                    if (isWaafiPay) {
+                      waafiResult = await context
+                          .read<PaymentProvider>()
+                          .initiateWaafiPayment(
+                            orderId: orderId,
+                            userId: authProvider.user!.id,
+                            amount: total,
+                            mobileNumber: _waafiMobileController.text.trim(),
+                            description: '$moduleLabel order $orderId',
+                          );
+                      if (!context.mounted) return;
+                      if (!waafiResult.success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              waafiResult.message ??
+                                  'Could not start WaafiPay payment.',
+                            ),
+                            backgroundColor: AppColors.error,
+                          ),
+                        );
+                        return;
+                      }
+                      final paymentUrl = waafiResult.paymentUrl;
+                      if (paymentUrl != null && paymentUrl.isNotEmpty) {
+                        await launchUrl(
+                          Uri.parse(paymentUrl),
+                          mode: LaunchMode.externalApplication,
+                        );
+                        if (!context.mounted) return;
+                      }
+                    }
+                    AnalyticsService.instance.track(
+                      AnalyticsEvents.checkoutCompleted,
+                      properties: {
+                        'order_id': orderId,
+                        'module_type': moduleType ?? 'mixed',
+                        'line_count': moduleItems.length,
+                        'item_count': moduleItems.fold<int>(
+                          0,
+                          (sum, item) => sum + item.quantity,
+                        ),
                         'subtotal': subtotal,
+                        'shipping': shipping,
                         'tax': tax,
-                        'deliveryFee': shipping,
+                        'tip': tip,
                         'discount': discount,
                         'total': total,
-                        'createdAt': DateTime.now().toIso8601String(),
-                        'paymentLabel': paymentName,
-                        'deliveryLabel':
+                        'payment_label': paymentName,
+                        'delivery_label':
                             _deliveryOptions[_selectedDeliveryOption].$1,
-                        'deliveryEta':
-                            _deliveryOptions[_selectedDeliveryOption].$2,
+                      },
+                    );
+                    if (!context.mounted) return;
+                    context.push(
+                      '/checkout/success',
+                      extra: {
+                        'orderId': orderId,
+                        'amount': total,
+                        'payment': paymentName,
+                        'delivery': selectedDeliveryLabel,
+                        'moduleName': moduleLabel,
                         'address': selectedAddress == null
                             ? null
                             : '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
-                        'items': moduleItems
-                            .map(
-                              (item) => {
-                                'id': item.id,
-                                'name': item.name,
-                                'brand': item.brand,
-                                'price': item.price,
-                                'quantity': item.quantity,
-                                'total': item.total,
-                                'color': item.color,
-                                'size': item.size,
-                              },
-                            )
-                            .toList(),
+                        'itemCount': moduleItems.fold<int>(
+                          0,
+                          (sum, item) => sum + item.quantity,
+                        ),
+                        'trackingRoute': _trackingRouteForModule(
+                          moduleType,
+                          orderId,
+                        ),
+                        'trackingExtra': {
+                          'id': orderId,
+                          'moduleType': moduleType?.toUpperCase(),
+                          'moduleName': moduleLabel,
+                          'status': 'PENDING',
+                          'subtotal': subtotal,
+                          'tax': tax,
+                          'deliveryFee': shipping,
+                          'discount': discount,
+                          'total': total,
+                          'createdAt': DateTime.now().toIso8601String(),
+                          'paymentLabel': paymentName,
+                          if (waafiResult?.referenceId != null)
+                            'paymentReference': waafiResult!.referenceId,
+                          'deliveryLabel':
+                              _deliveryOptions[_selectedDeliveryOption].$1,
+                          'deliveryEta':
+                              _deliveryOptions[_selectedDeliveryOption].$2,
+                          'address': selectedAddress == null
+                              ? null
+                              : '${selectedAddress.address}${selectedAddress.city != null ? ', ${selectedAddress.city}' : ''}',
+                          'items': moduleItems
+                              .map(
+                                (item) => {
+                                  'id': item.id,
+                                  'name': item.name,
+                                  'brand': item.brand,
+                                  'price': item.price,
+                                  'quantity': item.quantity,
+                                  'total': item.total,
+                                  'color': item.color,
+                                  'size': item.size,
+                                },
+                              )
+                              .toList(),
+                        },
                       },
-                    },
-                  );
+                    );
+                  } finally {
+                    if (context.mounted) {
+                      setState(() => _isPlacingOrder = false);
+                    }
+                  }
                 }
               },
             ),

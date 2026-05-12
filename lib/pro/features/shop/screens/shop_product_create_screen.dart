@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/media_upload_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ShopProductCreateScreen extends StatefulWidget {
   final String userId;
@@ -62,6 +63,11 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
     _unitController.text = _isPharmacy ? 'box' : '';
   }
 
+  String _storeLabel(String id, String? name) {
+    if (name != null && name.isNotEmpty) return name;
+    return _isPharmacy ? l10n.pharmacyLabel : l10n.storeLabel;
+  }
+
   @override
   void dispose() {
     _categoryController.dispose();
@@ -92,7 +98,7 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
         .toList(growable: false);
   }
 
-  Future<void> _pickAndUploadPrimaryImage() async {
+  Future<void> _pickAndUploadPrimaryImage(AppLocalizations l10n) async {
     if (_isUploadingPrimaryImage) return;
     final picker = ImagePicker();
     final file = await picker.pickImage(
@@ -133,7 +139,7 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
     }
   }
 
-  Future<void> _pickAndUploadGalleryImage() async {
+  Future<void> _pickAndUploadGalleryImage(AppLocalizations l10n) async {
     if (_isUploadingGalleryImage) return;
     final picker = ImagePicker();
     final file = await picker.pickImage(
@@ -176,12 +182,12 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
     }
   }
 
-  Future<void> _submit() async {
+  Future<void> _submit(AppLocalizations l10n) async {
     if (_isSubmitting) return;
     if (_isUploadingPrimaryImage || _isUploadingGalleryImage) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Wait for image uploads to finish first.'),
+        SnackBar(
+          content: Text(l10n.waitForImageUploads),
         ),
       );
       return;
@@ -192,8 +198,8 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
         SnackBar(
           content: Text(
             _isPharmacy
-                ? 'Select a pharmacy business first.'
-                : 'Select a store first.',
+                ? l10n.selectPharmacyFirst
+                : l10n.selectStoreFirst,
           ),
         ),
       );
@@ -245,8 +251,8 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
         SnackBar(
           content: Text(
             _isPharmacy
-                ? 'Medicine added to your pharmacy catalog.'
-                : 'Product added to your catalog.',
+                ? l10n.medicineAddedSuccessfully
+                : l10n.productAddedSuccessfully,
           ),
         ),
       );
@@ -267,9 +273,11 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
     }
   }
 
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
   @override
   Widget build(BuildContext context) {
-    final title = _isPharmacy ? 'Add Medicine' : 'Add Shopping Product';
+    final title = _isPharmacy ? l10n.createMedicine : l10n.createProduct;
 
     return Scaffold(
       appBar: AppBar(title: Text(title)),
@@ -284,14 +292,14 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                     const SizedBox(height: 12),
                     Text(
                       _isPharmacy
-                          ? 'No pharmacy business is connected yet. Connect one first to add medicines.'
-                          : 'No store is connected yet. Create a store first to add products.',
+                          ? l10n.noPharmacyConnected
+                          : l10n.noStoreConnected,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
                     FilledButton(
                       onPressed: () => Navigator.of(context).pop(false),
-                      child: const Text('Back'),
+                      child: Text(l10n.back),
                     ),
                   ],
                 ),
@@ -306,10 +314,10 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                       padding: const EdgeInsets.all(16),
                       children: [
                         _FormSectionTitle(
-                          title: 'Basic details',
+                          title: l10n.basicDetailsLabel,
                           subtitle: _isPharmacy
-                              ? 'Medicine identity and pharmacy binding.'
-                              : 'Core catalog identity and description.',
+                              ? l10n.basicDetailsMedicineSubtitle
+                              : l10n.basicDetailsProductSubtitle,
                         ),
                         const SizedBox(height: 12),
                         DropdownButtonFormField<String>(
@@ -319,8 +327,7 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                                 (store) => DropdownMenuItem<String>(
                                   value: store['id']?.toString(),
                                   child: Text(
-                                    store['name']?.toString() ??
-                                        (_isPharmacy ? 'Pharmacy' : 'Store'),
+                                    _storeLabel(store['id']?.toString() ?? '', store['name']?.toString()),
                                   ),
                                 ),
                               )
@@ -329,8 +336,8 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                               setState(() => _selectedStoreId = value),
                           decoration: InputDecoration(
                             labelText: _isPharmacy
-                                ? 'Pharmacy business'
-                                : 'Store',
+                                ? l10n.pharmacyLabel
+                                : l10n.storeLabel,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -338,12 +345,12 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                           controller: _categoryController,
                           decoration: InputDecoration(
                             labelText: _isPharmacy
-                                ? 'Medicine category'
-                                : 'Catalog category',
+                                ? l10n.medicineCategory
+                                : l10n.catalogCategory,
                           ),
                           validator: (value) =>
                               (value == null || value.trim().length < 2)
-                              ? 'Enter a category'
+                              ? l10n.enterCategoryError
                               : null,
                         ),
                         const SizedBox(height: 12),
@@ -351,12 +358,12 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                           controller: _nameController,
                           decoration: InputDecoration(
                             labelText: _isPharmacy
-                                ? 'Medicine name'
-                                : 'Product name',
+                                ? l10n.medicineName
+                                : l10n.productName,
                           ),
                           validator: (value) =>
                               (value == null || value.trim().length < 2)
-                              ? 'Enter a name'
+                              ? l10n.enterNameError
                               : null,
                         ),
                         const SizedBox(height: 12),
@@ -364,8 +371,8 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                           controller: _brandController,
                           decoration: InputDecoration(
                             labelText: _isPharmacy
-                                ? 'Lab / Brand (optional)'
-                                : 'Brand (optional)',
+                                ? l10n.labBrandOptional
+                                : l10n.brandOptional,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -373,37 +380,36 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                           controller: _descriptionController,
                           decoration: InputDecoration(
                             labelText: _isPharmacy
-                                ? 'Medicine details'
-                                : 'Description',
+                                ? l10n.medicineDetails
+                                : l10n.descriptionLabel,
                           ),
                           minLines: 3,
                           maxLines: 4,
                           validator: (value) =>
                               (value == null || value.trim().length < 4)
-                              ? 'Enter a description'
+                              ? l10n.enterDescriptionError
                               : null,
                         ),
                         if (_isPharmacy) ...[
                           const SizedBox(height: 18),
-                          const _FormSectionTitle(
-                            title: 'Medical specification',
-                            subtitle:
-                                'Dosage, package details, and prescription need.',
+                          _FormSectionTitle(
+                            title: l10n.medicalSpecificationLabel,
+                            subtitle: l10n.medicalSpecificationSubtitle,
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
                             controller: _dosageController,
-                            decoration: const InputDecoration(
-                              labelText: 'Dosage (optional)',
-                              hintText: '1 tablet every 8 hours',
+                            decoration: InputDecoration(
+                              labelText: l10n.dosageOptional,
+                              hintText: l10n.dosageHint,
                             ),
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
                             controller: _packageSizeController,
-                            decoration: const InputDecoration(
-                              labelText: 'Package size (optional)',
-                              hintText: '20 tablets / 100ml / 1 tube',
+                            decoration: InputDecoration(
+                              labelText: l10n.packageSizeOptional,
+                              hintText: l10n.packageSizeHint,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -412,14 +418,13 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                             value: _requiresPrescription,
                             onChanged: (value) =>
                                 setState(() => _requiresPrescription = value),
-                            title: const Text('Requires prescription'),
+                            title: Text(l10n.requiresPrescription),
                           ),
                         ],
                         const SizedBox(height: 18),
-                        const _FormSectionTitle(
-                          title: 'Pricing',
-                          subtitle:
-                              'Commercial fields used in listing and checkout.',
+                        _FormSectionTitle(
+                          title: l10n.pricingLabel,
+                          subtitle: l10n.pricingSubtitle,
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
@@ -427,10 +432,10 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          decoration: const InputDecoration(labelText: 'Price'),
+                          decoration: InputDecoration(labelText: l10n.priceLabel),
                           validator: (value) =>
                               (double.tryParse(value ?? '') ?? 0) <= 0
-                              ? 'Enter a valid price'
+                              ? l10n.enterValidPriceError
                               : null,
                         ),
                         const SizedBox(height: 12),
@@ -439,32 +444,32 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          decoration: const InputDecoration(
-                            labelText: 'Original price (optional)',
+                          decoration: InputDecoration(
+                            labelText: l10n.originalPriceOptional,
                           ),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _unitController,
                           decoration: InputDecoration(
-                            labelText: 'Unit (optional)',
+                            labelText: l10n.unitOptional,
                             hintText: _isPharmacy
-                                ? 'box, bottle, strip...'
-                                : 'piece, box, pair...',
+                                ? l10n.pharmacyUnitHint
+                                : l10n.shoppingUnitHint,
                           ),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _badgeController,
-                          decoration: const InputDecoration(
-                            labelText: 'Badge (optional)',
-                            hintText: 'Best Seller, New, Limited...',
+                          decoration: InputDecoration(
+                            labelText: l10n.badgeOptional,
+                            hintText: l10n.badgeHint,
                           ),
                         ),
                         const SizedBox(height: 18),
-                        const _FormSectionTitle(
-                          title: 'Media and attributes',
-                          subtitle: 'Images and metadata.',
+                        _FormSectionTitle(
+                          title: l10n.mediaAttributesLabel,
+                          subtitle: l10n.mediaAttributesSubtitle,
                         ),
                         const SizedBox(height: 12),
                         Container(
@@ -505,7 +510,7 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                         OutlinedButton.icon(
                           onPressed: _isUploadingPrimaryImage
                               ? null
-                              : _pickAndUploadPrimaryImage,
+                              : () => _pickAndUploadPrimaryImage(l10n),
                           icon: _isUploadingPrimaryImage
                               ? const SizedBox(
                                   height: 18,
@@ -517,24 +522,24 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                               : const Icon(Icons.photo_library_outlined),
                           label: Text(
                             _isUploadingPrimaryImage
-                                ? 'Uploading primary image...'
-                                : 'Upload Primary Image',
+                                ? l10n.uploadingPrimaryImage
+                                : l10n.uploadPrimaryImage,
                           ),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _imageUrlController,
-                          decoration: const InputDecoration(
-                            labelText: 'Primary image URL',
+                          decoration: InputDecoration(
+                            labelText: l10n.primaryImageURL,
                             hintText: 'https://...',
                           ),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _galleryImageUrlsController,
-                          decoration: const InputDecoration(
-                            labelText: 'Gallery image URLs',
-                            hintText: 'Comma or new-line separated URLs',
+                          decoration: InputDecoration(
+                            labelText: l10n.galleryImageURLs,
+                            hintText: l10n.galleryURLsHint,
                           ),
                           minLines: 2,
                           maxLines: 3,
@@ -543,7 +548,7 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                         OutlinedButton.icon(
                           onPressed: _isUploadingGalleryImage
                               ? null
-                              : _pickAndUploadGalleryImage,
+                              : () => _pickAndUploadGalleryImage(l10n),
                           icon: _isUploadingGalleryImage
                               ? const SizedBox(
                                   height: 18,
@@ -555,8 +560,8 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                               : const Icon(Icons.collections_outlined),
                           label: Text(
                             _isUploadingGalleryImage
-                                ? 'Uploading gallery image...'
-                                : 'Add Gallery Image',
+                                ? l10n.uploadingGalleryImage
+                                : l10n.addGalleryImage,
                           ),
                         ),
                         if (_galleryPreviewBytes.isNotEmpty) ...[
@@ -588,17 +593,17 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                           const SizedBox(height: 12),
                           TextFormField(
                             controller: _colorsController,
-                            decoration: const InputDecoration(
-                              labelText: 'Colors',
-                              hintText: 'Black, White, Blue',
+                            decoration: InputDecoration(
+                              labelText: l10n.colorsLabel,
+                              hintText: l10n.colorsHint,
                             ),
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
                             controller: _sizesController,
-                            decoration: const InputDecoration(
-                              labelText: 'Sizes',
-                              hintText: 'S, M, L or 40, 41, 42',
+                            decoration: InputDecoration(
+                              labelText: l10n.sizesLabel,
+                              hintText: l10n.sizesHint,
                             ),
                           ),
                         ],
@@ -606,28 +611,26 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                         TextFormField(
                           controller: _tagsController,
                           decoration: InputDecoration(
-                            labelText: 'Tags',
+                            labelText: l10n.tagsLabel,
                             hintText: _isPharmacy
-                                ? 'Pain relief, Cold, Antibiotic'
-                                : 'Sport, Casual, Trending',
+                                ? l10n.tagsPharmacyHint
+                                : l10n.tagsShoppingHint,
                           ),
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
                           controller: _featuresController,
-                          decoration: const InputDecoration(
-                            labelText: 'Features',
-                            hintText:
-                                'Fast action, Child-safe cap, Lightweight',
+                          decoration: InputDecoration(
+                            labelText: l10n.featuresLabel,
+                            hintText: l10n.featuresHint,
                           ),
                           minLines: 2,
                           maxLines: 3,
                         ),
                         const SizedBox(height: 18),
-                        const _FormSectionTitle(
-                          title: 'Availability',
-                          subtitle:
-                              'Current stock state for storefront visibility.',
+                        _FormSectionTitle(
+                          title: l10n.availabilityLabel,
+                          subtitle: l10n.availabilitySubtitle,
                         ),
                         const SizedBox(height: 8),
                         if (!_isPharmacy)
@@ -636,14 +639,14 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                             value: _isOrganic,
                             onChanged: (value) =>
                                 setState(() => _isOrganic = value),
-                            title: const Text('Mark as organic'),
+                            title: Text(l10n.markAsOrganic),
                           ),
                         SwitchListTile(
                           contentPadding: EdgeInsets.zero,
                           value: _inStock,
                           onChanged: (value) =>
                               setState(() => _inStock = value),
-                          title: const Text('Available in stock'),
+                          title: Text(l10n.availableInStock),
                         ),
                         const SizedBox(height: 10),
                       ],
@@ -661,16 +664,16 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                               _isUploadingPrimaryImage ||
                               _isUploadingGalleryImage
                           ? null
-                          : _submit,
+                          : () => _submit(l10n),
                       icon: const Icon(Icons.add_box_outlined),
                       label: Text(
                         _isSubmitting
                             ? (_isPharmacy
-                                  ? 'Saving medicine...'
-                                  : 'Saving product...')
+                                  ? l10n.savingMedicine
+                                  : l10n.savingProduct)
                             : (_isPharmacy
-                                  ? 'Create Medicine'
-                                  : 'Create Product'),
+                                  ? l10n.createMedicine
+                                  : l10n.createProduct),
                       ),
                     ),
                   ),

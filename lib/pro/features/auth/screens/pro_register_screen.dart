@@ -6,6 +6,7 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/constants/pro_design_system.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ProRegisterScreen extends StatefulWidget {
   const ProRegisterScreen({super.key});
@@ -61,9 +62,11 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
   Widget build(BuildContext context) {
     final proAuth = context.watch<ProAuthProvider>();
 
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Pro Account'),
+        title: Text(l10n.registerTitle),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
@@ -76,14 +79,14 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Set up your dedicated pro sign-in',
+                  l10n.registerSubtitle,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: ProDesignSystem.spacing8),
                 Text(
-                  'This account is separate from the customer app and is used only for EdaLab Pro access.',
+                  l10n.registerInfo,
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 const SizedBox(height: ProDesignSystem.spacing24),
@@ -100,7 +103,7 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
                 TextFormField(
                   controller: _fullNameController,
                   decoration: InputDecoration(
-                    labelText: 'Full name',
+                    labelText: l10n.fullName,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(
                         ProDesignSystem.radiusSmall,
@@ -113,7 +116,7 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.trim().length < 2) {
-                      return 'Enter your full name';
+                      return l10n.fullNameRequired;
                     }
                     return null;
                   },
@@ -123,7 +126,7 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    labelText: 'Email',
+                    labelText: l10n.email,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(
                         ProDesignSystem.radiusSmall,
@@ -136,7 +139,7 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Email is required';
+                      return l10n.emailRequired;
                     }
                     return null;
                   },
@@ -146,7 +149,7 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
                   decoration: InputDecoration(
-                    labelText: 'Phone',
+                    labelText: l10n.phoneLabel,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(
                         ProDesignSystem.radiusSmall,
@@ -163,7 +166,7 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
                   controller: _passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: l10n.password,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(
                         ProDesignSystem.radiusSmall,
@@ -176,7 +179,7 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
                   ),
                   validator: (value) {
                     if (value == null || value.length < 6) {
-                      return 'Password must be at least 6 characters';
+                      return l10n.passwordMinLength;
                     }
                     return null;
                   },
@@ -186,7 +189,7 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
                   controller: _confirmPasswordController,
                   obscureText: true,
                   decoration: InputDecoration(
-                    labelText: 'Confirm password',
+                    labelText: l10n.confirmPassword,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(
                         ProDesignSystem.radiusSmall,
@@ -199,21 +202,23 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
                   ),
                   validator: (value) {
                     if (value != _passwordController.text) {
-                      return 'Passwords do not match';
+                      return l10n.passwordsDoNotMatch;
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: ProDesignSystem.spacing24),
                 AppButton(
-                  text: proAuth.isLoading ? 'Creating account...' : 'Continue',
+                  text: proAuth.isLoading
+                      ? l10n.creatingAccount
+                      : l10n.proContinue,
                   isLoading: proAuth.isLoading,
                   onPressed: () => _submit(),
                 ),
                 const SizedBox(height: ProDesignSystem.spacing12),
                 TextButton(
                   onPressed: () => context.go(ProRoutePaths.login),
-                  child: const Text('Already have a pro account? Sign in'),
+                  child: Text(l10n.alreadyHaveProAccount),
                 ),
               ],
             ),

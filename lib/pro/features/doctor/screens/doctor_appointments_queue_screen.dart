@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -28,6 +29,8 @@ class _DoctorAppointmentsQueueScreenState
   List<Map<String, dynamic>> _items = const [];
   bool _isLoading = true;
   String _selectedStatus = 'pending';
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -90,9 +93,7 @@ class _DoctorAppointmentsQueueScreenState
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Appointment updated to ${status.replaceAll('_', ' ')}.',
-          ),
+          content: Text(l10n.appointmentUpdatedTo(_statusLabel(status))),
         ),
       );
       await _loadQueue();
@@ -132,7 +133,7 @@ class _DoctorAppointmentsQueueScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Dr. ${widget.businessName} Appointments'),
+        title: Text(l10n.doctorAppointmentsTitle(widget.businessName)),
         backgroundColor: AppColors.doctor,
         foregroundColor: Colors.white,
       ),
@@ -149,11 +150,11 @@ class _DoctorAppointmentsQueueScreenState
               ),
               child: Row(
                 children: [
-                  _QueueMetric(label: 'Pending', value: '$pendingCount'),
+                  _QueueMetric(label: l10n.pending, value: '$pendingCount'),
                   const SizedBox(width: 8),
-                  _QueueMetric(label: 'Approved', value: '$approvedCount'),
+                  _QueueMetric(label: l10n.approved, value: '$approvedCount'),
                   const SizedBox(width: 8),
-                  _QueueMetric(label: 'Done', value: '$completedCount'),
+                  _QueueMetric(label: l10n.done, value: '$completedCount'),
                 ],
               ),
             ),
@@ -187,23 +188,21 @@ class _DoctorAppointmentsQueueScreenState
                   color: AppColors.white,
                   border: Border.all(color: AppColors.lightGrey),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
-                    Icon(Icons.medical_information_outlined, size: 34),
-                    SizedBox(height: 10),
-                    CircularProgressIndicator(),
-                    SizedBox(height: 10),
-                    Text('Loading appointments...'),
+                    const Icon(Icons.medical_information_outlined, size: 34),
+                    const SizedBox(height: 10),
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 10),
+                    Text(l10n.loadingAppointments),
                   ],
                 ),
               )
             else if (filteredItems.isEmpty)
-              const Card(
+              Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    'No appointments match the current queue filters.',
-                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Text(l10n.noAppointmentsMatch),
                 ),
               )
             else
@@ -217,7 +216,7 @@ class _DoctorAppointmentsQueueScreenState
   Widget _buildAppointmentCard(Map<String, dynamic> item) {
     final id = item['id']?.toString() ?? '';
     final status = item['status']?.toString().toUpperCase() ?? '';
-    final title = item['title']?.toString() ?? 'Patient';
+    final title = item['title']?.toString() ?? l10n.patientLabel;
     final subtitle = item['subtitle']?.toString() ?? '';
     final doctorName = item['doctorName']?.toString() ?? '';
     final phone = item['customerPhone']?.toString() ?? '';
@@ -246,7 +245,7 @@ class _DoctorAppointmentsQueueScreenState
                   ),
                 ),
                 Text(
-                  status.replaceAll('_', ' '),
+                  _statusLabel(status),
                   style: const TextStyle(
                     color: AppColors.doctor,
                     fontWeight: FontWeight.w700,
@@ -276,7 +275,7 @@ class _DoctorAppointmentsQueueScreenState
                   OutlinedButton.icon(
                     onPressed: () => launchPhoneCall(context, phone),
                     icon: const Icon(Icons.call_outlined, size: 18),
-                    label: const Text('Call'),
+                    label: Text(l10n.callAction),
                   ),
                 if (customerUserId.isNotEmpty)
                   OutlinedButton.icon(
@@ -288,7 +287,7 @@ class _DoctorAppointmentsQueueScreenState
                       entityType: 'DOCTOR',
                       entityId: id,
                       title: widget.businessName,
-                      subtitle: 'Appointment support',
+                      subtitle: l10n.appointmentSupport,
                       accentColor: '#188E68',
                       metadata: {
                         'appointmentId': id,
@@ -297,14 +296,14 @@ class _DoctorAppointmentsQueueScreenState
                       },
                     ),
                     icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                    label: const Text('Message'),
+                    label: Text(l10n.messageAction),
                   ),
                 if (status == 'PENDING') ...[
                   TextButton(
                     onPressed: isBusy
                         ? null
                         : () => _updateStatus(item, 'REJECTED'),
-                    child: const Text('Reject'),
+                    child: Text(l10n.reject),
                   ),
                   ElevatedButton(
                     onPressed: isBusy
@@ -314,7 +313,7 @@ class _DoctorAppointmentsQueueScreenState
                       backgroundColor: AppColors.doctor,
                       foregroundColor: Colors.white,
                     ),
-                    child: Text(isBusy ? 'Updating...' : 'Approve'),
+                    child: Text(isBusy ? l10n.updating : l10n.approve),
                   ),
                 ] else if (status == 'APPROVED' || status == 'UPCOMING') ...[
                   ElevatedButton(
@@ -325,7 +324,7 @@ class _DoctorAppointmentsQueueScreenState
                       backgroundColor: AppColors.doctor,
                       foregroundColor: Colors.white,
                     ),
-                    child: Text(isBusy ? 'Updating...' : 'Complete'),
+                    child: Text(isBusy ? l10n.updating : l10n.complete),
                   ),
                   if (isVideo)
                     OutlinedButton(
@@ -336,7 +335,7 @@ class _DoctorAppointmentsQueueScreenState
                           ),
                         );
                       },
-                      child: const Text('Open Video'),
+                      child: Text(l10n.openVideoAction),
                     ),
                 ],
               ],
@@ -348,21 +347,25 @@ class _DoctorAppointmentsQueueScreenState
   }
 
   String _statusLabel(String status) {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'pending':
-        return 'Pending';
+        return l10n.pending;
       case 'approved':
-        return 'Approved';
+        return l10n.approved;
+      case 'upcoming':
+        return l10n.upcoming;
       case 'completed':
-        return 'Completed';
+        return l10n.completedLabel;
+      case 'rejected':
+        return l10n.rejected;
       default:
-        return 'All';
+        return status.replaceAll('_', ' ');
     }
   }
 
   String _formatDate(dynamic value) {
     final raw = value?.toString();
-    if (raw == null || raw.isEmpty) return 'Schedule pending';
+    if (raw == null || raw.isEmpty) return l10n.schedulePending;
     final parsed = DateTime.tryParse(raw);
     if (parsed == null) return raw;
     return DateFormat('EEE, MMM d • h:mm a').format(parsed.toLocal());

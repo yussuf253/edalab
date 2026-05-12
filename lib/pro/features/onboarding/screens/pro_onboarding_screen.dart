@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../../core/providers/language_provider.dart';
 import '../../../../core/storage/app_preferences.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../core/router/pro_route_paths.dart';
@@ -22,9 +25,8 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
   static const List<_ProOnboardingPageData> _pages = [
     _ProOnboardingPageData(
       heroType: _ProOnboardingHeroType.orbit,
-      title: 'All Your Pro Operations, In One Place',
-      subtitle:
-          'Manage appointments, service jobs, deliveries, and orders from one polished workspace built for fast teams.',
+      titleKey: 'onboardingTitle1',
+      subtitleKey: 'onboardingSubtitle1',
       centerAssetPath: _brandLogoAsset,
       centerIcon: Icons.health_and_safety_rounded,
       ctaColor: AppColors.primary,
@@ -63,26 +65,24 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
     ),
     _ProOnboardingPageData(
       heroType: _ProOnboardingHeroType.flow,
-      title: 'Accept Work Instantly And Keep Flowing',
-      subtitle:
-          'Update availability, claim requests, and move jobs from queue to completion with fewer taps and smarter context.',
+      titleKey: 'onboardingTitle2',
+      subtitleKey: 'onboardingSubtitle2',
       centerIcon: Icons.bolt_rounded,
       ctaColor: AppColors.primary,
       backgroundGradient: LinearGradient(
-        colors: [Color(0xFFF4FFFC), Color(0xFFDDFBF0)],
+        colors: [Color(0xFFF6FFF9), Color(0xFFE8FEEB)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
     ),
     _ProOnboardingPageData(
       heroType: _ProOnboardingHeroType.insights,
-      title: 'Insight, Control, And Clear Next Actions',
-      subtitle:
-          'See performance snapshots, urgent priorities, and customer activity in real time so nothing slips through.',
+      titleKey: 'onboardingTitle3',
+      subtitleKey: 'onboardingSubtitle3',
       centerIcon: Icons.insights_rounded,
       ctaColor: AppColors.primary,
       backgroundGradient: LinearGradient(
-        colors: [Color(0xFFF4FFFC), Color(0xFFDDFBF0)],
+        colors: [Color(0xFFF6FFF9), Color(0xFFE8FEEB)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ),
@@ -125,6 +125,7 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final page = _pages[_currentPage];
 
     return Scaffold(
@@ -137,7 +138,7 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
             padding: const EdgeInsets.fromLTRB(20, 14, 20, 22),
             child: Column(
               children: [
-                _TopBar(onSkip: _finishOnboarding),
+                _TopBar(onSkip: _finishOnboarding, skipText: l10n.skip),
                 const SizedBox(height: 8),
                 Expanded(
                   child: PageView.builder(
@@ -173,8 +174,8 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
                 const SizedBox(height: 24),
                 AppButton(
                   text: _currentPage == _pages.length - 1
-                      ? 'Get Started'
-                      : 'Continue',
+                      ? l10n.onboardingGetStarted
+                      : l10n.onboardingContinue,
                   color: page.ctaColor,
                   onPressed: _handlePrimaryAction,
                 ),
@@ -187,11 +188,11 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
                       style: AppTextStyles.labelLarge.copyWith(
                         color: AppColors.grey,
                       ),
-                      children: const [
-                        TextSpan(text: 'Already have an account? '),
+                      children: [
+                        TextSpan(text: '${l10n.alreadyHaveAccount} '),
                         TextSpan(
-                          text: 'Sign in',
-                          style: TextStyle(
+                          text: l10n.onboardingSignIn,
+                          style: const TextStyle(
                             color: AppColors.dark,
                             fontWeight: FontWeight.w800,
                           ),
@@ -210,27 +211,166 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.onSkip});
+  const _TopBar({required this.onSkip, required this.skipText});
 
   final VoidCallback onSkip;
+  final String skipText;
+
+  String _getLanguageCode(Locale locale) {
+    switch (locale.languageCode) {
+      case 'en':
+        return 'EN';
+      case 'fr':
+        return 'FR';
+      case 'ar':
+        return 'AR';
+      default:
+        return locale.languageCode.toUpperCase();
+    }
+  }
+
+  void _showLanguageDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final languageProvider = context.read<LanguageProvider>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          l10n.language,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: LanguageProvider.supportedLanguages
+              .map(
+                (lang) => InkWell(
+                  onTap: () {
+                    languageProvider.setLocale(lang.locale);
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color:
+                                languageProvider.locale.languageCode ==
+                                    lang.locale.languageCode
+                                ? AppColors.primary.withValues(alpha: 0.12)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(
+                            child: Text(
+                              _getLanguageCode(lang.locale),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color:
+                                    languageProvider.locale.languageCode ==
+                                        lang.locale.languageCode
+                                    ? AppColors.primary
+                                    : AppColors.dark,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                lang.englishName,
+                                style: TextStyle(
+                                  fontWeight:
+                                      languageProvider.locale.languageCode ==
+                                          lang.locale.languageCode
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                  color:
+                                      languageProvider.locale.languageCode ==
+                                          lang.locale.languageCode
+                                      ? AppColors.primary
+                                      : AppColors.dark,
+                                ),
+                              ),
+                              Text(
+                                lang.nativeName,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (languageProvider.locale.languageCode ==
+                            lang.locale.languageCode)
+                          const Icon(
+                            Icons.check_circle_rounded,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final languageProvider = context.watch<LanguageProvider>();
+    final currentCode = _getLanguageCode(languageProvider.locale);
+
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.80),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.95)),
+        GestureDetector(
+          onTap: () => _showLanguageDialog(context),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.25),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: Text(
+              currentCode,
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
         ),
         const Spacer(),
         TextButton(
           onPressed: onSkip,
           child: Text(
-            'Skip',
+            skipText,
             style: AppTextStyles.labelLarge.copyWith(
               color: AppColors.mediumGrey,
             ),
@@ -248,6 +388,8 @@ class _OnboardingPageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final compact = constraints.maxHeight < 620;
@@ -271,6 +413,12 @@ class _OnboardingPageContent extends StatelessWidget {
                   _ProOnboardingHeroType.flow => _FlowHero(
                     compact: compact,
                     icon: page.centerIcon,
+                    queuedText: l10n.onboardingFlowQueued,
+                    queuedDetail: l10n.onboardingFlowQueuedDetail,
+                    assignedText: l10n.onboardingFlowAssigned,
+                    assignedDetail: l10n.onboardingFlowAssignedDetail,
+                    completedText: l10n.onboardingFlowCompleted,
+                    completedDetail: l10n.onboardingFlowCompletedDetail,
                   ),
                   _ProOnboardingHeroType.insights => _InsightsHero(
                     compact: compact,
@@ -279,7 +427,7 @@ class _OnboardingPageContent extends StatelessWidget {
                 },
                 SizedBox(height: compact ? 24 : 30),
                 Text(
-                  page.title,
+                  _getString(l10n, page.titleKey),
                   style: AppTextStyles.h2.copyWith(
                     fontSize: compact ? 30 : 34,
                     height: 1.15,
@@ -289,7 +437,7 @@ class _OnboardingPageContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  page.subtitle,
+                  _getString(l10n, page.subtitleKey),
                   style: AppTextStyles.bodyLarge.copyWith(
                     color: AppColors.grey,
                     height: 1.5,
@@ -304,6 +452,25 @@ class _OnboardingPageContent extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _getString(AppLocalizations l10n, String key) {
+    switch (key) {
+      case 'onboardingTitle1':
+        return l10n.onboardingTitle1;
+      case 'onboardingSubtitle1':
+        return l10n.onboardingSubtitle1;
+      case 'onboardingTitle2':
+        return l10n.onboardingTitle2;
+      case 'onboardingSubtitle2':
+        return l10n.onboardingSubtitle2;
+      case 'onboardingTitle3':
+        return l10n.onboardingTitle3;
+      case 'onboardingSubtitle3':
+        return l10n.onboardingSubtitle3;
+      default:
+        return key;
+    }
   }
 }
 
@@ -422,8 +589,10 @@ class _OrbitHero extends StatelessWidget {
           child: Image.asset(
             node.assetPath,
             fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) =>
-                Icon(Icons.image_not_supported_outlined, color: AppColors.grey),
+            errorBuilder: (context, error, stackTrace) => const Icon(
+              Icons.image_not_supported_outlined,
+              color: AppColors.grey,
+            ),
           ),
         ),
       ),
@@ -432,10 +601,25 @@ class _OrbitHero extends StatelessWidget {
 }
 
 class _FlowHero extends StatelessWidget {
-  const _FlowHero({required this.compact, required this.icon});
+  const _FlowHero({
+    required this.compact,
+    required this.icon,
+    required this.queuedText,
+    required this.queuedDetail,
+    required this.assignedText,
+    required this.assignedDetail,
+    required this.completedText,
+    required this.completedDetail,
+  });
 
   final bool compact;
   final IconData icon;
+  final String queuedText;
+  final String queuedDetail;
+  final String assignedText;
+  final String assignedDetail;
+  final String completedText;
+  final String completedDetail;
 
   @override
   Widget build(BuildContext context) {
@@ -464,22 +648,22 @@ class _FlowHero extends StatelessWidget {
       child: Column(
         children: [
           _FlowStep(
-            label: 'Queued',
-            detail: '8 incoming requests',
+            label: queuedText,
+            detail: queuedDetail,
             icon: Icons.inventory_2_rounded,
             color: const Color(0xFF2A9E64),
           ),
           const _FlowConnector(),
           _FlowStep(
-            label: 'Assigned',
-            detail: 'Auto-routed by availability',
+            label: assignedText,
+            detail: assignedDetail,
             icon: icon,
             color: const Color(0xFF039D55),
           ),
           const _FlowConnector(),
           _FlowStep(
-            label: 'Completed',
-            detail: 'Customers notified instantly',
+            label: completedText,
+            detail: completedDetail,
             icon: Icons.check_circle_rounded,
             color: const Color(0xFF19844D),
           ),
@@ -743,8 +927,8 @@ class _StatTile extends StatelessWidget {
 class _ProOnboardingPageData {
   const _ProOnboardingPageData({
     required this.heroType,
-    required this.title,
-    required this.subtitle,
+    required this.titleKey,
+    required this.subtitleKey,
     required this.centerIcon,
     required this.ctaColor,
     required this.backgroundGradient,
@@ -754,8 +938,8 @@ class _ProOnboardingPageData {
   });
 
   final _ProOnboardingHeroType heroType;
-  final String title;
-  final String subtitle;
+  final String titleKey;
+  final String subtitleKey;
   final IconData centerIcon;
   final Color ctaColor;
   final LinearGradient backgroundGradient;

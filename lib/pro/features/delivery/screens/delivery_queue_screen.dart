@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/pro_message_launcher.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../rider/screens/rider_active_delivery_screen.dart';
 
 class DeliveryQueueScreen extends StatefulWidget {
@@ -27,6 +28,8 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
   bool _isLoading = true;
   String _selectedLane = 'open';
   String _selectedModule = 'all';
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -105,6 +108,7 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final openCount = _items
         .where((item) => (item['queueType']?.toString() ?? '') == 'open')
         .length;
@@ -132,7 +136,7 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.businessName} Dispatch'),
+        title: Text(l10n.moduleDispatchTitle(widget.businessName)),
         backgroundColor: AppColors.food,
         foregroundColor: Colors.white,
       ),
@@ -149,11 +153,14 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
               ),
               child: Row(
                 children: [
-                  _QueueMetric(label: 'Open', value: '$openCount'),
+                  _QueueMetric(label: l10n.openLabel, value: '$openCount'),
                   const SizedBox(width: 8),
-                  _QueueMetric(label: 'Assigned', value: '$assignedCount'),
+                  _QueueMetric(
+                    label: l10n.assignedLabel,
+                    value: '$assignedCount',
+                  ),
                   const SizedBox(width: 8),
-                  _QueueMetric(label: 'Lanes', value: '$laneCount'),
+                  _QueueMetric(label: l10n.lanesLabel, value: '$laneCount'),
                 ],
               ),
             ),
@@ -164,7 +171,7 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
               children: [
                 for (final lane in ['open', 'assigned', 'all'])
                   ChoiceChip(
-                    label: Text(_laneLabel(lane)),
+                    label: Text(_laneLabel(lane, l10n)),
                     selected: _selectedLane == lane,
                     onSelected: (_) => setState(() => _selectedLane = lane),
                   ),
@@ -177,7 +184,7 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
               children: [
                 for (final module in ['all', 'shopping', 'food', 'pharmacy'])
                   ChoiceChip(
-                    label: Text(_moduleLabel(module)),
+                    label: Text(_moduleLabel(module, l10n)),
                     selected: _selectedModule == module,
                     onSelected: (_) => setState(() => _selectedModule = module),
                   ),
@@ -195,34 +202,34 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
                   color: AppColors.white,
                   border: Border.all(color: AppColors.lightGrey),
                 ),
-                child: const Column(
+                child: Column(
                   children: [
-                    Icon(Icons.local_shipping_outlined, size: 34),
-                    SizedBox(height: 10),
-                    CircularProgressIndicator(),
-                    SizedBox(height: 10),
-                    Text('Loading dispatch queue...'),
+                    const Icon(Icons.local_shipping_outlined, size: 34),
+                    const SizedBox(height: 10),
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 10),
+                    Text(l10n.loadingDispatchQueue),
                   ],
                 ),
               )
             else if (filteredItems.isEmpty)
-              const Card(
+              Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   child: Text(
-                    'No delivery requests match the current queue filters.',
+                    l10n.noDeliveryRequestsMatch,
                   ),
                 ),
               )
             else
-              ...filteredItems.map(_buildQueueCard),
+              ...filteredItems.map((item) => _buildQueueCard(item, l10n)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildQueueCard(Map<String, dynamic> item) {
+  Widget _buildQueueCard(Map<String, dynamic> item, AppLocalizations l10n) {
     final id = item['id']?.toString() ?? '';
     final queueType = item['queueType']?.toString() ?? 'open';
     final module = item['module']?.toString() ?? '';
@@ -242,7 +249,7 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    item['title']?.toString() ?? 'Delivery',
+                    item['title']?.toString() ?? l10n.deliveryLabel,
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
@@ -250,7 +257,7 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
                   ),
                 ),
                 Text(
-                  _moduleLabel(module),
+                  _moduleLabel(module, l10n),
                   style: TextStyle(
                     color: _moduleColor(module),
                     fontWeight: FontWeight.w700,
@@ -261,14 +268,14 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
             const SizedBox(height: 6),
             Text(item['subtitle']?.toString() ?? ''),
             const SizedBox(height: 8),
-            Text(item['customerName']?.toString() ?? 'Customer'),
+            Text(item['customerName']?.toString() ?? l10n.customerLabel),
             if (phone.isNotEmpty) ...[
               const SizedBox(height: 4),
               Text(phone, style: TextStyle(color: Colors.grey.shade700)),
             ],
             const SizedBox(height: 4),
             Text(
-              'Created $createdAt',
+              l10n.createdDate(createdAt),
               style: TextStyle(color: Colors.grey.shade700),
             ),
             if ((item['address']?.toString() ?? '').isNotEmpty) ...[
@@ -279,60 +286,61 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
               ),
             ],
             const SizedBox(height: 12),
-            Text(
-              '${item['status']?.toString().replaceAll('_', ' ') ?? ''}${(item['amount']?.toString() ?? '').isEmpty ? '' : ' • ${item['amount']}'}',
-              style: TextStyle(
-                color: _moduleColor(module),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
+            Row(
               children: [
                 if (phone.isNotEmpty)
-                  OutlinedButton.icon(
-                    onPressed: () => launchPhoneCall(context, phone),
-                    icon: const Icon(Icons.call_outlined, size: 18),
-                    label: const Text('Call'),
-                  ),
-                if (customerUserId.isNotEmpty)
-                  OutlinedButton.icon(
-                    onPressed: () => openProConversation(
-                      context,
-                      customerUserId: customerUserId,
-                      participantUserId: widget.userId,
-                      moduleType: _messageModuleType(module),
-                      entityType: 'DELIVERY',
-                      entityId: id,
-                      title: widget.businessName,
-                      subtitle: '${_moduleLabel(module)} delivery',
-                      accentColor: '#3BAA5C',
-                      metadata: {'orderId': id, 'customerPhone': phone},
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => launchPhoneCall(context, phone),
+                      icon: const Icon(Icons.call_outlined, size: 18),
+                      label: Text(l10n.callAction),
                     ),
-                    icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                    label: const Text('Message'),
                   ),
-                ElevatedButton(
-                  onPressed: isBusy
-                      ? null
-                      : () => queueType == 'assigned'
-                            ? _openAssignedDelivery(id)
-                            : _claimItem(item),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _moduleColor(module),
-                    foregroundColor: Colors.white,
+                if (customerUserId.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => openProConversation(
+                        context,
+                        customerUserId: customerUserId,
+                        participantUserId: widget.userId,
+                        moduleType: _messageModuleType(module),
+                        entityType: 'DELIVERY',
+                        entityId: id,
+                        title: item['title']?.toString() ?? l10n.deliveryLabel,
+                        subtitle: l10n.moduleDeliverySubtitle(_moduleLabel(module, l10n)),
+                        accentColor: '#3BAA5C',
+                        metadata: {'orderId': id, 'customerPhone': phone},
+                      ),
+                      icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                      label: Text(l10n.messageAction),
+                    ),
                   ),
-                  child: Text(
-                    isBusy
-                        ? 'Working...'
-                        : queueType == 'assigned'
-                        ? 'Open Job'
-                        : 'Claim',
-                  ),
-                ),
+                ],
               ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: isBusy
+                    ? null
+                    : () => queueType == 'assigned'
+                        ? _openAssignedDelivery(id)
+                        : _claimItem(item),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _moduleColor(module),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                child: Text(
+                  isBusy
+                      ? l10n.working
+                      : queueType == 'assigned'
+                          ? l10n.openJobAction
+                          : l10n.claimAction,
+                ),
+              ),
             ),
           ],
         ),
@@ -340,27 +348,27 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
     );
   }
 
-  String _laneLabel(String lane) {
+  String _laneLabel(String lane, AppLocalizations l10n) {
     switch (lane) {
       case 'open':
-        return 'Open Requests';
+        return l10n.openRequestsLabel;
       case 'assigned':
-        return 'Assigned To Me';
+        return l10n.assignedToMeLabel;
       default:
-        return 'All';
+        return l10n.allLabel;
     }
   }
 
-  String _moduleLabel(String module) {
+  String _moduleLabel(String module, AppLocalizations l10n) {
     switch (module) {
       case 'shopping':
-        return 'Shopping';
+        return l10n.shoppingLabel;
       case 'food':
-        return 'Food';
+        return l10n.foodLabel;
       case 'pharmacy':
-        return 'Pharmacy';
+        return l10n.pharmacyLabel;
       default:
-        return 'All';
+        return l10n.allLabel;
     }
   }
 
@@ -377,7 +385,7 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
 
   String _formatDate(dynamic value) {
     final raw = value?.toString();
-    if (raw == null || raw.isEmpty) return 'recently';
+    if (raw == null || raw.isEmpty) return l10n.recently;
     final parsed = DateTime.tryParse(raw);
     if (parsed == null) return raw;
     return DateFormat('MMM d, h:mm a').format(parsed.toLocal());

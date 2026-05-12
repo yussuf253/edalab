@@ -1,9 +1,9 @@
-import 'dart:typed_data';
-
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
@@ -29,36 +29,40 @@ class ProviderAvailabilityScreen extends StatefulWidget {
 
 class _ProviderAvailabilityScreenState
     extends State<ProviderAvailabilityScreen> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+
+  // Identifier keys for localisation. These are sent to the backend and mapped to
+  // user‑visible strings via AppLocalizations.
   static const List<String> _houseHelpServiceOptions = <String>[
-    'Room Cleaning',
-    'Floor Cleaning',
-    'Kitchen Cleaning',
-    'Bathroom Cleaning',
-    'Dishes',
-    'Laundry',
+    'room_cleaning',
+    'floor_cleaning',
+    'kitchen_cleaning',
+    'bathroom_cleaning',
+    'dishes',
+    'laundry',
   ];
   static const List<String> _houseHelpBookingTypeOptions = <String>[
-    'One-time job',
-    'Daily recurring',
-    'Weekly recurring',
+    'one_time_job',
+    'daily_recurring',
+    'weekly_recurring',
   ];
   static const List<String> _houseHelpShiftOptions = <String>[
-    '2 hours',
-    '4 hours',
-    '8 hours',
+    'shift_2h',
+    'shift_4h',
+    'shift_8h',
   ];
   static const List<String> _houseHelpArrivalOptions = <String>[
-    'Within 30 min',
-    'Scheduled slot',
+    'within_30_min',
+    'scheduled_slot',
   ];
   static const List<String> _houseHelpHomeSizeOptions = <String>[
-    'F2',
-    'F3',
-    'F4',
+    'f2',
+    'f3',
+    'f4',
   ];
   static const List<String> _houseHelpSupplyModeOptions = <String>[
-    'Provider supplies',
-    'Customer supplies',
+    'provider_supplies',
+    'customer_supplies',
   ];
   static const List<double> _zoneRadiusOptionsKm = <double>[0.25, 0.5, 0.75, 1];
 
@@ -106,6 +110,75 @@ class _ProviderAvailabilityScreenState
     return normalized % 1 == 0
         ? normalized.toStringAsFixed(0)
         : normalized.toStringAsFixed(2);
+  }
+
+  // Convert identifier keys to localized strings. Falls back to English
+  // literals if a localisation entry is missing.
+  String _localizedOption(String key) {
+    const Map<String, String> fallback = {
+      'room_cleaning': 'Room Cleaning',
+      'floor_cleaning': 'Floor Cleaning',
+      'kitchen_cleaning': 'Kitchen Cleaning',
+      'bathroom_cleaning': 'Bathroom Cleaning',
+      'dishes': 'Dishes',
+      'laundry': 'Laundry',
+      'one_time_job': 'One‑time job',
+      'daily_recurring': 'Daily recurring',
+      'weekly_recurring': 'Weekly recurring',
+      'shift_2h': '2 hours',
+      'shift_4h': '4 hours',
+      'shift_8h': '8 hours',
+      'within_30_min': 'Within 30 min',
+      'scheduled_slot': 'Scheduled slot',
+      'f2': 'F2',
+      'f3': 'F3',
+      'f4': 'F4',
+      'provider_supplies': 'Provider supplies',
+      'customer_supplies': 'Customer supplies',
+    };
+    // Attempt to use localisation getters; if they are null, use fallback.
+    switch (key) {
+      case 'room_cleaning':
+        return l10n.roomCleaning;
+      case 'floor_cleaning':
+        return l10n.floorCleaning;
+      case 'kitchen_cleaning':
+        return l10n.kitchenCleaning;
+      case 'bathroom_cleaning':
+        return l10n.bathroomCleaning;
+      case 'dishes':
+        return l10n.dishes;
+      case 'laundry':
+        return l10n.laundry;
+      case 'one_time_job':
+        return l10n.oneTimeJob;
+      case 'daily_recurring':
+        return l10n.dailyRecurring;
+      case 'weekly_recurring':
+        return l10n.weeklyRecurring;
+      case 'shift_2h':
+        return l10n.shift2h;
+      case 'shift_4h':
+        return l10n.shift4h;
+      case 'shift_8h':
+        return l10n.shift8h;
+      case 'within_30_min':
+        return l10n.within30Min;
+      case 'scheduled_slot':
+        return l10n.scheduledSlot;
+      case 'f2':
+        return l10n.f2;
+      case 'f3':
+        return l10n.f3;
+      case 'f4':
+        return l10n.f4;
+      case 'provider_supplies':
+        return l10n.providerSupplies;
+      case 'customer_supplies':
+        return l10n.customerSupplies;
+      default:
+        return fallback[key] ?? key;
+    }
   }
 
   _CategoryListingPreset _presetForCategorySlug(String slug) {
@@ -203,11 +276,9 @@ class _ProviderAvailabilityScreenState
       final servicesEnabled = await Geolocator.isLocationServiceEnabled();
       if (!servicesEnabled) {
         if (showFailureSnackBar && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Turn on location services to continue.'),
-            ),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.turnOnLocationServices)));
         }
         return null;
       }
@@ -219,11 +290,7 @@ class _ProviderAvailabilityScreenState
           permission == LocationPermission.deniedForever) {
         if (showFailureSnackBar && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Location permission is required for service-zone matching.',
-              ),
-            ),
+            SnackBar(content: Text(l10n.locationPermissionRequired)),
           );
         }
         return null;
@@ -263,24 +330,18 @@ class _ProviderAvailabilityScreenState
       position ??= cachedPosition;
       if (position == null) {
         if (showFailureSnackBar && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Could not resolve your current location yet. Move the map pin manually and continue.',
-              ),
-            ),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.couldNotResolveLocation)));
         }
         return null;
       }
       return LatLng(position.latitude, position.longitude);
     } catch (_) {
       if (showFailureSnackBar && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Could not access location permission right now.'),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.couldNotAccessLocation)));
       }
       return null;
     }
@@ -370,9 +431,9 @@ class _ProviderAvailabilityScreenState
     }
     if (!mounted) return;
     if (item == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not load this service listing.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.couldNotLoadListing)));
       return;
     }
 
@@ -565,7 +626,7 @@ class _ProviderAvailabilityScreenState
                                 (entry) => DropdownMenuItem<String>(
                                   value: entry,
                                   child: Text(
-                                    entry,
+                                    _localizedOption(entry),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -594,7 +655,14 @@ class _ProviderAvailabilityScreenState
                     children: selectedValues
                         .map(
                           (value) => Chip(
-                            label: Text(value),
+                            label: Text(_localizedOption(value)),
+                            backgroundColor: AppColors.homeServices.withValues(
+                              alpha: 0.2,
+                            ),
+                            labelStyle: TextStyle(
+                              color: AppColors.homeServices,
+                              fontWeight: FontWeight.w600,
+                            ),
                             onDeleted: isSaving ? null : () => onRemove(value),
                           ),
                         )
@@ -607,7 +675,7 @@ class _ProviderAvailabilityScreenState
             Future<void> save() async {
               if (selectedServices.isEmpty) {
                 setModalState(() {
-                  errorText = 'Add at least one offered service.';
+                  errorText = l10n.addAtLeastOneService;
                 });
                 return;
               }
@@ -618,8 +686,7 @@ class _ProviderAvailabilityScreenState
                       selectedHomeSizes.isEmpty ||
                       selectedSupplyModes.isEmpty)) {
                 setModalState(() {
-                  errorText =
-                      'Complete house-help criteria using the dedicated fields.';
+                  errorText = l10n.completeHouseHelpCriteria;
                 });
                 return;
               }
@@ -682,7 +749,7 @@ class _ProviderAvailabilityScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item?['name']?.toString() ?? 'Edit listing',
+                      item?['name']?.toString() ?? l10n.editListing,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -690,11 +757,11 @@ class _ProviderAvailabilityScreenState
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: contactPhoneController,
-                      decoration: const InputDecoration(labelText: 'Phone'),
+                      decoration: InputDecoration(labelText: l10n.phone),
                     ),
                     const SizedBox(height: 12),
                     multiSelectDropdown(
-                      label: 'Offered services',
+                      label: l10n.offeredServices,
                       options: serviceOptions,
                       draftValue: draftService,
                       onDraftChanged: (value) =>
@@ -709,7 +776,7 @@ class _ProviderAvailabilityScreenState
                     if (isHouseHelpCategory) ...[
                       const SizedBox(height: 12),
                       multiSelectDropdown(
-                        label: 'Booking types',
+                        label: l10n.bookingTypes,
                         options: bookingTypeOptions,
                         draftValue: draftBookingType,
                         onDraftChanged: (value) =>
@@ -724,7 +791,7 @@ class _ProviderAvailabilityScreenState
                       ),
                       const SizedBox(height: 12),
                       multiSelectDropdown(
-                        label: 'Shift durations',
+                        label: l10n.shiftDurations,
                         options: shiftOptions,
                         draftValue: draftShift,
                         onDraftChanged: (value) =>
@@ -738,7 +805,7 @@ class _ProviderAvailabilityScreenState
                       ),
                       const SizedBox(height: 12),
                       multiSelectDropdown(
-                        label: 'Home sizes',
+                        label: l10n.homeSizes,
                         options: homeSizeOptions,
                         draftValue: draftHomeSize,
                         onDraftChanged: (value) =>
@@ -753,7 +820,7 @@ class _ProviderAvailabilityScreenState
                       ),
                       const SizedBox(height: 12),
                       multiSelectDropdown(
-                        label: 'Arrival targets',
+                        label: l10n.arrivalTargets,
                         options: arrivalOptions,
                         draftValue: draftArrival,
                         onDraftChanged: (value) =>
@@ -767,7 +834,7 @@ class _ProviderAvailabilityScreenState
                       ),
                       const SizedBox(height: 12),
                       multiSelectDropdown(
-                        label: 'Supply modes',
+                        label: l10n.supplyModes,
                         options: supplyModeOptions,
                         draftValue: draftSupplyMode,
                         onDraftChanged: (value) =>
@@ -826,16 +893,14 @@ class _ProviderAvailabilityScreenState
                                 setModalState(() => zoneCenter = location);
                               },
                         icon: const Icon(Icons.my_location_rounded),
-                        label: const Text('Use current location'),
+                        label: Text(l10n.useCurrentLocation),
                       ),
                     ),
                     DropdownButtonFormField<double>(
                       key: ValueKey('zone-radius-edit|$selectedZoneRadius'),
                       isExpanded: true,
                       initialValue: selectedZoneRadius,
-                      decoration: const InputDecoration(
-                        labelText: 'Zone radius',
-                      ),
+                      decoration: InputDecoration(labelText: l10n.zoneRadius),
                       items: _zoneRadiusOptionsKm
                           .map(
                             (radius) => DropdownMenuItem<double>(
@@ -867,7 +932,7 @@ class _ProviderAvailabilityScreenState
                           backgroundColor: AppColors.homeServices,
                           foregroundColor: Colors.white,
                         ),
-                        child: Text(isSaving ? 'Saving...' : 'Save changes'),
+                        child: Text(isSaving ? l10n.saving : l10n.saveChanges),
                       ),
                     ),
                   ],
@@ -884,7 +949,7 @@ class _ProviderAvailabilityScreenState
     if (!mounted) return;
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Service listing updated.')));
+    ).showSnackBar(SnackBar(content: Text(l10n.serviceListingUpdated)));
   }
 
   Future<void> _openCreateServiceListing() async {
@@ -1070,7 +1135,7 @@ class _ProviderAvailabilityScreenState
                                 (entry) => DropdownMenuItem<String>(
                                   value: entry,
                                   child: Text(
-                                    entry,
+                                    _localizedOption(entry),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -1099,7 +1164,14 @@ class _ProviderAvailabilityScreenState
                     children: selectedValues
                         .map(
                           (value) => Chip(
-                            label: Text(value),
+                            label: Text(_localizedOption(value)),
+                            backgroundColor: AppColors.homeServices.withValues(
+                              alpha: 0.2,
+                            ),
+                            labelStyle: TextStyle(
+                              color: AppColors.homeServices,
+                              fontWeight: FontWeight.w600,
+                            ),
                             onDeleted: isSaving ? null : () => onRemove(value),
                           ),
                         )
@@ -1112,7 +1184,7 @@ class _ProviderAvailabilityScreenState
             Future<void> save() async {
               if (isUploadingListingImage) {
                 setModalState(() {
-                  errorText = 'Wait for the listing image upload to finish.';
+                  errorText = l10n.waitForListingImageUpload;
                 });
                 return;
               }
@@ -1121,13 +1193,13 @@ class _ProviderAvailabilityScreenState
               );
               if (parsedPrice == null || parsedPrice <= 0) {
                 setModalState(() {
-                  errorText = 'Enter a valid starting price.';
+                  errorText = l10n.enterValidStartingPrice;
                 });
                 return;
               }
               if (selectedServices.isEmpty) {
                 setModalState(() {
-                  errorText = 'Select at least one service.';
+                  errorText = l10n.selectAtLeastOneService;
                 });
                 return;
               }
@@ -1138,8 +1210,7 @@ class _ProviderAvailabilityScreenState
                       selectedHomeSizes.isEmpty ||
                       selectedSupplyModes.isEmpty)) {
                 setModalState(() {
-                  errorText =
-                      'Complete the house-help booking criteria before saving.';
+                  errorText = l10n.completeHouseHelpCriteria;
                 });
                 return;
               }
@@ -1251,13 +1322,13 @@ class _ProviderAvailabilityScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Create Home-Service Listing',
+                      l10n.createHomeServiceListing,
                       style: Theme.of(modalContext).textTheme.titleLarge
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Choose a service category first. The rest of the setup adapts automatically.',
+                      l10n.chooseServiceCategoryFirst,
                       style: Theme.of(
                         modalContext,
                       ).textTheme.bodySmall?.copyWith(color: Colors.black54),
@@ -1267,7 +1338,7 @@ class _ProviderAvailabilityScreenState
                       key: ValueKey('category|$selectedCategoryId'),
                       isExpanded: true,
                       initialValue: selectedCategoryId,
-                      decoration: const InputDecoration(labelText: 'Category'),
+                      decoration: InputDecoration(labelText: l10n.category),
                       items: categories
                           .map((category) {
                             final id = category['id']?.toString() ?? '';
@@ -1358,16 +1429,12 @@ class _ProviderAvailabilityScreenState
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Business name',
-                      ),
+                      decoration: InputDecoration(labelText: l10n.businessName),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'Listing title',
-                      ),
+                      decoration: InputDecoration(labelText: l10n.listingTitle),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
@@ -1375,14 +1442,14 @@ class _ProviderAvailabilityScreenState
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      decoration: const InputDecoration(
-                        labelText: 'Starting price',
+                      decoration: InputDecoration(
+                        labelText: l10n.startingPrice,
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: phoneController,
-                      decoration: const InputDecoration(labelText: 'Phone'),
+                      decoration: InputDecoration(labelText: l10n.phone),
                     ),
                     const SizedBox(height: 12),
                     Container(
@@ -1434,13 +1501,13 @@ class _ProviderAvailabilityScreenState
                           : const Icon(Icons.photo_library_outlined),
                       label: Text(
                         isUploadingListingImage
-                            ? 'Uploading listing image...'
-                            : 'Upload Listing Image',
+                            ? l10n.uploadingListingImage
+                            : l10n.uploadListingImage,
                       ),
                     ),
                     const SizedBox(height: 16),
                     multiSelectDropdown(
-                      label: 'Services offered',
+                      label: l10n.servicesOffered,
                       options: categoryPreset.serviceOptions,
                       draftValue: draftService,
                       onDraftChanged: (value) =>
@@ -1455,7 +1522,7 @@ class _ProviderAvailabilityScreenState
                     if (isHouseHelpCategory) ...[
                       const SizedBox(height: 12),
                       multiSelectDropdown(
-                        label: 'Booking types',
+                        label: l10n.bookingTypes,
                         options: categoryPreset.bookingTypeOptions,
                         draftValue: draftBookingType,
                         onDraftChanged: (value) =>
@@ -1470,7 +1537,7 @@ class _ProviderAvailabilityScreenState
                       ),
                       const SizedBox(height: 12),
                       multiSelectDropdown(
-                        label: 'Shift durations',
+                        label: l10n.shiftDurations,
                         options: categoryPreset.shiftOptions,
                         draftValue: draftShift,
                         onDraftChanged: (value) =>
@@ -1484,7 +1551,7 @@ class _ProviderAvailabilityScreenState
                       ),
                       const SizedBox(height: 12),
                       multiSelectDropdown(
-                        label: 'Arrival targets',
+                        label: l10n.arrivalTargets,
                         options: categoryPreset.arrivalOptions,
                         draftValue: draftArrival,
                         onDraftChanged: (value) =>
@@ -1498,7 +1565,7 @@ class _ProviderAvailabilityScreenState
                       ),
                       const SizedBox(height: 12),
                       multiSelectDropdown(
-                        label: 'Home sizes',
+                        label: l10n.homeSizes,
                         options: categoryPreset.homeSizeOptions,
                         draftValue: draftHomeSize,
                         onDraftChanged: (value) =>
@@ -1513,7 +1580,7 @@ class _ProviderAvailabilityScreenState
                       ),
                       const SizedBox(height: 12),
                       multiSelectDropdown(
-                        label: 'Supply modes',
+                        label: l10n.supplyModes,
                         options: categoryPreset.supplyModeOptions,
                         draftValue: draftSupplyMode,
                         onDraftChanged: (value) =>
@@ -1571,16 +1638,14 @@ class _ProviderAvailabilityScreenState
                                 setModalState(() => zoneCenter = location);
                               },
                         icon: const Icon(Icons.my_location_rounded),
-                        label: const Text('Use current location'),
+                        label: Text(l10n.useCurrentLocation),
                       ),
                     ),
                     DropdownButtonFormField<double>(
                       key: ValueKey('zone-radius-create|$selectedZoneRadius'),
                       isExpanded: true,
                       initialValue: selectedZoneRadius,
-                      decoration: const InputDecoration(
-                        labelText: 'Zone radius',
-                      ),
+                      decoration: InputDecoration(labelText: l10n.zoneRadius),
                       items: _zoneRadiusOptionsKm
                           .map(
                             (radius) => DropdownMenuItem<double>(
@@ -1613,7 +1678,7 @@ class _ProviderAvailabilityScreenState
                           foregroundColor: Colors.white,
                         ),
                         child: Text(
-                          isSaving ? 'Creating...' : 'Create listing',
+                          isSaving ? l10n.creating : l10n.createListing,
                         ),
                       ),
                     ),
@@ -1629,9 +1694,9 @@ class _ProviderAvailabilityScreenState
     if (didCreate != true || !mounted) return;
     await _refresh();
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Service listing created and linked.')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.serviceListingCreated)));
   }
 
   Future<void> _openCreateLaundryService() async {
@@ -2354,10 +2419,10 @@ class _ProviderAvailabilityScreenState
     final hasServicesOnly = _supportsServices && !_supportsLaundry;
     final hasLaundryOnly = _supportsLaundry && !_supportsServices;
     final appBarTitle = hasLaundryOnly
-        ? 'Laundry Availability'
+        ? l10n.laundryAvailability
         : hasServicesOnly
-        ? 'Service Availability'
-        : 'Provider Availability';
+        ? l10n.serviceAvailability
+        : l10n.providerAvailability;
     final appBarColor = hasLaundryOnly
         ? AppColors.laundry
         : AppColors.homeServices;
@@ -2372,13 +2437,13 @@ class _ProviderAvailabilityScreenState
             IconButton(
               onPressed: _openCreateServiceListing,
               icon: const Icon(Icons.add_business_rounded),
-              tooltip: 'Add service listing',
+              tooltip: l10n.addServiceListing,
             ),
           if (_supportsLaundry && !_supportsServices)
             IconButton(
               onPressed: _openCreateLaundryService,
               icon: const Icon(Icons.local_laundry_service_outlined),
-              tooltip: 'Add laundry service',
+              tooltip: l10n.addLaundryService,
             ),
           if (_supportsServices && _supportsLaundry)
             PopupMenuButton<String>(
@@ -2391,18 +2456,18 @@ class _ProviderAvailabilityScreenState
                   _openCreateLaundryService();
                 }
               },
-              itemBuilder: (context) => const [
+              itemBuilder: (context) => [
                 PopupMenuItem<String>(
                   value: 'services',
-                  child: Text('Add service listing'),
+                  child: Text(l10n.addServiceListing),
                 ),
                 PopupMenuItem<String>(
                   value: 'laundry',
-                  child: Text('Add laundry service'),
+                  child: Text(l10n.addLaundryService),
                 ),
               ],
               icon: const Icon(Icons.add_rounded),
-              tooltip: 'Add listing',
+              tooltip: l10n.addListing,
             ),
         ],
       ),
@@ -2612,6 +2677,7 @@ class _AvailabilityItemsList extends StatelessWidget {
       itemCount: items.length,
       separatorBuilder: (_, _) => const Divider(),
       itemBuilder: (context, index) {
+        final l10n = AppLocalizations.of(context)!;
         final item = items[index];
         final id = item['id']?.toString() ?? '';
         final enabled = item['enabled'] as bool? ?? false;
@@ -2626,7 +2692,7 @@ class _AvailabilityItemsList extends StatelessWidget {
             child: Icon(icon, color: color),
           ),
           title: Text(
-            item['name']?.toString() ?? 'Item',
+            item['name']?.toString() ?? l10n.itemLabel,
             style: const TextStyle(fontWeight: FontWeight.bold),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -2645,7 +2711,7 @@ class _AvailabilityItemsList extends StatelessWidget {
                   IconButton(
                     onPressed: isBusy ? null : () => onEdit!(item),
                     icon: const Icon(Icons.edit_outlined, size: 20),
-                    tooltip: 'Edit listing',
+                    tooltip: l10n.editListing,
                     style: IconButton.styleFrom(
                       padding: EdgeInsets.zero,
                       minimumSize: const Size(32, 32),

@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -33,6 +34,8 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
   bool _isLoading = true;
   String _selectedModule = 'all';
   String _selectedStatus = 'active';
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   late final List<String> _allowedModules = _resolveAllowedModules();
   late final Set<String> _allowedModuleSet = _allowedModules.toSet();
@@ -154,29 +157,29 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
     if (module == 'services') {
       switch (normalizedStatus) {
         case 'PENDING':
-          return 'Confirm';
+          return l10n.confirmAction;
         case 'CONFIRMED':
         case 'PROCESSING':
-          return 'On the way';
+          return l10n.onTheWay;
         case 'DISPATCHED':
         case 'IN_PROGRESS':
-          return 'Work done';
+          return l10n.workDone;
         default:
-          return 'Done';
+          return l10n.done;
       }
     }
     switch (status.toUpperCase()) {
       case 'PENDING':
-        return 'Accept';
+        return l10n.accept;
       case 'CONFIRMED':
-        return module == 'laundry' ? 'Start Cleaning' : 'Start Job';
+        return module == 'laundry' ? l10n.startCleaning : l10n.startJob;
       case 'PROCESSING':
-        return module == 'laundry' ? 'Send Out' : 'Complete';
+        return module == 'laundry' ? l10n.sendOut : l10n.complete;
       case 'DISPATCHED':
       case 'IN_PROGRESS':
-        return 'Complete';
+        return l10n.complete;
       default:
-        return 'Done';
+        return l10n.done;
     }
   }
 
@@ -185,17 +188,17 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
     if (module == 'services') {
       switch (normalizedStatus) {
         case 'PENDING':
-          return 'Pending';
+          return l10n.pending;
         case 'CONFIRMED':
-          return 'Confirmed';
+          return l10n.confirmed;
         case 'PROCESSING':
-          return 'On the way';
+          return l10n.onTheWay;
         case 'DISPATCHED':
-          return 'On the way';
+          return l10n.onTheWay;
         case 'IN_PROGRESS':
-          return 'Work in progress';
+          return l10n.workInProgress;
         case 'COMPLETED':
-          return 'Work done';
+          return l10n.workDone;
         default:
           return normalizedStatus.replaceAll('_', ' ');
       }
@@ -247,7 +250,9 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Job updated to ${nextStatus.replaceAll('_', ' ')}.'),
+          content: Text(
+            '${l10n.job} ${l10n.updatedTo} ${nextStatus.replaceAll('_', ' ')}.',
+          ),
         ),
       );
       await _loadQueue();
@@ -298,7 +303,7 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.businessName} Jobs'),
+        title: Text(l10n.moduleJobsTitle(widget.businessName)),
         backgroundColor: AppColors.homeServices,
         foregroundColor: Colors.white,
       ),
@@ -315,11 +320,11 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
               ),
               child: Row(
                 children: [
-                  _QueueMetric(label: 'Active', value: '$activeCount'),
+                  _QueueMetric(label: l10n.active, value: '$activeCount'),
                   const SizedBox(width: 8),
-                  _QueueMetric(label: 'Completed', value: '$completedCount'),
+                  _QueueMetric(label: l10n.completed, value: '$completedCount'),
                   const SizedBox(width: 8),
-                  _QueueMetric(label: 'Pipelines', value: '$pipelineCount'),
+                  _QueueMetric(label: l10n.pipelines, value: '$pipelineCount'),
                 ],
               ),
             ),
@@ -375,10 +380,10 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
                 ),
               )
             else if (filteredItems.isEmpty)
-              const Card(
+              Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('No jobs match the current queue filters.'),
+                  padding: const EdgeInsets.all(16),
+                  child: Text(l10n.noJobsMatchFilters),
                 ),
               )
             else
@@ -445,7 +450,7 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    item['title']?.toString() ?? 'Job',
+                    item['title']?.toString() ?? l10n.jobLabel,
                     style: const TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 16,
@@ -469,7 +474,7 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Created $createdAt',
+              l10n.createdDate(createdAt),
               style: TextStyle(color: Colors.grey.shade700),
             ),
             if (address.isNotEmpty) ...[
@@ -496,13 +501,13 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
                 OutlinedButton.icon(
                   onPressed: () => _openDetails(item),
                   icon: const Icon(Icons.receipt_long_outlined, size: 18),
-                  label: const Text('Details'),
+                  label: Text(l10n.detailsAction),
                 ),
                 if (customerPhone.isNotEmpty)
                   OutlinedButton.icon(
                     onPressed: () => launchPhoneCall(context, customerPhone),
                     icon: const Icon(Icons.call_outlined, size: 18),
-                    label: const Text('Call'),
+                    label: Text(l10n.callAction),
                   ),
                 if (customerUserId.isNotEmpty)
                   OutlinedButton.icon(
@@ -527,7 +532,7 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
                       },
                     ),
                     icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                    label: const Text('Message'),
+                    label: Text(l10n.messageAction),
                   ),
                 if (nextStatus != null)
                   ElevatedButton(
@@ -537,7 +542,7 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
                       foregroundColor: Colors.white,
                     ),
                     child: Text(
-                      isBusy ? 'Updating...' : _actionLabel(module, status),
+                      isBusy ? l10n.updating : _actionLabel(module, status),
                     ),
                   ),
               ],
@@ -551,22 +556,22 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
   String _moduleLabel(String module) {
     switch (module) {
       case 'services':
-        return 'Services';
+        return l10n.servicesLabel;
       case 'laundry':
-        return 'Laundry';
+        return l10n.laundryLabel;
       default:
-        return 'All';
+        return l10n.allLabel;
     }
   }
 
   String _queueFilterLabel(String status) {
     switch (status) {
       case 'active':
-        return 'Active';
+        return l10n.active;
       case 'completed':
-        return 'Completed';
+        return l10n.completed;
       default:
-        return 'All';
+        return l10n.allLabel;
     }
   }
 
@@ -581,7 +586,7 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
 
   String _formatDate(dynamic value) {
     final raw = value?.toString();
-    if (raw == null || raw.isEmpty) return 'recently';
+    if (raw == null || raw.isEmpty) return l10n.recently;
     final parsed = DateTime.tryParse(raw);
     if (parsed == null) return raw;
     return DateFormat('MMM d, h:mm a').format(parsed.toLocal());

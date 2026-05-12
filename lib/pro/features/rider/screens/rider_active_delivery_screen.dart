@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -55,14 +56,14 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
     }
   }
 
-  String _actionLabel(String status) {
+  String _actionLabel(String status, AppLocalizations l10n) {
     switch (status) {
       case 'IN_PROGRESS':
-        return 'Swipe to Complete Delivery';
+        return l10n.swipeToCompleteDelivery;
       case 'COMPLETED':
-        return 'Delivery Completed';
+        return l10n.deliveryCompleted;
       default:
-        return 'Swipe to Start Delivery';
+        return l10n.swipeToStartDelivery;
     }
   }
 
@@ -106,10 +107,11 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
       });
       await _loadOrder();
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Delivery status updated to ${nextStatus.replaceAll('_', ' ')}.',
+            l10n.deliveryStatusUpdated(_statusLabel(nextStatus, l10n)),
           ),
         ),
       );
@@ -118,13 +120,33 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
       }
     } catch (error) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not update delivery: $error')),
+        SnackBar(content: Text(l10n.couldNotUpdateDelivery(error.toString()))),
       );
     } finally {
       if (mounted) {
         setState(() => _isUpdating = false);
       }
+    }
+  }
+
+  String _statusLabel(String status, AppLocalizations l10n) {
+    switch (status.toUpperCase()) {
+      case 'PENDING':
+        return l10n.pending;
+      case 'CONFIRMED':
+        return l10n.confirmedStatus;
+      case 'PROCESSING':
+        return l10n.processingStatus;
+      case 'DISPATCHED':
+        return l10n.dispatchedStatus;
+      case 'IN_PROGRESS':
+        return l10n.inProgress;
+      case 'COMPLETED':
+        return l10n.completedLabel;
+      default:
+        return status.replaceAll('_', ' ');
     }
   }
 
@@ -216,6 +238,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final order = _order;
     final metadata = _firstItemMetadata();
     final items = (order?['items'] as List<dynamic>? ?? const [])
@@ -229,15 +252,15 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
         order?['moduleName']?.toString() ??
         firstItem?['brand']?.toString() ??
         firstItem?['name']?.toString() ??
-        'Pickup point';
+        l10n.pickupPointFallback;
     final destinationLabel =
         order?['deliveryLabel']?.toString() ??
         order?['address']?.toString() ??
-        'Customer destination';
+        l10n.customerDestinationFallback;
     final customerName =
         order?['customerName']?.toString() ??
         metadata?['customerName']?.toString() ??
-        'Customer';
+        l10n.customerLabel;
     final customerPhone =
         order?['customerPhone']?.toString() ??
         metadata?['customerPhone']?.toString() ??
@@ -262,8 +285,9 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
       to: destinationPoint,
       progress: _progressForStatus(status),
       label: order?['deliveryAssignee'] is Map
-          ? (order!['deliveryAssignee'] as Map)['name']?.toString() ?? 'Courier'
-          : 'Courier',
+          ? (order!['deliveryAssignee'] as Map)['name']?.toString() ??
+                l10n.courierLabel
+          : l10n.courierLabel,
       color: AppColors.ride,
       icon: Icons.delivery_dining_rounded,
     );
@@ -276,7 +300,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
         order?['deliveryEta']?.toString() ??
         metadata?['durationLabel']?.toString() ??
         routeDetails?.durationLabel ??
-        'ETA unavailable';
+        l10n.etaUnavailable;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -288,7 +312,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                 height: MediaQuery.of(context).size.height * 0.46,
                 width: double.infinity,
                 child: RideRoutePreview(
-                  title: 'Delivery route',
+                  title: l10n.deliveryRouteTitle,
                   pickup: pickupPoint,
                   destination: destinationPoint,
                   driver: _isLoading ? null : driverPoint,
@@ -300,9 +324,9 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                       ? Icons.error_outline_rounded
                       : null,
                   overlayStatusMessage: _isLoading
-                      ? 'Loading assigned delivery...'
+                      ? l10n.loadingAssignedDelivery
                       : _error,
-                  actionLabel: 'Open map',
+                  actionLabel: l10n.openMapAction,
                   onActionTap: () => openRideRouteInMaps(
                     context,
                     pickupLabel: pickupTitle,
@@ -446,12 +470,22 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Order #${widget.orderId.substring(widget.orderId.length > 6 ? widget.orderId.length - 6 : 0)}',
+                                              l10n.orderNumberLabel(
+                                                widget.orderId.substring(
+                                                  widget.orderId.length > 6
+                                                      ? widget.orderId.length -
+                                                            6
+                                                      : 0,
+                                                ),
+                                              ),
                                               style: AppTextStyles.labelLarge,
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
-                                              '$lineCount item(s) • $eta',
+                                              l10n.itemsCountEta(
+                                                lineCount,
+                                                eta,
+                                              ),
                                               style: AppTextStyles.caption,
                                             ),
                                           ],
@@ -472,7 +506,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                                                 customerPhone,
                                               ),
                                         icon: const Icon(Icons.call_outlined),
-                                        label: const Text('Call customer'),
+                                        label: Text(l10n.callCustomerAction),
                                       ),
                                     ),
                                     const SizedBox(width: 12),
@@ -494,7 +528,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                                                 entityId: widget.orderId,
                                                 title: pickupTitle,
                                                 subtitle:
-                                                    'Delivery in progress',
+                                                    l10n.deliveryInProgress,
                                                 accentColor: '#3BAA5C',
                                                 metadata: {
                                                   'orderId': widget.orderId,
@@ -505,7 +539,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                                         icon: const Icon(
                                           Icons.chat_bubble_outline,
                                         ),
-                                        label: const Text('Message'),
+                                        label: Text(l10n.messageAction),
                                       ),
                                     ),
                                   ],
@@ -513,8 +547,8 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                                 const SizedBox(height: 28),
                                 SwipeableButton(
                                   label: _isUpdating
-                                      ? 'Updating...'
-                                      : _actionLabel(status),
+                                      ? l10n.updating
+                                      : _actionLabel(status, l10n),
                                   baseColor: AppColors.ride,
                                   onSwipe: _advanceStatus,
                                 ),

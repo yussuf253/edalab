@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -35,6 +36,8 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
   final Set<String> _busyIds = <String>{};
   final Map<ProModule, String> _searchByModule = <ProModule, String>{};
   ProModule? _selectedModule;
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -106,11 +109,9 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
     List<Map<String, dynamic>> shoppingStores,
   ) async {
     if (shoppingStores.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Create a store first before adding products.'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.createStoreFirstMessage)));
       return;
     }
 
@@ -212,9 +213,7 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
               if (isSubmitting || isUploadingImage) return;
               if (nameController.text.trim().length < 2) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  const SnackBar(
-                    content: Text('Enter a valid restaurant name first.'),
-                  ),
+                  SnackBar(content: Text(l10n.enterValidRestaurantNameError)),
                 );
                 return;
               }
@@ -235,8 +234,8 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                   SnackBar(
                     content: Text(
                       (response['created'] as bool? ?? false)
-                          ? 'Restaurant created and connected to your profile.'
-                          : 'Restaurant details updated.',
+                          ? l10n.restaurantCreatedSuccessfully
+                          : l10n.restaurantUpdatedSuccessfully,
                     ),
                   ),
                 );
@@ -264,8 +263,8 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                   children: [
                     Text(
                       existingRestaurant == null
-                          ? 'Connect Restaurant'
-                          : 'Edit Restaurant',
+                          ? l10n.connectRestaurant
+                          : l10n.editRestaurant,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -273,16 +272,16 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                     const SizedBox(height: 14),
                     TextFormField(
                       controller: nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Restaurant name',
+                      decoration: InputDecoration(
+                        labelText: l10n.restaurantName,
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: cuisineController,
-                      decoration: const InputDecoration(
-                        labelText: 'Cuisine',
-                        hintText: 'e.g. Djiboutian, Mixed, Seafood',
+                      decoration: InputDecoration(
+                        labelText: l10n.cuisineLabel,
+                        hintText: l10n.cuisineHint,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -328,8 +327,8 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                           : const Icon(Icons.photo_library_outlined),
                       label: Text(
                         isUploadingImage
-                            ? 'Uploading image...'
-                            : 'Upload Restaurant Image',
+                            ? l10n.uploadingImage
+                            : l10n.uploadRestaurantImage,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -350,10 +349,10 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                             : const Icon(Icons.save_outlined),
                         label: Text(
                           isSubmitting
-                              ? 'Saving...'
+                              ? l10n.saving
                               : existingRestaurant == null
-                              ? 'Connect Restaurant'
-                              : 'Save Restaurant',
+                              ? l10n.connectRestaurant
+                              : l10n.saveRestaurant,
                         ),
                       ),
                     ),
@@ -376,9 +375,7 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
       });
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Pharmacy business connected to your profile.'),
-        ),
+        SnackBar(content: Text(l10n.pharmacyConnectedSuccessfully)),
       );
       await _refresh();
     } catch (error) {
@@ -449,7 +446,7 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
           return Scaffold(
             appBar: AppBar(
               title: Text(
-                '${widget.businessName} Storefront',
+                l10n.shopStorefrontTitle(widget.businessName),
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -461,7 +458,7 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
           return Scaffold(
             appBar: AppBar(
               title: Text(
-                '${widget.businessName} Storefront',
+                l10n.shopStorefrontTitle(widget.businessName),
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -506,7 +503,7 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              '${widget.businessName} Storefront',
+              l10n.shopStorefrontTitle(widget.businessName),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             elevation: 0,
@@ -602,6 +599,7 @@ class _RecentOrdersModuleChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -613,7 +611,7 @@ class _RecentOrdersModuleChips extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Module Filter',
+            l10n.moduleFilter,
             style: Theme.of(
               context,
             ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
@@ -678,6 +676,7 @@ class _StorefrontModuleTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = ProModuleHelper.getModuleColor(module);
     final filteredItems = items
         .where((item) {
@@ -696,7 +695,7 @@ class _StorefrontModuleTab extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '${ProModuleHelper.getModuleName(module)} controls',
+          l10n.moduleControls(ProModuleHelper.getModuleName(module)),
           style: Theme.of(
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -707,7 +706,7 @@ class _StorefrontModuleTab extends StatelessWidget {
           initialValue: searchQuery,
           onChanged: onSearchChanged,
           decoration: InputDecoration(
-            hintText: _searchHint(module),
+            hintText: _searchHint(module, l10n),
             prefixIcon: const Icon(Icons.search),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
           ),
@@ -732,7 +731,7 @@ class _StorefrontModuleTab extends StatelessWidget {
         _StorefrontSummaryCard(module: module, summary: summary),
         const SizedBox(height: 16),
         Text(
-          'Catalog Entries',
+          l10n.catalogEntries,
           style: Theme.of(
             context,
           ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
@@ -745,7 +744,12 @@ class _StorefrontModuleTab extends StatelessWidget {
             onCreateModule: onCreateModule,
           )
         else if (filteredItems.isEmpty)
-          const _EmptySearchState()
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(l10n.noStorefrontMatch, textAlign: TextAlign.center),
+            ),
+          )
         else
           ...filteredItems.map(
             (item) => Padding(
@@ -764,14 +768,14 @@ class _StorefrontModuleTab extends StatelessWidget {
     );
   }
 
-  String _searchHint(ProModule module) {
+  String _searchHint(ProModule module, AppLocalizations l10n) {
     switch (module) {
       case ProModule.food:
-        return 'Search your restaurants and menu activity';
+        return l10n.searchFoodHint;
       case ProModule.pharmacy:
-        return 'Search medicines in your pharmacy catalog';
+        return l10n.searchPharmacyHint;
       default:
-        return 'Search your storefront and inventory';
+        return l10n.searchStorefrontHint;
     }
   }
 }
@@ -784,10 +788,11 @@ class _StorefrontSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final color = ProModuleHelper.getModuleColor(module);
     final metrics = (summary['metrics'] as List<dynamic>? ?? const [])
         .map((entry) => Map<String, dynamic>.from(entry as Map))
         .toList(growable: false);
-    final color = ProModuleHelper.getModuleColor(module);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -800,14 +805,16 @@ class _StorefrontSummaryCard extends StatelessWidget {
         children: [
           Text(
             summary['title']?.toString() ??
-                '${ProModuleHelper.getModuleName(module)} storefront',
+                l10n.moduleStorefrontSubtitle(
+                  ProModuleHelper.getModuleName(module),
+                ),
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
           Text(
-            summary['subtitle']?.toString() ?? 'Live operational summary',
+            summary['subtitle']?.toString() ?? l10n.liveOperationalSummary,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
           if (metrics.isNotEmpty) ...[
@@ -865,6 +872,7 @@ class _ShoppingActionsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final hasBindings = summary['hasBindings'] as bool? ?? false;
     final isPharmacy = module == ProModule.pharmacy;
 
@@ -876,8 +884,8 @@ class _ShoppingActionsRow extends StatelessWidget {
             icon: const Icon(Icons.add_business_outlined),
             label: Text(
               hasBindings
-                  ? (isPharmacy ? 'Edit Pharmacy' : 'Edit Store Setup')
-                  : (isPharmacy ? 'Connect Pharmacy' : 'Create Store'),
+                  ? (isPharmacy ? l10n.editPharmacy : l10n.editStoreSetup)
+                  : (isPharmacy ? l10n.connectPharmacy : l10n.createStore),
             ),
           ),
         ),
@@ -886,7 +894,7 @@ class _ShoppingActionsRow extends StatelessWidget {
           child: OutlinedButton.icon(
             onPressed: hasBindings ? onAddProduct : null,
             icon: const Icon(Icons.add_box_outlined),
-            label: Text(isPharmacy ? 'Add Medicine' : 'Add Product'),
+            label: Text(isPharmacy ? l10n.addMedicine : l10n.addProduct),
           ),
         ),
       ],
@@ -905,6 +913,7 @@ class _FoodActionsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final hasBindings = summary['hasBindings'] as bool? ?? false;
     return SizedBox(
       width: double.infinity,
@@ -914,7 +923,7 @@ class _FoodActionsRow extends StatelessWidget {
           hasBindings ? Icons.edit_outlined : Icons.add_business_outlined,
         ),
         label: Text(
-          hasBindings ? 'Edit Restaurant Setup' : 'Connect Restaurant',
+          hasBindings ? l10n.editRestaurantSetup : l10n.connectRestaurant,
         ),
       ),
     );
@@ -938,6 +947,7 @@ class _StorefrontItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final enabled = item['enabled'] as bool? ?? false;
     final metrics = (item['metrics'] as List<dynamic>? ?? const [])
         .map((entry) => entry.toString())
@@ -966,7 +976,7 @@ class _StorefrontItemCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        item['name']?.toString() ?? 'Store item',
+                        item['name']?.toString() ?? l10n.storeLabel,
                         style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 16,
@@ -1013,7 +1023,9 @@ class _StorefrontItemCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  enabled ? _enabledLabel(module) : _disabledLabel(module),
+                  enabled
+                      ? _enabledLabel(module, l10n)
+                      : _disabledLabel(module, l10n),
                   style: TextStyle(
                     color: enabled ? color : Colors.grey.shade700,
                     fontWeight: FontWeight.w700,
@@ -1027,25 +1039,25 @@ class _StorefrontItemCard extends StatelessWidget {
     );
   }
 
-  String _enabledLabel(ProModule module) {
+  String _enabledLabel(ProModule module, AppLocalizations l10n) {
     switch (module) {
       case ProModule.food:
-        return 'Restaurant is open';
+        return l10n.restaurantOpen;
       case ProModule.pharmacy:
-        return 'In stock';
+        return l10n.inStock;
       default:
-        return 'Store is open';
+        return l10n.storeOpen;
     }
   }
 
-  String _disabledLabel(ProModule module) {
+  String _disabledLabel(ProModule module, AppLocalizations l10n) {
     switch (module) {
       case ProModule.food:
-        return 'Restaurant is paused';
+        return l10n.restaurantPaused;
       case ProModule.pharmacy:
-        return 'Out of stock';
+        return l10n.outOfStock;
       default:
-        return 'Store is paused';
+        return l10n.storePaused;
     }
   }
 }
@@ -1105,13 +1117,14 @@ class _EmptyModuleState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final hasBindings = summary['hasBindings'] as bool? ?? false;
     final message =
         summary['emptyStateMessage']?.toString().trim().isNotEmpty == true
         ? summary['emptyStateMessage']!.toString()
         : hasBindings
-        ? _connectedEmptyMessage(module)
-        : _unboundMessage(module);
+        ? _connectedEmptyMessage(module, l10n)
+        : _unboundMessage(module, l10n);
 
     return Card(
       child: Padding(
@@ -1125,7 +1138,7 @@ class _EmptyModuleState extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onCreateModule,
                 icon: const Icon(Icons.add_business_outlined),
-                label: Text(_createLabel(module)),
+                label: Text(_createLabel(module, l10n)),
               ),
             ],
           ],
@@ -1134,54 +1147,37 @@ class _EmptyModuleState extends StatelessWidget {
     );
   }
 
-  String _createLabel(ProModule module) {
+  String _createLabel(ProModule module, AppLocalizations l10n) {
     switch (module) {
       case ProModule.food:
-        return 'Create Restaurant';
+        return l10n.createRestaurant;
       case ProModule.pharmacy:
-        return 'Create Pharmacy';
+        return l10n.createPharmacy;
       default:
-        return 'Create Store';
+        return l10n.createStore;
     }
   }
 
-  String _unboundMessage(ProModule module) {
+  String _unboundMessage(ProModule module, AppLocalizations l10n) {
     switch (module) {
       case ProModule.food:
-        return 'No restaurant is bound to this shop profile yet.';
+        return l10n.noRestaurantBound;
       case ProModule.pharmacy:
-        return 'No pharmacy business is bound to this shop profile yet.';
+        return l10n.noPharmacyBound;
       default:
-        return 'No shopping store is bound to this shop profile yet.';
+        return l10n.noStoreBound;
     }
   }
 
-  String _connectedEmptyMessage(ProModule module) {
+  String _connectedEmptyMessage(ProModule module, AppLocalizations l10n) {
     switch (module) {
       case ProModule.food:
-        return 'Your restaurant is connected, but no menu records are available right now.';
+        return l10n.restaurantConnectedNoMenu;
       case ProModule.pharmacy:
-        return 'Your pharmacy is connected, but no medicines are listed yet.';
+        return l10n.pharmacyConnectedNoMedicines;
       default:
-        return 'Your shopping store is connected, but no storefront records are available right now.';
+        return l10n.storeConnectedNoStorefront;
     }
-  }
-}
-
-class _EmptySearchState extends StatelessWidget {
-  const _EmptySearchState();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Card(
-      child: Padding(
-        padding: EdgeInsets.all(20),
-        child: Text(
-          'No storefront items match your search yet.',
-          textAlign: TextAlign.center,
-        ),
-      ),
-    );
   }
 }
 
@@ -1200,6 +1196,7 @@ class _StorefrontHeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = ProModuleHelper.getModuleColor(selectedModule);
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1211,14 +1208,14 @@ class _StorefrontHeaderCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '$businessName Storefront',
+            l10n.shopStorefrontTitle(businessName),
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
           Text(
-            'Manage availability, review inventory, and jump into queue actions quickly.',
+            l10n.manageAvailabilitySubtitle,
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: Colors.black54),
@@ -1234,7 +1231,7 @@ class _StorefrontHeaderCard extends StatelessWidget {
                     foregroundColor: Colors.white,
                   ),
                   icon: const Icon(Icons.receipt_long_outlined, size: 18),
-                  label: const Text('Open Queue'),
+                  label: Text(l10n.openQueue),
                 ),
               ),
               const SizedBox(width: 10),
@@ -1242,7 +1239,7 @@ class _StorefrontHeaderCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onOpenProducts,
                   icon: const Icon(Icons.inventory_2_outlined, size: 18),
-                  label: const Text('Products'),
+                  label: Text(l10n.productsLabel),
                 ),
               ),
             ],

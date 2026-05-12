@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,9 @@ class ProOperationsScreen extends StatefulWidget {
 
 class _ProOperationsScreenState extends State<ProOperationsScreen> {
   late Future<ProDashboardData> _dashboardFuture;
+
+  // Convenient getter for localized strings
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -57,50 +61,51 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
     return profile.activeModules.contains(module);
   }
 
-  List<_OperationAction> _buildActions(ProProfile profile) {
+  List<_OperationAction> _buildActions(
+    ProProfile profile,
+    AppLocalizations l10n,
+  ) {
     switch (profile.type) {
       case ProProfileType.shop:
         return [
           _OperationAction(
-            title: 'Orders Queue',
-            subtitle: 'Review the orders coming into your own storefront.',
+            title: l10n.ordersQueue,
+            subtitle: l10n.ordersQueueSubtitle,
             icon: Icons.receipt_long_outlined,
             color: AppColors.shopping,
             onTap: () => _open(ProRoutePaths.shopQueue),
           ),
           _OperationAction(
-            title: 'Store Setup',
-            subtitle:
-                'Manage storefront setup, visibility, and business profile.',
+            title: l10n.storeSetup,
+            subtitle: l10n.editStoreNameTaglineDescription,
             icon: Icons.store_mall_directory_outlined,
             color: AppColors.primary,
             onTap: () => _open(ProRoutePaths.shopProducts),
           ),
           _OperationAction(
-            title: 'Products Manager',
-            subtitle: 'Manage product stock and add new catalog items.',
+            title: l10n.productsManager,
+            subtitle: l10n.productsManagerSubtitle,
             icon: Icons.inventory_2_outlined,
             color: AppColors.shopping,
             onTap: () => _open(ProRoutePaths.shopProducts),
           ),
           _OperationAction(
-            title: 'Shopping Lane',
-            subtitle: 'Focus only on your retail orders and fulfillment.',
+            title: l10n.shoppingLane,
+            subtitle: l10n.shoppingLaneSubtitle,
             icon: Icons.shopping_bag_outlined,
             color: AppColors.shopping,
             onTap: () => _open('${ProRoutePaths.shopQueue}?module=shopping'),
           ),
           _OperationAction(
-            title: 'Food Lane',
-            subtitle: 'Focus only on your kitchen queue and prep flow.',
+            title: l10n.foodLane,
+            subtitle: l10n.foodLaneSubtitle,
             icon: Icons.restaurant_menu,
             color: AppColors.food,
             onTap: () => _open('${ProRoutePaths.shopQueue}?module=food'),
           ),
           _OperationAction(
-            title: 'Pharmacy Lane',
-            subtitle:
-                'Handle your medicine orders separately from other sales.',
+            title: l10n.pharmacyLane,
+            subtitle: l10n.pharmacyLaneSubtitle,
             icon: Icons.local_pharmacy_outlined,
             color: AppColors.pharmacy,
             onTap: () => _open('${ProRoutePaths.shopQueue}?module=pharmacy'),
@@ -110,33 +115,33 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
         final hasServices = _providerHasModule(profile, ProModule.services);
         final hasLaundry = _providerHasModule(profile, ProModule.laundry);
         final queueSubtitle = hasServices && hasLaundry
-            ? 'Review service bookings and laundry jobs.'
+            ? l10n.jobsQueueSubtitleFull
             : hasLaundry
-            ? 'Review your laundry jobs.'
-            : 'Review your service bookings.';
+            ? l10n.jobsQueueSubtitleLaundry
+            : l10n.jobsQueueSubtitleServices;
         final availabilitySubtitle = hasServices && hasLaundry
-            ? 'Control which provider and laundry lanes are open.'
+            ? l10n.availabilitySubtitleFull
             : hasLaundry
-            ? 'Control which laundry lanes are open.'
-            : 'Control which service lanes are open.';
+            ? l10n.availabilitySubtitleLaundry
+            : l10n.availabilitySubtitleServices;
         final actions = <_OperationAction>[
           _OperationAction(
-            title: 'Jobs Queue',
+            title: l10n.jobsQueue,
             subtitle: queueSubtitle,
             icon: Icons.work_outline,
             color: AppColors.homeServices,
             onTap: () => _open(ProRoutePaths.providerQueue),
           ),
           _OperationAction(
-            title: 'Availability',
+            title: l10n.availability,
             subtitle: availabilitySubtitle,
             icon: Icons.toggle_on_outlined,
             color: AppColors.info,
             onTap: () => _open(ProRoutePaths.providerAvailability),
           ),
           _OperationAction(
-            title: 'Scheduling',
-            subtitle: 'Edit response times, booking modes, and weekly hours.',
+            title: l10n.schedulingSettings,
+            subtitle: l10n.schedulingSettingsSubtitle,
             icon: Icons.schedule_outlined,
             color: AppColors.warning,
             onTap: () => _open(ProRoutePaths.providerSchedule),
@@ -145,8 +150,8 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
         if (hasServices) {
           actions.add(
             _OperationAction(
-              title: 'Services Only',
-              subtitle: 'Open the home services queue directly.',
+              title: l10n.servicesOnly,
+              subtitle: l10n.servicesOnlySubtitle,
               icon: Icons.home_repair_service_outlined,
               color: AppColors.homeServices,
               onTap: () =>
@@ -157,8 +162,8 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
         if (hasLaundry) {
           actions.add(
             _OperationAction(
-              title: 'Laundry Only',
-              subtitle: 'Open the laundry pipeline directly.',
+              title: l10n.laundryOnly,
+              subtitle: l10n.laundryOnlySubtitle,
               icon: Icons.local_laundry_service_outlined,
               color: AppColors.laundry,
               onTap: () =>
@@ -170,22 +175,22 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
       case ProProfileType.doctor:
         return [
           _OperationAction(
-            title: 'Appointments',
-            subtitle: 'Approve, complete, and review patient visits.',
+            title: l10n.appointmentsQueue,
+            subtitle: l10n.appointmentsQueueSubtitle,
             icon: Icons.event_note_outlined,
             color: AppColors.doctor,
             onTap: () => _open(ProRoutePaths.doctorAppointments),
           ),
           _OperationAction(
-            title: 'Availability',
-            subtitle: 'Set which doctor profiles are currently available.',
+            title: l10n.doctorAvailability,
+            subtitle: l10n.doctorAvailabilitySubtitle,
             icon: Icons.toggle_on_outlined,
             color: AppColors.info,
             onTap: () => _open(ProRoutePaths.doctorAvailability),
           ),
           _OperationAction(
-            title: 'Scheduling',
-            subtitle: 'Configure clinic details, hours, and care modes.',
+            title: l10n.scheduleSettings,
+            subtitle: l10n.scheduleSettingsSubtitle,
             icon: Icons.schedule_outlined,
             color: AppColors.warning,
             onTap: () => _open(ProRoutePaths.doctorSchedule),
@@ -194,8 +199,8 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
       case ProProfileType.delivery:
         return [
           _OperationAction(
-            title: 'Dispatch Queue',
-            subtitle: 'Claim shopping, food, and pharmacy deliveries.',
+            title: l10n.dispatchQueue,
+            subtitle: l10n.dispatchQueueSubtitle,
             icon: Icons.local_shipping_outlined,
             color: AppColors.food,
             onTap: () => _open(ProRoutePaths.deliveryQueue),
@@ -204,8 +209,8 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
       case ProProfileType.rider:
         return [
           _OperationAction(
-            title: 'Ride Queue',
-            subtitle: 'Claim new trips and reopen assigned rides.',
+            title: l10n.rideQueue,
+            subtitle: l10n.rideQueueSubtitle,
             icon: Icons.local_taxi_outlined,
             color: AppColors.ride,
             onTap: () => _open(ProRoutePaths.riderQueue),
@@ -214,46 +219,46 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
     }
   }
 
-  String _quickActionsTitle(ProProfileType type) {
+  String _quickActionsTitle(ProProfileType type, AppLocalizations l10n) {
     switch (type) {
       case ProProfileType.shop:
-        return 'Store Controls';
+        return l10n.storeControls;
       case ProProfileType.provider:
-        return 'Service Controls';
+        return l10n.serviceControls;
       case ProProfileType.doctor:
-        return 'Clinical Controls';
+        return l10n.clinicalControls;
       case ProProfileType.delivery:
-        return 'Dispatch Controls';
+        return l10n.dispatchControls;
       case ProProfileType.rider:
-        return 'Trip Controls';
+        return l10n.tripControls;
     }
   }
 
-  String _workstreamTitle(ProProfileType type) {
+  String _workstreamTitle(ProProfileType type, AppLocalizations l10n) {
     switch (type) {
       case ProProfileType.shop:
-        return 'Store Modules';
+        return l10n.storeModules;
       case ProProfileType.provider:
-        return 'Service Workstreams';
+        return l10n.serviceWorkstreams;
       case ProProfileType.doctor:
-        return 'Consultation Workstreams';
+        return l10n.consultationWorkstreams;
       case ProProfileType.delivery:
-        return 'Dispatch Workstreams';
+        return l10n.dispatchWorkstreams;
       case ProProfileType.rider:
-        return 'Ride Workstreams';
+        return l10n.rideWorkstreams;
     }
   }
 
-  String _laneShortcutsTitle(ProProfileType type) {
+  String _laneShortcutsTitle(ProProfileType type, AppLocalizations l10n) {
     switch (type) {
       case ProProfileType.shop:
-        return 'Lane Shortcuts';
+        return l10n.laneShortcuts;
       case ProProfileType.provider:
-        return 'Pipeline Shortcuts';
+        return l10n.pipelineShortcuts;
       case ProProfileType.doctor:
       case ProProfileType.delivery:
       case ProProfileType.rider:
-        return 'Shortcuts';
+        return l10n.shortcuts;
     }
   }
 
@@ -269,8 +274,8 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
         automaticallyImplyLeading: false,
         title: Text(
           widget.profile.type == ProProfileType.shop
-              ? 'Store Tools'
-              : 'Operations',
+              ? l10n.storeTools
+              : l10n.operations,
         ),
         backgroundColor: profileColor,
         foregroundColor: Colors.white,
@@ -279,7 +284,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
         future: _dashboardFuture,
         builder: (context, snapshot) {
           final data = snapshot.data;
-          final actions = _buildActions(widget.profile);
+          final actions = _buildActions(widget.profile, l10n);
           final type = widget.profile.type;
           final coreActions = switch (type) {
             ProProfileType.shop => actions.take(3).toList(growable: false),
@@ -329,7 +334,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  _quickActionsTitle(type),
+                  _quickActionsTitle(type, l10n),
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
@@ -344,7 +349,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
                 if (laneActions.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Text(
-                    _laneShortcutsTitle(type),
+                    _laneShortcutsTitle(type, l10n),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -360,7 +365,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
                 if (visibleSummaries.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text(
-                    _workstreamTitle(type),
+                    _workstreamTitle(type, l10n),
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -397,13 +402,14 @@ class _OperationsHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final color = ProModuleHelper.getProfileColor(profile.type);
     final fallbackHeadline = switch (profile.type) {
-      ProProfileType.shop => 'Manage store lanes, catalog, and stock.',
-      ProProfileType.provider => 'Coordinate service and laundry operations.',
-      ProProfileType.doctor => 'Run appointments and care availability.',
-      ProProfileType.delivery => 'Handle live dispatch and delivery claims.',
-      ProProfileType.rider => 'Track and claim nearby ride requests.',
+      ProProfileType.shop => l10n.shopHeroFallback,
+      ProProfileType.provider => l10n.providerHeroFallback,
+      ProProfileType.doctor => l10n.doctorHeroFallback,
+      ProProfileType.delivery => l10n.deliveryHeroFallback,
+      ProProfileType.rider => l10n.riderHeroFallback,
     };
 
     return Container(
@@ -462,7 +468,7 @@ class _OperationsHero extends StatelessWidget {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    onlineState ? 'Online' : 'Offline',
+                    onlineState ? l10n.online : l10n.offline,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,

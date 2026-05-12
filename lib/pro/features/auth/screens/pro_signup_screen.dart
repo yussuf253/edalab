@@ -8,6 +8,7 @@ import '../../../core/utils/pro_module_helper.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/constants/pro_design_system.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ProSignupScreen extends StatefulWidget {
   const ProSignupScreen({super.key});
@@ -40,16 +41,13 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
     final messenger = ScaffoldMessenger.of(context);
     FocusScope.of(context).unfocus();
 
+    final l10n = AppLocalizations.of(context)!;
     if (_selectedProfileType == null) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Please select a profile type')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(l10n.chooseProfileType)));
       return;
     }
     if (_selectedModules.isEmpty) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Please select at least one module')),
-      );
+      messenger.showSnackBar(SnackBar(content: Text(l10n.selectActiveModules)));
       return;
     }
     final proAuth = context.read<ProAuthProvider>();
@@ -68,8 +66,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
 
       if (proAuth.currentProfile == null) {
         setState(() {
-          _submissionMessage =
-              'We could not finish your pro setup. Please try again.';
+          _submissionMessage = l10n.signupFailed('');
         });
         return;
       }
@@ -87,19 +84,19 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _submissionMessage =
-            'Sign up failed. ${error.toString().replaceFirst('Exception: ', '')}';
+        _submissionMessage = l10n.signupFailed(
+          error.toString().replaceFirst('Exception: ', ''),
+        );
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Join as a Professional'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text(l10n.signupTitle), centerTitle: true),
       body: SafeArea(
         child: Consumer<ProAuthProvider>(
           builder: (context, proAuth, _) {
@@ -127,13 +124,10 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                         ),
                       ),
                       const SizedBox(height: ProDesignSystem.spacing12),
-                      const Text(
-                        'Create or sign in to a pro account first before setting up your workspace.',
-                        textAlign: TextAlign.center,
-                      ),
+                      Text(l10n.signupInfo, textAlign: TextAlign.center),
                       const SizedBox(height: ProDesignSystem.spacing16),
                       AppButton(
-                        text: 'Go to Pro Sign In',
+                        text: l10n.goToProSignIn,
                         onPressed: () => context.go(ProRoutePaths.login),
                       ),
                     ],
@@ -151,8 +145,9 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                   children: [
                     if (proAuth.currentAccount != null) ...[
                       ModernInfoBox(
-                        message:
-                            'Signed in as ${proAuth.currentAccount!.email}. Now choose the pro profile and modules you want to operate.',
+                        message: l10n.signedInAsMessage(
+                          proAuth.currentAccount!.email,
+                        ),
                         icon: Icons.verified_user_outlined,
                         backgroundColor: Colors.blue.withValues(alpha: 0.1),
                         textColor: Colors.blue[700]!,
@@ -164,7 +159,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                       const LinearProgressIndicator(),
                       const SizedBox(height: ProDesignSystem.spacing16),
                       Text(
-                        'Creating your pro workspace...',
+                        l10n.creatingWorkspace,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       const SizedBox(height: ProDesignSystem.spacing20),
@@ -180,7 +175,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                       const SizedBox(height: ProDesignSystem.spacing20),
                     ],
                     Text(
-                      'Choose Your Profile Type',
+                      l10n.chooseProfileType,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -229,7 +224,21 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                                   height: ProDesignSystem.spacing12,
                                 ),
                                 Text(
-                                  ProModuleHelper.getProfileName(type),
+                                  isSelected && type == ProProfileType.doctor
+                                      ? l10n.profileTypeDoctor
+                                      : isSelected &&
+                                            type == ProProfileType.provider
+                                      ? l10n.profileTypeProvider
+                                      : isSelected &&
+                                            type == ProProfileType.shop
+                                      ? l10n.profileTypeShop
+                                      : isSelected &&
+                                            type == ProProfileType.delivery
+                                      ? l10n.profileTypeDelivery
+                                      : isSelected &&
+                                            type == ProProfileType.rider
+                                      ? l10n.profileTypeRide
+                                      : ProModuleHelper.getProfileName(type),
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context).textTheme.titleSmall
                                       ?.copyWith(
@@ -286,7 +295,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                       ),
                       const SizedBox(height: ProDesignSystem.spacing24),
                       Text(
-                        'Select Active Modules',
+                        l10n.selectActiveModules,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -320,8 +329,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                       if (_selectedProfileType == ProProfileType.provider) ...[
                         const SizedBox(height: ProDesignSystem.spacing12),
                         ModernInfoBox(
-                          message:
-                              'After sign-up, create your own service listing from Availability, then configure services offered, activity zone, booking modes, and hours in Schedule.',
+                          message: l10n.providerInfo,
                           icon: Icons.tune_rounded,
                           backgroundColor: Colors.blue.withValues(alpha: 0.08),
                           textColor: Colors.blue[700]!,
@@ -331,8 +339,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                       if (_selectedProfileType == ProProfileType.doctor) ...[
                         const SizedBox(height: ProDesignSystem.spacing12),
                         ModernInfoBox(
-                          message:
-                              'After sign-up, you will configure your practice including clinic visits, telemedicine, and home care services.',
+                          message: l10n.doctorInfo,
                           icon: Icons.medical_services_outlined,
                           backgroundColor: Colors.teal.withValues(alpha: 0.08),
                           textColor: Colors.teal[700]!,
@@ -343,9 +350,8 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                       TextFormField(
                         controller: _businessNameController,
                         decoration: InputDecoration(
-                          labelText: 'Business / Display Name',
-                          hintText:
-                              'Enter the business, provider, clinic, fleet, or profile name',
+                          labelText: l10n.businessNameLabel,
+                          hintText: l10n.businessNameHint,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
                               ProDesignSystem.radiusSmall,
@@ -358,14 +364,14 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Business name is required';
+                            return l10n.businessNameRequired;
                           }
                           return null;
                         },
                       ),
                       const SizedBox(height: ProDesignSystem.spacing32),
                       AppButton(
-                        text: 'Complete Sign Up',
+                        text: l10n.completeSignUp,
                         isLoading: proAuth.isLoading,
                         onPressed: _submit,
                       ),

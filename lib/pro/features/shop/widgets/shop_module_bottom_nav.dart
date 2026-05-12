@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 enum ShopModuleBottomTab { orders, products }
@@ -29,7 +30,7 @@ class ShopModuleBottomNav extends StatelessWidget {
             Expanded(
               child: _ShopModuleNavButton(
                 icon: Icons.receipt_long_outlined,
-                label: 'Orders',
+                label: AppLocalizations.of(context)!.ordersLabel,
                 onTap: onOrders,
                 active: activeTab == ShopModuleBottomTab.orders,
               ),
@@ -37,7 +38,7 @@ class ShopModuleBottomNav extends StatelessWidget {
             Expanded(
               child: _ShopModuleNavButton(
                 icon: Icons.inventory_2_outlined,
-                label: 'Products',
+                label: AppLocalizations.of(context)!.productsLabel,
                 onTap: onProducts,
                 active: activeTab == ShopModuleBottomTab.products,
               ),

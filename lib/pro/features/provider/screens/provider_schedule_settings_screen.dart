@@ -1,3 +1,4 @@
+import '/pro/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -27,6 +28,8 @@ class _ProviderScheduleSettingsScreenState
     extends State<ProviderScheduleSettingsScreen> {
   late Future<List<Map<String, dynamic>>> _scheduleFuture;
   final Set<String> _busyIds = <String>{};
+
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   bool get _supportsServices =>
       widget.activeModules.isEmpty ||
@@ -102,9 +105,9 @@ class _ProviderScheduleSettingsScreenState
       });
       if (!mounted) return;
       if (showSuccess) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Schedule and active status updated.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.scheduleUpdated)));
       }
       await _refresh();
     } catch (error) {
@@ -210,7 +213,7 @@ class _ProviderScheduleSettingsScreenState
                       ],
                     ),
                     Text(
-                      slot.closed ? 'Closed' : 'Open',
+                      slot.closed ? l10n.closed : l10n.openLabel,
                       style: TextStyle(
                         color: slot.closed ? Colors.orange : Colors.green,
                         fontWeight: FontWeight.w600,
@@ -232,7 +235,7 @@ class _ProviderScheduleSettingsScreenState
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Text('to'),
+                        Text(l10n.toLabel),
                         const SizedBox(width: 8),
                         Expanded(
                           child: OutlinedButton.icon(
@@ -283,13 +286,15 @@ class _ProviderScheduleSettingsScreenState
                       onChanged: _busyIds.contains(providerId)
                           ? null
                           : (value) => setModalState(() => enabled = value),
-                      title: const Text('Accept bookings now'),
+                      title: Text(l10n.acceptBookingsNow),
                       subtitle: Text(
-                        enabled ? 'Active and visible to users' : 'Paused',
+                        enabled
+                            ? l10n.activeVisibleSubtitle
+                            : l10n.pausedSubtitle,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const _SettingsSectionLabel('Weekly time slots'),
+                    _SettingsSectionLabel(l10n.weeklyTimeSlots),
                     const SizedBox(height: 8),
                     slotEditor(title: 'Weekdays', slot: weekdaysSlot),
                     const SizedBox(height: 12),
@@ -297,9 +302,12 @@ class _ProviderScheduleSettingsScreenState
                     const SizedBox(height: 12),
                     slotEditor(title: 'Sunday', slot: sundaySlot),
                     const SizedBox(height: 10),
-                    const Text(
-                      'Use this screen for operations only: active status and time slots.',
-                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                    Text(
+                      l10n.useOperationsOnlyTip,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                      ),
                     ),
                     const SizedBox(height: 18),
                     SizedBox(
@@ -324,7 +332,9 @@ class _ProviderScheduleSettingsScreenState
                           foregroundColor: Colors.white,
                         ),
                         child: Text(
-                          _busyIds.contains(providerId) ? 'Saving...' : 'Save',
+                          _busyIds.contains(providerId)
+                              ? l10n.saving
+                              : l10n.save,
                         ),
                       ),
                     ),
@@ -342,7 +352,7 @@ class _ProviderScheduleSettingsScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.businessName} Scheduling'),
+        title: Text(l10n.providerSchedulingTitle(widget.businessName)),
         backgroundColor: AppColors.homeServices,
         foregroundColor: Colors.white,
       ),
@@ -350,11 +360,11 @@ class _ProviderScheduleSettingsScreenState
         future: _scheduleFuture,
         builder: (context, snapshot) {
           if (!_supportsServices) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Text(
-                  'Services module is not enabled for this provider profile.',
+                  l10n.servicesModuleDisabled,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -384,8 +394,8 @@ class _ProviderScheduleSettingsScreenState
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'No offered service listing found yet for this provider account.',
+                    Text(
+                      l10n.noServiceListingsFound,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 12),
@@ -393,7 +403,7 @@ class _ProviderScheduleSettingsScreenState
                       onPressed: () =>
                           context.push(ProRoutePaths.providerAvailability),
                       icon: const Icon(Icons.settings_outlined),
-                      label: const Text('Open Offered Services'),
+                      label: Text(l10n.openOfferedServices),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.homeServices,
                         foregroundColor: Colors.white,
@@ -407,27 +417,10 @@ class _ProviderScheduleSettingsScreenState
 
           return ListView.separated(
             padding: const EdgeInsets.all(16),
-            itemCount: items.length + 1,
+            itemCount: items.length,
             separatorBuilder: (_, _) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              if (index == 0) {
-                return Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.settings_outlined),
-                    title: const Text('Manage offered services and profile'),
-                    subtitle: const Text(
-                      'Use Offered Services for listing/profile configuration. Scheduling is only for active status and time slots.',
-                    ),
-                    trailing: TextButton(
-                      onPressed: () =>
-                          context.push(ProRoutePaths.providerAvailability),
-                      child: const Text('Open'),
-                    ),
-                  ),
-                );
-              }
-
-              final item = items[index - 1];
+              final item = items[index];
               final providerId = item['id']?.toString() ?? '';
               final isBusy = _busyIds.contains(providerId);
               final enabled = item['enabled'] as bool? ?? false;
@@ -495,21 +488,21 @@ class _ProviderScheduleSettingsScreenState
                       ),
                       const SizedBox(height: 12),
                       _SettingsInfoRow(
-                        label: 'Weekdays',
+                        label: l10n.weekdays,
                         value: currentAvailability['weekdays']!.isEmpty
-                            ? 'Not set'
+                            ? l10n.notSet
                             : currentAvailability['weekdays']!,
                       ),
                       _SettingsInfoRow(
-                        label: 'Saturday',
+                        label: l10n.saturday,
                         value: currentAvailability['saturday']!.isEmpty
-                            ? 'Not set'
+                            ? l10n.notSet
                             : currentAvailability['saturday']!,
                       ),
                       _SettingsInfoRow(
-                        label: 'Sunday',
+                        label: l10n.sunday,
                         value: currentAvailability['sunday']!.isEmpty
-                            ? 'Not set'
+                            ? l10n.notSet
                             : currentAvailability['sunday']!,
                       ),
                       Align(
@@ -517,7 +510,7 @@ class _ProviderScheduleSettingsScreenState
                         child: TextButton.icon(
                           onPressed: isBusy ? null : () => _openEditor(item),
                           icon: const Icon(Icons.edit_outlined),
-                          label: const Text('Edit time slots'),
+                          label: Text(l10n.editTimeSlots),
                         ),
                       ),
                     ],
