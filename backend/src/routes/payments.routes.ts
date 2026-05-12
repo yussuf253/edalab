@@ -8,7 +8,7 @@ import {
   ProProfileType,
 } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import express, { Request, Router } from 'express';
+import { Request, Router } from 'express';
 import { z } from 'zod';
 import { env } from '../config/env';
 import { prisma } from '../db';
@@ -19,14 +19,6 @@ import {
 } from '../utils/notifications';
 
 const router = Router();
-
-/**
- * IMPORTANT
- * Make sure your main app has:
- *
- * app.use(express.json());
- * app.use(express.urlencoded({ extended: true }));
- */
 
 const defaultWaafiPayStoreId = '1008147';
 const defaultWaafiPayHppKey = 'HPP-mnhsbMzojHqgAP7FXemveLt4Sa7O';
@@ -47,6 +39,7 @@ function paymentMetadata(value: Prisma.JsonValue | null | undefined) {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     return { ...(value as Record<string, unknown>) };
   }
+
   return {};
 }
 
@@ -231,7 +224,6 @@ function publicApiOrigin(req: Request) {
 
 function decodeWaafiResult(rawToken: string) {
   try {
-    // Try base64 decode first
     const decoded = Buffer.from(rawToken, 'base64')
       .toString('utf8')
       .trim();
@@ -239,12 +231,9 @@ function decodeWaafiResult(rawToken: string) {
     if (decoded.startsWith('{')) {
       return JSON.parse(decoded) as Record<string, unknown>;
     }
-  } catch (e) {
-    console.error('Base64 decode failed:', e);
-  }
+  } catch {}
 
   try {
-    // Try hex decode
     if (/^[0-9a-f]+$/i.test(rawToken)) {
       const hexDecoded = Buffer.from(rawToken, 'hex')
         .toString('utf8')
@@ -254,9 +243,7 @@ function decodeWaafiResult(rawToken: string) {
         return JSON.parse(hexDecoded) as Record<string, unknown>;
       }
     }
-  } catch (e) {
-    console.error('Hex decode failed:', e);
-  }
+  } catch {}
 
   return {
     opaqueToken: true,
@@ -297,8 +284,7 @@ router.post(
     const apiOrigin = publicApiOrigin(req);
 
     const callbackQuery =
-      `orderId=${encodeURIComponent(order.id)}` +
-      `&referenceId=${encodeURIComponent(referenceId)}`;
+      `referenceId=${encodeURIComponent(referenceId)}`;
 
     const timestamp = new Date()
       .toISOString()
@@ -323,11 +309,6 @@ router.post(
         hppFailureCallbackUrl:
           `${apiOrigin}/payments/waafipay/callback/failure?${callbackQuery}`,
 
-        /**
-         * FIXED
-         * Was 4 -> encrypted/opaque token
-         * Now 2 -> readable JSON/base64
-         */
         hppRespDataFormat: '2',
 
         paymentMethod: 'MWALLET_ACCOUNT',
@@ -335,14 +316,7 @@ router.post(
         transactionInfo: {
           referenceId,
           invoiceId: order.id,
-
           amount: body.amount.toFixed(2),
-
-          /**
-           * IMPORTANT
-           * DJF sometimes fails silently depending on merchant config.
-           * Test USD first if you still have issues.
-           */
           currency: 'DJF',
 
           description:
@@ -407,39 +381,24 @@ router.post(
 
           payment: {
             provider: 'WAAFIPAY',
-
-            status: success
-              ? 'INITIATED'
-              : 'FAILED',
-
+            status: success ? 'INITIATED' : 'FAILED',
             referenceId,
-
             transactionId: params.transactionId,
-
             responseCode: waafiResponse.responseCode,
-
             responseMessage: waafiResponse.responseMsg,
-
             updatedAt: new Date().toISOString(),
           },
         } as Prisma.InputJsonValue,
       },
     });
 
-    res.json({
+    return res.json({
       success,
-
       referenceId,
-
       transactionId: params.transactionId,
-
       paymentUrl: params.directPaymentLink,
-
       responseCode: waafiResponse.responseCode,
-
       responseMessage: waafiResponse.responseMsg,
-
-      data: waafiResponse,
     });
   }),
 );
@@ -451,25 +410,10 @@ router.all(
     console.log('WAAFIPAY CALLBACK');
     console.log('==========================');
 
-    console.log('QUERY');
     console.log(req.query);
-
-    console.log('BODY');
-    console.log(req.body);
-
-    console.log('PARAMS');
-    console.log(req.params);
 
     const callbackResult =
       req.params.result?.toString().toLowerCase();
-
-    /**
-     * IMPORTANT
-     * WaafiPay may send:
-     *
-     * 1. hppResultToken
-     * 2. direct query params
-     */
 
     const hppResultToken =
       req.query.hppResultToken?.toString() ||
@@ -479,16 +423,10 @@ router.all(
     let callbackData: Record<string, any> = {};
 
     if (hppResultToken) {
-      console.log('RAW TOKEN');
-      console.log(hppResultToken);
-
       callbackData = decodeWaafiResult(
         hppResultToken.toString(),
       );
     } else {
-      /**
-       * DIRECT QUERY PARAMS MODE
-       */
       callbackData = {
         responseCode:
           req.query.responseCode ||
@@ -531,14 +469,6 @@ router.all(
     console.log('FINAL CALLBACK DATA');
     console.log(callbackData);
 
-    /**
-     * IMPORTANT
-     * WaafiPay orderId here is THEIR orderId,
-     * not your internal DB order ID.
-     *
-     * So we use referenceId to find our order.
-     */
-
     const referenceId =
       callbackData.referenceId?.toString();
 
@@ -566,6 +496,28 @@ router.all(
       });
     }
 
+    const existingPayment = paymentMetadata(
+      order.metadata,
+    ).payment as Record<string, any> | undefined;
+
+const configuredBase = env.PUBLIC_BASE_URL?.replace(/\/+$/, '');
+
+const webOrigin = configuredBase
+  ? configuredBase.replace(/\/api$/i, '').replace(/\/+$/, '')
+  : `${req.protocol}://${req.get('host')}`;
+
+if (
+  existingPayment?.status === 'COMPLETED' &&
+  existingPayment?.transactionId ===
+    callbackData.transactionId
+) {
+  console.log('Duplicate callback ignored');
+
+  return res.redirect(
+    `${webOrigin}/payment/success?orderId=${order.id}`,
+  );
+}
+
     const responseCode =
       callbackData.responseCode?.toString();
 
@@ -575,18 +527,12 @@ router.all(
     const state =
       callbackData.state?.toString();
 
-    /**
-     * SUCCESS CONDITIONS
-     */
     const paid =
       responseCode === '2001' ||
       responseMsg === 'RCS_SUCCESS' ||
       state === 'APPROVED' ||
       callbackResult === 'success';
 
-    /**
-     * FAILURE CONDITIONS
-     */
     const cancelled =
       state === 'DECLINED' ||
       responseCode === '5001' ||
@@ -616,29 +562,24 @@ router.all(
 
           payment: {
             provider: 'WAAFIPAY',
-
             status: paymentStatus,
-
             referenceId,
-
             transactionId:
               callbackData.transactionId || null,
-
             responseCode,
-
             responseMessage: responseMsg,
-
             callbackResult,
-
             callbackData,
-
             updatedAt: new Date().toISOString(),
           },
         } as Prisma.InputJsonValue,
       },
     });
 
-    if (paid) {
+    if (
+      paid &&
+      existingPayment?.status !== 'COMPLETED'
+    ) {
       await createOrderCreatedNotification({
         userId: order.userId,
         orderId: order.id,
@@ -649,34 +590,17 @@ router.all(
       await notifyProvidersForPaidOrder(order);
     }
 
-    // Build a user-friendly message to avoid exposing raw callback data to users
-    const friendlyMessage = paid
-      ? 'Payment completed successfully.'
-      : cancelled
-        ? (responseMsg || 'Payment was declined.')
-        : 'Payment pending verification.';
-
-    // Determine web origin
-    const configuredBase = env.PUBLIC_BASE_URL?.replace(/\/+$/, '');
-    const webOrigin = configuredBase
-      ? configuredBase.replace(/\/api$/i, '').replace(/\/+$/, '')
-      : `${req.protocol}://${req.get('host')}`;
-
-    // Optional HTML redirect (opt-in via env)
-    if (env.WAAFIPAY_CALLBACK_HTML_REDIRECT && req.accepts && req.accepts('html')) {
-      const redirectUrl = `${webOrigin}/checkout/success?orderId=${encodeURIComponent(order.id)}&status=${encodeURIComponent(paymentStatus)}&message=${encodeURIComponent(friendlyMessage)}`;
-      return res.redirect(302, redirectUrl);
+    if (paid) {
+      return res.redirect(
+        `${webOrigin}/payment/success?orderId=${order.id}`,
+      );
     }
 
-    // API clients get a sanitized JSON response
-    return res.json({
-      success: paid,
-      status: paymentStatus,
-      orderId: order.id,
-      message: friendlyMessage,
-      responseCode,
-      tokenPreview: callbackData.tokenPreview || null,
-    });
+    return res.redirect(
+      `${webOrigin}/payment/failed?message=${encodeURIComponent(
+        responseMsg || 'Payment failed',
+      )}`,
+    );
   }),
 );
 
