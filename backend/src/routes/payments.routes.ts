@@ -649,11 +649,33 @@ router.all(
       await notifyProvidersForPaidOrder(order);
     }
 
+    // Build a user-friendly message to avoid exposing raw callback data to users
+    const friendlyMessage = paid
+      ? 'Payment completed successfully.'
+      : cancelled
+        ? (responseMsg || 'Payment was declined.')
+        : 'Payment pending verification.';
+
+    // Determine web origin
+    const configuredBase = env.PUBLIC_BASE_URL?.replace(/\/+$/, '');
+    const webOrigin = configuredBase
+      ? configuredBase.replace(/\/api$/i, '').replace(/\/+$/, '')
+      : `${req.protocol}://${req.get('host')}`;
+
+    // Optional HTML redirect (opt-in via env)
+    if (env.WAAFIPAY_CALLBACK_HTML_REDIRECT && req.accepts && req.accepts('html')) {
+      const redirectUrl = `${webOrigin}/checkout/success?orderId=${encodeURIComponent(order.id)}&status=${encodeURIComponent(paymentStatus)}&message=${encodeURIComponent(friendlyMessage)}`;
+      return res.redirect(302, redirectUrl);
+    }
+
+    // API clients get a sanitized JSON response
     return res.json({
       success: paid,
       status: paymentStatus,
       orderId: order.id,
-      callbackData,
+      message: friendlyMessage,
+      responseCode,
+      tokenPreview: callbackData.tokenPreview || null,
     });
   }),
 );
