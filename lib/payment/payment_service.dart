@@ -1,4 +1,5 @@
 import '../core/network/api_client.dart';
+import '../core/config/app_config.dart';
 
 class WaafiPaymentResult {
   const WaafiPaymentResult({
@@ -63,5 +64,13 @@ class PaymentService {
       success: false,
       message: 'Unexpected payment response.',
     );
+  }
+
+  String getPaymentSuccessUrl(String orderId) {
+    return '${AppConfig.baseUrl}/payment/success?orderId=$orderId';
+  }
+
+  String getPaymentFailureUrl(String message) {
+    return '${AppConfig.baseUrl}/payment/failed?message=${Uri.encodeComponent(message)}';
   }
 }

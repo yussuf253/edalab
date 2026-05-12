@@ -516,7 +516,7 @@ if (
   console.log('Duplicate callback ignored');
 
   return res.redirect(
-    `${deepLinkOrigin}/payment/success?orderId=${order.id}`,
+    `${webOrigin}/payment/success?orderId=${order.id}`,
   );
 }
 
@@ -594,12 +594,12 @@ if (
 
     if (paid) {
       return res.redirect(
-        `${deepLinkOrigin}/payment/success?orderId=${order.id}`,
+        `${webOrigin}/payment/success?orderId=${order.id}`,
       );
     }
 
     return res.redirect(
-      `${deepLinkOrigin}/payment/failed?message=${encodeURIComponent(
+      `${webOrigin}/payment/failed?message=${encodeURIComponent(
         responseMsg || 'Payment failed',
       )}`,
     );

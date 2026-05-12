@@ -780,11 +780,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       }
                       final paymentUrl = waafiResult.paymentUrl;
                       if (paymentUrl != null && paymentUrl.isNotEmpty) {
-                        await launchUrl(
-                          Uri.parse(paymentUrl),
-                          mode: LaunchMode.externalApplication,
+                        // Use web view instead of external browser
+                        context.push(
+                          '/payment/webview',
+                          extra: {
+                            'paymentUrl': paymentUrl,
+                            'orderId': orderId,
+                            'amount': total,
+                          },
                         );
-                        if (!context.mounted) return;
+                        return;
                       }
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -910,7 +915,6 @@ class _TimeChip extends StatelessWidget {
   final String label, time, price;
   final bool selected;
   const _TimeChip(this.label, this.time, this.price, this.selected);
-
   @override
   Widget build(BuildContext context) {
     return Expanded(

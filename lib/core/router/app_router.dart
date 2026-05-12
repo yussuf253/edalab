@@ -1,3 +1,4 @@
+import '../../core/config/app_config.dart';
 import 'package:edalab/features/doctor/screens/lab_tests_screen.dart';
 import 'package:edalab/features/doctor/screens/physiotherapy_screen.dart';
 import 'package:flutter/material.dart';
@@ -65,6 +66,7 @@ import '../../features/checkout/screens/checkout_screen.dart';
 import '../../features/checkout/screens/order_success_screen.dart';
 import '../../features/checkout/screens/payment_success_screen.dart';
 import '../../features/checkout/screens/payment_failure_screen.dart';
+import '../../features/checkout/screens/payment_webview_screen.dart';
 import '../../features/rewards/screens/coupons_screen.dart';
 import '../../features/profile/screens/edit_profile_screen.dart';
 import '../../features/profile/screens/addresses_screen.dart';
@@ -535,6 +537,21 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
               ? state.extra as Map<String, dynamic>
               : null,
         ),
+      ),
+      GoRoute(
+        path: '/payment/webview',
+        builder: (context, state) {
+          final extra = state.extra is Map<String, dynamic>
+              ? state.extra as Map<String, dynamic>
+              : <String, dynamic>{};
+          return PaymentWebViewScreen(
+            paymentUrl: extra['paymentUrl'] as String? ?? '',
+            successUrl: AppConfig.getPaymentSuccessUrl(
+              extra['orderId'] as String? ?? '',
+            ),
+            failureUrl: AppConfig.getPaymentFailureUrl('Payment failed'),
+          );
+        },
       ),
 
       // Rewards

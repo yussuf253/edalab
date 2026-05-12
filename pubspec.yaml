@@ -40,10 +40,12 @@ dependencies:
   url_launcher: ^6.3.2
   package_info_plus: ^8.0.0
   google_maps_flutter: ^2.17.0
-  uni_links: ^0.5.1
+  app_links: ^3.2.0
   geolocator: ^14.0.2
   image_picker: ^1.1.2
   amplitude_flutter: ^4.0.0
+  webview_flutter: ^4.4.2
+  webview_flutter_wkwebview: ^3.0.6
 
 dev_dependencies:
   flutter_test:
@@ -62,3 +64,4 @@ flutter:
     - assets/images/services/
     - assets/icons/
     - assets/lottie/
+
