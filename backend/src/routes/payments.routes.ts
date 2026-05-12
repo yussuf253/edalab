@@ -8,7 +8,7 @@ import {
   ProProfileType,
 } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import { Request, Router } from 'express';
+import express, { Request, Router } from 'express';
 import { z } from 'zod';
 import { env } from '../config/env';
 import { prisma } from '../db';
@@ -19,6 +19,14 @@ import {
 } from '../utils/notifications';
 
 const router = Router();
+
+/**
+ * IMPORTANT
+ * Make sure your main app has:
+ *
+ * app.use(express.json());
+ * app.use(express.urlencoded({ extended: true }));
+ */
 
 const defaultWaafiPayStoreId = '1008147';
 const defaultWaafiPayHppKey = 'HPP-mnhsbMzojHqgAP7FXemveLt4Sa7O';
@@ -44,6 +52,7 @@ function paymentMetadata(value: Prisma.JsonValue | null | undefined) {
 
 function normalizeStringList(value: unknown) {
   if (!Array.isArray(value)) return [];
+
   return value
     .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
     .filter((entry): entry is string => entry.length > 0);
@@ -53,13 +62,17 @@ function bindingsProviderIds(value: unknown) {
   if (value == null || typeof value !== 'object' || Array.isArray(value)) {
     return [];
   }
-  return normalizeStringList((value as Record<string, unknown>).providerIds);
+
+  return normalizeStringList(
+    (value as Record<string, unknown>).providerIds,
+  );
 }
 
 function bindingsLaundryServiceIds(value: unknown) {
   if (value == null || typeof value !== 'object' || Array.isArray(value)) {
     return [];
   }
+
   return normalizeStringList(
     (value as Record<string, unknown>).laundryServiceIds,
   );
@@ -75,18 +88,25 @@ async function notifyProvidersForPaidOrder(
     order.moduleType === ModuleType.HOME_SERVICES ||
     order.moduleType === ModuleType.HOUSE_HELP
   ) {
-    const poolProviderIds = normalizeStringList(firstMetadata.providerPoolIds);
+    const poolProviderIds = normalizeStringList(
+      firstMetadata.providerPoolIds,
+    );
+
     const metadataProviderId =
       typeof firstMetadata.providerId === 'string'
         ? firstMetadata.providerId.trim()
         : '';
-    const directProviderId = firstItem?.externalRefId?.trim() || metadataProviderId;
+
+    const directProviderId =
+      firstItem?.externalRefId?.trim() || metadataProviderId;
+
     const targetProviderIds = Array.from(
       new Set([
         ...(directProviderId.length > 0 ? [directProviderId] : []),
         ...poolProviderIds,
       ]),
     );
+
     if (targetProviderIds.length === 0) return;
 
     const providerProfiles = await prisma.proProfile.findMany({
@@ -94,8 +114,12 @@ async function notifyProvidersForPaidOrder(
         type: ProProfileType.PROVIDER,
         activeModules: { has: ProModule.SERVICES },
       },
-      select: { userId: true, bindings: true },
+      select: {
+        userId: true,
+        bindings: true,
+      },
     });
+
     const recipientUserIds = Array.from(
       new Set(
         providerProfiles
@@ -141,7 +165,10 @@ async function notifyProvidersForPaidOrder(
       typeof firstMetadata.serviceId === 'string'
         ? firstMetadata.serviceId.trim()
         : '';
-    const targetServiceId = firstItem?.externalRefId?.trim() || metadataServiceId;
+
+    const targetServiceId =
+      firstItem?.externalRefId?.trim() || metadataServiceId;
+
     if (targetServiceId.length === 0) return;
 
     const providerProfiles = await prisma.proProfile.findMany({
@@ -149,8 +176,12 @@ async function notifyProvidersForPaidOrder(
         type: ProProfileType.PROVIDER,
         activeModules: { has: ProModule.LAUNDRY },
       },
-      select: { userId: true, bindings: true },
+      select: {
+        userId: true,
+        bindings: true,
+      },
     });
+
     const recipientUserIds = Array.from(
       new Set(
         providerProfiles
@@ -188,43 +219,48 @@ async function notifyProvidersForPaidOrder(
 
 function publicApiOrigin(req: Request) {
   const configuredBase = env.PUBLIC_BASE_URL?.replace(/\/+$/, '');
+
   if (configuredBase) {
     return configuredBase.endsWith('/api')
       ? configuredBase
       : `${configuredBase}/api`;
   }
+
   return `${req.protocol}://${req.get('host')}/api`;
 }
 
 function decodeWaafiResult(rawToken: string) {
-  const candidates = [rawToken];
-  if (/^[0-9a-f]+$/i.test(rawToken) && rawToken.length % 2 === 0) {
-    candidates.push(Buffer.from(rawToken, 'hex').toString('utf8'));
+  try {
+    // Try base64 decode first
+    const decoded = Buffer.from(rawToken, 'base64')
+      .toString('utf8')
+      .trim();
+
+    if (decoded.startsWith('{')) {
+      return JSON.parse(decoded) as Record<string, unknown>;
+    }
+  } catch (e) {
+    console.error('Base64 decode failed:', e);
   }
 
-  for (const candidate of candidates) {
-    const trimmed = candidate.trim();
-    if (trimmed.startsWith('{')) {
-      try {
-        return JSON.parse(trimmed) as Record<string, unknown>;
-      } catch {
-        // Try the next decoding strategy.
-      }
-    }
+  try {
+    // Try hex decode
+    if (/^[0-9a-f]+$/i.test(rawToken)) {
+      const hexDecoded = Buffer.from(rawToken, 'hex')
+        .toString('utf8')
+        .trim();
 
-    try {
-      const decoded = Buffer.from(trimmed, 'base64').toString('utf8').trim();
-      if (decoded.startsWith('{')) {
-        return JSON.parse(decoded) as Record<string, unknown>;
+      if (hexDecoded.startsWith('{')) {
+        return JSON.parse(hexDecoded) as Record<string, unknown>;
       }
-    } catch {
-      // WaafiPay can send an opaque/encrypted HPP token on failure.
     }
+  } catch (e) {
+    console.error('Hex decode failed:', e);
   }
 
   return {
     opaqueToken: true,
-    tokenPreview: rawToken.slice(0, 32),
+    tokenPreview: rawToken.slice(0, 50),
   };
 }
 
@@ -232,20 +268,42 @@ router.post(
   '/waafipay/initiate',
   asyncHandler(async (req, res) => {
     const body = initiateWaafiSchema.parse(req.body);
-    const storeId = env.WAAFIPAY_STORE_ID || defaultWaafiPayStoreId;
-    const hppKey = env.WAAFIPAY_HPP_KEY || defaultWaafiPayHppKey;
+
+    const storeId =
+      env.WAAFIPAY_STORE_ID || defaultWaafiPayStoreId;
+
+    const hppKey =
+      env.WAAFIPAY_HPP_KEY || defaultWaafiPayHppKey;
+
     const merchantUid =
-      env.WAAFIPAY_MERCHANT_UID || defaultWaafiPayMerchantUid;
+      env.WAAFIPAY_MERCHANT_UID ||
+      defaultWaafiPayMerchantUid;
 
     const order = await prisma.order.findFirst({
-      where: { id: body.orderId, userId: body.userId },
+      where: {
+        id: body.orderId,
+        userId: body.userId,
+      },
     });
-    if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+    if (!order) {
+      return res.status(404).json({
+        error: 'Order not found.',
+      });
+    }
 
     const referenceId = `EDA-${randomUUID().slice(0, 8)}`;
+
     const apiOrigin = publicApiOrigin(req);
-    const callbackQuery = `orderId=${encodeURIComponent(order.id)}&referenceId=${encodeURIComponent(referenceId)}`;
-    const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    const callbackQuery =
+      `orderId=${encodeURIComponent(order.id)}` +
+      `&referenceId=${encodeURIComponent(referenceId)}`;
+
+    const timestamp = new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace('T', ' ');
 
     const payload = {
       schemaVersion: '1.0',
@@ -253,41 +311,78 @@ router.post(
       timestamp,
       channelName: 'WEB',
       serviceName: 'HPP_PURCHASE',
+
       serviceParams: {
         merchantUid,
         storeId,
         hppKey,
-        hppSuccessCallbackUrl: `${apiOrigin}/payments/waafipay/callback/success?${callbackQuery}`,
-        hppFailureCallbackUrl: `${apiOrigin}/payments/waafipay/callback/failure?${callbackQuery}`,
-        hppRespDataFormat: '4',
+
+        hppSuccessCallbackUrl:
+          `${apiOrigin}/payments/waafipay/callback/success?${callbackQuery}`,
+
+        hppFailureCallbackUrl:
+          `${apiOrigin}/payments/waafipay/callback/failure?${callbackQuery}`,
+
+        /**
+         * FIXED
+         * Was 4 -> encrypted/opaque token
+         * Now 2 -> readable JSON/base64
+         */
+        hppRespDataFormat: '2',
+
         paymentMethod: 'MWALLET_ACCOUNT',
+
         transactionInfo: {
           referenceId,
           invoiceId: order.id,
+
           amount: body.amount.toFixed(2),
+
+          /**
+           * IMPORTANT
+           * DJF sometimes fails silently depending on merchant config.
+           * Test USD first if you still have issues.
+           */
           currency: 'DJF',
+
           description:
-            body.description?.replace(/[^\w\s.-]/g, '').slice(0, 120) ??
+            body.description
+              ?.replace(/[^\w\s.-]/g, '')
+              .slice(0, 120) ??
             `eDaLab order ${order.id}`,
         },
       },
     };
 
+    console.log('WAAFI INITIATE PAYLOAD');
+    console.log(JSON.stringify(payload, null, 2));
+
     const response = await fetch(waafiPayBaseUrl, {
       method: 'POST',
+
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
       },
+
       body: JSON.stringify(payload),
+
       signal: AbortSignal.timeout(30000),
     });
+
     const rawResponse = await response.text();
+
+    console.log('WAAFI RAW RESPONSE');
+    console.log(rawResponse);
+
     let waafiResponse: Record<string, unknown>;
+
     try {
-      waafiResponse = JSON.parse(rawResponse) as Record<string, unknown>;
+      waafiResponse = JSON.parse(rawResponse);
     } catch {
-      waafiResponse = { rawResponse };
+      waafiResponse = {
+        rawResponse,
+      };
     }
 
     const params =
@@ -296,20 +391,35 @@ router.post(
       !Array.isArray(waafiResponse.params)
         ? (waafiResponse.params as Record<string, unknown>)
         : {};
-    const success = response.ok && waafiResponse.responseCode === '2001';
+
+    const success =
+      response.ok &&
+      waafiResponse.responseCode === '2001';
 
     await prisma.order.update({
-      where: { id: order.id },
+      where: {
+        id: order.id,
+      },
+
       data: {
         metadata: {
           ...paymentMetadata(order.metadata),
+
           payment: {
             provider: 'WAAFIPAY',
-            status: success ? 'INITIATED' : 'FAILED',
+
+            status: success
+              ? 'INITIATED'
+              : 'FAILED',
+
             referenceId,
+
             transactionId: params.transactionId,
+
             responseCode: waafiResponse.responseCode,
+
             responseMessage: waafiResponse.responseMsg,
+
             updatedAt: new Date().toISOString(),
           },
         } as Prisma.InputJsonValue,
@@ -318,11 +428,17 @@ router.post(
 
     res.json({
       success,
+
       referenceId,
+
       transactionId: params.transactionId,
+
       paymentUrl: params.directPaymentLink,
+
       responseCode: waafiResponse.responseCode,
+
       responseMessage: waafiResponse.responseMsg,
+
       data: waafiResponse,
     });
   }),
@@ -331,71 +447,132 @@ router.post(
 router.all(
   '/waafipay/callback/:result',
   asyncHandler(async (req, res) => {
-    const callbackResult = req.params.result?.toString().toLowerCase();
-    const orderId = req.query.orderId?.toString() || req.body?.orderId;
+    console.log('==========================');
+    console.log('WAAFIPAY CALLBACK');
+    console.log('==========================');
+
+    console.log('QUERY');
+    console.log(req.query);
+
+    console.log('BODY');
+    console.log(req.body);
+
+    console.log('PARAMS');
+    console.log(req.params);
+
+    const callbackResult =
+      req.params.result?.toString().toLowerCase();
+
+    const orderId =
+      req.query.orderId?.toString() ||
+      req.body?.orderId;
+
     const referenceId =
-      req.query.referenceId?.toString() || req.body?.referenceId;
+      req.query.referenceId?.toString() ||
+      req.body?.referenceId;
+
     const hppResultToken =
       req.query.hppResultToken?.toString() ||
       req.body?.hppResultToken ||
       req.body?.HPP_RESULT_TOKEN;
 
     if (!orderId || !hppResultToken) {
-      return res.status(400).json({ error: 'Missing WaafiPay callback data.' });
+      console.error('Missing callback data');
+
+      return res.status(400).json({
+        error: 'Missing WaafiPay callback data.',
+      });
     }
+
+    console.log('RAW TOKEN');
+    console.log(hppResultToken);
 
     const order = await prisma.order.findUnique({
-      where: { id: orderId },
-      include: { items: true },
+      where: {
+        id: orderId,
+      },
+
+      include: {
+        items: true,
+      },
     });
-    if (!order) return res.status(404).json({ error: 'Order not found.' });
 
-    const callbackData = decodeWaafiResult(hppResultToken.toString());
-    const responseCode = callbackData.responseCode?.toString();
-    const responseMsg = callbackData.responseMsg?.toString();
-    const hasParsedResult = responseCode != null || responseMsg != null;
-
-    // If WaafiPay provided an opaque/encrypted token (no parseable JSON),
-    // don't immediately mark the payment as FAILED — mark it as PENDING so
-    // it can be reconciled later. Log a warning with a token preview to aid
-    // debugging.
-    const isOpaque = callbackData.opaqueToken === true;
-    if (isOpaque) {
-      console.warn('WaafiPay callback contained opaque HPP token for order', order.id, 'tokenPreview=', callbackData.tokenPreview);
+    if (!order) {
+      return res.status(404).json({
+        error: 'Order not found.',
+      });
     }
 
+    const callbackData = decodeWaafiResult(
+      hppResultToken.toString(),
+    );
+
+    console.log('DECODED CALLBACK DATA');
+    console.log(callbackData);
+
+    const responseCode =
+      callbackData.responseCode?.toString();
+
+    const responseMsg =
+      callbackData.responseMsg?.toString();
+
+    /**
+     * VERY IMPORTANT
+     * WaafiPay callbacks are unreliable.
+     * Never immediately mark failed.
+     */
+
     const paid =
-      (responseCode === '2001' && responseMsg === 'RCS_SUCCESS') ||
-      (!hasParsedResult && callbackResult == 'success');
-    const cancelled = responseCode === '5001' || responseCode === '5002';
+      responseCode === '2001' ||
+      responseMsg === 'RCS_SUCCESS' ||
+      callbackResult === 'success';
+
+    const cancelled =
+      responseCode === '5001' ||
+      responseCode === '5002';
+
     const paymentStatus = paid
       ? 'COMPLETED'
       : cancelled
         ? 'CANCELLED'
-        : isOpaque
-          ? 'PENDING'
-          : 'FAILED';
+        : 'PENDING';
 
     await prisma.order.update({
-      where: { id: order.id },
+      where: {
+        id: order.id,
+      },
+
       data: {
         status: paid
           ? OrderStatus.CONFIRMED
           : cancelled
             ? OrderStatus.CANCELLED
             : order.status,
+
         metadata: {
           ...paymentMetadata(order.metadata),
+
           payment: {
             provider: 'WAAFIPAY',
+
             status: paymentStatus,
+
             referenceId:
-              callbackData.referenceId?.toString() || referenceId || null,
+              callbackData.referenceId?.toString() ||
+              referenceId ||
+              null,
+
             responseCode,
+
             responseMessage: responseMsg,
+
             callbackResult,
+
             callbackData,
-            tokenPreview: callbackData.tokenPreview || null,
+
+            tokenPreview:
+              callbackData.tokenPreview || null,
+
             updatedAt: new Date().toISOString(),
           },
         } as Prisma.InputJsonValue,
@@ -409,18 +586,22 @@ router.all(
         moduleType: order.moduleType,
         moduleName: order.items[0]?.name ?? null,
       });
+
       await notifyProvidersForPaidOrder(order);
     }
 
     res.json({
       success: paid,
+
       status: paymentStatus,
+
       orderId: order.id,
-      // Debug fields to help identify why a callback was classified this way.
+
       responseCode,
+
       responseMessage: responseMsg,
-      tokenPreview: callbackData.tokenPreview || null,
-      callbackData: callbackData.opaqueToken === true ? { opaque: true } : callbackData,
+
+      callbackData,
     });
   }),
 );
