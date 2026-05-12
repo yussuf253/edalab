@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import '../../../core/analytics/analytics_events.dart';
 import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
@@ -1995,9 +1993,14 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                   final paymentUrl = waafiResult.paymentUrl;
                                   if (paymentUrl != null &&
                                       paymentUrl.isNotEmpty) {
-                                    await launchUrl(
-                                      Uri.parse(paymentUrl),
-                                      mode: LaunchMode.externalApplication,
+                                    // Use web view instead of external browser
+                                    context.push(
+                                      '/payment/webview',
+                                      extra: {
+                                        'paymentUrl': paymentUrl,
+                                        'orderId': orderId,
+                                        'amount': bookingServiceFee,
+                                      },
                                     );
                                     if (!context.mounted) return;
                                   }
