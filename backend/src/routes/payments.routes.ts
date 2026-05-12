@@ -403,6 +403,11 @@ router.all(
       success: paid,
       status: paymentStatus,
       orderId: order.id,
+      // Debug fields to help identify why a callback was classified this way.
+      responseCode,
+      responseMessage: responseMsg,
+      tokenPreview: callbackData.tokenPreview || null,
+      callbackData: callbackData.opaqueToken === true ? { opaque: true } : callbackData,
     });
   }),
 );
