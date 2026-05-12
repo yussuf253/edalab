@@ -8,6 +8,10 @@ import { asyncHandler } from '../utils/async-handler';
 
 const router = Router();
 
+const defaultWaafiPayStoreId = '1008147';
+const defaultWaafiPayHppKey = 'HPP-mnhsbMzojHqgAP7FXemveLt4Sa7O';
+const defaultWaafiPayMerchantUid = 'M0913935';
+
 const waafiPayBaseUrl = env.WAAFIPAY_PRODUCTION
   ? 'https://api.waafipay.net/asm'
   : 'https://sandbox.waafipay.net/asm';
@@ -41,16 +45,10 @@ router.post(
   '/waafipay/initiate',
   asyncHandler(async (req, res) => {
     const body = initiateWaafiSchema.parse(req.body);
-    const storeId = env.WAAFIPAY_STORE_ID;
-    const hppKey = env.WAAFIPAY_HPP_KEY;
-    const merchantUid = env.WAAFIPAY_MERCHANT_UID;
-
-    if (!storeId || !hppKey || !merchantUid) {
-      return res.status(500).json({
-        error:
-          'WaafiPay is not configured. Set WAAFIPAY_STORE_ID, WAAFIPAY_HPP_KEY, and WAAFIPAY_MERCHANT_UID.',
-      });
-    }
+    const storeId = env.WAAFIPAY_STORE_ID || defaultWaafiPayStoreId;
+    const hppKey = env.WAAFIPAY_HPP_KEY || defaultWaafiPayHppKey;
+    const merchantUid =
+      env.WAAFIPAY_MERCHANT_UID || defaultWaafiPayMerchantUid;
 
     const order = await prisma.order.findFirst({
       where: { id: body.orderId, userId: body.userId },
