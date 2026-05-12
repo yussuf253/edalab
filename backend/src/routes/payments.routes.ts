@@ -354,6 +354,16 @@ router.all(
     const responseCode = callbackData.responseCode?.toString();
     const responseMsg = callbackData.responseMsg?.toString();
     const hasParsedResult = responseCode != null || responseMsg != null;
+
+    // If WaafiPay provided an opaque/encrypted token (no parseable JSON),
+    // don't immediately mark the payment as FAILED — mark it as PENDING so
+    // it can be reconciled later. Log a warning with a token preview to aid
+    // debugging.
+    const isOpaque = callbackData.opaqueToken === true;
+    if (isOpaque) {
+      console.warn('WaafiPay callback contained opaque HPP token for order', order.id, 'tokenPreview=', callbackData.tokenPreview);
+    }
+
     const paid =
       (responseCode === '2001' && responseMsg === 'RCS_SUCCESS') ||
       (!hasParsedResult && callbackResult == 'success');
@@ -362,7 +372,9 @@ router.all(
       ? 'COMPLETED'
       : cancelled
         ? 'CANCELLED'
-        : 'FAILED';
+        : isOpaque
+          ? 'PENDING'
+          : 'FAILED';
 
     await prisma.order.update({
       where: { id: order.id },
@@ -383,6 +395,7 @@ router.all(
             responseMessage: responseMsg,
             callbackResult,
             callbackData,
+            tokenPreview: callbackData.tokenPreview || null,
             updatedAt: new Date().toISOString(),
           },
         } as Prisma.InputJsonValue,
