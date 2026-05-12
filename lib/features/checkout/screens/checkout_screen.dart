@@ -26,7 +26,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   int _selectedAddress = 0;
   int _selectedDeliveryOption = 0;
   final TextEditingController _promoController = TextEditingController();
-  final TextEditingController _waafiMobileController = TextEditingController();
   bool _hasTrackedCheckoutView = false;
   bool _isPlacingOrder = false;
 
@@ -55,7 +54,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   void dispose() {
     _promoController.dispose();
-    _waafiMobileController.dispose();
     super.dispose();
   }
 
@@ -520,23 +518,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               );
             }),
-            if (isWaafiPay) ...[
-              const SizedBox(height: 2),
-              TextField(
-                controller: _waafiMobileController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: AppColors.white,
-                  prefixIcon: const Icon(Icons.phone_rounded),
-                  hintText: 'WaafiPay mobile number',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-            ],
             const SizedBox(height: 20),
 
             // Promo code
@@ -741,21 +722,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       backgroundColor: AppColors.error,
                     ),
                   );
-                } else if (isWaafiPay &&
-                    _waafiMobileController.text.trim().isEmpty) {
-                  AnalyticsService.instance.track(
-                    AnalyticsEvents.checkoutValidationFailed,
-                    properties: {
-                      'reason': 'missing_waafi_mobile',
-                      'module_type': moduleType ?? 'mixed',
-                    },
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Enter your WaafiPay mobile number.'),
-                      backgroundColor: AppColors.error,
-                    ),
-                  );
                 } else {
                   setState(() => _isPlacingOrder = true);
                   final modules = moduleType == null
@@ -775,8 +741,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           'deliveryLabel': selectedDeliveryLabel,
                           'deliveryEta': selectedDeliveryEta,
                           'paymentLabel': paymentName,
-                          if (isWaafiPay)
-                            'waafiMobile': _waafiMobileController.text.trim(),
                         },
                       );
                       if (moduleType == null) {
@@ -800,7 +764,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             orderId: orderId,
                             userId: authProvider.user!.id,
                             amount: total,
-                            mobileNumber: _waafiMobileController.text.trim(),
                             description: '$moduleLabel order $orderId',
                           );
                       if (!context.mounted) return;

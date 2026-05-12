@@ -16,7 +16,6 @@ const initiateWaafiSchema = z.object({
   orderId: z.string().min(1),
   userId: z.string().min(1),
   amount: z.coerce.number().positive(),
-  mobileNumber: z.string().min(6),
   description: z.string().optional(),
 });
 

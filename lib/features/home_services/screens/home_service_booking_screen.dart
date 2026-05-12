@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/analytics/analytics_events.dart';
 import '../../../core/analytics/analytics_service.dart';
@@ -14,6 +15,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../payment/payment_service.dart';
 import '../widgets/house_help_booking_map.dart';
 
 class HomeServiceBookingScreen extends StatefulWidget {
@@ -35,7 +37,9 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
   int _selectedHouseHelpShift = 0;
   int _selectedHouseHelpHomeSize = 0;
   int _selectedHouseHelpUrgency = 1;
+  int _selectedPayment = 0;
   bool _houseHelpBringSupplies = false;
+  bool _isSubmitting = false;
   HomeServiceProviderModel? _provider;
   List<HomeServiceProviderModel> _zonePoolProviders = const [];
   List<HomeServiceProviderModel> _zoneFallbackProviders = const [];
@@ -613,6 +617,22 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
         selectedAddress?.latitude ?? _deviceLocation?.latitude;
     final selectedLongitude =
         selectedAddress?.longitude ?? _deviceLocation?.longitude;
+    final paymentMethods = [
+      (
+        l10n.t('home_service_booking.pay_on_confirmation'),
+        'Confirm now and pay after provider approval',
+        Icons.handshake_rounded,
+        AppColors.homeServices,
+      ),
+      (
+        'WaafiPay',
+        'EVC Plus / mobile wallet',
+        Icons.account_balance_wallet_rounded,
+        AppColors.food,
+      ),
+    ];
+    final paymentLabel = paymentMethods[_selectedPayment].$1;
+    final isWaafiPay = paymentLabel == 'WaafiPay';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -1556,7 +1576,77 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                             ),
                           ),
                           const SizedBox(height: 24),
+                          Text(
+                            l10n.t('checkout.payment_method'),
+                            style: AppTextStyles.h4,
+                          ),
+                          const SizedBox(height: 12),
+                          ...paymentMethods.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final method = entry.value;
+                            final selected = _selectedPayment == index;
+                            return GestureDetector(
+                              onTap: () =>
+                                  setState(() => _selectedPayment = index),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: selected
+                                        ? method.$4
+                                        : AppColors.lightGrey,
+                                    width: selected ? 2 : 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 42,
+                                      height: 42,
+                                      decoration: BoxDecoration(
+                                        color: method.$4.withValues(
+                                          alpha: 0.12,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        method.$3,
+                                        color: method.$4,
+                                        size: 22,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            method.$1,
+                                            style: AppTextStyles.labelMedium,
+                                          ),
+                                          Text(
+                                            method.$2,
+                                            style: AppTextStyles.caption,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (selected)
+                                      Icon(
+                                        Icons.check_circle_rounded,
+                                        color: method.$4,
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }),
                           AppButton(
+                            isLoading: _isSubmitting,
                             text: l10n.t(
                               'home_service_booking.confirm_booking',
                             ),
@@ -1780,6 +1870,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 'address': addressText,
                                 'addressId': selectedAddress.id,
                                 'addressLabel': selectedAddress.label,
+                                'paymentLabel': paymentLabel,
                                 if (!_isZoneDispatchRoute)
                                   'providerId': bookingProvider.id,
                                 if (_isZoneDispatchRoute &&
@@ -1850,6 +1941,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 'quantity': 1,
                                 'metadata': bookingMetadata,
                               };
+                              setState(() => _isSubmitting = true);
                               try {
                                 final order = await ApiClient.post('/orders', {
                                   'userId': auth.user!.id,
@@ -1863,31 +1955,71 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                   'items': [orderItem],
                                 });
                                 if (!context.mounted) return;
+                                final orderMap = order is Map
+                                    ? Map<String, dynamic>.from(order)
+                                    : <String, dynamic>{};
+                                final orderId = orderMap['id']?.toString();
+                                if (orderId == null || orderId.isEmpty) {
+                                  throw Exception(
+                                    'Order was created without an id.',
+                                  );
+                                }
+                                WaafiPaymentResult? waafiResult;
+                                if (isWaafiPay) {
+                                  waafiResult = await context
+                                      .read<PaymentProvider>()
+                                      .initiateWaafiPayment(
+                                        orderId: orderId,
+                                        userId: auth.user!.id,
+                                        amount: bookingServiceFee,
+                                        description:
+                                            '${serviceOptions[selectedService]} booking $orderId',
+                                      );
+                                  if (!context.mounted) return;
+                                  if (!waafiResult.success) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          waafiResult.message ??
+                                              'Could not start WaafiPay payment.',
+                                        ),
+                                        backgroundColor: AppColors.error,
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  final paymentUrl = waafiResult.paymentUrl;
+                                  if (paymentUrl != null &&
+                                      paymentUrl.isNotEmpty) {
+                                    await launchUrl(
+                                      Uri.parse(paymentUrl),
+                                      mode: LaunchMode.externalApplication,
+                                    );
+                                    if (!context.mounted) return;
+                                  }
+                                }
                                 AnalyticsService.instance.track(
                                   AnalyticsEvents.checkoutCompleted,
                                   properties: {
                                     'module_type': isHouseHelp
                                         ? 'house_help'
                                         : 'home_services',
-                                    'order_id': order is Map
-                                        ? order['id']?.toString()
-                                        : null,
+                                    'order_id': orderId,
                                     'provider_id': bookingProvider.id,
                                     'service_name':
                                         serviceOptionsRaw[selectedService],
                                     'amount': bookingServiceFee,
                                     'item_count': 1,
+                                    'payment_label': paymentLabel,
                                     'is_zone_dispatch': _isZoneDispatchRoute,
                                   },
                                 );
                                 context.go(
                                   '/checkout/success',
                                   extra: {
-                                    'orderId': order['id'],
+                                    'orderId': orderId,
                                     'amount': bookingServiceFee,
-                                    'payment': l10n.t(
-                                      'home_service_booking.pay_on_confirmation',
-                                    ),
+                                    'payment': paymentLabel,
                                     'delivery': isInstantHouseHelp
                                         ? houseHelpArrivalOptionsRaw[selectedHouseHelpArrival]
                                         : '${_summaryDateLabel(selectedDateValue)}, ${_times[_selectedTime]}',
@@ -1896,10 +2028,14 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     'itemCount': 1,
                                     'address': addressText,
                                     'trackingRoute':
-                                        '/home-services/booking/${order['id']}',
-                                    'trackingExtra': order is Map
-                                        ? Map<String, dynamic>.from(order)
-                                        : null,
+                                        '/home-services/booking/$orderId',
+                                    'trackingExtra': {
+                                      ...orderMap,
+                                      'paymentLabel': paymentLabel,
+                                      if (waafiResult?.referenceId != null)
+                                        'paymentReference':
+                                            waafiResult!.referenceId,
+                                    },
                                   },
                                 );
                               } catch (error) {
@@ -1924,6 +2060,10 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     ),
                                   ),
                                 );
+                              } finally {
+                                if (context.mounted) {
+                                  setState(() => _isSubmitting = false);
+                                }
                               }
                             },
                           ),

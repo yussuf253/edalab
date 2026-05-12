@@ -46,14 +46,12 @@ class PaymentService {
     required String orderId,
     required String userId,
     required double amount,
-    required String mobileNumber,
     String? description,
   }) async {
     final response = await ApiClient.post('/payments/waafipay/initiate', {
       'orderId': orderId,
       'userId': userId,
       'amount': amount,
-      'mobileNumber': _formatDjiboutiMobileNumber(mobileNumber),
       if (description != null && description.trim().isNotEmpty)
         'description': description.trim(),
     });
@@ -65,12 +63,5 @@ class PaymentService {
       success: false,
       message: 'Unexpected payment response.',
     );
-  }
-
-  String _formatDjiboutiMobileNumber(String number) {
-    final cleanNumber = number.replaceAll(RegExp(r'\D'), '');
-    if (cleanNumber.startsWith('253')) return cleanNumber.substring(3);
-    if (cleanNumber.startsWith('0')) return cleanNumber.substring(1);
-    return cleanNumber;
   }
 }

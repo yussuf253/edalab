@@ -22,7 +22,6 @@ class PaymentProvider extends ChangeNotifier {
     required String orderId,
     required String userId,
     required double amount,
-    required String mobileNumber,
     String? description,
   }) async {
     _isProcessing = true;
@@ -34,7 +33,6 @@ class PaymentProvider extends ChangeNotifier {
         orderId: orderId,
         userId: userId,
         amount: amount,
-        mobileNumber: mobileNumber,
         description: description,
       );
       _lastWaafiResult = result;
