@@ -63,6 +63,8 @@ import '../../features/laundry/screens/laundry_order_screen.dart';
 import '../../features/laundry/screens/laundry_tracking_screen.dart';
 import '../../features/checkout/screens/checkout_screen.dart';
 import '../../features/checkout/screens/order_success_screen.dart';
+import '../../features/checkout/screens/payment_success_screen.dart';
+import '../../features/checkout/screens/payment_failure_screen.dart';
 import '../../features/rewards/screens/coupons_screen.dart';
 import '../../features/profile/screens/edit_profile_screen.dart';
 import '../../features/profile/screens/addresses_screen.dart';
@@ -514,6 +516,22 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         path: '/checkout/success',
         builder: (context, state) => OrderSuccessScreen(
           orderData: state.extra is Map<String, dynamic>
+              ? state.extra as Map<String, dynamic>
+              : null,
+        ),
+      ),
+      GoRoute(
+        path: '/payment/success',
+        builder: (context, state) => PaymentSuccessScreen(
+          paymentData: state.extra is Map<String, dynamic>
+              ? state.extra as Map<String, dynamic>
+              : null,
+        ),
+      ),
+      GoRoute(
+        path: '/payment/failed',
+        builder: (context, state) => PaymentFailureScreen(
+          paymentData: state.extra is Map<String, dynamic>
               ? state.extra as Map<String, dynamic>
               : null,
         ),

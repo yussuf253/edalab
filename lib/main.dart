@@ -12,6 +12,7 @@ import 'core/router/app_router.dart';
 import 'core/services/notification_sync_service.dart';
 import 'core/services/push_notification_service.dart';
 import 'core/services/app_version_service.dart';
+import 'core/services/deep_link_service.dart';
 import 'core/storage/app_preferences.dart';
 import 'pro/core/providers/pro_auth_provider.dart';
 import 'pro/core/services/pro_inbox_sync_service.dart';
@@ -204,6 +205,7 @@ Future<void> _bootstrapAppServices({
       final context = rootNavigatorKey.currentContext;
       if (context != null && context.mounted) {
         AppVersionService().initialize(context);
+        DeepLinkService().initialize(context);
       }
     } catch (e) {
       print('Version service initialization error: $e');

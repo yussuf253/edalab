@@ -40,6 +40,7 @@ dependencies:
   url_launcher: ^6.3.2
   package_info_plus: ^8.0.0
   google_maps_flutter: ^2.17.0
+  uni_links: ^0.5.1
   geolocator: ^14.0.2
   image_picker: ^1.1.2
   amplitude_flutter: ^4.0.0

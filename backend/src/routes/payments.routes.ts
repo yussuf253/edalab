@@ -506,6 +506,8 @@ const webOrigin = configuredBase
   ? configuredBase.replace(/\/api$/i, '').replace(/\/+$/, '')
   : `${req.protocol}://${req.get('host')}`;
 
+const deepLinkOrigin = env.DEEP_LINK_URL || 'https://edalab.app';
+
 if (
   existingPayment?.status === 'COMPLETED' &&
   existingPayment?.transactionId ===
@@ -514,7 +516,7 @@ if (
   console.log('Duplicate callback ignored');
 
   return res.redirect(
-    `${webOrigin}/payment/success?orderId=${order.id}`,
+    `${deepLinkOrigin}/payment/success?orderId=${order.id}`,
   );
 }
 
@@ -592,12 +594,12 @@ if (
 
     if (paid) {
       return res.redirect(
-        `${webOrigin}/payment/success?orderId=${order.id}`,
+        `${deepLinkOrigin}/payment/success?orderId=${order.id}`,
       );
     }
 
     return res.redirect(
-      `${webOrigin}/payment/failed?message=${encodeURIComponent(
+      `${deepLinkOrigin}/payment/failed?message=${encodeURIComponent(
         responseMsg || 'Payment failed',
       )}`,
     );

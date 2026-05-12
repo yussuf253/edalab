@@ -25,6 +25,8 @@ const envSchema = z.object({
   WAAFIPAY_MERCHANT_UID: z.string().optional(),
   WAAFIPAY_PRODUCTION: z.coerce.boolean().default(true),
   WAAFIPAY_CALLBACK_HTML_REDIRECT: z.coerce.boolean().default(false),
+  DEEP_LINK_URL: z.string().optional(),
+
 });
 
 export const env = envSchema.parse(process.env);
