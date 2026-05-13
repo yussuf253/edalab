@@ -24,5 +24,11 @@ const envSchema = zod_1.z.object({
     FIREBASE_CLIENT_EMAIL: zod_1.z.string().optional(),
     FIREBASE_PRIVATE_KEY: zod_1.z.string().optional(),
     FIREBASE_SERVICE_ACCOUNT_JSON: zod_1.z.string().optional(),
+    WAAFIPAY_STORE_ID: zod_1.z.string().optional(),
+    WAAFIPAY_HPP_KEY: zod_1.z.string().optional(),
+    WAAFIPAY_MERCHANT_UID: zod_1.z.string().optional(),
+    WAAFIPAY_PRODUCTION: zod_1.z.coerce.boolean().default(true),
+    WAAFIPAY_CALLBACK_HTML_REDIRECT: zod_1.z.coerce.boolean().default(false),
+    DEEP_LINK_URL: zod_1.z.string().optional(),
 });
 exports.env = envSchema.parse(process.env);

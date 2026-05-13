@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { env } from '../config/env';
-import WebSocket from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 
 // Initialize Supabase client
 const supabaseUrl = env.SUPABASE_URL?.trim();
@@ -13,12 +13,12 @@ if (!supabaseUrl || !supabaseKey) {
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // WebSocket server for real-time updates
-let wss: WebSocket.Server | null = null;
+let wss: WebSocketServer | null = null;
 
 export function initializeWebSocketServer(server: any) {
-  wss = new WebSocket.Server({ server });
+  wss = new WebSocketServer({ server });
   
-  wss.on('connection', (ws) => {
+  wss.on('connection', (ws: WebSocket) => {
     console.log('New WebSocket client connected');
     
     ws.on('close', () => {
@@ -30,7 +30,7 @@ export function initializeWebSocketServer(server: any) {
 // Function to broadcast messages to all connected WebSocket clients
 export function broadcastToClients(message: string) {
   if (wss) {
-    wss.clients.forEach((client) => {
+    wss.clients.forEach((client: WebSocket) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(message);
       }

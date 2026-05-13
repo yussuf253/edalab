@@ -32,6 +32,7 @@ const createOrderSchema = zod_1.z.object({
     discount: zod_1.z.coerce.number().optional().default(0),
     total: zod_1.z.coerce.number(),
     notes: zod_1.z.string().optional(),
+    deferNotifications: zod_1.z.boolean().optional().default(false),
     items: zod_1.z.array(orderItemSchema).default([]),
 });
 const createPharmacyPrescriptionOrderSchema = zod_1.z.object({
@@ -798,16 +799,18 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
             deliveryAssignee: true,
         },
     });
-    const primaryLabel = resolveOrderModuleName(order);
-    await (0, notifications_1.createOrderCreatedNotification)({
-        userId: order.userId,
-        orderId: order.id,
-        moduleType: order.moduleType,
-        moduleName: primaryLabel,
-    });
+    if (!body.deferNotifications) {
+        const primaryLabel = resolveOrderModuleName(order);
+        await (0, notifications_1.createOrderCreatedNotification)({
+            userId: order.userId,
+            orderId: order.id,
+            moduleType: order.moduleType,
+            moduleName: primaryLabel,
+        });
+    }
     const serviceRequestModule = order.moduleType === client_1.ModuleType.HOME_SERVICES ||
         order.moduleType === client_1.ModuleType.HOUSE_HELP;
-    if (serviceRequestModule) {
+    if (serviceRequestModule && !body.deferNotifications) {
         const firstItem = order.items[0];
         const firstMetadata = firstItem
             ? enrichOrderItemMetadata(firstItem)
@@ -860,7 +863,7 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
             })));
         }
     }
-    if (order.moduleType === client_1.ModuleType.LAUNDRY) {
+    if (order.moduleType === client_1.ModuleType.LAUNDRY && !body.deferNotifications) {
         const firstItem = order.items[0];
         const firstMetadata = firstItem
             ? enrichOrderItemMetadata(firstItem)
