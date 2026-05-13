@@ -18,16 +18,23 @@ class RealtimeService {
     if (_isConnected) return;
 
     try {
-      // Replace with your actual WebSocket URL
-      final wsUrl = ApiClient.baseUrl.replaceFirst('http', 'ws') + '/ws';
+      // Build the correct WebSocket URL
+      final baseUrl = ApiClient.baseUrl;
+      final wsProtocol = baseUrl.startsWith('https') ? 'wss' : 'ws';
+      final wsHost = baseUrl.replaceFirst(RegExp(r'https?://'), '');
+      final wsUrl = '$wsProtocol://$wsHost/api/ws';
+
+      print('Connecting to WebSocket: $wsUrl');
+
       _channel = IOWebSocketChannel.connect(Uri.parse(wsUrl));
-      
+
       _channel?.stream.listen(
         (message) {
           _handleMessage(message);
         },
         onDone: () {
           _isConnected = false;
+          print('WebSocket connection closed');
           _reconnect();
         },
         onError: (error) {
@@ -38,7 +45,7 @@ class RealtimeService {
       );
 
       _isConnected = true;
-      print('WebSocket connected');
+      print('WebSocket connected successfully');
     } catch (e) {
       print('Failed to connect WebSocket: $e');
       _isConnected = false;
@@ -59,7 +66,7 @@ class RealtimeService {
     try {
       final data = json.decode(message);
       final table = data['table'] as String?;
-      
+
       if (table != null && _subscribers.containsKey(table)) {
         for (final callback in _subscribers[table]!) {
           callback(data);
@@ -76,7 +83,7 @@ class RealtimeService {
       _subscribers[table] = [];
     }
     _subscribers[table]!.add(callback);
-    
+
     // Also subscribe on the backend
     _subscribeOnBackend(table);
   }

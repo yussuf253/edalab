@@ -51,11 +51,17 @@ exports.supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey);
 // WebSocket server for real-time updates
 let wss = null;
 function initializeWebSocketServer(server) {
-    wss = new ws_1.WebSocketServer({ server });
+    wss = new ws_1.WebSocketServer({
+        server,
+        path: '/api/ws' // Set the WebSocket path
+    });
     wss.on('connection', (ws) => {
         console.log('New WebSocket client connected');
         ws.on('close', () => {
             console.log('WebSocket client disconnected');
+        });
+        ws.on('error', (error) => {
+            console.error('WebSocket error:', error);
         });
     });
 }
@@ -64,7 +70,12 @@ function broadcastToClients(message) {
     if (wss) {
         wss.clients.forEach((client) => {
             if (client.readyState === ws_1.default.OPEN) {
-                client.send(message);
+                try {
+                    client.send(message);
+                }
+                catch (error) {
+                    console.error('Error sending message to client:', error);
+                }
             }
         });
     }

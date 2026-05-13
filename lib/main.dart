@@ -13,6 +13,7 @@ import 'core/services/notification_sync_service.dart';
 import 'core/services/push_notification_service.dart';
 import 'core/services/app_version_service.dart';
 import 'core/services/deep_link_service.dart';
+import 'core/services/realtime_service.dart';
 import 'core/storage/app_preferences.dart';
 
 Future<void> main() async {
@@ -103,6 +104,7 @@ Future<void> main() async {
         appVersionProvider: appVersionProvider,
       ),
     );
+    RealtimeService().connect();
   });
 }
 

@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { env } from '../config/env';
 import WebSocket, { WebSocketServer } from 'ws';
+import http from 'http';
 
 // Initialize Supabase client
 const supabaseUrl = env.SUPABASE_URL?.trim();
@@ -15,14 +16,21 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 // WebSocket server for real-time updates
 let wss: WebSocketServer | null = null;
 
-export function initializeWebSocketServer(server: any) {
-  wss = new WebSocketServer({ server });
+export function initializeWebSocketServer(server: http.Server) {
+  wss = new WebSocketServer({
+    server,
+    path: '/api/ws' // Set the WebSocket path
+  });
   
   wss.on('connection', (ws: WebSocket) => {
     console.log('New WebSocket client connected');
     
     ws.on('close', () => {
       console.log('WebSocket client disconnected');
+    });
+    
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
     });
   });
 }
@@ -32,7 +40,11 @@ export function broadcastToClients(message: string) {
   if (wss) {
     wss.clients.forEach((client: WebSocket) => {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(message);
+        try {
+          client.send(message);
+        } catch (error) {
+          console.error('Error sending message to client:', error);
+        }
       }
     });
   }

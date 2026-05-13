@@ -11,6 +11,7 @@ const env_1 = require("./config/env");
 const routes_1 = __importDefault(require("./routes"));
 const version_routes_1 = __importDefault(require("./routes/version.routes"));
 const error_handler_1 = require("./middleware/error-handler");
+const http_1 = __importDefault(require("http"));
 const supabase_realtime_service_1 = require("./services/supabase-realtime.service");
 const app = (0, express_1.default)();
 app.set('trust proxy', 1);
@@ -145,11 +146,14 @@ app.use('/api/version', version_routes_1.default);
 app.use('/api', routes_1.default);
 app.use(error_handler_1.notFoundHandler);
 app.use(error_handler_1.errorHandler);
-const server = app.listen(env_1.env.PORT, '0.0.0.0', () => {
-    console.log(`EdaLab API running on http://0.0.0.0:${env_1.env.PORT}`);
-});
-// Initialize WebSocket server
+const server = http_1.default.createServer(app);
+// Initialize WebSocket server with the HTTP server
 (0, supabase_realtime_service_1.initializeWebSocketServer)(server);
+// Start the server
+server.listen(env_1.env.PORT, '0.0.0.0', () => {
+    console.log(`EdaLab API running on http://0.0.0.0:${env_1.env.PORT}`);
+    console.log(`WebSocket server running on ws://0.0.0.0:${env_1.env.PORT}`);
+});
 process.on('unhandledRejection', (reason) => {
     console.error('[UNHANDLED REJECTION]', reason);
 });
