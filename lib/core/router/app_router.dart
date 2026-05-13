@@ -75,8 +75,6 @@ import '../../features/profile/screens/settings_screen.dart';
 import '../../features/profile/screens/help_center_screen.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/search/screens/search_screen.dart';
-import '../../pro/features/auth/screens/pro_signup_screen.dart';
-import '../../pro/features/dashboard/screens/pro_dashboard_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey =
@@ -588,16 +586,6 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),
-      ),
-
-      // Pro App Routes
-      GoRoute(
-        path: '/pro/signup',
-        builder: (context, state) => const ProSignupScreen(),
-      ),
-      GoRoute(
-        path: '/pro/dashboard',
-        builder: (context, state) => const ProDashboardScreen(),
       ),
     ],
   );

@@ -6,8 +6,6 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/notification_bell.dart';
-import '../../../pro/core/providers/pro_auth_provider.dart';
-import '../../../pro/core/utils/pro_module_helper.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -15,11 +13,9 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
-    final proAuthProvider = context.watch<ProAuthProvider>();
     final languageProvider = context.watch<LanguageProvider>();
     final user = authProvider.user;
     final l10n = context.l10n;
-    final currentProProfile = proAuthProvider.currentProfile;
     final avatarUrl = user?.avatarUrl?.trim();
     final hasAvatar = avatarUrl != null && avatarUrl.isNotEmpty;
 
@@ -231,52 +227,6 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  //Text(l10n.t('profile.professional'), style: AppTextStyles.h4),
-                  //const SizedBox(height: 12),
-                  /*_MenuItem(
-                    currentProProfile != null
-                        ? ProModuleHelper.getProfileIcon(currentProProfile.type)
-                        : Icons.store_mall_directory_outlined,
-                    currentProProfile != null
-                        ? l10n.t(
-                            'profile.open_professional_profile',
-                            params: {
-                              'name': ProModuleHelper.getProfileName(
-                                currentProProfile.type,
-                              ),
-                            },
-                          )
-                        : l10n.t('profile.join_professional'),
-                    currentProProfile != null
-                        ? ProModuleHelper.getProfileColor(
-                            currentProProfile.type,
-                          )
-                        : AppColors.primary,
-                    onTap: () {
-                      if (user == null) {
-                        context.push('/pro/signup');
-                        return;
-                      }
-
-                      context.push(
-                        currentProProfile != null
-                            ? '/pro/dashboard'
-                            : '/pro/signup',
-                      );
-                    },
-                  ),*/
-                  if (currentProProfile != null)
-                    _MenuItem(
-                      Icons.badge_outlined,
-                      l10n.t(
-                        'profile.active_business_modules',
-                        params: {
-                          'count': '${currentProProfile.activeModules.length}',
-                        },
-                      ),
-                      AppColors.secondary,
-                      onTap: () => context.push('/pro/dashboard'),
-                    ),
                   const SizedBox(height: 20),
 
                   // Logout

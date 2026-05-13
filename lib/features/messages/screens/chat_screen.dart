@@ -12,8 +12,6 @@ import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
-import '../../../pro/core/models/pro_profile.dart';
-import '../../../pro/core/providers/pro_auth_provider.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
@@ -42,30 +40,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   Set<String> _seenNotificationIds = const <String>{};
 
   String? _actorUserId(BuildContext context) {
-    if (widget.isProView) {
-      return context.read<ProAuthProvider>().currentProfile?.userId;
-    }
     return context.read<AuthProvider>().user?.id;
   }
 
   String _senderRole(BuildContext context) {
-    if (!widget.isProView) return 'USER';
-    final profile = context.read<ProAuthProvider>().currentProfile;
-    if (profile == null) return 'DRIVER';
-    switch (profile.type) {
-      case ProProfileType.delivery:
-      case ProProfileType.rider:
-        return 'DRIVER';
-      case ProProfileType.provider:
-      case ProProfileType.doctor:
-      case ProProfileType.shop:
-        return 'PROVIDER';
-    }
+    return 'USER';
   }
 
   Future<void> _refreshProInboxSummary() async {
-    if (!widget.isProView || !mounted) return;
-    await context.read<ProAuthProvider>().refreshInboxSummary();
+    // No action needed since ProAuthProvider is removed
   }
 
   @override
@@ -135,8 +118,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     }
 
     final route = notification.route?.trim() ?? '';
-    return route == '/messages/chat/${widget.conversationId}' ||
-        route == '/pro/messages/chat/${widget.conversationId}';
+    return route == '/messages/chat/${widget.conversationId}';
   }
 
   void _handleNotificationsChanged() {
@@ -187,9 +169,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     try {
       final actorUserId = _actorUserId(context);
       final response = await ApiClient.get(
-        widget.isProView && actorUserId != null
-            ? '/messages/conversations/${widget.conversationId}?actorUserId=$actorUserId'
-            : '/messages/conversations/${widget.conversationId}',
+        '/messages/conversations/${widget.conversationId}',
         forceRefresh: true,
       );
       final data = Map<String, dynamic>.from(response as Map);
@@ -247,10 +227,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
     setState(() => _isSending = true);
     try {
-      final senderLabel = widget.isProView
-          ? context.read<ProAuthProvider>().currentProfile?.businessName ??
-                'Pro'
-          : context.read<AuthProvider>().user?.fullName ?? 'User';
+      final senderLabel = context.read<AuthProvider>().user?.fullName ?? 'User';
       await ApiClient.post(
         '/messages/conversations/${widget.conversationId}/messages',
         {
@@ -344,9 +321,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     itemCount: _messages.length,
                     itemBuilder: (context, index) {
                       final message = _messages[index];
-                      final isMine = widget.isProView
-                          ? message.senderRole != 'USER'
-                          : message.isMine;
+                      final isMine = message.isMine;
                       return Align(
                         alignment: isMine
                             ? Alignment.centerRight
