@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { subscribeToTableChanges, unsubscribeFromTableChanges } from '../services/supabase-realtime.service';
+import { subscribeToTableChanges, unsubscribeFromTableChanges, addSSEClient } from '../services/supabase-realtime.service';
 
 const router = Router();
 
@@ -41,20 +41,20 @@ router.post('/unsubscribe', (req, res) => {
     return res.status(400).json({ error: 'Table name is required' });
   }
 
-  const channel = activeSubscriptions.get(table);
-  if (channel) {
-    unsubscribeFromTableChanges(channel);
-    activeSubscriptions.delete(table);
-    res.status(200).json({ message: `Unsubscribed from ${table} changes` });
-  } else {
-    res.status(404).json({ error: `No active subscription for ${table}` });
-  }
+  unsubscribeFromTableChanges(table);
+  activeSubscriptions.delete(table);
+  res.status(200).json({ message: `Unsubscribed from ${table} changes` });
 });
 
 // Get list of active subscriptions
 router.get('/subscriptions', (req, res) => {
   const subscriptions = Array.from(activeSubscriptions.keys());
   res.status(200).json({ subscriptions });
+});
+
+// SSE endpoint for receiving real-time updates
+router.get('/events', (req, res) => {
+  addSSEClient(req, res);
 });
 
 export default router;

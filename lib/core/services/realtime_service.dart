@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:http/http.dart' as http;
 import '../network/api_client.dart';
 
 class RealtimeService {
@@ -9,59 +8,70 @@ class RealtimeService {
   factory RealtimeService() => _instance;
   RealtimeService._internal();
 
-  WebSocketChannel? _channel;
+  http.Client? _client;
   final Map<String, List<Function(dynamic)>> _subscribers = {};
   bool _isConnected = false;
 
-  /// Connect to the WebSocket server
+  /// Connect to the SSE server
   Future<void> connect() async {
     if (_isConnected) return;
 
     try {
-      // Build the correct WebSocket URL
-      final baseUrl = ApiClient.baseUrl;
-      final wsProtocol = baseUrl.startsWith('https') ? 'wss' : 'ws';
-      final wsHost = baseUrl.replaceFirst(RegExp(r'https?://'), '');
-      final wsUrl = '$wsProtocol://$wsHost/api/ws';
+      final sseUrl = '${ApiClient.baseUrl}/realtime/events';
+      print('Connecting to SSE: $sseUrl');
 
-      print('Connecting to WebSocket: $wsUrl');
+      _client = http.Client();
+      final request = http.Request('GET', Uri.parse(sseUrl));
 
-      _channel = IOWebSocketChannel.connect(Uri.parse(wsUrl));
+      final response = await _client!.send(request);
 
-      _channel?.stream.listen(
-        (message) {
-          _handleMessage(message);
-        },
-        onDone: () {
-          _isConnected = false;
-          print('WebSocket connection closed');
-          _reconnect();
-        },
-        onError: (error) {
-          print('WebSocket error: $error');
-          _isConnected = false;
-          _reconnect();
-        },
-      );
+      if (response.statusCode == 200) {
+        _isConnected = true;
+        print('SSE connected successfully');
 
-      _isConnected = true;
-      print('WebSocket connected successfully');
+        // Listen to the stream
+        response.stream
+            .transform(const Utf8Decoder())
+            .transform(const LineSplitter())
+            .listen(
+              (line) {
+                if (line.startsWith('data: ')) {
+                  final data = line.substring(6).trim();
+                  if (data.isNotEmpty) {
+                    _handleMessage(data);
+                  }
+                }
+              },
+              onDone: () {
+                _isConnected = false;
+                print('SSE connection closed');
+                _reconnect();
+              },
+              onError: (error) {
+                print('SSE error: $error');
+                _isConnected = false;
+                _reconnect();
+              },
+            );
+      } else {
+        throw Exception('Failed to connect to SSE: ${response.statusCode}');
+      }
     } catch (e) {
-      print('Failed to connect WebSocket: $e');
+      print('Failed to connect SSE: $e');
       _isConnected = false;
       await Future.delayed(Duration(seconds: 5));
       await connect();
     }
   }
 
-  /// Reconnect to the WebSocket server
+  /// Reconnect to the SSE server
   Future<void> _reconnect() async {
     print('Attempting to reconnect...');
     await Future.delayed(Duration(seconds: 5));
     await connect();
   }
 
-  /// Handle incoming WebSocket messages
+  /// Handle incoming SSE messages
   void _handleMessage(String message) {
     try {
       final data = json.decode(message);
@@ -73,7 +83,7 @@ class RealtimeService {
         }
       }
     } catch (e) {
-      print('Error handling WebSocket message: $e');
+      print('Error handling SSE message: $e');
     }
   }
 
@@ -118,14 +128,14 @@ class RealtimeService {
     }
   }
 
-  /// Disconnect from the WebSocket server
+  /// Disconnect from the SSE server
   void disconnect() {
-    _channel?.sink.close();
-    _channel = null;
+    _client?.close();
+    _client = null;
     _isConnected = false;
     _subscribers.clear();
   }
 
-  /// Check if connected to WebSocket server
+  /// Check if connected to SSE server
   bool get isConnected => _isConnected;
 }

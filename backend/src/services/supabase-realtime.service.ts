@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { env } from '../config/env';
-import WebSocket, { WebSocketServer } from 'ws';
-import http from 'http';
+import { Request, Response } from 'express';
 
 // Initialize Supabase client
 const supabaseUrl = env.SUPABASE_URL?.trim();
@@ -13,45 +12,20 @@ if (!supabaseUrl || !supabaseKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// WebSocket server for real-time updates
-let wss: WebSocketServer | null = null;
+// Store active subscriptions
+const activeSubscriptions: Map<string, any> = new Map();
 
-export function initializeWebSocketServer(server: http.Server) {
-  wss = new WebSocketServer({
-    server,
-    path: '/api/ws' // Set the WebSocket path
-  });
-  
-  wss.on('connection', (ws: WebSocket) => {
-    console.log('New WebSocket client connected');
-    
-    ws.on('close', () => {
-      console.log('WebSocket client disconnected');
-    });
-    
-    ws.on('error', (error) => {
-      console.error('WebSocket error:', error);
-    });
-  });
-}
-
-// Function to broadcast messages to all connected WebSocket clients
-export function broadcastToClients(message: string) {
-  if (wss) {
-    wss.clients.forEach((client: WebSocket) => {
-      if (client.readyState === WebSocket.OPEN) {
-        try {
-          client.send(message);
-        } catch (error) {
-          console.error('Error sending message to client:', error);
-        }
-      }
-    });
-  }
-}
+// Store connected clients for SSE
+export const sseClients: Map<string, Response> = new Map();
 
 // Function to subscribe to real-time updates for a specific table
 export function subscribeToTableChanges(table: string, callback: (payload: any) => void) {
+  // Check if already subscribed to this table
+  if (activeSubscriptions.has(table)) {
+    console.log(`Already subscribed to ${table}`);
+    return activeSubscriptions.get(table);
+  }
+
   const channel = supabase
     .channel(`table-changes-${table}`)
     .on(
@@ -59,8 +33,8 @@ export function subscribeToTableChanges(table: string, callback: (payload: any) 
       { event: '*', schema: 'public', table },
       (payload) => {
         console.log(`Change received for ${table}:`, payload);
-        // Broadcast the change to all WebSocket clients
-        broadcastToClients(JSON.stringify({
+        // Broadcast the change to all connected SSE clients
+        broadcastToSSEClients(JSON.stringify({
           table,
           event: payload.eventType,
           data: payload.new || payload.old
@@ -74,11 +48,57 @@ export function subscribeToTableChanges(table: string, callback: (payload: any) 
       }
     });
 
+  activeSubscriptions.set(table, channel);
   return channel;
 }
 
 // Function to unsubscribe from real-time updates
-export function unsubscribeFromTableChanges(channel: any) {
-  supabase.removeChannel(channel);
-  console.log('Unsubscribed from table changes');
+export function unsubscribeFromTableChanges(table: string) {
+  const channel = activeSubscriptions.get(table);
+  if (channel) {
+    supabase.removeChannel(channel);
+    activeSubscriptions.delete(table);
+    console.log(`Unsubscribed from ${table} changes`);
+  }
+}
+
+// Function to broadcast messages to all connected SSE clients
+export function broadcastToSSEClients(message: string) {
+  sseClients.forEach((res, clientId) => {
+    try {
+      res.write(`data: ${message}\n\n`);
+    } catch (error) {
+      console.error(`Error sending SSE to client ${clientId}:`, error);
+      sseClients.delete(clientId);
+    }
+  });
+}
+
+// Function to add an SSE client
+export function addSSEClient(req: Request, res: Response) {
+  const clientId = Date.now().toString();
+  
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Cache-Control',
+  });
+  
+  sseClients.set(clientId, res);
+  
+  req.on('close', () => {
+    console.log(`SSE client ${clientId} disconnected`);
+    sseClients.delete(clientId);
+  });
+  
+  req.on('error', (error) => {
+    console.error(`SSE client ${clientId} error:`, error);
+    sseClients.delete(clientId);
+  });
+  
+  console.log(`New SSE client connected: ${clientId}`);
+  
+  return clientId;
 }

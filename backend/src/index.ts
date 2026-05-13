@@ -7,8 +7,6 @@ import apiRoutes from './routes';
 import versionRouter from './routes/version.routes';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
 import http from 'http';
-import { initializeWebSocketServer } from './services/supabase-realtime.service';
-
 const app = express();
 app.set('trust proxy', 1);
 const avatarFallbackSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 220 220"><rect width="220" height="220" rx="44" fill="#E8F1FF"/><circle cx="110" cy="92" r="34" fill="#7AA3E8"/><path d="M44 193c12-33 38-54 66-54s54 21 66 54" fill="#7AA3E8"/></svg>`;
@@ -176,13 +174,9 @@ app.use(errorHandler);
 
 const server = http.createServer(app);
 
-// Initialize WebSocket server with the HTTP server
-initializeWebSocketServer(server);
-
 // Start the server
 server.listen(env.PORT, '0.0.0.0', () => {
   console.log(`EdaLab API running on http://0.0.0.0:${env.PORT}`);
-  console.log(`WebSocket server running on ws://0.0.0.0:${env.PORT}`);
 });
 
 process.on('unhandledRejection', (reason) => {
