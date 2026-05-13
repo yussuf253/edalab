@@ -1,4 +1,4 @@
-import cors from 'cors';
+  import cors from 'cors';
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
@@ -6,6 +6,7 @@ import { env } from './config/env';
 import apiRoutes from './routes';
 import versionRouter from './routes/version.routes';
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
+import { initializeWebSocketServer } from './services/supabase-realtime.service';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -172,9 +173,12 @@ app.use('/api', apiRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-app.listen(env.PORT, '0.0.0.0', () => {
+const server = app.listen(env.PORT, '0.0.0.0', () => {
   console.log(`EdaLab API running on http://0.0.0.0:${env.PORT}`);
 });
+
+// Initialize WebSocket server
+initializeWebSocketServer(server);
 
 process.on('unhandledRejection', (reason) => {
   console.error('[UNHANDLED REJECTION]', reason);
@@ -183,3 +187,4 @@ process.on('unhandledRejection', (reason) => {
 process.on('uncaughtException', (error) => {
   console.error('[UNCAUGHT EXCEPTION]', error);
 });
+

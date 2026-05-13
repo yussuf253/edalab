@@ -13,6 +13,7 @@ import proRoutes from './pro.routes';
 import promotionsRoutes from './promotions.routes';
 import ridesRoutes from './rides.routes';
 import usersRoutes from './users.routes';
+import realtimeRoutes from './realtime.routes';
 
 const router = Router();
 
@@ -37,5 +38,6 @@ router.use('/appointments', appointmentsRoutes);
 router.use('/rides', ridesRoutes);
 router.use('/promotions', promotionsRoutes);
 router.use('/notifications', notificationsRoutes);
+router.use('/realtime', realtimeRoutes);
 
 export default router;
