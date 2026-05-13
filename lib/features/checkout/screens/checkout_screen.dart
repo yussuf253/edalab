@@ -786,18 +786,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             'paymentUrl': paymentUrl,
                             'orderId': orderId,
                             'amount': total,
+                            'moduleName': moduleLabel,
                           },
                         );
                         return;
                       }
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Complete payment in WaafiPay. Your order will be confirmed after payment.',
-                          ),
-                          backgroundColor: AppColors.success,
-                        ),
-                      );
                       return;
                     }
                     AnalyticsService.instance.track(

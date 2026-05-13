@@ -2,19 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 import 'package:go_router/go_router.dart';
-import 'payment_success_screen.dart';
-import 'payment_failure_screen.dart';
 
 class PaymentWebViewScreen extends StatefulWidget {
   final String paymentUrl;
   final String successUrl;
   final String failureUrl;
+  final double amount;
+  final String moduleName;
 
   const PaymentWebViewScreen({
     super.key,
     required this.paymentUrl,
     required this.successUrl,
     required this.failureUrl,
+    this.amount = 0.0,
+    this.moduleName = 'Order',
   });
 
   @override
@@ -129,8 +131,10 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       '/payment/success',
       extra: {
         'orderId': orderId,
-        'moduleName': 'Order',
-        'amount': 0.0, // You might want to pass the actual amount
+        'moduleName': widget.moduleName,
+        'amount': widget.amount,
+        'paymentMethod': 'WaafiPay',
+        'status': 'completed',
       },
     );
   }
@@ -144,8 +148,8 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       extra: {
         'message': message,
         'orderId': '',
-        'moduleName': 'Order',
-        'amount': 0.0,
+        'moduleName': widget.moduleName,
+        'amount': widget.amount,
       },
     );
   }

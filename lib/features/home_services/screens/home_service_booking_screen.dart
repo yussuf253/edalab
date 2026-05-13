@@ -2000,18 +2000,12 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                         'paymentUrl': paymentUrl,
                                         'orderId': orderId,
                                         'amount': bookingServiceFee,
+                                        'moduleName':
+                                            serviceOptions[selectedService],
                                       },
                                     );
                                     if (!context.mounted) return;
                                   }
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Complete payment in WaafiPay. Your booking will be confirmed after payment.',
-                                      ),
-                                      backgroundColor: AppColors.success,
-                                    ),
-                                  );
                                   return;
                                 }
                                 AnalyticsService.instance.track(

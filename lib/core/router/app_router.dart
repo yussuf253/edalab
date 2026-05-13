@@ -550,6 +550,8 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
               extra['orderId'] as String? ?? '',
             ),
             failureUrl: AppConfig.getPaymentFailureUrl('Payment failed'),
+            amount: (extra['amount'] as num?)?.toDouble() ?? 0.0,
+            moduleName: extra['moduleName'] as String? ?? 'Order',
           );
         },
       ),

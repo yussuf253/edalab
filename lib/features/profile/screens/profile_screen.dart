@@ -231,9 +231,9 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  Text(l10n.t('profile.professional'), style: AppTextStyles.h4),
-                  const SizedBox(height: 12),
-                  _MenuItem(
+                  //Text(l10n.t('profile.professional'), style: AppTextStyles.h4),
+                  //const SizedBox(height: 12),
+                  /*_MenuItem(
                     currentProProfile != null
                         ? ProModuleHelper.getProfileIcon(currentProProfile.type)
                         : Icons.store_mall_directory_outlined,
@@ -264,7 +264,7 @@ class ProfileScreen extends StatelessWidget {
                             : '/pro/signup',
                       );
                     },
-                  ),
+                  ),*/
                   if (currentProProfile != null)
                     _MenuItem(
                       Icons.badge_outlined,
