@@ -2684,8 +2684,6 @@ async function buildDashboard(profile: {
 
       return {
         headline: 'Provider operations',
-        scopeNote:
-          'Services are scoped to bound providers, and laundry now follows explicitly owned laundry services when claimed by this provider profile.',
         stats: [
           {
             key: 'jobs',
