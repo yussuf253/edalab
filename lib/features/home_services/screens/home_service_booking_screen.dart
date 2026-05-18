@@ -622,13 +622,13 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
     final paymentMethods = [
       (
         l10n.t('home_service_booking.pay_on_confirmation'),
-        'Confirm now and pay after provider approval',
+        l10n.t('home_service_booking.pay_on_confirmation_description'),
         Icons.handshake_rounded,
         AppColors.homeServices,
       ),
       (
-        'WaafiPay',
-        'EVC Plus / mobile wallet',
+        l10n.t('home_service_booking.waafipay'),
+        l10n.t('home_service_booking.waafipay_description'),
         Icons.account_balance_wallet_rounded,
         AppColors.food,
       ),

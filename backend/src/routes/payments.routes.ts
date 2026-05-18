@@ -598,8 +598,10 @@ if (
       );
     }
 
+    // Include status and orderId in the redirect so the frontend can show a
+    // meaningful error screen.
     return res.redirect(
-      `${webOrigin}/payment/failed?message=${encodeURIComponent(
+      `${webOrigin}/payment/failed?status=${paymentStatus}&orderId=${order.id}&message=${encodeURIComponent(
         responseMsg || 'Payment failed',
       )}`,
     );

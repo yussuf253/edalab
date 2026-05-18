@@ -30,8 +30,12 @@ class _PaymentFailureScreenState extends State<PaymentFailureScreen> {
     final orderId = widget.paymentData?['orderId'] as String? ?? '';
     final amount = (widget.paymentData?['amount'] as num?)?.toDouble() ?? 0.0;
     final moduleName = widget.paymentData?['moduleName'] as String? ?? 'Order';
-    final errorMessage = widget.paymentData?['message'] as String? ??
+    // The backend may send a `status` (e.g., FAILED, PENDING) and a human‑readable
+    // `message`. Prefer the explicit message; fall back to a generic error.
+    final errorMessage =
+        widget.paymentData?['message'] as String? ??
         l10n.t('payment_failure.default_error');
+    final status = widget.paymentData?['status'] as String? ?? 'FAILED';
 
     return PopScope(
       canPop: false,
@@ -101,8 +105,9 @@ class _PaymentFailureScreenState extends State<PaymentFailureScreen> {
                   ),
                   child: Column(
                     children: [
+                      // Show the status (e.g., FAILED, PENDING) as part of the error title
                       Text(
-                        l10n.t('payment_failure.error_title'),
+                        '${l10n.t('payment_failure.error_title')} ($status)',
                         style: AppTextStyles.labelLarge.copyWith(
                           color: AppColors.error,
                         ),

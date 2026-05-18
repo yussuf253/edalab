@@ -142,12 +142,15 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
   void _handlePaymentFailure(String url) {
     final uri = Uri.parse(url);
     final message = uri.queryParameters['message'] ?? 'Payment failed';
+    final status = uri.queryParameters['status'] ?? 'FAILED';
+    final orderId = uri.queryParameters['orderId'] ?? '';
 
     context.pushReplacement(
       '/payment/failed',
       extra: {
+        'status': status,
         'message': message,
-        'orderId': '',
+        'orderId': orderId,
         'moduleName': widget.moduleName,
         'amount': widget.amount,
       },

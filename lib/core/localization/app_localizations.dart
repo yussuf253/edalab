@@ -1173,6 +1173,8 @@ class AppLocalizations {
       'doctor_detail.service_fee': 'Service Fee',
       'doctor_detail.message': 'Message',
       'home_service_booking.title': 'Book Service',
+      'home_service_booking.pay_on_confirmation_description':
+          'Pay after the provider confirms the booking',
       'home_service_booking.choose_service': 'Choose Service',
       'home_service_booking.service_mode': 'Service Mode',
       'home_service_booking.select_date': 'Select Date',
@@ -1205,7 +1207,7 @@ class AppLocalizations {
       'home_service_booking.house_help_bring_supplies':
           'Bring cleaning supplies',
       'home_service_booking.house_help_supplies_fee':
-          'Adds \$5 service materials fee',
+          'Adds FDJ300 service materials fee',
       'home_service_booking.house_help_instant_dispatch':
           'Instant dispatch selected: {window}. A nearby helper is assigned immediately.',
       'home_service_booking.house_help_plan_one_time': 'One-time job',
@@ -1704,6 +1706,15 @@ class AppLocalizations {
       'payment_failure.back_home': 'Back to Home',
     },
     'fr': {
+      'checkout.payment_method': 'Méthode de paiement',
+      'home_service_booking.pay_on_confirmation_description':
+          'Payer après que le prestataire confirme la réservation',
+      'home_service_booking.confirm_booking': 'Confirmer la réservation',
+      'home_service_booking.choose_service': 'Chosissez un service',
+      'home_service_booking.title': 'Réservation',
+      'home_service_booking.pay_on_confirmation': 'Payer après le service',
+      'home_service_booking.waafipay': 'WaafiPay',
+      'home_service_booking.waafipay_description': 'Automatic payment',
       'payment_success.title': 'Paiement réussi ! 🎉',
       'payment_success.subtitle':
           'Votre paiement {moduleName} a été effectué avec succès.',
@@ -2426,7 +2437,7 @@ class AppLocalizations {
       'home_service_booking.house_help_bring_supplies':
           'Apporter les produits de nettoyage',
       'home_service_booking.house_help_supplies_fee':
-          'Ajoute 5\$ de frais de matériel',
+          'Ajoute FDJ300 de frais de matériel',
       'home_service_booking.house_help_instant_dispatch':
           'Dispatch instantané sélectionné : {window}. Un aide proche est assigné immédiatement.',
       'home_service_booking.house_help_plan_one_time': 'Mission unique',
@@ -2927,6 +2938,15 @@ class AppLocalizations {
           '{count} article{suffix} prêt{suffix} pour la livraison',
     },
     'ar': {
+      'home_service_booking.booking_type': 'نوع الحجز',
+      'home_service_booking.pay_on_confirmation_description':
+          'الدفع بعد تأكيد المزود للحجز',
+      'home_service_booking.waafipay': 'Waafi',
+      'home_service_booking.waafipay_description': 'الدفع التلقائي',
+      'home_service_booking.pay_on_confirmation': 'الدفع بعد تقديم الخدمة',
+      'home_service_booking.confirm_booking': 'تأكيد الحجز',
+      'home_service_booking.choose_service': 'اختر الخدمة',
+      'home_service_booking.title': 'الحجز',
       'common.all': 'الكل',
       'common.unread': 'غير المقروءة',
       'common.total': 'الإجمالي',
@@ -3579,7 +3599,7 @@ class AppLocalizations {
       'home_service_booking.house_help_tasks': 'المهام',
       'home_service_booking.house_help_bring_supplies': 'إحضار مواد التنظيف',
       'home_service_booking.house_help_supplies_fee':
-          'تضاف رسوم مواد قدرها 5\$',
+          'تضاف رسوم مواد قدرها FDJ300',
       'home_service_booking.house_help_instant_dispatch':
           'تم اختيار إرسال فوري: {window}. سيتم تعيين مساعد قريب مباشرة.',
       'home_service_booking.house_help_plan_one_time': 'مرة واحدة',
