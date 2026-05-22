@@ -35,7 +35,7 @@ class _ProProfileManagementScreenState
   bool _isUploadingAvatar = false;
   Uint8List? _pickedAvatarBytes;
   String? _latestAvatarUrl;
-  late Future<_ProfileInsights> _insightsFuture;
+  // _insightsFuture removed as profile snapshot UI is no longer needed
   Future<_ShopProfileDetails>? _shopProfileFuture;
   Future<List<Map<String, dynamic>>>? _providerSettingsFuture;
   Future<Map<String, dynamic>>? _providerAvailabilityFuture;
@@ -54,7 +54,7 @@ class _ProProfileManagementScreenState
       text: widget.profile.businessName,
     );
     _selectedModules = {...widget.profile.activeModules};
-    _insightsFuture = _loadInsights();
+    // _insightsFuture initialization removed
     if (widget.profile.type == ProProfileType.shop) {
       _shopProfileFuture = _loadShopProfileDetails();
     } else if (widget.profile.type == ProProfileType.provider) {
@@ -163,7 +163,7 @@ class _ProProfileManagementScreenState
           _businessNameController.text = updatedProfile.businessName;
           _selectedModules = {...updatedProfile.activeModules};
         }
-        _insightsFuture = _loadInsights();
+        // _insightsFuture refresh removed
         final refreshedProfile = updatedProfile ?? widget.profile;
         if (refreshedProfile.type == ProProfileType.shop) {
           _shopProfileFuture = _loadShopProfileDetails();
@@ -227,7 +227,7 @@ class _ProProfileManagementScreenState
   Future<void> _refreshInsights() async {
     final future = _loadInsights();
     setState(() {
-      _insightsFuture = future;
+      // _insightsFuture update removed
       final profile =
           context.read<ProAuthProvider>().currentProfile ?? widget.profile;
       if (profile.type == ProProfileType.shop) {
@@ -818,7 +818,7 @@ class _ProProfileManagementScreenState
       if (!mounted) return;
       setState(() {
         _deliveryQueueFuture = _loadDeliveryQueue();
-        _insightsFuture = _loadInsights();
+        // _insightsFuture reload removed
       });
       ScaffoldMessenger.of(
         context,
@@ -851,7 +851,7 @@ class _ProProfileManagementScreenState
       if (!mounted) return;
       setState(() {
         _rideQueueFuture = _loadRideQueue();
-        _insightsFuture = _loadInsights();
+        // _insightsFuture reload removed
       });
       ScaffoldMessenger.of(
         context,
@@ -1066,7 +1066,9 @@ class _ProProfileManagementScreenState
                               )
                             : const Icon(Icons.save_outlined),
                         label: Text(
-                          isSubmitting ? l10n.saving : l10n.saveProviderSettings,
+                          isSubmitting
+                              ? l10n.saving
+                              : l10n.saveProviderSettings,
                         ),
                       ),
                     ),
@@ -1268,25 +1270,19 @@ class _ProProfileManagementScreenState
               final price = double.tryParse(priceController.text.trim());
               if (name.length < 2) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.laundryServiceNameMustBeValid),
-                  ),
+                  SnackBar(content: Text(l10n.laundryServiceNameMustBeValid)),
                 );
                 return;
               }
               if (price == null || price <= 0) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.priceMustBeGreaterThanZero),
-                  ),
+                  SnackBar(content: Text(l10n.priceMustBeGreaterThanZero)),
                 );
                 return;
               }
               if (unit.length < 2) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.unitMustBeAtLeast2Chars),
-                  ),
+                  SnackBar(content: Text(l10n.unitMustBeAtLeast2Chars)),
                 );
                 return;
               }
@@ -1304,11 +1300,7 @@ class _ProProfileManagementScreenState
                     .toList();
                 if (parts.length < 2) {
                   ScaffoldMessenger.of(sheetContext).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        l10n.invalidItemCatalogLine(line),
-                      ),
-                    ),
+                    SnackBar(content: Text(l10n.invalidItemCatalogLine(line))),
                   );
                   return;
                 }
@@ -1325,20 +1317,14 @@ class _ProProfileManagementScreenState
                 if (label.isEmpty || parsedPrice == null || parsedPrice <= 0) {
                   ScaffoldMessenger.of(sheetContext).showSnackBar(
                     SnackBar(
-                      content: Text(
-                        l10n.invalidItemCatalogRequired(line),
-                      ),
+                      content: Text(l10n.invalidItemCatalogRequired(line)),
                     ),
                   );
                   return;
                 }
                 if (category == 'group' && spec.isEmpty) {
                   ScaffoldMessenger.of(sheetContext).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        l10n.groupItemNeedsSpec(label),
-                      ),
-                    ),
+                    SnackBar(content: Text(l10n.groupItemNeedsSpec(label))),
                   );
                   return;
                 }
@@ -1358,20 +1344,16 @@ class _ProProfileManagementScreenState
               }
               if (parsedCatalog.isEmpty) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.addItemCatalogEntry),
-                  ),
+                  SnackBar(content: Text(l10n.addItemCatalogEntry)),
                 );
                 return;
               }
 
               final slots = _splitTextList(pickupSlotsController.text);
               if (slots.isEmpty) {
-                ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.addPickupSlot),
-                  ),
-                );
+                ScaffoldMessenger.of(
+                  sheetContext,
+                ).showSnackBar(SnackBar(content: Text(l10n.addPickupSlot)));
                 return;
               }
 
@@ -1393,11 +1375,7 @@ class _ProProfileManagementScreenState
                   turnaroundHours < 1 ||
                   turnaroundHours > 168) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      l10n.turnaroundHoursRange,
-                    ),
-                  ),
+                  SnackBar(content: Text(l10n.turnaroundHoursRange)),
                 );
                 return;
               }
@@ -1405,9 +1383,7 @@ class _ProProfileManagementScreenState
                   minNoticeHours < 0 ||
                   minNoticeHours > 72) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.minNoticeHoursBetween),
-                  ),
+                  SnackBar(content: Text(l10n.minNoticeHoursBetween)),
                 );
                 return;
               }
@@ -1415,17 +1391,13 @@ class _ProProfileManagementScreenState
                   maxAdvanceDays < 1 ||
                   maxAdvanceDays > 30) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.maxAdvanceDaysBetween),
-                  ),
+                  SnackBar(content: Text(l10n.maxAdvanceDaysBetween)),
                 );
                 return;
               }
               if (taxRate == null || taxRate < 0 || taxRate > 40) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.taxRateMustBeBetween),
-                  ),
+                  SnackBar(content: Text(l10n.taxRateMustBeBetween)),
                 );
                 return;
               }
@@ -1433,9 +1405,7 @@ class _ProProfileManagementScreenState
                   deliveryFee < 0 ||
                   deliveryFee > 100000) {
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
-                  SnackBar(
-                    content: Text(l10n.deliveryFeeMustBeBetween),
-                  ),
+                  SnackBar(content: Text(l10n.deliveryFeeMustBeBetween)),
                 );
                 return;
               }
@@ -2188,7 +2158,10 @@ class _ProProfileManagementScreenState
         title: l10n.profileSnapshot,
         subtitle: l10n.couldNotLoadLiveProfileInsights,
         metrics: [
-          _ProfileMetric(label: l10n.status, value: l10n.temporarilyUnavailable),
+          _ProfileMetric(
+            label: l10n.status,
+            value: l10n.temporarilyUnavailable,
+          ),
         ],
       );
     }
@@ -2208,91 +2181,7 @@ class _ProProfileManagementScreenState
     return modes.length;
   }
 
-  List<_ProfileAction> _actionsForProfile(ProProfile profile) {
-    switch (profile.type) {
-      case ProProfileType.shop:
-        return [
-          _ProfileAction(
-            title: l10n.storefrontSetup,
-            subtitle: l10n.storefrontSetupSubtitle,
-            route: ProRoutePaths.shopStoreSetup,
-            icon: Icons.store_mall_directory_outlined,
-          ),
-          _ProfileAction(
-            title: l10n.productsMedicines,
-            subtitle: l10n.productsMedicinesSubtitle,
-            route: ProRoutePaths.shopProducts,
-            icon: Icons.inventory_2_outlined,
-          ),
-          _ProfileAction(
-            title: l10n.ordersQueue,
-            subtitle: l10n.ordersQueueSubtitle,
-            route: ProRoutePaths.shopQueue,
-            icon: Icons.receipt_long_outlined,
-          ),
-        ];
-      case ProProfileType.provider:
-        return [
-          _ProfileAction(
-            title: l10n.serviceAndLaundryProfiles,
-            subtitle: l10n.serviceAndLaundryProfilesSubtitle,
-            route: ProRoutePaths.providerAvailability,
-            icon: Icons.local_laundry_service_outlined,
-          ),
-          _ProfileAction(
-            title: l10n.scheduleAndBookingModes,
-            subtitle: l10n.scheduleAndBookingModesSubtitle,
-            route: ProRoutePaths.providerSchedule,
-            icon: Icons.schedule_outlined,
-          ),
-          _ProfileAction(
-            title: l10n.jobsQueue,
-            subtitle: l10n.jobsQueueSubtitle,
-            route: ProRoutePaths.providerQueue,
-            icon: Icons.work_outline,
-          ),
-        ];
-      case ProProfileType.doctor:
-        return [
-          _ProfileAction(
-            title: l10n.doctorDetails,
-            subtitle: l10n.doctorDetailsSubtitle,
-            route: ProRoutePaths.doctorSchedule,
-            icon: Icons.medical_services_outlined,
-          ),
-          _ProfileAction(
-            title: l10n.doctorAvailability,
-            subtitle: l10n.doctorAvailabilitySubtitle,
-            route: ProRoutePaths.doctorAvailability,
-            icon: Icons.toggle_on_outlined,
-          ),
-          _ProfileAction(
-            title: l10n.appointmentsQueue,
-            subtitle: l10n.appointmentsQueueSubtitle,
-            route: ProRoutePaths.doctorAppointments,
-            icon: Icons.event_note_outlined,
-          ),
-        ];
-      case ProProfileType.delivery:
-        return [
-          _ProfileAction(
-            title: l10n.dispatchQueue,
-            subtitle: l10n.dispatchQueueSubtitle,
-            route: ProRoutePaths.deliveryQueue,
-            icon: Icons.local_shipping_outlined,
-          ),
-        ];
-      case ProProfileType.rider:
-        return [
-          _ProfileAction(
-            title: l10n.rideQueue,
-            subtitle: l10n.rideQueueSubtitle,
-            route: ProRoutePaths.riderQueue,
-            icon: Icons.local_taxi_outlined,
-          ),
-        ];
-    }
-  }
+  // _actionsForProfile method removed as its UI has been eliminated.
 
   @override
   Widget build(BuildContext context) {
@@ -2357,87 +2246,8 @@ class _ProProfileManagementScreenState
                   ? _latestAvatarUrl
                   : currentProfile.avatarUrl,
               onUploadAvatar: _pickAndUploadAvatar,
-              onToggleModule: (module) {
-                setState(() {
-                  if (_selectedModules.contains(module)) {
-                    if (_selectedModules.length == 1) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            l10n.atLeastOneModuleMustStayEnabled,
-                          ),
-                        ),
-                      );
-                      return;
-                    }
-                    _selectedModules.remove(module);
-                  } else {
-                    _selectedModules.add(module);
-                  }
-                });
-              },
+              // Module toggling disabled – modules are immutable after signup.
               onSave: _saveProfile,
-            ),
-            const SizedBox(height: ProDesignSystem.spacing16),
-            ModernHeader(title: l10n.profileSnapshot),
-            FutureBuilder<_ProfileInsights>(
-              future: _insightsFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting &&
-                    !snapshot.hasData) {
-                  return const ModernCard(
-                    child: Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(ProDesignSystem.spacing16),
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
-                  );
-                }
-
-                final insights = snapshot.data;
-                if (insights == null) {
-                  return ModernCard(
-                    child: Text(
-                      l10n.couldNotLoadProfileInsights,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  );
-                }
-
-                return ModernCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        insights.title,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: ProDesignSystem.spacing6),
-                      Text(
-                        insights.subtitle,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF6B7280),
-                        ),
-                      ),
-                      const SizedBox(height: ProDesignSystem.spacing12),
-                      Wrap(
-                        spacing: ProDesignSystem.spacing8,
-                        runSpacing: ProDesignSystem.spacing8,
-                        children: insights.metrics
-                            .map(
-                              (metric) => _MetricPill(
-                                label: metric.label,
-                                value: metric.value,
-                              ),
-                            )
-                            .toList(growable: false),
-                      ),
-                    ],
-                  ),
-                );
-              },
             ),
             if (currentProfile.type == ProProfileType.shop) ...[
               const SizedBox(height: ProDesignSystem.spacing16),
@@ -2488,7 +2298,7 @@ class _ProProfileManagementScreenState
                   final restaurant = _primaryRestaurantFromData(
                     details.storefrontData,
                   );
-                   final storeName =
+                  final storeName =
                       store?['name']?.toString() ?? l10n.notConnected;
                   final restaurantName =
                       restaurant?['name']?.toString() ?? l10n.notConnected;
@@ -2496,7 +2306,7 @@ class _ProProfileManagementScreenState
                       restaurant?['subtitle']?.toString() ??
                       restaurant?['cuisine']?.toString() ??
                       '';
-                   final pharmacyName = details.pharmacyBusinesses.isNotEmpty
+                  final pharmacyName = details.pharmacyBusinesses.isNotEmpty
                       ? details.pharmacyBusinesses.first
                       : l10n.notConnected;
 
@@ -2525,7 +2335,9 @@ class _ProProfileManagementScreenState
                         title: l10n.pharmacyProfile,
                         value: pharmacyName,
                         subtitle: details.pharmacyBusinesses.length > 1
-                            ? l10n.pharmacyBusinessesConnected(details.pharmacyBusinesses.length)
+                            ? l10n.pharmacyBusinessesConnected(
+                                details.pharmacyBusinesses.length,
+                              )
                             : l10n.editPharmacyBusinessName,
                         onTap: () => _openPharmacyEditor(
                           businesses: details.pharmacyBusinesses,
@@ -2837,7 +2649,7 @@ class _ProProfileManagementScreenState
                               item['name']?.toString().trim().isNotEmpty == true
                               ? item['name'].toString()
                               : l10n.moduleDoctor;
-                           final specialty =
+                          final specialty =
                               item['specialty']?.toString().trim().isNotEmpty ==
                                   true
                               ? item['specialty'].toString()
@@ -2937,7 +2749,7 @@ class _ProProfileManagementScreenState
                               spacing: ProDesignSystem.spacing8,
                               runSpacing: ProDesignSystem.spacing8,
                               children: [
-                               _MetricPill(
+                                _MetricPill(
                                   label: l10n.openRequests,
                                   value: '$openCount',
                                 ),
@@ -2945,7 +2757,10 @@ class _ProProfileManagementScreenState
                                   label: l10n.assignedLabel,
                                   value: '$assignedCount',
                                 ),
-                                _MetricPill(label: l10n.lanesLabel, value: '$lanes'),
+                                _MetricPill(
+                                  label: l10n.lanesLabel,
+                                  value: '$lanes',
+                                ),
                               ],
                             ),
                             const SizedBox(height: ProDesignSystem.spacing12),
@@ -2964,7 +2779,7 @@ class _ProProfileManagementScreenState
                           final orderId = item['id']?.toString() ?? '';
                           final queueType =
                               item['queueType']?.toString() ?? 'open';
-                           final module = _dispatchModuleLabel(
+                          final module = _dispatchModuleLabel(
                             item['module']?.toString() ?? '',
                             l10n,
                           );
@@ -3096,7 +2911,7 @@ class _ProProfileManagementScreenState
                               spacing: ProDesignSystem.spacing8,
                               runSpacing: ProDesignSystem.spacing8,
                               children: [
-                                 _MetricPill(
+                                _MetricPill(
                                   label: l10n.openRequests,
                                   value: '$openCount',
                                 ),
@@ -3179,26 +2994,7 @@ class _ProProfileManagementScreenState
                 },
               ),
             ],
-            const SizedBox(height: ProDesignSystem.spacing16),
-            ModernHeader(title: l10n.profileFrontendSections),
-            ..._actionsForProfile(currentProfile).map(
-              (action) => Padding(
-                padding: const EdgeInsets.only(
-                  bottom: ProDesignSystem.spacing12,
-                ),
-                child: ModernTile(
-                  leadingIcon: action.icon,
-                  title: action.title,
-                  subtitle: action.subtitle,
-                  onTap: () => context.push(action.route),
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 16,
-                    color: Color(0xFF6B7280),
-                  ),
-                ),
-              ),
-            ),
+            // Profile frontend sections removed as per request
           ],
         ),
       ),
@@ -3218,7 +3014,7 @@ class _ProfileIdentityCard extends StatelessWidget {
     required this.pickedAvatarBytes,
     required this.displayAvatarUrl,
     required this.onUploadAvatar,
-    required this.onToggleModule,
+    // onToggleModule removed – modules are read‑only after signup
     required this.onSave,
   });
 
@@ -3232,7 +3028,7 @@ class _ProfileIdentityCard extends StatelessWidget {
   final Uint8List? pickedAvatarBytes;
   final String? displayAvatarUrl;
   final VoidCallback onUploadAvatar;
-  final ValueChanged<ProModule> onToggleModule;
+  // final ValueChanged<ProModule> onToggleModule; // removed
   final VoidCallback onSave;
 
   @override
@@ -3364,9 +3160,8 @@ class _ProfileIdentityCard extends StatelessWidget {
                       module,
                     ).withValues(alpha: 0.18),
                     showCheckmark: true,
-                    onSelected: isSavingProfile
-                        ? null
-                        : (_) => onToggleModule(module),
+                    // Modules are read‑only after signup; disable toggling.
+                    onSelected: null,
                   ),
                 )
                 .toList(growable: false),
@@ -3420,19 +3215,7 @@ class _MetricPill extends StatelessWidget {
   }
 }
 
-class _ProfileAction {
-  const _ProfileAction({
-    required this.title,
-    required this.subtitle,
-    required this.route,
-    required this.icon,
-  });
-
-  final String title;
-  final String subtitle;
-  final String route;
-  final IconData icon;
-}
+// _ProfileAction class removed as it is no longer used.
 
 class _ProfileMetric {
   const _ProfileMetric({required this.label, required this.value});

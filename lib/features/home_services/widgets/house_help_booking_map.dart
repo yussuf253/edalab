@@ -86,26 +86,16 @@ class _HouseHelpBookingMapState extends State<HouseHelpBookingMap> {
   }
 
   Set<Circle> _buildCircles() {
-    final circles = <Circle>{};
-    for (final provider in widget.providers) {
-      final center = _providerZoneCenter(provider);
-      if (center == null) continue;
-      final radiusKm = _toDouble(provider.serviceZone['radiusKm']) ?? 1;
-      final isSelected = widget.selectedProviderId == provider.id;
-      circles.add(
-        Circle(
-          circleId: CircleId('zone-${provider.id}'),
-          center: center,
-          radius: (radiusKm * 1000).clamp(100, 10000),
-          fillColor: (isSelected ? AppColors.homeServices : AppColors.info)
-              .withValues(alpha: 0.10),
-          strokeColor: (isSelected ? AppColors.homeServices : AppColors.info)
-              .withValues(alpha: 0.55),
-          strokeWidth: isSelected ? 2 : 1,
-        ),
-      );
-    }
-    return circles;
+    return {
+      Circle(
+        circleId: const CircleId('user-search-area'),
+        center: LatLng(widget.selectedLatitude, widget.selectedLongitude),
+        radius: 1000,
+        fillColor: AppColors.homeServices.withValues(alpha: 0.08),
+        strokeColor: AppColors.homeServices.withValues(alpha: 0.40),
+        strokeWidth: 2,
+      ),
+    };
   }
 
   Future<void> _fitCamera() async {

@@ -1,7 +1,7 @@
 name: edalab
 description: "EdaLab - Your All-in-One Super App"
 publish_to: 'none'
-version: 1.4.0+4
+version: 1.5.0+5
 
 environment:
   sdk: ^3.10.3
@@ -47,6 +47,7 @@ dependencies:
   webview_flutter: ^4.4.2
   webview_flutter_wkwebview: ^3.0.6
   web_socket_channel: ^2.4.0
+  flutter_gen: ^5.14.1
 
 dev_dependencies:
   flutter_test:

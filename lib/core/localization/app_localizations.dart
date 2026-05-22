@@ -152,7 +152,41 @@ class AppLocalizations {
     'deep cleaning': 'Nettoyage en profondeur',
     'office cleaning': 'Nettoyage de bureau',
     'disinfection': 'Désinfection',
+    'ecological disinfection': 'Désinfection écologique',
+    'leak repair': 'Réparation de fuite',
     'pipe installation': 'Installation de tuyaux',
+    'drain unclogging': 'Débouchage de canalisation',
+    'faucet sink repair': 'Réparation robinet et évier',
+    'toilet repair': 'Réparation de toilettes',
+    'water heater service': 'Service chauffe-eau',
+    'socket switch repair': 'Réparation prise et interrupteur',
+    'lighting installation': 'Installation d\'éclairage',
+    'wiring inspection': 'Inspection du câblage',
+    'circuit breaker service': 'Service disjoncteur',
+    'fan installation': 'Installation de ventilateur',
+    'power fault diagnosis': 'Diagnostic panne électrique',
+    'ac gas refill': 'Recharge gaz climatiseur',
+    'cooling fault diagnosis': 'Diagnostic panne de refroidissement',
+    'ac installation': 'Installation climatiseur',
+    'filter cleaning': 'Nettoyage filtre',
+    'emergency cooling repair': 'Réparation urgente de climatisation',
+    'makeup service': 'Service maquillage',
+    'nail care': 'Soin des ongles',
+    'facial treatment': 'Soin du visage',
+    'henna service': 'Service henné',
+    'bridal beauty': 'Beauté mariée',
+    'furniture assembly': 'Montage de meubles',
+    'curtain wall mounting': 'Pose rideaux et fixation murale',
+    'door lock fix': 'Réparation porte et serrure',
+    'shelf installation': 'Installation d\'étagère',
+    'general home tasks': 'Tâches domestiques générales',
+    'general home service': 'Service à domicile général',
+    'inspection visit': 'Visite d\'inspection',
+    'maintenance support': 'Support maintenance',
+    'eco friendly car wash': 'Lavage de voiture écologique',
+    'living room cleaning': 'Nettoyage salon',
+    'furniture cleaning': 'Nettoyage meubles',
+    'post construction cleaning': 'Nettoyage après construction',
     'water fittings': 'Raccords d\'eau',
     'technical inspection': 'Inspection technique',
     'electrical inspection': 'Inspection électrique',
@@ -218,6 +252,8 @@ class AppLocalizations {
     'bathroom cleaning': 'Nettoyage salle de bain',
     'dishes': 'Vaisselle',
     'laundry': 'Lessive',
+    'living room furniture cleaning': 'Nettoyage salon et meubles',
+    'office business cleaning': 'Nettoyage bureaux et entreprises',
   };
 
   static const Map<String, String> _homeServiceDynamicLabelsAr = {
@@ -236,7 +272,37 @@ class AppLocalizations {
     'deep cleaning': 'تنظيف عميق',
     'office cleaning': 'تنظيف المكتب',
     'disinfection': 'تعقيم',
+    'ecological disinfection': 'تعقيم بيئي',
+    'leak repair': 'إصلاح تسرب',
     'pipe installation': 'تركيب الأنابيب',
+    'drain unclogging': 'فتح انسداد الصرف',
+    'faucet sink repair': 'إصلاح الصنبور والحوض',
+    'toilet repair': 'إصلاح المرحاض',
+    'water heater service': 'خدمة سخان المياه',
+    'socket switch repair': 'إصلاح المقابس والمفاتيح',
+    'lighting installation': 'تركيب الإضاءة',
+    'wiring inspection': 'فحص الأسلاك',
+    'circuit breaker service': 'خدمة قاطع الكهرباء',
+    'fan installation': 'تركيب المروحة',
+    'power fault diagnosis': 'تشخيص عطل الكهرباء',
+    'ac gas refill': 'تعبئة غاز المكيف',
+    'cooling fault diagnosis': 'تشخيص عطل التبريد',
+    'ac installation': 'تركيب المكيف',
+    'filter cleaning': 'تنظيف الفلتر',
+    'emergency cooling repair': 'إصلاح تبريد طارئ',
+    'makeup service': 'خدمة مكياج',
+    'nail care': 'العناية بالأظافر',
+    'facial treatment': 'علاج الوجه',
+    'henna service': 'خدمة الحناء',
+    'bridal beauty': 'تجميل العروس',
+    'furniture assembly': 'تركيب الأثاث',
+    'curtain wall mounting': 'تركيب الستائر والتثبيت الجداري',
+    'door lock fix': 'إصلاح الباب والقفل',
+    'shelf installation': 'تركيب الرفوف',
+    'general home tasks': 'مهام منزلية عامة',
+    'general home service': 'خدمة منزلية عامة',
+    'inspection visit': 'زيارة فحص',
+    'maintenance support': 'دعم الصيانة',
     'water fittings': 'تجهيزات المياه',
     'technical inspection': 'فحص فني',
     'electrical inspection': 'فحص كهربائي',
@@ -302,6 +368,12 @@ class AppLocalizations {
     'bathroom cleaning': 'تنظيف الحمام',
     'dishes': 'غسيل الصحون',
     'laundry': 'غسيل الملابس',
+    'eco friendly car wash': 'غسل السيارات البيئي',
+    'living room furniture cleaning': 'تنظيف غرفة المعيشة والأثاث',
+    'office business cleaning': 'تنظيف المكاتب والشركات',
+    'living room cleaning': 'تنظيف غرفة المعيشة',
+    'furniture cleaning': 'تنظيف الأثاث',
+    'post construction cleaning': 'تنظيف بعد البناء',
   };
 
   static const Map<String, String> _homeServiceCategoryNamesFr = {
@@ -312,6 +384,7 @@ class AppLocalizations {
     'ac-cooling': 'Climatisation',
     'beauty-at-home': 'Beauté à domicile',
     'handyman': 'Menuisier',
+    'ecological-cleaning': 'Nettoyage écologique',
   };
 
   static const Map<String, String> _homeServiceCategoryNamesAr = {
@@ -322,6 +395,7 @@ class AppLocalizations {
     'ac-cooling': 'تكييف وتبريد',
     'beauty-at-home': 'تجميل في المنزل',
     'handyman': 'فني منزلي',
+    'ecological-cleaning': 'تنظيف بيئي',
   };
 
   static const Map<String, String> _homeServiceCategoryDescriptionsFr = {
@@ -338,6 +412,8 @@ class AppLocalizations {
         'Coiffure, maquillage, ongles et soins beauté à domicile.',
     'handyman':
         'Montage meubles, fixation tringles, perçage et petits travaux domestiques.',
+    'ecological-cleaning':
+        'Services de nettoyage écologique : lavage voiture, salon, meubles, bureau, post-construction et désinfection écologique.',
   };
 
   static const Map<String, String> _homeServiceCategoryDescriptionsAr = {
@@ -350,6 +426,8 @@ class AppLocalizations {
     'beauty-at-home':
         'خدمات الشعر والمكياج والأظافر والعناية الذاتية في المنزل.',
     'handyman': 'تركيب الأثاث وتعليق الستائر والثقب والمهام المنزلية اليومية.',
+    'ecological-cleaning':
+        'خدمات التنظيف البيئي: غسل السيارات، غرفة المعيشة، الأثاث، المكاتب، التنظيف بعد البناء، والتعقيم البيئي.',
   };
 
   static const Map<String, Map<String, String>> _localizedValues = {
@@ -2427,8 +2505,7 @@ class AppLocalizations {
       'home_services.pricing_title': 'Prix de départ clairs',
       'home_services.pricing_subtitle':
           'Connaissez le tarif de base avant de confirmer.',
-      'home_service_booking.house_help_format_title':
-          'Format de réservation aide ménagère',
+      'home_service_booking.house_help_format_title': 'Format de réservation',
       'home_service_booking.house_help_booking_type': 'Type de réservation',
       'home_service_booking.house_help_shift_duration': 'Durée du shift',
       'home_service_booking.house_help_home_size': 'Taille du logement',

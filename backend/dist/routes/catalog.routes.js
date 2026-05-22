@@ -7,6 +7,16 @@ const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
 const serializers_1 = require("../utils/serializers");
 const router = (0, express_1.Router)();
+const ECOLOGICAL_CLEANING_CATEGORY = {
+    id: 'hs-ecological-cleaning',
+    name: 'Ecological Cleaning',
+    slug: 'ecological-cleaning',
+    description: 'Eco-friendly car wash, living room and furniture cleaning, office cleaning, post-construction cleaning, and ecological disinfection.',
+    iconKey: 'cleaning',
+    colorHex: '#2F9E44',
+    sortOrder: 8,
+    active: true,
+};
 function readJsonStringArray(value) {
     if (!Array.isArray(value)) {
         return [];
@@ -708,6 +718,11 @@ router.get('/doctors/:id', (0, async_handler_1.asyncHandler)(async (req, res) =>
     });
 }));
 router.get('/home-service-categories', (0, async_handler_1.asyncHandler)(async (_req, res) => {
+    await db_1.prisma.homeServiceCategory.upsert({
+        where: { id: ECOLOGICAL_CLEANING_CATEGORY.id },
+        update: ECOLOGICAL_CLEANING_CATEGORY,
+        create: ECOLOGICAL_CLEANING_CATEGORY,
+    });
     const categories = await db_1.prisma.homeServiceCategory.findMany({
         where: { active: true },
         include: {

@@ -93,12 +93,34 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
   }
 
   String _normalizeServiceOption(String value) {
-    return value
+    final normalized = value
         .toLowerCase()
         .replaceAll('&', ' and ')
         .replaceAll(RegExp(r'[^a-z0-9]+'), ' ')
         .trim()
         .replaceAll(RegExp(r'\s+'), ' ');
+    switch (normalized) {
+      case 'shift 2h':
+        return '2 hours';
+      case 'shift 4h':
+        return '4 hours';
+      case 'shift 8h':
+        return '8 hours';
+      default:
+        return normalized;
+    }
+  }
+
+  List<String> _uniqueNormalizedOptions(Iterable<String> options) {
+    final byKey = <String, String>{};
+    for (final option in options) {
+      final text = option.trim();
+      if (text.isEmpty) continue;
+      final key = _normalizeServiceOption(text);
+      if (key.isEmpty) continue;
+      byKey.putIfAbsent(key, () => text);
+    }
+    return byKey.values.toList(growable: false);
   }
 
   bool _isGenericHouseHelpOption(String value) {
@@ -115,11 +137,9 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
   }
 
   List<String> _houseHelpSpecificServiceOptions(List<String> options) {
-    return options
-        .map((entry) => entry.trim())
-        .where((entry) => entry.isNotEmpty)
-        .where((entry) => !_isGenericHouseHelpOption(entry))
-        .toList(growable: false);
+    return _uniqueNormalizedOptions(
+      options.where((entry) => !_isGenericHouseHelpOption(entry)),
+    );
   }
 
   HomeServiceProviderModel _buildZoneDispatchProvider(
@@ -131,12 +151,9 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
         : providers
               .map((provider) => provider.startingPrice)
               .reduce((left, right) => left < right ? left : right);
-    final unionServices = providers
-        .expand((provider) => provider.services)
-        .map((service) => service.trim())
-        .where((service) => service.isNotEmpty)
-        .toSet()
-        .toList(growable: false);
+    final unionServices = _uniqueNormalizedOptions(
+      providers.expand((provider) => provider.services),
+    );
     return HomeServiceProviderModel(
       id: _zoneDispatchProviderId,
       categoryId: primary?.categoryId ?? 'hs-house-help',
@@ -206,21 +223,21 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
     return {
       'bookingTypes': bookingTypes.isEmpty
           ? [..._houseHelpPlans]
-          : bookingTypes.toList(growable: false),
+          : _uniqueNormalizedOptions(bookingTypes),
       'shiftDurations': shiftDurations.isEmpty
           ? _houseHelpShiftOptions
                 .map((entry) => entry.$1)
                 .toList(growable: false)
-          : shiftDurations.toList(growable: false),
+          : _uniqueNormalizedOptions(shiftDurations),
       'homeSizes': homeSizes.isEmpty
           ? [..._houseHelpHomeSizes]
-          : homeSizes.toList(growable: false),
+          : _uniqueNormalizedOptions(homeSizes),
       'arrivalTargets': arrivalTargets.isEmpty
           ? [..._houseHelpUrgency]
-          : arrivalTargets.toList(growable: false),
+          : _uniqueNormalizedOptions(arrivalTargets),
       'supplyModes': supplyModes.isEmpty
           ? const ['Customer supplies', 'Provider supplies']
-          : supplyModes.toList(growable: false),
+          : _uniqueNormalizedOptions(supplyModes),
     };
   }
 

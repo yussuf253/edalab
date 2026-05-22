@@ -7,6 +7,18 @@ import { toNumber } from '../utils/serializers';
 
 const router = Router();
 
+const ECOLOGICAL_CLEANING_CATEGORY = {
+  id: 'hs-ecological-cleaning',
+  name: 'Ecological Cleaning',
+  slug: 'ecological-cleaning',
+  description:
+    'Eco-friendly car wash, living room and furniture cleaning, office cleaning, post-construction cleaning, and ecological disinfection.',
+  iconKey: 'cleaning',
+  colorHex: '#2F9E44',
+  sortOrder: 8,
+  active: true,
+} as const;
+
 type CatalogProductWithCategory = Awaited<
   ReturnType<typeof prisma.product.findMany>
 >[number] & {
@@ -923,6 +935,12 @@ router.get(
 router.get(
   '/home-service-categories',
   asyncHandler(async (_req, res) => {
+    await prisma.homeServiceCategory.upsert({
+      where: { id: ECOLOGICAL_CLEANING_CATEGORY.id },
+      update: ECOLOGICAL_CLEANING_CATEGORY,
+      create: ECOLOGICAL_CLEANING_CATEGORY,
+    });
+
     const categories = await prisma.homeServiceCategory.findMany({
       where: { active: true },
       include: {

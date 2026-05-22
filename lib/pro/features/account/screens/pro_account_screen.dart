@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import '/pro/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +14,7 @@ import '../../../core/models/pro_profile.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
+import '../../../../core/providers/language_provider.dart';
 
 class ProAccountScreen extends StatelessWidget {
   const ProAccountScreen({super.key, required this.profile});
@@ -22,6 +23,41 @@ class ProAccountScreen extends StatelessWidget {
 
   Future<void> _open(BuildContext context, String route) {
     return context.push(route);
+  }
+
+  /// Shows a bottom sheet allowing the user to pick a language.
+  /// The selected language is applied via [LanguageProvider].
+  void _showLanguagePicker(BuildContext context) {
+    final languageProvider = context.read<LanguageProvider>();
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: LanguageProvider.supportedLanguages
+                .map((lang) {
+                  final isSelected =
+                      lang.locale.languageCode ==
+                      languageProvider.locale.languageCode;
+                  return ListTile(
+                    leading: Icon(
+                      Icons.language,
+                      color: isSelected ? Theme.of(context).primaryColor : null,
+                    ),
+                    title: Text(lang.nativeName),
+                    trailing: isSelected ? const Icon(Icons.check) : null,
+                    onTap: () {
+                      languageProvider.setLocale(lang.locale);
+                      Navigator.of(sheetContext).pop();
+                    },
+                  );
+                })
+                .toList(growable: false),
+          ),
+        );
+      },
+    );
   }
 
   String _profileDescriptor(BuildContext context, ProProfile profile) {
@@ -153,6 +189,19 @@ class ProAccountScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: ProDesignSystem.spacing20),
+          // Language switcher
+          Padding(
+            padding: const EdgeInsets.only(bottom: ProDesignSystem.spacing12),
+            child: ModernTile(
+              leadingIcon: Icons.language,
+              title: AppLocalizations.of(context)!.language,
+              subtitle: context
+                  .watch<LanguageProvider>()
+                  .currentLanguage
+                  .nativeName,
+              onTap: () => _showLanguagePicker(context),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.only(bottom: ProDesignSystem.spacing12),
             child: Container(

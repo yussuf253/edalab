@@ -239,6 +239,10 @@ class ProAuthProvider extends ChangeNotifier {
     }
   }
 
+  // After signup the set of active modules is immutable. The `activeModules`
+  // argument is retained for backward compatibility but is ignored – the
+  // provider will always persist the modules that are already stored in the
+  // current profile.
   Future<void> updateProfileSettings({
     required String businessName,
     required List<ProModule> activeModules,
@@ -253,9 +257,11 @@ class ProAuthProvider extends ChangeNotifier {
       throw Exception('Business name must be at least 2 characters.');
     }
 
+    // Use the modules from the existing profile to prevent changes.
+    final List<ProModule> modulesToPersist = profile.activeModules;
     final normalizedModules = ProModuleHelper.sanitizeModules(
       profile.type,
-      activeModules,
+      modulesToPersist,
     );
 
     final response = Map<String, dynamic>.from(
@@ -388,6 +394,8 @@ class ProAuthProvider extends ChangeNotifier {
         return 'PHARMACY_DELIVERY';
       case ProModule.ride:
         return 'RIDE';
+      case ProModule.ecologicalCleaning:
+        return 'ECOLOGICAL_CLEANING';
     }
   }
 }

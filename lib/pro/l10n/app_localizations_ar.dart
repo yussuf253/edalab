@@ -211,7 +211,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onboardingSubtitle1 =>
-      'إدارة المواعيد، وظائف الخدمة، والتوصيل، والطلبات من مساحة عمل مُنظَّمة مُصمَّمة لفرق سريعة.';
+      'إدارة المواعيد وقبول حجوزات الخدمات من مساحة عمل واحدة أنيقة';
 
   @override
   String get onboardingTitle2 => 'اقبل العمل فوراً واستمر في التقدم';
@@ -235,6 +235,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onboardingSignIn => 'تسجيل الدخول';
+
+  @override
+  String get edaLabProWelcomeTitle => 'Welcome';
+
+  @override
+  String get edaLabProWelcomeDescription => 'Welcome';
+
+  @override
+  String get edaLabProWelcomeSignInButton => 'Sign In';
+
+  @override
+  String get edaLabProWelcomeCreateAccountButton => 'Create Account';
 
   @override
   String get onboardingFlowQueued => 'في الانتظار';
@@ -794,7 +806,7 @@ class AppLocalizationsAr extends AppLocalizations {
       'إدارة جدول المزود وتفضيلات الحجز.';
 
   @override
-  String get jobsQueue => 'قائمة الوظائف';
+  String get jobsQueue => 'المهام المتاحة';
 
   @override
   String get jobsQueueSubtitle => 'تتبع الوظائف النشطة والمعلقة للمزود.';
@@ -1031,9 +1043,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get galleryURLsHint => 'https://...\\nhttps://...';
 
   @override
-  String get availabilityLabel => 'التوفر';
-
-  @override
   String get patientLabel => 'مريض';
 
   @override
@@ -1128,11 +1137,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'إيقاف أو إعادة فتح ممرات الخدمات والغسيل.';
 
   @override
-  String get schedulingSettings => 'إعدادات الجدولة';
+  String get schedulingSettings => 'إدارة الأوقات المتاحة لديك';
 
   @override
-  String get schedulingSettingsSubtitle =>
-      'تحديث أوضاع الحجز والتوفر الأسبوعي.';
+  String get schedulingSettingsSubtitle => 'إدارة الأوقات المتاحة لديك';
 
   @override
   String get scheduleSettings => 'إعدادات الجدول';
@@ -1171,7 +1179,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get mediaAndAttributesSubtitle => 'الصور والبيانات الوصفية.';
 
   @override
-  String get availability => 'التوفر';
+  String get availability => 'خدمات';
 
   @override
   String get availabilitySubtitle => 'التحكم في ظهور المنتج في متجرك';
@@ -1631,6 +1639,42 @@ class AppLocalizationsAr extends AppLocalizations {
   String get washAndFold => 'غسيل وطي';
 
   @override
+  String get shirt => 'قميص';
+
+  @override
+  String get tShirt => 'تي شيرت';
+
+  @override
+  String get polo => 'بولو';
+
+  @override
+  String get trouser => 'بنطال';
+
+  @override
+  String get blazer => 'بليزر';
+
+  @override
+  String get suit2Pieces => 'بدلة قطعتين';
+
+  @override
+  String get suit3Pieces => 'بدلة 3 قطع';
+
+  @override
+  String get jacket => 'سترة';
+
+  @override
+  String get dress => 'فستان';
+
+  @override
+  String get washAndFold1020Pieces => 'غسيل وطي 10-20 قطعة';
+
+  @override
+  String get washAndFold2130Pieces => 'غسيل وطي 21-30 قطعة';
+
+  @override
+  String get washAndFold3140Pieces => 'غسيل وطي 31-40 قطعة';
+
+  @override
   String get kg => 'كجم';
 
   @override
@@ -1772,7 +1816,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get jobsQueueSubtitleLaundry => 'مراجعة مهام الغسيل الخاصة بك.';
 
   @override
-  String get jobsQueueSubtitleServices => 'مراجعة حجوزات الخدمات الخاصة بك.';
+  String get jobsQueueSubtitleServices => 'مراجعة الحجوزات';
 
   @override
   String get availabilitySubtitleFull =>
@@ -1782,8 +1826,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get availabilitySubtitleLaundry => 'التحكم في مسارات الغسيل المفتوحة.';
 
   @override
-  String get availabilitySubtitleServices =>
-      'التحكم في مسارات الخدمات المفتوحة.';
+  String get availabilitySubtitleServices => 'إدارة خدماتك';
 
   @override
   String get servicesOnly => 'الخدمات فقط';
@@ -1907,7 +1950,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get workInProgress => 'العمل قيد التنفيذ';
 
   @override
-  String get pipelineWorkboard => 'لوحة عمل التدفق';
+  String get pipelineWorkboard => 'لوحة التحكم';
 
   @override
   String get noPendingBookings => 'لا توجد حجوزات معلقة لقبولها.';
@@ -2148,10 +2191,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cardiology => 'أمراض القلب';
 
   @override
-  String get dermatology => 'أمراض الجلد';
+  String get dermatology => 'أمراض جلدية';
 
   @override
-  String get neurology => 'أمراض الأعصاب';
+  String get neurology => 'أمراض عصبية';
 
   @override
   String get orthopedics => 'جراحة العظام';
@@ -2160,19 +2203,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get pediatrics => 'طب الأطفال';
 
   @override
-  String get homeNursing => 'التمريض المنزلي';
+  String get homeNursing => 'تمريض منزلي';
 
   @override
-  String get physiotherapy => 'العلاج الطبيعي';
+  String get physiotherapy => 'علاج طبيعي';
 
   @override
-  String get mentalTherapy => 'العلاج النفسي';
+  String get mentalTherapy => 'علاج نفسي';
 
   @override
-  String get dentalCare => 'رعاية الأسنان';
+  String get dentalCare => 'رعاية أسنان';
 
   @override
-  String get optometry => 'فحص النظر';
+  String get optometry => 'فحص بصريات';
 
   @override
   String get other => 'أخرى';
@@ -2181,37 +2224,37 @@ class AppLocalizationsAr extends AppLocalizations {
   String get generalCheckup => 'فحص عام';
 
   @override
-  String get ecg => 'تخطيط القلب';
+  String get ecg => 'رسم قلب';
 
   @override
-  String get bloodTest => 'فحص دم';
+  String get bloodTest => 'تحليل دم';
 
   @override
   String get vaccination => 'تطعيم';
 
   @override
-  String get woundDressing => 'تغيير الجرح';
+  String get woundDressing => 'تغيير ضماد';
 
   @override
-  String get injection => 'حقنة';
+  String get injection => 'حقن';
 
   @override
-  String get postSurgeryRehab => 'تأهيل ما بعد الجراحة';
+  String get postSurgeryRehab => 'تأهيل بعد الجراحة';
 
   @override
-  String get physicalTherapy => 'العلاج الفيزيائي';
+  String get physicalTherapy => 'علاج طبيعي';
 
   @override
   String get psychologicalCounseling => 'استشارة نفسية';
 
   @override
-  String get emergencyCare => 'رعاية الطوارئ';
+  String get emergencyCare => 'رعاية طارئة';
 
   @override
-  String get routineMonitoring => 'المراقبة الروتينية';
+  String get routineMonitoring => 'مراقبة روتينية';
 
   @override
-  String get prescriptionRefill => 'إعادة تعبئة الوصفة';
+  String get prescriptionRefill => 'تجديد وصفة طبية';
 
   @override
   String waitingForPatient(Object name) {
@@ -2766,6 +2809,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get createStoreFirstMessage => 'أنشئ متجراً أولاً قبل إضافة المنتجات.';
 
   @override
+  String get availabilityLabel => 'التوفر';
+
+  @override
   String get storeCreatedSuccessfully =>
       'تم إنشاء المتجر وتوصيله بملفك الشخصي.';
 
@@ -3053,7 +3099,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get laundryAvailability => 'توفر الغسيل';
 
   @override
-  String get serviceAvailability => 'توفر الخدمة';
+  String get serviceAvailability => 'خدماتك';
 
   @override
   String get addServiceListing => 'إضافة قائمة خدمات';
@@ -3118,4 +3164,97 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get category => 'فئة';
+
+  @override
+  String get houseHelp => 'مساعدة منزلية';
+  @override
+  String get homeCleaning => 'تنظيف منزلي';
+  @override
+  String get plumbing => 'سباكة';
+  @override
+  String get electrical => 'كهرباء';
+  @override
+  String get acCooling => 'تكييف وتبريد';
+  @override
+  String get beautyAtHome => 'تجميل في المنزل';
+  @override
+  String get handyman => 'فني منزلي';
+  @override
+  String get ecologicalCleaning => 'تنظيف بيئي';
+  @override
+  String get leakRepair => 'إصلاح تسرب';
+  @override
+  String get pipeInstallation => 'تركيب الأنابيب';
+  @override
+  String get drainUnclogging => 'فتح انسداد الصرف';
+  @override
+  String get faucetSinkRepair => 'إصلاح الصنبور والحوض';
+  @override
+  String get toiletRepair => 'إصلاح المرحاض';
+  @override
+  String get waterHeaterService => 'خدمة سخان المياه';
+  @override
+  String get socketSwitchRepair => 'إصلاح المقابس والمفاتيح';
+  @override
+  String get lightingInstallation => 'تركيب الإضاءة';
+  @override
+  String get wiringInspection => 'فحص الأسلاك';
+  @override
+  String get circuitBreakerService => 'خدمة قاطع الكهرباء';
+  @override
+  String get fanInstallation => 'تركيب المروحة';
+  @override
+  String get powerFaultDiagnosis => 'تشخيص عطل الكهرباء';
+  @override
+  String get acMaintenance => 'صيانة المكيف';
+  @override
+  String get acGasRefill => 'تعبئة غاز المكيف';
+  @override
+  String get coolingFaultDiagnosis => 'تشخيص عطل التبريد';
+  @override
+  String get acInstallation => 'تركيب المكيف';
+  @override
+  String get filterCleaning => 'تنظيف الفلتر';
+  @override
+  String get emergencyCoolingRepair => 'إصلاح تبريد طارئ';
+  @override
+  String get hairStyling => 'تصفيف الشعر';
+  @override
+  String get makeupService => 'خدمة مكياج';
+  @override
+  String get nailCare => 'العناية بالأظافر';
+  @override
+  String get facialTreatment => 'علاج الوجه';
+  @override
+  String get hennaService => 'خدمة الحناء';
+  @override
+  String get bridalBeauty => 'تجميل العروس';
+  @override
+  String get furnitureAssembly => 'تركيب الأثاث';
+  @override
+  String get curtainWallMounting => 'تركيب الستائر والتثبيت الجداري';
+  @override
+  String get minorRepairs => 'إصلاحات بسيطة';
+  @override
+  String get doorLockFix => 'إصلاح الباب والقفل';
+  @override
+  String get shelfInstallation => 'تركيب الرفوف';
+  @override
+  String get generalHomeTasks => 'مهام منزلية عامة';
+  @override
+  String get generalHomeService => 'خدمة منزلية عامة';
+  @override
+  String get inspectionVisit => 'زيارة فحص';
+  @override
+  String get maintenanceSupport => 'دعم الصيانة';
+  @override
+  String get ecoFriendlyCarWash => 'غسيل سيارات صديق للبيئة';
+  @override
+  String get livingRoomFurnitureCleaning => 'تنظيف غرفة المعيشة والأثاث';
+  @override
+  String get officeBusinessCleaning => 'تنظيف المكاتب والشركات';
+  @override
+  String get postConstructionCleaning => 'تنظيف بعد البناء';
+  @override
+  String get ecologicalDisinfection => 'تعقيم بيئي';
 }

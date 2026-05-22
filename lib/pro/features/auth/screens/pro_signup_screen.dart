@@ -181,7 +181,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                       ),
                     ),
                     const SizedBox(height: ProDesignSystem.spacing16),
-                    GridView.count(
+                    /*GridView.count(
                       crossAxisCount: 2,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -279,6 +279,76 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                           ),
                         );
                       }).toList(),
+                    ),*/
+                    // Only ProProfileType.provider is available
+                    InkWell(
+                      onTap: () => setState(() {
+                        _selectedProfileType = ProProfileType.provider;
+                        _selectedModules.clear();
+                        _selectedModules.addAll(
+                          ProModuleHelper.getDefaultModulesForProfile(
+                            ProProfileType.provider,
+                          ),
+                        );
+                        _submissionMessage = null;
+                      }),
+                      borderRadius: BorderRadius.circular(
+                        ProDesignSystem.radiusLarge,
+                      ),
+                      child: ModernCard(
+                        borderRadius: ProDesignSystem.radiusLarge,
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 2,
+                        ),
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.primaryContainer.withValues(alpha: 0.5),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              ProModuleHelper.getProfileIcon(
+                                ProProfileType.provider,
+                              ),
+                              size: 40,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(height: ProDesignSystem.spacing12),
+                            Text(
+                              l10n.profileTypeProvider,
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                  ),
+                            ),
+                            const SizedBox(height: ProDesignSystem.spacing8),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: ProDesignSystem.spacing12,
+                              ),
+                              child: Text(
+                                ProModuleHelper.getProfileDescription(
+                                  ProProfileType.provider,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     const SizedBox(height: ProDesignSystem.spacing32),
                     if (_selectedProfileType != null) ...[

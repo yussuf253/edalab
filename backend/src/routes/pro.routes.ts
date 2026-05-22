@@ -126,6 +126,18 @@ const createHomeServiceProviderSchema = z.object({
     .optional(),
 });
 
+const ECOLOGICAL_CLEANING_CATEGORY = {
+  id: 'hs-ecological-cleaning',
+  name: 'Ecological Cleaning',
+  slug: 'ecological-cleaning',
+  description:
+    'Eco-friendly car wash, living room and furniture cleaning, office cleaning, post-construction cleaning, and ecological disinfection.',
+  iconKey: 'cleaning',
+  colorHex: '#2F9E44',
+  sortOrder: 8,
+  active: true,
+} as const;
+
 const laundryServiceConfigItemSchema = z.object({
   id: z.string().trim().max(40).optional().or(z.literal('')),
   label: z.string().trim().min(1).max(80),
@@ -2165,6 +2177,9 @@ async function buildServicesSummary(todayStart: Date, bindings: ProBindings) {
             id: true,
             isAvailable: true,
             availabilityJson: true,
+            category: {
+              select: { slug: true },
+            },
           },
         }),
     bindings.providerIds.length === 0
@@ -2206,10 +2221,22 @@ async function buildServicesSummary(todayStart: Date, bindings: ProBindings) {
   const pickZoneProvider = (
     order: (typeof serviceCandidates)[number],
   ): { providerId: string; distanceKm: number } | null => {
+    if (
+      order.moduleType === ModuleType.HOUSE_HELP &&
+      !providers.some((provider) => isHouseHelpCategorySlug(provider.category?.slug))
+    ) {
+      return null;
+    }
     const location = orderServiceLocation(order);
     if (location == null) return null;
     const matches = providers
-      .filter((provider) => provider.isAvailable)
+      .filter((provider) => {
+        if (!provider.isAvailable) return false;
+        if (order.moduleType === ModuleType.HOUSE_HELP) {
+          return isHouseHelpCategorySlug(provider.category?.slug);
+        }
+        return true;
+      })
       .map((provider) => {
         const zone = serviceZoneFromAvailabilityJson(provider.availabilityJson);
         if (
@@ -2245,25 +2272,27 @@ async function buildServicesSummary(todayStart: Date, bindings: ProBindings) {
     const firstItem = order.items[0];
     const directProviderId = firstItem?.externalRefId;
     const assignedProviderId = assignedProviderIdFromMetadata(firstItem?.metadata);
+    const providerCanReceiveOrder = (providerId: string | null | undefined) => {
+      if (providerId == null || !bindings.providerIds.includes(providerId)) {
+        return false;
+      }
+      const provider = providers.find((entry) => entry.id === providerId);
+      if (provider == null) return false;
+      if (order.moduleType === ModuleType.HOUSE_HELP) {
+        return isHouseHelpCategorySlug(provider.category?.slug);
+      }
+      return true;
+    };
 
     if (order.moduleType === ModuleType.HOME_SERVICES) {
-      return (
-        directProviderId != null &&
-        bindings.providerIds.includes(directProviderId)
-      );
+      return providerCanReceiveOrder(directProviderId);
     }
 
-    if (
-      directProviderId != null &&
-      bindings.providerIds.includes(directProviderId)
-    ) {
+    if (providerCanReceiveOrder(directProviderId)) {
       return true;
     }
 
-    if (
-      assignedProviderId != null &&
-      bindings.providerIds.includes(assignedProviderId)
-    ) {
+    if (providerCanReceiveOrder(assignedProviderId)) {
       return true;
     }
 
@@ -3486,6 +3515,9 @@ router.get(
               id: true,
               isAvailable: true,
               availabilityJson: true,
+              category: {
+                select: { slug: true },
+              },
             },
           }),
       !canServices
@@ -3557,6 +3589,20 @@ router.get(
           const providerLookup = new Map(
             serviceProviders.map((provider) => [provider.id, provider]),
           );
+          const providerCanReceiveOrder = (
+            providerId: string | null | undefined,
+            moduleType: ModuleType,
+          ) => {
+            if (providerId == null || !bindings.providerIds.includes(providerId)) {
+              return false;
+            }
+            const provider = providerLookup.get(providerId);
+            if (provider == null) return false;
+            if (moduleType === ModuleType.HOUSE_HELP) {
+              return isHouseHelpCategorySlug(provider.category?.slug);
+            }
+            return true;
+          };
           const candidatesByOrderId = new Map<
             string,
             {
@@ -3568,10 +3614,22 @@ router.get(
           >();
 
           const pickZoneProvider = (order: (typeof serviceCandidates)[number]) => {
+            if (order.moduleType === ModuleType.HOUSE_HELP) {
+              const hasHouseHelpProvider = Array.from(providerLookup.values()).some(
+                (provider) => isHouseHelpCategorySlug(provider.category?.slug),
+              );
+              if (!hasHouseHelpProvider) return null;
+            }
             const location = orderServiceLocation(order);
             if (location == null) return null;
             const matches = Array.from(providerLookup.values())
-              .filter((provider) => provider.isAvailable)
+              .filter((provider) => {
+                if (!provider.isAvailable) return false;
+                if (order.moduleType === ModuleType.HOUSE_HELP) {
+                  return isHouseHelpCategorySlug(provider.category?.slug);
+                }
+                return true;
+              })
               .map((provider) => {
                 const zone = serviceZoneFromAvailabilityJson(provider.availabilityJson);
                 if (
@@ -3611,10 +3669,7 @@ router.get(
             );
 
             if (order.moduleType === ModuleType.HOME_SERVICES) {
-              if (
-                directProviderId != null &&
-                bindings.providerIds.includes(directProviderId)
-              ) {
+              if (providerCanReceiveOrder(directProviderId, order.moduleType)) {
                 candidatesByOrderId.set(order.id, {
                   order,
                   providerIdOverride: directProviderId,
@@ -3625,8 +3680,7 @@ router.get(
             }
 
             if (
-              directProviderId != null &&
-              bindings.providerIds.includes(directProviderId)
+              providerCanReceiveOrder(directProviderId, order.moduleType)
             ) {
               candidatesByOrderId.set(order.id, {
                 order,
@@ -3637,8 +3691,7 @@ router.get(
             }
 
             if (
-              assignedProviderId != null &&
-              bindings.providerIds.includes(assignedProviderId)
+              providerCanReceiveOrder(assignedProviderId, order.moduleType)
             ) {
               candidatesByOrderId.set(order.id, {
                 order,
@@ -4541,6 +4594,12 @@ router.post(
         error: 'Services is not enabled for this provider profile.',
       });
     }
+
+    await prisma.homeServiceCategory.upsert({
+      where: { id: ECOLOGICAL_CLEANING_CATEGORY.id },
+      update: ECOLOGICAL_CLEANING_CATEGORY,
+      create: ECOLOGICAL_CLEANING_CATEGORY,
+    });
 
     const activeCategories = await prisma.homeServiceCategory.findMany({
       where: { active: true },

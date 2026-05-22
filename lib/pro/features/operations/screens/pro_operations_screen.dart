@@ -1,4 +1,5 @@
 import '/pro/l10n/app_localizations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -293,9 +294,10 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             ProProfileType.delivery => actions,
             ProProfileType.rider => actions,
           };
+          // For providers we hide lane shortcuts (pipeline shortcuts).
           final laneActions = switch (type) {
+            ProProfileType.provider => const <_OperationAction>[],
             ProProfileType.shop => actions.skip(3).toList(growable: false),
-            ProProfileType.provider => actions.skip(3).toList(growable: false),
             ProProfileType.doctor => const <_OperationAction>[],
             ProProfileType.delivery => const <_OperationAction>[],
             ProProfileType.rider => const <_OperationAction>[],
@@ -346,6 +348,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
                     child: _OperationCard(action: action),
                   ),
                 ),
+                // Lane shortcuts are omitted for providers.
                 if (laneActions.isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Text(
@@ -362,7 +365,9 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
                     ),
                   ),
                 ],
-                if (visibleSummaries.isNotEmpty) ...[
+                // Service workstreams are omitted for providers.
+                if (type != ProProfileType.provider &&
+                    visibleSummaries.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text(
                     _workstreamTitle(type, l10n),

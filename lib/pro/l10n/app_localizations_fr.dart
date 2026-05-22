@@ -180,7 +180,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get home => 'Accueil';
 
   @override
-  String get dashboard => 'Tableau de Bord';
+  String get dashboard => 'Accueil';
 
   @override
   String get orders => 'Commandes';
@@ -214,7 +214,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get onboardingSubtitle1 =>
-      'Gérez les rendez-vous, les travaux de service, les livraisons et les commandes depuis un espace de travail poli conçu pour les équipes rapides.';
+      'Gérez vos rendez-vous et acceptez les réservations de services depuis un espace de travail élégant et moderne.';
 
   @override
   String get onboardingTitle2 => 'Acceptez le travail instantanément';
@@ -238,6 +238,18 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get onboardingSignIn => 'Se connecter';
+
+  @override
+  String get edaLabProWelcomeTitle => 'Welcome';
+
+  @override
+  String get edaLabProWelcomeDescription => 'Welcome';
+
+  @override
+  String get edaLabProWelcomeSignInButton => 'Sign In';
+
+  @override
+  String get edaLabProWelcomeCreateAccountButton => 'Create Account';
 
   @override
   String get onboardingFlowQueued => 'En attente';
@@ -810,7 +822,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Gérez le planning du prestataire et les préférences de réservation.';
 
   @override
-  String get jobsQueue => 'File d\'Attente des missions';
+  String get jobsQueue => 'Missions disponibles';
 
   @override
   String get jobsQueueSubtitle =>
@@ -897,10 +909,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get operations => 'Opérations';
 
   @override
-  String get inbox => 'Boîte de Réception';
+  String get inbox => 'Boîte';
 
   @override
-  String get insights => 'Insights';
+  String get insights => 'Aperçu';
 
   @override
   String get ordersQueueNav => 'File d\'Attente des Commandes';
@@ -1061,9 +1073,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get galleryURLsHint => 'https://...\\nhttps://...';
 
   @override
-  String get availabilityLabel => 'Disponibilité';
-
-  @override
   String get patientLabel => 'Patient';
 
   @override
@@ -1161,11 +1170,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Mettre en pause ou réouvrir les voies de service et de blanchisserie.';
 
   @override
-  String get schedulingSettings => 'Paramètres de planification';
+  String get schedulingSettings => 'Horaires';
 
   @override
-  String get schedulingSettingsSubtitle =>
-      'Mettre à jour les modes de réservation et la disponibilité hebdomadaire.';
+  String get schedulingSettingsSubtitle => 'Gérez vos créneaux';
 
   @override
   String get scheduleSettings => 'Paramètres d\'horaire';
@@ -1208,7 +1216,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get mediaAndAttributesSubtitle => 'Images et métadonnées.';
 
   @override
-  String get availability => 'Disponibilité';
+  String get availability => 'Services';
 
   @override
   String get availabilitySubtitle =>
@@ -1684,6 +1692,42 @@ class AppLocalizationsFr extends AppLocalizations {
   String get washAndFold => 'Lavage & Pliage';
 
   @override
+  String get shirt => 'Chemise';
+
+  @override
+  String get tShirt => 'T-Shirt';
+
+  @override
+  String get polo => 'Polo';
+
+  @override
+  String get trouser => 'Pantalon';
+
+  @override
+  String get blazer => 'Veste';
+
+  @override
+  String get suit2Pieces => 'Costume 2 pièces';
+
+  @override
+  String get suit3Pieces => 'Costume 3 pièces';
+
+  @override
+  String get jacket => 'Blouson';
+
+  @override
+  String get dress => 'Robe';
+
+  @override
+  String get washAndFold1020Pieces => 'Lavage et Pliage 10-20 pièces';
+
+  @override
+  String get washAndFold2130Pieces => 'Lavage et Pliage 21-30 pièces';
+
+  @override
+  String get washAndFold3140Pieces => 'Lavage et Pliage 31-40 pièces';
+
+  @override
   String get kg => 'kg';
 
   @override
@@ -1765,7 +1809,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get storeControls => 'Contrôles du magasin';
 
   @override
-  String get serviceControls => 'Contrôles du service';
+  String get serviceControls => 'Contrôles des services';
 
   @override
   String get clinicalControls => 'Contrôles cliniques';
@@ -1827,8 +1871,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Consulter vos tâches de blanchisserie.';
 
   @override
-  String get jobsQueueSubtitleServices =>
-      'Consulter vos réservations de service.';
+  String get jobsQueueSubtitleServices => 'Consulter les réservations';
 
   @override
   String get availabilitySubtitleFull =>
@@ -1839,8 +1882,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Contrôler quelles voies de blanchisserie sont ouvertes.';
 
   @override
-  String get availabilitySubtitleServices =>
-      'Contrôler quelles voies de service sont ouvertes.';
+  String get availabilitySubtitleServices => 'Gérez vos services';
 
   @override
   String get servicesOnly => 'Services uniquement';
@@ -1968,7 +2010,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get workInProgress => 'Travail en cours';
 
   @override
-  String get pipelineWorkboard => 'Tableau de bord du pipeline';
+  String get pipelineWorkboard => 'Tableau de bord';
 
   @override
   String get noPendingBookings => 'Aucune réservation en attente à accepter.';
@@ -2229,16 +2271,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pediatrics => 'Pédiatrie';
 
   @override
-  String get homeNursing => 'Soins infirmiers à domicile';
+  String get homeNursing => 'Soins Infirmiers à Domicile';
 
   @override
   String get physiotherapy => 'Physiothérapie';
 
   @override
-  String get mentalTherapy => 'Thérapie mentale';
+  String get mentalTherapy => 'Thérapie Mentale';
 
   @override
-  String get dentalCare => 'Soins dentaires';
+  String get dentalCare => 'Soins Dentaires';
 
   @override
   String get optometry => 'Optométrie';
@@ -2247,40 +2289,40 @@ class AppLocalizationsFr extends AppLocalizations {
   String get other => 'Autre';
 
   @override
-  String get generalCheckup => 'Bilan général';
+  String get generalCheckup => 'Bilan Général';
 
   @override
   String get ecg => 'ECG';
 
   @override
-  String get bloodTest => 'Analyse de sang';
+  String get bloodTest => 'Analyse de Sang';
 
   @override
   String get vaccination => 'Vaccination';
 
   @override
-  String get woundDressing => 'Pansement de plaie';
+  String get woundDressing => 'Pansement';
 
   @override
   String get injection => 'Injection';
 
   @override
-  String get postSurgeryRehab => 'Rééducation post-chirurgicale';
+  String get postSurgeryRehab => 'Rééducation Post-Chirurgicale';
 
   @override
-  String get physicalTherapy => 'Thérapie physique';
+  String get physicalTherapy => 'Physiothérapie';
 
   @override
-  String get psychologicalCounseling => 'Conseils psychologiques';
+  String get psychologicalCounseling => 'Conseil Psychologique';
 
   @override
-  String get emergencyCare => 'Soins d\'urgence';
+  String get emergencyCare => 'Soins d\'Urgence';
 
   @override
-  String get routineMonitoring => 'Surveillance de routine';
+  String get routineMonitoring => 'Suivi de Routine';
 
   @override
-  String get prescriptionRefill => 'Renouvellement d\'ordonnance';
+  String get prescriptionRefill => 'Renouvellement d\'Ordonnance';
 
   @override
   String waitingForPatient(Object name) {
@@ -2849,6 +2891,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Créez d\'abord un magasin avant d\'ajouter des produits.';
 
   @override
+  String get availabilityLabel => 'Disponibilité';
+
+  @override
   String get storeCreatedSuccessfully =>
       'Magasin créé et connecté à votre profil.';
 
@@ -3145,7 +3190,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get laundryAvailability => 'Disponibilité de la blanchisserie';
 
   @override
-  String get serviceAvailability => 'Disponibilité du service';
+  String get serviceAvailability => 'Vos services';
 
   @override
   String get addServiceListing => 'Ajouter une liste de services';
@@ -3214,4 +3259,97 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get category => 'Catégorie';
+
+  @override
+  String get houseHelp => 'Aide ménagère';
+  @override
+  String get homeCleaning => 'Nettoyage maison';
+  @override
+  String get plumbing => 'Plomberie';
+  @override
+  String get electrical => 'Électricité';
+  @override
+  String get acCooling => 'Climatisation';
+  @override
+  String get beautyAtHome => 'Beauté à domicile';
+  @override
+  String get handyman => 'Bricolage';
+  @override
+  String get ecologicalCleaning => 'Nettoyage écologique';
+  @override
+  String get leakRepair => 'Réparation de fuite';
+  @override
+  String get pipeInstallation => 'Installation de tuyaux';
+  @override
+  String get drainUnclogging => 'Débouchage de canalisation';
+  @override
+  String get faucetSinkRepair => 'Réparation robinet et évier';
+  @override
+  String get toiletRepair => 'Réparation de toilettes';
+  @override
+  String get waterHeaterService => 'Service chauffe-eau';
+  @override
+  String get socketSwitchRepair => 'Réparation prise et interrupteur';
+  @override
+  String get lightingInstallation => 'Installation d\'éclairage';
+  @override
+  String get wiringInspection => 'Inspection du câblage';
+  @override
+  String get circuitBreakerService => 'Service disjoncteur';
+  @override
+  String get fanInstallation => 'Installation de ventilateur';
+  @override
+  String get powerFaultDiagnosis => 'Diagnostic panne électrique';
+  @override
+  String get acMaintenance => 'Maintenance climatiseur';
+  @override
+  String get acGasRefill => 'Recharge gaz climatiseur';
+  @override
+  String get coolingFaultDiagnosis => 'Diagnostic panne de refroidissement';
+  @override
+  String get acInstallation => 'Installation climatiseur';
+  @override
+  String get filterCleaning => 'Nettoyage filtre';
+  @override
+  String get emergencyCoolingRepair => 'Réparation urgente de climatisation';
+  @override
+  String get hairStyling => 'Coiffure';
+  @override
+  String get makeupService => 'Service maquillage';
+  @override
+  String get nailCare => 'Soin des ongles';
+  @override
+  String get facialTreatment => 'Soin du visage';
+  @override
+  String get hennaService => 'Service henné';
+  @override
+  String get bridalBeauty => 'Beauté mariée';
+  @override
+  String get furnitureAssembly => 'Montage de meubles';
+  @override
+  String get curtainWallMounting => 'Pose rideaux et fixation murale';
+  @override
+  String get minorRepairs => 'Petites réparations';
+  @override
+  String get doorLockFix => 'Réparation porte et serrure';
+  @override
+  String get shelfInstallation => 'Installation d\'étagère';
+  @override
+  String get generalHomeTasks => 'Tâches domestiques générales';
+  @override
+  String get generalHomeService => 'Service à domicile général';
+  @override
+  String get inspectionVisit => 'Visite d\'inspection';
+  @override
+  String get maintenanceSupport => 'Support maintenance';
+  @override
+  String get ecoFriendlyCarWash => 'Lavage auto écologique';
+  @override
+  String get livingRoomFurnitureCleaning => 'Nettoyage salon et meubles';
+  @override
+  String get officeBusinessCleaning => 'Nettoyage bureaux et entreprises';
+  @override
+  String get postConstructionCleaning => 'Nettoyage après construction';
+  @override
+  String get ecologicalDisinfection => 'Désinfection écologique';
 }

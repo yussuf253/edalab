@@ -514,22 +514,11 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
       ),
       GoRoute(
         path: '/checkout/success',
-        builder: (context, state) {
-          // Merge any extra data with possible query parameters from the
-          // WaafiPay callback redirect (status & message). This allows the
-          // success screen to display error information when the payment
-          // failed.
-          final Map<String, dynamic> data = {};
-          if (state.extra is Map<String, dynamic>) {
-            data.addAll(state.extra as Map<String, dynamic>);
-          }
-          // Query parameters are optional; include them if present.
-          final status = state.uri.queryParameters['status'];
-          final message = state.uri.queryParameters['message'];
-          if (status != null) data['status'] = status;
-          if (message != null) data['message'] = message;
-          return OrderSuccessScreen(orderData: data);
-        },
+        builder: (context, state) => OrderSuccessScreen(
+          orderData: state.extra is Map<String, dynamic>
+              ? state.extra as Map<String, dynamic>
+              : null,
+        ),
       ),
       GoRoute(
         path: '/payment/success',

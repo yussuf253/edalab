@@ -228,7 +228,11 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          provider.title,
+                          l10n.homeServiceProviderSubtitle(
+                            categorySlug: provider.categorySlug,
+                            categoryName: provider.categoryName,
+                            fallbackTitle: provider.title,
+                          ),
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: Colors.white70,
                           ),
@@ -241,9 +245,11 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           alignment: WrapAlignment.center,
                           children: [
                             _HeroPill(
-                              label:
-                                  provider.categoryName ??
-                                  l10n.t('home_provider.home_service'),
+                              label: l10n.homeServiceCategoryName(
+                                provider.categorySlug ?? '',
+                                provider.categoryName ??
+                                    l10n.t('home_provider.home_service'),
+                              ),
                             ),
                             if (provider.isVerified)
                               _HeroPill(
@@ -297,7 +303,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           children: provider.services
                               .map(
                                 (service) => _Tag(
-                                  label: service,
+                                  label: l10n.homeServiceDynamicLabel(service),
                                   color: AppColors.homeServices,
                                 ),
                               )

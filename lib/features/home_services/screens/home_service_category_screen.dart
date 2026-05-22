@@ -207,10 +207,19 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(category.name, style: AppTextStyles.h4),
+                            Text(
+                              l10n.homeServiceCategoryName(
+                                category.slug,
+                                category.name,
+                              ),
+                              style: AppTextStyles.h4,
+                            ),
                             const SizedBox(height: 4),
                             Text(
-                              category.description,
+                              l10n.homeServiceCategoryDescription(
+                                category.slug,
+                                category.description,
+                              ),
                               style: AppTextStyles.bodySmall.copyWith(
                                 color: AppColors.grey,
                                 height: 1.4,
@@ -319,13 +328,20 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                provider.title,
+                                l10n.homeServiceProviderSubtitle(
+                                  categorySlug: provider.categorySlug,
+                                  categoryName: provider.categoryName,
+                                  fallbackTitle: provider.title,
+                                ),
                                 style: AppTextStyles.caption,
                               ),
                               if (provider.services.isNotEmpty) ...[
                                 const SizedBox(height: 8),
                                 Text(
-                                  provider.services.take(2).join(' • '),
+                                  provider.services
+                                      .take(2)
+                                      .map(l10n.homeServiceDynamicLabel)
+                                      .join(' • '),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppTextStyles.bodySmall.copyWith(

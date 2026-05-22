@@ -505,7 +505,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingSubtitle1.
   ///
   /// In en, this message translates to:
-  /// **'Manage appointments, service jobs, deliveries, and orders from one polished workspace built for fast teams.'**
+  /// **'Manage appointments and accept service bookings from one polished workspace.'**
   String get onboardingSubtitle1;
 
   /// No description provided for @onboardingTitle2.
@@ -549,6 +549,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign in'**
   String get onboardingSignIn;
+
+  /// No description provided for @edaLabProWelcomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome'**
+  String get edaLabProWelcomeTitle;
+
+  /// No description provided for @edaLabProWelcomeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome'**
+  String get edaLabProWelcomeDescription;
+
+  /// No description provided for @edaLabProWelcomeSignInButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get edaLabProWelcomeSignInButton;
+
+  /// No description provided for @edaLabProWelcomeCreateAccountButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get edaLabProWelcomeCreateAccountButton;
 
   /// No description provided for @onboardingFlowQueued.
   ///
@@ -1603,7 +1627,7 @@ abstract class AppLocalizations {
   /// No description provided for @jobsQueue.
   ///
   /// In en, this message translates to:
-  /// **'Jobs Queue'**
+  /// **'Available missions'**
   String get jobsQueue;
 
   /// No description provided for @jobsQueueSubtitle.
@@ -2062,12 +2086,6 @@ abstract class AppLocalizations {
   /// **'https://...\\nhttps://...'**
   String get galleryURLsHint;
 
-  /// No description provided for @availabilityLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Availability'**
-  String get availabilityLabel;
-
   /// No description provided for @patientLabel.
   ///
   /// In en, this message translates to:
@@ -2239,13 +2257,13 @@ abstract class AppLocalizations {
   /// No description provided for @schedulingSettings.
   ///
   /// In en, this message translates to:
-  /// **'Scheduling Settings'**
+  /// **'Schedules'**
   String get schedulingSettings;
 
   /// No description provided for @schedulingSettingsSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Update booking modes and weekly availability.'**
+  /// **'Manage your available slots'**
   String get schedulingSettingsSubtitle;
 
   /// No description provided for @scheduleSettings.
@@ -2323,7 +2341,7 @@ abstract class AppLocalizations {
   /// No description provided for @availability.
   ///
   /// In en, this message translates to:
-  /// **'Availability'**
+  /// **'Services'**
   String get availability;
 
   /// No description provided for @availabilitySubtitle.
@@ -3148,6 +3166,78 @@ abstract class AppLocalizations {
   /// **'Wash & Fold'**
   String get washAndFold;
 
+  /// No description provided for @shirt.
+  ///
+  /// In en, this message translates to:
+  /// **'Shirt'**
+  String get shirt;
+
+  /// No description provided for @tShirt.
+  ///
+  /// In en, this message translates to:
+  /// **'T-Shirt'**
+  String get tShirt;
+
+  /// No description provided for @polo.
+  ///
+  /// In en, this message translates to:
+  /// **'Polo'**
+  String get polo;
+
+  /// No description provided for @trouser.
+  ///
+  /// In en, this message translates to:
+  /// **'Trouser'**
+  String get trouser;
+
+  /// No description provided for @blazer.
+  ///
+  /// In en, this message translates to:
+  /// **'Blazer'**
+  String get blazer;
+
+  /// No description provided for @suit2Pieces.
+  ///
+  /// In en, this message translates to:
+  /// **'Suit 2 Pieces'**
+  String get suit2Pieces;
+
+  /// No description provided for @suit3Pieces.
+  ///
+  /// In en, this message translates to:
+  /// **'Suit 3 Pieces'**
+  String get suit3Pieces;
+
+  /// No description provided for @jacket.
+  ///
+  /// In en, this message translates to:
+  /// **'Jacket'**
+  String get jacket;
+
+  /// No description provided for @dress.
+  ///
+  /// In en, this message translates to:
+  /// **'Dress'**
+  String get dress;
+
+  /// No description provided for @washAndFold1020Pieces.
+  ///
+  /// In en, this message translates to:
+  /// **'Wash & Fold 10-20 Pieces'**
+  String get washAndFold1020Pieces;
+
+  /// No description provided for @washAndFold2130Pieces.
+  ///
+  /// In en, this message translates to:
+  /// **'Wash & Fold 21-30 Pieces'**
+  String get washAndFold2130Pieces;
+
+  /// No description provided for @washAndFold3140Pieces.
+  ///
+  /// In en, this message translates to:
+  /// **'Wash & Fold 31-40 Pieces'**
+  String get washAndFold3140Pieces;
+
   /// No description provided for @kg.
   ///
   /// In en, this message translates to:
@@ -3409,7 +3499,7 @@ abstract class AppLocalizations {
   /// No description provided for @jobsQueueSubtitleServices.
   ///
   /// In en, this message translates to:
-  /// **'Review your service bookings.'**
+  /// **'Review bookings'**
   String get jobsQueueSubtitleServices;
 
   /// No description provided for @availabilitySubtitleFull.
@@ -3427,7 +3517,7 @@ abstract class AppLocalizations {
   /// No description provided for @availabilitySubtitleServices.
   ///
   /// In en, this message translates to:
-  /// **'Control which service lanes are open.'**
+  /// **'Manage your services'**
   String get availabilitySubtitleServices;
 
   /// No description provided for @servicesOnly.
@@ -3661,7 +3751,7 @@ abstract class AppLocalizations {
   /// No description provided for @pipelineWorkboard.
   ///
   /// In en, this message translates to:
-  /// **'Pipeline Workboard'**
+  /// **'Dashboard'**
   String get pipelineWorkboard;
 
   /// No description provided for @noPendingBookings.
@@ -5206,6 +5296,12 @@ abstract class AppLocalizations {
   /// **'Create a store first before adding products.'**
   String get createStoreFirstMessage;
 
+  /// No description provided for @availabilityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Availability'**
+  String get availabilityLabel;
+
   /// No description provided for @storeCreatedSuccessfully.
   ///
   /// In en, this message translates to:
@@ -5713,7 +5809,7 @@ abstract class AppLocalizations {
   /// No description provided for @serviceAvailability.
   ///
   /// In en, this message translates to:
-  /// **'Service Availability'**
+  /// **'Your services'**
   String get serviceAvailability;
 
   /// No description provided for @addServiceListing.
@@ -5841,6 +5937,53 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Category'**
   String get category;
+
+  String get houseHelp;
+  String get homeCleaning;
+  String get plumbing;
+  String get electrical;
+  String get acCooling;
+  String get beautyAtHome;
+  String get handyman;
+  String get ecologicalCleaning;
+  String get leakRepair;
+  String get pipeInstallation;
+  String get drainUnclogging;
+  String get faucetSinkRepair;
+  String get toiletRepair;
+  String get waterHeaterService;
+  String get socketSwitchRepair;
+  String get lightingInstallation;
+  String get wiringInspection;
+  String get circuitBreakerService;
+  String get fanInstallation;
+  String get powerFaultDiagnosis;
+  String get acMaintenance;
+  String get acGasRefill;
+  String get coolingFaultDiagnosis;
+  String get acInstallation;
+  String get filterCleaning;
+  String get emergencyCoolingRepair;
+  String get hairStyling;
+  String get makeupService;
+  String get nailCare;
+  String get facialTreatment;
+  String get hennaService;
+  String get bridalBeauty;
+  String get furnitureAssembly;
+  String get curtainWallMounting;
+  String get minorRepairs;
+  String get doorLockFix;
+  String get shelfInstallation;
+  String get generalHomeTasks;
+  String get generalHomeService;
+  String get inspectionVisit;
+  String get maintenanceSupport;
+  String get ecoFriendlyCarWash;
+  String get livingRoomFurnitureCleaning;
+  String get officeBusinessCleaning;
+  String get postConstructionCleaning;
+  String get ecologicalDisinfection;
 }
 
 class _AppLocalizationsDelegate

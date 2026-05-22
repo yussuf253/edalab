@@ -1,9 +1,10 @@
 import '/pro/l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:typed_data';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
@@ -30,6 +31,10 @@ class ProviderAvailabilityScreen extends StatefulWidget {
 class _ProviderAvailabilityScreenState
     extends State<ProviderAvailabilityScreen> {
   AppLocalizations get l10n => AppLocalizations.of(context)!;
+  static final Set<Factory<OneSequenceGestureRecognizer>>
+  _mapGestureRecognizers = <Factory<OneSequenceGestureRecognizer>>{
+    Factory<EagerGestureRecognizer>(() => EagerGestureRecognizer()),
+  };
 
   // Identifier keys for localisation. These are sent to the backend and mapped to
   // user‑visible strings via AppLocalizations.
@@ -63,6 +68,13 @@ class _ProviderAvailabilityScreenState
   static const List<String> _houseHelpSupplyModeOptions = <String>[
     'provider_supplies',
     'customer_supplies',
+  ];
+  static const List<String> _ecologicalCleaningServiceOptions = <String>[
+    'eco_friendly_car_wash',
+    'living_room_furniture_cleaning',
+    'office_business_cleaning',
+    'post_construction_cleaning',
+    'ecological_disinfection',
   ];
   static const List<double> _zoneRadiusOptionsKm = <double>[0.25, 0.5, 0.75, 1];
 
@@ -135,6 +147,44 @@ class _ProviderAvailabilityScreenState
       'f4': 'F4',
       'provider_supplies': 'Provider supplies',
       'customer_supplies': 'Customer supplies',
+      'leak_repair': 'Leak Repair',
+      'pipe_installation': 'Pipe Installation',
+      'drain_unclogging': 'Drain Unclogging',
+      'faucet_sink_repair': 'Faucet & Sink Repair',
+      'toilet_repair': 'Toilet Repair',
+      'water_heater_service': 'Water Heater Service',
+      'socket_switch_repair': 'Socket & Switch Repair',
+      'lighting_installation': 'Lighting Installation',
+      'wiring_inspection': 'Wiring Inspection',
+      'circuit_breaker_service': 'Circuit Breaker Service',
+      'fan_installation': 'Fan Installation',
+      'power_fault_diagnosis': 'Power Fault Diagnosis',
+      'ac_maintenance': 'AC Maintenance',
+      'ac_gas_refill': 'AC Gas Refill',
+      'cooling_fault_diagnosis': 'Cooling Fault Diagnosis',
+      'ac_installation': 'AC Installation',
+      'filter_cleaning': 'Filter Cleaning',
+      'emergency_cooling_repair': 'Emergency Cooling Repair',
+      'hair_styling': 'Hair Styling',
+      'makeup_service': 'Makeup Service',
+      'nail_care': 'Nail Care',
+      'facial_treatment': 'Facial Treatment',
+      'henna_service': 'Henna Service',
+      'bridal_beauty': 'Bridal Beauty',
+      'furniture_assembly': 'Furniture Assembly',
+      'curtain_wall_mounting': 'Curtain & Wall Mounting',
+      'minor_repairs': 'Minor Repairs',
+      'door_lock_fix': 'Door & Lock Fix',
+      'shelf_installation': 'Shelf Installation',
+      'general_home_tasks': 'General Home Tasks',
+      'general_home_service': 'General Home Service',
+      'inspection_visit': 'Inspection Visit',
+      'maintenance_support': 'Maintenance Support',
+      'eco_friendly_car_wash': 'Eco-friendly Car Wash',
+      'living_room_furniture_cleaning': 'Living Room & Furniture Cleaning',
+      'office_business_cleaning': 'Office & Business Cleaning',
+      'post_construction_cleaning': 'Post-Construction Cleaning',
+      'ecological_disinfection': 'Ecological Disinfection',
     };
     // Attempt to use localisation getters; if they are null, use fallback.
     switch (key) {
@@ -176,8 +226,107 @@ class _ProviderAvailabilityScreenState
         return l10n.providerSupplies;
       case 'customer_supplies':
         return l10n.customerSupplies;
+      case 'leak_repair':
+        return l10n.leakRepair;
+      case 'pipe_installation':
+        return l10n.pipeInstallation;
+      case 'drain_unclogging':
+        return l10n.drainUnclogging;
+      case 'faucet_sink_repair':
+        return l10n.faucetSinkRepair;
+      case 'toilet_repair':
+        return l10n.toiletRepair;
+      case 'water_heater_service':
+        return l10n.waterHeaterService;
+      case 'socket_switch_repair':
+        return l10n.socketSwitchRepair;
+      case 'lighting_installation':
+        return l10n.lightingInstallation;
+      case 'wiring_inspection':
+        return l10n.wiringInspection;
+      case 'circuit_breaker_service':
+        return l10n.circuitBreakerService;
+      case 'fan_installation':
+        return l10n.fanInstallation;
+      case 'power_fault_diagnosis':
+        return l10n.powerFaultDiagnosis;
+      case 'ac_maintenance':
+        return l10n.acMaintenance;
+      case 'ac_gas_refill':
+        return l10n.acGasRefill;
+      case 'cooling_fault_diagnosis':
+        return l10n.coolingFaultDiagnosis;
+      case 'ac_installation':
+        return l10n.acInstallation;
+      case 'filter_cleaning':
+        return l10n.filterCleaning;
+      case 'emergency_cooling_repair':
+        return l10n.emergencyCoolingRepair;
+      case 'hair_styling':
+        return l10n.hairStyling;
+      case 'makeup_service':
+        return l10n.makeupService;
+      case 'nail_care':
+        return l10n.nailCare;
+      case 'facial_treatment':
+        return l10n.facialTreatment;
+      case 'henna_service':
+        return l10n.hennaService;
+      case 'bridal_beauty':
+        return l10n.bridalBeauty;
+      case 'furniture_assembly':
+        return l10n.furnitureAssembly;
+      case 'curtain_wall_mounting':
+        return l10n.curtainWallMounting;
+      case 'minor_repairs':
+        return l10n.minorRepairs;
+      case 'door_lock_fix':
+        return l10n.doorLockFix;
+      case 'shelf_installation':
+        return l10n.shelfInstallation;
+      case 'general_home_tasks':
+        return l10n.generalHomeTasks;
+      case 'general_home_service':
+        return l10n.generalHomeService;
+      case 'inspection_visit':
+        return l10n.inspectionVisit;
+      case 'maintenance_support':
+        return l10n.maintenanceSupport;
+      case 'eco_friendly_car_wash':
+        return l10n.ecoFriendlyCarWash;
+      case 'living_room_furniture_cleaning':
+        return l10n.livingRoomFurnitureCleaning;
+      case 'office_business_cleaning':
+        return l10n.officeBusinessCleaning;
+      case 'post_construction_cleaning':
+        return l10n.postConstructionCleaning;
+      case 'ecological_disinfection':
+        return l10n.ecologicalDisinfection;
       default:
         return fallback[key] ?? key;
+    }
+  }
+
+  String _localizedCategoryLabel(String slug, String fallback) {
+    switch (slug.toLowerCase().replaceAll('_', '-').trim()) {
+      case 'house-help':
+        return l10n.houseHelp;
+      case 'cleaning':
+        return l10n.homeCleaning;
+      case 'plumbing':
+        return l10n.plumbing;
+      case 'electrical':
+        return l10n.electrical;
+      case 'ac-cooling':
+        return l10n.acCooling;
+      case 'beauty-at-home':
+        return l10n.beautyAtHome;
+      case 'handyman':
+        return l10n.handyman;
+      case 'ecological-cleaning':
+        return l10n.ecologicalCleaning;
+      default:
+        return fallback;
     }
   }
 
@@ -194,16 +343,25 @@ class _ProviderAvailabilityScreenState
         supplyModeOptions: _houseHelpSupplyModeOptions,
       );
     }
+    if (normalized.contains('ecological') ||
+        normalized.contains('ecologique') ||
+        normalized.contains('eco-clean') ||
+        normalized.contains('eco_clean')) {
+      return const _CategoryListingPreset(
+        defaultTitle: 'Ecological Cleaning Specialist',
+        serviceOptions: _ecologicalCleaningServiceOptions,
+      );
+    }
     if (normalized.contains('plumb')) {
       return const _CategoryListingPreset(
         defaultTitle: 'Plumbing Specialist',
         serviceOptions: <String>[
-          'Leak Repair',
-          'Pipe Installation',
-          'Drain Unclogging',
-          'Faucet & Sink Repair',
-          'Toilet Repair',
-          'Water Heater Service',
+          'leak_repair',
+          'pipe_installation',
+          'drain_unclogging',
+          'faucet_sink_repair',
+          'toilet_repair',
+          'water_heater_service',
         ],
       );
     }
@@ -211,12 +369,12 @@ class _ProviderAvailabilityScreenState
       return const _CategoryListingPreset(
         defaultTitle: 'Electrical Technician',
         serviceOptions: <String>[
-          'Socket & Switch Repair',
-          'Lighting Installation',
-          'Wiring Inspection',
-          'Circuit Breaker Service',
-          'Fan Installation',
-          'Power Fault Diagnosis',
+          'socket_switch_repair',
+          'lighting_installation',
+          'wiring_inspection',
+          'circuit_breaker_service',
+          'fan_installation',
+          'power_fault_diagnosis',
         ],
       );
     }
@@ -224,12 +382,12 @@ class _ProviderAvailabilityScreenState
       return const _CategoryListingPreset(
         defaultTitle: 'AC & Cooling Technician',
         serviceOptions: <String>[
-          'AC Maintenance',
-          'AC Gas Refill',
-          'Cooling Fault Diagnosis',
-          'AC Installation',
-          'Filter Cleaning',
-          'Emergency Cooling Repair',
+          'ac_maintenance',
+          'ac_gas_refill',
+          'cooling_fault_diagnosis',
+          'ac_installation',
+          'filter_cleaning',
+          'emergency_cooling_repair',
         ],
       );
     }
@@ -237,12 +395,12 @@ class _ProviderAvailabilityScreenState
       return const _CategoryListingPreset(
         defaultTitle: 'Beauty at Home Specialist',
         serviceOptions: <String>[
-          'Hair Styling',
-          'Makeup Service',
-          'Nail Care',
-          'Facial Treatment',
-          'Henna Service',
-          'Bridal Beauty',
+          'hair_styling',
+          'makeup_service',
+          'nail_care',
+          'facial_treatment',
+          'henna_service',
+          'bridal_beauty',
         ],
       );
     }
@@ -250,21 +408,21 @@ class _ProviderAvailabilityScreenState
       return const _CategoryListingPreset(
         defaultTitle: 'Handyman Specialist',
         serviceOptions: <String>[
-          'Furniture Assembly',
-          'Curtain & Wall Mounting',
-          'Minor Repairs',
-          'Door & Lock Fix',
-          'Shelf Installation',
-          'General Home Tasks',
+          'furniture_assembly',
+          'curtain_wall_mounting',
+          'minor_repairs',
+          'door_lock_fix',
+          'shelf_installation',
+          'general_home_tasks',
         ],
       );
     }
     return const _CategoryListingPreset(
       defaultTitle: 'Home Service Specialist',
       serviceOptions: <String>[
-        'General Home Service',
-        'Inspection Visit',
-        'Maintenance Support',
+        'general_home_service',
+        'inspection_visit',
+        'maintenance_support',
       ],
     );
   }
@@ -858,6 +1016,7 @@ class _ProviderAvailabilityScreenState
                             target: zoneCenter,
                             zoom: 12.4,
                           ),
+                          gestureRecognizers: _mapGestureRecognizers,
                           markers: {
                             Marker(
                               markerId: const MarkerId('provider-zone-center'),
@@ -869,7 +1028,9 @@ class _ProviderAvailabilityScreenState
                           mapToolbarEnabled: false,
                           rotateGesturesEnabled: false,
                           tiltGesturesEnabled: false,
-                          liteModeEnabled: true,
+                          scrollGesturesEnabled: true,
+                          zoomGesturesEnabled: true,
+                          liteModeEnabled: false,
                           onTap: (point) {
                             if (isSaving) return;
                             setModalState(() => zoneCenter = point);
@@ -1010,14 +1171,15 @@ class _ProviderAvailabilityScreenState
     }
 
     String categoryNameForId(String categoryId) {
-      return categories
-              .firstWhere(
-                (entry) => entry['id']?.toString() == categoryId,
-                orElse: () => categories.first,
-              )['name']
-              ?.toString()
-              .trim() ??
-          'Service';
+      final category = categories.firstWhere(
+        (entry) => entry['id']?.toString() == categoryId,
+        orElse: () => categories.first,
+      );
+      final fallback = category['name']?.toString().trim() ?? 'Service';
+      return _localizedCategoryLabel(
+        category['slug']?.toString() ?? '',
+        fallback,
+      );
     }
 
     String selectedCategoryId =
@@ -1028,13 +1190,12 @@ class _ProviderAvailabilityScreenState
             )['id']
             ?.toString() ??
         categories.first['id'].toString());
-    final selectedPreset = _presetForCategorySlug(
-      categorySlugForId(selectedCategoryId),
-    );
-
     final nameController = TextEditingController(text: widget.businessName);
     final titleController = TextEditingController(
-      text: selectedPreset.defaultTitle,
+      text: categoryNameForId(selectedCategoryId),
+    );
+    final selectedPreset = _presetForCategorySlug(
+      categorySlugForId(selectedCategoryId),
     );
     final startingPriceController = TextEditingController(text: '25');
     final phoneController = TextEditingController();
@@ -1342,8 +1503,10 @@ class _ProviderAvailabilityScreenState
                       items: categories
                           .map((category) {
                             final id = category['id']?.toString() ?? '';
-                            final label =
-                                category['name']?.toString() ?? 'Category';
+                            final label = _localizedCategoryLabel(
+                              category['slug']?.toString() ?? '',
+                              category['name']?.toString() ?? 'Category',
+                            );
                             return DropdownMenuItem<String>(
                               value: id,
                               child: Text(
@@ -1366,8 +1529,7 @@ class _ProviderAvailabilityScreenState
                                   ..clear()
                                   ..add(nextPreset.serviceOptions.first);
                                 draftService = nextPreset.serviceOptions.first;
-                                titleController.text =
-                                    '${categoryNameForId(value)} Specialist';
+                                titleController.text = categoryNameForId(value);
 
                                 selectedBookingTypes
                                   ..clear()
@@ -1604,6 +1766,7 @@ class _ProviderAvailabilityScreenState
                             target: zoneCenter,
                             zoom: 12.4,
                           ),
+                          gestureRecognizers: _mapGestureRecognizers,
                           markers: {
                             Marker(
                               markerId: const MarkerId('provider-zone-center'),
@@ -1615,7 +1778,9 @@ class _ProviderAvailabilityScreenState
                           mapToolbarEnabled: false,
                           rotateGesturesEnabled: false,
                           tiltGesturesEnabled: false,
-                          liteModeEnabled: true,
+                          scrollGesturesEnabled: true,
+                          zoomGesturesEnabled: true,
+                          liteModeEnabled: false,
                           onTap: (point) {
                             if (isSaving) return;
                             setModalState(() => zoneCenter = point);

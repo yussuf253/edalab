@@ -2333,6 +2333,17 @@ export const djiboutiHomeServiceCategories = [
     sortOrder: 7,
     active: true,
   },
+  {
+    id: 'hs-ecological-cleaning',
+    name: 'Ecological Cleaning',
+    slug: 'ecological-cleaning',
+    description:
+      'Eco-friendly car wash, living room and furniture cleaning, office cleaning, post-construction cleaning, and ecological disinfection.',
+    iconKey: 'cleaning',
+    colorHex: '#2F9E44',
+    sortOrder: 8,
+    active: true,
+  },
 ] as const;
 
 export const djiboutiHomeServiceProviders = [

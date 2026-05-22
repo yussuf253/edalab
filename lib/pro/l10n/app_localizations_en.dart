@@ -212,7 +212,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingSubtitle1 =>
-      'Manage appointments, service jobs, deliveries, and orders from one polished workspace built for fast teams.';
+      'Manage appointments and accept service bookings from one polished workspace.';
 
   @override
   String get onboardingTitle2 => 'Accept Work Instantly And Keep Flowing';
@@ -236,6 +236,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingSignIn => 'Sign in';
+
+  @override
+  String get edaLabProWelcomeTitle => 'Welcome';
+
+  @override
+  String get edaLabProWelcomeDescription => 'Welcome';
+
+  @override
+  String get edaLabProWelcomeSignInButton => 'Sign In';
+
+  @override
+  String get edaLabProWelcomeCreateAccountButton => 'Create Account';
 
   @override
   String get onboardingFlowQueued => 'Queued';
@@ -796,7 +808,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Manage provider schedule and booking preferences.';
 
   @override
-  String get jobsQueue => 'Jobs Queue';
+  String get jobsQueue => 'Available missions';
 
   @override
   String get jobsQueueSubtitle =>
@@ -1041,9 +1053,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get galleryURLsHint => 'https://...\\nhttps://...';
 
   @override
-  String get availabilityLabel => 'Availability';
-
-  @override
   String get patientLabel => 'Patient';
 
   @override
@@ -1139,11 +1148,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pause or reopen service and laundry lanes.';
 
   @override
-  String get schedulingSettings => 'Scheduling Settings';
+  String get schedulingSettings => 'Schedules';
 
   @override
-  String get schedulingSettingsSubtitle =>
-      'Update booking modes and weekly availability.';
+  String get schedulingSettingsSubtitle => 'Manage your available slots';
 
   @override
   String get scheduleSettings => 'Schedule Settings';
@@ -1184,7 +1192,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mediaAndAttributesSubtitle => 'Images and metadata.';
 
   @override
-  String get availability => 'Availability';
+  String get availability => 'Services';
 
   @override
   String get availabilitySubtitle => 'Control product visibility in your store';
@@ -1646,6 +1654,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get washAndFold => 'Wash & Fold';
 
   @override
+  String get shirt => 'Shirt';
+
+  @override
+  String get tShirt => 'T-Shirt';
+
+  @override
+  String get polo => 'Polo';
+
+  @override
+  String get trouser => 'Trouser';
+
+  @override
+  String get blazer => 'Blazer';
+
+  @override
+  String get suit2Pieces => 'Suit 2 Pieces';
+
+  @override
+  String get suit3Pieces => 'Suit 3 Pieces';
+
+  @override
+  String get jacket => 'Jacket';
+
+  @override
+  String get dress => 'Dress';
+
+  @override
+  String get washAndFold1020Pieces => 'Wash & Fold 10-20 Pieces';
+
+  @override
+  String get washAndFold2130Pieces => 'Wash & Fold 21-30 Pieces';
+
+  @override
+  String get washAndFold3140Pieces => 'Wash & Fold 31-40 Pieces';
+
+  @override
   String get kg => 'kg';
 
   @override
@@ -1788,7 +1832,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get jobsQueueSubtitleLaundry => 'Review your laundry jobs.';
 
   @override
-  String get jobsQueueSubtitleServices => 'Review your service bookings.';
+  String get jobsQueueSubtitleServices => 'Review bookings';
 
   @override
   String get availabilitySubtitleFull =>
@@ -1799,8 +1843,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Control which laundry lanes are open.';
 
   @override
-  String get availabilitySubtitleServices =>
-      'Control which service lanes are open.';
+  String get availabilitySubtitleServices => 'Manage your services';
 
   @override
   String get servicesOnly => 'Services Only';
@@ -1924,7 +1967,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workInProgress => 'Work in progress';
 
   @override
-  String get pipelineWorkboard => 'Pipeline Workboard';
+  String get pipelineWorkboard => 'Dashboard';
 
   @override
   String get noPendingBookings => 'No pending bookings to accept.';
@@ -2790,6 +2833,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Create a store first before adding products.';
 
   @override
+  String get availabilityLabel => 'Availability';
+
+  @override
   String get storeCreatedSuccessfully =>
       'Store created and connected to your profile.';
 
@@ -3078,7 +3124,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get laundryAvailability => 'Laundry Availability';
 
   @override
-  String get serviceAvailability => 'Service Availability';
+  String get serviceAvailability => 'Your services';
 
   @override
   String get addServiceListing => 'Add service listing';
@@ -3144,4 +3190,97 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get category => 'Category';
+
+  @override
+  String get houseHelp => 'House Help';
+  @override
+  String get homeCleaning => 'Home Cleaning';
+  @override
+  String get plumbing => 'Plumbing';
+  @override
+  String get electrical => 'Electrical';
+  @override
+  String get acCooling => 'AC & Cooling';
+  @override
+  String get beautyAtHome => 'Beauty at Home';
+  @override
+  String get handyman => 'Handyman';
+  @override
+  String get ecologicalCleaning => 'Ecological Cleaning';
+  @override
+  String get leakRepair => 'Leak Repair';
+  @override
+  String get pipeInstallation => 'Pipe Installation';
+  @override
+  String get drainUnclogging => 'Drain Unclogging';
+  @override
+  String get faucetSinkRepair => 'Faucet & Sink Repair';
+  @override
+  String get toiletRepair => 'Toilet Repair';
+  @override
+  String get waterHeaterService => 'Water Heater Service';
+  @override
+  String get socketSwitchRepair => 'Socket & Switch Repair';
+  @override
+  String get lightingInstallation => 'Lighting Installation';
+  @override
+  String get wiringInspection => 'Wiring Inspection';
+  @override
+  String get circuitBreakerService => 'Circuit Breaker Service';
+  @override
+  String get fanInstallation => 'Fan Installation';
+  @override
+  String get powerFaultDiagnosis => 'Power Fault Diagnosis';
+  @override
+  String get acMaintenance => 'AC Maintenance';
+  @override
+  String get acGasRefill => 'AC Gas Refill';
+  @override
+  String get coolingFaultDiagnosis => 'Cooling Fault Diagnosis';
+  @override
+  String get acInstallation => 'AC Installation';
+  @override
+  String get filterCleaning => 'Filter Cleaning';
+  @override
+  String get emergencyCoolingRepair => 'Emergency Cooling Repair';
+  @override
+  String get hairStyling => 'Hair Styling';
+  @override
+  String get makeupService => 'Makeup Service';
+  @override
+  String get nailCare => 'Nail Care';
+  @override
+  String get facialTreatment => 'Facial Treatment';
+  @override
+  String get hennaService => 'Henna Service';
+  @override
+  String get bridalBeauty => 'Bridal Beauty';
+  @override
+  String get furnitureAssembly => 'Furniture Assembly';
+  @override
+  String get curtainWallMounting => 'Curtain & Wall Mounting';
+  @override
+  String get minorRepairs => 'Minor Repairs';
+  @override
+  String get doorLockFix => 'Door & Lock Fix';
+  @override
+  String get shelfInstallation => 'Shelf Installation';
+  @override
+  String get generalHomeTasks => 'General Home Tasks';
+  @override
+  String get generalHomeService => 'General Home Service';
+  @override
+  String get inspectionVisit => 'Inspection Visit';
+  @override
+  String get maintenanceSupport => 'Maintenance Support';
+  @override
+  String get ecoFriendlyCarWash => 'Eco-Friendly Car Wash';
+  @override
+  String get livingRoomFurnitureCleaning => 'Living Room & Furniture Cleaning';
+  @override
+  String get officeBusinessCleaning => 'Office & Business Cleaning';
+  @override
+  String get postConstructionCleaning => 'Post-Construction Cleaning';
+  @override
+  String get ecologicalDisinfection => 'Ecological Disinfection';
 }

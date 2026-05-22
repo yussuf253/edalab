@@ -1,3 +1,4 @@
+import '/pro/features/auth/screens/pro_register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -21,7 +22,7 @@ class ProEntryScreen extends StatelessWidget {
 
     if (!proAuthProvider.isAuthenticated ||
         proAuthProvider.currentAccount == null) {
-      return const ProWelcomeScreen();
+      return const ProRegisterScreen();
     }
 
     if (proAuthProvider.currentProfile == null) {

@@ -81,6 +81,8 @@ class ProRoutePaths {
         return deliveryQueue;
       case ProModule.ride:
         return riderQueue;
+      case ProModule.ecologicalCleaning:
+        return providerQueue;
     }
   }
 }

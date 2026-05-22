@@ -104,6 +104,16 @@ const createHomeServiceProviderSchema = zod_1.z.object({
     })
         .optional(),
 });
+const ECOLOGICAL_CLEANING_CATEGORY = {
+    id: 'hs-ecological-cleaning',
+    name: 'Ecological Cleaning',
+    slug: 'ecological-cleaning',
+    description: 'Eco-friendly car wash, living room and furniture cleaning, office cleaning, post-construction cleaning, and ecological disinfection.',
+    iconKey: 'cleaning',
+    colorHex: '#2F9E44',
+    sortOrder: 8,
+    active: true,
+};
 const laundryServiceConfigItemSchema = zod_1.z.object({
     id: zod_1.z.string().trim().max(40).optional().or(zod_1.z.literal('')),
     label: zod_1.z.string().trim().min(1).max(80),
@@ -1550,6 +1560,9 @@ async function buildServicesSummary(todayStart, bindings) {
                     id: true,
                     isAvailable: true,
                     availabilityJson: true,
+                    category: {
+                        select: { slug: true },
+                    },
                 },
             }),
         bindings.providerIds.length === 0
@@ -1588,11 +1601,22 @@ async function buildServicesSummary(todayStart, bindings) {
     const providerCount = providers.length;
     const availableCount = providers.filter((provider) => provider.isAvailable).length;
     const pickZoneProvider = (order) => {
+        if (order.moduleType === client_1.ModuleType.HOUSE_HELP &&
+            !providers.some((provider) => isHouseHelpCategorySlug(provider.category?.slug))) {
+            return null;
+        }
         const location = orderServiceLocation(order);
         if (location == null)
             return null;
         const matches = providers
-            .filter((provider) => provider.isAvailable)
+            .filter((provider) => {
+            if (!provider.isAvailable)
+                return false;
+            if (order.moduleType === client_1.ModuleType.HOUSE_HELP) {
+                return isHouseHelpCategorySlug(provider.category?.slug);
+            }
+            return true;
+        })
             .map((provider) => {
             const zone = serviceZoneFromAvailabilityJson(provider.availabilityJson);
             if (!zone.enabled ||
@@ -1615,16 +1639,25 @@ async function buildServicesSummary(todayStart, bindings) {
         const firstItem = order.items[0];
         const directProviderId = firstItem?.externalRefId;
         const assignedProviderId = assignedProviderIdFromMetadata(firstItem?.metadata);
+        const providerCanReceiveOrder = (providerId) => {
+            if (providerId == null || !bindings.providerIds.includes(providerId)) {
+                return false;
+            }
+            const provider = providers.find((entry) => entry.id === providerId);
+            if (provider == null)
+                return false;
+            if (order.moduleType === client_1.ModuleType.HOUSE_HELP) {
+                return isHouseHelpCategorySlug(provider.category?.slug);
+            }
+            return true;
+        };
         if (order.moduleType === client_1.ModuleType.HOME_SERVICES) {
-            return (directProviderId != null &&
-                bindings.providerIds.includes(directProviderId));
+            return providerCanReceiveOrder(directProviderId);
         }
-        if (directProviderId != null &&
-            bindings.providerIds.includes(directProviderId)) {
+        if (providerCanReceiveOrder(directProviderId)) {
             return true;
         }
-        if (assignedProviderId != null &&
-            bindings.providerIds.includes(assignedProviderId)) {
+        if (providerCanReceiveOrder(assignedProviderId)) {
             return true;
         }
         if (order.status !== client_1.OrderStatus.PENDING)
@@ -2603,6 +2636,9 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
                     id: true,
                     isAvailable: true,
                     availabilityJson: true,
+                    category: {
+                        select: { slug: true },
+                    },
                 },
             }),
         !canServices
@@ -2671,13 +2707,37 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
         ? []
         : (() => {
             const providerLookup = new Map(serviceProviders.map((provider) => [provider.id, provider]));
+            const providerCanReceiveOrder = (providerId, moduleType) => {
+                if (providerId == null || !bindings.providerIds.includes(providerId)) {
+                    return false;
+                }
+                const provider = providerLookup.get(providerId);
+                if (provider == null)
+                    return false;
+                if (moduleType === client_1.ModuleType.HOUSE_HELP) {
+                    return isHouseHelpCategorySlug(provider.category?.slug);
+                }
+                return true;
+            };
             const candidatesByOrderId = new Map();
             const pickZoneProvider = (order) => {
+                if (order.moduleType === client_1.ModuleType.HOUSE_HELP) {
+                    const hasHouseHelpProvider = Array.from(providerLookup.values()).some((provider) => isHouseHelpCategorySlug(provider.category?.slug));
+                    if (!hasHouseHelpProvider)
+                        return null;
+                }
                 const location = orderServiceLocation(order);
                 if (location == null)
                     return null;
                 const matches = Array.from(providerLookup.values())
-                    .filter((provider) => provider.isAvailable)
+                    .filter((provider) => {
+                    if (!provider.isAvailable)
+                        return false;
+                    if (order.moduleType === client_1.ModuleType.HOUSE_HELP) {
+                        return isHouseHelpCategorySlug(provider.category?.slug);
+                    }
+                    return true;
+                })
                     .map((provider) => {
                     const zone = serviceZoneFromAvailabilityJson(provider.availabilityJson);
                     if (!zone.enabled ||
@@ -2701,8 +2761,7 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
                 const directProviderId = firstItem?.externalRefId;
                 const assignedProviderId = assignedProviderIdFromMetadata(firstItem?.metadata);
                 if (order.moduleType === client_1.ModuleType.HOME_SERVICES) {
-                    if (directProviderId != null &&
-                        bindings.providerIds.includes(directProviderId)) {
+                    if (providerCanReceiveOrder(directProviderId, order.moduleType)) {
                         candidatesByOrderId.set(order.id, {
                             order,
                             providerIdOverride: directProviderId,
@@ -2711,8 +2770,7 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
                     }
                     continue;
                 }
-                if (directProviderId != null &&
-                    bindings.providerIds.includes(directProviderId)) {
+                if (providerCanReceiveOrder(directProviderId, order.moduleType)) {
                     candidatesByOrderId.set(order.id, {
                         order,
                         providerIdOverride: directProviderId,
@@ -2720,8 +2778,7 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
                     });
                     continue;
                 }
-                if (assignedProviderId != null &&
-                    bindings.providerIds.includes(assignedProviderId)) {
+                if (providerCanReceiveOrder(assignedProviderId, order.moduleType)) {
                     candidatesByOrderId.set(order.id, {
                         order,
                         providerIdOverride: assignedProviderId,
@@ -3403,6 +3460,11 @@ router.post('/:userId/home-service-provider', (0, async_handler_1.asyncHandler)(
             error: 'Services is not enabled for this provider profile.',
         });
     }
+    await db_1.prisma.homeServiceCategory.upsert({
+        where: { id: ECOLOGICAL_CLEANING_CATEGORY.id },
+        update: ECOLOGICAL_CLEANING_CATEGORY,
+        create: ECOLOGICAL_CLEANING_CATEGORY,
+    });
     const activeCategories = await db_1.prisma.homeServiceCategory.findMany({
         where: { active: true },
         select: { id: true, name: true, slug: true, colorHex: true, iconKey: true },

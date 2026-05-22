@@ -62,6 +62,8 @@ class ProModuleHelper {
         return 'Pharmacy Delivery';
       case ProModule.ride:
         return 'Ride';
+      case ProModule.ecologicalCleaning:
+        return 'Ecological Cleaning';
     }
   }
 
@@ -87,6 +89,8 @@ class ProModuleHelper {
         return 'Complete pharmacy deliveries with medicine-sensitive handling.';
       case ProModule.ride:
         return 'Accept ride requests, manage trips, and track rider earnings.';
+      case ProModule.ecologicalCleaning:
+        return 'Eco-friendly cleaning services and sustainability operations.';
     }
   }
 
@@ -109,6 +113,8 @@ class ProModuleHelper {
         return AppColors.doctor;
       case ProModule.ride:
         return AppColors.ride;
+      case ProModule.ecologicalCleaning:
+        return AppColors.homeServices;
     }
   }
 
@@ -134,6 +140,8 @@ class ProModuleHelper {
         return Icons.medication_outlined;
       case ProModule.ride:
         return Icons.local_taxi;
+      case ProModule.ecologicalCleaning:
+        return Icons.cleaning_services;
     }
   }
 

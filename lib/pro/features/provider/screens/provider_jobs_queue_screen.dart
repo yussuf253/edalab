@@ -1,4 +1,5 @@
 import '/pro/l10n/app_localizations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -57,6 +58,9 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
         case ProModule.laundry:
           modules.add('laundry');
           break;
+        case ProModule.ecologicalCleaning:
+          modules.add('services');
+          break;
         default:
           break;
       }
@@ -98,13 +102,12 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
       final items = (response as List)
           .map((entry) => Map<String, dynamic>.from(entry as Map))
           .map((entry) {
-            final normalized = Map<String, dynamic>.from(entry);
-            normalized['module'] = _canonicalModule(
-              normalized['module']?.toString() ?? '',
-            );
-            return normalized;
-          })
-          .toList(growable: false);
+        final normalized = Map<String, dynamic>.from(entry);
+        normalized['module'] = _canonicalModule(
+          normalized['module']?.toString() ?? '',
+        );
+        return normalized;
+      }).toList(growable: false);
       if (!mounted) return;
       setState(() {
         _items = items;
@@ -288,18 +291,22 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
         .where((module) => module.isNotEmpty)
         .toSet()
         .length;
-    final filteredItems = _items
-        .where((item) {
-          final module = item['module']?.toString() ?? '';
-          if (!_allowedModuleSet.contains(module)) {
-            return false;
-          }
-          if (_selectedModule != 'all' && module != _selectedModule) {
-            return false;
-          }
-          return _matchesStatus(item);
-        })
-        .toList(growable: false);
+    final filteredItems = _items.where((item) {
+      final module = item['module']?.toString() ?? '';
+      if (!_allowedModuleSet.contains(module)) {
+        return false;
+      }
+      if (_selectedModule != 'all' && module != _selectedModule) {
+        return false;
+      }
+      final rawModuleType = item['moduleType']?.toString().toUpperCase() ?? '';
+      if (rawModuleType == 'HOUSE_HELP') {
+        final hasHouseHelpModule =
+            widget.activeModules.any((m) => m == ProModule.services);
+        if (!hasHouseHelpModule) return false;
+      }
+      return _matchesStatus(item);
+    }).toList(growable: false);
 
     return Scaffold(
       appBar: AppBar(

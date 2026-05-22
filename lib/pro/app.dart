@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'l10n/app_localizations.dart';
-import 'core/providers/language_provider.dart';
-import 'core/theme/app_theme.dart';
-import 'core/providers/theme_provider.dart';
+
+import 'l10n/app_localizations.dart'; // ✅ Pro
+import '../core/providers/language_provider.dart'; // ✅ User
+import '../core/providers/theme_provider.dart'; // ✅ User
+import '../core/theme/app_theme.dart'; // ✅ User
 
 class EdaLabApp extends StatelessWidget {
   const EdaLabApp({required this.router, this.title = 'EdaLab', super.key});

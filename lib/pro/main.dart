@@ -4,17 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../app.dart';
-import '../core/network/api_client.dart';
-import '../core/providers/language_provider.dart';
-import '../core/providers/notification_provider.dart';
-import '../core/providers/theme_provider.dart';
-import '../core/services/notification_sync_service.dart';
-import '../core/services/push_notification_service.dart';
-import '../core/storage/app_preferences.dart';
-import 'core/providers/pro_auth_provider.dart';
-import 'core/router/pro_app_router.dart';
-import 'core/services/pro_inbox_sync_service.dart';
+import 'app.dart'; // pro/app.dart
+import '../core/network/api_client.dart'; // ✅ User
+import '../core/providers/language_provider.dart'; // ✅ User
+import '../core/providers/notification_provider.dart'; // ✅ User
+import '../core/providers/theme_provider.dart'; // ✅ User
+import '../core/services/notification_sync_service.dart'; // ✅ User
+import '../core/services/push_notification_service.dart'; // ✅ User
+import '../core/storage/app_preferences.dart'; // ✅ User
+import 'core/providers/pro_auth_provider.dart'; // ✅ Pro (spécifique Pro)
+import 'core/router/pro_app_router.dart'; // ✅ Pro
+import 'core/services/pro_inbox_sync_service.dart'; // ✅ Pro
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
