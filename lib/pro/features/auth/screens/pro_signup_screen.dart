@@ -25,17 +25,6 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
   final Set<ProModule> _selectedModules = {};
   String? _submissionMessage;
 
-  void _onProfileSelected(ProProfileType type) {
-    setState(() {
-      _selectedProfileType = type;
-      _selectedModules.clear();
-      _selectedModules.addAll(
-        ProModuleHelper.getDefaultModulesForProfile(type),
-      );
-      _submissionMessage = null;
-    });
-  }
-
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     final messenger = ScaffoldMessenger.of(context);
@@ -74,13 +63,8 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
       await AppPreferences.setHasSeenProOnboarding(true);
       if (!mounted) return;
 
-      if (_selectedProfileType == ProProfileType.doctor) {
-        context.go(ProRoutePaths.doctorSetup);
-      } else {
-        context.go(
-          ProRoutePaths.homeForProfileType(proAuth.currentProfile!.type),
-        );
-      }
+      // Navigate to entry screen which will check verification status
+      context.go(ProRoutePaths.entry);
     } catch (error) {
       if (!mounted) return;
       setState(() {

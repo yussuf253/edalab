@@ -38,25 +38,26 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
       ringColor: Color(0xFFBFEFD0),
       nodes: [
         _OrbitNodeData(
-          assetPath: 'assets/icons/doctor.png',
+          // Use built‑in icon instead of asset image
+          icon: Icons.medical_services,
           alignment: Alignment(-0.82, -0.50),
           size: 58,
           backgroundColor: Color(0xFFE4F8EC),
         ),
         _OrbitNodeData(
-          assetPath: 'assets/icons/pharmacy.png',
+          icon: Icons.local_pharmacy,
           alignment: Alignment(0.82, -0.56),
           size: 56,
           backgroundColor: Color(0xFFDEF7ED),
         ),
         _OrbitNodeData(
-          assetPath: 'assets/icons/orders.png',
+          icon: Icons.shopping_cart,
           alignment: Alignment(0.82, 0.54),
           size: 62,
           backgroundColor: Color(0xFFFFF3DD),
         ),
         _OrbitNodeData(
-          assetPath: 'assets/icons/messages.png',
+          icon: Icons.message,
           alignment: Alignment(-0.82, 0.52),
           size: 60,
           backgroundColor: Color(0xFFE4F8EC),
@@ -586,14 +587,20 @@ class _OrbitHero extends StatelessWidget {
         ),
         child: Padding(
           padding: EdgeInsets.all(node.size * 0.24),
-          child: Image.asset(
-            node.assetPath,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => const Icon(
-              Icons.image_not_supported_outlined,
-              color: AppColors.grey,
-            ),
-          ),
+          child: node.assetPath != null
+              ? Image.asset(
+                  node.assetPath!,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.image_not_supported_outlined,
+                    color: AppColors.grey,
+                  ),
+                )
+              : Icon(
+                  node.icon ?? Icons.help_outline,
+                  color: AppColors.dark,
+                  size: node.size * 0.5,
+                ),
         ),
       ),
     );
@@ -950,13 +957,18 @@ class _ProOnboardingPageData {
 
 class _OrbitNodeData {
   const _OrbitNodeData({
-    required this.assetPath,
+    this.assetPath,
+    this.icon,
     required this.alignment,
     required this.size,
     required this.backgroundColor,
-  });
+  }) : assert(
+         assetPath != null || icon != null,
+         'Either assetPath or icon must be provided',
+       );
 
-  final String assetPath;
+  final String? assetPath;
+  final IconData? icon;
   final Alignment alignment;
   final double size;
   final Color backgroundColor;

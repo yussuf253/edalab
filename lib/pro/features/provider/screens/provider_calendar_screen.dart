@@ -20,10 +20,7 @@ class ProviderCalendarScreen extends StatelessWidget {
         title: Text('$businessName Schedule'),
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(80),
@@ -48,27 +45,41 @@ class ProviderCalendarScreen extends StatelessWidget {
                   children: List.generate(7, (index) {
                     final date = DateTime.now().add(Duration(days: index - 2));
                     final isSelected = index == 2;
-                    final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                    final weekdays = [
+                      'Sun',
+                      'Mon',
+                      'Tue',
+                      'Wed',
+                      'Thu',
+                      'Fri',
+                      'Sat',
+                    ];
                     return Column(
                       children: [
                         Text(
                           weekdays[date.weekday - 1],
                           style: TextStyle(
-                            color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
+                            color: isSelected
+                                ? Theme.of(context).primaryColor
+                                : Colors.grey,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+                            color: isSelected
+                                ? Theme.of(context).primaryColor
+                                : Colors.transparent,
                             shape: BoxShape.circle,
                           ),
                           child: Text(
                             '${date.day}',
                             style: TextStyle(
                               color: isSelected ? Colors.white : Colors.black87,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                             ),
                           ),
                         ),
@@ -84,12 +95,54 @@ class ProviderCalendarScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildTimeSlot(context, '09:00 AM', true, 'Deep Cleaning - 123 Main St', '2 Hours', Colors.blue),
-          _buildTimeSlot(context, '11:00 AM', false, '', '', Colors.transparent),
-          _buildTimeSlot(context, '01:00 PM', true, 'AC Repair - Apartment 4B', '1.5 Hours', Colors.orange),
-          _buildTimeSlot(context, '02:30 PM', true, 'Plumbing - Villa 22', '1 Hour', Colors.green),
-          _buildTimeSlot(context, '03:30 PM', false, '', '', Colors.transparent),
-          _buildTimeSlot(context, '04:00 PM', false, '', '', Colors.transparent),
+          _buildTimeSlot(
+            context,
+            '09:00 AM',
+            true,
+            'Deep Cleaning - 123 Main St',
+            '2 Hours',
+            Colors.blue,
+          ),
+          _buildTimeSlot(
+            context,
+            '11:00 AM',
+            false,
+            '',
+            '',
+            Colors.transparent,
+          ),
+          _buildTimeSlot(
+            context,
+            '01:00 PM',
+            true,
+            'AC Repair - Apartment 4B',
+            '1.5 Hours',
+            Colors.orange,
+          ),
+          _buildTimeSlot(
+            context,
+            '02:30 PM',
+            true,
+            'Plumbing - Villa 22',
+            '1 Hour',
+            Colors.green,
+          ),
+          _buildTimeSlot(
+            context,
+            '03:30 PM',
+            false,
+            '',
+            '',
+            Colors.transparent,
+          ),
+          _buildTimeSlot(
+            context,
+            '04:00 PM',
+            false,
+            '',
+            '',
+            Colors.transparent,
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -100,7 +153,14 @@ class ProviderCalendarScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeSlot(BuildContext context, String time, bool isBooked, String title, String duration, Color color) {
+  Widget _buildTimeSlot(
+    BuildContext context,
+    String time,
+    bool isBooked,
+    String title,
+    String duration,
+    Color color,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -110,7 +170,10 @@ class ProviderCalendarScreen extends StatelessWidget {
             width: 70,
             child: Text(
               time,
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
             ),
           ),
           Container(

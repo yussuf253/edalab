@@ -85,12 +85,37 @@ class AppLocalizations {
         .replaceAll(RegExp(r'\s+'), ' ');
     switch (languageCode) {
       case 'fr':
-        return _homeServiceDynamicLabelsFr[normalized] ?? value;
+        return _homeServiceDynamicLabelsFr[normalized] ??
+            _homeServiceDynamicLabelsEn[normalized] ??
+            _humanizeHomeServiceLabel(value, normalized);
       case 'ar':
-        return _homeServiceDynamicLabelsAr[normalized] ?? value;
+        return _homeServiceDynamicLabelsAr[normalized] ??
+            _homeServiceDynamicLabelsEn[normalized] ??
+            _humanizeHomeServiceLabel(value, normalized);
+      case 'en':
+        return _homeServiceDynamicLabelsEn[normalized] ??
+            _humanizeHomeServiceLabel(value, normalized);
       default:
-        return value;
+        return _humanizeHomeServiceLabel(value, normalized);
     }
+  }
+
+  static String _humanizeHomeServiceLabel(String value, String normalized) {
+    if (normalized.isEmpty) return value;
+    if (RegExp(r'^f\d+$').hasMatch(normalized)) {
+      return normalized.toUpperCase();
+    }
+    return normalized
+        .split(' ')
+        .where((word) => word.isNotEmpty)
+        .map((word) {
+          if (RegExp(r'^\d+h$').hasMatch(word)) {
+            return '${word.substring(0, word.length - 1)} hours';
+          }
+          if (word == 'ac') return 'AC';
+          return '${word[0].toUpperCase()}${word.substring(1)}';
+        })
+        .join(' ');
   }
 
   String homeServiceCategoryName(String slug, String fallback) {
@@ -252,6 +277,16 @@ class AppLocalizations {
     'bathroom cleaning': 'Nettoyage salle de bain',
     'dishes': 'Vaisselle',
     'laundry': 'Lessive',
+    'one time job': 'Mission ponctuelle',
+    'daily recurring': 'Récurrence quotidienne',
+    'weekly recurring': 'Récurrence hebdomadaire',
+    'shift 2h': '2 heures',
+    'shift 4h': '4 heures',
+    'shift 8h': '8 heures',
+    'within 30 min': 'Sous 30 min',
+    'scheduled slot': 'Créneau planifié',
+    'provider supplies': 'Fournitures du prestataire',
+    'customer supplies': 'Fournitures du client',
     'living room furniture cleaning': 'Nettoyage salon et meubles',
     'office business cleaning': 'Nettoyage bureaux et entreprises',
   };
@@ -368,6 +403,16 @@ class AppLocalizations {
     'bathroom cleaning': 'تنظيف الحمام',
     'dishes': 'غسيل الصحون',
     'laundry': 'غسيل الملابس',
+    'one time job': 'مهمة لمرة واحدة',
+    'daily recurring': 'تكرار يومي',
+    'weekly recurring': 'تكرار أسبوعي',
+    'shift 2h': 'ساعتان',
+    'shift 4h': '4 ساعات',
+    'shift 8h': '8 ساعات',
+    'within 30 min': 'خلال 30 دقيقة',
+    'scheduled slot': 'موعد مجدول',
+    'provider supplies': 'المزوّد يحضر المستلزمات',
+    'customer supplies': 'العميل يحضر المستلزمات',
     'eco friendly car wash': 'غسل السيارات البيئي',
     'living room furniture cleaning': 'تنظيف غرفة المعيشة والأثاث',
     'office business cleaning': 'تنظيف المكاتب والشركات',
@@ -396,6 +441,90 @@ class AppLocalizations {
     'beauty-at-home': 'تجميل في المنزل',
     'handyman': 'فني منزلي',
     'ecological-cleaning': 'تنظيف بيئي',
+  };
+
+  static const Map<String, String> _homeServiceDynamicLabelsEn = {
+    'home visit': 'Home Visit',
+    'phone advice': 'Phone Advice',
+    'instant dispatch': 'Instant Dispatch',
+    'scheduled visit': 'Scheduled Visit',
+    'recurring plan': 'Recurring Plan',
+    'house help': 'House Help',
+    'home cleaning': 'Home Cleaning',
+    'plumbing': 'Plumbing',
+    'electrical': 'Electrical',
+    'ac and cooling': 'AC and Cooling',
+    'beauty at home': 'Beauty at Home',
+    'handyman': 'Handyman',
+    'deep cleaning': 'Deep Cleaning',
+    'office cleaning': 'Office Cleaning',
+    'disinfection': 'Disinfection',
+    'ecological disinfection': 'Ecological Disinfection',
+    'leak repair': 'Leak Repair',
+    'pipe installation': 'Pipe Installation',
+    'drain unclogging': 'Drain Unclogging',
+    'faucet sink repair': 'Faucet Sink Repair',
+    'toilet repair': 'Toilet Repair',
+    'water heater service': 'Water Heater Service',
+    'socket switch repair': 'Socket Switch Repair',
+    'lighting installation': 'Lighting Installation',
+    'wiring inspection': 'Wiring Inspection',
+    'circuit breaker service': 'Circuit Breaker Service',
+    'fan installation': 'Fan Installation',
+    'power fault diagnosis': 'Power Fault Diagnosis',
+    'ac gas refill': 'AC Gas Refill',
+    'cooling fault diagnosis': 'Cooling Fault Diagnosis',
+    'ac installation': 'AC Installation',
+    'filter cleaning': 'Filter Cleaning',
+    'emergency cooling repair': 'Emergency Cooling Repair',
+    'makeup service': 'Makeup Service',
+    'nail care': 'Nail Care',
+    'facial treatment': 'Facial Treatment',
+    'henna service': 'Henna Service',
+    'bridal beauty': 'Bridal Beauty',
+    'furniture assembly': 'Furniture Assembly',
+    'curtain wall mounting': 'Curtain Wall Mounting',
+    'door lock fix': 'Door Lock Fix',
+    'shelf installation': 'Shelf Installation',
+    'general home tasks': 'General Home Tasks',
+    'general home service': 'General Home Service',
+    'inspection visit': 'Inspection Visit',
+    'maintenance support': 'Maintenance Support',
+    'water fittings': 'Water Fittings',
+    'technical inspection': 'Technical Inspection',
+    'electrical inspection': 'Electrical Inspection',
+    'connection support': 'Connection Support',
+    'fault follow up': 'Fault Follow Up',
+    'ac cleaning': 'AC Cleaning',
+    'cooling repair': 'Cooling Repair',
+    'maintenance visit': 'Maintenance Visit',
+    'makeup': 'Makeup',
+    'hair styling': 'Hair Styling',
+    'spa care': 'Spa Care',
+    'appliance repair': 'Appliance Repair',
+    'minor home fixes': 'Minor Home Fixes',
+    'laundry': 'Laundry',
+    'room cleaning': 'Room Cleaning',
+    'floor cleaning': 'Floor Cleaning',
+    'kitchen cleaning': 'Kitchen Cleaning',
+    'bathroom cleaning': 'Bathroom Cleaning',
+    'dishes': 'Dishes',
+    'one time job': 'One-time Job',
+    'daily recurring': 'Daily Recurring',
+    'weekly recurring': 'Weekly Recurring',
+    'shift 2h': '2 Hours',
+    'shift 4h': '4 Hours',
+    'shift 8h': '8 Hours',
+    'within 30 min': 'Within 30 Min',
+    'scheduled slot': 'Scheduled Slot',
+    'provider supplies': 'Provider Supplies',
+    'customer supplies': 'Customer Supplies',
+    'eco friendly car wash': 'Eco Friendly Car Wash',
+    'living room furniture cleaning': 'Living Room Furniture Cleaning',
+    'office business cleaning': 'Office Business Cleaning',
+    'living room cleaning': 'Living Room Cleaning',
+    'furniture cleaning': 'Furniture Cleaning',
+    'post construction cleaning': 'Post Construction Cleaning',
   };
 
   static const Map<String, String> _homeServiceCategoryDescriptionsFr = {
@@ -743,7 +872,7 @@ class AppLocalizations {
       'home_provider.booking_options': 'Booking Options',
       'home_provider.highlights': 'Highlights',
       'home_provider.availability': 'Availability',
-      'home_provider.weekdays': 'Weekdays',
+      'home_provider.weekdays': 'Sunday - Thursday',
       'home_provider.saturday': 'Saturday',
       'home_provider.sunday': 'Sunday',
       'home_provider.not_set': 'Not set',
@@ -1238,7 +1367,7 @@ class AppLocalizations {
       'doctor_detail.languages': 'Languages',
       'doctor_detail.care_modes': 'Care Modes',
       'doctor_detail.working_hours': 'Working Hours',
-      'doctor_detail.weekdays': 'Mon - Fri',
+      'doctor_detail.weekdays': 'Sun - Thu',
       'doctor_detail.saturday': 'Saturday',
       'doctor_detail.sunday': 'Sunday',
       'doctor_detail.closed': 'Closed',
@@ -2137,7 +2266,7 @@ class AppLocalizations {
       'home_provider.booking_options': 'Options de réservation',
       'home_provider.highlights': 'Points forts',
       'home_provider.availability': 'Disponibilité',
-      'home_provider.weekdays': 'Semaine',
+      'home_provider.weekdays': 'Dimanche - Jeudi',
       'home_provider.saturday': 'Samedi',
       'home_provider.sunday': 'Dimanche',
       'home_provider.not_set': 'Non défini',
@@ -2694,7 +2823,7 @@ class AppLocalizations {
       'doctor_detail.languages': 'Langues',
       'doctor_detail.care_modes': 'Modes de prise en charge',
       'doctor_detail.working_hours': 'Horaires',
-      'doctor_detail.weekdays': 'Lun - Ven',
+      'doctor_detail.weekdays': 'Dim - Ven',
       'doctor_detail.saturday': 'Samedi',
       'doctor_detail.sunday': 'Dimanche',
       'doctor_detail.closed': 'Fermé',
@@ -3334,7 +3463,7 @@ class AppLocalizations {
       'home_provider.booking_options': 'خيارات الحجز',
       'home_provider.highlights': 'المميزات',
       'home_provider.availability': 'التوفر',
-      'home_provider.weekdays': 'أيام الأسبوع',
+      'home_provider.weekdays': 'الأحد - الخميس',
       'home_provider.saturday': 'السبت',
       'home_provider.sunday': 'الأحد',
       'home_provider.not_set': 'غير محدد',
@@ -3848,7 +3977,7 @@ class AppLocalizations {
       'doctor_detail.languages': 'اللغات',
       'doctor_detail.care_modes': 'أنماط الرعاية',
       'doctor_detail.working_hours': 'ساعات العمل',
-      'doctor_detail.weekdays': 'الإثنين - الجمعة',
+      'doctor_detail.weekdays': 'الأحد - الخميس',
       'doctor_detail.saturday': 'السبت',
       'doctor_detail.sunday': 'الأحد',
       'doctor_detail.closed': 'مغلق',

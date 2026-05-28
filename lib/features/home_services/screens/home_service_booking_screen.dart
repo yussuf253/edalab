@@ -252,13 +252,13 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
   }
 
   static const List<String> _weekdayShortNames = <String>[
+    'Sun',
     'Mon',
     'Tue',
     'Wed',
     'Thu',
     'Fri',
     'Sat',
-    'Sun',
   ];
 
   String _weekdayShortLabel(DateTime date) =>

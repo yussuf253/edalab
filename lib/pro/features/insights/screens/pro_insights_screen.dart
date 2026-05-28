@@ -148,22 +148,6 @@ class _ProInsightsScreenState extends State<ProInsightsScreen> {
                     onOpen: _openPrimaryQueue,
                   ),
                 ],
-                if (data.moduleSummaries.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  Text(
-                    l10n.recentModuleActivity,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  ...data.moduleSummaries.map(
-                    (summary) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: _InsightSummaryCard(summary: summary),
-                    ),
-                  ),
-                ],
               ],
             ),
           );
