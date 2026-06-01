@@ -251,6 +251,17 @@ class ApiClient {
       }
     }
 
+    if (parsed.scheme == 'supabase' && apiOrigin != null) {
+      final bucket = parsed.host.trim();
+      final objectSegments = parsed.pathSegments
+          .where((segment) => segment.trim().isNotEmpty)
+          .map((segment) => Uri.encodeComponent(Uri.decodeComponent(segment)))
+          .join('/');
+      if (bucket.isNotEmpty && objectSegments.isNotEmpty) {
+        return '$apiOrigin/uploads/supabase/${Uri.encodeComponent(bucket)}/$objectSegments';
+      }
+    }
+
     if (!parsed.hasScheme) {
       if (trimmed.startsWith('/') && apiUri != null) {
         final origin = Uri(

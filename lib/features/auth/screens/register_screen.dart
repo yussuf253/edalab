@@ -66,6 +66,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    if (authProvider.emailVerificationRequired) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            authProvider.errorMessage ??
+                'Check your email to verify your account before signing in.',
+          ),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      context.go('/login');
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

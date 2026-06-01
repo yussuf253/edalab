@@ -13,6 +13,8 @@ class ProAuthProvider extends ChangeNotifier {
   ProProfile? _currentProfile;
   bool _isLoading = false;
   bool _isInitialized = false;
+  bool _emailVerificationRequired = false;
+  String? _pendingVerificationEmail;
   int _unreadInboxCount = 0;
 
   ProAccount? get currentAccount => _currentAccount;
@@ -20,6 +22,8 @@ class ProAuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isInitialized => _isInitialized;
   bool get isAuthenticated => _currentAccount != null;
+  bool get emailVerificationRequired => _emailVerificationRequired;
+  String? get pendingVerificationEmail => _pendingVerificationEmail;
   int get unreadInboxCount => _unreadInboxCount;
   bool get hasUnreadInbox => _unreadInboxCount > 0;
   bool get supportsInbox =>
@@ -109,6 +113,14 @@ class ProAuthProvider extends ChangeNotifier {
             })
             as Map,
       );
+      if (response['requiresEmailVerification'] == true) {
+        _emailVerificationRequired = true;
+        _pendingVerificationEmail = response['email']?.toString();
+        await _clearLocalSession(clearToken: true);
+        return;
+      }
+      _emailVerificationRequired = false;
+      _pendingVerificationEmail = null;
       await _applySessionResponse(response);
     } finally {
       _isLoading = false;
@@ -128,6 +140,8 @@ class ProAuthProvider extends ChangeNotifier {
             })
             as Map,
       );
+      _emailVerificationRequired = false;
+      _pendingVerificationEmail = null;
       await _applySessionResponse(response);
     } finally {
       _isLoading = false;
@@ -349,6 +363,8 @@ class ProAuthProvider extends ChangeNotifier {
   Future<void> _clearLocalSession({required bool clearToken}) async {
     _currentAccount = null;
     _currentProfile = null;
+    _emailVerificationRequired = false;
+    _pendingVerificationEmail = null;
     _unreadInboxCount = 0;
     await AppPreferences.clearProAccountJson();
     await AppPreferences.clearProProfileJson();

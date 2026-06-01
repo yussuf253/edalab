@@ -9,172 +9,21 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum ModuleType {
-  SHOPPING
-  FOOD
-  GROCERY
-  HOME_SERVICES
-  HOUSE_HELP
-  PHARMACY
-  DOCTOR
-  HOTEL
-  RIDE
-  LAUNDRY
-  HEALTH_SERVICES
-}
-
-enum OrderStatus {
-  DRAFT
-  PENDING
-  CONFIRMED
-  PROCESSING
-  DISPATCHED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-  REFUNDED
-}
-
-enum AppointmentStatus {
-  UPCOMING
-  PENDING
-  APPROVED
-  REJECTED
-  COMPLETED
-  CANCELLED
-  NO_SHOW
-}
-
-enum RideStatus {
-  REQUESTED
-  ACCEPTED
-  DRIVER_ARRIVING
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
-enum HotelBookingStatus {
-  PENDING
-  CONFIRMED
-  CHECKED_IN
-  CHECKED_OUT
-  CANCELLED
-}
-
-enum LaundryOrderStatus {
-  PENDING
-  SCHEDULED
-  PICKED_UP
-  CLEANING
-  OUT_FOR_DELIVERY
-  COMPLETED
-  CANCELLED
-}
-
-enum NotificationType {
-  ORDER
-  APPOINTMENT
-  PROMOTION
-  RIDE
-  LAUNDRY
-  SYSTEM
-}
-
-enum NotificationModule {
-  SYSTEM
-  MESSAGES
-  ORDERS
-  FOOD
-  SHOPPING
-  GROCERY
-  PHARMACY
-  RIDE
-  HOTEL
-  DOCTOR
-  HOME_SERVICES
-  LAUNDRY
-  HEALTH_SERVICES
-  PROMOTIONS
-  ACCOUNT
-}
-
-enum NotificationPriority {
-  LOW
-  NORMAL
-  HIGH
-  URGENT
-}
-
-enum DevicePlatform {
-  IOS
-  ANDROID
-  WEB
-  MACOS
-  WINDOWS
-  LINUX
-  UNKNOWN
-}
-
-enum ConversationEntityType {
-  DOCTOR
-  HOME_SERVICE_PROVIDER
-  SHOP
-  DELIVERY
-  RIDE
-}
-
-enum MessageSenderRole {
-  USER
-  PROVIDER
-  DRIVER
-  SYSTEM
-}
-
-enum PaymentMethodType {
-  CARD
-  APPLE_PAY
-  GOOGLE_PAY
-  PAYPAL
-  CASH
-}
-
-enum ProProfileType {
-  SHOP
-  PROVIDER
-  DOCTOR
-  DELIVERY
-  RIDER
-}
-
-enum ProModule {
-  SHOPPING
-  FOOD
-  PHARMACY
-  SERVICES
-  LAUNDRY
-  DOCTOR
-  SHOPPING_DELIVERY
-  FOOD_DELIVERY
-  PHARMACY_DELIVERY
-  RIDE
-}
-
 model AppVersion {
-  id                     String @id @default(uuid())
-  platform               String
-  currentVersion         String
-  minRequiredVersion     String
-  latestVersion          String
-  releaseNotes           String   @db.Text
+  id                    String   @id @default(uuid())
+  platform              String
+  currentVersion        String
+  minRequiredVersion    String
+  latestVersion         String
+  releaseNotes          String
   isForceUpdateRequired Boolean  @default(false)
-  isSkippableUpdate      Boolean  @default(true)
-  downloadUrl            String?
-  storeUrl               String
-  releasedAt             DateTime @default(now())
-  isActive               Boolean  @default(true)
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @default(now())
+  isSkippableUpdate     Boolean  @default(true)
+  downloadUrl           String?
+  storeUrl              String
+  releasedAt            DateTime @default(now())
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @default(now())
 
   @@index([platform, isActive])
   @@index([latestVersion])
@@ -187,41 +36,41 @@ model UpdateActionLog {
   platform       String?
   userId         String?
   timestamp      DateTime @default(now())
-  deviceInfo     String?  @db.Text
+  deviceInfo     String?
 
   @@index([action, timestamp])
   @@index([userId])
 }
 
 model User {
-  id             String          @id @default(cuid())
-  email          String          @unique
-  passwordHash   String
-  firstName      String
-  lastName       String
-  phone          String?
-  avatarUrl      String?
-  dateOfBirth    DateTime?
-  points         Int             @default(0)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  addresses      Address[]
-  paymentMethods PaymentMethod[]
-  wishlistItems  WishlistItem[]
-  notifications  Notification[]
-  deviceTokens   DeviceToken[]
-  conversations  Conversation[]  @relation("ConversationOwner")
-  participantConversations Conversation[] @relation("ConversationParticipant")
-  orders         Order[]
-  appointments   Appointment[]
-  hotelBookings  HotelBooking[]
-  rideBookings   RideBooking[]
-  laundryOrders  LaundryOrder[]
-  userCoupons    UserCoupon[]
-  proProfile     ProProfile?
-  assignedDeliveryOrders Order[]         @relation("DeliveryAssignee")
-  assignedRideBookings   RideBooking[]   @relation("RideDriver")
-  ownedLaundryServices   LaundryService[] @relation("LaundryServiceOwner")
+  id                       String           @id @default(cuid())
+  email                    String           @unique
+  passwordHash             String
+  firstName                String
+  lastName                 String
+  phone                    String?
+  avatarUrl                String?
+  dateOfBirth              DateTime?
+  points                   Int              @default(0)
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+  addresses                Address[]
+  appointments             Appointment[]
+  participantConversations Conversation[]   @relation("ConversationParticipant")
+  conversations            Conversation[]   @relation("ConversationOwner")
+  deviceTokens             DeviceToken[]
+  hotelBookings            HotelBooking[]
+  laundryOrders            LaundryOrder[]
+  ownedLaundryServices     LaundryService[] @relation("LaundryServiceOwner")
+  notifications            Notification[]
+  assignedDeliveryOrders   Order[]          @relation("DeliveryAssignee")
+  orders                   Order[]
+  paymentMethods           PaymentMethod[]
+  proProfile               ProProfile?
+  assignedRideBookings     RideBooking[]    @relation("RideDriver")
+  rideBookings             RideBooking[]
+  userCoupons              UserCoupon[]
+  wishlistItems            WishlistItem[]
 }
 
 model ProAccount {
@@ -238,46 +87,46 @@ model ProAccount {
 
 model ProProfile {
   id            String         @id @default(cuid())
-  accountId     String?        @unique
   userId        String         @unique
-  type          ProProfileType
-  activeModules ProModule[]
   businessName  String
   avatarUrl     String?
-  bindings      Json?
-  isOnline      Boolean        @default(true)
   isVerified    Boolean        @default(false)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  account       ProAccount?    @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  type          ProProfileType
+  activeModules ProModule[]
+  bindings      Json?
+  isOnline      Boolean        @default(true)
+  accountId     String?        @unique
+  account       ProAccount?    @relation(fields: [accountId], references: [id])
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([type, updatedAt])
 }
 
 model Conversation {
-  id            String                 @id @default(cuid())
-  userId        String
-  participantUserId String?
-  moduleType    ModuleType
-  entityType    ConversationEntityType
-  entityId      String
-  title         String
-  subtitle      String?
-  avatarUrl     String?
-  accentColor   String?
-  status        String                 @default("OPEN")
-  unreadCount   Int                    @default(0)
-  userUnreadCount Int                  @default(0)
-  participantUnreadCount Int           @default(0)
-  lastMessage   String?
-  lastMessageAt DateTime?
-  metadata      Json?
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
-  user          User                   @relation("ConversationOwner", fields: [userId], references: [id], onDelete: Cascade)
-  participantUser User?                @relation("ConversationParticipant", fields: [participantUserId], references: [id], onDelete: SetNull)
-  messages      Message[]
+  id                     String                 @id @default(cuid())
+  userId                 String
+  moduleType             ModuleType
+  entityType             ConversationEntityType
+  entityId               String
+  title                  String
+  subtitle               String?
+  avatarUrl              String?
+  accentColor            String?
+  status                 String                 @default("OPEN")
+  unreadCount            Int                    @default(0)
+  lastMessage            String?
+  lastMessageAt          DateTime?
+  metadata               Json?
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  participantUnreadCount Int                    @default(0)
+  participantUserId      String?
+  userUnreadCount        Int                    @default(0)
+  participantUser        User?                  @relation("ConversationParticipant", fields: [participantUserId], references: [id])
+  user                   User                   @relation("ConversationOwner", fields: [userId], references: [id], onDelete: Cascade)
+  messages               Message[]
 
   @@unique([userId, entityType, entityId])
   @@index([userId, lastMessageAt])
@@ -287,13 +136,13 @@ model Conversation {
 model Message {
   id             String            @id @default(cuid())
   conversationId String
-  senderUserId   String?
   senderRole     MessageSenderRole
   senderLabel    String?
   body           String
   metadata       Json?
   readAt         DateTime?
   createdAt      DateTime          @default(now())
+  senderUserId   String?
   conversation   Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@index([conversationId, createdAt])
@@ -315,10 +164,10 @@ model Address {
   createdAt  DateTime       @default(now())
   updatedAt  DateTime       @updatedAt
   user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders     Order[]
-  ridesFrom  RideBooking[]  @relation("RidePickupAddress")
-  ridesTo    RideBooking[]  @relation("RideDropoffAddress")
   laundry    LaundryOrder[]
+  orders     Order[]
+  ridesTo    RideBooking[]  @relation("RideDropoffAddress")
+  ridesFrom  RideBooking[]  @relation("RidePickupAddress")
 
   @@index([userId, isDefault])
 }
@@ -335,11 +184,11 @@ model PaymentMethod {
   isDefault     Boolean           @default(false)
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
-  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders        Order[]
   hotelBookings HotelBooking[]
-  rideBookings  RideBooking[]
   laundryOrders LaundryOrder[]
+  orders        Order[]
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rideBookings  RideBooking[]
 }
 
 model WishlistItem {
@@ -359,20 +208,20 @@ model WishlistItem {
 }
 
 model Notification {
-  id        String           @id @default(cuid())
+  id        String               @id @default(cuid())
   userId    String
   type      NotificationType
-  module    NotificationModule @default(SYSTEM)
-  priority  NotificationPriority @default(NORMAL)
   title     String
   body      String
-  route     String?
-  dedupeKey String?
   data      Json?
-  metadata  Json?
   readAt    DateTime?
-  createdAt DateTime         @default(now())
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime             @default(now())
+  dedupeKey String?
+  metadata  Json?
+  module    NotificationModule   @default(SYSTEM)
+  priority  NotificationPriority @default(NORMAL)
+  route     String?
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([userId, readAt, createdAt])
@@ -421,8 +270,8 @@ model UserCoupon {
   usedAt      DateTime?
   expiresAt   DateTime?
   createdAt   DateTime  @default(now())
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, promotionId])
 }
@@ -453,29 +302,28 @@ model ProductCategory {
 }
 
 model ShoppingStore {
-  id            String    @id
-  name          String
-  slug          String    @unique
-  tagline       String?
-  description   String?
-  imageUrl      String?
-  isOpen        Boolean   @default(true)
-  rating        Decimal   @default(0) @db.Decimal(3, 2)
-  reviewCount   Int       @default(0)
-  badge         String?
-  minPrice      Decimal?  @db.Decimal(10, 2)
-  maxPrice      Decimal?  @db.Decimal(10, 2)
+  id             String    @id
+  name           String
+  slug           String    @unique
+  tagline        String?
+  description    String?
+  imageUrl       String?
+  rating         Decimal   @default(0) @db.Decimal(3, 2)
+  reviewCount    Int       @default(0)
+  badge          String?
+  minPrice       Decimal?  @db.Decimal(10, 2)
+  maxPrice       Decimal?  @db.Decimal(10, 2)
   highlightsJson Json?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  products      Product[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  isOpen         Boolean   @default(true)
+  products       Product[]
 }
 
 model Product {
   id                   String           @id
   moduleType           ModuleType
   categoryId           String?
-  shopId               String?
   name                 String
   brand                String?
   description          String
@@ -498,9 +346,10 @@ model Product {
   metadata             Json?
   createdAt            DateTime         @default(now())
   updatedAt            DateTime         @updatedAt
-  category             ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  shop                 ShoppingStore?   @relation(fields: [shopId], references: [id], onDelete: SetNull)
+  shopId               String?
   orderItems           OrderItem[]
+  category             ProductCategory? @relation(fields: [categoryId], references: [id])
+  shop                 ShoppingStore?   @relation(fields: [shopId], references: [id])
 
   @@index([moduleType, categoryId])
   @@index([shopId])
@@ -521,68 +370,68 @@ model Restaurant {
   createdAt      DateTime                 @default(now())
   updatedAt      DateTime                 @updatedAt
   menuCategories RestaurantMenuCategory[]
+  menuItems      RestaurantMenuItem[]
 }
 
 model RestaurantMenuCategory {
-  id           String               @id @default(cuid())
+  id           String     @id @default(cuid())
   restaurantId String
   name         String
-  sortOrder    Int                  @default(0)
-  restaurant   Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  items        RestaurantMenuItem[]
+  sortOrder    Int        @default(0)
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
 
 model RestaurantMenuItem {
-  id                 String                 @id
-  categoryId         String
+  id                 String     @id
+  restaurantId       String
   name               String
   description        String
-  price              Decimal                @db.Decimal(10, 2)
+  price              Decimal    @db.Decimal(10, 2)
   imageUrl           String?
-  isPopular          Boolean                @default(false)
-  isAvailable        Boolean                @default(true)
+  isPopular          Boolean    @default(false)
+  isAvailable        Boolean    @default(true)
   customizationsJson Json?
-  category           RestaurantMenuCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  restaurant         Restaurant @relation(fields: [restaurantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Doctor {
   id               String         @id
   name             String
   specialty        String
-  providerType     String         @default("DOCTOR")
   rating           Decimal        @default(0) @db.Decimal(3, 2)
   reviewCount      Int            @default(0)
   experience       String?
   consultationFee  Decimal        @db.Decimal(10, 2)
   isAvailable      Boolean        @default(true)
-  isSignedUp       Boolean        @default(true)
   imageUrl         String?
   about            String?
   location         String?
-  contactPhone     String?
-  contactWhatsApp  String?
   languagesJson    Json?
   servicesJson     Json?
-  careModesJson    Json?
   workingHoursJson Json?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
-  reviews          DoctorReview[]
+  careModesJson    Json?
+  contactPhone     String?
+  contactWhatsApp  String?
+  isSignedUp       Boolean        @default(true)
+  providerType     String         @default("DOCTOR")
   appointments     Appointment[]
+  reviews          DoctorReview[]
 }
 
 model HomeServiceCategory {
-  id           String                @id
-  name         String
-  slug         String                @unique
-  description  String
-  iconKey      String
-  colorHex     String
-  sortOrder    Int                   @default(0)
-  active       Boolean               @default(true)
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
-  providers    HomeServiceProvider[]
+  id          String                @id
+  name        String
+  slug        String                @unique
+  description String
+  iconKey     String
+  colorHex    String
+  sortOrder   Int                   @default(0)
+  active      Boolean               @default(true)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  providers   HomeServiceProvider[]
 }
 
 model HomeServiceProvider {
@@ -635,8 +484,8 @@ model Appointment {
   notes           String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
+  doctor          Doctor            @relation(fields: [doctorId], references: [id])
   user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  doctor          Doctor            @relation(fields: [doctorId], references: [id], onDelete: Restrict)
 
   @@index([userId, appointmentAt])
 }
@@ -678,9 +527,9 @@ model HotelBooking {
   total           Decimal            @db.Decimal(10, 2)
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
+  hotel           Hotel              @relation(fields: [hotelId], references: [id])
+  paymentMethod   PaymentMethod?     @relation(fields: [paymentMethodId], references: [id])
   user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  hotel           Hotel              @relation(fields: [hotelId], references: [id], onDelete: Restrict)
-  paymentMethod   PaymentMethod?     @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
 
   @@index([userId, checkInAt])
 }
@@ -702,7 +551,6 @@ model RideCategory {
 model RideBooking {
   id               String         @id @default(cuid())
   userId           String
-  driverUserId     String?
   rideCategoryId   String
   paymentMethodId  String?
   pickupAddressId  String?
@@ -721,31 +569,32 @@ model RideBooking {
   trackingData     Json?
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+  driverUserId     String?
+  driverUser       User?          @relation("RideDriver", fields: [driverUserId], references: [id])
+  dropoffAddress   Address?       @relation("RideDropoffAddress", fields: [dropoffAddressId], references: [id])
+  paymentMethod    PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  pickupAddress    Address?       @relation("RidePickupAddress", fields: [pickupAddressId], references: [id])
+  rideCategory     RideCategory   @relation(fields: [rideCategoryId], references: [id])
   user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  driverUser       User?          @relation("RideDriver", fields: [driverUserId], references: [id], onDelete: SetNull)
-  rideCategory     RideCategory   @relation(fields: [rideCategoryId], references: [id], onDelete: Restrict)
-  paymentMethod    PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
-  pickupAddress    Address?       @relation("RidePickupAddress", fields: [pickupAddressId], references: [id], onDelete: SetNull)
-  dropoffAddress   Address?       @relation("RideDropoffAddress", fields: [dropoffAddressId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
   @@index([driverUserId, status, createdAt])
 }
 
 model LaundryService {
-  id            String         @id
-  providerUserId String?
-  name          String
-  description   String
-  price         Decimal        @db.Decimal(10, 2)
-  unit          String
-  iconUrl       String?
+  id                String         @id
+  name              String
+  description       String
+  price             Decimal        @db.Decimal(10, 2)
+  unit              String
+  iconUrl           String?
+  active            Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  providerUserId    String?
   bookingConfigJson Json?
-  active        Boolean        @default(true)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  providerUser  User?          @relation("LaundryServiceOwner", fields: [providerUserId], references: [id], onDelete: SetNull)
-  laundryOrders LaundryOrder[]
+  laundryOrders     LaundryOrder[]
+  providerUser      User?          @relation("LaundryServiceOwner", fields: [providerUserId], references: [id])
 
   @@index([providerUserId, active])
 }
@@ -766,41 +615,41 @@ model LaundryOrder {
   total           Decimal            @db.Decimal(10, 2)
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
+  address         Address?           @relation(fields: [addressId], references: [id])
+  paymentMethod   PaymentMethod?     @relation(fields: [paymentMethodId], references: [id])
+  service         LaundryService     @relation(fields: [serviceId], references: [id])
   user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  service         LaundryService     @relation(fields: [serviceId], references: [id], onDelete: Restrict)
-  address         Address?           @relation(fields: [addressId], references: [id], onDelete: SetNull)
-  paymentMethod   PaymentMethod?     @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
 
   @@index([userId, pickupAt])
 }
 
 model Order {
-  id              String         @id @default(cuid())
-  userId          String
-  deliveryUserId  String?
-  moduleType      ModuleType
-  status          OrderStatus    @default(PENDING)
-  addressId       String?
-  paymentMethodId String?
-  promotionId     String?
-  moduleRefId     String?
-  moduleRefType   String?
-  subtotal        Decimal        @db.Decimal(10, 2)
-  tax             Decimal        @db.Decimal(10, 2)
-  deliveryFee     Decimal        @default(0) @db.Decimal(10, 2)
-  discount        Decimal        @default(0) @db.Decimal(10, 2)
-  total           Decimal        @db.Decimal(10, 2)
-  currency        String         @default("USD")
-  notes           String?
-  metadata        Json?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  deliveryAssignee User?         @relation("DeliveryAssignee", fields: [deliveryUserId], references: [id], onDelete: SetNull)
-  address         Address?       @relation(fields: [addressId], references: [id], onDelete: SetNull)
-  paymentMethod   PaymentMethod? @relation(fields: [paymentMethodId], references: [id], onDelete: SetNull)
-  promotion       Promotion?     @relation(fields: [promotionId], references: [id], onDelete: SetNull)
-  items           OrderItem[]
+  id               String         @id @default(cuid())
+  userId           String
+  moduleType       ModuleType
+  status           OrderStatus    @default(PENDING)
+  addressId        String?
+  paymentMethodId  String?
+  promotionId      String?
+  moduleRefId      String?
+  moduleRefType    String?
+  subtotal         Decimal        @db.Decimal(10, 2)
+  tax              Decimal        @db.Decimal(10, 2)
+  deliveryFee      Decimal        @default(0) @db.Decimal(10, 2)
+  discount         Decimal        @default(0) @db.Decimal(10, 2)
+  total            Decimal        @db.Decimal(10, 2)
+  currency         String         @default("USD")
+  notes            String?
+  metadata         Json?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  deliveryUserId   String?
+  address          Address?       @relation(fields: [addressId], references: [id])
+  deliveryAssignee User?          @relation("DeliveryAssignee", fields: [deliveryUserId], references: [id])
+  paymentMethod    PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  promotion        Promotion?     @relation(fields: [promotionId], references: [id])
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items            OrderItem[]
 
   @@index([userId, moduleType, createdAt])
   @@index([userId, status, createdAt])
@@ -822,49 +671,200 @@ model OrderItem {
   size          String?
   metadata      Json?
   createdAt     DateTime @default(now())
-  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product       Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
   labTestId     String?
-  labTest       LabTest? @relation(fields: [labTestId], references: [id], onDelete: SetNull)
+  labTest       LabTest? @relation(fields: [labTestId], references: [id])
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       Product? @relation(fields: [productId], references: [id])
 
   @@index([orderId])
 }
 
 model HealthServiceCategory {
-  id           String                @id @default(cuid())
-  name         String
-  slug         String                @unique
-  description  String
-  iconKey      String
-  colorHex     String
-  sortOrder    Int                   @default(0)
-  active       Boolean               @default(true)
-  createdAt    DateTime              @default(now())
-  updatedAt    DateTime              @updatedAt
-  labTests     LabTest[]
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String
+  iconKey     String
+  colorHex    String
+  sortOrder   Int       @default(0)
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  labTests    LabTest[]
 
   @@index([active, sortOrder])
 }
 
 model LabTest {
-  id                     String            @id @default(cuid())
-  categoryId             String
-  name                   String
-  description            String
-  fullDescription        String?           @db.Text
-  price                  Decimal           @db.Decimal(10, 2)
-  originalPrice          Decimal?          @db.Decimal(10, 2)
-  preparationInstructions String?         @db.Text
-  sampleType             String?
-  durationLabel          String?
-  imageUrl               String?
-  active                 Boolean           @default(true)
-  sortOrder              Int               @default(0)
-  createdAt              DateTime          @default(now())
-  updatedAt              DateTime          @updatedAt
-  category               HealthServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  orderItems             OrderItem[]
+  id                      String                @id @default(cuid())
+  categoryId              String
+  name                    String
+  description             String
+  fullDescription         String?
+  price                   Decimal               @db.Decimal(10, 2)
+  originalPrice           Decimal?              @db.Decimal(10, 2)
+  preparationInstructions String?
+  sampleType              String?
+  durationLabel           String?
+  imageUrl                String?
+  active                  Boolean               @default(true)
+  sortOrder               Int                   @default(0)
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  category                HealthServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  orderItems              OrderItem[]
 
   @@index([categoryId, active, sortOrder])
   @@index([active])
+}
+
+enum ModuleType {
+  SHOPPING
+  FOOD
+  GROCERY
+  PHARMACY
+  DOCTOR
+  HOTEL
+  RIDE
+  LAUNDRY
+  HOME_SERVICES
+  HOUSE_HELP
+  HEALTH_SERVICES
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING
+  CONFIRMED
+  PROCESSING
+  DISPATCHED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  REFUNDED
+}
+
+enum AppointmentStatus {
+  UPCOMING
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RideStatus {
+  REQUESTED
+  ACCEPTED
+  DRIVER_ARRIVING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum HotelBookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CHECKED_OUT
+  CANCELLED
+}
+
+enum LaundryOrderStatus {
+  PENDING
+  SCHEDULED
+  PICKED_UP
+  CLEANING
+  OUT_FOR_DELIVERY
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  ORDER
+  APPOINTMENT
+  PROMOTION
+  RIDE
+  LAUNDRY
+  SYSTEM
+}
+
+enum NotificationModule {
+  SYSTEM
+  ORDERS
+  FOOD
+  SHOPPING
+  GROCERY
+  PHARMACY
+  RIDE
+  HOTEL
+  DOCTOR
+  HOME_SERVICES
+  LAUNDRY
+  PROMOTIONS
+  ACCOUNT
+  MESSAGES
+  HEALTH_SERVICES
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum DevicePlatform {
+  IOS
+  ANDROID
+  WEB
+  MACOS
+  WINDOWS
+  LINUX
+  UNKNOWN
+}
+
+enum ConversationEntityType {
+  DOCTOR
+  HOME_SERVICE_PROVIDER
+  RIDE
+  DELIVERY
+  SHOP
+}
+
+enum MessageSenderRole {
+  USER
+  PROVIDER
+  DRIVER
+  SYSTEM
+}
+
+enum PaymentMethodType {
+  CARD
+  APPLE_PAY
+  GOOGLE_PAY
+  PAYPAL
+  CASH
+}
+
+enum ProProfileType {
+  SHOP
+  PROVIDER
+  DOCTOR
+  DELIVERY
+  RIDER
+}
+
+enum ProModule {
+  SHOPPING
+  FOOD
+  PHARMACY
+  SERVICES
+  LAUNDRY
+  DOCTOR
+  SHOPPING_DELIVERY
+  FOOD_DELIVERY
+  PHARMACY_DELIVERY
+  RIDE
 }

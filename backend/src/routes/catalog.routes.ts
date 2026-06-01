@@ -1103,10 +1103,7 @@ router.get(
   asyncHandler(async (_req, res) => {
     const restaurants = await prisma.restaurant.findMany({
       include: {
-        menuCategories: {
-          orderBy: { sortOrder: 'asc' },
-          include: { items: true },
-        },
+        menuItems: true,
       },
       orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
     });
@@ -1127,19 +1124,21 @@ router.get(
           isOpen: restaurant.isOpen,
           distance: toNumber(restaurant.distanceKm),
           tags,
-          menu: restaurant.menuCategories.map((category) => ({
-            name: category.name,
-            items: category.items.map((item) => ({
-              id: item.id,
-              name: item.name,
-              description: item.description,
-              price: toNumber(item.price),
-              imageUrl: item.imageUrl,
-              isPopular: item.isPopular,
-              isAvailable: item.isAvailable,
-              customizations: item.customizationsJson ?? [],
-            })),
-          })),
+          menu: [
+            {
+              name: 'Menu',
+              items: restaurant.menuItems.map((item) => ({
+                id: item.id,
+                name: item.name,
+                description: item.description,
+                price: toNumber(item.price),
+                imageUrl: item.imageUrl,
+                isPopular: item.isPopular,
+                isAvailable: item.isAvailable,
+                customizations: item.customizationsJson ?? [],
+              })),
+            },
+          ],
         };
       }),
     );
@@ -1153,10 +1152,7 @@ router.get(
     const restaurant = await prisma.restaurant.findUnique({
       where: { id: restaurantId },
       include: {
-        menuCategories: {
-          orderBy: { sortOrder: 'asc' },
-          include: { items: true },
-        },
+        menuItems: true,
       },
     });
 
@@ -1178,19 +1174,21 @@ router.get(
       isOpen: restaurant.isOpen,
       distance: toNumber(restaurant.distanceKm),
       tags,
-      menu: restaurant.menuCategories.map((category) => ({
-        name: category.name,
-        items: category.items.map((item) => ({
-          id: item.id,
-          name: item.name,
-          description: item.description,
-          price: toNumber(item.price),
-          imageUrl: item.imageUrl,
-          isPopular: item.isPopular,
-          isAvailable: item.isAvailable,
-          customizations: item.customizationsJson ?? [],
-        })),
-      })),
+      menu: [
+        {
+          name: 'Menu',
+          items: restaurant.menuItems.map((item) => ({
+            id: item.id,
+            name: item.name,
+            description: item.description,
+            price: toNumber(item.price),
+            imageUrl: item.imageUrl,
+            isPopular: item.isPopular,
+            isAvailable: item.isAvailable,
+            customizations: item.customizationsJson ?? [],
+          })),
+        },
+      ],
     });
   }),
 );

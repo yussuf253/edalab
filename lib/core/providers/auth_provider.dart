@@ -12,11 +12,15 @@ class AuthProvider extends ChangeNotifier {
   bool _isLoggedIn = false;
   bool _isLoading = false;
   String? _errorMessage;
+  bool _emailVerificationRequired = false;
+  String? _pendingVerificationEmail;
 
   UserModel? get user => _user;
   bool get isLoggedIn => _isLoggedIn;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  bool get emailVerificationRequired => _emailVerificationRequired;
+  String? get pendingVerificationEmail => _pendingVerificationEmail;
 
   bool _isConnectionError(Object error) {
     return ApiClient.isConnectionError(error);
@@ -131,6 +135,8 @@ class AuthProvider extends ChangeNotifier {
     );
     _isLoading = true;
     _errorMessage = null;
+    _emailVerificationRequired = false;
+    _pendingVerificationEmail = null;
     notifyListeners();
 
     try {
@@ -197,6 +203,19 @@ class AuthProvider extends ChangeNotifier {
             })
             as Map,
       );
+
+      if (response['requiresEmailVerification'] == true) {
+        _emailVerificationRequired = true;
+        _pendingVerificationEmail = response['email']?.toString();
+        _errorMessage =
+            'Check your email to verify your account before signing in.';
+        _isLoading = false;
+        _user = null;
+        _isLoggedIn = false;
+        _syncAnalyticsIdentity();
+        notifyListeners();
+        return false;
+      }
 
       final userResponse = Map<String, dynamic>.from(response['user'] as Map);
       await _setUserFromResponse(userResponse);

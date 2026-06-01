@@ -249,6 +249,7 @@ const updateProviderSettingsSchema = z.object({
   location: z.string().trim().max(120).optional(),
   contactPhone: z.string().trim().max(40).optional(),
   responseTime: z.string().trim().max(60).optional(),
+  imageUrl: z.string().trim().url().optional().or(z.literal('')),
   services: z.array(z.string().trim().min(1).max(80)).max(24).optional(),
   bookingModes: settingsModesSchema.optional(),
   availability: hoursSchema.optional(),
@@ -5990,6 +5991,7 @@ router.get(
                 location: true,
                 contactPhone: true,
                 responseTime: true,
+                imageUrl: true,
                 servicesJson: true,
                 bookingModesJson: true,
                 availabilityJson: true,
@@ -6010,6 +6012,7 @@ router.get(
         location: provider.location,
         contactPhone: provider.contactPhone,
         responseTime: provider.responseTime,
+        imageUrl: provider.imageUrl,
         categorySlug: provider.category?.slug ?? null,
         services: normalizeStringList(provider.servicesJson),
         bookingModes: normalizeStringList(provider.bookingModesJson),
@@ -6077,6 +6080,8 @@ router.post(
           body.responseTime == null
             ? undefined
             : body.responseTime.trim() || null,
+        imageUrl:
+          body.imageUrl == null ? undefined : body.imageUrl.trim() || null,
         servicesJson:
           body.services == null ? undefined : normalizeStringList(body.services),
         bookingModesJson:
@@ -6102,6 +6107,7 @@ router.post(
         location: true,
         contactPhone: true,
         responseTime: true,
+        imageUrl: true,
         servicesJson: true,
         bookingModesJson: true,
         availabilityJson: true,
@@ -6115,6 +6121,7 @@ router.post(
       location: provider.location,
       contactPhone: provider.contactPhone,
       responseTime: provider.responseTime,
+      imageUrl: provider.imageUrl,
       services: normalizeStringList(provider.servicesJson),
       bookingModes: normalizeStringList(provider.bookingModesJson),
       availability: normalizeHours(provider.availabilityJson, {

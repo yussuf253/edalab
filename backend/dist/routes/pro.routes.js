@@ -207,6 +207,7 @@ const updateProviderSettingsSchema = zod_1.z.object({
     location: zod_1.z.string().trim().max(120).optional(),
     contactPhone: zod_1.z.string().trim().max(40).optional(),
     responseTime: zod_1.z.string().trim().max(60).optional(),
+    imageUrl: zod_1.z.string().trim().url().optional().or(zod_1.z.literal('')),
     services: zod_1.z.array(zod_1.z.string().trim().min(1).max(80)).max(24).optional(),
     bookingModes: settingsModesSchema.optional(),
     availability: hoursSchema.optional(),
@@ -4585,6 +4586,7 @@ router.get('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(async
                 location: true,
                 contactPhone: true,
                 responseTime: true,
+                imageUrl: true,
                 servicesJson: true,
                 bookingModesJson: true,
                 availabilityJson: true,
@@ -4603,6 +4605,7 @@ router.get('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(async
         location: provider.location,
         contactPhone: provider.contactPhone,
         responseTime: provider.responseTime,
+        imageUrl: provider.imageUrl,
         categorySlug: provider.category?.slug ?? null,
         services: normalizeStringList(provider.servicesJson),
         bookingModes: normalizeStringList(provider.bookingModesJson),
@@ -4652,6 +4655,7 @@ router.post('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(asyn
             responseTime: body.responseTime == null
                 ? undefined
                 : body.responseTime.trim() || null,
+            imageUrl: body.imageUrl == null ? undefined : body.imageUrl.trim() || null,
             servicesJson: body.services == null ? undefined : normalizeStringList(body.services),
             bookingModesJson: body.bookingModes == null
                 ? undefined
@@ -4674,6 +4678,7 @@ router.post('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(asyn
             location: true,
             contactPhone: true,
             responseTime: true,
+            imageUrl: true,
             servicesJson: true,
             bookingModesJson: true,
             availabilityJson: true,
@@ -4686,6 +4691,7 @@ router.post('/:userId/provider-settings', (0, async_handler_1.asyncHandler)(asyn
         location: provider.location,
         contactPhone: provider.contactPhone,
         responseTime: provider.responseTime,
+        imageUrl: provider.imageUrl,
         services: normalizeStringList(provider.servicesJson),
         bookingModes: normalizeStringList(provider.bookingModesJson),
         availability: normalizeHours(provider.availabilityJson, {

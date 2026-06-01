@@ -49,6 +49,17 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
       );
 
       if (!mounted) return;
+      if (proAuth.emailVerificationRequired) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Check your email to verify your pro account before signing in.',
+            ),
+          ),
+        );
+        context.go(ProRoutePaths.login);
+        return;
+      }
       context.go(ProRoutePaths.signup);
     } catch (error) {
       if (!mounted) return;

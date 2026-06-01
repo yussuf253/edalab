@@ -555,6 +555,21 @@ class _ProviderAvailabilityScreenState
     }
   }
 
+  String _localizedAvailabilityDetails(String details) {
+    if (details.trim().isEmpty) return details;
+    return details
+        .split(' • ')
+        .map((part) {
+          final text = part.trim();
+          if (text.isEmpty) return text;
+          if (RegExp(r'^\+\d+\s+more$', caseSensitive: false).hasMatch(text)) {
+            return text;
+          }
+          return _localizedOption(text);
+        })
+        .join(' • ');
+  }
+
   Future<Map<String, dynamic>?> _loadProviderSettingById(
     String providerId,
   ) async {
@@ -2555,7 +2570,16 @@ class _ProviderAvailabilityScreenState
           disabledLabel: 'Paused',
           emptyMessage: 'No service listings found yet. Tap + to add one.',
           items: (data['services'] as List<dynamic>? ?? const [])
-              .map((entry) => Map<String, dynamic>.from(entry as Map))
+              .map((entry) {
+                final item = Map<String, dynamic>.from(entry as Map);
+                final name = item['name']?.toString() ?? '';
+                final details = item['details']?.toString() ?? '';
+                return {
+                  ...item,
+                  'displayName': _localizedOption(name),
+                  'displayDetails': _localizedAvailabilityDetails(details),
+                };
+              })
               .toList(growable: false),
         ),
       );
@@ -2857,13 +2881,19 @@ class _AvailabilityItemsList extends StatelessWidget {
             child: Icon(icon, color: color),
           ),
           title: Text(
-            item['name']?.toString() ?? l10n.itemLabel,
+            item['displayName']?.toString().trim().isNotEmpty == true
+                ? item['displayName'].toString()
+                : item['name']?.toString() ?? l10n.itemLabel,
             style: const TextStyle(fontWeight: FontWeight.bold),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: Text(
-            details.isNotEmpty ? details : statusLabel,
+            item['displayDetails']?.toString().trim().isNotEmpty == true
+                ? item['displayDetails'].toString()
+                : details.isNotEmpty
+                ? details
+                : statusLabel,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),

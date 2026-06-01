@@ -109,10 +109,17 @@ SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 SUPABASE_STORAGE_BUCKET_AVATARS=avatars
 SUPABASE_STORAGE_BUCKET_PRESCRIPTIONS=prescriptions
+RESEND_API_KEY=your-resend-api-key
+RESEND_FROM_EMAIL="EdaLab <noreply@your-domain.com>"
+EMAIL_VERIFICATION_TTL_MINUTES=60
 ```
 
 Avatar uploads are persistent only when Supabase Storage variables are set.
 If they are missing, uploads fall back to local `uploads/` files, which are not persistent on Render free instances.
+
+Email verification uses Resend when `RESEND_API_KEY` and a public
+`PUBLIC_BASE_URL` are configured. Without them, registration still creates a
+verification token and returns a dev-only token outside production.
 
 For first deployment, you should also run schema sync and seed once:
 

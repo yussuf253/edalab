@@ -9,6 +9,7 @@ const http_1 = require("../utils/http");
 const password_1 = require("../utils/password");
 const jwt_1 = require("../utils/jwt");
 const serializers_1 = require("../utils/serializers");
+const email_verification_1 = require("../utils/email-verification");
 const router = (0, express_1.Router)();
 const profileSchema = zod_1.z.object({
     email: zod_1.z.string().email(),
@@ -66,6 +67,7 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
         return res.status(409).json({ error: 'An account with this email already exists.' });
     }
     const parsedName = (0, serializers_1.parseFullName)(name);
+    const verification = (0, email_verification_1.createEmailVerificationChallenge)();
     const user = await db_1.prisma.user.create({
         data: {
             email: email.toLowerCase(),
@@ -73,6 +75,10 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
             lastName: parsedName.lastName,
             phone: phone?.trim() || null,
             passwordHash: await (0, password_1.hashPassword)(password),
+            emailVerifiedAt: null,
+            emailVerificationTokenHash: verification.tokenHash,
+            emailVerificationExpiresAt: verification.expiresAt,
+            emailVerificationSentAt: new Date(),
         },
         include: {
             addresses: {
@@ -80,7 +86,19 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
             },
         },
     });
-    res.status(201).json((0, serializers_1.sanitizeUser)(user));
+    const delivery = await (0, email_verification_1.sendEmailVerification)({
+        email: user.email,
+        name: [user.firstName, user.lastName].filter(Boolean).join(' '),
+        token: verification.token,
+        kind: 'auth',
+    });
+    res.status(201).json({
+        requiresEmailVerification: true,
+        email: user.email,
+        verificationEmailSent: delivery.sent,
+        verificationUrl: delivery.verificationUrl,
+        devToken: delivery.devToken,
+    });
 }));
 router.post('/login', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const { email, password } = zod_1.z
@@ -99,6 +117,13 @@ router.post('/login', (0, async_handler_1.asyncHandler)(async (req, res) => {
     });
     if (!user || !(await (0, password_1.verifyPassword)(password, user.passwordHash))) {
         return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+    if ((0, email_verification_1.hasPendingEmailVerification)(user)) {
+        return res.status(403).json({
+            code: 'EMAIL_NOT_VERIFIED',
+            error: 'Please verify your email address before signing in.',
+            email: user.email,
+        });
     }
     const safeUser = (0, serializers_1.sanitizeUser)(user);
     const token = (0, jwt_1.signAccessToken)({ userId: user.id, email: user.email });

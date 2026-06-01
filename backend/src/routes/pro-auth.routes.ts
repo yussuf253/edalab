@@ -12,6 +12,12 @@ import { asyncHandler } from '../utils/async-handler';
 import { signAccessToken } from '../utils/jwt';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { parseFullName } from '../utils/serializers';
+import {
+  createEmailVerificationChallenge,
+  hashEmailVerificationToken,
+  hasPendingEmailVerification,
+  sendEmailVerification,
+} from '../utils/email-verification';
 
 const router = Router();
 
@@ -25,6 +31,14 @@ const proAccountRegisterSchema = z.object({
 const proAccountLoginSchema = z.object({
   email: z.string().trim().email(),
   password: z.string().min(1),
+});
+
+const emailSchema = z.object({
+  email: z.string().trim().email(),
+});
+
+const verifyEmailSchema = z.object({
+  token: z.string().trim().min(16),
 });
 
 const proProfileSetupSchema = z.object({
@@ -157,25 +171,33 @@ router.post(
         .json({ error: 'A pro account with this email already exists.' });
     }
 
+    const verification = createEmailVerificationChallenge();
     const account = await prisma.proAccount.create({
       data: {
         email,
         fullName: body.fullName.trim(),
         phone: body.phone?.trim() || null,
         passwordHash: await hashPassword(body.password),
+        emailVerifiedAt: null,
+        emailVerificationTokenHash: verification.tokenHash,
+        emailVerificationExpiresAt: verification.expiresAt,
+        emailVerificationSentAt: new Date(),
       },
     });
 
-    const token = signAccessToken({
-      userId: account.id,
+    const delivery = await sendEmailVerification({
       email: account.email,
-      accountType: 'pro',
+      name: account.fullName,
+      token: verification.token,
+      kind: 'pro-auth',
     });
 
     res.status(201).json({
-      token,
-      account: serializeProAccount(account),
-      profile: null,
+      requiresEmailVerification: true,
+      email: account.email,
+      verificationEmailSent: delivery.sent,
+      verificationUrl: delivery.verificationUrl,
+      devToken: delivery.devToken,
     });
   }),
 );
@@ -194,6 +216,14 @@ router.post(
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
+    if (hasPendingEmailVerification(account)) {
+      return res.status(403).json({
+        code: 'EMAIL_NOT_VERIFIED',
+        error: 'Please verify your email address before signing in.',
+        email: account.email,
+      });
+    }
+
     const token = signAccessToken({
       userId: account.id,
       email: account.email,
@@ -205,6 +235,98 @@ router.post(
       account: serializeProAccount(account),
       profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
     });
+  }),
+);
+
+router.post(
+  '/resend-verification',
+  asyncHandler(async (req, res) => {
+    const body = emailSchema.parse(req.body);
+    const account = await prisma.proAccount.findUnique({
+      where: { email: body.email.toLowerCase() },
+    });
+
+    if (!account || !hasPendingEmailVerification(account)) {
+      return res.json({ ok: true });
+    }
+
+    const verification = createEmailVerificationChallenge();
+    await prisma.proAccount.update({
+      where: { id: account.id },
+      data: {
+        emailVerificationTokenHash: verification.tokenHash,
+        emailVerificationExpiresAt: verification.expiresAt,
+        emailVerificationSentAt: new Date(),
+      },
+    });
+
+    const delivery = await sendEmailVerification({
+      email: account.email,
+      name: account.fullName,
+      token: verification.token,
+      kind: 'pro-auth',
+    });
+
+    res.json({
+      ok: true,
+      verificationEmailSent: delivery.sent,
+      verificationUrl: delivery.verificationUrl,
+      devToken: delivery.devToken,
+    });
+  }),
+);
+
+async function verifyProEmail(token: string) {
+  const tokenHash = hashEmailVerificationToken(token);
+  const account = await prisma.proAccount.findFirst({
+    where: { emailVerificationTokenHash: tokenHash },
+  });
+
+  if (!account) {
+    return { status: 400, payload: { error: 'Invalid verification link.' } };
+  }
+
+  if (
+    account.emailVerificationExpiresAt != null &&
+    account.emailVerificationExpiresAt.getTime() < Date.now()
+  ) {
+    return {
+      status: 400,
+      payload: { error: 'This verification link has expired.' },
+    };
+  }
+
+  await prisma.proAccount.update({
+    where: { id: account.id },
+    data: {
+      emailVerifiedAt: new Date(),
+      emailVerificationTokenHash: null,
+      emailVerificationExpiresAt: null,
+      emailVerificationSentAt: null,
+    },
+  });
+
+  return {
+    status: 200,
+    payload: { verified: true, email: account.email },
+  };
+}
+
+router.get(
+  '/verify-email',
+  asyncHandler(async (req, res) => {
+    const body = verifyEmailSchema.parse({ token: req.query.token });
+    const result = await verifyProEmail(body.token);
+    res.status(result.status).json(result.payload);
+  }),
+);
+
+router.post(
+  '/verify-email',
+  asyncHandler(async (req, res) => {
+    const body = verifyEmailSchema.parse(req.body);
+    const result = await verifyProEmail(body.token);
+    res.status(result.status).json(result.payload);
   }),
 );
 
