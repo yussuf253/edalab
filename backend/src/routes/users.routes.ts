@@ -7,11 +7,6 @@ import { getParam } from '../utils/http';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { signAccessToken } from '../utils/jwt';
 import { parseFullName, sanitizeUser, toNumber } from '../utils/serializers';
-import {
-  createEmailVerificationChallenge,
-  hasPendingEmailVerification,
-  sendEmailVerification,
-} from '../utils/email-verification';
 
 const router = Router();
 
@@ -80,7 +75,6 @@ router.post(
     }
 
     const parsedName = parseFullName(name);
-    const verification = createEmailVerificationChallenge();
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
@@ -88,10 +82,6 @@ router.post(
         lastName: parsedName.lastName,
         phone: phone?.trim() || null,
         passwordHash: await hashPassword(password),
-        emailVerifiedAt: null,
-        emailVerificationTokenHash: verification.tokenHash,
-        emailVerificationExpiresAt: verification.expiresAt,
-        emailVerificationSentAt: new Date(),
       },
       include: {
         addresses: {
@@ -100,19 +90,9 @@ router.post(
       },
     });
 
-    const delivery = await sendEmailVerification({
-      email: user.email,
-      name: [user.firstName, user.lastName].filter(Boolean).join(' '),
-      token: verification.token,
-      kind: 'auth',
-    });
-
     res.status(201).json({
-      requiresEmailVerification: true,
-      email: user.email,
-      verificationEmailSent: delivery.sent,
-      verificationUrl: delivery.verificationUrl,
-      devToken: delivery.devToken,
+      ...sanitizeUser(user),
+      token: signAccessToken({ userId: user.id, email: user.email }),
     });
   }),
 );
@@ -138,14 +118,6 @@ router.post(
 
     if (!user || !(await verifyPassword(password, user.passwordHash))) {
       return res.status(401).json({ error: 'Invalid email or password.' });
-    }
-
-    if (hasPendingEmailVerification(user)) {
-      return res.status(403).json({
-        code: 'EMAIL_NOT_VERIFIED',
-        error: 'Please verify your email address before signing in.',
-        email: user.email,
-      });
     }
 
     const safeUser = sanitizeUser(user);
