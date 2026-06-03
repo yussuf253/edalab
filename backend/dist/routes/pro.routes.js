@@ -1450,7 +1450,7 @@ async function buildFoodSummary(todayStart, bindings, businessName) {
         db_1.prisma.restaurantMenuItem.count({
             where: {
                 isAvailable: true,
-                category: { restaurantId: { in: bindings.restaurantIds } },
+                restaurantId: { in: bindings.restaurantIds },
             },
         }),
         db_1.prisma.order.count({
@@ -3007,18 +3007,12 @@ router.get('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async
             ? Promise.resolve([])
             : db_1.prisma.restaurantMenuItem.findMany({
                 where: {
-                    category: {
-                        restaurantId: { in: bindings.restaurantIds },
-                    },
+                    restaurantId: { in: bindings.restaurantIds },
                 },
                 select: {
                     id: true,
                     isAvailable: true,
-                    category: {
-                        select: {
-                            restaurantId: true,
-                        },
-                    },
+                    restaurantId: true,
                 },
             }),
         bindings.restaurantNames.length === 0
@@ -3122,7 +3116,7 @@ router.get('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async
     const restaurantMenuCountById = new Map();
     const restaurantUnavailableCountById = new Map();
     for (const item of restaurantMenuItems) {
-        const restaurantId = item.category.restaurantId;
+        const restaurantId = item.restaurantId;
         restaurantMenuCountById.set(restaurantId, (restaurantMenuCountById.get(restaurantId) ?? 0) + 1);
         if (!item.isAvailable) {
             restaurantUnavailableCountById.set(restaurantId, (restaurantUnavailableCountById.get(restaurantId) ?? 0) + 1);

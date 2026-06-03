@@ -10,7 +10,6 @@ const async_handler_1 = require("../utils/async-handler");
 const jwt_1 = require("../utils/jwt");
 const password_1 = require("../utils/password");
 const serializers_1 = require("../utils/serializers");
-const email_verification_1 = require("../utils/email-verification");
 const router = (0, express_1.Router)();
 const proAccountRegisterSchema = zod_1.z.object({
     fullName: zod_1.z.string().trim().min(2),
@@ -21,12 +20,6 @@ const proAccountRegisterSchema = zod_1.z.object({
 const proAccountLoginSchema = zod_1.z.object({
     email: zod_1.z.string().trim().email(),
     password: zod_1.z.string().min(1),
-});
-const emailSchema = zod_1.z.object({
-    email: zod_1.z.string().trim().email(),
-});
-const verifyEmailSchema = zod_1.z.object({
-    token: zod_1.z.string().trim().min(16),
 });
 const proProfileSetupSchema = zod_1.z.object({
     type: zod_1.z.nativeEnum(client_1.ProProfileType),
@@ -116,31 +109,16 @@ router.post('/register', (0, async_handler_1.asyncHandler)(async (req, res) => {
             .status(409)
             .json({ error: 'A pro account with this email already exists.' });
     }
-    const verification = (0, email_verification_1.createEmailVerificationChallenge)();
     const account = await db_1.prisma.proAccount.create({
         data: {
             email,
             fullName: body.fullName.trim(),
             phone: body.phone?.trim() || null,
             passwordHash: await (0, password_1.hashPassword)(body.password),
-            emailVerifiedAt: null,
-            emailVerificationTokenHash: verification.tokenHash,
-            emailVerificationExpiresAt: verification.expiresAt,
-            emailVerificationSentAt: new Date(),
         },
     });
-    const delivery = await (0, email_verification_1.sendEmailVerification)({
-        email: account.email,
-        name: account.fullName,
-        token: verification.token,
-        kind: 'pro-auth',
-    });
     res.status(201).json({
-        requiresEmailVerification: true,
-        email: account.email,
-        verificationEmailSent: delivery.sent,
-        verificationUrl: delivery.verificationUrl,
-        devToken: delivery.devToken,
+        account: serializeProAccount(account),
     });
 }));
 router.post('/login', (0, async_handler_1.asyncHandler)(async (req, res) => {
@@ -153,13 +131,6 @@ router.post('/login', (0, async_handler_1.asyncHandler)(async (req, res) => {
     if (!account || !(await (0, password_1.verifyPassword)(body.password, account.passwordHash))) {
         return res.status(401).json({ error: 'Invalid email or password.' });
     }
-    if ((0, email_verification_1.hasPendingEmailVerification)(account)) {
-        return res.status(403).json({
-            code: 'EMAIL_NOT_VERIFIED',
-            error: 'Please verify your email address before signing in.',
-            email: account.email,
-        });
-    }
     const token = (0, jwt_1.signAccessToken)({
         userId: account.id,
         email: account.email,
@@ -170,75 +141,6 @@ router.post('/login', (0, async_handler_1.asyncHandler)(async (req, res) => {
         account: serializeProAccount(account),
         profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
     });
-}));
-router.post('/resend-verification', (0, async_handler_1.asyncHandler)(async (req, res) => {
-    const body = emailSchema.parse(req.body);
-    const account = await db_1.prisma.proAccount.findUnique({
-        where: { email: body.email.toLowerCase() },
-    });
-    if (!account || !(0, email_verification_1.hasPendingEmailVerification)(account)) {
-        return res.json({ ok: true });
-    }
-    const verification = (0, email_verification_1.createEmailVerificationChallenge)();
-    await db_1.prisma.proAccount.update({
-        where: { id: account.id },
-        data: {
-            emailVerificationTokenHash: verification.tokenHash,
-            emailVerificationExpiresAt: verification.expiresAt,
-            emailVerificationSentAt: new Date(),
-        },
-    });
-    const delivery = await (0, email_verification_1.sendEmailVerification)({
-        email: account.email,
-        name: account.fullName,
-        token: verification.token,
-        kind: 'pro-auth',
-    });
-    res.json({
-        ok: true,
-        verificationEmailSent: delivery.sent,
-        verificationUrl: delivery.verificationUrl,
-        devToken: delivery.devToken,
-    });
-}));
-async function verifyProEmail(token) {
-    const tokenHash = (0, email_verification_1.hashEmailVerificationToken)(token);
-    const account = await db_1.prisma.proAccount.findFirst({
-        where: { emailVerificationTokenHash: tokenHash },
-    });
-    if (!account) {
-        return { status: 400, payload: { error: 'Invalid verification link.' } };
-    }
-    if (account.emailVerificationExpiresAt != null &&
-        account.emailVerificationExpiresAt.getTime() < Date.now()) {
-        return {
-            status: 400,
-            payload: { error: 'This verification link has expired.' },
-        };
-    }
-    await db_1.prisma.proAccount.update({
-        where: { id: account.id },
-        data: {
-            emailVerifiedAt: new Date(),
-            emailVerificationTokenHash: null,
-            emailVerificationExpiresAt: null,
-            emailVerificationSentAt: null,
-        },
-    });
-    return {
-        status: 200,
-        payload: { verified: true, email: account.email },
-    };
-}
-router.get('/verify-email', (0, async_handler_1.asyncHandler)(async (req, res) => {
-    const body = verifyEmailSchema.parse({ token: req.query.token });
-    const result = await verifyProEmail(body.token);
-    res.status(result.status).json(result.payload);
-}));
-router.post('/verify-email', (0, async_handler_1.asyncHandler)(async (req, res) => {
-    const body = verifyEmailSchema.parse(req.body);
-    const result = await verifyProEmail(body.token);
-    res.status(result.status).json(result.payload);
 }));
 router.get('/me', auth_1.requireAuth, (0, async_handler_1.asyncHandler)(async (req, res) => {
     const accountId = proAccountIdFromRequest(req);

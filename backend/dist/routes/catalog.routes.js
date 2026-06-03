@@ -856,10 +856,7 @@ router.get('/home-service-providers/:id', (0, async_handler_1.asyncHandler)(asyn
 router.get('/restaurants', (0, async_handler_1.asyncHandler)(async (_req, res) => {
     const restaurants = await db_1.prisma.restaurant.findMany({
         include: {
-            menuCategories: {
-                orderBy: { sortOrder: 'asc' },
-                include: { items: true },
-            },
+            menuItems: true,
         },
         orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
     });
@@ -878,19 +875,21 @@ router.get('/restaurants', (0, async_handler_1.asyncHandler)(async (_req, res) =
             isOpen: restaurant.isOpen,
             distance: (0, serializers_1.toNumber)(restaurant.distanceKm),
             tags,
-            menu: restaurant.menuCategories.map((category) => ({
-                name: category.name,
-                items: category.items.map((item) => ({
-                    id: item.id,
-                    name: item.name,
-                    description: item.description,
-                    price: (0, serializers_1.toNumber)(item.price),
-                    imageUrl: item.imageUrl,
-                    isPopular: item.isPopular,
-                    isAvailable: item.isAvailable,
-                    customizations: item.customizationsJson ?? [],
-                })),
-            })),
+            menu: [
+                {
+                    name: 'Menu',
+                    items: restaurant.menuItems.map((item) => ({
+                        id: item.id,
+                        name: item.name,
+                        description: item.description,
+                        price: (0, serializers_1.toNumber)(item.price),
+                        imageUrl: item.imageUrl,
+                        isPopular: item.isPopular,
+                        isAvailable: item.isAvailable,
+                        customizations: item.customizationsJson ?? [],
+                    })),
+                },
+            ],
         };
     }));
 }));
@@ -899,10 +898,7 @@ router.get('/restaurants/:id', (0, async_handler_1.asyncHandler)(async (req, res
     const restaurant = await db_1.prisma.restaurant.findUnique({
         where: { id: restaurantId },
         include: {
-            menuCategories: {
-                orderBy: { sortOrder: 'asc' },
-                include: { items: true },
-            },
+            menuItems: true,
         },
     });
     if (!restaurant) {
@@ -922,19 +918,21 @@ router.get('/restaurants/:id', (0, async_handler_1.asyncHandler)(async (req, res
         isOpen: restaurant.isOpen,
         distance: (0, serializers_1.toNumber)(restaurant.distanceKm),
         tags,
-        menu: restaurant.menuCategories.map((category) => ({
-            name: category.name,
-            items: category.items.map((item) => ({
-                id: item.id,
-                name: item.name,
-                description: item.description,
-                price: (0, serializers_1.toNumber)(item.price),
-                imageUrl: item.imageUrl,
-                isPopular: item.isPopular,
-                isAvailable: item.isAvailable,
-                customizations: item.customizationsJson ?? [],
-            })),
-        })),
+        menu: [
+            {
+                name: 'Menu',
+                items: restaurant.menuItems.map((item) => ({
+                    id: item.id,
+                    name: item.name,
+                    description: item.description,
+                    price: (0, serializers_1.toNumber)(item.price),
+                    imageUrl: item.imageUrl,
+                    isPopular: item.isPopular,
+                    isAvailable: item.isAvailable,
+                    customizations: item.customizationsJson ?? [],
+                })),
+            },
+        ],
     });
 }));
 router.get('/hotels', (0, async_handler_1.asyncHandler)(async (_req, res) => {
