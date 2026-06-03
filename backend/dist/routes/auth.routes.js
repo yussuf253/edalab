@@ -7,6 +7,8 @@ const async_handler_1 = require("../utils/async-handler");
 const password_1 = require("../utils/password");
 const jwt_1 = require("../utils/jwt");
 const serializers_1 = require("../utils/serializers");
+const supabase_admin_service_1 = require("../services/supabase-admin.service");
+const env_1 = require("../config/env");
 const router = (0, express_1.Router)();
 const registerSchema = zod_1.z.object({
     email: zod_1.z.string().email(),
@@ -26,6 +28,17 @@ router.post('/register', (0, async_handler_1.asyncHandler)(async (req, res) => {
     });
     if (existingUser) {
         return res.status(409).json({ error: 'An account with this email already exists.' });
+    }
+    // Create user in Supabase Auth (handles email verification)
+    const { data: authData, error: authError } = await supabase_admin_service_1.supabaseAdmin.auth.signUp({
+        email,
+        password: body.password,
+        options: {
+            emailRedirectTo: `${env_1.env.PUBLIC_BASE_URL}/auth/confirm`,
+        },
+    });
+    if (authError) {
+        return res.status(400).json({ error: authError.message });
     }
     const name = (0, serializers_1.parseFullName)(body.name);
     const user = await db_1.prisma.user.create({

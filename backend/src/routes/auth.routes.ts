@@ -5,6 +5,8 @@ import { asyncHandler } from '../utils/async-handler';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { signAccessToken } from '../utils/jwt';
 import { parseFullName, sanitizeUser } from '../utils/serializers';
+import { supabaseAdmin } from '../services/supabase-admin.service';
+import { env } from '../config/env';
 
 const router = Router();
 
@@ -31,6 +33,19 @@ router.post(
 
     if (existingUser) {
       return res.status(409).json({ error: 'An account with this email already exists.' });
+    }
+
+    // Create user in Supabase Auth (handles email verification)
+    const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
+      email,
+      password: body.password,
+      options: {
+        emailRedirectTo: `${env.PUBLIC_BASE_URL}/auth/confirm`,
+      },
+    });
+
+    if (authError) {
+      return res.status(400).json({ error: authError.message });
     }
 
     const name = parseFullName(body.name);

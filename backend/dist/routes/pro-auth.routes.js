@@ -10,6 +10,8 @@ const async_handler_1 = require("../utils/async-handler");
 const jwt_1 = require("../utils/jwt");
 const password_1 = require("../utils/password");
 const serializers_1 = require("../utils/serializers");
+const supabase_admin_service_1 = require("../services/supabase-admin.service");
+const env_1 = require("../config/env");
 const router = (0, express_1.Router)();
 const proAccountRegisterSchema = zod_1.z.object({
     fullName: zod_1.z.string().trim().min(2),
@@ -108,6 +110,17 @@ router.post('/register', (0, async_handler_1.asyncHandler)(async (req, res) => {
         return res
             .status(409)
             .json({ error: 'A pro account with this email already exists.' });
+    }
+    // Create user in Supabase Auth (handles email verification)
+    const { data: authData, error: authError } = await supabase_admin_service_1.supabaseAdmin.auth.signUp({
+        email,
+        password: body.password,
+        options: {
+            emailRedirectTo: `${env_1.env.PUBLIC_BASE_URL}/auth/confirm`,
+        },
+    });
+    if (authError) {
+        return res.status(400).json({ error: authError.message });
     }
     const account = await db_1.prisma.proAccount.create({
         data: {

@@ -12,6 +12,8 @@ import { asyncHandler } from '../utils/async-handler';
 import { signAccessToken } from '../utils/jwt';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { parseFullName } from '../utils/serializers';
+import { supabaseAdmin } from '../services/supabase-admin.service';
+import { env } from '../config/env';
 
 const router = Router();
 
@@ -155,6 +157,19 @@ router.post(
       return res
         .status(409)
         .json({ error: 'A pro account with this email already exists.' });
+    }
+
+    // Create user in Supabase Auth (handles email verification)
+    const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
+      email,
+      password: body.password,
+      options: {
+        emailRedirectTo: `${env.PUBLIC_BASE_URL}/auth/confirm`,
+      },
+    });
+
+    if (authError) {
+      return res.status(400).json({ error: authError.message });
     }
 
     const account = await prisma.proAccount.create({
