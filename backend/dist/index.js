@@ -37,7 +37,7 @@ app.use((0, cors_1.default)({
     origin: env_1.env.CORS_ORIGIN === '*' ? true : env_1.env.CORS_ORIGIN,
     credentials: true,
 }));
-app.use(express_1.default.json({ limit: '8mb' }));
+app.use(express_1.default.json({ limit: '50mb' }));
 app.get('/uploads/supabase/:bucket/*', async (req, res) => {
     const bucket = (req.params.bucket || '').trim();
     const params = req.params;
