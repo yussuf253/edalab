@@ -350,6 +350,7 @@ router.all('/waafipay/callback/:result', (0, async_handler_1.asyncHandler)(async
     }
     const responseCode = callbackData.responseCode?.toString();
     const responseMsg = callbackData.responseMsg?.toString();
+    const procDescription = callbackData.procDescription?.toString();
     const state = callbackData.state?.toString();
     const paid = responseCode === '2001' ||
         responseMsg === 'RCS_SUCCESS' ||
@@ -403,6 +404,19 @@ router.all('/waafipay/callback/:result', (0, async_handler_1.asyncHandler)(async
     if (paid) {
         return res.redirect(`${webOrigin}/payment/success?orderId=${order.id}`);
     }
-    return res.redirect(`${webOrigin}/payment/failed?message=${encodeURIComponent(responseMsg || 'Payment failed')}`);
+    const failureMessage = responseMsg ||
+        procDescription ||
+        (state ? `Payment ${state.toLowerCase()}` : null) ||
+        'Payment failed';
+    const failureParams = new URLSearchParams({
+        message: failureMessage,
+        status: paymentStatus,
+        orderId: order.id,
+    });
+    if (responseCode)
+        failureParams.set('code', responseCode);
+    if (state)
+        failureParams.set('state', state);
+    return res.redirect(`${webOrigin}/payment/failed?${failureParams.toString()}`);
 }));
 exports.default = router;

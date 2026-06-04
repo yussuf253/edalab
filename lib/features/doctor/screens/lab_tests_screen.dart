@@ -41,8 +41,11 @@ class _LabTestsScreenState extends State<LabTestsScreen> {
 
   Future<void> _loadTests() async {
     try {
+      final categoryQuery = _categoryId == null || _categoryId!.trim().isEmpty
+          ? ''
+          : '?categoryId=${Uri.encodeComponent(_categoryId!)}';
       final response = await ApiClient.get(
-        '/catalog/health-services/tests?categoryId=$_categoryId',
+        '/catalog/health-services/tests$categoryQuery',
         forceRefresh: true,
       );
 
@@ -261,7 +264,7 @@ class _TestCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '${test.price.toStringAsFixed(0)} DZD',
+                        'DJF ${test.price.toStringAsFixed(0)}',
                         style: AppTextStyles.labelMedium.copyWith(
                           fontWeight: FontWeight.w800,
                           color: AppColors.primary,
@@ -270,7 +273,7 @@ class _TestCard extends StatelessWidget {
                       if (hasDiscount) ...[
                         const SizedBox(width: 6),
                         Text(
-                          '${test.originalPrice!.toStringAsFixed(0)} DZD',
+                          'DJF ${test.originalPrice!.toStringAsFixed(0)}',
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.grey,
                             decoration: TextDecoration.lineThrough,
@@ -462,7 +465,7 @@ class _TestDetailsBottomSheet extends StatelessWidget {
                                 Row(
                                   children: [
                                     Text(
-                                      '${test.price.toStringAsFixed(0)} DZD',
+                                      'DJF ${test.price.toStringAsFixed(0)}',
                                       style: AppTextStyles.h4.copyWith(
                                         fontWeight: FontWeight.w800,
                                         color: AppColors.primary,
@@ -471,7 +474,7 @@ class _TestDetailsBottomSheet extends StatelessWidget {
                                     if (hasDiscount) ...[
                                       const SizedBox(width: 8),
                                       Text(
-                                        '${test.originalPrice!.toStringAsFixed(0)} DZD',
+                                        'DJF ${test.originalPrice!.toStringAsFixed(0)}',
                                         style: AppTextStyles.bodySmall.copyWith(
                                           color: AppColors.grey,
                                           decoration:

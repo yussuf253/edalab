@@ -41,6 +41,7 @@ class _RideScreenState extends State<RideScreen> {
   bool _isLoading = true;
   bool _hasLocationPermission = false;
   bool _isResolvingPickup = true;
+  bool _showRent = false;
 
   @override
   void initState() {
@@ -352,9 +353,19 @@ class _RideScreenState extends State<RideScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              Text(l10n.t('ride.available_rides'), style: AppTextStyles.h4),
+              _RideModeTabs(
+                showRent: _showRent,
+                onChanged: (value) => setState(() => _showRent = value),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                _showRent ? 'Cars to rent' : l10n.t('ride.available_rides'),
+                style: AppTextStyles.h4,
+              ),
               const SizedBox(height: 12),
-              if (_isLoading)
+              if (_showRent)
+                const _RentalCarsSection()
+              else if (_isLoading)
                 const AppShimmer(
                   child: SizedBox(
                     height: 118,
@@ -1333,6 +1344,220 @@ class _QuickRide extends StatelessWidget {
       ),
     );
   }
+}
+
+class _RideModeTabs extends StatelessWidget {
+  final bool showRent;
+  final ValueChanged<bool> onChanged;
+
+  const _RideModeTabs({required this.showRent, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: AppSpacing.shadowSm,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _RideModeTab(
+              label: context.l10n.t('ride.title'),
+              icon: Icons.local_taxi_rounded,
+              isSelected: !showRent,
+              onTap: () => onChanged(false),
+            ),
+          ),
+          Expanded(
+            child: _RideModeTab(
+              label: 'Rent',
+              icon: Icons.car_rental_rounded,
+              isSelected: showRent,
+              onTap: () => onChanged(true),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RideModeTab extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _RideModeTab({
+    required this.label,
+    required this.icon,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 11),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.ride : Colors.transparent,
+          borderRadius: BorderRadius.circular(11),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? AppColors.white : AppColors.grey,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: isSelected ? AppColors.white : AppColors.grey,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RentalCarsSection extends StatelessWidget {
+  const _RentalCarsSection();
+
+  static const _cars = [
+    _RentalCarOption(
+      name: 'Toyota Yaris',
+      type: 'Economy',
+      pricePerDay: 6500,
+      seats: 5,
+      transmission: 'Automatic',
+      icon: Icons.directions_car_rounded,
+    ),
+    _RentalCarOption(
+      name: 'Hyundai Tucson',
+      type: 'SUV',
+      pricePerDay: 12000,
+      seats: 5,
+      transmission: 'Automatic',
+      icon: Icons.airport_shuttle_rounded,
+    ),
+    _RentalCarOption(
+      name: 'Toyota Hiace',
+      type: 'Van',
+      pricePerDay: 18000,
+      seats: 12,
+      transmission: 'Manual',
+      icon: Icons.directions_bus_filled_rounded,
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: _cars
+          .map(
+            (car) => GestureDetector(
+              onTap: () {
+                AnalyticsService.instance.track(
+                  AnalyticsEvents.entityOpened,
+                  properties: {
+                    'module': 'ride',
+                    'entity_type': 'rental_car',
+                    'entity_id': car.name,
+                    'source': 'ride_rent_tab',
+                  },
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Rental request started for ${car.name}'),
+                  ),
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: AppSpacing.shadowSm,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: AppColors.rideBg,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(car.icon, color: AppColors.ride, size: 28),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(car.name, style: AppTextStyles.labelLarge),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${car.type} • ${car.seats} seats • ${car.transmission}',
+                            style: AppTextStyles.caption,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'DJF${car.pricePerDay}',
+                          style: AppTextStyles.labelMedium.copyWith(
+                            color: AppColors.ride,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text('/ day', style: AppTextStyles.caption),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _RentalCarOption {
+  final String name;
+  final String type;
+  final int pricePerDay;
+  final int seats;
+  final String transmission;
+  final IconData icon;
+
+  const _RentalCarOption({
+    required this.name,
+    required this.type,
+    required this.pricePerDay,
+    required this.seats,
+    required this.transmission,
+    required this.icon,
+  });
 }
 
 class _PlacePickerStatus extends StatelessWidget {

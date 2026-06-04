@@ -7,6 +7,8 @@ import { getParam } from '../utils/http';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { signAccessToken } from '../utils/jwt';
 import { parseFullName, sanitizeUser, toNumber } from '../utils/serializers';
+import { supabaseAdmin } from '../services/supabase-admin.service';
+import { env } from '../config/env';
 
 const router = Router();
 
@@ -75,6 +77,24 @@ router.post(
     }
 
     const parsedName = parseFullName(name);
+    
+    // Create user in Supabase Auth with metadata
+    const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
+      email: email.toLowerCase(),
+      password,
+      options: {
+        emailRedirectTo: `${env.PUBLIC_BASE_URL}/auth/confirm`,
+        data: {
+          displayName: [parsedName.firstName, parsedName.lastName].filter(Boolean).join(' '),
+          phone: phone?.trim() || null,
+        },
+      },
+    });
+
+    if (authError) {
+      return res.status(400).json({ error: authError.message });
+    }
+
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
@@ -91,8 +111,9 @@ router.post(
     });
 
     res.status(201).json({
-      ...sanitizeUser(user),
-      token: signAccessToken({ userId: user.id, email: user.email }),
+      message: 'Please check your email to verify your account before signing in.',
+      email: user.email,
+      requiresEmailVerification: true,
     });
   }),
 );
@@ -118,6 +139,15 @@ router.post(
 
     if (!user || !(await verifyPassword(password, user.passwordHash))) {
       return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    // Check if user is banned
+    if (user.banned) {
+      return res.status(403).json({ 
+        error: 'Your account has been suspended.',
+        banReason: user.banReason,
+        banned: true,
+      });
     }
 
     const safeUser = sanitizeUser(user);

@@ -25,6 +25,43 @@ function readJsonStringArray(value) {
         .map((entry) => (typeof entry === 'string' ? entry : null))
         .filter((entry) => entry != null);
 }
+function serializeRestaurantMenu(restaurant) {
+    const hasCategories = restaurant.menuCategories != null && restaurant.menuCategories.length > 0;
+    const categories = hasCategories
+        ? restaurant.menuCategories
+        : [{ id: 'menu', name: 'Menu', sortOrder: 9999 }];
+    const knownCategoryIds = new Set(categories.map((category) => category.id));
+    const serializeItem = (item) => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        price: (0, serializers_1.toNumber)(item.price),
+        imageUrl: item.imageUrl,
+        isPopular: item.isPopular,
+        isAvailable: item.isAvailable,
+        customizations: item.customizationsJson ?? [],
+    });
+    const menu = categories
+        .map((category) => ({
+        name: category.name,
+        sortOrder: category.sortOrder,
+        items: restaurant.menuItems
+            .filter((item) => (hasCategories ? item.categoryId === category.id : true))
+            .map(serializeItem),
+    }))
+        .filter((category) => category.items.length > 0);
+    const uncategorizedItems = restaurant.menuItems.filter((item) => item.categoryId == null || !knownCategoryIds.has(item.categoryId));
+    if (hasCategories && uncategorizedItems.length > 0) {
+        menu.push({
+            name: 'Menu',
+            sortOrder: 9999,
+            items: uncategorizedItems.map(serializeItem),
+        });
+    }
+    return menu
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map(({ name, items }) => ({ name, items }));
+}
 function toFiniteNumber(value) {
     if (typeof value === 'number' && Number.isFinite(value)) {
         return value;
@@ -856,6 +893,9 @@ router.get('/home-service-providers/:id', (0, async_handler_1.asyncHandler)(asyn
 router.get('/restaurants', (0, async_handler_1.asyncHandler)(async (_req, res) => {
     const restaurants = await db_1.prisma.restaurant.findMany({
         include: {
+            menuCategories: {
+                orderBy: { sortOrder: 'asc' },
+            },
             menuItems: true,
         },
         orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
@@ -875,21 +915,7 @@ router.get('/restaurants', (0, async_handler_1.asyncHandler)(async (_req, res) =
             isOpen: restaurant.isOpen,
             distance: (0, serializers_1.toNumber)(restaurant.distanceKm),
             tags,
-            menu: [
-                {
-                    name: 'Menu',
-                    items: restaurant.menuItems.map((item) => ({
-                        id: item.id,
-                        name: item.name,
-                        description: item.description,
-                        price: (0, serializers_1.toNumber)(item.price),
-                        imageUrl: item.imageUrl,
-                        isPopular: item.isPopular,
-                        isAvailable: item.isAvailable,
-                        customizations: item.customizationsJson ?? [],
-                    })),
-                },
-            ],
+            menu: serializeRestaurantMenu(restaurant),
         };
     }));
 }));
@@ -898,6 +924,9 @@ router.get('/restaurants/:id', (0, async_handler_1.asyncHandler)(async (req, res
     const restaurant = await db_1.prisma.restaurant.findUnique({
         where: { id: restaurantId },
         include: {
+            menuCategories: {
+                orderBy: { sortOrder: 'asc' },
+            },
             menuItems: true,
         },
     });
@@ -918,21 +947,7 @@ router.get('/restaurants/:id', (0, async_handler_1.asyncHandler)(async (req, res
         isOpen: restaurant.isOpen,
         distance: (0, serializers_1.toNumber)(restaurant.distanceKm),
         tags,
-        menu: [
-            {
-                name: 'Menu',
-                items: restaurant.menuItems.map((item) => ({
-                    id: item.id,
-                    name: item.name,
-                    description: item.description,
-                    price: (0, serializers_1.toNumber)(item.price),
-                    imageUrl: item.imageUrl,
-                    isPopular: item.isPopular,
-                    isAvailable: item.isAvailable,
-                    customizations: item.customizationsJson ?? [],
-                })),
-            },
-        ],
+        menu: serializeRestaurantMenu(restaurant),
     });
 }));
 router.get('/hotels', (0, async_handler_1.asyncHandler)(async (_req, res) => {
@@ -1089,6 +1104,42 @@ router.get('/health-services/tests', (0, async_handler_1.asyncHandler)(async (re
         imageUrl: test.imageUrl,
         active: test.active,
         sortOrder: test.sortOrder,
+    })));
+}));
+router.get('/health-services/physiotherapy', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const categoryId = req.query.categoryId?.toString() || 'hsc-physiotherapy';
+    const services = await db_1.prisma.labTest.findMany({
+        where: {
+            active: true,
+            categoryId,
+        },
+        orderBy: { sortOrder: 'asc' },
+        include: {
+            category: {
+                select: {
+                    id: true,
+                    name: true,
+                    iconKey: true,
+                    colorHex: true,
+                },
+            },
+        },
+    });
+    res.json(services.map((service) => ({
+        id: service.id,
+        categoryId: service.categoryId,
+        name: service.name,
+        description: service.description,
+        fullDescription: service.fullDescription,
+        price: service.price,
+        originalPrice: service.originalPrice,
+        durationLabel: service.durationLabel,
+        imageUrl: service.imageUrl,
+        active: service.active,
+        sortOrder: service.sortOrder,
+        targetArea: service.preparationInstructions,
+        sessionType: service.sampleType,
+        therapistQualification: service.category.name,
     })));
 }));
 exports.default = router;

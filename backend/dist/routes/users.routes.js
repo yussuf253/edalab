@@ -9,6 +9,8 @@ const http_1 = require("../utils/http");
 const password_1 = require("../utils/password");
 const jwt_1 = require("../utils/jwt");
 const serializers_1 = require("../utils/serializers");
+const supabase_admin_service_1 = require("../services/supabase-admin.service");
+const env_1 = require("../config/env");
 const router = (0, express_1.Router)();
 const profileSchema = zod_1.z.object({
     email: zod_1.z.string().email(),
@@ -66,6 +68,21 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
         return res.status(409).json({ error: 'An account with this email already exists.' });
     }
     const parsedName = (0, serializers_1.parseFullName)(name);
+    // Create user in Supabase Auth with metadata
+    const { data: authData, error: authError } = await supabase_admin_service_1.supabaseAdmin.auth.signUp({
+        email: email.toLowerCase(),
+        password,
+        options: {
+            emailRedirectTo: `${env_1.env.PUBLIC_BASE_URL}/auth/confirm`,
+            data: {
+                displayName: [parsedName.firstName, parsedName.lastName].filter(Boolean).join(' '),
+                phone: phone?.trim() || null,
+            },
+        },
+    });
+    if (authError) {
+        return res.status(400).json({ error: authError.message });
+    }
     const user = await db_1.prisma.user.create({
         data: {
             email: email.toLowerCase(),
@@ -81,8 +98,9 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
         },
     });
     res.status(201).json({
-        ...(0, serializers_1.sanitizeUser)(user),
-        token: (0, jwt_1.signAccessToken)({ userId: user.id, email: user.email }),
+        message: 'Please check your email to verify your account before signing in.',
+        email: user.email,
+        requiresEmailVerification: true,
     });
 }));
 router.post('/login', (0, async_handler_1.asyncHandler)(async (req, res) => {
@@ -102,6 +120,14 @@ router.post('/login', (0, async_handler_1.asyncHandler)(async (req, res) => {
     });
     if (!user || !(await (0, password_1.verifyPassword)(password, user.passwordHash))) {
         return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+    // Check if user is banned
+    if (user.banned) {
+        return res.status(403).json({
+            error: 'Your account has been suspended.',
+            banReason: user.banReason,
+            banned: true,
+        });
     }
     const safeUser = (0, serializers_1.sanitizeUser)(user);
     const token = (0, jwt_1.signAccessToken)({ userId: user.id, email: user.email });

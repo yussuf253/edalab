@@ -22,6 +22,11 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+const confirmSchema = z.object({
+  token: z.string().trim().min(1),
+  email: z.string().email(),
+});
+
 router.post(
   '/register',
   asyncHandler(async (req, res) => {
@@ -35,12 +40,18 @@ router.post(
       return res.status(409).json({ error: 'An account with this email already exists.' });
     }
 
-    // Create user in Supabase Auth (handles email verification)
+    const name = parseFullName(body.name);
+    
+    // Create user in Supabase Auth with metadata (handles email verification)
     const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
       email,
       password: body.password,
       options: {
         emailRedirectTo: `${env.PUBLIC_BASE_URL}/auth/confirm`,
+        data: {
+          displayName: [name.firstName, name.lastName].filter(Boolean).join(' '),
+          phone: body.phone?.trim() || null,
+        },
       },
     });
 
@@ -48,7 +59,6 @@ router.post(
       return res.status(400).json({ error: authError.message });
     }
 
-    const name = parseFullName(body.name);
     const user = await prisma.user.create({
       data: {
         email,
@@ -64,9 +74,11 @@ router.post(
       },
     });
 
+    // Return message about email verification - don't return token yet
     res.status(201).json({
-      user: sanitizeUser(user),
-      token: signAccessToken({ userId: user.id, email: user.email }),
+      message: 'Please check your email to verify your account before signing in.',
+      email: user.email,
+      requiresEmailVerification: true,
     });
   }),
 );
@@ -88,10 +100,75 @@ router.post(
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
+    // Check if user is banned
+    if (user.banned) {
+      return res.status(403).json({ 
+        error: 'Your account has been suspended.',
+        banReason: user.banReason,
+        banned: true,
+      });
+    }
+
     const safeUser = sanitizeUser(user);
     const token = signAccessToken({ userId: user.id, email: user.email });
 
     res.json({ token, user: safeUser });
+  }),
+);
+
+// Handle email confirmation redirect from Supabase
+router.post(
+  '/confirm',
+  asyncHandler(async (req, res) => {
+    const body = confirmSchema.parse(req.body);
+    const { token, email } = body;
+
+    // Verify the token with Supabase
+    const { data: authData, error: authError } = await supabaseAdmin.auth.verifyOtp({
+      token,
+      email,
+      type: 'signup',
+    });
+
+    if (authError || !authData.user) {
+      return res.status(400).json({ 
+        error: 'Invalid or expired verification link.',
+        verified: false,
+      });
+    }
+
+    // Get the user from Prisma
+    const user = await prisma.user.findUnique({
+      where: { email: authData.user.email },
+      include: {
+        addresses: {
+          orderBy: [{ isDefault: 'desc' }, { updatedAt: 'desc' }],
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    // Check if user is banned
+    if (user.banned) {
+      return res.status(403).json({ 
+        error: 'Your account has been suspended.',
+        banReason: user.banReason,
+        banned: true,
+      });
+    }
+
+    const safeUser = sanitizeUser(user);
+    const jwtToken = signAccessToken({ userId: user.id, email: user.email });
+
+    res.json({
+      message: 'Email verified successfully!',
+      verified: true,
+      user: safeUser,
+      token: jwtToken,
+    });
   }),
 );
 

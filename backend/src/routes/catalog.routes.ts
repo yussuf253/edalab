@@ -49,6 +49,70 @@ function readJsonStringArray(value: unknown): string[] {
     .filter((entry): entry is string => entry != null);
 }
 
+function serializeRestaurantMenu(restaurant: {
+  menuCategories?: Array<{ id: string; name: string; sortOrder: number }>;
+  menuItems: Array<{
+    id: string;
+    categoryId?: string | null;
+    name: string;
+    description: string | null;
+    price: Parameters<typeof toNumber>[0];
+    imageUrl: string | null;
+    isPopular: boolean;
+    isAvailable: boolean;
+    customizationsJson: unknown;
+  }>;
+}) {
+  const hasCategories =
+    restaurant.menuCategories != null && restaurant.menuCategories.length > 0;
+  const categories = hasCategories
+    ? restaurant.menuCategories!
+    : [{ id: 'menu', name: 'Menu', sortOrder: 9999 }];
+  const knownCategoryIds = new Set(categories.map((category) => category.id));
+  const categoryIdForItem = (item: (typeof restaurant.menuItems)[number]) =>
+    'categoryId' in item ? item.categoryId ?? null : null;
+  const serializeItem = (item: (typeof restaurant.menuItems)[number]) => ({
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    price: toNumber(item.price),
+    imageUrl: item.imageUrl,
+    isPopular: item.isPopular,
+    isAvailable: item.isAvailable,
+    customizations: item.customizationsJson ?? [],
+  });
+
+  const menu = categories
+    .map((category) => ({
+      name: category.name,
+      sortOrder: category.sortOrder,
+      items: restaurant.menuItems
+        .filter((item) =>
+          hasCategories ? categoryIdForItem(item) === category.id : true,
+        )
+        .map(serializeItem),
+    }))
+    .filter((category) => category.items.length > 0);
+
+  const uncategorizedItems = restaurant.menuItems.filter(
+    (item) =>
+      categoryIdForItem(item) == null ||
+      !knownCategoryIds.has(categoryIdForItem(item)!),
+  );
+
+  if (hasCategories && uncategorizedItems.length > 0) {
+    menu.push({
+      name: 'Menu',
+      sortOrder: 9999,
+      items: uncategorizedItems.map(serializeItem),
+    });
+  }
+
+  return menu
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map(({ name, items }) => ({ name, items }));
+}
+
 function toFiniteNumber(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return value;
@@ -1103,6 +1167,9 @@ router.get(
   asyncHandler(async (_req, res) => {
     const restaurants = await prisma.restaurant.findMany({
       include: {
+        menuCategories: {
+          orderBy: { sortOrder: 'asc' },
+        },
         menuItems: true,
       },
       orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
@@ -1124,21 +1191,7 @@ router.get(
           isOpen: restaurant.isOpen,
           distance: toNumber(restaurant.distanceKm),
           tags,
-          menu: [
-            {
-              name: 'Menu',
-              items: restaurant.menuItems.map((item) => ({
-                id: item.id,
-                name: item.name,
-                description: item.description,
-                price: toNumber(item.price),
-                imageUrl: item.imageUrl,
-                isPopular: item.isPopular,
-                isAvailable: item.isAvailable,
-                customizations: item.customizationsJson ?? [],
-              })),
-            },
-          ],
+          menu: serializeRestaurantMenu(restaurant),
         };
       }),
     );
@@ -1152,6 +1205,9 @@ router.get(
     const restaurant = await prisma.restaurant.findUnique({
       where: { id: restaurantId },
       include: {
+        menuCategories: {
+          orderBy: { sortOrder: 'asc' },
+        },
         menuItems: true,
       },
     });
@@ -1174,21 +1230,7 @@ router.get(
       isOpen: restaurant.isOpen,
       distance: toNumber(restaurant.distanceKm),
       tags,
-      menu: [
-        {
-          name: 'Menu',
-          items: restaurant.menuItems.map((item) => ({
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            price: toNumber(item.price),
-            imageUrl: item.imageUrl,
-            isPopular: item.isPopular,
-            isAvailable: item.isAvailable,
-            customizations: item.customizationsJson ?? [],
-          })),
-        },
-      ],
+      menu: serializeRestaurantMenu(restaurant),
     });
   }),
 );
@@ -1384,6 +1426,47 @@ router.get('/health-services/tests', asyncHandler(async (req, res) => {
       imageUrl: test.imageUrl,
       active: test.active,
       sortOrder: test.sortOrder,
+    })),
+  );
+}));
+
+router.get('/health-services/physiotherapy', asyncHandler(async (req, res) => {
+  const categoryId = req.query.categoryId?.toString() || 'hsc-physiotherapy';
+
+  const services = await prisma.labTest.findMany({
+    where: {
+      active: true,
+      categoryId,
+    },
+    orderBy: { sortOrder: 'asc' },
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+          iconKey: true,
+          colorHex: true,
+        },
+      },
+    },
+  });
+
+  res.json(
+    services.map((service) => ({
+      id: service.id,
+      categoryId: service.categoryId,
+      name: service.name,
+      description: service.description,
+      fullDescription: service.fullDescription,
+      price: service.price,
+      originalPrice: service.originalPrice,
+      durationLabel: service.durationLabel,
+      imageUrl: service.imageUrl,
+      active: service.active,
+      sortOrder: service.sortOrder,
+      targetArea: service.preparationInstructions,
+      sessionType: service.sampleType,
+      therapistQualification: service.category.name,
     })),
   );
 }));

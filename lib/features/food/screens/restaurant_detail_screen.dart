@@ -691,6 +691,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
       quantity: 1,
       moduleType: 'food',
       brand: restaurantName,
+      imageUrl: item.imageUrl,
     );
     context.read<CartProvider>().addItem(cartItem);
     AnalyticsService.instance.track(
@@ -894,10 +895,23 @@ class _MenuItemCard extends StatelessWidget {
                     color: AppColors.extraLightGrey,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    Icons.fastfood_rounded,
-                    color: AppColors.food.withValues(alpha: 0.3),
-                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child:
+                      item.imageUrl != null && item.imageUrl!.trim().isNotEmpty
+                      ? Image.network(
+                          item.imageUrl!,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => Icon(
+                            Icons.fastfood_rounded,
+                            color: AppColors.food.withValues(alpha: 0.3),
+                          ),
+                        )
+                      : Icon(
+                          Icons.fastfood_rounded,
+                          color: AppColors.food.withValues(alpha: 0.3),
+                        ),
                 ),
                 Positioned(
                   bottom: -8,

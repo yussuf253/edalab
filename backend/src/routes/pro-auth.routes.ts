@@ -29,6 +29,11 @@ const proAccountLoginSchema = z.object({
   password: z.string().min(1),
 });
 
+const confirmSchema = z.object({
+  token: z.string().trim().min(1),
+  email: z.string().email(),
+});
+
 const proProfileSetupSchema = z.object({
   type: z.nativeEnum(ProProfileType),
   activeModules: z.array(z.nativeEnum(ProModule)).min(1),
@@ -159,12 +164,16 @@ router.post(
         .json({ error: 'A pro account with this email already exists.' });
     }
 
-    // Create user in Supabase Auth (handles email verification)
+    // Create user in Supabase Auth with metadata (handles email verification)
     const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
       email,
       password: body.password,
       options: {
         emailRedirectTo: `${env.PUBLIC_BASE_URL}/auth/confirm`,
+        data: {
+          displayName: body.fullName.trim(),
+          phone: body.phone?.trim() || null,
+        },
       },
     });
 
@@ -181,8 +190,11 @@ router.post(
       },
     });
 
+    // Return message about email verification - don't return account data yet
     res.status(201).json({
-      account: serializeProAccount(account),
+      message: 'Please check your email to verify your account before signing in.',
+      email: account.email,
+      requiresEmailVerification: true,
     });
   }),
 );
@@ -201,6 +213,15 @@ router.post(
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
+    // Check if account is banned
+    if (account.banned) {
+      return res.status(403).json({ 
+        error: 'Your account has been suspended.',
+        banReason: account.banReason,
+        banned: true,
+      });
+    }
+
     const token = signAccessToken({
       userId: account.id,
       email: account.email,
@@ -211,6 +232,53 @@ router.post(
       token,
       account: serializeProAccount(account),
       profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
+    });
+  }),
+);
+
+// Handle email confirmation redirect from Supabase
+router.post(
+  '/confirm',
+  asyncHandler(async (req, res) => {
+    const body = confirmSchema.parse(req.body);
+    const { token, email } = body;
+
+    // Verify the token with Supabase
+    const { data: authData, error: authError } = await supabaseAdmin.auth.verifyOtp({
+      token,
+      email,
+      type: 'signup',
+    });
+
+    if (authError || !authData.user) {
+      return res.status(400).json({ 
+        error: 'Invalid or expired verification link.',
+        verified: false,
+      });
+    }
+
+    // Get the account from Prisma
+    const account = await prisma.proAccount.findUnique({
+      where: { email: authData.user.email },
+      include: { proProfile: true },
+    });
+
+    if (!account) {
+      return res.status(404).json({ error: 'Account not found.' });
+    }
+
+    const tokenResult = signAccessToken({
+      userId: account.id,
+      email: account.email,
+      accountType: 'pro',
+    });
+
+    res.json({
+      message: 'Email verified successfully!',
+      verified: true,
+      account: serializeProAccount(account),
+      profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
+      token: tokenResult,
     });
   }),
 );

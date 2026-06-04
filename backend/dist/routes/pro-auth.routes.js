@@ -23,6 +23,10 @@ const proAccountLoginSchema = zod_1.z.object({
     email: zod_1.z.string().trim().email(),
     password: zod_1.z.string().min(1),
 });
+const confirmSchema = zod_1.z.object({
+    token: zod_1.z.string().trim().min(1),
+    email: zod_1.z.string().email(),
+});
 const proProfileSetupSchema = zod_1.z.object({
     type: zod_1.z.nativeEnum(client_1.ProProfileType),
     activeModules: zod_1.z.array(zod_1.z.nativeEnum(client_1.ProModule)).min(1),
@@ -111,12 +115,16 @@ router.post('/register', (0, async_handler_1.asyncHandler)(async (req, res) => {
             .status(409)
             .json({ error: 'A pro account with this email already exists.' });
     }
-    // Create user in Supabase Auth (handles email verification)
+    // Create user in Supabase Auth with metadata (handles email verification)
     const { data: authData, error: authError } = await supabase_admin_service_1.supabaseAdmin.auth.signUp({
         email,
         password: body.password,
         options: {
             emailRedirectTo: `${env_1.env.PUBLIC_BASE_URL}/auth/confirm`,
+            data: {
+                displayName: body.fullName.trim(),
+                phone: body.phone?.trim() || null,
+            },
         },
     });
     if (authError) {
@@ -130,8 +138,11 @@ router.post('/register', (0, async_handler_1.asyncHandler)(async (req, res) => {
             passwordHash: await (0, password_1.hashPassword)(body.password),
         },
     });
+    // Return message about email verification - don't return account data yet
     res.status(201).json({
-        account: serializeProAccount(account),
+        message: 'Please check your email to verify your account before signing in.',
+        email: account.email,
+        requiresEmailVerification: true,
     });
 }));
 router.post('/login', (0, async_handler_1.asyncHandler)(async (req, res) => {
@@ -144,6 +155,14 @@ router.post('/login', (0, async_handler_1.asyncHandler)(async (req, res) => {
     if (!account || !(await (0, password_1.verifyPassword)(body.password, account.passwordHash))) {
         return res.status(401).json({ error: 'Invalid email or password.' });
     }
+    // Check if account is banned
+    if (account.banned) {
+        return res.status(403).json({
+            error: 'Your account has been suspended.',
+            banReason: account.banReason,
+            banned: true,
+        });
+    }
     const token = (0, jwt_1.signAccessToken)({
         userId: account.id,
         email: account.email,
@@ -153,6 +172,43 @@ router.post('/login', (0, async_handler_1.asyncHandler)(async (req, res) => {
         token,
         account: serializeProAccount(account),
         profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
+    });
+}));
+// Handle email confirmation redirect from Supabase
+router.post('/confirm', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const body = confirmSchema.parse(req.body);
+    const { token, email } = body;
+    // Verify the token with Supabase
+    const { data: authData, error: authError } = await supabase_admin_service_1.supabaseAdmin.auth.verifyOtp({
+        token,
+        email,
+        type: 'signup',
+    });
+    if (authError || !authData.user) {
+        return res.status(400).json({
+            error: 'Invalid or expired verification link.',
+            verified: false,
+        });
+    }
+    // Get the account from Prisma
+    const account = await db_1.prisma.proAccount.findUnique({
+        where: { email: authData.user.email },
+        include: { proProfile: true },
+    });
+    if (!account) {
+        return res.status(404).json({ error: 'Account not found.' });
+    }
+    const tokenResult = (0, jwt_1.signAccessToken)({
+        userId: account.id,
+        email: account.email,
+        accountType: 'pro',
+    });
+    res.json({
+        message: 'Email verified successfully!',
+        verified: true,
+        account: serializeProAccount(account),
+        profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
+        token: tokenResult,
     });
 }));
 router.get('/me', auth_1.requireAuth, (0, async_handler_1.asyncHandler)(async (req, res) => {

@@ -530,11 +530,14 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
       ),
       GoRoute(
         path: '/payment/failed',
-        builder: (context, state) => PaymentFailureScreen(
-          paymentData: state.extra is Map<String, dynamic>
-              ? state.extra as Map<String, dynamic>
-              : null,
-        ),
+        builder: (context, state) {
+          final extra = state.extra is Map<String, dynamic>
+              ? Map<String, dynamic>.from(state.extra as Map<String, dynamic>)
+              : <String, dynamic>{};
+          return PaymentFailureScreen(
+            paymentData: {...state.uri.queryParameters, ...extra},
+          );
+        },
       ),
       GoRoute(
         path: '/payment/webview',

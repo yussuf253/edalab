@@ -32,19 +32,19 @@ class _DoctorScreenState extends State<DoctorScreen> {
   final TextEditingController _searchController = TextEditingController();
   final List<_HealthServiceCategory> _categories = const [
     _HealthServiceCategory(
-      id: 'lab-tests',
+      id: 'hsc-lab-tests',
       labelKey: 'doctor.lab_tests',
       icon: Icons.science_rounded,
       color: Color(0xFF3B82F6),
     ),
     _HealthServiceCategory(
-      id: 'consultation',
+      id: 'hsc-consultation',
       labelKey: 'doctor.consultation',
       icon: Icons.medical_services_rounded,
       color: AppColors.doctor,
     ),
     _HealthServiceCategory(
-      id: 'physiotherapy',
+      id: 'hsc-physiotherapy',
       labelKey: 'doctor.physiotherapy',
       icon: Icons.accessibility_new_rounded,
       color: AppColors.secondary,
@@ -54,7 +54,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
   String _searchQuery = '';
 
   void _openService(_HealthServiceCategory category) {
-    if (category.id == 'lab-tests') {
+    if (category.id == 'hsc-lab-tests') {
       context.push(
         '/doctor/lab-tests',
         extra: {
@@ -62,7 +62,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
           'label': context.l10n.t(category.labelKey),
         },
       );
-    } else if (category.id == 'physiotherapy') {
+    } else if (category.id == 'hsc-physiotherapy') {
       context.push(
         '/doctor/physiotherapy',
         extra: {
@@ -73,8 +73,11 @@ class _DoctorScreenState extends State<DoctorScreen> {
     } else {
       // For consultation and other services, navigate to professionals
       context.push(
-        '/doctor/professionals/${category.id}',
-        extra: {'label': context.l10n.t(category.labelKey)},
+        '/doctor/professionals/consultation',
+        extra: {
+          'label': context.l10n.t(category.labelKey),
+          'keywords': ['doctor', 'consultation', 'medical', 'general'],
+        },
       );
     }
   }

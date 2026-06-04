@@ -97,14 +97,13 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
       return NavigationDecision.navigate;
     }
 
-    // Check if this is our success or failure URL
-    if (url.startsWith(widget.successUrl)) {
+    if (_isSuccessUrl(url)) {
       _handlePaymentSuccess(url);
 
       return NavigationDecision.prevent;
     }
 
-    if (url.startsWith(widget.failureUrl)) {
+    if (_isFailureUrl(url)) {
       _handlePaymentFailure(url);
 
       return NavigationDecision.prevent;
@@ -116,11 +115,33 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
   }
 
   void _checkPaymentResult(String url) {
-    if (url.startsWith(widget.successUrl)) {
+    if (_isSuccessUrl(url)) {
       _handlePaymentSuccess(url);
-    } else if (url.startsWith(widget.failureUrl)) {
+    } else if (_isFailureUrl(url)) {
       _handlePaymentFailure(url);
     }
+  }
+
+  bool _isSuccessUrl(String url) => _matchesPaymentResultUrl(
+    url,
+    expectedUrl: widget.successUrl,
+    resultPath: '/payment/success',
+  );
+
+  bool _isFailureUrl(String url) => _matchesPaymentResultUrl(
+    url,
+    expectedUrl: widget.failureUrl,
+    resultPath: '/payment/failed',
+  );
+
+  bool _matchesPaymentResultUrl(
+    String url, {
+    required String expectedUrl,
+    required String resultPath,
+  }) {
+    if (url.startsWith(expectedUrl)) return true;
+    final uri = Uri.tryParse(url);
+    return uri != null && uri.path == resultPath;
   }
 
   void _handlePaymentSuccess(String url) {

@@ -412,8 +412,8 @@ class _PromoBanner extends StatelessWidget {
         ],
         image: const DecorationImage(
           image: AssetImage('assets/images/banners/banner.png'),
-          fit: BoxFit.fitWidth,
-          alignment: Alignment.topCenter,
+          fit: BoxFit.cover,
+          alignment: Alignment.center,
         ),
       ),
     );
@@ -761,7 +761,7 @@ class _SpecialOffers extends StatelessWidget {
       _OfferData(
         '40% OFF',
         'Fresh Groceries',
-        'Free delivery on orders above \$30',
+        'Free delivery on orders above DJF 30',
         AppColors.grocery,
         Icons.local_grocery_store_rounded,
         moduleId: 'grocery',
@@ -940,6 +940,8 @@ class _PopularRestaurants extends StatelessWidget {
                                 ),
                                 child: Image.network(
                                   restaurant.imageUrl!,
+                                  width: double.infinity,
+                                  height: double.infinity,
                                   fit: BoxFit.cover,
                                   errorBuilder: (_, _, _) {
                                     return Center(

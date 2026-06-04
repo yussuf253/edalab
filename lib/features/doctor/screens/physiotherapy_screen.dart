@@ -41,8 +41,11 @@ class _PhysiotherapyScreenState extends State<PhysiotherapyScreen> {
 
   Future<void> _loadServices() async {
     try {
+      final categoryQuery = _categoryId == null || _categoryId!.trim().isEmpty
+          ? ''
+          : '?categoryId=${Uri.encodeComponent(_categoryId!)}';
       final response = await ApiClient.get(
-        '/catalog/health-services/physiotherapy?categoryId=$_categoryId',
+        '/catalog/health-services/physiotherapy$categoryQuery',
         forceRefresh: true,
       );
 
@@ -264,7 +267,7 @@ class _ServiceCard extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '${service.price.toStringAsFixed(0)} DZD',
+                        'DJF ${service.price.toStringAsFixed(0)}',
                         style: AppTextStyles.labelMedium.copyWith(
                           fontWeight: FontWeight.w800,
                           color: AppColors.primary,
@@ -273,7 +276,7 @@ class _ServiceCard extends StatelessWidget {
                       if (hasDiscount) ...[
                         const SizedBox(width: 6),
                         Text(
-                          '${service.originalPrice!.toStringAsFixed(0)} DZD',
+                          'DJF ${service.originalPrice!.toStringAsFixed(0)}',
                           style: AppTextStyles.caption.copyWith(
                             color: AppColors.grey,
                             decoration: TextDecoration.lineThrough,
@@ -500,7 +503,7 @@ class _ServiceDetailsBottomSheet extends StatelessWidget {
                                 Row(
                                   children: [
                                     Text(
-                                      '${service.price.toStringAsFixed(0)} DZD',
+                                      'DJF ${service.price.toStringAsFixed(0)}',
                                       style: AppTextStyles.h4.copyWith(
                                         fontWeight: FontWeight.w800,
                                         color: AppColors.primary,
@@ -509,7 +512,7 @@ class _ServiceDetailsBottomSheet extends StatelessWidget {
                                     if (hasDiscount) ...[
                                       const SizedBox(width: 8),
                                       Text(
-                                        '${service.originalPrice!.toStringAsFixed(0)} DZD',
+                                        'DJF ${service.originalPrice!.toStringAsFixed(0)}',
                                         style: AppTextStyles.bodySmall.copyWith(
                                           color: AppColors.grey,
                                           decoration:

@@ -526,6 +526,9 @@ if (
     const responseMsg =
       callbackData.responseMsg?.toString();
 
+    const procDescription =
+      callbackData.procDescription?.toString();
+
     const state =
       callbackData.state?.toString();
 
@@ -598,10 +601,21 @@ if (
       );
     }
 
+    const failureMessage =
+      responseMsg ||
+      procDescription ||
+      (state ? `Payment ${state.toLowerCase()}` : null) ||
+      'Payment failed';
+    const failureParams = new URLSearchParams({
+      message: failureMessage,
+      status: paymentStatus,
+      orderId: order.id,
+    });
+    if (responseCode) failureParams.set('code', responseCode);
+    if (state) failureParams.set('state', state);
+
     return res.redirect(
-      `${webOrigin}/payment/failed?message=${encodeURIComponent(
-        responseMsg || 'Payment failed',
-      )}`,
+      `${webOrigin}/payment/failed?${failureParams.toString()}`,
     );
   }),
 );
