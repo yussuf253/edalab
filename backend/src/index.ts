@@ -44,7 +44,7 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json({ limit: '8mb' }));
+app.use(express.json({ limit: '50mb' }));
 app.get('/uploads/supabase/:bucket/*', async (req, res) => {
   const bucket = (req.params.bucket || '').trim();
   const params = req.params as unknown as Record<
