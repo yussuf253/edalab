@@ -169,10 +169,10 @@ router.post('/upload', (0, async_handler_1.asyncHandler)(async (req, res) => {
     if (!fileBuffer || fileBuffer.length === 0) {
         return res.status(400).json({ error: 'Invalid image payload.' });
     }
-    if (fileBuffer.length > 6 * 1024 * 1024) {
+    if (fileBuffer.length > 20 * 1024 * 1024) {
         return res
             .status(413)
-            .json({ error: 'Image is too large. Max size is 6MB.' });
+            .json({ error: 'Image is too large. Max size is 20MB.' });
     }
     const extFromMime = fileExtensionFromMimeType(body.mimeType);
     const extFromName = fileExtensionFromName(body.fileName);

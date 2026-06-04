@@ -31,6 +31,7 @@ function serializeRestaurantMenu(restaurant) {
         ? restaurant.menuCategories
         : [{ id: 'menu', name: 'Menu', sortOrder: 9999 }];
     const knownCategoryIds = new Set(categories.map((category) => category.id));
+    const categoryIdForItem = (item) => 'categoryId' in item ? item.categoryId ?? null : null;
     const serializeItem = (item) => ({
         id: item.id,
         name: item.name,
@@ -46,11 +47,12 @@ function serializeRestaurantMenu(restaurant) {
         name: category.name,
         sortOrder: category.sortOrder,
         items: restaurant.menuItems
-            .filter((item) => (hasCategories ? item.categoryId === category.id : true))
+            .filter((item) => hasCategories ? categoryIdForItem(item) === category.id : true)
             .map(serializeItem),
     }))
         .filter((category) => category.items.length > 0);
-    const uncategorizedItems = restaurant.menuItems.filter((item) => item.categoryId == null || !knownCategoryIds.has(item.categoryId));
+    const uncategorizedItems = restaurant.menuItems.filter((item) => categoryIdForItem(item) == null ||
+        !knownCategoryIds.has(categoryIdForItem(item)));
     if (hasCategories && uncategorizedItems.length > 0) {
         menu.push({
             name: 'Menu',
