@@ -17,6 +17,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../widgets/ride_route_preview.dart';
+import '../../car_rental/services/car_rental_service.dart';
 
 class RideScreen extends StatefulWidget {
   const RideScreen({super.key});
@@ -41,7 +42,7 @@ class _RideScreenState extends State<RideScreen> {
   bool _isLoading = true;
   bool _hasLocationPermission = false;
   bool _isResolvingPickup = true;
-  bool _showRent = false;
+  int _activeTab = 0; // 0 = Ride, 1 = Rent
 
   @override
   void initState() {
@@ -211,6 +212,102 @@ class _RideScreenState extends State<RideScreen> {
       fallback: savedPlaces.length > 1 ? savedPlaces[1] : _fallbackPickup,
     );
 
+    if (_activeTab == 1) {
+      // Short-circuit: when the Rent tab is active, render only the RentContent
+      return PopScope(
+        canPop: context.canPop(),
+        onPopInvokedWithResult: (didPop, result) {
+          if (!didPop && !context.canPop()) {
+            context.go('/');
+          }
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            title: Text(l10n.t('ride.title')),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/');
+                }
+              },
+            ),
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Mode tabs (Ride / Rent) ─────────────────────────────────
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _activeTab = 0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: _activeTab == 0
+                                ? AppColors.primary
+                                : AppColors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: AppSpacing.shadowSm,
+                          ),
+                          child: Center(
+                            child: Text(
+                              l10n.t('ride.mode_ride'),
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: _activeTab == 0
+                                    ? Colors.white
+                                    : AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _activeTab = 1),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: _activeTab == 1
+                                ? AppColors.primary
+                                : AppColors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: AppSpacing.shadowSm,
+                          ),
+                          child: Center(
+                            child: Text(
+                              l10n.t('ride.mode_rent'),
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: _activeTab == 1
+                                    ? Colors.white
+                                    : AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Rent-only content
+                const RentContent(),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return PopScope(
       canPop: context.canPop(),
       onPopInvokedWithResult: (didPop, result) {
@@ -238,6 +335,65 @@ class _RideScreenState extends State<RideScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Mode tabs (Ride / Rent) ─────────────────────────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _activeTab = 0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: _activeTab == 0
+                              ? AppColors.primary
+                              : AppColors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: AppSpacing.shadowSm,
+                        ),
+                        child: Center(
+                          child: Text(
+                            l10n.t('ride.mode_ride'),
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: _activeTab == 0
+                                  ? Colors.white
+                                  : AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => setState(() => _activeTab = 1),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: _activeTab == 1
+                              ? AppColors.primary
+                              : AppColors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: AppSpacing.shadowSm,
+                        ),
+                        child: Center(
+                          child: Text(
+                            l10n.t('ride.mode_rent'),
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: _activeTab == 1
+                                  ? Colors.white
+                                  : AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Map preview (ride) - Rent handled above by short-circuit
               RideRoutePreview(
                 title: l10n.t('ride.map_view'),
                 pickup: pickupPoint,
@@ -251,7 +407,7 @@ class _RideScreenState extends State<RideScreen> {
                 actionIcon: Icons.my_location_rounded,
                 onActionTap: _requestLocationAccess,
               ),
-              const SizedBox(height: 20),
+              // ── Route input card ─────────────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -353,19 +509,11 @@ class _RideScreenState extends State<RideScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              _RideModeTabs(
-                showRent: _showRent,
-                onChanged: (value) => setState(() => _showRent = value),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                _showRent ? 'Cars to rent' : l10n.t('ride.available_rides'),
-                style: AppTextStyles.h4,
-              ),
+
+              // ── Available rides ──────────────────────────────────────────
+              Text(l10n.t('ride.available_rides'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
-              if (_showRent)
-                const _RentalCarsSection()
-              else if (_isLoading)
+              if (_isLoading)
                 const AppShimmer(
                   child: SizedBox(
                     height: 118,
@@ -472,6 +620,10 @@ class _RideScreenState extends State<RideScreen> {
                   ),
                 ),
               const SizedBox(height: 24),
+
+              // Note: 'Rent a Car' content moved into the Rent tab's RentContent widget
+
+              // ── Quick rides ──────────────────────────────────────────────
               Text(l10n.t('ride.quick_rides'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
               LayoutBuilder(
@@ -510,6 +662,8 @@ class _RideScreenState extends State<RideScreen> {
                 },
               ),
               const SizedBox(height: 24),
+
+              // ── Recent places ────────────────────────────────────────────
               Text(l10n.t('ride.recent_places'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
               ...savedPlaces
@@ -567,6 +721,8 @@ class _RideScreenState extends State<RideScreen> {
                     ),
                   ),
               const SizedBox(height: 24),
+
+              // ── Promo banner ─────────────────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -926,6 +1082,10 @@ class _RideScreenState extends State<RideScreen> {
   }
 }
 
+// (Car rental banner removed — Rent tab now displays `RentContent` only.)
+
+// ─── Place picker sheet ──────────────────────────────────────────────────────
+
 class _PlacePickerSheet extends StatefulWidget {
   final bool isPickup;
   final List<_RidePlace> places;
@@ -1013,9 +1173,7 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
         'Accept-Language': 'en',
       },
     );
-    if (response.statusCode != 200) {
-      return const [];
-    }
+    if (response.statusCode != 200) return const [];
 
     final rawItems = jsonDecode(response.body);
     if (rawItems is! List) return const [];
@@ -1030,10 +1188,7 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
 
   Future<void> _loadPopularDjiboutiPlaces() async {
     if (_isLoadingPopular) return;
-    setState(() {
-      _isLoadingPopular = true;
-    });
-
+    setState(() => _isLoadingPopular = true);
     try {
       final popularQueries = <String>[
         'Place Menelik',
@@ -1042,15 +1197,12 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
         'Bawadi Mall',
         'Kempinski Palace',
       ];
-
       final collected = <_RidePlace>[];
       for (final query in popularQueries) {
         final results = await _fetchDjiboutiPlaces(query, limit: 3);
         collected.addAll(results);
       }
-
       if (!mounted || _searchController.text.trim().isNotEmpty) return;
-
       final seen = <String>{};
       setState(() {
         _popularPlaces = collected
@@ -1070,11 +1222,7 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
   Future<void> _searchDjiboutiPlaces(String query) async {
     final normalizedQuery = query.trim();
     if (normalizedQuery.length < 2) return;
-
-    setState(() {
-      _isSearching = true;
-    });
-
+    setState(() => _isSearching = true);
     try {
       final activeQuery = _searchController.text.trim();
       if (!mounted ||
@@ -1239,6 +1387,8 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
   }
 }
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 List<_RidePlace> _mergedPlaces(
   List<_RidePlace> primary,
   List<_RidePlace> secondary,
@@ -1299,6 +1449,8 @@ IconData _iconForPlaceCategory(String? type, String? category) {
   return Icons.place_rounded;
 }
 
+// ─── Small reusable widgets ───────────────────────────────────────────────────
+
 class _QuickRide extends StatelessWidget {
   final IconData icon;
   final String name;
@@ -1344,220 +1496,6 @@ class _QuickRide extends StatelessWidget {
       ),
     );
   }
-}
-
-class _RideModeTabs extends StatelessWidget {
-  final bool showRent;
-  final ValueChanged<bool> onChanged;
-
-  const _RideModeTabs({required this.showRent, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: AppSpacing.shadowSm,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _RideModeTab(
-              label: context.l10n.t('ride.title'),
-              icon: Icons.local_taxi_rounded,
-              isSelected: !showRent,
-              onTap: () => onChanged(false),
-            ),
-          ),
-          Expanded(
-            child: _RideModeTab(
-              label: 'Rent',
-              icon: Icons.car_rental_rounded,
-              isSelected: showRent,
-              onTap: () => onChanged(true),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RideModeTab extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _RideModeTab({
-    required this.label,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 11),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.ride : Colors.transparent,
-          borderRadius: BorderRadius.circular(11),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected ? AppColors.white : AppColors.grey,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: AppTextStyles.labelMedium.copyWith(
-                color: isSelected ? AppColors.white : AppColors.grey,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RentalCarsSection extends StatelessWidget {
-  const _RentalCarsSection();
-
-  static const _cars = [
-    _RentalCarOption(
-      name: 'Toyota Yaris',
-      type: 'Economy',
-      pricePerDay: 6500,
-      seats: 5,
-      transmission: 'Automatic',
-      icon: Icons.directions_car_rounded,
-    ),
-    _RentalCarOption(
-      name: 'Hyundai Tucson',
-      type: 'SUV',
-      pricePerDay: 12000,
-      seats: 5,
-      transmission: 'Automatic',
-      icon: Icons.airport_shuttle_rounded,
-    ),
-    _RentalCarOption(
-      name: 'Toyota Hiace',
-      type: 'Van',
-      pricePerDay: 18000,
-      seats: 12,
-      transmission: 'Manual',
-      icon: Icons.directions_bus_filled_rounded,
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: _cars
-          .map(
-            (car) => GestureDetector(
-              onTap: () {
-                AnalyticsService.instance.track(
-                  AnalyticsEvents.entityOpened,
-                  properties: {
-                    'module': 'ride',
-                    'entity_type': 'rental_car',
-                    'entity_id': car.name,
-                    'source': 'ride_rent_tab',
-                  },
-                );
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Rental request started for ${car.name}'),
-                  ),
-                );
-              },
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: AppSpacing.shadowSm,
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 58,
-                      height: 58,
-                      decoration: BoxDecoration(
-                        color: AppColors.rideBg,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(car.icon, color: AppColors.ride, size: 28),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(car.name, style: AppTextStyles.labelLarge),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${car.type} • ${car.seats} seats • ${car.transmission}',
-                            style: AppTextStyles.caption,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          'DJF${car.pricePerDay}',
-                          style: AppTextStyles.labelMedium.copyWith(
-                            color: AppColors.ride,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        Text('/ day', style: AppTextStyles.caption),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          )
-          .toList(),
-    );
-  }
-}
-
-class _RentalCarOption {
-  final String name;
-  final String type;
-  final int pricePerDay;
-  final int seats;
-  final String transmission;
-  final IconData icon;
-
-  const _RentalCarOption({
-    required this.name,
-    required this.type,
-    required this.pricePerDay,
-    required this.seats,
-    required this.transmission,
-    required this.icon,
-  });
 }
 
 class _PlacePickerStatus extends StatelessWidget {
@@ -1616,4 +1554,107 @@ class _RidePlace {
     this.longitude,
     this.addressId,
   });
+}
+
+// RentContent: displays a simple list of rental cars fetched from the backend.
+class RentContent extends StatefulWidget {
+  const RentContent({super.key});
+
+  @override
+  State<RentContent> createState() => _RentContentState();
+}
+
+class _RentContentState extends State<RentContent> {
+  bool _loading = true;
+  List<dynamic> _cars = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCars();
+  }
+
+  Future<void> _loadCars() async {
+    try {
+      final cars = await CarRentalService.fetchCars();
+      if (!mounted) return;
+      setState(() {
+        _cars = cars;
+        _loading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_cars.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Text('No cars available', style: AppTextStyles.bodyMedium),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: _cars.map((c) {
+        // CarRentalService returns CarRentalCar objects; ensure we can read id/name/price
+        final id = c is Map ? (c['id']?.toString() ?? '') : (c.id ?? '');
+        final name = c is Map ? (c['name']?.toString() ?? '') : (c.name ?? '');
+        final price = c is Map
+            ? (c['price']?.toString() ?? c['pricePerDay']?.toString() ?? '')
+            : '${c.pricePerDay ?? ''}';
+
+        return GestureDetector(
+          onTap: () => context.push('/car-rental/$id'),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: AppSpacing.shadowSm,
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 64,
+                  height: 48,
+                  color: AppColors.extraLightGrey,
+                  child: const Icon(
+                    Icons.directions_car_rounded,
+                    color: AppColors.mediumGrey,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(name, style: AppTextStyles.labelLarge),
+                      const SizedBox(height: 6),
+                      Text('DJF $price / day', style: AppTextStyles.caption),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: AppColors.mediumGrey,
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
 }

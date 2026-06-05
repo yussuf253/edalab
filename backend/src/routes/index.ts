@@ -12,6 +12,7 @@ import proAuthRoutes from './pro-auth.routes';
 import proRoutes from './pro.routes';
 import promotionsRoutes from './promotions.routes';
 import ridesRoutes from './rides.routes';
+import carRentalsRoutes from './car-rentals.routes';
 import usersRoutes from './users.routes';
 import realtimeRoutes from './realtime.routes';
 
@@ -36,6 +37,7 @@ router.use('/pro-auth', proAuthRoutes);
 router.use('/pro', proRoutes);
 router.use('/appointments', appointmentsRoutes);
 router.use('/rides', ridesRoutes);
+router.use('/car-rentals', carRentalsRoutes);
 router.use('/promotions', promotionsRoutes);
 router.use('/notifications', notificationsRoutes);
 router.use('/realtime', realtimeRoutes);

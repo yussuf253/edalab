@@ -67,6 +67,7 @@ model User {
   notifications            Notification[]
   assignedDeliveryOrders   Order[]          @relation("DeliveryAssignee")
   orders                   Order[]
+  carRentalBookings        CarRentalBooking[]
   paymentMethods           PaymentMethod[]
   proProfile               ProProfile?
   assignedRideBookings     RideBooking[]    @relation("RideDriver")
@@ -357,6 +358,45 @@ model Product {
 
   @@index([moduleType, categoryId])
   @@index([shopId])
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Car rental bookings
+// Dedicated table for rental bookings to avoid overloading Order model.
+model CarRentalBooking {
+  id              String       @id @default(cuid())
+  userId          String
+  carId           String
+  carName         String
+  carType         String
+  startDate       DateTime
+  endDate         DateTime
+  totalDays       Int
+  pricePerDay     Decimal      @db.Decimal(10, 2)
+  subtotal        Decimal      @db.Decimal(10, 2)
+  tax             Decimal      @db.Decimal(10, 2)
+  total           Decimal      @db.Decimal(10, 2)
+  status          CarRentalStatus @default(PENDING)
+  pickupLocation  String?
+  dropoffLocation String?
+  notes           String?
+  metadata        Json?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@index([carId, startDate, endDate])
+}
+
+enum CarRentalStatus {
+  PENDING
+  CONFIRMED
+  ACTIVE
+  COMPLETED
+  CANCELLED
 }
 
 model Restaurant {

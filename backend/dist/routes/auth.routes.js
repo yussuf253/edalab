@@ -140,4 +140,59 @@ router.post('/confirm', (0, async_handler_1.asyncHandler)(async (req, res) => {
         token: jwtToken,
     });
 }));
+// GET endpoint for email confirmation (called by frontend after redirect)
+router.get('/confirm', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const accessToken = req.query.access_token;
+    const tokenType = req.query.token_type;
+    const expiresIn = req.query.expires_in;
+    if (!accessToken || tokenType !== 'bearer') {
+        return res.status(400).json({
+            error: 'Invalid verification parameters.',
+            verified: false,
+        });
+    }
+    // Verify the access token with Supabase
+    const { data: authData, error: authError } = await supabase_admin_service_1.supabaseAdmin.auth.getUser(accessToken);
+    if (authError || !authData.user) {
+        return res.status(400).json({
+            error: 'Invalid or expired verification link.',
+            verified: false,
+        });
+    }
+    // Get the user from Prisma
+    const user = await db_1.prisma.user.findUnique({
+        where: { email: authData.user.email },
+        include: {
+            addresses: {
+                orderBy: [{ isDefault: 'desc' }, { updatedAt: 'desc' }],
+            },
+        },
+    });
+    if (!user) {
+        return res.status(404).json({ error: 'User not found.' });
+    }
+    // Check if user is banned
+    if (user.banned) {
+        return res.status(403).json({
+            error: 'Your account has been suspended.',
+            banReason: user.banReason,
+            banned: true,
+        });
+    }
+    const safeUser = (0, serializers_1.sanitizeUser)(user);
+    const jwtToken = (0, jwt_1.signAccessToken)({ userId: user.id, email: user.email });
+    // Return HTML page that auto-closes and sends token to frontend
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>Email Verified</title></head>
+      <body>
+        <script>
+          window.opener.postMessage({ type: 'EMAIL_VERIFIED', token: '${jwtToken}', user: ${JSON.stringify(safeUser)} }, '*');
+          window.close();
+        </script>
+      </body>
+      </html>
+    `);
+}));
 exports.default = router;

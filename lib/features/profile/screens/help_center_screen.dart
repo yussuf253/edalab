@@ -10,12 +10,8 @@ class HelpCenterScreen extends StatelessWidget {
   const HelpCenterScreen({super.key});
 
   Future<void> _launchWhatsApp(String phoneNumber) async {
-    final url = 'https://wa.me/$phoneNumber';
-    if (await canLaunchUrl(Uri.parse(url))) {
-      await launchUrl(Uri.parse(url));
-    } else {
-      throw 'Could not launch $url';
-    }
+    final uri = Uri.parse('https://wa.me/$phoneNumber');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   @override

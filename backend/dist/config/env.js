@@ -15,6 +15,7 @@ const envSchema = zod_1.z.object({
     JWT_EXPIRES_IN: zod_1.z.string().default('7d'),
     CORS_ORIGIN: zod_1.z.string().default('*'),
     PUBLIC_BASE_URL: zod_1.z.string().optional(),
+    BACKEND_URL: zod_1.z.string().optional(),
     SUPABASE_URL: zod_1.z.string().optional(),
     SUPABASE_SERVICE_ROLE_KEY: zod_1.z.string().optional(),
     SUPABASE_STORAGE_BUCKET_AVATARS: zod_1.z.string().default('avatars'),

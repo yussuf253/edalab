@@ -45,6 +45,9 @@ import '../../features/ride/screens/ride_screen.dart';
 import '../../features/ride/screens/ride_booking_screen.dart';
 import '../../features/ride/screens/ride_booking_summary_screen.dart';
 import '../../features/ride/screens/ride_tracking_screen.dart';
+import '../../features/car_rental/screens/car_rental_screen.dart';
+import '../../features/car_rental/screens/car_rental_detail_screen.dart';
+import '../../features/car_rental/services/car_rental_service.dart';
 import '../../features/pharmacy/screens/pharmacy_screen.dart';
 import '../../features/pharmacy/screens/medicine_detail_screen.dart';
 import '../../features/pharmacy/screens/pharmacy_order_detail_screen.dart';
@@ -383,6 +386,24 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
           rideId: state.pathParameters['id']!,
           rideData: state.extra as Map<String, dynamic>?,
         ),
+      ),
+
+      // Car Rental
+      GoRoute(
+        path: '/car-rental',
+        builder: (context, state) => const CarRentalScreen(),
+      ),
+      GoRoute(
+        path: '/car-rental/:carId',
+        builder: (context, state) {
+          final car = state.extra is CarRentalCar
+              ? state.extra as CarRentalCar
+              : null;
+          return CarRentalDetailScreen(
+            carId: state.pathParameters['carId']!,
+            carData: car,
+          );
+        },
       ),
 
       // Pharmacy

@@ -136,6 +136,33 @@ router.post('/login', (0, async_handler_1.asyncHandler)(async (req, res) => {
         token,
     });
 }));
+// Get current user - checks for banned status
+router.get('/me', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = req.query.userId;
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized.' });
+    }
+    const user = await db_1.prisma.user.findUnique({
+        where: { id: userId },
+        include: {
+            addresses: {
+                orderBy: [{ isDefault: 'desc' }, { updatedAt: 'desc' }],
+            },
+        },
+    });
+    if (!user) {
+        return res.status(404).json({ error: 'User not found.' });
+    }
+    // Check if user is banned
+    if (user.banned) {
+        return res.status(403).json({
+            error: 'Your account has been suspended.',
+            banReason: user.banReason,
+            banned: true,
+        });
+    }
+    res.json((0, serializers_1.sanitizeUser)(user));
+}));
 router.get('/:id', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const userId = (0, http_1.getParam)(req.params.id, 'userId');
     const user = await getUserWithAddresses(userId);

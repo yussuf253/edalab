@@ -1971,7 +1971,7 @@ class AppLocalizations {
       'home.ride': 'Trajet',
       'home.pharmacy': 'Pharmacie',
       'home.home_services': 'Services',
-      'home.laundry': 'Blanchisserie',
+      'home.laundry': 'Pressing',
       'profile.guest': 'Invité',
       'profile.account': 'Compte',
       'profile.preferences': 'Préférences',

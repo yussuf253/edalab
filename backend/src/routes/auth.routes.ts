@@ -172,4 +172,71 @@ router.post(
   }),
 );
 
+// GET endpoint for email confirmation (called by frontend after redirect)
+router.get(
+  '/confirm',
+  asyncHandler(async (req, res) => {
+    const accessToken = req.query.access_token as string;
+    const tokenType = req.query.token_type as string;
+    const expiresIn = req.query.expires_in as string;
+
+    if (!accessToken || tokenType !== 'bearer') {
+      return res.status(400).json({ 
+        error: 'Invalid verification parameters.',
+        verified: false,
+      });
+    }
+
+    // Verify the access token with Supabase
+    const { data: authData, error: authError } = await supabaseAdmin.auth.getUser(accessToken);
+
+    if (authError || !authData.user) {
+      return res.status(400).json({ 
+        error: 'Invalid or expired verification link.',
+        verified: false,
+      });
+    }
+
+    // Get the user from Prisma
+    const user = await prisma.user.findUnique({
+      where: { email: authData.user.email },
+      include: {
+        addresses: {
+          orderBy: [{ isDefault: 'desc' }, { updatedAt: 'desc' }],
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    // Check if user is banned
+    if (user.banned) {
+      return res.status(403).json({ 
+        error: 'Your account has been suspended.',
+        banReason: user.banReason,
+        banned: true,
+      });
+    }
+
+    const safeUser = sanitizeUser(user);
+    const jwtToken = signAccessToken({ userId: user.id, email: user.email });
+
+    // Return HTML page that auto-closes and sends token to frontend
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>Email Verified</title></head>
+      <body>
+        <script>
+          window.opener.postMessage({ type: 'EMAIL_VERIFIED', token: '${jwtToken}', user: ${JSON.stringify(safeUser)} }, '*');
+          window.close();
+        </script>
+      </body>
+      </html>
+    `);
+  }),
+);
+
 export default router;

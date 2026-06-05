@@ -5,11 +5,9 @@ const express_1 = require("express");
 const zod_1 = require("zod");
 const db_1 = require("../db");
 const auth_1 = require("../middleware/auth");
-const pro_routes_1 = require("./pro.routes");
 const async_handler_1 = require("../utils/async-handler");
 const jwt_1 = require("../utils/jwt");
 const password_1 = require("../utils/password");
-const serializers_1 = require("../utils/serializers");
 const supabase_admin_service_1 = require("../services/supabase-admin.service");
 const env_1 = require("../config/env");
 const router = (0, express_1.Router)();
@@ -211,6 +209,57 @@ router.post('/confirm', (0, async_handler_1.asyncHandler)(async (req, res) => {
         token: tokenResult,
     });
 }));
+// GET endpoint for email confirmation (called by frontend after redirect)
+router.get('/confirm', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const accessToken = req.query.access_token;
+    const tokenType = req.query.token_type;
+    if (!accessToken || tokenType !== 'bearer') {
+        return res.status(400).json({
+            error: 'Invalid verification parameters.',
+            verified: false,
+        });
+    }
+    // Verify the access token with Supabase
+    const { data: authData, error: authError } = await supabase_admin_service_1.supabaseAdmin.auth.getUser(accessToken);
+    if (authError || !authData.user) {
+        return res.status(400).json({
+            error: 'Invalid or expired verification link.',
+            verified: false,
+        });
+    }
+    // Get the account from Prisma
+    const account = await db_1.prisma.proAccount.findUnique({
+        where: { email: authData.user.email },
+        include: { proProfile: true },
+    });
+    if (!account) {
+        return res.status(404).json({ error: 'Account not found.' });
+    }
+    const tokenResult = (0, jwt_1.signAccessToken)({
+        userId: account.id,
+        email: account.email,
+        accountType: 'pro',
+    });
+    const profileJson = account.proProfile ? JSON.stringify(serializeProAccount(account)) : 'null';
+    // Return HTML page that auto-closes and sends token to frontend
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head><title>Email Verified</title></head>
+      <body>
+        <script>
+          window.opener.postMessage({ 
+            type: 'PRO_EMAIL_VERIFIED', 
+            token: '${tokenResult}', 
+            account: ${JSON.stringify(serializeProAccount(account))},
+            profile: ${profileJson}
+          }, '*');
+          window.close();
+        </script>
+      </body>
+      </html>
+    `);
+}));
 router.get('/me', auth_1.requireAuth, (0, async_handler_1.asyncHandler)(async (req, res) => {
     const accountId = proAccountIdFromRequest(req);
     if (accountId == null) {
@@ -225,150 +274,17 @@ router.get('/me', auth_1.requireAuth, (0, async_handler_1.asyncHandler)(async (r
     if (!account) {
         return res.status(404).json({ error: 'Pro account not found.' });
     }
+    // Check if account is banned
+    if (account.banned) {
+        return res.status(403).json({
+            error: 'Your account has been suspended.',
+            banReason: account.banReason,
+            banned: true,
+        });
+    }
     res.json({
         account: serializeProAccount(account),
         profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
-    });
-}));
-router.post('/profile', auth_1.requireAuth, (0, async_handler_1.asyncHandler)(async (req, res) => {
-    const accountId = proAccountIdFromRequest(req);
-    if (accountId == null) {
-        return res
-            .status(403)
-            .json({ error: 'This endpoint requires a pro account session.' });
-    }
-    const body = proProfileSetupSchema.parse(req.body);
-    const activeModules = sanitizeModulesForProfile(body.type, body.activeModules);
-    const resolvedBindingsRaw = await (0, pro_routes_1.resolveBindings)(body.businessName.trim(), activeModules);
-    const resolvedBindings = normalizeBindingsForProfileType(body.type, resolvedBindingsRaw);
-    const bindingOverrides = body.bindingOverrides;
-    const sanitizedOverrides = bindingOverrides == null
-        ? null
-        : await (0, pro_routes_1.sanitizeProviderBindingOverrides)(activeModules, bindingOverrides);
-    const mergedBindings = {
-        ...resolvedBindings,
-        ...(bindingOverrides?.providerIds === undefined
-            ? {}
-            : { providerIds: sanitizedOverrides?.providerIds ?? [] }),
-        ...(bindingOverrides?.laundryServiceIds === undefined
-            ? {}
-            : { laundryServiceIds: sanitizedOverrides?.laundryServiceIds ?? [] }),
-    };
-    const avatarUrl = body.avatarUrl?.trim() || null;
-    const payload = await db_1.prisma.$transaction(async (tx) => {
-        const account = await tx.proAccount.findUnique({
-            where: { id: accountId },
-            include: { proProfile: true },
-        });
-        if (!account) {
-            throw new Error('Pro account not found.');
-        }
-        if (account.proProfile) {
-            const ownedLaundryServiceIds = await (0, pro_routes_1.syncLaundryOwnership)(account.proProfile.userId, body.type, activeModules, mergedBindings, tx);
-            const bindings = {
-                ...mergedBindings,
-                laundryServiceIds: ownedLaundryServiceIds,
-            };
-            const updatedProfile = await tx.proProfile.update({
-                where: { id: account.proProfile.id },
-                data: {
-                    type: body.type,
-                    activeModules,
-                    businessName: body.businessName.trim(),
-                    avatarUrl,
-                    bindings,
-                },
-            });
-            const updatedAccount = await tx.proAccount.update({
-                where: { id: account.id },
-                data: {
-                    avatarUrl: avatarUrl ?? account.avatarUrl,
-                },
-            });
-            return {
-                account: updatedAccount,
-                profile: updatedProfile,
-                created: false,
-            };
-        }
-        const legacyUser = await tx.user.findUnique({
-            where: { email: account.email },
-            include: { proProfile: true },
-        });
-        if (legacyUser?.proProfile != null &&
-            legacyUser.proProfile.accountId == null) {
-            const ownedLaundryServiceIds = await (0, pro_routes_1.syncLaundryOwnership)(legacyUser.id, body.type, activeModules, mergedBindings, tx);
-            const bindings = {
-                ...mergedBindings,
-                laundryServiceIds: ownedLaundryServiceIds,
-            };
-            const linkedProfile = await tx.proProfile.update({
-                where: { id: legacyUser.proProfile.id },
-                data: {
-                    accountId: account.id,
-                    type: body.type,
-                    activeModules,
-                    businessName: body.businessName.trim(),
-                    avatarUrl: avatarUrl ?? account.avatarUrl,
-                    bindings,
-                },
-            });
-            const updatedAccount = await tx.proAccount.update({
-                where: { id: account.id },
-                data: {
-                    avatarUrl: avatarUrl ?? account.avatarUrl,
-                },
-            });
-            return {
-                account: updatedAccount,
-                profile: linkedProfile,
-                created: true,
-            };
-        }
-        const name = (0, serializers_1.parseFullName)(account.fullName);
-        const internalUser = await tx.user.create({
-            data: {
-                email: buildInternalUserEmail(account.id),
-                firstName: name.firstName,
-                lastName: name.lastName,
-                phone: account.phone,
-                avatarUrl: avatarUrl ?? account.avatarUrl,
-                passwordHash: await (0, password_1.hashPassword)(`pro:${account.id}:${Date.now().toString()}`),
-            },
-        });
-        const ownedLaundryServiceIds = await (0, pro_routes_1.syncLaundryOwnership)(internalUser.id, body.type, activeModules, mergedBindings, tx);
-        const bindings = {
-            ...mergedBindings,
-            laundryServiceIds: ownedLaundryServiceIds,
-        };
-        const profile = await tx.proProfile.create({
-            data: {
-                accountId: account.id,
-                userId: internalUser.id,
-                type: body.type,
-                activeModules,
-                businessName: body.businessName.trim(),
-                avatarUrl: avatarUrl ?? account.avatarUrl,
-                bindings,
-                isOnline: true,
-                isVerified: false,
-            },
-        });
-        const updatedAccount = await tx.proAccount.update({
-            where: { id: account.id },
-            data: {
-                avatarUrl: avatarUrl ?? account.avatarUrl,
-            },
-        });
-        return {
-            account: updatedAccount,
-            profile,
-            created: true,
-        };
-    }, { timeout: 15000, maxWait: 10000 });
-    res.status(payload.created ? 201 : 200).json({
-        account: serializeProAccount(payload.account),
-        profile: serializeProProfile(payload.profile),
     });
 }));
 exports.default = router;
