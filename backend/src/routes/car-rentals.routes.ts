@@ -248,7 +248,8 @@ router.get(
 
     const types = Array.from(new Set(cars.map((car) => car.type)));
 
-    res.json({ cars, types });
+    // Return both `items` and `cars` for compatibility with frontends
+    res.json({ items: cars, cars, types });
   }),
 );
 
