@@ -8,6 +8,8 @@ class UserModel {
   final List<AddressModel> addresses;
   final DateTime? dateOfBirth;
   final int points;
+  final bool isBanned;
+  final String? banReason;
 
   UserModel({
     required this.id,
@@ -19,6 +21,8 @@ class UserModel {
     this.addresses = const [],
     this.dateOfBirth,
     this.points = 0,
+    this.isBanned = false,
+    this.banReason,
   });
 
   String get fullName => '$firstName $lastName';
@@ -33,6 +37,8 @@ class UserModel {
     List<AddressModel>? addresses,
     DateTime? dateOfBirth,
     int? points,
+    bool? isBanned,
+    String? banReason,
   }) {
     return UserModel(
       id: id,
@@ -44,6 +50,8 @@ class UserModel {
       addresses: addresses ?? this.addresses,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
       points: points ?? this.points,
+      isBanned: isBanned ?? this.isBanned,
+      banReason: banReason ?? this.banReason,
     );
   }
 }

@@ -28,6 +28,17 @@ class AppPreferences {
     await prefs.setBool(_hasSeenOnboardingKey, value);
   }
 
+  static const _hasSeenHomeOnboarding = 'has_seen_home_onboarding';
+  static Future<bool> hasSeenHomeOnboarding() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_hasSeenHomeOnboarding) ?? false;
+  }
+
+  static Future<void> setHasSeenHomeOnboarding(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_hasSeenHomeOnboarding, value);
+  }
+
   static Future<String?> getCurrentUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_currentUserIdKey);

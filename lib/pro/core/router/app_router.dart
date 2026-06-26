@@ -13,7 +13,7 @@ void openAppRoute(String route) {
 GoRouter createAppRouter({required bool hasSeenOnboarding}) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: hasSeenOnboarding ? '/' : '/onboarding',
+    initialLocation: hasSeenOnboarding ? '/' : '/home-onboarding',
     redirect: (context, state) {
       final moduleId = ModuleAccessService.instance.moduleForPath(
         state.uri.path,

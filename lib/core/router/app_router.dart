@@ -1,3 +1,5 @@
+import 'package:edalab/features/onboarding/home_onboarding_screen.dart';
+
 import '../../core/config/app_config.dart';
 import 'package:edalab/features/doctor/screens/lab_tests_screen.dart';
 import 'package:edalab/features/doctor/screens/physiotherapy_screen.dart';
@@ -9,7 +11,7 @@ import '../models/models.dart';
 import '../widgets/example_version_check.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
-import '../../features/onboarding/screens/onboarding_screen.dart';
+import '../../features/auth/screens/banned_user_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/messages/screens/chat_screen.dart';
 import '../../features/messages/screens/messages_screen.dart';
@@ -95,7 +97,7 @@ void openAppRoute(String route) {
 GoRouter createAppRouter({required bool hasSeenOnboarding}) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: hasSeenOnboarding ? '/' : '/onboarding',
+    initialLocation: hasSeenOnboarding ? '/' : '/home-onboarding',
     redirect: (context, state) {
       final moduleId = ModuleAccessService.instance.moduleForPath(
         state.uri.path,
@@ -107,8 +109,8 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
     routes: [
       // Onboarding
       GoRoute(
-        path: '/onboarding',
-        builder: (context, state) => const OnboardingScreen(),
+        path: '/home-onboarding',
+        builder: (context, state) => const HomeOnboardingScreen(),
       ),
 
       // Auth
@@ -116,6 +118,13 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+
+      // Banned User Screen
+      GoRoute(
+        path: '/banned',
+        builder: (context, state) =>
+            BannedUserScreen(banReason: state.extra as String?),
       ),
 
       // Main App Shell with Bottom Navigation
@@ -396,12 +405,20 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
       GoRoute(
         path: '/car-rental/:carId',
         builder: (context, state) {
-          final car = state.extra is CarRentalCar
-              ? state.extra as CarRentalCar
-              : null;
+          final extra = state.extra;
+          CarRentalCar? carData;
+          Map<String, dynamic>? carMap;
+
+          if (extra is CarRentalCar) {
+            carData = extra;
+          } else if (extra is Map<String, dynamic>) {
+            carMap = extra;
+          }
+
           return CarRentalDetailScreen(
             carId: state.pathParameters['carId']!,
-            carData: car,
+            carData: carData,
+            carMap: carMap,
           );
         },
       ),

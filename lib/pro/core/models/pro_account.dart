@@ -4,6 +4,8 @@ class ProAccount {
   final String fullName;
   final String phone;
   final String? avatarUrl;
+  final bool isBanned;
+  final String? banReason;
 
   const ProAccount({
     required this.id,
@@ -11,6 +13,8 @@ class ProAccount {
     required this.fullName,
     required this.phone,
     this.avatarUrl,
+    this.isBanned = false,
+    this.banReason,
   });
 
   factory ProAccount.fromJson(Map<String, dynamic> json) {
@@ -20,6 +24,8 @@ class ProAccount {
       fullName: json['fullName'] as String? ?? '',
       phone: json['phone'] as String? ?? '',
       avatarUrl: json['avatarUrl'] as String?,
+      isBanned: json['banned'] as bool? ?? false,
+      banReason: json['banReason'] as String?,
     );
   }
 
@@ -30,6 +36,8 @@ class ProAccount {
       'fullName': fullName,
       'phone': phone,
       'avatarUrl': avatarUrl,
+      'banned': isBanned,
+      'banReason': banReason,
     };
   }
 }

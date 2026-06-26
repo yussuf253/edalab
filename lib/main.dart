@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 import 'core/analytics/analytics_service.dart';
@@ -173,6 +174,20 @@ Future<void> _bootstrapAppServices({
     notificationProvider.initialize(),
     moduleProvider.initialize(),
   ]);
+
+  // Redirect banned users to the banned screen
+  if (authProvider.isBanned) {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      try {
+        final context = rootNavigatorKey.currentContext;
+        if (context != null && context.mounted) {
+          context.go('/banned', extra: authProvider.user?.banReason);
+        }
+      } catch (e) {
+        print('Banned redirect error: $e');
+      }
+    });
+  }
 
   await notificationProvider.syncSession(
     authProvider: authProvider,

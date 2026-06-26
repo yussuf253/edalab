@@ -21,6 +21,7 @@ class AuthProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get emailVerificationRequired => _emailVerificationRequired;
   String? get pendingVerificationEmail => _pendingVerificationEmail;
+  bool get isBanned => _user?.isBanned == true;
 
   bool _isConnectionError(Object error) {
     return ApiClient.isConnectionError(error);
@@ -118,6 +119,8 @@ class AuthProvider extends ChangeNotifier {
             isDefault: true,
           ),
       ],
+      isBanned: response['banned'] as bool? ?? false,
+      banReason: response['banReason'] as String?,
     );
   }
 
@@ -147,6 +150,17 @@ class AuthProvider extends ChangeNotifier {
             })
             as Map,
       );
+
+      // Check if user is banned (backend returns 403 with banned status)
+      if (response['banned'] == true) {
+        _errorMessage = response['banReason'] as String? ?? 'Your account has been suspended.';
+        _isLoading = false;
+        _user = null;
+        _isLoggedIn = false;
+        _syncAnalyticsIdentity();
+        notifyListeners();
+        return false;
+      }
 
       final userResponse = Map<String, dynamic>.from(response['user'] as Map);
       await _setUserFromResponse(userResponse);
@@ -264,7 +278,24 @@ class AuthProvider extends ChangeNotifier {
       }
 
       final response = await ApiClient.get('/users/$userId');
-      await _setUserFromResponse(Map<String, dynamic>.from(response as Map));
+      final responseMap = Map<String, dynamic>.from(response as Map);
+      
+      // Check if user is banned
+      if (responseMap['banned'] == true) {
+        _user = await _userFromResponse(responseMap);
+        _isLoggedIn = true;
+        _errorMessage = responseMap['banReason'] as String? ?? 'Your account has been suspended.';
+        AnalyticsService.instance.track(
+          AnalyticsEvents.authSessionRestoreFailed,
+          properties: {'error': 'banned_user'},
+        );
+        await AppPreferences.clearCurrentUserId();
+        await ApiClient.setToken(null);
+        _syncAnalyticsIdentity();
+        return;
+      }
+      
+      await _setUserFromResponse(responseMap);
       AnalyticsService.instance.track(
         AnalyticsEvents.authSessionRestored,
         properties: {'source': 'stored_session'},

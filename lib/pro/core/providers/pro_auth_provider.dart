@@ -140,6 +140,17 @@ class ProAuthProvider extends ChangeNotifier {
             })
             as Map,
       );
+      
+      // Check if account is banned
+      if (response['banned'] == true) {
+        _emailVerificationRequired = false;
+        _pendingVerificationEmail = null;
+        _currentAccount = null;
+        _currentProfile = null;
+        await _clearLocalSession(clearToken: true);
+        throw Exception(response['banReason'] as String? ?? 'Your account has been suspended.');
+      }
+      
       _emailVerificationRequired = false;
       _pendingVerificationEmail = null;
       await _applySessionResponse(response);

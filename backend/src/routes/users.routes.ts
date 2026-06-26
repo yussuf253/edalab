@@ -204,6 +204,15 @@ router.get(
       return res.status(404).json({ error: 'User not found.' });
     }
 
+    // Check if user is banned
+    if (user.banned) {
+      return res.status(403).json({ 
+        error: 'Your account has been suspended.',
+        banReason: user.banReason,
+        banned: true,
+      });
+    }
+
     res.json(sanitizeUser(user));
   }),
 );

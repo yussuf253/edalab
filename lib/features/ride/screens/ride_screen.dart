@@ -1556,7 +1556,7 @@ class _RidePlace {
   });
 }
 
-// RentContent: displays a simple list of rental cars fetched from the backend.
+// RentContent: displays a list of rental cars with improved UI matching app design.
 class RentContent extends StatefulWidget {
   const RentContent({super.key});
 
@@ -1590,6 +1590,8 @@ class _RentContentState extends State<RentContent> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -1598,63 +1600,164 @@ class _RentContentState extends State<RentContent> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 24),
-          child: Text('No cars available', style: AppTextStyles.bodyMedium),
+          child: Text(
+            l10n.t('car_rental.no_cars'),
+            style: AppTextStyles.bodyMedium,
+          ),
         ),
       );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: _cars.map((c) {
-        // CarRentalService returns CarRentalCar objects; ensure we can read id/name/price
-        final id = c is Map ? (c['id']?.toString() ?? '') : (c.id ?? '');
-        final name = c is Map ? (c['name']?.toString() ?? '') : (c.name ?? '');
-        final price = c is Map
-            ? (c['price']?.toString() ?? c['pricePerDay']?.toString() ?? '')
-            : '${c.pricePerDay ?? ''}';
-
-        return GestureDetector(
-          onTap: () => context.push('/car-rental/$id'),
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: AppSpacing.shadowSm,
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 64,
-                  height: 48,
-                  color: AppColors.extraLightGrey,
-                  child: const Icon(
-                    Icons.directions_car_rounded,
-                    color: AppColors.mediumGrey,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(name, style: AppTextStyles.labelLarge),
-                      const SizedBox(height: 6),
-                      Text('DJF $price / day', style: AppTextStyles.caption),
-                    ],
-                  ),
-                ),
-                const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 16,
-                  color: AppColors.mediumGrey,
-                ),
-              ],
-            ),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            l10n.t('car_rental.browse_cars'),
+            style: AppTextStyles.labelLarge,
           ),
-        );
-      }).toList(),
+        ),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.75,
+          ),
+          itemCount: _cars.length,
+          itemBuilder: (context, index) {
+            final c = _cars[index];
+            final id = c is Map ? (c['id']?.toString() ?? '') : (c.id ?? '');
+            final name = c is Map
+                ? (c['name']?.toString() ?? '')
+                : (c.name ?? '');
+            final price = c is Map
+                ? (c['price']?.toString() ?? c['pricePerDay']?.toString() ?? '')
+                : '${c.pricePerDay ?? ''}';
+            final type = c is Map
+                ? (c['type']?.toString() ?? '')
+                : (c.type ?? '');
+            final seats = c is Map
+                ? (c['seats']?.toString() ??
+                      c['metadata']?['seats']?.toString() ??
+                      '4')
+                : '${c.seats ?? 4}';
+            final badge = c is Map ? (c['badge']?.toString()) : (c.badge);
+
+            return GestureDetector(
+              onTap: () {
+                // Pass as Map to ensure compatibility with router's CarRentalCar model
+                final Map<String, dynamic> carMap = c is Map
+                    ? Map<String, dynamic>.from(c)
+                    : {
+                        'id': c.id,
+                        'name': c.name,
+                        'type': c.type,
+                        'pricePerDay': c.pricePerDay,
+                        'seats': c.seats,
+                        'badge': c.badge,
+                        'transmission': c.transmission,
+                        'fuelType': c.fuelType,
+                        'year': c.year,
+                        'features': c.features,
+                      };
+                context.push('/car-rental/$id', extra: carMap);
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: AppSpacing.shadowSm,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Image placeholder with badge
+                    Container(
+                      height: 100,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: AppColors.extraLightGrey,
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const Icon(
+                            Icons.directions_car_rounded,
+                            color: AppColors.mediumGrey,
+                            size: 40,
+                          ),
+                          if (badge != null)
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  badge,
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: AppTextStyles.labelLarge,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '$type • $seats seats',
+                            style: AppTextStyles.caption,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.t(
+                              'car_rental.price_per_day',
+                              params: {'price': price},
+                            ),
+                            style: AppTextStyles.labelMedium.copyWith(
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }

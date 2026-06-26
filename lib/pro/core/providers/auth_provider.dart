@@ -111,6 +111,8 @@ class AuthProvider extends ChangeNotifier {
             isDefault: true,
           ),
       ],
+      isBanned: response['banned'] as bool? ?? false,
+      banReason: response['banReason'] as String?,
     );
   }
 
@@ -235,7 +237,24 @@ class AuthProvider extends ChangeNotifier {
       }
 
       final response = await ApiClient.get('/users/$userId');
-      _setUserFromResponse(Map<String, dynamic>.from(response as Map));
+      final responseMap = Map<String, dynamic>.from(response as Map);
+      
+      // Check if user is banned
+      if (responseMap['banned'] == true) {
+        _user = _userFromResponse(responseMap);
+        _isLoggedIn = true;
+        _errorMessage = responseMap['banReason'] as String? ?? 'Your account has been suspended.';
+        AnalyticsService.instance.track(
+          AnalyticsEvents.authSessionRestoreFailed,
+          properties: {'error': 'banned_user'},
+        );
+        await AppPreferences.clearCurrentUserId();
+        await ApiClient.setToken(null);
+        _syncAnalyticsIdentity();
+        return;
+      }
+      
+      _setUserFromResponse(responseMap);
       AnalyticsService.instance.track(
         AnalyticsEvents.authSessionRestored,
         properties: {'source': 'stored_session'},
