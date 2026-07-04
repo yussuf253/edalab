@@ -44,6 +44,8 @@ function serializeProAccount(account) {
         fullName: account.fullName,
         phone: account.phone,
         avatarUrl: account.avatarUrl,
+        banned: account.banned,
+        banReason: account.banReason,
         createdAt: account.createdAt,
         updatedAt: account.updatedAt,
     };

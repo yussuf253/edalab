@@ -22,6 +22,19 @@ class ProAuthProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isInitialized => _isInitialized;
   bool get isAuthenticated => _currentAccount != null;
+  bool get isBanned => _currentAccount?.isBanned == true;
+  String? get banReason => _currentAccount?.banReason;
+  bool get isSuperAdmin {
+    final email = _currentAccount?.email.toLowerCase().trim() ?? '';
+    const configuredEmail = String.fromEnvironment(
+      'SUPER_ADMIN_EMAIL',
+      defaultValue: 'admin@edalab.com',
+    );
+    return email == configuredEmail.toLowerCase() ||
+        email.startsWith('admin@') ||
+        email.contains('+admin@');
+  }
+
   bool get emailVerificationRequired => _emailVerificationRequired;
   String? get pendingVerificationEmail => _pendingVerificationEmail;
   int get unreadInboxCount => _unreadInboxCount;
@@ -63,6 +76,9 @@ class ProAuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
+    // Set up banned callback to handle banned users during API calls
+    ApiClient.setBannedCallback(_handleBanned);
+
     try {
       await ApiClient.configureSessionScope(ApiSessionScope.pro);
       await _restoreLocalSession();
@@ -74,7 +90,8 @@ class ProAuthProvider extends ChangeNotifier {
         try {
           await refreshSession();
         } catch (error) {
-          if (!_isConnectionError(error)) {
+          // Don't clear session for banned users - they should stay logged in but blocked
+          if (!_isConnectionError(error) && !_isBannedError(error)) {
             await _clearLocalSession(clearToken: true);
             rethrow;
           }
@@ -87,11 +104,44 @@ class ProAuthProvider extends ChangeNotifier {
     }
   }
 
+  bool _isBannedError(Object error) {
+    final message = error.toString().toLowerCase();
+    return message.contains('account has been suspended') ||
+        message.contains('banned');
+  }
+
   Future<void> refreshSession() async {
     final response = Map<String, dynamic>.from(
       await ApiClient.get('/pro-auth/me', forceRefresh: true) as Map,
     );
+
+    // Check if account is banned - keep session but mark as banned
+    if (response['banned'] == true) {
+      final reason =
+          response['banReason'] as String? ??
+          'Your account has been suspended.';
+      _currentAccount = response['account'] is Map
+          ? ProAccount.fromJson(Map<String, dynamic>.from(response['account']))
+          : _currentAccount?.copyWith(isBanned: true, banReason: reason);
+      _currentProfile = null;
+      await _persistLocalSession();
+      return;
+    }
+
     await _applySessionResponse(response);
+  }
+
+  void _handleBanned(String? banReason) {
+    final reason = banReason ?? 'Your account has been suspended.';
+    if (_currentAccount != null) {
+      _currentAccount = _currentAccount!.copyWith(
+        isBanned: true,
+        banReason: reason,
+      );
+    }
+    _currentProfile = null;
+    _persistLocalSession();
+    notifyListeners();
   }
 
   Future<void> registerAccount({
@@ -140,7 +190,7 @@ class ProAuthProvider extends ChangeNotifier {
             })
             as Map,
       );
-      
+
       // Check if account is banned
       if (response['banned'] == true) {
         _emailVerificationRequired = false;
@@ -148,9 +198,12 @@ class ProAuthProvider extends ChangeNotifier {
         _currentAccount = null;
         _currentProfile = null;
         await _clearLocalSession(clearToken: true);
-        throw Exception(response['banReason'] as String? ?? 'Your account has been suspended.');
+        throw Exception(
+          response['banReason'] as String? ??
+              'Your account has been suspended.',
+        );
       }
-      
+
       _emailVerificationRequired = false;
       _pendingVerificationEmail = null;
       await _applySessionResponse(response);

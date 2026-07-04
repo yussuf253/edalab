@@ -20,6 +20,7 @@ import 'core/storage/app_preferences.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final hasSeenOnboarding = await AppPreferences.hasSeenOnboarding();
+  final hasSeenHomeOnboarding = await AppPreferences.hasSeenHomeOnboarding();
   final authProvider = AuthProvider();
   final cartProvider = CartProvider();
   final languageProvider = LanguageProvider();
@@ -38,7 +39,11 @@ Future<void> main() async {
     languageProvider: languageProvider,
   );
 
-  final router = createAppRouter(hasSeenOnboarding: hasSeenOnboarding);
+  final router = createAppRouter(
+    authProvider: authProvider,
+    hasSeenOnboarding: hasSeenOnboarding,
+    hasSeenHomeOnboarding: hasSeenHomeOnboarding,
+  );
   AnalyticsService.instance.attachRouter(router);
 
   SystemChrome.setSystemUIOverlayStyle(

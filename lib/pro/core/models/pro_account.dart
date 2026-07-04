@@ -29,6 +29,26 @@ class ProAccount {
     );
   }
 
+  ProAccount copyWith({
+    String? id,
+    String? email,
+    String? fullName,
+    String? phone,
+    String? avatarUrl,
+    bool? isBanned,
+    String? banReason,
+  }) {
+    return ProAccount(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      phone: phone ?? this.phone,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      isBanned: isBanned ?? this.isBanned,
+      banReason: banReason ?? this.banReason,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

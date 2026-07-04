@@ -199,7 +199,8 @@ router.get('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
         cars = cars.filter((car) => car.seats >= minSeats);
     }
     const types = Array.from(new Set(cars.map((car) => car.type)));
-    res.json({ cars, types });
+    // Return both `items` and `cars` for compatibility with frontends
+    res.json({ items: cars, cars, types });
 }));
 // GET /api/car-rentals/:carId — single car details
 router.get('/:carId', (0, async_handler_1.asyncHandler)(async (req, res) => {
@@ -251,111 +252,169 @@ router.post('/bookings', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const carMetadata = car.metadata && typeof car.metadata === 'object' && !Array.isArray(car.metadata)
         ? car.metadata
         : {};
-    // Fallback: create an Order record until CarRentalBooking table exists
-    const order = await db_1.prisma.order.create({
-        data: {
-            userId: body.userId,
-            moduleType: client_1.ModuleType.RIDE,
-            status: client_1.OrderStatus.CONFIRMED,
-            subtotal: new client_1.Prisma.Decimal(subtotal),
-            tax: new client_1.Prisma.Decimal(tax),
-            deliveryFee: new client_1.Prisma.Decimal(0),
-            discount: new client_1.Prisma.Decimal(0),
-            total: new client_1.Prisma.Decimal(total),
-            notes: body.notes ?? null,
-            metadata: {
-                rentalBooking: true,
+    // Check availability: ensure no existing confirmed/active bookings overlap
+    const overlapping = await db_1.prisma.carRentalBooking.findFirst({
+        where: {
+            carId: body.carId,
+            status: { in: ['PENDING', 'CONFIRMED', 'ACTIVE'] },
+            AND: [
+                { startDate: { lte: endDate } },
+                { endDate: { gte: startDate } },
+            ],
+        },
+    });
+    if (overlapping) {
+        return res.status(409).json({ error: 'Car is already booked for the selected dates.' });
+    }
+    // Transactionally create CarRentalBooking and an Order record for accounting
+    const result = await db_1.prisma.$transaction(async (tx) => {
+        const booking = await tx.carRentalBooking.create({
+            data: {
+                userId: body.userId,
                 carId: body.carId,
                 carName: car.name,
                 carType: carMetadata.type?.toString() ?? car.brand ?? 'Standard',
-                startDate: startDate.toISOString(),
-                endDate: endDate.toISOString(),
+                startDate,
+                endDate,
                 totalDays,
-                pricePerDay,
+                pricePerDay: new client_1.Prisma.Decimal(pricePerDay),
+                subtotal: new client_1.Prisma.Decimal(subtotal),
+                tax: new client_1.Prisma.Decimal(tax),
+                total: new client_1.Prisma.Decimal(total),
+                status: 'CONFIRMED',
                 pickupLocation: body.pickupLocation,
                 dropoffLocation: body.dropoffLocation ?? body.pickupLocation,
+                notes: body.notes ?? null,
+                metadata: {
+                    createdBy: 'api',
+                },
             },
-            items: {
-                create: [
-                    {
-                        productId: body.carId,
-                        name: car.name,
-                        brand: carMetadata.type?.toString() ?? car.brand ?? 'Car Rental',
-                        quantity: totalDays,
-                        unitPrice: new client_1.Prisma.Decimal(pricePerDay),
-                        lineTotal: new client_1.Prisma.Decimal(subtotal),
-                        metadata: {
-                            startDate: startDate.toISOString(),
-                            endDate: endDate.toISOString(),
-                            totalDays,
-                            pickupLocation: body.pickupLocation,
-                            dropoffLocation: body.dropoffLocation ?? body.pickupLocation,
-                            rentalBooking: true,
+        });
+        const order = await tx.order.create({
+            data: {
+                userId: body.userId,
+                moduleType: client_1.ModuleType.RIDE,
+                status: client_1.OrderStatus.CONFIRMED,
+                subtotal: new client_1.Prisma.Decimal(subtotal),
+                tax: new client_1.Prisma.Decimal(tax),
+                deliveryFee: new client_1.Prisma.Decimal(0),
+                discount: new client_1.Prisma.Decimal(0),
+                total: new client_1.Prisma.Decimal(total),
+                notes: body.notes ?? null,
+                metadata: {
+                    rentalBooking: true,
+                    bookingId: booking.id,
+                    carId: body.carId,
+                    carName: car.name,
+                    carType: carMetadata.type?.toString() ?? car.brand ?? 'Standard',
+                    startDate: startDate.toISOString(),
+                    endDate: endDate.toISOString(),
+                    totalDays,
+                    pricePerDay,
+                    pickupLocation: body.pickupLocation,
+                    dropoffLocation: body.dropoffLocation ?? body.pickupLocation,
+                },
+                items: {
+                    create: [
+                        {
+                            productId: body.carId,
+                            name: car.name,
+                            brand: carMetadata.type?.toString() ?? car.brand ?? 'Car Rental',
+                            quantity: totalDays,
+                            unitPrice: new client_1.Prisma.Decimal(pricePerDay),
+                            lineTotal: new client_1.Prisma.Decimal(subtotal),
+                            metadata: {
+                                bookingId: booking.id,
+                                startDate: startDate.toISOString(),
+                                endDate: endDate.toISOString(),
+                                totalDays,
+                                pickupLocation: body.pickupLocation,
+                                dropoffLocation: body.dropoffLocation ?? body.pickupLocation,
+                                rentalBooking: true,
+                            },
                         },
-                    },
-                ],
+                    ],
+                },
             },
+            include: { items: true },
+        });
+        return { booking, order };
+    });
+    const booking = result.booking;
+    res.status(201).json(serializeBooking({
+        id: booking.id,
+        userId: booking.userId,
+        carId: booking.carId,
+        carName: booking.carName,
+        carType: booking.carType,
+        startDate: booking.startDate,
+        endDate: booking.endDate,
+        totalDays: booking.totalDays,
+        pricePerDay: booking.pricePerDay,
+        subtotal: booking.subtotal,
+        tax: booking.tax,
+        total: booking.total,
+        status: booking.status,
+        pickupLocation: booking.pickupLocation ?? null,
+        dropoffLocation: booking.dropoffLocation ?? null,
+        notes: booking.notes ?? null,
+        createdAt: booking.createdAt,
+        updatedAt: booking.updatedAt,
+    }));
+}));
+// Availability check endpoint
+// GET /api/car-rentals/bookings/availability?carId=...&startDate=...&endDate=...
+router.get('/bookings/availability', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const carId = req.query.carId?.toString();
+    const start = req.query.startDate?.toString();
+    const end = req.query.endDate?.toString();
+    if (!carId || !start || !end) {
+        return res.status(400).json({ error: 'carId, startDate and endDate are required' });
+    }
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (endDate <= startDate) {
+        return res.status(400).json({ error: 'End date must be after start date.' });
+    }
+    const overlapping = await db_1.prisma.carRentalBooking.findFirst({
+        where: {
+            carId,
+            status: { in: ['PENDING', 'CONFIRMED', 'ACTIVE'] },
+            AND: [
+                { startDate: { lte: endDate } },
+                { endDate: { gte: startDate } },
+            ],
         },
-        include: { items: true },
     });
-    const meta = order.metadata;
-    res.status(201).json({
-        id: order.id,
-        userId: order.userId,
-        carId: meta.carId?.toString() ?? body.carId,
-        carName: meta.carName?.toString() ?? car.name,
-        carType: meta.carType?.toString() ?? 'Standard',
-        startDate: meta.startDate,
-        endDate: meta.endDate,
-        totalDays: typeof meta.totalDays === 'number' ? meta.totalDays : totalDays,
-        pricePerDay: typeof meta.pricePerDay === 'number' ? meta.pricePerDay : pricePerDay,
-        subtotal: (0, serializers_1.toNumber)(order.subtotal),
-        tax: (0, serializers_1.toNumber)(order.tax),
-        total: (0, serializers_1.toNumber)(order.total),
-        status: order.status,
-        pickupLocation: meta.pickupLocation?.toString() ?? body.pickupLocation,
-        dropoffLocation: meta.dropoffLocation?.toString() ?? body.pickupLocation,
-        notes: order.notes,
-        createdAt: order.createdAt,
-    });
+    res.json({ available: !Boolean(overlapping) });
 }));
 // GET /api/car-rentals/bookings/user/:userId — user's rental history
 router.get('/bookings/user/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const userId = (0, http_1.getParam)(req.params.userId, 'userId');
-    const orders = await db_1.prisma.order.findMany({
-        where: {
-            userId,
-            moduleType: client_1.ModuleType.RIDE,
-            metadata: {
-                path: ['rentalBooking'],
-                equals: true,
-            },
-        },
-        include: { items: true },
+    const bookings = await db_1.prisma.carRentalBooking.findMany({
+        where: { userId },
         orderBy: { createdAt: 'desc' },
     });
-    const bookings = orders.map((order) => {
-        const meta = order.metadata;
-        return {
-            id: order.id,
-            userId: order.userId,
-            carId: meta.carId?.toString() ?? '',
-            carName: meta.carName?.toString() ?? 'Car',
-            carType: meta.carType?.toString() ?? 'Standard',
-            startDate: meta.startDate,
-            endDate: meta.endDate,
-            totalDays: typeof meta.totalDays === 'number' ? meta.totalDays : 1,
-            pricePerDay: typeof meta.pricePerDay === 'number' ? meta.pricePerDay : 0,
-            subtotal: (0, serializers_1.toNumber)(order.subtotal),
-            tax: (0, serializers_1.toNumber)(order.tax),
-            total: (0, serializers_1.toNumber)(order.total),
-            status: order.status,
-            pickupLocation: meta.pickupLocation?.toString() ?? null,
-            dropoffLocation: meta.dropoffLocation?.toString() ?? null,
-            notes: order.notes,
-            createdAt: order.createdAt,
-        };
-    });
-    res.json(bookings);
+    const serialized = bookings.map((b) => serializeBooking({
+        id: b.id,
+        userId: b.userId,
+        carId: b.carId,
+        carName: b.carName,
+        carType: b.carType,
+        startDate: b.startDate,
+        endDate: b.endDate,
+        totalDays: b.totalDays,
+        pricePerDay: b.pricePerDay,
+        subtotal: b.subtotal,
+        tax: b.tax,
+        total: b.total,
+        status: b.status,
+        pickupLocation: b.pickupLocation ?? null,
+        dropoffLocation: b.dropoffLocation ?? null,
+        notes: b.notes ?? null,
+        createdAt: b.createdAt,
+        updatedAt: b.updatedAt,
+    }));
+    res.json(serialized);
 }));
 exports.default = router;

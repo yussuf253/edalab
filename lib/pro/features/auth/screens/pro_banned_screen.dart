@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../../core/providers/auth_provider.dart';
+import '../../../core/providers/pro_auth_provider.dart';
+import '../../../core/router/pro_route_paths.dart';
 
-class BannedUserScreen extends StatelessWidget {
-  const BannedUserScreen({this.banReason, super.key});
+class ProBannedScreen extends StatelessWidget {
+  const ProBannedScreen({this.banReason, super.key});
 
   final String? banReason;
 
@@ -43,8 +44,8 @@ class BannedUserScreen extends StatelessWidget {
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: () {
-                  context.read<AuthProvider>().logout();
-                  context.go('/login');
+                  context.read<ProAuthProvider>().logout();
+                  context.go(ProRoutePaths.login);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.error,

@@ -1,4 +1,5 @@
-import 'package:edalab/features/onboarding/home_onboarding_screen.dart';
+import 'package:edalab/features/onboarding/screens/home_onboarding_screen.dart';
+import 'package:edalab/features/onboarding/screens/onboarding_screen.dart';
 
 import '../../core/config/app_config.dart';
 import 'package:edalab/features/doctor/screens/lab_tests_screen.dart';
@@ -8,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../localization/app_localizations.dart';
 import '../modules/module_access_service.dart';
 import '../models/models.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/example_version_check.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
@@ -85,7 +87,6 @@ final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<NavigatorState> _shellNavigatorKey =
     GlobalKey<NavigatorState>();
 
-// Export for use in main.dart
 GlobalKey<NavigatorState> get rootNavigatorKey => _rootNavigatorKey;
 
 void openAppRoute(String route) {
@@ -94,40 +95,63 @@ void openAppRoute(String route) {
   context.push(route);
 }
 
-GoRouter createAppRouter({required bool hasSeenOnboarding}) {
+GoRouter createAppRouter({
+  required AuthProvider authProvider,
+  required bool hasSeenOnboarding,
+  required bool hasSeenHomeOnboarding,
+}) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
+    refreshListenable: authProvider,
+    // Onboarding général → /onboarding
+    // Home onboarding → géré via redirect sur /home-services
     initialLocation: hasSeenOnboarding ? '/' : '/home-onboarding',
     redirect: (context, state) {
-      final moduleId = ModuleAccessService.instance.moduleForPath(
-        state.uri.path,
-      );
+      final path = state.uri.path;
+      if (authProvider.isBanned) {
+        return path == '/banned' ? null : '/banned';
+      }
+      if (path == '/banned' && !authProvider.isBanned) {
+        return authProvider.isLoggedIn ? '/' : '/login';
+      }
+      // Home onboarding : s'affiche une seule fois au premier accès à /home-services
+      if (!hasSeenHomeOnboarding && path == '/home-services') {
+        return '/home-onboarding';
+      }
+      final moduleId = ModuleAccessService.instance.moduleForPath(path);
       if (moduleId == null) return null;
       if (ModuleAccessService.instance.isEnabled(moduleId)) return null;
       return '/';
     },
     routes: [
-      // Onboarding
+      // ── Onboarding général ──────────────────────────────────────────────
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+
+      // ── Home Services Onboarding ────────────────────────────────────────
       GoRoute(
         path: '/home-onboarding',
         builder: (context, state) => const HomeOnboardingScreen(),
       ),
 
-      // Auth
+      // ── Auth ────────────────────────────────────────────────────────────
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
 
-      // Banned User Screen
+      // ── Banned ──────────────────────────────────────────────────────────
       GoRoute(
         path: '/banned',
-        builder: (context, state) =>
-            BannedUserScreen(banReason: state.extra as String?),
+        builder: (context, state) => BannedUserScreen(
+          banReason: state.extra as String? ?? authProvider.banReason,
+        ),
       ),
 
-      // Main App Shell with Bottom Navigation
+      // ── Main App Shell ───────────────────────────────────────────────────
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) => AppShell(child: child),
@@ -169,13 +193,13 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         ),
       ),
 
-      // Search
+      // ── Search ──────────────────────────────────────────────────────────
       GoRoute(
         path: '/search',
         builder: (context, state) => const SearchScreen(),
       ),
 
-      // Shopping
+      // ── Shopping ────────────────────────────────────────────────────────
       GoRoute(
         path: '/shopping',
         builder: (context, state) => const ShoppingScreen(),
@@ -212,13 +236,12 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
               : null,
         ),
       ),
-      // Demo route for version management example widget
       GoRoute(
         path: '/version-demo',
         builder: (context, state) => const ExampleVersionCheckWidget(),
       ),
 
-      // Food
+      // ── Food ────────────────────────────────────────────────────────────
       GoRoute(path: '/food', builder: (context, state) => const FoodScreen()),
       GoRoute(
         path: '/food/restaurant/:id',
@@ -265,7 +288,7 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
             FoodOrderTrackingScreen(orderId: state.pathParameters['id']!),
       ),
 
-      // Doctor
+      // ── Doctor ──────────────────────────────────────────────────────────
       GoRoute(
         path: '/doctor',
         builder: (context, state) => const DoctorScreen(),
@@ -351,7 +374,7 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         },
       ),
 
-      // Hotel
+      // ── Hotel ────────────────────────────────────────────────────────────
       GoRoute(path: '/hotel', builder: (context, state) => const HotelScreen()),
       GoRoute(
         path: '/hotel/detail/:id',
@@ -373,7 +396,7 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         ),
       ),
 
-      // Ride
+      // ── Ride ─────────────────────────────────────────────────────────────
       GoRoute(path: '/ride', builder: (context, state) => const RideScreen()),
       GoRoute(
         path: '/ride/book',
@@ -397,7 +420,7 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         ),
       ),
 
-      // Car Rental
+      // ── Car Rental ───────────────────────────────────────────────────────
       GoRoute(
         path: '/car-rental',
         builder: (context, state) => const CarRentalScreen(),
@@ -408,13 +431,11 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
           final extra = state.extra;
           CarRentalCar? carData;
           Map<String, dynamic>? carMap;
-
           if (extra is CarRentalCar) {
             carData = extra;
           } else if (extra is Map<String, dynamic>) {
             carMap = extra;
           }
-
           return CarRentalDetailScreen(
             carId: state.pathParameters['carId']!,
             carData: carData,
@@ -423,7 +444,7 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         },
       ),
 
-      // Pharmacy
+      // ── Pharmacy ─────────────────────────────────────────────────────────
       GoRoute(
         path: '/pharmacy',
         builder: (context, state) {
@@ -464,7 +485,7 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         ),
       ),
 
-      // Grocery
+      // ── Grocery ──────────────────────────────────────────────────────────
       GoRoute(
         path: '/grocery',
         builder: (context, state) => const GroceryScreen(),
@@ -484,7 +505,7 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         builder: (context, state) => const GroceryCartScreen(),
       ),
 
-      // Home Services
+      // ── Home Services ────────────────────────────────────────────────────
       GoRoute(
         path: '/home-services',
         builder: (context, state) => const HomeServicesScreen(),
@@ -518,7 +539,7 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         ),
       ),
 
-      // Laundry
+      // ── Laundry ──────────────────────────────────────────────────────────
       GoRoute(
         path: '/laundry',
         builder: (context, state) => const LaundryScreen(),
@@ -541,7 +562,7 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
             LaundryTrackingScreen(orderId: state.pathParameters['id']!),
       ),
 
-      // Checkout
+      // ── Checkout ─────────────────────────────────────────────────────────
       GoRoute(
         path: '/checkout',
         builder: (context, state) => CheckoutScreen(
@@ -595,13 +616,13 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         },
       ),
 
-      // Rewards
+      // ── Rewards ──────────────────────────────────────────────────────────
       GoRoute(
         path: '/rewards',
         builder: (context, state) => const CouponsScreen(),
       ),
 
-      // Profile Sub-screens
+      // ── Profile ──────────────────────────────────────────────────────────
       GoRoute(
         path: '/profile/edit',
         builder: (context, state) => const EditProfileScreen(),
@@ -623,7 +644,7 @@ GoRouter createAppRouter({required bool hasSeenOnboarding}) {
         builder: (context, state) => const HelpCenterScreen(),
       ),
 
-      // Notifications
+      // ── Notifications ────────────────────────────────────────────────────
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationsScreen(),

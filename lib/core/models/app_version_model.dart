@@ -60,17 +60,17 @@ class AppVersionModel {
 
   /// Determines if an update is needed
   bool get isUpdateRequired {
-    return _compareVersions(latestVersion, currentVersion) > 0;
+    return compareVersions(latestVersion, currentVersion) > 0;
   }
 
   /// Determines if current version is below minimum required version
   bool get isBelowMinimumVersion {
-    return _compareVersions(currentVersion, minRequiredVersion) < 0;
+    return compareVersions(currentVersion, minRequiredVersion) < 0;
   }
 
   /// Compare two semantic versions
   /// Returns: 1 if version1 > version2, -1 if version1 < version2, 0 if equal
-  static int _compareVersions(String version1, String version2) {
+  static int compareVersions(String version1, String version2) {
     // Strip any build metadata (e.g., "1.0.0+1" -> "1.0.0")
     final v1Clean = version1.split('+').first;
     final v2Clean = version2.split('+').first;
@@ -88,8 +88,12 @@ class AppVersionModel {
     final maxLength = v1Parts.length > v2Parts.length
         ? v1Parts.length
         : v2Parts.length;
-    while (v1Parts.length < maxLength) v1Parts.add(0);
-    while (v2Parts.length < maxLength) v2Parts.add(0);
+    while (v1Parts.length < maxLength) {
+      v1Parts.add(0);
+    }
+    while (v2Parts.length < maxLength) {
+      v2Parts.add(0);
+    }
 
     for (int i = 0; i < maxLength; i++) {
       if (v1Parts[i] > v2Parts[i]) return 1;

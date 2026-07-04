@@ -81,7 +81,6 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
     return subtotal + tax;
   }
 
-
   Future<void> _pickStartDate(AppLocalizations l10n) async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -153,7 +152,6 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
     }
   }
 
-
   Future<void> _bookCar(AppLocalizations l10n) async {
     final car = widget.carData;
     if (car == null) return;
@@ -166,9 +164,9 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
       return;
     }
     if (_startDate == null || _endDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.t('car_rental.error_dates'))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.t('car_rental.error_dates'))));
       return;
     }
 
@@ -186,8 +184,12 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
         'carId': car.id,
         'startDate': _startDate!.toIso8601String(),
         'endDate': _endDate!.toIso8601String(),
-        'pickupLocation': _pickupLocation.isEmpty ? 'Djibouti City' : _pickupLocation,
-        'dropoffLocation': _dropoffLocation.isEmpty ? 'Djibouti City' : _dropoffLocation,
+        'pickupLocation': _pickupLocation.isEmpty
+            ? 'Djibouti City'
+            : _pickupLocation,
+        'dropoffLocation': _dropoffLocation.isEmpty
+            ? 'Djibouti City'
+            : _dropoffLocation,
       });
 
       // Ensure widget still mounted before interacting with context
@@ -199,9 +201,16 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
       Navigator.of(context).pop(resp);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.t('car_rental.error_booking', params: {'error': ApiClient.userFacingError(e)}))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.t(
+              'car_rental.error_booking',
+              params: {'error': ApiClient.userFacingError(e)},
+            ),
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _isBooking = false);
     }
@@ -211,7 +220,6 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final car = widget.carData;
-    final pricePerDay = car?.pricePerDay ?? 0;
 
     return Scaffold(
       appBar: AppBar(title: Text(car?.name ?? 'Car')),
@@ -270,14 +278,16 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
                     label: l10n.t('car_rental.pickup_location'),
                     hint: l10n.t('car_rental.pickup_location_hint'),
                     value: _pickupLocation,
-                    onChanged: (value) => setState(() => _pickupLocation = value),
+                    onChanged: (value) =>
+                        setState(() => _pickupLocation = value),
                   ),
                   const SizedBox(height: 12),
                   _LocationField(
                     label: l10n.t('car_rental.dropoff_location'),
                     hint: l10n.t('car_rental.dropoff_location_hint'),
                     value: _dropoffLocation,
-                    onChanged: (value) => setState(() => _dropoffLocation = value),
+                    onChanged: (value) =>
+                        setState(() => _dropoffLocation = value),
                   ),
                 ],
               ),
@@ -420,7 +430,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(12),
-                boxShadow: AppSpacing.shadowSm,
+                  boxShadow: AppSpacing.shadowSm,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -445,7 +455,8 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
                     ),
                     _PriceRow(
                       label: l10n.t('car_rental.tax'),
-                      value: 'DJF${((_totalDays * (car?.pricePerDay ?? 0)) * 0.08).toInt()}',
+                      value:
+                          'DJF${((_totalDays * (car?.pricePerDay ?? 0)) * 0.08).toInt()}',
                     ),
                     const Divider(height: 16),
                     _PriceRow(
@@ -560,6 +571,7 @@ class _LocationField extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _InfoRow extends StatelessWidget {
   final String label;
   final String value;

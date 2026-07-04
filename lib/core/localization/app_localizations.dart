@@ -561,6 +561,12 @@ class AppLocalizations {
 
   static const Map<String, Map<String, String>> _localizedValues = {
     'en': {
+      'home_onboarding.step_choose_service': 'Choose your service',
+      'home_onboarding.step_select_date': 'Select a date',
+      'home_onboarding.step_pro_arrives': 'A pro comes to you',
+      'home_onboarding.trust_verified': 'Verified providers',
+      'home_onboarding.trust_price': 'Price shown upfront',
+      'home_onboarding.trust_support': 'Support 7 days/7',
       'common.all': 'All',
       'common.unread': 'Unread',
       'common.total': 'Total',
@@ -713,7 +719,7 @@ class AppLocalizations {
           'You can track your order in real-time from the Orders tab. Tap on any active order to see its current status, estimated delivery time, and rider information.',
       'help.faq3_q': 'What payment methods are accepted?',
       'help.faq3_a':
-          'We accept Credit/Debit cards, Apple Pay, Google Pay, PayPal, and Cash on Delivery. You can manage your payment methods from your Profile settings.',
+          'We accept Waafi and Cash on Delivery. You can manage your payment methods from your Profile settings.',
       'help.faq4_q': 'How do I cancel an order?',
       'help.faq4_a':
           'You can cancel an order within 5 minutes of placing it. Go to Orders tab, select the order, and tap "Cancel Order". After 5 minutes, contact support for assistance.',
@@ -2109,6 +2115,12 @@ class AppLocalizations {
       'home_onboarding.page3_title': 'Prix clairs, zéro surprise',
       'home_onboarding.page3_subtitle': 'Tu vois le tarif avant de confirmer.',
       'home_onboarding.get_started': 'Découvrir les services',
+      "home_onboarding.step_choose_service": "Choisis ton service",
+      "home_onboarding.step_select_date": "Sélectionne une date",
+      "home_onboarding.step_pro_arrives": "Un pro arrive chez toi",
+      "home_onboarding.trust_verified": "Prestataires vérifiés",
+      "home_onboarding.trust_price": "Prix affichés avant",
+      "home_onboarding.trust_support": "Support 7j/7",
       'onboarding.skip': 'Passer',
       'onboarding.next': 'Suivant',
       'onboarding.get_started': 'Commencer',
@@ -2157,7 +2169,7 @@ class AppLocalizations {
           'Vous pouvez suivre votre commande en temps réel depuis l\'onglet Commandes. Touchez une commande active pour voir son statut et l\'heure estimée.',
       'help.faq3_q': 'Quels moyens de paiement sont acceptés ?',
       'help.faq3_a':
-          'Nous acceptons les cartes, Apple Pay, Google Pay, PayPal et le paiement à la livraison. Vous pouvez gérer vos moyens de paiement dans le profil.',
+          'Nous acceptons Waafi et le paiement à la livraison. Vous pouvez gérer vos moyens de paiement dans le profil.',
       'help.faq4_q': 'Comment annuler une commande ?',
       'help.faq4_a':
           'Vous pouvez annuler une commande dans les 5 minutes suivant sa création. Allez dans Commandes, choisissez la commande puis touchez "Annuler".',
@@ -3209,6 +3221,12 @@ class AppLocalizations {
           '{count} article{suffix} prêt{suffix} pour la livraison',
     },
     'ar': {
+      'home_onboarding.step_choose_service': 'اختر خدمتك',
+      'home_onboarding.step_select_date': 'حدد تاريخاً',
+      'home_onboarding.step_pro_arrives': 'يصل المحترف إليك',
+      'home_onboarding.trust_verified': 'مزودون موثقون',
+      'home_onboarding.trust_price': 'السعر معروف مسبقاً',
+      'home_onboarding.trust_support': 'دعم 7 أيام / 7',
       'home_service_booking.booking_type': 'نوع الحجز',
       'home_service_booking.pay_on_confirmation_description':
           'الدفع بعد تأكيد المزود للحجز',
@@ -3314,13 +3332,13 @@ class AppLocalizations {
       'common.search': 'بحث...',
       'home.detecting_location': 'جارٍ تحديد موقعك...',
       'home.no_services_available': 'لا توجد خدمات متاحة الآن.',
-      'home_onboarding.page1_title': '',
-      'home_onboarding.page1_subtitle': 'Ménage, plomberie, électricité…',
-      'home_onboarding.page2_title': 'Réserve en 3 clics',
-      'home_onboarding.page2_subtitle': 'Choisis, date, confirmation.',
-      'home_onboarding.page3_title': 'Prix clairs, zéro surprise',
-      'home_onboarding.page3_subtitle': 'Tu vois le tarif avant de confirmer.',
-      'home_onboarding.get_started': 'Découvrir les services',
+      'home_onboarding.page1_title': 'محترفون معتمدون، في منزلك',
+      'home_onboarding.page1_subtitle': 'التنظيف، والسباكة، والكهرباء...',
+      'home_onboarding.page2_title': 'احجز بثلاث نقرات',
+      'home_onboarding.page2_subtitle': 'اختر التاريخ، ثم أكد.',
+      'home_onboarding.page3_title': 'أسعار واضحة، بدون مفاجآت',
+      'home_onboarding.page3_subtitle': 'يمكنك رؤية السعر قبل التأكيد.',
+      'home_onboarding.get_started': 'اكتشف الخدمات',
       'onboarding.skip': 'تخطي',
       'onboarding.next': 'التالي',
       'onboarding.get_started': 'ابدأ',
@@ -3368,7 +3386,7 @@ class AppLocalizations {
           'يمكنك تتبع طلبك لحظة بلحظة من تبويب الطلبات. اضغط على أي طلب نشط لمعرفة حالته ووقت التوصيل المتوقع.',
       'help.faq3_q': 'ما وسائل الدفع المقبولة؟',
       'help.faq3_a':
-          'نقبل البطاقات، Apple Pay، Google Pay، PayPal، والدفع عند الاستلام. يمكنك إدارة وسائل الدفع من إعدادات الملف الشخصي.',
+          'نقبل Waafi والدفع عند الاستلام. يمكنك إدارة وسائل الدفع من إعدادات الملف الشخصي.',
       'help.faq4_q': 'كيف ألغي طلباً؟',
       'help.faq4_a':
           'يمكنك إلغاء الطلب خلال 5 دقائق من إنشائه. اذهب إلى تبويب الطلبات، اختر الطلب، ثم اضغط "إلغاء الطلب".',

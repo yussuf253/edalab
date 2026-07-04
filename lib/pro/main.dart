@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart'; // pro/app.dart
@@ -31,6 +32,21 @@ Future<void> main() async {
     notificationProvider.initialize(),
     proAuthProvider.initialize(),
   ]);
+
+  // Redirect banned pro users to the banned screen
+  if (proAuthProvider.isBanned) {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      try {
+        final context = proNavigatorKey.currentContext;
+        if (context != null && context.mounted) {
+          context.go('/banned', extra: proAuthProvider.banReason);
+        }
+      } catch (e) {
+        print('Banned redirect error: $e');
+      }
+    });
+  }
+
   await notificationProvider.syncProSession(
     userId: proAuthProvider.currentProfile?.userId,
   );
@@ -77,7 +93,10 @@ Future<void> main() async {
       ],
       child: EdaLabApp(
         title: 'EdaLab Pro',
-        router: createProAppRouter(hasSeenOnboarding: hasSeenProOnboarding),
+        router: createProAppRouter(
+          proAuthProvider: proAuthProvider,
+          hasSeenOnboarding: hasSeenProOnboarding,
+        ),
       ),
     ),
   );

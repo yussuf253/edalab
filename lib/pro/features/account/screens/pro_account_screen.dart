@@ -172,6 +172,18 @@ class ProAccountScreen extends StatelessWidget {
             ),
           ],
           const SizedBox(height: ProDesignSystem.spacing20),
+          if (proAuth.isSuperAdmin) ...[
+            ModernHeader(title: 'Super Admin'),
+            const SizedBox(height: ProDesignSystem.spacing12),
+            ModernTile(
+              leadingIcon: Icons.admin_panel_settings_outlined,
+              title: 'Operations Control Center',
+              subtitle:
+                  'Track release actions, operational signals, and admin workflows.',
+              onTap: () => _open(context, ProRoutePaths.superAdmin),
+            ),
+            const SizedBox(height: ProDesignSystem.spacing20),
+          ],
           ModernHeader(title: _managementTitle(currentProfile.type)),
           const SizedBox(height: ProDesignSystem.spacing12),
           ..._buildManagementTiles(context, currentProfile),

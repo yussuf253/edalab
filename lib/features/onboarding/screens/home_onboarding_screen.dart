@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_text_styles.dart';
-import '../../../core/localization/app_localizations.dart';
-import '../../../core/providers/language_provider.dart';
-import '../../../core/storage/app_preferences.dart';
-import '../../../core/widgets/app_button.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_text_styles.dart';
+import '../../../../core/localization/app_localizations.dart';
+import '../../../../core/providers/language_provider.dart';
+import '../../../../core/storage/app_preferences.dart';
+import '../../../../core/widgets/app_button.dart';
 
 class HomeOnboardingScreen extends StatefulWidget {
   const HomeOnboardingScreen({super.key});
@@ -28,79 +28,44 @@ class _HomeOnboardingScreenState extends State<HomeOnboardingScreen> {
     end: Alignment.bottomRight,
   );
 
+  // ── Services (icônes orbit) ── restent const car pas de texte localisé ──
   static const List<_HomeServiceData> _services = [
     _HomeServiceData(
       assetPath: 'assets/icons/home_services/cleaning.png',
       fallbackIcon: Icons.cleaning_services_rounded,
-      label: 'Ménage',
+      label: '',
     ),
     _HomeServiceData(
       assetPath: 'assets/icons/home_services/electrician.png',
       fallbackIcon: Icons.electrical_services_rounded,
-      label: 'Électricien',
+      label: '',
     ),
     _HomeServiceData(
       assetPath: 'assets/icons/home_services/plumber.png',
       fallbackIcon: Icons.plumbing_rounded,
-      label: 'Plombier',
+      label: '',
     ),
     _HomeServiceData(
       assetPath: 'assets/icons/home_services/ac.png',
       fallbackIcon: Icons.ac_unit_rounded,
-      label: 'Climatisation',
+      label: '',
     ),
     _HomeServiceData(
       assetPath: 'assets/icons/home_services/carpenter.png',
       fallbackIcon: Icons.handyman_rounded,
-      label: 'Menuisier',
+      label: '',
     ),
     _HomeServiceData(
       assetPath: 'assets/icons/home_services/beauty.png',
       fallbackIcon: Icons.spa_rounded,
-      label: 'Beauté',
+      label: '',
     ),
   ];
 
-  // Page 2 — étapes de réservation
-  static const List<_StepCardData> _bookingSteps = [
-    _StepCardData(
-      icon: Icons.touch_app_rounded,
-      label: 'Choisis ton service',
-      step: '1',
-    ),
-    _StepCardData(
-      icon: Icons.calendar_month_rounded,
-      label: 'Sélectionne une date',
-      step: '2',
-    ),
-    _StepCardData(
-      icon: Icons.check_circle_rounded,
-      label: 'Un pro arrive chez toi',
-      step: '3',
-    ),
-  ];
-
-  // Page 3 — garanties
-  static const List<_StepCardData> _trustItems = [
-    _StepCardData(
-      icon: Icons.verified_user_rounded,
-      label: 'Prestataires vérifiés',
-      step: '✓',
-    ),
-    _StepCardData(
-      icon: Icons.price_check_rounded,
-      label: 'Prix affichés avant',
-      step: '✓',
-    ),
-    _StepCardData(
-      icon: Icons.support_agent_rounded,
-      label: 'Support 7j/7',
-      step: '✓',
-    ),
-  ];
-
-  Future<void> _markSeen() async =>
-      AppPreferences.setHasSeenHomeOnboarding(true);
+  Future<void> _markSeen() async {
+    await AppPreferences.setHasSeenHomeOnboarding(true);
+    await AppPreferences.setHasSeenOnboarding(true); // ← empêche la boucle
+  }
 
   Future<void> _goToHome() async {
     await _markSeen();
@@ -128,6 +93,43 @@ class _HomeOnboardingScreenState extends State<HomeOnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+
+    // ── Listes localisées — définies ici pour accéder à l10n ──────────────
+    final bookingSteps = [
+      _StepCardData(
+        icon: Icons.touch_app_rounded,
+        label: l10n.t('home_onboarding.step_choose_service'),
+        step: '1',
+      ),
+      _StepCardData(
+        icon: Icons.calendar_month_rounded,
+        label: l10n.t('home_onboarding.step_select_date'),
+        step: '2',
+      ),
+      _StepCardData(
+        icon: Icons.check_circle_rounded,
+        label: l10n.t('home_onboarding.step_pro_arrives'),
+        step: '3',
+      ),
+    ];
+
+    final trustItems = [
+      _StepCardData(
+        icon: Icons.verified_user_rounded,
+        label: l10n.t('home_onboarding.trust_verified'),
+        step: '✓',
+      ),
+      _StepCardData(
+        icon: Icons.price_check_rounded,
+        label: l10n.t('home_onboarding.trust_price'),
+        step: '✓',
+      ),
+      _StepCardData(
+        icon: Icons.support_agent_rounded,
+        label: l10n.t('home_onboarding.trust_support'),
+        step: '✓',
+      ),
+    ];
 
     final pages = [
       _HomeOnboardingData(
@@ -185,8 +187,8 @@ class _HomeOnboardingScreenState extends State<HomeOnboardingScreen> {
                     itemBuilder: (context, index) => _HomeOnboardingPageContent(
                       page: pages[index],
                       services: _services,
-                      bookingSteps: _bookingSteps,
-                      trustItems: _trustItems,
+                      bookingSteps: bookingSteps,
+                      trustItems: trustItems,
                     ),
                   ),
                 ),
@@ -337,7 +339,6 @@ class _HomeOnboardingPageContent extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 SizedBox(height: compact ? 8 : 20),
-
                 switch (page.heroType) {
                   _HomeHeroType.orbit => _HomeOrbitHero(
                     services: services,
@@ -356,9 +357,7 @@ class _HomeOnboardingPageContent extends StatelessWidget {
                     heroIcon: Icons.verified_user_rounded,
                   ),
                 },
-
                 SizedBox(height: compact ? 24 : 32),
-
                 Text(
                   page.title,
                   style: AppTextStyles.h2.copyWith(
@@ -368,9 +367,7 @@ class _HomeOnboardingPageContent extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-
                 const SizedBox(height: 14),
-
                 Text(
                   page.subtitle,
                   style: AppTextStyles.bodyLarge.copyWith(
@@ -380,7 +377,6 @@ class _HomeOnboardingPageContent extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-
                 SizedBox(height: compact ? 10 : 16),
               ],
             ),
@@ -547,7 +543,6 @@ class _ServiceNode extends StatelessWidget {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HERO STEPS — pages 2 & 3
-// Design : grande icône centrée en haut + liste de lignes icon+label en dessous
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _StepsHero extends StatelessWidget {
@@ -585,7 +580,6 @@ class _StepsHero extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Grande icône centrale ──────────────────────────────────────
           Container(
             width: heroBoxSize,
             height: heroBoxSize,
@@ -595,15 +589,9 @@ class _StepsHero extends StatelessWidget {
             ),
             child: Icon(heroIcon, color: accentColor, size: compact ? 48 : 56),
           ),
-
           SizedBox(height: compact ? 20 : 24),
-
-          // ── Séparateur ────────────────────────────────────────────────
           Divider(color: AppColors.lightGrey, height: 1),
-
           SizedBox(height: compact ? 16 : 18),
-
-          // ── Lignes items ──────────────────────────────────────────────
           ...items.asMap().entries.map((entry) {
             final i = entry.key;
             final item = entry.value;
@@ -611,7 +599,6 @@ class _StepsHero extends StatelessWidget {
               padding: EdgeInsets.only(bottom: i < items.length - 1 ? gap : 0),
               child: Row(
                 children: [
-                  // Icône dans un petit carré
                   Container(
                     width: compact ? 36 : 40,
                     height: compact ? 36 : 40,
@@ -626,7 +613,6 @@ class _StepsHero extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 14),
-                  // Texte
                   Expanded(
                     child: Text(
                       item.label,
@@ -637,7 +623,6 @@ class _StepsHero extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Pastille numéro/check
                   Text(
                     item.step,
                     style: TextStyle(

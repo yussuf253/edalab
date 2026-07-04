@@ -24,16 +24,22 @@ class AppVersionProvider extends ChangeNotifier {
   /// Check if an update is available (current version < latest version)
   bool get isUpdateAvailable {
     if (_versionInfo == null) return false;
-    // Only show update if current app version is less than latest version
-    return _versionInfo!.isUpdateRequired;
+    return AppVersionModel.compareVersions(
+          _versionInfo!.latestVersion,
+          _currentAppVersion,
+        ) >
+        0;
   }
 
   /// Check if update is mandatory (force update)
   /// Shows popup only if current app version is less than minRequiredVersion
   bool get isForceUpdateRequired {
     if (_versionInfo == null) return false;
-    // Force update only if current version is below minimum required version
-    return _versionInfo!.isBelowMinimumVersion;
+    return AppVersionModel.compareVersions(
+          _currentAppVersion,
+          _versionInfo!.minRequiredVersion,
+        ) <
+        0;
   }
 
   /// Check if update can be skipped
@@ -68,6 +74,10 @@ class AppVersionProvider extends ChangeNotifier {
     try {
       final versionInfo = await AppVersionRepository.checkForUpdates();
       _versionInfo = versionInfo;
+      if (!isUpdateAvailable && !isForceUpdateRequired) {
+        _updateDismissed = false;
+        _updateSkipped = false;
+      }
       _error = null;
     } catch (e) {
       _error = 'Failed to check for updates: ${e.toString()}';
@@ -89,6 +99,10 @@ class AppVersionProvider extends ChangeNotifier {
         platform,
       );
       _versionInfo = versionInfo;
+      if (!isUpdateAvailable && !isForceUpdateRequired) {
+        _updateDismissed = false;
+        _updateSkipped = false;
+      }
       _error = null;
     } catch (e) {
       _error = 'Failed to check for updates: ${e.toString()}';

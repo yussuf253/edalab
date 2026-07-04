@@ -26,11 +26,16 @@ import '../../features/rider/screens/rider_queue_screen.dart';
 import '../../features/shop/screens/shop_orders_queue_screen.dart';
 import '../../features/shop/screens/shop_products_screen.dart';
 import '../../features/shop/screens/shop_store_setup_screen.dart';
+import '../../features/auth/screens/pro_banned_screen.dart';
+import '../../features/super_admin/screens/pro_super_admin_screen.dart';
 import '../models/pro_profile.dart';
 import '../providers/pro_auth_provider.dart';
 import 'pro_route_paths.dart';
 
 final GlobalKey<NavigatorState> _proNavigatorKey = GlobalKey<NavigatorState>();
+
+// Export for use in pro_auth_provider.dart
+GlobalKey<NavigatorState> get proNavigatorKey => _proNavigatorKey;
 
 void openProAppRoute(String route) {
   final context = _proNavigatorKey.currentContext;
@@ -49,12 +54,28 @@ Widget _withProfile(
   return builder(profile);
 }
 
-GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
+GoRouter createProAppRouter({
+  required ProAuthProvider proAuthProvider,
+  required bool hasSeenOnboarding,
+}) {
   return GoRouter(
     navigatorKey: _proNavigatorKey,
+    refreshListenable: proAuthProvider,
     initialLocation: hasSeenOnboarding
         ? ProRoutePaths.entry
         : ProRoutePaths.onboarding,
+    redirect: (context, state) {
+      final path = state.uri.path;
+      if (proAuthProvider.isBanned) {
+        return path == '/banned' ? null : '/banned';
+      }
+      if (path == '/banned' && !proAuthProvider.isBanned) {
+        return proAuthProvider.isAuthenticated
+            ? ProRoutePaths.entry
+            : ProRoutePaths.login;
+      }
+      return null;
+    },
     routes: [
       GoRoute(
         path: ProRoutePaths.onboarding,
@@ -77,6 +98,12 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
         builder: (context, state) => const ProSignupScreen(),
       ),
       GoRoute(
+        path: '/banned',
+        builder: (context, state) => ProBannedScreen(
+          banReason: state.extra as String? ?? proAuthProvider.banReason,
+        ),
+      ),
+      GoRoute(
         path: ProRoutePaths.dashboard,
         builder: (context, state) => const ProDashboardScreen(),
       ),
@@ -95,6 +122,10 @@ GoRouter createProAppRouter({required bool hasSeenOnboarding}) {
       GoRoute(
         path: ProRoutePaths.account,
         builder: (context, state) => const ProDashboardScreen(initialIndex: 4),
+      ),
+      GoRoute(
+        path: ProRoutePaths.superAdmin,
+        builder: (context, state) => const ProSuperAdminScreen(),
       ),
       GoRoute(
         path: ProRoutePaths.profileManagement,

@@ -29,6 +29,8 @@ function sanitizeUser(user) {
         name: [user.firstName, user.lastName].filter(Boolean).join(' ').trim(),
         phone: user.phone,
         avatarUrl: user.avatarUrl,
+        banned: user.banned,
+        banReason: user.banReason,
         address: user.addresses?.find((address) => address.isDefault)?.line1 ?? null,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,

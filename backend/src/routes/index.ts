@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import appointmentsRoutes from './appointments.routes';
+import adminRoutes from './admin.routes';
 import authRoutes from './auth.routes';
 import catalogRoutes from './catalog.routes';
 import modulesRoutes from './modules.routes';
@@ -26,6 +27,7 @@ router.get('/health', (_req, res) => {
 });
 
 router.use('/auth', authRoutes);
+router.use('/admin', adminRoutes);
 router.use('/catalog', catalogRoutes);
 router.use('/modules', modulesRoutes);
 router.use('/messages', messagesRoutes);

@@ -7,6 +7,8 @@ import '../storage/app_preferences.dart';
 
 enum ApiSessionScope { user, pro }
 
+typedef BannedCallback = void Function(String? banReason);
+
 class ApiClient {
   static const _defaultPort = '5050';
   static const Duration _defaultCacheDuration = Duration(minutes: 5);
@@ -40,6 +42,15 @@ class ApiClient {
   static Future<void>? _warmUpInFlight;
   static String? _token;
   static ApiSessionScope _sessionScope = ApiSessionScope.user;
+  static BannedCallback? _onBanned;
+
+  static void setBannedCallback(BannedCallback callback) {
+    _onBanned = callback;
+  }
+
+  static void clearBannedCallback() {
+    _onBanned = null;
+  }
 
   static String get baseUrl {
     if (_configuredBaseUrl.isNotEmpty) {
@@ -447,6 +458,21 @@ class ApiClient {
         cachedAt: DateTime.now(),
       );
       return _decodeBody(response.body);
+    } else if (response.statusCode == 403) {
+      final body = response.body.trim();
+      if (body.isNotEmpty) {
+        final errorDecoded = json.decode(body);
+        if (errorDecoded['banned'] == true) {
+          _onBanned?.call(errorDecoded['banReason'] as String?);
+          // Return the response instead of throwing so caller can handle it
+          return errorDecoded;
+        }
+        throw Exception(
+          errorDecoded['error'] ??
+              'Failed to load data: ${response.statusCode}',
+        );
+      }
+      throw Exception('Failed to load data: ${response.statusCode}');
     } else {
       final body = response.body.trim();
       if (body.isNotEmpty) {
@@ -482,6 +508,14 @@ class ApiClient {
     if (response.statusCode == 200 || response.statusCode == 201) {
       clearCache();
       return _decodeBody(response.body);
+    } else if (response.statusCode == 403) {
+      final errorDecoded = json.decode(response.body);
+      if (errorDecoded['banned'] == true) {
+        _onBanned?.call(errorDecoded['banReason'] as String?);
+      }
+      throw Exception(
+        errorDecoded['error'] ?? 'Failed to post data: ${response.statusCode}',
+      );
     } else {
       final errorDecoded = json.decode(response.body);
       throw Exception(
@@ -512,6 +546,14 @@ class ApiClient {
     if (response.statusCode == 200 || response.statusCode == 201) {
       clearCache();
       return _decodeBody(response.body);
+    } else if (response.statusCode == 403) {
+      final errorDecoded = json.decode(response.body);
+      if (errorDecoded['banned'] == true) {
+        _onBanned?.call(errorDecoded['banReason'] as String?);
+      }
+      throw Exception(
+        errorDecoded['error'] ?? 'Failed to patch data: ${response.statusCode}',
+      );
     } else {
       final errorDecoded = json.decode(response.body);
       throw Exception(
@@ -538,6 +580,15 @@ class ApiClient {
         return null;
       }
       return _decodeBody(response.body);
+    } else if (response.statusCode == 403) {
+      final errorDecoded = json.decode(response.body);
+      if (errorDecoded['banned'] == true) {
+        _onBanned?.call(errorDecoded['banReason'] as String?);
+      }
+      throw Exception(
+        errorDecoded['error'] ??
+            'Failed to delete data: ${response.statusCode}',
+      );
     } else {
       final errorDecoded = json.decode(response.body);
       throw Exception(

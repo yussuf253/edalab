@@ -32,11 +32,11 @@ class AppShell extends StatelessWidget {
         label: l10n.t('module.orders'),
         path: '/orders',
       ),
-      _NavItem(
+      /*_NavItem(
         assetPath: AppAssets.navCart,
         label: l10n.t('cart.title'),
         path: '/cart',
-      ),
+      ),*/
       _NavItem(
         assetPath: AppAssets.navMessages,
         label: l10n.t('messages.title'),
@@ -174,11 +174,11 @@ class _NavButton extends StatelessWidget {
                             color: AppColors.accent,
                             borderRadius: BorderRadius.circular(999),
                           ),
-                          child: Text(
+                          /*child: Text(
                             cartCount > 99 ? '99+' : '$cartCount',
                             textAlign: TextAlign.center,
                             style: AppTextStyles.badge.copyWith(fontSize: 8),
-                          ),
+                          ),*/
                         ),
                       ),
                   ],

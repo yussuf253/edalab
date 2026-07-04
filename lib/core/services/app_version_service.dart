@@ -11,6 +11,7 @@ class AppVersionService {
 
   Timer? _checkTimer;
   bool _isInitialized = false;
+  bool _isDialogVisible = false;
 
   /// Initialize the version check service
   /// This will set up periodic checks for app updates
@@ -45,6 +46,9 @@ class AppVersionService {
           !provider.updateDismissed &&
           !provider.updateSkipped) {
         _showOptionalUpdateDialog(context);
+      } else if (_isDialogVisible && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+        _isDialogVisible = false;
       }
     } catch (e) {
       print('Error during version check: $e');
@@ -60,11 +64,13 @@ class AppVersionService {
 
     provider.markForcedUpdate();
 
+    if (_isDialogVisible) return;
+    _isDialogVisible = true;
     showAppUpdateDialog(
       context,
       isForceUpdate: true,
       onUpdatePressed: () => _openAppStore(context, versionInfo.storeUrl),
-    );
+    ).whenComplete(() => _isDialogVisible = false);
   }
 
   /// Show optional update dialog (can be skipped)
@@ -74,6 +80,8 @@ class AppVersionService {
 
     if (versionInfo == null || !context.mounted) return;
 
+    if (_isDialogVisible) return;
+    _isDialogVisible = true;
     showAppUpdateDialog(
       context,
       isForceUpdate: false,
@@ -82,7 +90,7 @@ class AppVersionService {
         provider.skipUpdate();
         provider.dismissUpdateDialog();
       },
-    );
+    ).whenComplete(() => _isDialogVisible = false);
   }
 
   /// Open the app store for updating

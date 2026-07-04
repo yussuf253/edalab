@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const appointments_routes_1 = __importDefault(require("./appointments.routes"));
+const admin_routes_1 = __importDefault(require("./admin.routes"));
 const auth_routes_1 = __importDefault(require("./auth.routes"));
 const catalog_routes_1 = __importDefault(require("./catalog.routes"));
 const modules_routes_1 = __importDefault(require("./modules.routes"));
@@ -28,6 +29,7 @@ router.get('/health', (_req, res) => {
     });
 });
 router.use('/auth', auth_routes_1.default);
+router.use('/admin', admin_routes_1.default);
 router.use('/catalog', catalog_routes_1.default);
 router.use('/modules', modules_routes_1.default);
 router.use('/messages', messages_routes_1.default);

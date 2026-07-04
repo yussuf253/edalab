@@ -22,6 +22,7 @@ class AuthProvider extends ChangeNotifier {
   bool get emailVerificationRequired => _emailVerificationRequired;
   String? get pendingVerificationEmail => _pendingVerificationEmail;
   bool get isBanned => _user?.isBanned == true;
+  String? get banReason => _user?.banReason;
 
   bool _isConnectionError(Object error) {
     return ApiClient.isConnectionError(error);
@@ -42,6 +43,7 @@ class AuthProvider extends ChangeNotifier {
       lastName: '',
       email: '',
       phone: '',
+      isBanned: false,
     );
     _isLoggedIn = true;
   }
@@ -153,7 +155,9 @@ class AuthProvider extends ChangeNotifier {
 
       // Check if user is banned (backend returns 403 with banned status)
       if (response['banned'] == true) {
-        _errorMessage = response['banReason'] as String? ?? 'Your account has been suspended.';
+        _errorMessage =
+            response['banReason'] as String? ??
+            'Your account has been suspended.';
         _isLoading = false;
         _user = null;
         _isLoggedIn = false;
@@ -266,6 +270,9 @@ class AuthProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
+    // Set up banned callback to handle banned users during API calls
+    ApiClient.setBannedCallback(_handleBanned);
+
     String? userId;
     try {
       await ApiClient.initialize();
@@ -277,24 +284,42 @@ class AuthProvider extends ChangeNotifier {
         return;
       }
 
-      final response = await ApiClient.get('/users/$userId');
+      final response = await ApiClient.get(
+        '/users/$userId',
+        forceRefresh: true,
+      );
       final responseMap = Map<String, dynamic>.from(response as Map);
-      
-      // Check if user is banned
+
+      // Check if user is banned - keep session but mark as banned
       if (responseMap['banned'] == true) {
-        _user = await _userFromResponse(responseMap);
+        final reason =
+            responseMap['banReason'] as String? ??
+            'Your account has been suspended.';
+        if (responseMap['id'] is String) {
+          _user = await _userFromResponse(responseMap);
+        } else if (_user != null) {
+          _user = _user!.copyWith(isBanned: true, banReason: reason);
+        } else {
+          _user = UserModel(
+            id: userId,
+            firstName: 'User',
+            lastName: '',
+            email: '',
+            phone: '',
+            isBanned: true,
+            banReason: reason,
+          );
+        }
         _isLoggedIn = true;
-        _errorMessage = responseMap['banReason'] as String? ?? 'Your account has been suspended.';
+        _errorMessage = reason;
         AnalyticsService.instance.track(
           AnalyticsEvents.authSessionRestoreFailed,
           properties: {'error': 'banned_user'},
         );
-        await AppPreferences.clearCurrentUserId();
-        await ApiClient.setToken(null);
         _syncAnalyticsIdentity();
         return;
       }
-      
+
       await _setUserFromResponse(responseMap);
       AnalyticsService.instance.track(
         AnalyticsEvents.authSessionRestored,
@@ -548,6 +573,16 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  void _handleBanned(String? banReason) {
+    final reason = banReason ?? 'Your account has been suspended.';
+    _errorMessage = reason;
+    if (_user != null) {
+      _user = _user!.copyWith(isBanned: true, banReason: reason);
+    }
+    _isLoggedIn = _user != null;
+    notifyListeners();
   }
 
   Future<void> logout() async {

@@ -12,7 +12,8 @@ class ProDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final proProfile = context.watch<ProAuthProvider>().currentProfile;
+    final proAuth = context.watch<ProAuthProvider>();
+    final proProfile = proAuth.currentProfile;
 
     if (proProfile == null) {
       return const Drawer(child: SafeArea(child: Text('Not Signed In')));
@@ -114,6 +115,15 @@ class ProDrawer extends StatelessWidget {
                     context.push(ProRoutePaths.account);
                   },
                 ),
+                if (proAuth.isSuperAdmin)
+                  ListTile(
+                    leading: const Icon(Icons.admin_panel_settings_outlined),
+                    title: const Text('Super Admin'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.push(ProRoutePaths.superAdmin);
+                    },
+                  ),
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
