@@ -1975,6 +1975,22 @@ class AppLocalizations {
       'payment_failure.default_error': 'Payment could not be processed.',
       'payment_failure.retry_payment': 'Retry Payment',
       'payment_failure.back_home': 'Back to Home',
+      'city_gate.checking': 'Checking your location…',
+      'city_gate.title': 'Not available here yet',
+      'city_gate.message':
+          "eDalab is currently only available in {cities}. We're expanding city by city — yours is coming soon!",
+      'city_gate.coming_soon_label': 'Coming soon:',
+      'city_gate.retry_button': 'Check again',
+      'city_gate.location_disabled_title': 'Location is turned off',
+      'city_gate.location_disabled_message':
+          'Please enable location services on your device so we can check if eDalab is available near you.',
+      'city_gate.permission_denied_title': 'Location access needed',
+      'city_gate.permission_denied_message':
+          "eDalab needs your location to check if it's available in your area.",
+      'city_gate.permission_denied_forever_message':
+          'Location access was permanently denied. Please enable it from your device settings.',
+      'city_gate.open_settings_button': 'Open Settings',
+      'city_gate.error_message': "We couldn't check your location right now.",
     },
     'fr': {
       'checkout.payment_method': 'Méthode de paiement',
@@ -3219,6 +3235,23 @@ class AppLocalizations {
       'shopping_tracking.back_to_shopping': 'Retour au shopping',
       'shopping_tracking.ready_delivery':
           '{count} article{suffix} prêt{suffix} pour la livraison',
+      'city_gate.checking': 'Vérification de votre position…',
+      'city_gate.title': 'Pas encore disponible ici',
+      'city_gate.message':
+          "eDalab est actuellement disponible uniquement à {cities}. Nous nous développons ville par ville — la vôtre arrive bientôt !",
+      'city_gate.coming_soon_label': 'Prochainement :',
+      'city_gate.retry_button': 'Vérifier à nouveau',
+      'city_gate.location_disabled_title': 'La localisation est désactivée',
+      'city_gate.location_disabled_message':
+          'Veuillez activer les services de localisation sur votre appareil pour que nous puissions vérifier si eDalab est disponible près de vous.',
+      'city_gate.permission_denied_title': 'Accès à la position requis',
+      'city_gate.permission_denied_message':
+          "eDalab a besoin de votre position pour vérifier s'il est disponible dans votre zone.",
+      'city_gate.permission_denied_forever_message':
+          "L'accès à la position a été refusé de façon permanente. Veuillez l'activer depuis les réglages de votre appareil.",
+      'city_gate.open_settings_button': 'Ouvrir les réglages',
+      'city_gate.error_message':
+          'Impossible de vérifier votre position pour le moment.',
     },
     'ar': {
       'home_onboarding.step_choose_service': 'اختر خدمتك',
@@ -4394,6 +4427,22 @@ class AppLocalizations {
       'payment_failure.default_error': 'تعذر معالجة الدفع.',
       'payment_failure.retry_payment': 'إعادة المحاولة',
       'payment_failure.back_home': 'العودة للرئيسية',
+      'city_gate.checking': 'جارٍ التحقق من موقعك…',
+      'city_gate.title': 'غير متاح هنا بعد',
+      'city_gate.message':
+          'تطبيق eDalab متاح حالياً فقط في {cities}. نحن نتوسع مدينة تلو الأخرى، ومدينتك قادمة قريباً!',
+      'city_gate.coming_soon_label': 'قريباً:',
+      'city_gate.retry_button': 'تحقق مرة أخرى',
+      'city_gate.location_disabled_title': 'خدمة الموقع متوقفة',
+      'city_gate.location_disabled_message':
+          'يرجى تفعيل خدمة الموقع على جهازك حتى نتمكن من التحقق مما إذا كان eDalab متاحاً بالقرب منك.',
+      'city_gate.permission_denied_title': 'الوصول إلى الموقع مطلوب',
+      'city_gate.permission_denied_message':
+          'يحتاج eDalab إلى موقعك للتحقق مما إذا كان متاحاً في منطقتك.',
+      'city_gate.permission_denied_forever_message':
+          'تم رفض الوصول إلى الموقع بشكل دائم. يرجى تفعيله من إعدادات جهازك.',
+      'city_gate.open_settings_button': 'فتح الإعدادات',
+      'city_gate.error_message': 'تعذر التحقق من موقعك في الوقت الحالي.',
     },
   };
 }

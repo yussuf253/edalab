@@ -102,7 +102,7 @@ class AppShell extends StatelessWidget {
   int _currentIndexForPath(String path) {
     if (path == '/' || path.startsWith('/search')) return 0;
 
-    const navPaths = ['/orders', '/cart', '/messages', '/profile'];
+    const navPaths = ['/orders', '/messages', '/profile'];
     for (var index = 0; index < navPaths.length; index++) {
       final navPath = navPaths[index];
       if (path == navPath || path.startsWith('$navPath/')) {
