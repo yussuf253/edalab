@@ -32,11 +32,11 @@ class AppShell extends StatelessWidget {
         label: l10n.t('module.orders'),
         path: '/orders',
       ),
-      /*_NavItem(
+      _NavItem(
         assetPath: AppAssets.navCart,
         label: l10n.t('cart.title'),
         path: '/cart',
-      ),*/
+      ),
       _NavItem(
         assetPath: AppAssets.navMessages,
         label: l10n.t('messages.title'),
@@ -102,7 +102,7 @@ class AppShell extends StatelessWidget {
   int _currentIndexForPath(String path) {
     if (path == '/' || path.startsWith('/search')) return 0;
 
-    const navPaths = ['/orders', '/messages', '/profile'];
+    const navPaths = ['/orders', '/cart', '/messages', '/profile'];
     for (var index = 0; index < navPaths.length; index++) {
       final navPath = navPaths[index];
       if (path == navPath || path.startsWith('$navPath/')) {
@@ -174,11 +174,11 @@ class _NavButton extends StatelessWidget {
                             color: AppColors.accent,
                             borderRadius: BorderRadius.circular(999),
                           ),
-                          /*child: Text(
+                          child: Text(
                             cartCount > 99 ? '99+' : '$cartCount',
                             textAlign: TextAlign.center,
                             style: AppTextStyles.badge.copyWith(fontSize: 8),
-                          ),*/
+                          ),
                         ),
                       ),
                   ],

@@ -1,0 +1,84 @@
+diff --git a/backend/src/routes/car-rentals.routes.ts b/backend/src/routes/car-rentals.routes.ts
+index 747a4fc..a3b8402 100644
+--- a/backend/src/routes/car-rentals.routes.ts
++++ b/backend/src/routes/car-rentals.routes.ts
+@@ -512,4 +512,79 @@ router.get(
+   }),
+ );
+ 
++// POST /api/car-rentals/bookings/:bookingId/cancel — cancel a booking
++router.post(
++  '/bookings/:bookingId/cancel',
++  asyncHandler(async (req, res) => {
++    const bookingId = getParam(req.params.bookingId, 'bookingId');
++
++    const booking = await prisma.carRentalBooking.findUnique({
++      where: { id: bookingId },
++    });
++
++    if (!booking) {
++      return res.status(404).json({ error: 'Booking not found.' });
++    }
++    if (booking.status === 'CANCELLED') {
++      return res.status(400).json({ error: 'Booking is already cancelled.' });
++    }
++    if (booking.status === 'COMPLETED') {
++      return res.status(400).json({ error: 'Completed bookings cannot be cancelled.' });
++    }
++    if (booking.startDate <= new Date()) {
++      return res
++        .status(400)
++        .json({ error: 'This rental has already started and cannot be cancelled.' });
++    }
++
++    // Keep the linked accounting Order in sync too (created alongside the
++    // booking in POST /bookings — see the $transaction above). The Order
++    // doesn't have a direct FK to the booking, only bookingId in its JSON
++    // metadata, so we look it up the same way.
++    const updated = await prisma.$transaction(async (tx) => {
++      const cancelledBooking = await tx.carRentalBooking.update({
++        where: { id: bookingId },
++        data: { status: 'CANCELLED' },
++      });
++
++      const relatedOrder = await tx.order.findFirst({
++        where: { metadata: { path: ['bookingId'], equals: bookingId } },
++      });
++
++      if (relatedOrder) {
++        await tx.order.update({
++          where: { id: relatedOrder.id },
++          data: { status: OrderStatus.CANCELLED },
++        });
++      }
++
++      return cancelledBooking;
++    });
++
++    res.json({
++      success: true,
++      booking: serializeBooking({
++        id: updated.id,
++        userId: updated.userId,
++        carId: updated.carId,
++        carName: updated.carName,
++        carType: updated.carType,
++        startDate: updated.startDate,
++        endDate: updated.endDate,
++        totalDays: updated.totalDays,
++        pricePerDay: updated.pricePerDay,
++        subtotal: updated.subtotal,
++        tax: updated.tax,
++        total: updated.total,
++        status: updated.status,
++        pickupLocation: updated.pickupLocation ?? null,
++        dropoffLocation: updated.dropoffLocation ?? null,
++        notes: updated.notes ?? null,
++        createdAt: updated.createdAt,
++        updatedAt: updated.updatedAt,
++      }),
++    });
++  }),
++);
++
+ export default router;

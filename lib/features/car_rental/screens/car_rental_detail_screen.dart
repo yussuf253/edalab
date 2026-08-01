@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
@@ -9,6 +10,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/providers/providers.dart';
 import '../services/car_rental_service.dart';
+import 'car_rental_confirmation_screen.dart';
 
 class CarRentalDetailScreen extends StatefulWidget {
   final String carId;
@@ -29,8 +31,6 @@ class CarRentalDetailScreen extends StatefulWidget {
 class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
-  String _pickupLocation = '';
-  String _dropoffLocation = '';
   bool _isBooking = false;
   bool _isCheckingAvailability = false;
   bool _isAvailable = true;
@@ -170,13 +170,6 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
       return;
     }
 
-    if (_pickupLocation.isEmpty || _dropoffLocation.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.t('car_rental.error_locations'))),
-      );
-      return;
-    }
-
     setState(() => _isBooking = true);
     try {
       final resp = await ApiClient.post('/car-rentals/bookings', {
@@ -184,21 +177,30 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
         'carId': car.id,
         'startDate': _startDate!.toIso8601String(),
         'endDate': _endDate!.toIso8601String(),
-        'pickupLocation': _pickupLocation.isEmpty
-            ? 'Djibouti City'
-            : _pickupLocation,
-        'dropoffLocation': _dropoffLocation.isEmpty
-            ? 'Djibouti City'
-            : _dropoffLocation,
+        // Self-drive rental: no per-trip route, so we default these rather
+        // than making the renter fill in a ride-style pickup/dropoff pair.
+        'pickupLocation': 'Djibouti City',
+        'dropoffLocation': 'Djibouti City',
       });
 
       // Ensure widget still mounted before interacting with context
       if (!mounted) return;
-      // Show success and navigate back or to a booking summary
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Booking created successfully')),
+      final respMap = resp is Map ? Map<String, dynamic>.from(resp) : const {};
+      final confirmationNumber =
+          (respMap['id'] ?? respMap['bookingId'] ?? respMap['_id'])
+              ?.toString() ??
+          '—';
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => CarRentalConfirmationScreen(
+            carName: car.name,
+            startDate: _startDate!,
+            endDate: _endDate!,
+            totalPrice: _totalPrice,
+            confirmationNumber: confirmationNumber,
+          ),
+        ),
       );
-      Navigator.of(context).pop(resp);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -222,9 +224,16 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
     final car = widget.carData;
 
     return Scaffold(
-      appBar: AppBar(title: Text(car?.name ?? 'Car')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text(car?.name ?? l10n.t('car_rental.default_car_name')),
+        leading: IconButton(
+          icon: const Icon(Iconsax.arrow_left_2, size: 20),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -235,18 +244,18 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Center(
-                child: Icon(Icons.directions_car_rounded, size: 64),
+                child: Icon(Iconsax.car, size: 64),
               ),
             ),
             const SizedBox(height: 12),
-            Text(car?.name ?? 'Vehicle', style: AppTextStyles.h4),
+            Text(car?.name ?? l10n.t('car_rental.default_car_name'), style: AppTextStyles.h4),
             const SizedBox(height: 6),
             Text(
               car != null ? '${car.type} • ${car.seats} seats' : '',
               style: AppTextStyles.labelMedium,
             ),
             const SizedBox(height: 12),
-            Text('Features', style: AppTextStyles.labelLarge),
+            Text(l10n.t('car_rental.features'), style: AppTextStyles.labelLarge),
             const SizedBox(height: 8),
             if (car != null)
               Wrap(
@@ -258,36 +267,27 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
               ),
             const SizedBox(height: 12),
 
-            // Pickup and Drop-off locations
+            // Rental is date-driven, not route-driven — no pickup/dropoff
+            // address pair like a ride. Just a short heads-up instead.
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: AppColors.extraLightGrey,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: AppSpacing.shadowSm,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text(
-                    l10n.t('car_rental.pickup_dropoff_locations'),
-                    style: AppTextStyles.labelLarge,
+                  const Icon(
+                    Iconsax.information,
+                    size: 20,
+                    color: AppColors.mediumGrey,
                   ),
-                  const SizedBox(height: 12),
-                  _LocationField(
-                    label: l10n.t('car_rental.pickup_location'),
-                    hint: l10n.t('car_rental.pickup_location_hint'),
-                    value: _pickupLocation,
-                    onChanged: (value) =>
-                        setState(() => _pickupLocation = value),
-                  ),
-                  const SizedBox(height: 12),
-                  _LocationField(
-                    label: l10n.t('car_rental.dropoff_location'),
-                    hint: l10n.t('car_rental.dropoff_location_hint'),
-                    value: _dropoffLocation,
-                    onChanged: (value) =>
-                        setState(() => _dropoffLocation = value),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      l10n.t('car_rental.pickup_note'),
+                      style: AppTextStyles.bodySmall,
+                    ),
                   ),
                 ],
               ),
@@ -397,8 +397,8 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
                         children: [
                           Icon(
                             _isAvailable
-                                ? Icons.check_circle_rounded
-                                : Icons.cancel_rounded,
+                                ? Iconsax.tick_circle
+                                : Iconsax.close_circle,
                             color: _isAvailable
                                 ? AppColors.success
                                 : AppColors.error,
@@ -496,28 +496,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
                       ),
               ),
             ),
-            const SizedBox(height: 16),
-            const Spacer(),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _isBooking ? null : () => _bookCar(l10n),
-                    child: _isBooking
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            _totalDays > 0
-                                ? '${l10n.t('car_rental.book_now')} • DJF$_totalPrice'
-                                : l10n.t('car_rental.select_dates'),
-                          ),
-                  ),
-                ),
-              ],
-            ),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -526,48 +505,6 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
-  }
-}
-
-class _LocationField extends StatelessWidget {
-  final String label;
-  final String hint;
-  final String value;
-  final ValueChanged<String> onChanged;
-
-  const _LocationField({
-    required this.label,
-    required this.hint,
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTextStyles.bodyMedium),
-        const SizedBox(height: 6),
-        TextField(
-          onChanged: onChanged,
-          decoration: InputDecoration(
-            hintText: hint,
-            filled: true,
-            fillColor: AppColors.background,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide.none,
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 14,
-            ),
-          ),
-          style: AppTextStyles.bodyLarge,
-        ),
-      ],
-    );
   }
 }
 

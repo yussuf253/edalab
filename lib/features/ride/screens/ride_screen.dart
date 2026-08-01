@@ -17,6 +17,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../widgets/ride_route_preview.dart';
+import '../services/nearby_drivers_service.dart';
 import '../../car_rental/services/car_rental_service.dart';
 
 class RideScreen extends StatefulWidget {
@@ -43,14 +44,73 @@ class _RideScreenState extends State<RideScreen> {
   bool _hasLocationPermission = false;
   bool _isResolvingPickup = true;
   int _activeTab = 0; // 0 = Ride, 1 = Rent
+  List<RideMapPoint> _nearbyDrivers = const [];
+  Timer? _nearbyDriversTimer;
+  List<_RidePlace> _recentDestinations = const [];
 
   @override
   void initState() {
     super.initState();
     _loadRideCategories();
+    _loadRecentDestinations();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _requestLocationAccess(showFailureSnackBar: false);
     });
+  }
+
+  /// Real "recent places" sourced from the user's own ride history — never
+  /// fabricated demo addresses. Silently no-ops if there's no history yet;
+  /// the UI falls back to saved addresses or an honest empty state.
+  Future<void> _loadRecentDestinations() async {
+    final userId = context.read<AuthProvider>().user?.id;
+    if (userId == null) return;
+    try {
+      final resp = await ApiClient.get('/rides/user/$userId');
+      if (resp is! List) return;
+
+      final places = <_RidePlace>[];
+      final seenAddresses = <String>{};
+      for (final raw in resp) {
+        if (raw is! Map) continue;
+        final ride = Map<String, dynamic>.from(raw);
+        final destinationRaw = ride['destination'];
+        if (destinationRaw is! Map) continue;
+        final destination = Map<String, dynamic>.from(destinationRaw);
+
+        final lat = _asDouble(destination['latitude'] ?? destination['lat']);
+        final lng = _asDouble(destination['longitude'] ?? destination['lng']);
+        final address =
+            destination['address']?.toString() ??
+            destination['label']?.toString();
+        if (lat == null || lng == null || address == null || address.isEmpty) {
+          continue;
+        }
+        if (!seenAddresses.add(address.toLowerCase())) continue;
+
+        places.add(
+          _RidePlace(
+            title: destination['label']?.toString() ?? address,
+            address: address,
+            icon: Icons.history_rounded,
+            distance: 0,
+            latitude: lat,
+            longitude: lng,
+          ),
+        );
+        if (places.length >= 5) break;
+      }
+
+      if (!mounted) return;
+      setState(() => _recentDestinations = places);
+    } catch (_) {
+      // No history yet, or the endpoint hiccuped — no fake data shown.
+    }
+  }
+
+  double? _asDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
   }
 
   Future<void> _loadRideCategories() async {
@@ -110,6 +170,37 @@ class _RideScreenState extends State<RideScreen> {
     return l10n.t('ride.eta_minutes', params: {'count': match.group(1)!});
   }
 
+  void _startNearbyDriversUpdates() {
+    final lat = _pickupPlace?.latitude;
+    final lng = _pickupPlace?.longitude;
+    if (lat == null || lng == null) return;
+
+    unawaited(_refreshNearbyDrivers(lat, lng));
+    _nearbyDriversTimer?.cancel();
+    _nearbyDriversTimer = Timer.periodic(const Duration(seconds: 6), (_) {
+      final currentLat = _pickupPlace?.latitude;
+      final currentLng = _pickupPlace?.longitude;
+      if (currentLat != null && currentLng != null) {
+        unawaited(_refreshNearbyDrivers(currentLat, currentLng));
+      }
+    });
+  }
+
+  Future<void> _refreshNearbyDrivers(double lat, double lng) async {
+    final drivers = await NearbyDriversService.fetch(
+      latitude: lat,
+      longitude: lng,
+    );
+    if (!mounted) return;
+    setState(() => _nearbyDrivers = drivers);
+  }
+
+  @override
+  void dispose() {
+    _nearbyDriversTimer?.cancel();
+    super.dispose();
+  }
+
   Future<void> _requestLocationAccess({bool showFailureSnackBar = true}) async {
     try {
       final locationProvider = context.read<UserLocationProvider>();
@@ -124,6 +215,7 @@ class _RideScreenState extends State<RideScreen> {
           _isResolvingPickup = false;
           _pickupPlace ??= _defaultPickupPlace();
         });
+        _startNearbyDriversUpdates();
         if (showFailureSnackBar) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -149,6 +241,7 @@ class _RideScreenState extends State<RideScreen> {
         _hasLocationPermission = true;
         _isResolvingPickup = false;
       });
+      _startNearbyDriversUpdates();
     } catch (_) {
       if (mounted) {
         setState(() {
@@ -201,15 +294,11 @@ class _RideScreenState extends State<RideScreen> {
             icon: Icons.location_on_rounded,
           )
         : null;
-    final homeQuickRide = _findPlace(
-      savedPlaces,
-      l10n.t('ride.home'),
-      fallback: savedPlaces.isNotEmpty ? savedPlaces.first : _fallbackPickup,
-    );
+    final homeQuickRide = _findPlace(savedPlaces, l10n.t('ride.home'));
     final workQuickRide = _findPlace(
       savedPlaces,
       l10n.t('ride.work'),
-      fallback: savedPlaces.length > 1 ? savedPlaces[1] : _fallbackPickup,
+      exclude: homeQuickRide,
     );
 
     if (_activeTab == 1) {
@@ -401,6 +490,9 @@ class _RideScreenState extends State<RideScreen> {
                 showMyLocation: _hasLocationPermission,
                 showTitleChip: false,
                 showLegend: false,
+                nearbyDrivers: destinationPoint == null
+                    ? _nearbyDrivers
+                    : const [],
                 emptyLabel: _isResolvingPickup
                     ? 'Finding your current location...'
                     : l10n.t('ride.choose_destination'),
@@ -635,27 +727,39 @@ class _RideScreenState extends State<RideScreen> {
                     children: [
                       SizedBox(
                         width: cardWidth,
-                        child: _QuickRide(
-                          homeQuickRide.icon,
-                          homeQuickRide.title,
-                          homeQuickRide.address,
-                          onTap: () => _openRideBooking(
-                            homeQuickRide,
-                            source: 'quick_home',
-                          ),
-                        ),
+                        child: homeQuickRide != null
+                            ? _QuickRide(
+                                homeQuickRide.icon,
+                                homeQuickRide.title,
+                                homeQuickRide.address,
+                                onTap: () => _openRideBooking(
+                                  homeQuickRide,
+                                  source: 'quick_home',
+                                ),
+                              )
+                            : _AddQuickRidePlace(
+                                icon: Icons.home_rounded,
+                                label: l10n.t('ride.home'),
+                                onTap: () => context.push('/profile/addresses'),
+                              ),
                       ),
                       SizedBox(
                         width: cardWidth,
-                        child: _QuickRide(
-                          workQuickRide.icon,
-                          workQuickRide.title,
-                          workQuickRide.address,
-                          onTap: () => _openRideBooking(
-                            workQuickRide,
-                            source: 'quick_work',
-                          ),
-                        ),
+                        child: workQuickRide != null
+                            ? _QuickRide(
+                                workQuickRide.icon,
+                                workQuickRide.title,
+                                workQuickRide.address,
+                                onTap: () => _openRideBooking(
+                                  workQuickRide,
+                                  source: 'quick_work',
+                                ),
+                              )
+                            : _AddQuickRidePlace(
+                                icon: Icons.work_rounded,
+                                label: l10n.t('ride.work'),
+                                onTap: () => context.push('/profile/addresses'),
+                              ),
                       ),
                     ],
                   );
@@ -666,6 +770,32 @@ class _RideScreenState extends State<RideScreen> {
               // ── Recent places ────────────────────────────────────────────
               Text(l10n.t('ride.recent_places'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
+              if (savedPlaces.skip(2).isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.history_rounded,
+                        color: AppColors.mediumGrey,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          l10n.t('ride.no_recent_places'),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.grey,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ...savedPlaces
                   .skip(2)
                   .map(
@@ -848,13 +978,34 @@ class _RideScreenState extends State<RideScreen> {
     if (selected == null) return;
 
     if (isPickup) {
-      setState(() => _pickupPlace = selected);
+      var resolvedPickup = selected;
+      if (resolvedPickup.latitude == null || resolvedPickup.longitude == null) {
+        final geocoded = await _geocodeAddressText(resolvedPickup.address);
+        if (geocoded == null) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(context.l10n.t('ride.address_needs_pin'))),
+          );
+          return;
+        }
+        resolvedPickup = _RidePlace(
+          title: resolvedPickup.title,
+          address: resolvedPickup.address,
+          icon: resolvedPickup.icon,
+          distance: resolvedPickup.distance,
+          latitude: geocoded.$1,
+          longitude: geocoded.$2,
+          addressId: resolvedPickup.addressId,
+        );
+      }
+      if (!mounted) return;
+      setState(() => _pickupPlace = resolvedPickup);
       AnalyticsService.instance.track(
         AnalyticsEvents.filterApplied,
         properties: {
           'module': 'ride',
           'filter_type': 'pickup_place',
-          'filter_value': selected.title,
+          'filter_value': resolvedPickup.title,
         },
       );
       return;
@@ -872,7 +1023,32 @@ class _RideScreenState extends State<RideScreen> {
     _openRideBooking(selected, source: 'destination_picker');
   }
 
-  void _openRideBooking(_RidePlace destination, {required String source}) {
+  Future<void> _openRideBooking(
+    _RidePlace requestedDestination, {
+    required String source,
+  }) async {
+    var destination = requestedDestination;
+
+    if (destination.latitude == null || destination.longitude == null) {
+      final geocoded = await _geocodeAddressText(destination.address);
+      if (geocoded == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(context.l10n.t('ride.address_needs_pin'))),
+        );
+        return;
+      }
+      destination = _RidePlace(
+        title: destination.title,
+        address: destination.address,
+        icon: destination.icon,
+        distance: destination.distance,
+        latitude: geocoded.$1,
+        longitude: geocoded.$2,
+        addressId: destination.addressId,
+      );
+    }
+
     final pickup = _pickupPlace ?? _defaultPickupPlace();
     AnalyticsService.instance.track(
       AnalyticsEvents.checkoutEntryTapped,
@@ -885,6 +1061,7 @@ class _RideScreenState extends State<RideScreen> {
             destination.latitude != null && destination.longitude != null,
       },
     );
+    if (!mounted) return;
     context.push(
       '/ride/book',
       extra: {
@@ -912,6 +1089,38 @@ class _RideScreenState extends State<RideScreen> {
         'distance': destination.distance,
       },
     );
+  }
+
+  /// Best-effort forward geocoding for a saved address that has no stored
+  /// coordinates yet (e.g. added before the "pin on map" step existed, or a
+  /// user skipped it). Returns null if nothing could be resolved.
+  Future<(double, double)?> _geocodeAddressText(String address) async {
+    if (address.trim().isEmpty) return null;
+    try {
+      final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
+        'q': '$address, Djibouti',
+        'format': 'jsonv2',
+        'countrycodes': 'dj',
+        'limit': '1',
+      });
+      final response = await http.get(
+        uri,
+        headers: const {
+          'User-Agent': 'eDalab/1.0 (Ride destination geocoding)',
+          'Accept-Language': 'en',
+        },
+      );
+      if (response.statusCode != 200) return null;
+      final results = jsonDecode(response.body);
+      if (results is! List || results.isEmpty) return null;
+      final first = Map<String, dynamic>.from(results.first as Map);
+      final lat = double.tryParse(first['lat']?.toString() ?? '');
+      final lon = double.tryParse(first['lon']?.toString() ?? '');
+      if (lat == null || lon == null) return null;
+      return (lat, lon);
+    } catch (_) {
+      return null;
+    }
   }
 
   _RidePlace _defaultPickupPlace() {
@@ -957,9 +1166,6 @@ class _RideScreenState extends State<RideScreen> {
   List<_RidePlace> _savedPlaces(BuildContext context) {
     final addresses = context.read<AuthProvider>().user?.addresses ?? const [];
     final userPlaces = addresses
-        .where(
-          (address) => address.latitude != null && address.longitude != null,
-        )
         .map(
           (address) => _RidePlace(
             title: address.label,
@@ -972,61 +1178,11 @@ class _RideScreenState extends State<RideScreen> {
           ),
         )
         .toList();
-    final fallbackPlaces = [
-      _RidePlace(
-        title: context.l10n.t('ride.home'),
-        address: '123 Main St',
-        icon: Icons.home_rounded,
-        distance: 4.2,
-        latitude: 11.5824,
-        longitude: 43.1488,
-      ),
-      _RidePlace(
-        title: context.l10n.t('ride.work'),
-        address: '456 Office Ave',
-        icon: Icons.work_rounded,
-        distance: 6.8,
-        latitude: 11.5485,
-        longitude: 43.1529,
-      ),
-      _RidePlace(
-        title: context.l10n.t('ride.city_mall'),
-        address: '789 Shopping Blvd',
-        icon: Icons.shopping_bag_rounded,
-        distance: 5.2,
-        latitude: 11.5316,
-        longitude: 43.1434,
-      ),
-      _RidePlace(
-        title: context.l10n.t('ride.central_park'),
-        address: '321 Green Lane',
-        icon: Icons.park_rounded,
-        distance: 3.7,
-        latitude: 11.5776,
-        longitude: 43.1514,
-      ),
-      _RidePlace(
-        title: context.l10n.t('ride.airport'),
-        address: 'International Airport',
-        icon: Icons.flight_rounded,
-        distance: 9.5,
-        latitude: 11.5475,
-        longitude: 43.1596,
-      ),
-      _RidePlace(
-        title: context.l10n.t('ride.train_station'),
-        address: 'Central Station',
-        icon: Icons.train_rounded,
-        distance: 7.1,
-        latitude: 11.5958,
-        longitude: 43.1374,
-      ),
-    ];
 
     final seen = <String>{};
     return [
       ...userPlaces,
-      ...fallbackPlaces,
+      ..._recentDestinations,
     ].where((place) => seen.add(place.address.toLowerCase())).toList();
   }
 
@@ -1034,9 +1190,6 @@ class _RideScreenState extends State<RideScreen> {
     final addresses = context.read<AuthProvider>().user?.addresses ?? const [];
     final currentPickup = _pickupPlace ?? _defaultPickupPlace();
     final userPlaces = addresses
-        .where(
-          (address) => address.latitude != null && address.longitude != null,
-        )
         .map(
           (address) => _RidePlace(
             title: address.label,
@@ -1057,17 +1210,18 @@ class _RideScreenState extends State<RideScreen> {
     ].where((place) => seen.add(place.address.toLowerCase())).toList();
   }
 
-  _RidePlace _findPlace(
+  _RidePlace? _findPlace(
     List<_RidePlace> places,
     String title, {
-    required _RidePlace fallback,
+    _RidePlace? exclude,
   }) {
     for (final place in places) {
+      if (place == exclude) continue;
       if (place.title.toLowerCase() == title.toLowerCase()) {
         return place;
       }
     }
-    return fallback;
+    return null;
   }
 
   IconData _iconForLabel(String label) {
@@ -1490,6 +1644,60 @@ class _QuickRide extends StatelessWidget {
               style: AppTextStyles.caption,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AddQuickRidePlace extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _AddQuickRidePlace({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: AppColors.lightGrey,
+            style: BorderStyle.solid,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.extraLightGrey,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(
+                Icons.add_rounded,
+                color: AppColors.mediumGrey,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              context.l10n.t('ride.add_place', params: {'place': label}),
+              style: AppTextStyles.labelLarge.copyWith(
+                color: AppColors.mediumGrey,
+              ),
             ),
           ],
         ),

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../services/car_rental_service.dart';
+import 'my_car_rentals_screen.dart';
 
 class CarRentalScreen extends StatefulWidget {
   const CarRentalScreen({super.key});
@@ -39,9 +41,18 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
       appBar: AppBar(
         title: Text(l10n.t('car_rental.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(Iconsax.arrow_left_2, size: 20),
           onPressed: () => context.pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Iconsax.receipt_1),
+            tooltip: l10n.t('car_rental.my_bookings'),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const MyCarRentalsScreen()),
+            ),
+          ),
+        ],
       ),
       body: FutureBuilder<List<CarRentalCar>>(
         future: _carsFuture,
@@ -56,7 +67,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.directions_car_rounded,
+                    Iconsax.car,
                     size: 64,
                     color: AppColors.extraLightGrey,
                   ),
@@ -173,7 +184,7 @@ class _CarCard extends StatelessWidget {
                 alignment: Alignment.center,
                 children: [
                   Icon(
-                    Icons.directions_car_rounded,
+                    Iconsax.car,
                     size: 60,
                     color: AppColors.lightGrey,
                   ),
@@ -223,7 +234,7 @@ class _CarCard extends StatelessWidget {
                       Row(
                         children: [
                           Icon(
-                            Icons.people_rounded,
+                            Iconsax.people,
                             size: 16,
                             color: AppColors.lightGrey,
                           ),

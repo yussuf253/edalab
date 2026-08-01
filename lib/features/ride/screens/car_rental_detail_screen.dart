@@ -796,10 +796,7 @@ class _ConfirmationSheet extends StatelessWidget {
               '${booking.startDate.day}/${booking.startDate.month} → '
                   '${booking.endDate.day}/${booking.endDate.month}',
             ),
-            _InfoRow(
-              'Total',
-              'DJF ${booking.total?.toStringAsFixed(0) ?? '0'}',
-            ),
+            _InfoRow('Total', 'DJF ${booking.total.toStringAsFixed(0)}'),
             const SizedBox(height: 24),
             AppButton(
               text: 'View My Orders',
