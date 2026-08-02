@@ -423,11 +423,13 @@ model RestaurantMenuCategory {
   name         String
   sortOrder    Int        @default(0)
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items        RestaurantMenuItem[]
 }
 
 model RestaurantMenuItem {
   id                 String     @id
   restaurantId       String
+  categoryId         String?
   name               String
   description        String
   price              Decimal    @db.Decimal(10, 2)
@@ -436,6 +438,7 @@ model RestaurantMenuItem {
   isAvailable        Boolean    @default(true)
   customizationsJson Json?
   restaurant         Restaurant @relation(fields: [restaurantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  category           RestaurantMenuCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: NoAction)
 }
 
 model Doctor {
