@@ -1,0 +1,129 @@
+diff --git a/src/routes/pro-auth.routes.ts b/src/routes/pro-auth.routes.ts
+index 45245cf..3c93ac7 100644
+--- a/src/routes/pro-auth.routes.ts
++++ b/src/routes/pro-auth.routes.ts
+@@ -385,4 +385,124 @@ router.get(
+   }),
+ );
+ 
++// POST /pro-auth/profile — completes signup after email verification: picks
++// profile type + active modules + business name, matching `proProfileSetupSchema`
++// above. This creates the underlying `User` row too, since pro-auth accounts
++// don't go through the regular consumer registration flow.
++router.post(
++  '/profile',
++  requireAuth,
++  asyncHandler(async (req, res) => {
++    const accountId = proAccountIdFromRequest(req);
++    if (accountId == null) {
++      return res
++        .status(403)
++        .json({ error: 'This endpoint requires a pro account session.' });
++    }
++
++    const account = await prisma.proAccount.findUnique({
++      where: { id: accountId },
++      include: { proProfile: true },
++    });
++    if (!account) {
++      return res.status(404).json({ error: 'Pro account not found.' });
++    }
++    if (account.proProfile) {
++      // Profile already completed — treat as idempotent success rather
++      // than erroring, in case of a retried request.
++      return res.json({
++        account: serializeProAccount(account),
++        profile: serializeProProfile(account.proProfile),
++      });
++    }
++
++    const parsedBody = proProfileSetupSchema.parse(req.body) as {
++      type: ProProfileType;
++      activeModules: ProModule[];
++      businessName: string;
++      avatarUrl?: string | null;
++      bindingOverrides?: { providerIds?: string[]; laundryServiceIds?: string[] };
++    };
++    const profileType: ProProfileType = parsedBody.type;
++    const requestedModules: ProModule[] = parsedBody.activeModules;
++    const businessName: string = parsedBody.businessName;
++    const avatarUrl: string | null | undefined = parsedBody.avatarUrl;
++    const bindingOverrides:
++      | { providerIds?: string[]; laundryServiceIds?: string[] }
++      | undefined = parsedBody.bindingOverrides;
++    const sanitizedModules = sanitizeModulesForProfile(
++      profileType,
++      requestedModules,
++    );
++
++    // Pro-auth accounts don't have a matching `User` row (that table backs
++    // the separate consumer signup flow) — find one by email if this person
++    // also has a consumer account, otherwise create one now.
++    let user = await prisma.user.findUnique({ where: { email: account.email } });
++    if (user) {
++      const existingProfile = await prisma.proProfile.findUnique({
++        where: { userId: user.id },
++      });
++      if (existingProfile) {
++        return res.status(409).json({
++          error: 'This email is already linked to a different pro profile.',
++        });
++      }
++    } else {
++      const { firstName, lastName } = parseFullName(account.fullName);
++      user = await prisma.user.create({
++        data: {
++          email: account.email,
++          passwordHash: account.passwordHash,
++          firstName,
++          lastName,
++          phone: account.phone,
++        },
++      });
++    }
++
++    const resolvedBindingsRaw = await resolveBindings(
++      businessName,
++      sanitizedModules,
++    );
++    let bindings = normalizeBindingsForProfileType(
++      profileType,
++      resolvedBindingsRaw,
++    );
++    if (bindingOverrides) {
++      const overrides = await sanitizeProviderBindingOverrides(
++        sanitizedModules,
++        bindingOverrides,
++      );
++      bindings = { ...bindings, ...overrides };
++    }
++    const ownedLaundryServiceIds = await syncLaundryOwnership(
++      user.id,
++      profileType,
++      sanitizedModules,
++      bindings,
++    );
++    bindings = { ...bindings, laundryServiceIds: ownedLaundryServiceIds };
++
++    const profile = await prisma.proProfile.create({
++      data: {
++        userId: user.id,
++        accountId: account.id,
++        type: profileType,
++        activeModules: sanitizedModules,
++        businessName: businessName,
++        avatarUrl: avatarUrl?.trim() || null,
++        bindings,
++        isOnline: true,
++        isVerified: false,
++      },
++    });
++
++    res.status(201).json({
++      account: serializeProAccount(account),
++      profile: serializeProProfile(profile),
++    });
++  }),
++);
++
+ export default router;

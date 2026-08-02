@@ -248,6 +248,35 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
                       _openQueue(initialModule: module),
                   l10n: l10n,
                 ),
+                if (summaries.any((s) => s.module == 'food')) ...[
+                  const SizedBox(height: ProDesignSystem.spacing12),
+                  ModernCard(
+                    backgroundColor: Colors.white,
+                    padding: const EdgeInsets.all(ProDesignSystem.spacing16),
+                    shadows: ProDesignSystem.shadowElevation1,
+                    child: Row(
+                      children: [
+                        Icon(Icons.restaurant_menu_rounded, color: AppColors.food),
+                        const SizedBox(width: ProDesignSystem.spacing12),
+                        Expanded(
+                          child: Text(
+                            l10n.manageRestaurantMenu,
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () async {
+                            await context.push(ProRoutePaths.restaurantMenu);
+                            if (!mounted) return;
+                            await _refreshDashboard();
+                          },
+                          child: Text(l10n.restaurantMenuTitle),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const SizedBox(height: ProDesignSystem.spacing20),
                 _RecentOrdersListCard(
                   entries: recentOrders,

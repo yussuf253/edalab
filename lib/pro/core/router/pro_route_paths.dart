@@ -21,6 +21,9 @@ class ProRoutePaths {
   static const shopQueue = '/pro/shop/queue';
   static const shopCatalog = '/pro/shop/catalog';
   static const shopProducts = '/pro/shop/products';
+  static const restaurantMenu = '/pro/shop/restaurant-menu';
+  static const restaurantMenuItemNew = '/pro/shop/restaurant-menu/item/new';
+  static const restaurantMenuItemEdit = '/pro/shop/restaurant-menu/item/edit';
   static const shopStoreSetup = '/pro/shop/store-setup';
 
   static const providerHome = '/pro/provider';

@@ -11,6 +11,7 @@ class CartItem {
   final String? shopName;
   int quantity;
   final String moduleType; // 'shopping', 'food', 'pharmacy', 'grocery'
+  final List<Map<String, dynamic>>? customizations;
 
   CartItem({
     required this.id,
@@ -25,6 +26,7 @@ class CartItem {
     this.shopName,
     this.quantity = 1,
     required this.moduleType,
+    this.customizations,
   });
 
   double get total => price * quantity;
@@ -43,6 +45,7 @@ class CartItem {
       'shopName': shopName,
       'quantity': quantity,
       'moduleType': moduleType,
+      'customizations': customizations,
     };
   }
 
@@ -60,6 +63,9 @@ class CartItem {
       shopName: json['shopName']?.toString(),
       quantity: (json['quantity'] as num?)?.toInt() ?? 1,
       moduleType: json['moduleType']?.toString() ?? '',
+      customizations: (json['customizations'] as List?)
+          ?.map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
     );
   }
 }

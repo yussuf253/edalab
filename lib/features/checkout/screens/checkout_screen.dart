@@ -864,6 +864,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   'total': item.total,
                                   'color': item.color,
                                   'size': item.size,
+                                  if (item.customizations != null &&
+                                      item.customizations!.isNotEmpty)
+                                    'metadata': {
+                                      'customizations': item.customizations,
+                                      'customizationsLabel': item.description,
+                                    },
                                 },
                               )
                               .toList(),

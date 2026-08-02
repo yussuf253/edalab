@@ -1,0 +1,1501 @@
+diff --git a/lib/core/models/cart_model.dart b/lib/core/models/cart_model.dart
+index a400f6f..5997a79 100644
+--- a/lib/core/models/cart_model.dart
++++ b/lib/core/models/cart_model.dart
+@@ -11,6 +11,7 @@ class CartItem {
+   final String? shopName;
+   int quantity;
+   final String moduleType; // 'shopping', 'food', 'pharmacy', 'grocery'
++  final List<Map<String, dynamic>>? customizations;
+ 
+   CartItem({
+     required this.id,
+@@ -25,6 +26,7 @@ class CartItem {
+     this.shopName,
+     this.quantity = 1,
+     required this.moduleType,
++    this.customizations,
+   });
+ 
+   double get total => price * quantity;
+@@ -43,6 +45,7 @@ class CartItem {
+       'shopName': shopName,
+       'quantity': quantity,
+       'moduleType': moduleType,
++      'customizations': customizations,
+     };
+   }
+ 
+@@ -60,6 +63,9 @@ class CartItem {
+       shopName: json['shopName']?.toString(),
+       quantity: (json['quantity'] as num?)?.toInt() ?? 1,
+       moduleType: json['moduleType']?.toString() ?? '',
++      customizations: (json['customizations'] as List?)
++          ?.map((e) => Map<String, dynamic>.from(e as Map))
++          .toList(),
+     );
+   }
+ }
+diff --git a/lib/features/checkout/screens/checkout_screen.dart b/lib/features/checkout/screens/checkout_screen.dart
+index ae62efc..f2184b5 100644
+--- a/lib/features/checkout/screens/checkout_screen.dart
++++ b/lib/features/checkout/screens/checkout_screen.dart
+@@ -864,6 +864,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
+                                   'total': item.total,
+                                   'color': item.color,
+                                   'size': item.size,
++                                  if (item.customizations != null &&
++                                      item.customizations!.isNotEmpty)
++                                    'metadata': {
++                                      'customizations': item.customizations,
++                                      'customizationsLabel': item.description,
++                                    },
+                                 },
+                               )
+                               .toList(),
+diff --git a/lib/pro/core/router/pro_app_router.dart b/lib/pro/core/router/pro_app_router.dart
+index 5b31787..e3ec194 100644
+--- a/lib/pro/core/router/pro_app_router.dart
++++ b/lib/pro/core/router/pro_app_router.dart
+@@ -25,6 +25,7 @@ import '../../features/rider/screens/rider_active_trip_screen.dart';
+ import '../../features/rider/screens/rider_queue_screen.dart';
+ import '../../features/shop/screens/shop_orders_queue_screen.dart';
+ import '../../features/shop/screens/shop_products_screen.dart';
++import '../../features/restaurant/screens/restaurant_menu_screen.dart';
+ import '../../features/shop/screens/shop_store_setup_screen.dart';
+ import '../../features/auth/screens/pro_banned_screen.dart';
+ import '../../features/super_admin/screens/pro_super_admin_screen.dart';
+@@ -176,6 +177,13 @@ GoRouter createProAppRouter({
+           ),
+         ),
+       ),
++      GoRoute(
++        path: ProRoutePaths.restaurantMenu,
++        builder: (context, state) => _withProfile(
++          context,
++          (profile) => RestaurantMenuScreen(userId: profile.userId),
++        ),
++      ),
+       GoRoute(
+         path: ProRoutePaths.providerHome,
+         builder: (context, state) => const ProDashboardScreen(),
+diff --git a/lib/pro/core/router/pro_route_paths.dart b/lib/pro/core/router/pro_route_paths.dart
+index 24bd27b..cf5dd09 100644
+--- a/lib/pro/core/router/pro_route_paths.dart
++++ b/lib/pro/core/router/pro_route_paths.dart
+@@ -21,6 +21,9 @@ class ProRoutePaths {
+   static const shopQueue = '/pro/shop/queue';
+   static const shopCatalog = '/pro/shop/catalog';
+   static const shopProducts = '/pro/shop/products';
++  static const restaurantMenu = '/pro/shop/restaurant-menu';
++  static const restaurantMenuItemNew = '/pro/shop/restaurant-menu/item/new';
++  static const restaurantMenuItemEdit = '/pro/shop/restaurant-menu/item/edit';
+   static const shopStoreSetup = '/pro/shop/store-setup';
+ 
+   static const providerHome = '/pro/provider';
+diff --git a/lib/pro/features/restaurant/screens/restaurant_menu_item_edit_screen.dart b/lib/pro/features/restaurant/screens/restaurant_menu_item_edit_screen.dart
+new file mode 100644
+index 0000000..54fadcc
+--- /dev/null
++++ b/lib/pro/features/restaurant/screens/restaurant_menu_item_edit_screen.dart
+@@ -0,0 +1,543 @@
++import 'package:flutter/material.dart';
++
++import '../../../../core/constants/app_colors.dart';
++import '../../../../core/network/api_client.dart';
++import '../../../core/constants/pro_design_system.dart';
++import '../../../l10n/app_localizations.dart';
++
++class _EditableOption {
++  String id;
++  final TextEditingController nameController;
++  final TextEditingController priceController;
++
++  _EditableOption({required this.id, String name = '', double priceDelta = 0})
++    : nameController = TextEditingController(text: name),
++      priceController = TextEditingController(
++        text: priceDelta == 0 ? '' : priceDelta.toStringAsFixed(0),
++      );
++
++  Map<String, dynamic> toJson() => {
++    'id': id,
++    'name': nameController.text.trim(),
++    'priceDelta': double.tryParse(priceController.text.trim()) ?? 0,
++  };
++}
++
++class _EditableGroup {
++  String id;
++  final TextEditingController nameController;
++  bool multiSelect;
++  bool required;
++  final TextEditingController maxSelectionsController;
++  List<_EditableOption> options;
++
++  _EditableGroup({
++    required this.id,
++    String name = '',
++    this.multiSelect = false,
++    this.required = false,
++    int? maxSelections,
++    List<_EditableOption>? options,
++  }) : nameController = TextEditingController(text: name),
++       maxSelectionsController = TextEditingController(
++         text: maxSelections?.toString() ?? '',
++       ),
++       options = options ?? [];
++
++  Map<String, dynamic> toJson() => {
++    'id': id,
++    'name': nameController.text.trim(),
++    'type': multiSelect ? 'multiple' : 'single',
++    'required': required,
++    if (maxSelectionsController.text.trim().isNotEmpty)
++      'maxSelections': int.tryParse(maxSelectionsController.text.trim()),
++    'options': options
++        .where((o) => o.nameController.text.trim().isNotEmpty)
++        .map((o) => o.toJson())
++        .toList(),
++  };
++}
++
++class RestaurantMenuItemEditScreen extends StatefulWidget {
++  final String userId;
++  final String restaurantId;
++  final List<Map<String, dynamic>> categories;
++  final Map<String, dynamic>? existingItem;
++
++  const RestaurantMenuItemEditScreen({
++    super.key,
++    required this.userId,
++    required this.restaurantId,
++    required this.categories,
++    this.existingItem,
++  });
++
++  @override
++  State<RestaurantMenuItemEditScreen> createState() =>
++      _RestaurantMenuItemEditScreenState();
++}
++
++class _RestaurantMenuItemEditScreenState
++    extends State<RestaurantMenuItemEditScreen> {
++  final _formKey = GlobalKey<FormState>();
++  late final TextEditingController _nameController;
++  late final TextEditingController _descriptionController;
++  late final TextEditingController _priceController;
++  late final TextEditingController _imageUrlController;
++  String? _selectedCategoryId;
++  bool _isPopular = false;
++  bool _isAvailable = true;
++  bool _isSubmitting = false;
++  final List<_EditableGroup> _groups = [];
++  int _idCounter = 0;
++
++  bool get _isEditing => widget.existingItem != null;
++
++  AppLocalizations get l10n => AppLocalizations.of(context)!;
++
++  String _nextId(String prefix) => '${prefix}_${_idCounter++}';
++
++  @override
++  void initState() {
++    super.initState();
++    final item = widget.existingItem;
++    _nameController = TextEditingController(text: item?['name']?.toString());
++    _descriptionController = TextEditingController(
++      text: item?['description']?.toString(),
++    );
++    _priceController = TextEditingController(
++      text: item == null ? '' : (item['price'] as num?)?.toString() ?? '',
++    );
++    _imageUrlController = TextEditingController(
++      text: item?['imageUrl']?.toString(),
++    );
++    _selectedCategoryId = item?['categoryId']?.toString();
++    _isPopular = item?['isPopular'] as bool? ?? false;
++    _isAvailable = item?['isAvailable'] as bool? ?? true;
++
++    final customizations = item?['customizations'];
++    final groupsJson = customizations is Map
++        ? (customizations['groups'] as List? ?? [])
++        : const [];
++    for (final rawGroup in groupsJson) {
++      final group = Map<String, dynamic>.from(rawGroup as Map);
++      final optionsJson = group['options'] as List? ?? [];
++      _groups.add(
++        _EditableGroup(
++          id: group['id']?.toString() ?? _nextId('group'),
++          name: group['name']?.toString() ?? '',
++          multiSelect: group['type'] == 'multiple',
++          required: group['required'] as bool? ?? false,
++          maxSelections: (group['maxSelections'] as num?)?.toInt(),
++          options: optionsJson.map((rawOption) {
++            final option = Map<String, dynamic>.from(rawOption as Map);
++            return _EditableOption(
++              id: option['id']?.toString() ?? _nextId('option'),
++              name: option['name']?.toString() ?? '',
++              priceDelta: (option['priceDelta'] as num?)?.toDouble() ?? 0,
++            );
++          }).toList(),
++        ),
++      );
++    }
++  }
++
++  void _addGroup() {
++    setState(() {
++      _groups.add(_EditableGroup(id: _nextId('group')));
++    });
++  }
++
++  void _removeGroup(_EditableGroup group) {
++    setState(() => _groups.remove(group));
++  }
++
++  void _addOption(_EditableGroup group) {
++    setState(() {
++      group.options.add(_EditableOption(id: _nextId('option')));
++    });
++  }
++
++  void _removeOption(_EditableGroup group, _EditableOption option) {
++    setState(() => group.options.remove(option));
++  }
++
++  Future<void> _save() async {
++    if (!_formKey.currentState!.validate()) return;
++
++    setState(() => _isSubmitting = true);
++    final payload = {
++      'restaurantId': widget.restaurantId,
++      'categoryId': _selectedCategoryId,
++      'name': _nameController.text.trim(),
++      'description': _descriptionController.text.trim(),
++      'price': double.tryParse(_priceController.text.trim()) ?? 0,
++      'imageUrl': _imageUrlController.text.trim().isEmpty
++          ? null
++          : _imageUrlController.text.trim(),
++      'isPopular': _isPopular,
++      'isAvailable': _isAvailable,
++      'customizationGroups': _groups
++          .where((g) => g.nameController.text.trim().isNotEmpty)
++          .map((g) => g.toJson())
++          .toList(),
++    };
++
++    try {
++      if (_isEditing) {
++        final id = widget.existingItem!['id'].toString();
++        await ApiClient.patch(
++          '/pro/${widget.userId}/restaurant-menu/items/$id',
++          payload,
++        );
++      } else {
++        await ApiClient.post(
++          '/pro/${widget.userId}/restaurant-menu/items',
++          payload,
++        );
++      }
++      if (!mounted) return;
++      ScaffoldMessenger.of(
++        context,
++      ).showSnackBar(SnackBar(content: Text(l10n.menuItemSaved)));
++      Navigator.of(context).pop(true);
++    } catch (_) {
++      if (!mounted) return;
++      ScaffoldMessenger.of(
++        context,
++      ).showSnackBar(SnackBar(content: Text(l10n.somethingWentWrong)));
++    } finally {
++      if (mounted) setState(() => _isSubmitting = false);
++    }
++  }
++
++  Future<void> _delete() async {
++    final confirmed = await showDialog<bool>(
++      context: context,
++      builder: (context) => AlertDialog(
++        content: Text(l10n.deleteMenuItemConfirm),
++        actions: [
++          TextButton(
++            onPressed: () => Navigator.of(context).pop(false),
++            child: Text(l10n.cancel),
++          ),
++          TextButton(
++            onPressed: () => Navigator.of(context).pop(true),
++            child: Text(l10n.delete),
++          ),
++        ],
++      ),
++    );
++    if (confirmed != true) return;
++
++    setState(() => _isSubmitting = true);
++    try {
++      final id = widget.existingItem!['id'].toString();
++      await ApiClient.delete('/pro/${widget.userId}/restaurant-menu/items/$id');
++      if (!mounted) return;
++      ScaffoldMessenger.of(
++        context,
++      ).showSnackBar(SnackBar(content: Text(l10n.menuItemDeleted)));
++      Navigator.of(context).pop(true);
++    } catch (_) {
++      if (!mounted) return;
++      ScaffoldMessenger.of(
++        context,
++      ).showSnackBar(SnackBar(content: Text(l10n.somethingWentWrong)));
++      setState(() => _isSubmitting = false);
++    }
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return Scaffold(
++      backgroundColor: AppColors.background,
++      appBar: AppBar(
++        title: Text(_isEditing ? l10n.editMenuItem : l10n.newMenuItem),
++        leading: IconButton(
++          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
++          onPressed: () => Navigator.of(context).pop(false),
++        ),
++        actions: [
++          if (_isEditing)
++            IconButton(
++              icon: const Icon(Icons.delete_outline_rounded),
++              onPressed: _isSubmitting ? null : _delete,
++            ),
++        ],
++      ),
++      body: Form(
++        key: _formKey,
++        child: ListView(
++          padding: const EdgeInsets.all(ProDesignSystem.spacing16),
++          children: [
++            TextFormField(
++              controller: _nameController,
++              decoration: InputDecoration(labelText: l10n.itemNameLabel),
++              validator: (v) =>
++                  (v == null || v.trim().isEmpty) ? l10n.enterNameError : null,
++            ),
++            const SizedBox(height: ProDesignSystem.spacing12),
++            TextFormField(
++              controller: _descriptionController,
++              decoration: InputDecoration(labelText: l10n.description),
++              maxLines: 2,
++            ),
++            const SizedBox(height: ProDesignSystem.spacing12),
++            TextFormField(
++              controller: _priceController,
++              decoration: InputDecoration(labelText: '${l10n.price} (DJF)'),
++              keyboardType: const TextInputType.numberWithOptions(
++                decimal: true,
++              ),
++              validator: (v) {
++                final parsed = double.tryParse((v ?? '').trim());
++                if (parsed == null || parsed < 0) {
++                  return l10n.enterValidPriceError;
++                }
++                return null;
++              },
++            ),
++            const SizedBox(height: ProDesignSystem.spacing12),
++            TextFormField(
++              controller: _imageUrlController,
++              decoration: const InputDecoration(labelText: 'Image URL'),
++            ),
++            const SizedBox(height: ProDesignSystem.spacing12),
++            DropdownButtonFormField<String?>(
++              value: _selectedCategoryId,
++              decoration: InputDecoration(labelText: l10n.itemCategoryLabel),
++              items: [
++                DropdownMenuItem<String?>(
++                  value: null,
++                  child: Text(l10n.noCategoryOption),
++                ),
++                ...widget.categories.map(
++                  (c) => DropdownMenuItem<String?>(
++                    value: c['id'].toString(),
++                    child: Text(c['name']?.toString() ?? ''),
++                  ),
++                ),
++              ],
++              onChanged: (value) => setState(() => _selectedCategoryId = value),
++            ),
++            const SizedBox(height: ProDesignSystem.spacing8),
++            SwitchListTile(
++              contentPadding: EdgeInsets.zero,
++              title: Text(l10n.isPopularLabel),
++              value: _isPopular,
++              activeColor: AppColors.food,
++              onChanged: (v) => setState(() => _isPopular = v),
++            ),
++            SwitchListTile(
++              contentPadding: EdgeInsets.zero,
++              title: Text(l10n.isAvailableLabel),
++              value: _isAvailable,
++              activeColor: AppColors.food,
++              onChanged: (v) => setState(() => _isAvailable = v),
++            ),
++            const SizedBox(height: ProDesignSystem.spacing20),
++            Row(
++              mainAxisAlignment: MainAxisAlignment.spaceBetween,
++              children: [
++                Expanded(
++                  child: Column(
++                    crossAxisAlignment: CrossAxisAlignment.start,
++                    children: [
++                      Text(
++                        l10n.customizationGroupsTitle,
++                        style: Theme.of(context).textTheme.titleSmall
++                            ?.copyWith(fontWeight: FontWeight.w800),
++                      ),
++                      Text(
++                        l10n.customizationGroupsSubtitle,
++                        style: Theme.of(context).textTheme.bodySmall,
++                      ),
++                    ],
++                  ),
++                ),
++                TextButton.icon(
++                  onPressed: _addGroup,
++                  icon: const Icon(Icons.add_rounded, size: 18),
++                  label: Text(l10n.addCustomizationGroup),
++                ),
++              ],
++            ),
++            const SizedBox(height: ProDesignSystem.spacing8),
++            for (final group in _groups) _GroupEditor(
++              group: group,
++              l10n: l10n,
++              onRemove: () => _removeGroup(group),
++              onAddOption: () => _addOption(group),
++              onRemoveOption: (option) => _removeOption(group, option),
++              onChanged: () => setState(() {}),
++            ),
++            const SizedBox(height: ProDesignSystem.spacing32),
++            SizedBox(
++              width: double.infinity,
++              child: ElevatedButton(
++                onPressed: _isSubmitting ? null : _save,
++                style: ElevatedButton.styleFrom(
++                  backgroundColor: AppColors.food,
++                  foregroundColor: Colors.white,
++                  padding: const EdgeInsets.symmetric(vertical: 14),
++                ),
++                child: _isSubmitting
++                    ? const SizedBox(
++                        width: 20,
++                        height: 20,
++                        child: CircularProgressIndicator(
++                          strokeWidth: 2,
++                          valueColor: AlwaysStoppedAnimation<Color>(
++                            Colors.white,
++                          ),
++                        ),
++                      )
++                    : Text(l10n.save),
++              ),
++            ),
++            const SizedBox(height: ProDesignSystem.spacing24),
++          ],
++        ),
++      ),
++    );
++  }
++}
++
++class _GroupEditor extends StatelessWidget {
++  final _EditableGroup group;
++  final AppLocalizations l10n;
++  final VoidCallback onRemove;
++  final VoidCallback onAddOption;
++  final ValueChanged<_EditableOption> onRemoveOption;
++  final VoidCallback onChanged;
++
++  const _GroupEditor({
++    required this.group,
++    required this.l10n,
++    required this.onRemove,
++    required this.onAddOption,
++    required this.onRemoveOption,
++    required this.onChanged,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    return Container(
++      margin: const EdgeInsets.only(bottom: ProDesignSystem.spacing12),
++      padding: const EdgeInsets.all(ProDesignSystem.spacing12),
++      decoration: BoxDecoration(
++        color: AppColors.white,
++        borderRadius: BorderRadius.circular(ProDesignSystem.radiusMedium),
++        border: Border.all(color: AppColors.lightGrey),
++      ),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Row(
++            children: [
++              Expanded(
++                child: TextField(
++                  controller: group.nameController,
++                  decoration: InputDecoration(
++                    labelText: l10n.groupNameLabel,
++                    isDense: true,
++                  ),
++                ),
++              ),
++              IconButton(
++                icon: const Icon(Icons.close_rounded, size: 18),
++                onPressed: onRemove,
++              ),
++            ],
++          ),
++          const SizedBox(height: ProDesignSystem.spacing8),
++          Wrap(
++            spacing: 12,
++            runSpacing: 4,
++            crossAxisAlignment: WrapCrossAlignment.center,
++            children: [
++              ChoiceChip(
++                label: Text(l10n.groupTypeSingle),
++                selected: !group.multiSelect,
++                onSelected: (_) {
++                  group.multiSelect = false;
++                  onChanged();
++                },
++              ),
++              ChoiceChip(
++                label: Text(l10n.groupTypeMultiple),
++                selected: group.multiSelect,
++                onSelected: (_) {
++                  group.multiSelect = true;
++                  onChanged();
++                },
++              ),
++              FilterChip(
++                label: Text(l10n.groupRequiredLabel),
++                selected: group.required,
++                onSelected: (v) {
++                  group.required = v;
++                  onChanged();
++                },
++              ),
++            ],
++          ),
++          if (group.multiSelect) ...[
++            const SizedBox(height: ProDesignSystem.spacing8),
++            TextField(
++              controller: group.maxSelectionsController,
++              keyboardType: TextInputType.number,
++              decoration: InputDecoration(
++                labelText: l10n.maxSelectionsLabel,
++                isDense: true,
++              ),
++            ),
++          ],
++          const SizedBox(height: ProDesignSystem.spacing12),
++          for (final option in group.options)
++            Padding(
++              padding: const EdgeInsets.only(bottom: 8),
++              child: Row(
++                children: [
++                  Expanded(
++                    flex: 3,
++                    child: TextField(
++                      controller: option.nameController,
++                      decoration: InputDecoration(
++                        labelText: l10n.optionNameLabel,
++                        isDense: true,
++                      ),
++                    ),
++                  ),
++                  const SizedBox(width: 8),
++                  Expanded(
++                    flex: 2,
++                    child: TextField(
++                      controller: option.priceController,
++                      keyboardType: const TextInputType.numberWithOptions(
++                        decimal: true,
++                      ),
++                      decoration: InputDecoration(
++                        labelText: l10n.optionPriceDeltaLabel,
++                        isDense: true,
++                      ),
++                    ),
++                  ),
++                  IconButton(
++                    icon: const Icon(Icons.close_rounded, size: 16),
++                    onPressed: () => onRemoveOption(option),
++                  ),
++                ],
++              ),
++            ),
++          TextButton.icon(
++            onPressed: onAddOption,
++            icon: const Icon(Icons.add_rounded, size: 16),
++            label: Text(l10n.addOption),
++          ),
++        ],
++      ),
++    );
++  }
++}
+diff --git a/lib/pro/features/restaurant/screens/restaurant_menu_screen.dart b/lib/pro/features/restaurant/screens/restaurant_menu_screen.dart
+new file mode 100644
+index 0000000..d662503
+--- /dev/null
++++ b/lib/pro/features/restaurant/screens/restaurant_menu_screen.dart
+@@ -0,0 +1,413 @@
++import 'package:flutter/material.dart';
++import 'package:go_router/go_router.dart';
++
++import '../../../../core/constants/app_colors.dart';
++import '../../../../core/network/api_client.dart';
++import '../../../core/constants/pro_design_system.dart';
++import '../../../core/router/pro_route_paths.dart';
++import '../../../l10n/app_localizations.dart';
++import 'restaurant_menu_item_edit_screen.dart';
++
++class RestaurantMenuScreen extends StatefulWidget {
++  final String userId;
++
++  const RestaurantMenuScreen({super.key, required this.userId});
++
++  @override
++  State<RestaurantMenuScreen> createState() => _RestaurantMenuScreenState();
++}
++
++class _RestaurantMenuScreenState extends State<RestaurantMenuScreen> {
++  late Future<Map<String, dynamic>?> _menuFuture;
++  final Set<String> _busyItemIds = <String>{};
++
++  AppLocalizations get l10n => AppLocalizations.of(context)!;
++
++  @override
++  void initState() {
++    super.initState();
++    _menuFuture = _loadMenu();
++  }
++
++  Future<Map<String, dynamic>?> _loadMenu() async {
++    try {
++      final response = await ApiClient.get(
++        '/pro/${widget.userId}/restaurant-menu',
++      );
++      final restaurants = (response as Map)['restaurants'] as List?;
++      if (restaurants == null || restaurants.isEmpty) return null;
++      // A shop pro is typically bound to a single restaurant; use the first.
++      return Map<String, dynamic>.from(restaurants.first as Map);
++    } catch (_) {
++      return null;
++    }
++  }
++
++  Future<void> _refresh() async {
++    final future = _loadMenu();
++    setState(() => _menuFuture = future);
++    await future;
++  }
++
++  Future<void> _toggleAvailability(
++    Map<String, dynamic> item,
++    bool value,
++  ) async {
++    final id = item['id']?.toString();
++    if (id == null) return;
++    setState(() => _busyItemIds.add(id));
++    try {
++      await ApiClient.patch('/pro/${widget.userId}/restaurant-menu/items/$id', {
++        'isAvailable': value,
++      });
++      await _refresh();
++    } catch (_) {
++      if (!mounted) return;
++      ScaffoldMessenger.of(
++        context,
++      ).showSnackBar(SnackBar(content: Text(l10n.somethingWentWrong)));
++    } finally {
++      if (mounted) setState(() => _busyItemIds.remove(id));
++    }
++  }
++
++  Future<void> _addCategory(String restaurantId) async {
++    final controller = TextEditingController();
++    final name = await showDialog<String>(
++      context: context,
++      builder: (context) => AlertDialog(
++        title: Text(l10n.addMenuCategory),
++        content: TextField(
++          controller: controller,
++          autofocus: true,
++          decoration: InputDecoration(hintText: l10n.newCategoryName),
++        ),
++        actions: [
++          TextButton(
++            onPressed: () => Navigator.of(context).pop(),
++            child: Text(l10n.cancel),
++          ),
++          TextButton(
++            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
++            child: Text(l10n.save),
++          ),
++        ],
++      ),
++    );
++    if (name == null || name.isEmpty) return;
++
++    try {
++      await ApiClient.post('/pro/${widget.userId}/restaurant-menu/categories', {
++        'name': name,
++        'restaurantId': restaurantId,
++      });
++      if (!mounted) return;
++      ScaffoldMessenger.of(
++        context,
++      ).showSnackBar(SnackBar(content: Text(l10n.categoryCreated)));
++      await _refresh();
++    } catch (_) {
++      if (!mounted) return;
++      ScaffoldMessenger.of(
++        context,
++      ).showSnackBar(SnackBar(content: Text(l10n.somethingWentWrong)));
++    }
++  }
++
++  Future<void> _openItemEditor({
++    required String restaurantId,
++    required List<Map<String, dynamic>> categories,
++    Map<String, dynamic>? item,
++  }) async {
++    final saved = await Navigator.of(context).push<bool>(
++      MaterialPageRoute(
++        builder: (_) => RestaurantMenuItemEditScreen(
++          userId: widget.userId,
++          restaurantId: restaurantId,
++          categories: categories,
++          existingItem: item,
++        ),
++      ),
++    );
++    if (saved == true) await _refresh();
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    return Scaffold(
++      backgroundColor: AppColors.background,
++      appBar: AppBar(
++        title: Text(l10n.restaurantMenuTitle),
++        leading: IconButton(
++          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
++          onPressed: () => context.pop(),
++        ),
++      ),
++      body: FutureBuilder<Map<String, dynamic>?>(
++        future: _menuFuture,
++        builder: (context, snapshot) {
++          if (snapshot.connectionState != ConnectionState.done) {
++            return const Center(child: CircularProgressIndicator());
++          }
++          final restaurant = snapshot.data;
++          if (restaurant == null) {
++            return Center(
++              child: Padding(
++                padding: const EdgeInsets.all(ProDesignSystem.spacing24),
++                child: Text(
++                  l10n.restaurantMenuNoBinding,
++                  textAlign: TextAlign.center,
++                ),
++              ),
++            );
++          }
++
++          final restaurantId = restaurant['id'].toString();
++          final categories = List<Map<String, dynamic>>.from(
++            (restaurant['categories'] as List? ?? [])
++                .map((c) => Map<String, dynamic>.from(c as Map)),
++          );
++          final items = List<Map<String, dynamic>>.from(
++            (restaurant['items'] as List? ?? [])
++                .map((i) => Map<String, dynamic>.from(i as Map)),
++          );
++
++          if (items.isEmpty) {
++            return RefreshIndicator(
++              onRefresh: _refresh,
++              child: ListView(
++                padding: const EdgeInsets.all(ProDesignSystem.spacing24),
++                children: [
++                  const SizedBox(height: 80),
++                  Icon(
++                    Icons.restaurant_menu_rounded,
++                    size: 48,
++                    color: AppColors.grey.withValues(alpha: 0.6),
++                  ),
++                  const SizedBox(height: ProDesignSystem.spacing16),
++                  Text(
++                    l10n.restaurantMenuEmptyState,
++                    textAlign: TextAlign.center,
++                  ),
++                ],
++              ),
++            );
++          }
++
++          final itemsByCategory = <String?, List<Map<String, dynamic>>>{};
++          for (final item in items) {
++            final categoryId = item['categoryId']?.toString();
++            itemsByCategory.putIfAbsent(categoryId, () => []).add(item);
++          }
++
++          return RefreshIndicator(
++            onRefresh: _refresh,
++            child: ListView(
++              padding: const EdgeInsets.all(ProDesignSystem.spacing16),
++              children: [
++                for (final category in categories)
++                  if ((itemsByCategory[category['id']] ?? []).isNotEmpty)
++                    _CategorySection(
++                      title: category['name']?.toString() ?? '',
++                      items: itemsByCategory[category['id']] ?? [],
++                      busyItemIds: _busyItemIds,
++                      onToggleAvailability: _toggleAvailability,
++                      onTapItem: (item) => _openItemEditor(
++                        restaurantId: restaurantId,
++                        categories: categories,
++                        item: item,
++                      ),
++                    ),
++                if ((itemsByCategory[null] ?? []).isNotEmpty)
++                  _CategorySection(
++                    title: l10n.uncategorizedItems,
++                    items: itemsByCategory[null] ?? [],
++                    busyItemIds: _busyItemIds,
++                    onToggleAvailability: _toggleAvailability,
++                    onTapItem: (item) => _openItemEditor(
++                      restaurantId: restaurantId,
++                      categories: categories,
++                      item: item,
++                    ),
++                  ),
++                const SizedBox(height: ProDesignSystem.spacing32),
++              ],
++            ),
++          );
++        },
++      ),
++      floatingActionButton: FutureBuilder<Map<String, dynamic>?>(
++        future: _menuFuture,
++        builder: (context, snapshot) {
++          final restaurant = snapshot.data;
++          if (restaurant == null) return const SizedBox.shrink();
++          final restaurantId = restaurant['id'].toString();
++          final categories = List<Map<String, dynamic>>.from(
++            (restaurant['categories'] as List? ?? [])
++                .map((c) => Map<String, dynamic>.from(c as Map)),
++          );
++          return Row(
++            mainAxisSize: MainAxisSize.min,
++            children: [
++              FloatingActionButton.extended(
++                heroTag: 'add_category',
++                onPressed: () => _addCategory(restaurantId),
++                backgroundColor: AppColors.white,
++                foregroundColor: AppColors.food,
++                icon: const Icon(Icons.category_outlined),
++                label: Text(l10n.addMenuCategory),
++              ),
++              const SizedBox(width: ProDesignSystem.spacing12),
++              FloatingActionButton.extended(
++                heroTag: 'add_item',
++                onPressed: () => _openItemEditor(
++                  restaurantId: restaurantId,
++                  categories: categories,
++                ),
++                backgroundColor: AppColors.food,
++                icon: const Icon(Icons.add_rounded),
++                label: Text(l10n.addMenuItem),
++              ),
++            ],
++          );
++        },
++      ),
++    );
++  }
++}
++
++class _CategorySection extends StatelessWidget {
++  final String title;
++  final List<Map<String, dynamic>> items;
++  final Set<String> busyItemIds;
++  final void Function(Map<String, dynamic> item, bool value)
++  onToggleAvailability;
++  final void Function(Map<String, dynamic> item) onTapItem;
++
++  const _CategorySection({
++    required this.title,
++    required this.items,
++    required this.busyItemIds,
++    required this.onToggleAvailability,
++    required this.onTapItem,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    return Padding(
++      padding: const EdgeInsets.only(bottom: ProDesignSystem.spacing20),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Padding(
++            padding: const EdgeInsets.only(
++              bottom: ProDesignSystem.spacing8,
++              left: 4,
++            ),
++            child: Text(
++              title,
++              style: Theme.of(
++                context,
++              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
++            ),
++          ),
++          ModernCard(
++            padding: EdgeInsets.zero,
++            backgroundColor: AppColors.white,
++            shadows: ProDesignSystem.shadowElevation1,
++            child: Column(
++              children: [
++                for (var i = 0; i < items.length; i++) ...[
++                  if (i > 0) const Divider(height: 1),
++                  _MenuItemRow(
++                    item: items[i],
++                    isBusy: busyItemIds.contains(items[i]['id']?.toString()),
++                    onToggleAvailability: (value) =>
++                        onToggleAvailability(items[i], value),
++                    onTap: () => onTapItem(items[i]),
++                  ),
++                ],
++              ],
++            ),
++          ),
++        ],
++      ),
++    );
++  }
++}
++
++class _MenuItemRow extends StatelessWidget {
++  final Map<String, dynamic> item;
++  final bool isBusy;
++  final ValueChanged<bool> onToggleAvailability;
++  final VoidCallback onTap;
++
++  const _MenuItemRow({
++    required this.item,
++    required this.isBusy,
++    required this.onToggleAvailability,
++    required this.onTap,
++  });
++
++  @override
++  Widget build(BuildContext context) {
++    final price = (item['price'] as num?)?.toDouble() ?? 0;
++    final isAvailable = item['isAvailable'] as bool? ?? true;
++    final customizations = item['customizations'];
++    final hasCustomizations =
++        customizations is Map &&
++        (customizations['groups'] as List?)?.isNotEmpty == true;
++
++    return InkWell(
++      onTap: onTap,
++      child: Padding(
++        padding: const EdgeInsets.symmetric(
++          horizontal: ProDesignSystem.spacing16,
++          vertical: ProDesignSystem.spacing12,
++        ),
++        child: Row(
++          children: [
++            Expanded(
++              child: Column(
++                crossAxisAlignment: CrossAxisAlignment.start,
++                children: [
++                  Text(
++                    item['name']?.toString() ?? '',
++                    style: Theme.of(
++                      context,
++                    ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
++                  ),
++                  const SizedBox(height: 2),
++                  Text(
++                    'DJF${price.toStringAsFixed(0)}',
++                    style: Theme.of(context).textTheme.bodySmall,
++                  ),
++                  if (hasCustomizations) ...[
++                    const SizedBox(height: 2),
++                    Icon(
++                      Icons.tune_rounded,
++                      size: 14,
++                      color: AppColors.grey,
++                    ),
++                  ],
++                ],
++              ),
++            ),
++            if (isBusy)
++              const SizedBox(
++                width: 20,
++                height: 20,
++                child: CircularProgressIndicator(strokeWidth: 2),
++              )
++            else
++              Switch(
++                value: isAvailable,
++                activeColor: AppColors.food,
++                onChanged: onToggleAvailability,
++              ),
++          ],
++        ),
++      ),
++    );
++  }
++}
+diff --git a/lib/pro/features/shop/screens/shop_dashboard_screen.dart b/lib/pro/features/shop/screens/shop_dashboard_screen.dart
+index 0639f41..1558423 100644
+--- a/lib/pro/features/shop/screens/shop_dashboard_screen.dart
++++ b/lib/pro/features/shop/screens/shop_dashboard_screen.dart
+@@ -248,6 +248,35 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
+                       _openQueue(initialModule: module),
+                   l10n: l10n,
+                 ),
++                if (summaries.any((s) => s.module == 'food')) ...[
++                  const SizedBox(height: ProDesignSystem.spacing12),
++                  ModernCard(
++                    backgroundColor: Colors.white,
++                    padding: const EdgeInsets.all(ProDesignSystem.spacing16),
++                    shadows: ProDesignSystem.shadowElevation1,
++                    child: Row(
++                      children: [
++                        Icon(Icons.restaurant_menu_rounded, color: AppColors.food),
++                        const SizedBox(width: ProDesignSystem.spacing12),
++                        Expanded(
++                          child: Text(
++                            l10n.manageRestaurantMenu,
++                            style: Theme.of(context).textTheme.bodyLarge
++                                ?.copyWith(fontWeight: FontWeight.w700),
++                          ),
++                        ),
++                        TextButton(
++                          onPressed: () async {
++                            await context.push(ProRoutePaths.restaurantMenu);
++                            if (!mounted) return;
++                            await _refreshDashboard();
++                          },
++                          child: Text(l10n.restaurantMenuTitle),
++                        ),
++                      ],
++                    ),
++                  ),
++                ],
+                 const SizedBox(height: ProDesignSystem.spacing20),
+                 _RecentOrdersListCard(
+                   entries: recentOrders,
+diff --git a/lib/pro/l10n/app_ar.arb b/lib/pro/l10n/app_ar.arb
+index fc2a61c..45592da 100644
+--- a/lib/pro/l10n/app_ar.arb
++++ b/lib/pro/l10n/app_ar.arb
+@@ -1,5 +1,38 @@
+ {
+   "@@locale": "ar",
++  "somethingWentWrong": "\u062d\u062f\u062b \u062e\u0637\u0623 \u0645\u0627. \u064a\u0631\u062c\u0649 \u0627\u0644\u0645\u062d\u0627\u0648\u0644\u0629 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.",
++  "restaurantMenuTitle": "قائمة المطعم",
++  "manageRestaurantMenu": "إدارة قائمة المطعم",
++  "restaurantMenuEmptyState": "لا توجد أطباق بعد. أضف طبقك الأول للبدء.",
++  "restaurantMenuNoBinding": "لا يوجد مطعم مطابق مرتبط بهذا الملف الشخصي بعد. تواصل مع الدعم لربط مطعمك.",
++  "addMenuItem": "إضافة طبق",
++  "addMenuCategory": "إضافة فئة",
++  "newCategoryName": "اسم الفئة الجديدة",
++  "uncategorizedItems": "بدون فئة",
++  "editMenuItem": "تعديل الطبق",
++  "newMenuItem": "طبق جديد",
++  "itemNameLabel": "اسم الطبق",
++  "itemCategoryLabel": "الفئة",
++  "noCategoryOption": "بدون فئة",
++  "isPopularLabel": "وضع علامة كطبق مشهور",
++  "isAvailableLabel": "متاح للطلب",
++  "customizationGroupsTitle": "مجموعات التخصيص",
++  "customizationGroupsSubtitle": "مثال: مستوى الحرارة، اختيار مشروب، إضافة إضافات",
++  "addCustomizationGroup": "إضافة مجموعة",
++  "groupNameLabel": "اسم المجموعة",
++  "groupTypeSingle": "اختيار واحد",
++  "groupTypeMultiple": "اختيار متعدد",
++  "groupRequiredLabel": "إلزامي",
++  "maxSelectionsLabel": "الحد الأقصى للاختيارات (اختياري)",
++  "addOption": "إضافة خيار",
++  "optionNameLabel": "اسم الخيار",
++  "optionPriceDeltaLabel": "سعر إضافي (فرنك جيبوتي)",
++  "deleteMenuItemConfirm": "حذف هذا الطبق؟ لا يمكن التراجع عن هذا الإجراء.",
++  "deleteCategoryConfirm": "حذف هذه الفئة؟ ستصبح الأطباق فيها بدون فئة، ولن يتم حذفها.",
++  "menuItemSaved": "تم حفظ الطبق.",
++  "menuItemDeleted": "تم حذف الطبق.",
++  "categoryCreated": "تم إنشاء الفئة.",
++  "categoryDeleted": "تم حذف الفئة.",
+   "moduleMessages": "الرسائل",
+   "moduleOrders": "الطلبات",
+   "moduleFood": "طعام",
+diff --git a/lib/pro/l10n/app_en.arb b/lib/pro/l10n/app_en.arb
+index 7892448..5187b55 100644
+--- a/lib/pro/l10n/app_en.arb
++++ b/lib/pro/l10n/app_en.arb
+@@ -1,5 +1,38 @@
+ {
+   "@@locale": "en",
++  "somethingWentWrong": "Something went wrong. Please try again.",
++  "restaurantMenuTitle": "Restaurant Menu",
++  "manageRestaurantMenu": "Manage Restaurant Menu",
++  "restaurantMenuEmptyState": "No menu items yet. Add your first dish to get started.",
++  "restaurantMenuNoBinding": "No matching restaurant is linked to this profile yet. Contact support to get your restaurant connected.",
++  "addMenuItem": "Add Item",
++  "addMenuCategory": "Add Category",
++  "newCategoryName": "New category name",
++  "uncategorizedItems": "Uncategorized",
++  "editMenuItem": "Edit Item",
++  "newMenuItem": "New Item",
++  "itemNameLabel": "Item name",
++  "itemCategoryLabel": "Category",
++  "noCategoryOption": "No category",
++  "isPopularLabel": "Mark as popular",
++  "isAvailableLabel": "Available for order",
++  "customizationGroupsTitle": "Customization Groups",
++  "customizationGroupsSubtitle": "e.g. Spice Level, Choose a drink, Add extras",
++  "addCustomizationGroup": "Add Group",
++  "groupNameLabel": "Group name",
++  "groupTypeSingle": "Single choice",
++  "groupTypeMultiple": "Multiple choice",
++  "groupRequiredLabel": "Required",
++  "maxSelectionsLabel": "Max selections (optional)",
++  "addOption": "Add Option",
++  "optionNameLabel": "Option name",
++  "optionPriceDeltaLabel": "Extra price (DJF)",
++  "deleteMenuItemConfirm": "Delete this menu item? This cannot be undone.",
++  "deleteCategoryConfirm": "Delete this category? Items in it will become uncategorized, not deleted.",
++  "menuItemSaved": "Menu item saved.",
++  "menuItemDeleted": "Menu item deleted.",
++  "categoryCreated": "Category created.",
++  "categoryDeleted": "Category deleted.",
+   "moduleMessages": "Messages",
+   "moduleOrders": "Orders",
+   "moduleFood": "Food",
+diff --git a/lib/pro/l10n/app_fr.arb b/lib/pro/l10n/app_fr.arb
+index 8a14af2..0bcdc46 100644
+--- a/lib/pro/l10n/app_fr.arb
++++ b/lib/pro/l10n/app_fr.arb
+@@ -1,5 +1,38 @@
+ {
+   "@@locale": "fr",
++  "somethingWentWrong": "Une erreur est survenue. Veuillez r\u00e9essayer.",
++  "restaurantMenuTitle": "Menu du restaurant",
++  "manageRestaurantMenu": "Gérer le menu du restaurant",
++  "restaurantMenuEmptyState": "Aucun plat pour le moment. Ajoutez votre premier plat pour commencer.",
++  "restaurantMenuNoBinding": "Aucun restaurant correspondant n'est encore lié à ce profil. Contactez le support pour connecter votre restaurant.",
++  "addMenuItem": "Ajouter un plat",
++  "addMenuCategory": "Ajouter une catégorie",
++  "newCategoryName": "Nom de la nouvelle catégorie",
++  "uncategorizedItems": "Sans catégorie",
++  "editMenuItem": "Modifier le plat",
++  "newMenuItem": "Nouveau plat",
++  "itemNameLabel": "Nom du plat",
++  "itemCategoryLabel": "Catégorie",
++  "noCategoryOption": "Aucune catégorie",
++  "isPopularLabel": "Marquer comme populaire",
++  "isAvailableLabel": "Disponible à la commande",
++  "customizationGroupsTitle": "Groupes de personnalisation",
++  "customizationGroupsSubtitle": "ex : Niveau épicé, Choix de boisson, Ajouter des extras",
++  "addCustomizationGroup": "Ajouter un groupe",
++  "groupNameLabel": "Nom du groupe",
++  "groupTypeSingle": "Choix unique",
++  "groupTypeMultiple": "Choix multiple",
++  "groupRequiredLabel": "Obligatoire",
++  "maxSelectionsLabel": "Sélections max (optionnel)",
++  "addOption": "Ajouter une option",
++  "optionNameLabel": "Nom de l'option",
++  "optionPriceDeltaLabel": "Supplément (DJF)",
++  "deleteMenuItemConfirm": "Supprimer ce plat ? Cette action est irréversible.",
++  "deleteCategoryConfirm": "Supprimer cette catégorie ? Les plats qu'elle contient deviendront sans catégorie, pas supprimés.",
++  "menuItemSaved": "Plat enregistré.",
++  "menuItemDeleted": "Plat supprimé.",
++  "categoryCreated": "Catégorie créée.",
++  "categoryDeleted": "Catégorie supprimée.",
+   "moduleMessages": "Messages",
+   "moduleOrders": "Commandes",
+   "moduleFood": "Nourriture",
+diff --git a/lib/pro/l10n/app_localizations.dart b/lib/pro/l10n/app_localizations.dart
+index 43e2a0c..a5fab3f 100644
+--- a/lib/pro/l10n/app_localizations.dart
++++ b/lib/pro/l10n/app_localizations.dart
+@@ -5984,6 +5984,39 @@ abstract class AppLocalizations {
+   String get officeBusinessCleaning;
+   String get postConstructionCleaning;
+   String get ecologicalDisinfection;
++  String get somethingWentWrong;
++  String get restaurantMenuTitle;
++  String get manageRestaurantMenu;
++  String get restaurantMenuEmptyState;
++  String get restaurantMenuNoBinding;
++  String get addMenuItem;
++  String get addMenuCategory;
++  String get newCategoryName;
++  String get uncategorizedItems;
++  String get editMenuItem;
++  String get newMenuItem;
++  String get itemNameLabel;
++  String get itemCategoryLabel;
++  String get noCategoryOption;
++  String get isPopularLabel;
++  String get isAvailableLabel;
++  String get customizationGroupsTitle;
++  String get customizationGroupsSubtitle;
++  String get addCustomizationGroup;
++  String get groupNameLabel;
++  String get groupTypeSingle;
++  String get groupTypeMultiple;
++  String get groupRequiredLabel;
++  String get maxSelectionsLabel;
++  String get addOption;
++  String get optionNameLabel;
++  String get optionPriceDeltaLabel;
++  String get deleteMenuItemConfirm;
++  String get deleteCategoryConfirm;
++  String get menuItemSaved;
++  String get menuItemDeleted;
++  String get categoryCreated;
++  String get categoryDeleted;
+ }
+ 
+ class _AppLocalizationsDelegate
+diff --git a/lib/pro/l10n/app_localizations_ar.dart b/lib/pro/l10n/app_localizations_ar.dart
+index b63a771..9967427 100644
+--- a/lib/pro/l10n/app_localizations_ar.dart
++++ b/lib/pro/l10n/app_localizations_ar.dart
+@@ -3257,4 +3257,70 @@ class AppLocalizationsAr extends AppLocalizations {
+   String get postConstructionCleaning => 'تنظيف بعد البناء';
+   @override
+   String get ecologicalDisinfection => 'تعقيم بيئي';
++  @override
++  String get somethingWentWrong => "\u062d\u062f\u062b \u062e\u0637\u0623 \u0645\u0627. \u064a\u0631\u062c\u0649 \u0627\u0644\u0645\u062d\u0627\u0648\u0644\u0629 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.";
++  @override
++  String get restaurantMenuTitle => "\u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0645\u0637\u0639\u0645";
++  @override
++  String get manageRestaurantMenu => "\u0625\u062f\u0627\u0631\u0629 \u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0645\u0637\u0639\u0645";
++  @override
++  String get restaurantMenuEmptyState => "\u0644\u0627 \u062a\u0648\u062c\u062f \u0623\u0637\u0628\u0627\u0642 \u0628\u0639\u062f. \u0623\u0636\u0641 \u0637\u0628\u0642\u0643 \u0627\u0644\u0623\u0648\u0644 \u0644\u0644\u0628\u062f\u0621.";
++  @override
++  String get restaurantMenuNoBinding => "\u0644\u0627 \u064a\u0648\u062c\u062f \u0645\u0637\u0639\u0645 \u0645\u0637\u0627\u0628\u0642 \u0645\u0631\u062a\u0628\u0637 \u0628\u0647\u0630\u0627 \u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u0634\u062e\u0635\u064a \u0628\u0639\u062f. \u062a\u0648\u0627\u0635\u0644 \u0645\u0639 \u0627\u0644\u062f\u0639\u0645 \u0644\u0631\u0628\u0637 \u0645\u0637\u0639\u0645\u0643.";
++  @override
++  String get addMenuItem => "\u0625\u0636\u0627\u0641\u0629 \u0637\u0628\u0642";
++  @override
++  String get addMenuCategory => "\u0625\u0636\u0627\u0641\u0629 \u0641\u0626\u0629";
++  @override
++  String get newCategoryName => "\u0627\u0633\u0645 \u0627\u0644\u0641\u0626\u0629 \u0627\u0644\u062c\u062f\u064a\u062f\u0629";
++  @override
++  String get uncategorizedItems => "\u0628\u062f\u0648\u0646 \u0641\u0626\u0629";
++  @override
++  String get editMenuItem => "\u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u0637\u0628\u0642";
++  @override
++  String get newMenuItem => "\u0637\u0628\u0642 \u062c\u062f\u064a\u062f";
++  @override
++  String get itemNameLabel => "\u0627\u0633\u0645 \u0627\u0644\u0637\u0628\u0642";
++  @override
++  String get itemCategoryLabel => "\u0627\u0644\u0641\u0626\u0629";
++  @override
++  String get noCategoryOption => "\u0628\u062f\u0648\u0646 \u0641\u0626\u0629";
++  @override
++  String get isPopularLabel => "\u0648\u0636\u0639 \u0639\u0644\u0627\u0645\u0629 \u0643\u0637\u0628\u0642 \u0645\u0634\u0647\u0648\u0631";
++  @override
++  String get isAvailableLabel => "\u0645\u062a\u0627\u062d \u0644\u0644\u0637\u0644\u0628";
++  @override
++  String get customizationGroupsTitle => "\u0645\u062c\u0645\u0648\u0639\u0627\u062a \u0627\u0644\u062a\u062e\u0635\u064a\u0635";
++  @override
++  String get customizationGroupsSubtitle => "\u0645\u062b\u0627\u0644: \u0645\u0633\u062a\u0648\u0649 \u0627\u0644\u062d\u0631\u0627\u0631\u0629\u060c \u0627\u062e\u062a\u064a\u0627\u0631 \u0645\u0634\u0631\u0648\u0628\u060c \u0625\u0636\u0627\u0641\u0629 \u0625\u0636\u0627\u0641\u0627\u062a";
++  @override
++  String get addCustomizationGroup => "\u0625\u0636\u0627\u0641\u0629 \u0645\u062c\u0645\u0648\u0639\u0629";
++  @override
++  String get groupNameLabel => "\u0627\u0633\u0645 \u0627\u0644\u0645\u062c\u0645\u0648\u0639\u0629";
++  @override
++  String get groupTypeSingle => "\u0627\u062e\u062a\u064a\u0627\u0631 \u0648\u0627\u062d\u062f";
++  @override
++  String get groupTypeMultiple => "\u0627\u062e\u062a\u064a\u0627\u0631 \u0645\u062a\u0639\u062f\u062f";
++  @override
++  String get groupRequiredLabel => "\u0625\u0644\u0632\u0627\u0645\u064a";
++  @override
++  String get maxSelectionsLabel => "\u0627\u0644\u062d\u062f \u0627\u0644\u0623\u0642\u0635\u0649 \u0644\u0644\u0627\u062e\u062a\u064a\u0627\u0631\u0627\u062a (\u0627\u062e\u062a\u064a\u0627\u0631\u064a)";
++  @override
++  String get addOption => "\u0625\u0636\u0627\u0641\u0629 \u062e\u064a\u0627\u0631";
++  @override
++  String get optionNameLabel => "\u0627\u0633\u0645 \u0627\u0644\u062e\u064a\u0627\u0631";
++  @override
++  String get optionPriceDeltaLabel => "\u0633\u0639\u0631 \u0625\u0636\u0627\u0641\u064a (\u0641\u0631\u0646\u0643 \u062c\u064a\u0628\u0648\u062a\u064a)";
++  @override
++  String get deleteMenuItemConfirm => "\u062d\u0630\u0641 \u0647\u0630\u0627 \u0627\u0644\u0637\u0628\u0642\u061f \u0644\u0627 \u064a\u0645\u0643\u0646 \u0627\u0644\u062a\u0631\u0627\u062c\u0639 \u0639\u0646 \u0647\u0630\u0627 \u0627\u0644\u0625\u062c\u0631\u0627\u0621.";
++  @override
++  String get deleteCategoryConfirm => "\u062d\u0630\u0641 \u0647\u0630\u0647 \u0627\u0644\u0641\u0626\u0629\u061f \u0633\u062a\u0635\u0628\u062d \u0627\u0644\u0623\u0637\u0628\u0627\u0642 \u0641\u064a\u0647\u0627 \u0628\u062f\u0648\u0646 \u0641\u0626\u0629\u060c \u0648\u0644\u0646 \u064a\u062a\u0645 \u062d\u0630\u0641\u0647\u0627.";
++  @override
++  String get menuItemSaved => "\u062a\u0645 \u062d\u0641\u0638 \u0627\u0644\u0637\u0628\u0642.";
++  @override
++  String get menuItemDeleted => "\u062a\u0645 \u062d\u0630\u0641 \u0627\u0644\u0637\u0628\u0642.";
++  @override
++  String get categoryCreated => "\u062a\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0641\u0626\u0629.";
++  @override
++  String get categoryDeleted => "\u062a\u0645 \u062d\u0630\u0641 \u0627\u0644\u0641\u0626\u0629.";
+ }
+diff --git a/lib/pro/l10n/app_localizations_en.dart b/lib/pro/l10n/app_localizations_en.dart
+index 7f15a3d..ec25674 100644
+--- a/lib/pro/l10n/app_localizations_en.dart
++++ b/lib/pro/l10n/app_localizations_en.dart
+@@ -3283,4 +3283,70 @@ class AppLocalizationsEn extends AppLocalizations {
+   String get postConstructionCleaning => 'Post-Construction Cleaning';
+   @override
+   String get ecologicalDisinfection => 'Ecological Disinfection';
++  @override
++  String get somethingWentWrong => "Something went wrong. Please try again.";
++  @override
++  String get restaurantMenuTitle => "Restaurant Menu";
++  @override
++  String get manageRestaurantMenu => "Manage Restaurant Menu";
++  @override
++  String get restaurantMenuEmptyState => "No menu items yet. Add your first dish to get started.";
++  @override
++  String get restaurantMenuNoBinding => "No matching restaurant is linked to this profile yet. Contact support to get your restaurant connected.";
++  @override
++  String get addMenuItem => "Add Item";
++  @override
++  String get addMenuCategory => "Add Category";
++  @override
++  String get newCategoryName => "New category name";
++  @override
++  String get uncategorizedItems => "Uncategorized";
++  @override
++  String get editMenuItem => "Edit Item";
++  @override
++  String get newMenuItem => "New Item";
++  @override
++  String get itemNameLabel => "Item name";
++  @override
++  String get itemCategoryLabel => "Category";
++  @override
++  String get noCategoryOption => "No category";
++  @override
++  String get isPopularLabel => "Mark as popular";
++  @override
++  String get isAvailableLabel => "Available for order";
++  @override
++  String get customizationGroupsTitle => "Customization Groups";
++  @override
++  String get customizationGroupsSubtitle => "e.g. Spice Level, Choose a drink, Add extras";
++  @override
++  String get addCustomizationGroup => "Add Group";
++  @override
++  String get groupNameLabel => "Group name";
++  @override
++  String get groupTypeSingle => "Single choice";
++  @override
++  String get groupTypeMultiple => "Multiple choice";
++  @override
++  String get groupRequiredLabel => "Required";
++  @override
++  String get maxSelectionsLabel => "Max selections (optional)";
++  @override
++  String get addOption => "Add Option";
++  @override
++  String get optionNameLabel => "Option name";
++  @override
++  String get optionPriceDeltaLabel => "Extra price (DJF)";
++  @override
++  String get deleteMenuItemConfirm => "Delete this menu item? This cannot be undone.";
++  @override
++  String get deleteCategoryConfirm => "Delete this category? Items in it will become uncategorized, not deleted.";
++  @override
++  String get menuItemSaved => "Menu item saved.";
++  @override
++  String get menuItemDeleted => "Menu item deleted.";
++  @override
++  String get categoryCreated => "Category created.";
++  @override
++  String get categoryDeleted => "Category deleted.";
+ }
+diff --git a/lib/pro/l10n/app_localizations_fr.dart b/lib/pro/l10n/app_localizations_fr.dart
+index 4b88574..b12a620 100644
+--- a/lib/pro/l10n/app_localizations_fr.dart
++++ b/lib/pro/l10n/app_localizations_fr.dart
+@@ -3352,4 +3352,70 @@ class AppLocalizationsFr extends AppLocalizations {
+   String get postConstructionCleaning => 'Nettoyage après construction';
+   @override
+   String get ecologicalDisinfection => 'Désinfection écologique';
++  @override
++  String get somethingWentWrong => "Une erreur est survenue. Veuillez r\u00e9essayer.";
++  @override
++  String get restaurantMenuTitle => "Menu du restaurant";
++  @override
++  String get manageRestaurantMenu => "G\u00e9rer le menu du restaurant";
++  @override
++  String get restaurantMenuEmptyState => "Aucun plat pour le moment. Ajoutez votre premier plat pour commencer.";
++  @override
++  String get restaurantMenuNoBinding => "Aucun restaurant correspondant n'est encore li\u00e9 \u00e0 ce profil. Contactez le support pour connecter votre restaurant.";
++  @override
++  String get addMenuItem => "Ajouter un plat";
++  @override
++  String get addMenuCategory => "Ajouter une cat\u00e9gorie";
++  @override
++  String get newCategoryName => "Nom de la nouvelle cat\u00e9gorie";
++  @override
++  String get uncategorizedItems => "Sans cat\u00e9gorie";
++  @override
++  String get editMenuItem => "Modifier le plat";
++  @override
++  String get newMenuItem => "Nouveau plat";
++  @override
++  String get itemNameLabel => "Nom du plat";
++  @override
++  String get itemCategoryLabel => "Cat\u00e9gorie";
++  @override
++  String get noCategoryOption => "Aucune cat\u00e9gorie";
++  @override
++  String get isPopularLabel => "Marquer comme populaire";
++  @override
++  String get isAvailableLabel => "Disponible \u00e0 la commande";
++  @override
++  String get customizationGroupsTitle => "Groupes de personnalisation";
++  @override
++  String get customizationGroupsSubtitle => "ex : Niveau \u00e9pic\u00e9, Choix de boisson, Ajouter des extras";
++  @override
++  String get addCustomizationGroup => "Ajouter un groupe";
++  @override
++  String get groupNameLabel => "Nom du groupe";
++  @override
++  String get groupTypeSingle => "Choix unique";
++  @override
++  String get groupTypeMultiple => "Choix multiple";
++  @override
++  String get groupRequiredLabel => "Obligatoire";
++  @override
++  String get maxSelectionsLabel => "S\u00e9lections max (optionnel)";
++  @override
++  String get addOption => "Ajouter une option";
++  @override
++  String get optionNameLabel => "Nom de l'option";
++  @override
++  String get optionPriceDeltaLabel => "Suppl\u00e9ment (DJF)";
++  @override
++  String get deleteMenuItemConfirm => "Supprimer ce plat ? Cette action est irr\u00e9versible.";
++  @override
++  String get deleteCategoryConfirm => "Supprimer cette cat\u00e9gorie ? Les plats qu'elle contient deviendront sans cat\u00e9gorie, pas supprim\u00e9s.";
++  @override
++  String get menuItemSaved => "Plat enregistr\u00e9.";
++  @override
++  String get menuItemDeleted => "Plat supprim\u00e9.";
++  @override
++  String get categoryCreated => "Cat\u00e9gorie cr\u00e9\u00e9e.";
++  @override
++  String get categoryDeleted => "Cat\u00e9gorie supprim\u00e9e.";
+ }

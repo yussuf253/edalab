@@ -3283,4 +3283,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get postConstructionCleaning => 'Post-Construction Cleaning';
   @override
   String get ecologicalDisinfection => 'Ecological Disinfection';
+  @override
+  String get somethingWentWrong => "Something went wrong. Please try again.";
+  @override
+  String get restaurantMenuTitle => "Restaurant Menu";
+  @override
+  String get manageRestaurantMenu => "Manage Restaurant Menu";
+  @override
+  String get restaurantMenuEmptyState => "No menu items yet. Add your first dish to get started.";
+  @override
+  String get restaurantMenuNoBinding => "No matching restaurant is linked to this profile yet. Contact support to get your restaurant connected.";
+  @override
+  String get addMenuItem => "Add Item";
+  @override
+  String get addMenuCategory => "Add Category";
+  @override
+  String get newCategoryName => "New category name";
+  @override
+  String get uncategorizedItems => "Uncategorized";
+  @override
+  String get editMenuItem => "Edit Item";
+  @override
+  String get newMenuItem => "New Item";
+  @override
+  String get itemNameLabel => "Item name";
+  @override
+  String get itemCategoryLabel => "Category";
+  @override
+  String get noCategoryOption => "No category";
+  @override
+  String get isPopularLabel => "Mark as popular";
+  @override
+  String get isAvailableLabel => "Available for order";
+  @override
+  String get customizationGroupsTitle => "Customization Groups";
+  @override
+  String get customizationGroupsSubtitle => "e.g. Spice Level, Choose a drink, Add extras";
+  @override
+  String get addCustomizationGroup => "Add Group";
+  @override
+  String get groupNameLabel => "Group name";
+  @override
+  String get groupTypeSingle => "Single choice";
+  @override
+  String get groupTypeMultiple => "Multiple choice";
+  @override
+  String get groupRequiredLabel => "Required";
+  @override
+  String get maxSelectionsLabel => "Max selections (optional)";
+  @override
+  String get addOption => "Add Option";
+  @override
+  String get optionNameLabel => "Option name";
+  @override
+  String get optionPriceDeltaLabel => "Extra price (DJF)";
+  @override
+  String get deleteMenuItemConfirm => "Delete this menu item? This cannot be undone.";
+  @override
+  String get deleteCategoryConfirm => "Delete this category? Items in it will become uncategorized, not deleted.";
+  @override
+  String get menuItemSaved => "Menu item saved.";
+  @override
+  String get menuItemDeleted => "Menu item deleted.";
+  @override
+  String get categoryCreated => "Category created.";
+  @override
+  String get categoryDeleted => "Category deleted.";
 }

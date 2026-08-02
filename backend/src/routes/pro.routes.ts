@@ -6454,4 +6454,317 @@ router.post(
   }),
 );
 
+// ──────────────────────────────────────────────────────────────────────
+// Restaurant menu management (categories + items) for FOOD-module SHOP
+// pro profiles. Mirrors the shopping-products authorization pattern:
+// the profile must be type SHOP with FOOD active, and every write is
+// scoped to the restaurant(s) matched via bindings.restaurantIds.
+// ──────────────────────────────────────────────────────────────────────
+
+const menuCategoryUpsertSchema = z.object({
+  name: z.string().trim().min(1),
+  sortOrder: z.coerce.number().int().optional(),
+});
+
+const customizationOptionSchema = z.object({
+  id: z.string().trim().min(1),
+  name: z.string().trim().min(1),
+  priceDelta: z.coerce.number().optional().default(0),
+});
+
+const customizationGroupSchema = z.object({
+  id: z.string().trim().min(1),
+  name: z.string().trim().min(1),
+  type: z.enum(['single', 'multiple']).optional().default('single'),
+  required: z.boolean().optional().default(false),
+  maxSelections: z.coerce.number().int().optional(),
+  options: z.array(customizationOptionSchema).default([]),
+});
+
+const menuItemUpsertSchema = z.object({
+  restaurantId: z.string().trim().optional(),
+  categoryId: z.string().trim().nullable().optional(),
+  name: z.string().trim().min(1),
+  description: z.string().trim().optional().default(''),
+  price: z.coerce.number().nonnegative(),
+  imageUrl: z.string().trim().optional().nullable(),
+  isPopular: z.boolean().optional(),
+  isAvailable: z.boolean().optional(),
+  customizationGroups: z.array(customizationGroupSchema).optional().default([]),
+});
+
+async function requireFoodShopProfile(userId: string) {
+  const profile = await prisma.proProfile.findUnique({ where: { userId } });
+  if (!profile || profile.type !== ProProfileType.SHOP) {
+    return { error: { status: 404, body: { error: 'Shop pro profile not found.' } } };
+  }
+  if (!profile.activeModules.includes(ProModule.FOOD)) {
+    return {
+      error: {
+        status: 400,
+        body: { error: 'Food is not enabled for this shop profile.' },
+      },
+    };
+  }
+  const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+  const bindings = normalizeBindings(hydratedProfile.bindings);
+  if (bindings.restaurantIds.length === 0) {
+    return {
+      error: {
+        status: 403,
+        body: {
+          error:
+            'No matching restaurant is currently bound to this profile. Update the pro profile business name to match the real restaurant listing.',
+        },
+      },
+    };
+  }
+  return { profile, restaurantIds: bindings.restaurantIds };
+}
+
+// GET /pro/:userId/restaurant-menu — the bound restaurant(s), categories and items.
+router.get(
+  '/:userId/restaurant-menu',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const auth = await requireFoodShopProfile(userId);
+    if ('error' in auth) {
+      return res.status(auth.error.status).json(auth.error.body);
+    }
+
+    const restaurants = await prisma.restaurant.findMany({
+      where: { id: { in: auth.restaurantIds } },
+      include: {
+        menuCategories: { orderBy: { sortOrder: 'asc' } },
+        menuItems: { orderBy: { name: 'asc' } },
+      },
+    });
+
+    res.json({
+      restaurants: restaurants.map((restaurant) => ({
+        id: restaurant.id,
+        name: restaurant.name,
+        categories: restaurant.menuCategories.map((category) => ({
+          id: category.id,
+          name: category.name,
+          sortOrder: category.sortOrder,
+        })),
+        items: restaurant.menuItems.map((item) => ({
+          id: item.id,
+          categoryId: item.categoryId,
+          name: item.name,
+          description: item.description,
+          price: toNumber(item.price),
+          imageUrl: item.imageUrl,
+          isPopular: item.isPopular,
+          isAvailable: item.isAvailable,
+          customizations: item.customizationsJson ?? [],
+        })),
+      })),
+    });
+  }),
+);
+
+// POST /pro/:userId/restaurant-menu/categories
+router.post(
+  '/:userId/restaurant-menu/categories',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const auth = await requireFoodShopProfile(userId);
+    if ('error' in auth) {
+      return res.status(auth.error.status).json(auth.error.body);
+    }
+    const body = menuCategoryUpsertSchema.parse(req.body);
+    const restaurantId = req.body.restaurantId ?? auth.restaurantIds[0];
+    if (!auth.restaurantIds.includes(restaurantId)) {
+      return res.status(403).json({ error: 'Restaurant is not bound to this profile.' });
+    }
+
+    const category = await prisma.restaurantMenuCategory.create({
+      data: {
+        restaurantId,
+        name: body.name,
+        sortOrder: body.sortOrder ?? 0,
+      },
+    });
+    res.status(201).json(category);
+  }),
+);
+
+// PATCH /pro/:userId/restaurant-menu/categories/:categoryId
+router.patch(
+  '/:userId/restaurant-menu/categories/:categoryId',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const categoryId = getParam(req.params.categoryId, 'categoryId');
+    const auth = await requireFoodShopProfile(userId);
+    if ('error' in auth) {
+      return res.status(auth.error.status).json(auth.error.body);
+    }
+    const body = menuCategoryUpsertSchema.partial().parse(req.body);
+
+    const existing = await prisma.restaurantMenuCategory.findUnique({
+      where: { id: categoryId },
+    });
+    if (!existing || !auth.restaurantIds.includes(existing.restaurantId)) {
+      return res.status(404).json({ error: 'Menu category not found.' });
+    }
+
+    const category = await prisma.restaurantMenuCategory.update({
+      where: { id: categoryId },
+      data: {
+        name: body.name ?? undefined,
+        sortOrder: body.sortOrder ?? undefined,
+      },
+    });
+    res.json(category);
+  }),
+);
+
+// DELETE /pro/:userId/restaurant-menu/categories/:categoryId
+// Items in this category are NOT deleted — they fall back to "uncategorized"
+// (see categoryId's onDelete: SetNull in schema.prisma) rather than being lost.
+router.delete(
+  '/:userId/restaurant-menu/categories/:categoryId',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const categoryId = getParam(req.params.categoryId, 'categoryId');
+    const auth = await requireFoodShopProfile(userId);
+    if ('error' in auth) {
+      return res.status(auth.error.status).json(auth.error.body);
+    }
+
+    const existing = await prisma.restaurantMenuCategory.findUnique({
+      where: { id: categoryId },
+    });
+    if (!existing || !auth.restaurantIds.includes(existing.restaurantId)) {
+      return res.status(404).json({ error: 'Menu category not found.' });
+    }
+
+    await prisma.restaurantMenuCategory.delete({ where: { id: categoryId } });
+    res.json({ success: true });
+  }),
+);
+
+// POST /pro/:userId/restaurant-menu/items
+router.post(
+  '/:userId/restaurant-menu/items',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const auth = await requireFoodShopProfile(userId);
+    if ('error' in auth) {
+      return res.status(auth.error.status).json(auth.error.body);
+    }
+    const body = menuItemUpsertSchema.parse(req.body);
+    const restaurantId = body.restaurantId ?? auth.restaurantIds[0];
+    if (!auth.restaurantIds.includes(restaurantId)) {
+      return res.status(403).json({ error: 'Restaurant is not bound to this profile.' });
+    }
+    if (body.categoryId) {
+      const category = await prisma.restaurantMenuCategory.findUnique({
+        where: { id: body.categoryId },
+      });
+      if (!category || category.restaurantId !== restaurantId) {
+        return res.status(400).json({ error: 'Menu category does not belong to this restaurant.' });
+      }
+    }
+
+    const item = await prisma.restaurantMenuItem.create({
+      data: {
+        id: randomUUID(),
+        restaurantId,
+        categoryId: body.categoryId ?? null,
+        name: body.name,
+        description: body.description ?? '',
+        price: new Prisma.Decimal(body.price),
+        imageUrl: body.imageUrl ?? null,
+        isPopular: body.isPopular ?? false,
+        isAvailable: body.isAvailable ?? true,
+        customizationsJson:
+          body.customizationGroups.length > 0
+            ? { groups: body.customizationGroups }
+            : [],
+      },
+    });
+    res.status(201).json({
+      ...item,
+      price: toNumber(item.price),
+      customizations: item.customizationsJson ?? [],
+    });
+  }),
+);
+
+// PATCH /pro/:userId/restaurant-menu/items/:itemId
+router.patch(
+  '/:userId/restaurant-menu/items/:itemId',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const itemId = getParam(req.params.itemId, 'itemId');
+    const auth = await requireFoodShopProfile(userId);
+    if ('error' in auth) {
+      return res.status(auth.error.status).json(auth.error.body);
+    }
+
+    const existing = await prisma.restaurantMenuItem.findUnique({ where: { id: itemId } });
+    if (!existing || !auth.restaurantIds.includes(existing.restaurantId)) {
+      return res.status(404).json({ error: 'Menu item not found.' });
+    }
+
+    const body = menuItemUpsertSchema.partial().parse(req.body);
+    if (body.categoryId) {
+      const category = await prisma.restaurantMenuCategory.findUnique({
+        where: { id: body.categoryId },
+      });
+      if (!category || category.restaurantId !== existing.restaurantId) {
+        return res.status(400).json({ error: 'Menu category does not belong to this restaurant.' });
+      }
+    }
+
+    const item = await prisma.restaurantMenuItem.update({
+      where: { id: itemId },
+      data: {
+        categoryId: body.categoryId === undefined ? undefined : body.categoryId,
+        name: body.name ?? undefined,
+        description: body.description ?? undefined,
+        price: body.price === undefined ? undefined : new Prisma.Decimal(body.price),
+        imageUrl: body.imageUrl === undefined ? undefined : body.imageUrl,
+        isPopular: body.isPopular ?? undefined,
+        isAvailable: body.isAvailable ?? undefined,
+        customizationsJson:
+          body.customizationGroups === undefined
+            ? undefined
+            : body.customizationGroups.length > 0
+              ? { groups: body.customizationGroups }
+              : [],
+      },
+    });
+    res.json({
+      ...item,
+      price: toNumber(item.price),
+      customizations: item.customizationsJson ?? [],
+    });
+  }),
+);
+
+// DELETE /pro/:userId/restaurant-menu/items/:itemId
+router.delete(
+  '/:userId/restaurant-menu/items/:itemId',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const itemId = getParam(req.params.itemId, 'itemId');
+    const auth = await requireFoodShopProfile(userId);
+    if ('error' in auth) {
+      return res.status(auth.error.status).json(auth.error.body);
+    }
+
+    const existing = await prisma.restaurantMenuItem.findUnique({ where: { id: itemId } });
+    if (!existing || !auth.restaurantIds.includes(existing.restaurantId)) {
+      return res.status(404).json({ error: 'Menu item not found.' });
+    }
+
+    await prisma.restaurantMenuItem.delete({ where: { id: itemId } });
+    res.json({ success: true });
+  }),
+);
+
 export default router;

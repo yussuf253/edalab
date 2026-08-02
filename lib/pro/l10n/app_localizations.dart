@@ -5984,6 +5984,39 @@ abstract class AppLocalizations {
   String get officeBusinessCleaning;
   String get postConstructionCleaning;
   String get ecologicalDisinfection;
+  String get somethingWentWrong;
+  String get restaurantMenuTitle;
+  String get manageRestaurantMenu;
+  String get restaurantMenuEmptyState;
+  String get restaurantMenuNoBinding;
+  String get addMenuItem;
+  String get addMenuCategory;
+  String get newCategoryName;
+  String get uncategorizedItems;
+  String get editMenuItem;
+  String get newMenuItem;
+  String get itemNameLabel;
+  String get itemCategoryLabel;
+  String get noCategoryOption;
+  String get isPopularLabel;
+  String get isAvailableLabel;
+  String get customizationGroupsTitle;
+  String get customizationGroupsSubtitle;
+  String get addCustomizationGroup;
+  String get groupNameLabel;
+  String get groupTypeSingle;
+  String get groupTypeMultiple;
+  String get groupRequiredLabel;
+  String get maxSelectionsLabel;
+  String get addOption;
+  String get optionNameLabel;
+  String get optionPriceDeltaLabel;
+  String get deleteMenuItemConfirm;
+  String get deleteCategoryConfirm;
+  String get menuItemSaved;
+  String get menuItemDeleted;
+  String get categoryCreated;
+  String get categoryDeleted;
 }
 
 class _AppLocalizationsDelegate

@@ -3352,4 +3352,70 @@ class AppLocalizationsFr extends AppLocalizations {
   String get postConstructionCleaning => 'Nettoyage après construction';
   @override
   String get ecologicalDisinfection => 'Désinfection écologique';
+  @override
+  String get somethingWentWrong => "Une erreur est survenue. Veuillez r\u00e9essayer.";
+  @override
+  String get restaurantMenuTitle => "Menu du restaurant";
+  @override
+  String get manageRestaurantMenu => "G\u00e9rer le menu du restaurant";
+  @override
+  String get restaurantMenuEmptyState => "Aucun plat pour le moment. Ajoutez votre premier plat pour commencer.";
+  @override
+  String get restaurantMenuNoBinding => "Aucun restaurant correspondant n'est encore li\u00e9 \u00e0 ce profil. Contactez le support pour connecter votre restaurant.";
+  @override
+  String get addMenuItem => "Ajouter un plat";
+  @override
+  String get addMenuCategory => "Ajouter une cat\u00e9gorie";
+  @override
+  String get newCategoryName => "Nom de la nouvelle cat\u00e9gorie";
+  @override
+  String get uncategorizedItems => "Sans cat\u00e9gorie";
+  @override
+  String get editMenuItem => "Modifier le plat";
+  @override
+  String get newMenuItem => "Nouveau plat";
+  @override
+  String get itemNameLabel => "Nom du plat";
+  @override
+  String get itemCategoryLabel => "Cat\u00e9gorie";
+  @override
+  String get noCategoryOption => "Aucune cat\u00e9gorie";
+  @override
+  String get isPopularLabel => "Marquer comme populaire";
+  @override
+  String get isAvailableLabel => "Disponible \u00e0 la commande";
+  @override
+  String get customizationGroupsTitle => "Groupes de personnalisation";
+  @override
+  String get customizationGroupsSubtitle => "ex : Niveau \u00e9pic\u00e9, Choix de boisson, Ajouter des extras";
+  @override
+  String get addCustomizationGroup => "Ajouter un groupe";
+  @override
+  String get groupNameLabel => "Nom du groupe";
+  @override
+  String get groupTypeSingle => "Choix unique";
+  @override
+  String get groupTypeMultiple => "Choix multiple";
+  @override
+  String get groupRequiredLabel => "Obligatoire";
+  @override
+  String get maxSelectionsLabel => "S\u00e9lections max (optionnel)";
+  @override
+  String get addOption => "Ajouter une option";
+  @override
+  String get optionNameLabel => "Nom de l'option";
+  @override
+  String get optionPriceDeltaLabel => "Suppl\u00e9ment (DJF)";
+  @override
+  String get deleteMenuItemConfirm => "Supprimer ce plat ? Cette action est irr\u00e9versible.";
+  @override
+  String get deleteCategoryConfirm => "Supprimer cette cat\u00e9gorie ? Les plats qu'elle contient deviendront sans cat\u00e9gorie, pas supprim\u00e9s.";
+  @override
+  String get menuItemSaved => "Plat enregistr\u00e9.";
+  @override
+  String get menuItemDeleted => "Plat supprim\u00e9.";
+  @override
+  String get categoryCreated => "Cat\u00e9gorie cr\u00e9\u00e9e.";
+  @override
+  String get categoryDeleted => "Cat\u00e9gorie supprim\u00e9e.";
 }

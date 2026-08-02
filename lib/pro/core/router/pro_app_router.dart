@@ -25,6 +25,7 @@ import '../../features/rider/screens/rider_active_trip_screen.dart';
 import '../../features/rider/screens/rider_queue_screen.dart';
 import '../../features/shop/screens/shop_orders_queue_screen.dart';
 import '../../features/shop/screens/shop_products_screen.dart';
+import '../../features/restaurant/screens/restaurant_menu_screen.dart';
 import '../../features/shop/screens/shop_store_setup_screen.dart';
 import '../../features/auth/screens/pro_banned_screen.dart';
 import '../../features/super_admin/screens/pro_super_admin_screen.dart';
@@ -174,6 +175,13 @@ GoRouter createProAppRouter({
             activeModules: profile.activeModules,
             initialModule: state.uri.queryParameters['module'] ?? 'shopping',
           ),
+        ),
+      ),
+      GoRoute(
+        path: ProRoutePaths.restaurantMenu,
+        builder: (context, state) => _withProfile(
+          context,
+          (profile) => RestaurantMenuScreen(userId: profile.userId),
         ),
       ),
       GoRoute(
