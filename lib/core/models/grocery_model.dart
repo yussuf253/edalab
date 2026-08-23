@@ -50,18 +50,18 @@ class GroceryModel {
   }
 
   static List<GroceryCategory> sampleCategories = [
-    GroceryCategory(id: 'c1', name: 'Fruits & Veg'),
-    GroceryCategory(id: 'c2', name: 'Dairy & Eggs'),
-    GroceryCategory(id: 'c3', name: 'Meat & Seafood'),
-    GroceryCategory(id: 'c4', name: 'Bakery'),
-    GroceryCategory(id: 'c5', name: 'Beverages'),
+    GroceryCategory(id: 'grocery-fruits-veg', name: 'Fruits & Veg'),
+    GroceryCategory(id: 'grocery-dairy-eggs', name: 'Dairy & Eggs'),
+    GroceryCategory(id: 'grocery-meat-seafood', name: 'Meat & Seafood'),
+    GroceryCategory(id: 'grocery-bakery', name: 'Bakery'),
+    GroceryCategory(id: 'grocery-beverages', name: 'Beverages'),
   ];
 
   static List<GroceryModel> sampleItems = [
     GroceryModel(
       id: 'g1',
       name: 'Fresh Organic Bananas',
-      categoryId: 'c1',
+      categoryId: 'grocery-fruits-veg',
       price: 2.99,
       unit: 'bunch',
       description: 'Sweet, organic bananas perfect for snacking.',
@@ -71,7 +71,7 @@ class GroceryModel {
     GroceryModel(
       id: 'g2',
       name: 'Whole Milk 1 Gallon',
-      categoryId: 'c2',
+      categoryId: 'grocery-dairy-eggs',
       price: 4.49,
       unit: 'gallon',
       description: 'Farm fresh whole milk fortified with Vitamin D.',
@@ -81,7 +81,7 @@ class GroceryModel {
     GroceryModel(
       id: 'g3',
       name: 'Free Range Eggs',
-      categoryId: 'c2',
+      categoryId: 'grocery-dairy-eggs',
       price: 5.99,
       unit: 'dozen',
       description: 'Large brown eggs from free roaming chickens.',
@@ -91,7 +91,7 @@ class GroceryModel {
     GroceryModel(
       id: 'g4',
       name: 'Salmon Fillet',
-      categoryId: 'c3',
+      categoryId: 'grocery-meat-seafood',
       price: 12.99,
       unit: 'lb',
       description: 'Wild caught Alaskan salmon fillet.',
@@ -101,7 +101,7 @@ class GroceryModel {
     GroceryModel(
       id: 'g5',
       name: 'Sourdough Bread',
-      categoryId: 'c4',
+      categoryId: 'grocery-bakery',
       price: 5.49,
       unit: 'loaf',
       description: 'Freshly baked artisan sourdough bread.',

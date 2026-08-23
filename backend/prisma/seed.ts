@@ -238,7 +238,7 @@ async function seedProducts() {
       rating: 4.8,
       reviewCount: 0,
       unit: 'bunch',
-      imageUrlsJson: [],
+      imageUrlsJson: ['https://via.placeholder.com/640x480.png?text=Fresh+Organic+Bananas'],
       colorsJson: [],
       sizesJson: [],
       tagsJson: ['Organic'],
@@ -259,7 +259,7 @@ async function seedProducts() {
       rating: 4.7,
       reviewCount: 0,
       unit: 'gallon',
-      imageUrlsJson: [],
+      imageUrlsJson: ['https://via.placeholder.com/640x480.png?text=Whole+Milk+1+Gallon'],
       colorsJson: [],
       sizesJson: [],
       tagsJson: [],
@@ -336,10 +336,25 @@ async function seedRestaurants() {
   }
 
   for (const item of djiboutiRestaurantMenuItems) {
+    // Determine restaurantId from menu category mapping so we can connect the item
+    const category = djiboutiRestaurantMenuCategories.find((c) => c.id === item.categoryId as string);
+    const restaurantId = category ? category.restaurantId : undefined;
+
+    const createPayload: any = { ...item };
+    // If categoryId is provided, convert to nested connect for create
+    if (createPayload.categoryId) {
+      createPayload.category = { connect: { id: createPayload.categoryId } };
+      delete createPayload.categoryId;
+    }
+
+    if (restaurantId) {
+      createPayload.restaurant = { connect: { id: restaurantId } };
+    }
+
     await prisma.restaurantMenuItem.upsert({
       where: { id: item.id },
       update: item,
-      create: item,
+      create: createPayload,
     });
   }
 }

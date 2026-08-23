@@ -248,42 +248,57 @@ class ModernStatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: ModernCard(
+        child: ModernCard(
         backgroundColor: backgroundColor,
         shadows: ProDesignSystem.shadowElevation1,
         padding: const EdgeInsets.all(ProDesignSystem.spacing16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: const Color(0xFF6B7280),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (icon != null)
-                  Container(
-                    padding: const EdgeInsets.all(ProDesignSystem.spacing8),
-                    decoration: BoxDecoration(
-                      color: (iconColor ?? const Color(0xFF039D55)).withValues(
-                        alpha: 0.1,
-                      ),
-                      borderRadius: BorderRadius.circular(
-                        ProDesignSystem.radiusSmall,
+            LayoutBuilder(builder: (context, constraints) {
+              // Hide the label entirely when the available width is very small
+              final showLabel = constraints.maxWidth > 64;
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (showLabel)
+                    Expanded(
+                      child: Text(
+                        label,
+                        style: Theme.of(context).textTheme.labelMedium
+                            ?.copyWith(
+                          color: const Color(0xFF6B7280),
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    child: Icon(
-                      icon,
-                      size: 16,
-                      color: iconColor ?? const Color(0xFF039D55),
+                  if (showLabel && icon != null)
+                    const SizedBox(width: ProDesignSystem.spacing12),
+                  if (icon != null)
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(minWidth: 40),
+                      child: Container(
+                        padding: const EdgeInsets.all(ProDesignSystem.spacing6),
+                        decoration: BoxDecoration(
+                          color: (iconColor ?? const Color(0xFF039D55)).withValues(
+                            alpha: 0.1,
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            ProDesignSystem.radiusSmall,
+                          ),
+                        ),
+                        child: Icon(
+                          icon,
+                          size: 14,
+                          color: iconColor ?? const Color(0xFF039D55),
+                        ),
+                      ),
                     ),
-                  ),
-              ],
-            ),
+                ],
+              );
+            }),
             const SizedBox(height: ProDesignSystem.spacing8),
             Text(
               value,

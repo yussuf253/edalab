@@ -895,6 +895,36 @@ router.get(
 );
 
 router.get(
+  '/categories',
+  asyncHandler(async (req, res) => {
+    const moduleTypeParam = req.query.moduleType?.toString().toUpperCase();
+    const moduleType = moduleTypeParam && moduleTypeParam in ModuleType
+      ? (moduleTypeParam as ModuleType)
+      : undefined;
+
+    const categories = await prisma.productCategory.findMany({
+      where: {
+        ...(moduleType ? { moduleType } : {}),
+      },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+
+    res.json(
+      categories.map((c) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        description: c.description,
+        iconKey: c.iconKey,
+        colorHex: c.colorHex,
+        sortOrder: c.sortOrder,
+        active: c.active,
+      })),
+    );
+  }),
+);
+
+router.get(
   '/products/:id',
   asyncHandler(async (req, res) => {
     const productId = getParam(req.params.id, 'productId');

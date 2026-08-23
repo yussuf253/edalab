@@ -32,13 +32,19 @@ class GroceryCategoryScreen extends StatelessWidget {
           onPressed: () => context.pop(),
         ),
       ),
-      body: FutureBuilder<dynamic>(
-        future: ApiClient.get(
-          '/catalog/products?moduleType=grocery&categoryId=$categoryId',
-        ),
+      body: FutureBuilder<List<dynamic>>(
+        future: Future.wait([
+          ApiClient.get('/catalog/products?moduleType=grocery&categoryId=$categoryId'),
+          ApiClient.get('/catalog/categories?moduleType=grocery'),
+        ]),
         builder: (context, snapshot) {
-          final items = snapshot.hasData
-              ? ((snapshot.data as List)
+          final loading = snapshot.connectionState == ConnectionState.waiting;
+
+          final productsData = snapshot.hasData ? snapshot.data![0] : null;
+          final categoriesData = snapshot.hasData && snapshot.data!.length > 1 ? snapshot.data![1] : null;
+
+          final items = productsData != null
+              ? ((productsData as List)
                     .map(
                       (item) => GroceryModel.fromApi(
                         Map<String, dynamic>.from(item as Map),
@@ -49,16 +55,27 @@ class GroceryCategoryScreen extends StatelessWidget {
                     .where((item) => item.categoryId == categoryId)
                     .toList();
 
+          // Build categories list from server result when available
+          final serverCategories = categoriesData != null
+              ? (categoriesData as List)
+                  .map((c) => GroceryCategory(
+                        id: (c as Map)['id']?.toString() ?? '',
+                        name: (c as Map)['name']?.toString() ?? '',
+                        iconUrl: (c as Map)['iconKey']?.toString(),
+                      ))
+                  .toList()
+              : GroceryModel.sampleCategories;
+
           final title = items.isNotEmpty
               ? (items.first.categoryName ?? items.first.categoryId)
-              : GroceryModel.sampleCategories
+              : serverCategories
                     .firstWhere(
                       (category) => category.id == categoryId,
                       orElse: () => GroceryModel.sampleCategories.first,
                     )
                     .name;
 
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (loading) {
             return const Padding(
               padding: EdgeInsets.all(20),
               child: Column(

@@ -25,6 +25,7 @@ class GroceryScreen extends StatefulWidget {
 class _GroceryScreenState extends State<GroceryScreen> {
   final TextEditingController _searchController = TextEditingController();
   List<GroceryModel> _items = GroceryModel.sampleItems;
+  List<GroceryCategory> _categories = GroceryModel.sampleCategories;
   bool _isLoading = true;
   String _searchQuery = '';
   Timer? _searchDebounce;
@@ -47,6 +48,22 @@ class _GroceryScreenState extends State<GroceryScreen> {
                 GroceryModel.fromApi(Map<String, dynamic>.from(item as Map)),
           )
           .toList();
+      // Fetch categories from backend
+      try {
+        final catResp = await ApiClient.get('/catalog/categories?moduleType=grocery');
+        final cats = (catResp as List)
+            .map((c) => GroceryCategory(
+                  id: (c as Map)['id']?.toString() ?? '',
+                  name: (c as Map)['name']?.toString() ?? '',
+                  iconUrl: (c as Map)['iconKey']?.toString(),
+                ))
+            .toList();
+        if (mounted) {
+          setState(() => _categories = cats.isEmpty ? GroceryModel.sampleCategories : cats);
+        }
+      } catch (_) {
+        // Keep sample categories on failure
+      }
       if (!mounted) return;
       setState(() {
         _items = items.isEmpty ? GroceryModel.sampleItems : items;
@@ -125,15 +142,18 @@ class _GroceryScreenState extends State<GroceryScreen> {
     }).toList();
 
     final categoryMap = <String, GroceryCategory>{};
-    for (final item in _items) {
-      categoryMap[item.categoryId] ??= GroceryCategory(
-        id: item.categoryId,
-        name: item.categoryName ?? item.categoryId,
-      );
-    }
-    final categories = categoryMap.isEmpty
-        ? GroceryModel.sampleCategories
-        : categoryMap.values.toList();
+    // Prefer server-provided categories when available
+    final categories = _categories.isNotEmpty
+        ? _categories
+        : () {
+            for (final item in _items) {
+              categoryMap[item.categoryId] ??= GroceryCategory(
+                id: item.categoryId,
+                name: item.categoryName ?? item.categoryId,
+              );
+            }
+            return categoryMap.isEmpty ? GroceryModel.sampleCategories : categoryMap.values.toList();
+          }();
 
     return PopScope(
       canPop: context.canPop(),
