@@ -1,0 +1,789 @@
+diff --git a/lib/core/localization/app_localizations.dart b/lib/core/localization/app_localizations.dart
+index e346807..466658c 100644
+--- a/lib/core/localization/app_localizations.dart
++++ b/lib/core/localization/app_localizations.dart
+@@ -1317,6 +1317,9 @@ class AppLocalizations {
+       'car_rental.error_dates': 'Please select valid start and end dates',
+       'car_rental.pickup_note':
+           'Our team will confirm delivery/pickup details with you after booking.',
++      'car_rental.booking_success': 'Booking created successfully',
++      'common.cancel': 'Cancel',
++      'car_rental.default_car_name': 'Car',
+       'ride.add_place': 'Add {place}',
+       'car_rental.error_locations':
+           'Please enter both pickup and drop-off locations',
+@@ -3269,6 +3272,61 @@ class AppLocalizations {
+           "Impossible de localiser précisément cette adresse — modifiez-la et placez un point sur la carte.",
+       'car_rental.pickup_note':
+           'Notre équipe confirmera les modalités de remise/retour du véhicule avec vous après la réservation.',
++      'car_rental.title': 'Location de voiture',
++      'car_rental.browse_cars': 'Voitures disponibles',
++      'car_rental.no_cars': 'Aucune voiture disponible pour le moment',
++      'car_rental.car_type': '{type} • {seats} places',
++      'car_rental.price_per_day': 'DJF{price}/jour',
++      'car_rental.select_dates': 'Sélectionnez les dates de location',
++      'car_rental.start_date': 'Date de début',
++      'car_rental.end_date': 'Date de fin',
++      'car_rental.pickup_location': 'Lieu de prise en charge',
++      'car_rental.pickup_location_hint': 'Entrez le lieu de prise en charge',
++      'car_rental.dropoff_location': 'Lieu de restitution',
++      'car_rental.dropoff_location_hint': 'Entrez le lieu de restitution',
++      'car_rental.duration': '{days} jour{plural}',
++      'car_rental.price_breakdown': 'Détail du prix',
++      'car_rental.daily_rate': 'Tarif journalier',
++      'car_rental.subtotal': 'Sous-total',
++      'car_rental.tax': 'Taxe (8%)',
++      'car_rental.total': 'Total',
++      'car_rental.features': 'Caractéristiques',
++      'car_rental.transmission': 'Transmission : {transmission}',
++      'car_rental.fuel_type': 'Carburant : {fuel}',
++      'car_rental.year': 'Année : {year}',
++      'car_rental.mileage': 'Kilométrage : {mileage}',
++      'car_rental.book_now': 'Réserver • DJF{total}',
++      'car_rental.check_availability': 'Vérifier la disponibilité',
++      'car_rental.available': 'Disponible',
++      'car_rental.unavailable': 'Indisponible pour ces dates',
++      'car_rental.checking': 'Vérification de la disponibilité...',
++      'car_rental.booking_summary': 'Récapitulatif de la réservation',
++      'car_rental.vehicle_details': 'Détails du véhicule',
++      'car_rental.rental_period': 'Période de location',
++      'car_rental.booking_confirmed': 'Réservation confirmée !',
++      'car_rental.booking_confirmation_subtitle':
++          'Votre réservation de location a été confirmée.',
++      'car_rental.confirmation_details': 'Détails de la confirmation',
++      'car_rental.confirmation_number': 'N° de confirmation',
++      'car_rental.view_details': 'Voir les détails',
++      'car_rental.login_required':
++          'Veuillez vous connecter pour réserver une voiture.',
++      'car_rental.error_booking': 'Échec de la réservation : {error}',
++      'car_rental.error_dates':
++          'Veuillez sélectionner des dates de début et de fin valides',
++      'car_rental.error_locations':
++          'Veuillez indiquer le lieu de prise en charge et de restitution',
++      'car_rental.error_no_car': 'Voiture introuvable',
++      'car_rental.error_booked':
++          'Cette voiture est déjà réservée pour ces dates',
++      'car_rental.my_bookings': 'Mes réservations',
++      'car_rental.past_rentals': 'Locations passées',
++      'car_rental.active_bookings': 'Réservations actives',
++      'car_rental.cancel_booking': 'Annuler la réservation',
++      'car_rental.reschedule': 'Reprogrammer',
++      'car_rental.booking_success': 'Réservation créée avec succès',
++      'common.cancel': 'Annuler',
++      'car_rental.default_car_name': 'Voiture',
+       'ride.add_place': 'Ajouter {place}',
+     },
+     'ar': {
+@@ -4469,6 +4527,57 @@ class AppLocalizations {
+           'تعذر تحديد هذا العنوان بدقة — يرجى تعديله وتثبيت موقع على الخريطة.',
+       'car_rental.pickup_note':
+           'سيؤكد فريقنا تفاصيل التسليم/الاستلام معك بعد الحجز.',
++      'car_rental.title': 'تأجير السيارات',
++      'car_rental.browse_cars': 'تصفح السيارات المتاحة',
++      'car_rental.no_cars': 'لا توجد سيارات متاحة حالياً',
++      'car_rental.car_type': '{type} • {seats} مقاعد',
++      'car_rental.price_per_day': '{price} فرنك جيبوتي/اليوم',
++      'car_rental.select_dates': 'اختر تواريخ الإيجار',
++      'car_rental.start_date': 'تاريخ البدء',
++      'car_rental.end_date': 'تاريخ الانتهاء',
++      'car_rental.pickup_location': 'مكان الاستلام',
++      'car_rental.pickup_location_hint': 'أدخل مكان الاستلام',
++      'car_rental.dropoff_location': 'مكان التسليم',
++      'car_rental.dropoff_location_hint': 'أدخل مكان التسليم',
++      'car_rental.duration': '{days} يوم{plural}',
++      'car_rental.price_breakdown': 'تفاصيل السعر',
++      'car_rental.daily_rate': 'السعر اليومي',
++      'car_rental.subtotal': 'المجموع الفرعي',
++      'car_rental.tax': 'الضريبة (8%)',
++      'car_rental.total': 'المجموع',
++      'car_rental.features': 'المميزات',
++      'car_rental.transmission': 'ناقل الحركة: {transmission}',
++      'car_rental.fuel_type': 'الوقود: {fuel}',
++      'car_rental.year': 'السنة: {year}',
++      'car_rental.mileage': 'المسافة المقطوعة: {mileage}',
++      'car_rental.book_now': 'احجز الآن • {total} فرنك جيبوتي',
++      'car_rental.check_availability': 'التحقق من التوفر',
++      'car_rental.available': 'متاح',
++      'car_rental.unavailable': 'غير متاح لهذه التواريخ',
++      'car_rental.checking': 'جارٍ التحقق من التوفر...',
++      'car_rental.booking_summary': 'ملخص الحجز',
++      'car_rental.vehicle_details': 'تفاصيل المركبة',
++      'car_rental.rental_period': 'فترة الإيجار',
++      'car_rental.booking_confirmed': 'تم تأكيد الحجز!',
++      'car_rental.booking_confirmation_subtitle':
++          'تم تأكيد حجز السيارة الخاص بك.',
++      'car_rental.confirmation_details': 'تفاصيل التأكيد',
++      'car_rental.confirmation_number': 'رقم التأكيد',
++      'car_rental.view_details': 'عرض التفاصيل',
++      'car_rental.login_required': 'يرجى تسجيل الدخول لحجز سيارة.',
++      'car_rental.error_booking': 'فشل حجز السيارة: {error}',
++      'car_rental.error_dates': 'يرجى اختيار تواريخ بدء وانتهاء صالحة',
++      'car_rental.error_locations': 'يرجى إدخال مكان الاستلام والتسليم',
++      'car_rental.error_no_car': 'السيارة غير موجودة',
++      'car_rental.error_booked': 'هذه السيارة محجوزة بالفعل لهذه التواريخ',
++      'car_rental.my_bookings': 'حجوزاتي',
++      'car_rental.past_rentals': 'الإيجارات السابقة',
++      'car_rental.active_bookings': 'الحجوزات النشطة',
++      'car_rental.cancel_booking': 'إلغاء الحجز',
++      'car_rental.reschedule': 'إعادة الجدولة',
++      'car_rental.booking_success': 'تم إنشاء الحجز بنجاح',
++      'common.cancel': 'إلغاء',
++      'car_rental.default_car_name': 'سيارة',
+       'ride.add_place': 'إضافة {place}',
+     },
+   };
+diff --git a/lib/features/car_rental/screens/car_rental_confirmation_screen.dart b/lib/features/car_rental/screens/car_rental_confirmation_screen.dart
+new file mode 100644
+index 0000000..a410d51
+--- /dev/null
++++ b/lib/features/car_rental/screens/car_rental_confirmation_screen.dart
+@@ -0,0 +1,160 @@
++import 'package:flutter/material.dart';
++
++import '../../../core/constants/app_colors.dart';
++import '../../../core/constants/app_text_styles.dart';
++import '../../../core/localization/app_localizations.dart';
++import 'my_car_rentals_screen.dart';
++
++class CarRentalConfirmationScreen extends StatelessWidget {
++  final String carName;
++  final DateTime startDate;
++  final DateTime endDate;
++  final int totalPrice;
++  final String confirmationNumber;
++
++  const CarRentalConfirmationScreen({
++    super.key,
++    required this.carName,
++    required this.startDate,
++    required this.endDate,
++    required this.totalPrice,
++    required this.confirmationNumber,
++  });
++
++  String _formatDate(DateTime date) => '${date.day}/${date.month}/${date.year}';
++
++  @override
++  Widget build(BuildContext context) {
++    final l10n = AppLocalizations.of(context);
++
++    return Scaffold(
++      backgroundColor: AppColors.background,
++      body: SafeArea(
++        child: Padding(
++          padding: const EdgeInsets.all(24),
++          child: Column(
++            children: [
++              const Spacer(),
++              Container(
++                width: 84,
++                height: 84,
++                decoration: const BoxDecoration(
++                  color: AppColors.success,
++                  shape: BoxShape.circle,
++                ),
++                child: const Icon(
++                  Icons.check_rounded,
++                  color: Colors.white,
++                  size: 44,
++                ),
++              ),
++              const SizedBox(height: 24),
++              Text(
++                l10n.t('car_rental.booking_confirmed'),
++                style: AppTextStyles.h3,
++                textAlign: TextAlign.center,
++              ),
++              const SizedBox(height: 8),
++              Text(
++                l10n.t('car_rental.booking_confirmation_subtitle'),
++                style: AppTextStyles.bodyMedium.copyWith(
++                  color: AppColors.mediumGrey,
++                ),
++                textAlign: TextAlign.center,
++              ),
++              const SizedBox(height: 28),
++              Container(
++                width: double.infinity,
++                padding: const EdgeInsets.all(20),
++                decoration: BoxDecoration(
++                  color: AppColors.white,
++                  borderRadius: BorderRadius.circular(16),
++                ),
++                child: Column(
++                  crossAxisAlignment: CrossAxisAlignment.start,
++                  children: [
++                    Text(
++                      l10n.t('car_rental.confirmation_details'),
++                      style: AppTextStyles.labelLarge,
++                    ),
++                    const SizedBox(height: 16),
++                    _DetailRow(
++                      label: l10n.t('car_rental.vehicle_details'),
++                      value: carName,
++                    ),
++                    const SizedBox(height: 10),
++                    _DetailRow(
++                      label: l10n.t('car_rental.rental_period'),
++                      value: '${_formatDate(startDate)} - ${_formatDate(endDate)}',
++                    ),
++                    const SizedBox(height: 10),
++                    _DetailRow(
++                      label: l10n.t('car_rental.total'),
++                      value: 'DJF$totalPrice',
++                    ),
++                    const SizedBox(height: 10),
++                    _DetailRow(
++                      label: l10n.t('car_rental.confirmation_number'),
++                      value: confirmationNumber,
++                    ),
++                  ],
++                ),
++              ),
++              const Spacer(),
++              SizedBox(
++                width: double.infinity,
++                child: ElevatedButton(
++                  onPressed: () {
++                    Navigator.of(context).pushAndRemoveUntil(
++                      MaterialPageRoute(
++                        builder: (_) => const MyCarRentalsScreen(),
++                      ),
++                      (route) => route.isFirst,
++                    );
++                  },
++                  child: Text(l10n.t('car_rental.my_bookings')),
++                ),
++              ),
++              const SizedBox(height: 12),
++              SizedBox(
++                width: double.infinity,
++                child: OutlinedButton(
++                  onPressed: () =>
++                      Navigator.of(context).popUntil((route) => route.isFirst),
++                  child: Text(l10n.t('payment_failure.back_home')),
++                ),
++              ),
++            ],
++          ),
++        ),
++      ),
++    );
++  }
++}
++
++class _DetailRow extends StatelessWidget {
++  final String label;
++  final String value;
++
++  const _DetailRow({required this.label, required this.value});
++
++  @override
++  Widget build(BuildContext context) {
++    return Row(
++      mainAxisAlignment: MainAxisAlignment.spaceBetween,
++      children: [
++        Text(
++          label,
++          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.mediumGrey),
++        ),
++        Flexible(
++          child: Text(
++            value,
++            style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
++            textAlign: TextAlign.end,
++          ),
++        ),
++      ],
++    );
++  }
++}
+diff --git a/lib/features/car_rental/screens/car_rental_detail_screen.dart b/lib/features/car_rental/screens/car_rental_detail_screen.dart
+index 48a2df3..eed4808 100644
+--- a/lib/features/car_rental/screens/car_rental_detail_screen.dart
++++ b/lib/features/car_rental/screens/car_rental_detail_screen.dart
+@@ -1,5 +1,6 @@
+ import 'package:flutter/material.dart';
+ import 'package:provider/provider.dart';
++import 'package:iconsax_flutter/iconsax_flutter.dart';
+ 
+ import '../../../core/constants/app_colors.dart';
+ import '../../../core/constants/app_spacing.dart';
+@@ -9,6 +10,7 @@ import '../../../core/network/api_client.dart';
+ import '../../../core/providers/auth_provider.dart';
+ import '../../../core/providers/providers.dart';
+ import '../services/car_rental_service.dart';
++import 'car_rental_confirmation_screen.dart';
+ 
+ class CarRentalDetailScreen extends StatefulWidget {
+   final String carId;
+@@ -183,11 +185,22 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
+ 
+       // Ensure widget still mounted before interacting with context
+       if (!mounted) return;
+-      // Show success and navigate back or to a booking summary
+-      ScaffoldMessenger.of(context).showSnackBar(
+-        const SnackBar(content: Text('Booking created successfully')),
++      final respMap = resp is Map ? Map<String, dynamic>.from(resp) : const {};
++      final confirmationNumber =
++          (respMap['id'] ?? respMap['bookingId'] ?? respMap['_id'])
++              ?.toString() ??
++          '—';
++      Navigator.of(context).pushReplacement(
++        MaterialPageRoute(
++          builder: (_) => CarRentalConfirmationScreen(
++            carName: car.name,
++            startDate: _startDate!,
++            endDate: _endDate!,
++            totalPrice: _totalPrice,
++            confirmationNumber: confirmationNumber,
++          ),
++        ),
+       );
+-      Navigator.of(context).pop(resp);
+     } catch (e) {
+       if (!mounted) return;
+       ScaffoldMessenger.of(context).showSnackBar(
+@@ -211,9 +224,16 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
+     final car = widget.carData;
+ 
+     return Scaffold(
+-      appBar: AppBar(title: Text(car?.name ?? 'Car')),
++      backgroundColor: AppColors.background,
++      appBar: AppBar(
++        title: Text(car?.name ?? l10n.t('car_rental.default_car_name')),
++        leading: IconButton(
++          icon: const Icon(Iconsax.arrow_left_2, size: 20),
++          onPressed: () => Navigator.of(context).pop(),
++        ),
++      ),
+       body: SingleChildScrollView(
+-        padding: const EdgeInsets.all(16),
++        padding: const EdgeInsets.all(20),
+         child: Column(
+           crossAxisAlignment: CrossAxisAlignment.start,
+           children: [
+@@ -224,18 +244,18 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
+                 borderRadius: BorderRadius.circular(12),
+               ),
+               child: const Center(
+-                child: Icon(Icons.directions_car_rounded, size: 64),
++                child: Icon(Iconsax.car, size: 64),
+               ),
+             ),
+             const SizedBox(height: 12),
+-            Text(car?.name ?? 'Vehicle', style: AppTextStyles.h4),
++            Text(car?.name ?? l10n.t('car_rental.default_car_name'), style: AppTextStyles.h4),
+             const SizedBox(height: 6),
+             Text(
+               car != null ? '${car.type} • ${car.seats} seats' : '',
+               style: AppTextStyles.labelMedium,
+             ),
+             const SizedBox(height: 12),
+-            Text('Features', style: AppTextStyles.labelLarge),
++            Text(l10n.t('car_rental.features'), style: AppTextStyles.labelLarge),
+             const SizedBox(height: 8),
+             if (car != null)
+               Wrap(
+@@ -258,7 +278,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
+               child: Row(
+                 children: [
+                   const Icon(
+-                    Icons.info_outline_rounded,
++                    Iconsax.information,
+                     size: 20,
+                     color: AppColors.mediumGrey,
+                   ),
+@@ -377,8 +397,8 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
+                         children: [
+                           Icon(
+                             _isAvailable
+-                                ? Icons.check_circle_rounded
+-                                : Icons.cancel_rounded,
++                                ? Iconsax.tick_circle
++                                : Iconsax.close_circle,
+                             color: _isAvailable
+                                 ? AppColors.success
+                                 : AppColors.error,
+diff --git a/lib/features/car_rental/screens/car_rental_screen.dart b/lib/features/car_rental/screens/car_rental_screen.dart
+index 9c1c5d4..18dab4b 100644
+--- a/lib/features/car_rental/screens/car_rental_screen.dart
++++ b/lib/features/car_rental/screens/car_rental_screen.dart
+@@ -1,11 +1,13 @@
+ import 'package:flutter/material.dart';
+ import 'package:go_router/go_router.dart';
++import 'package:iconsax_flutter/iconsax_flutter.dart';
+ 
+ import '../../../core/constants/app_colors.dart';
+ import '../../../core/constants/app_text_styles.dart';
+ import '../../../core/constants/app_spacing.dart';
+ import '../../../core/localization/app_localizations.dart';
+ import '../services/car_rental_service.dart';
++import 'my_car_rentals_screen.dart';
+ 
+ class CarRentalScreen extends StatefulWidget {
+   const CarRentalScreen({super.key});
+@@ -39,9 +41,18 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
+       appBar: AppBar(
+         title: Text(l10n.t('car_rental.title')),
+         leading: IconButton(
+-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
++          icon: const Icon(Iconsax.arrow_left_2, size: 20),
+           onPressed: () => context.pop(),
+         ),
++        actions: [
++          IconButton(
++            icon: const Icon(Iconsax.receipt_1),
++            tooltip: l10n.t('car_rental.my_bookings'),
++            onPressed: () => Navigator.of(context).push(
++              MaterialPageRoute(builder: (_) => const MyCarRentalsScreen()),
++            ),
++          ),
++        ],
+       ),
+       body: FutureBuilder<List<CarRentalCar>>(
+         future: _carsFuture,
+@@ -56,7 +67,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
+                 mainAxisAlignment: MainAxisAlignment.center,
+                 children: [
+                   Icon(
+-                    Icons.directions_car_rounded,
++                    Iconsax.car,
+                     size: 64,
+                     color: AppColors.extraLightGrey,
+                   ),
+@@ -173,7 +184,7 @@ class _CarCard extends StatelessWidget {
+                 alignment: Alignment.center,
+                 children: [
+                   Icon(
+-                    Icons.directions_car_rounded,
++                    Iconsax.car,
+                     size: 60,
+                     color: AppColors.lightGrey,
+                   ),
+@@ -223,7 +234,7 @@ class _CarCard extends StatelessWidget {
+                       Row(
+                         children: [
+                           Icon(
+-                            Icons.people_rounded,
++                            Iconsax.people,
+                             size: 16,
+                             color: AppColors.lightGrey,
+                           ),
+diff --git a/lib/features/car_rental/screens/my_car_rentals_screen.dart b/lib/features/car_rental/screens/my_car_rentals_screen.dart
+new file mode 100644
+index 0000000..67f2c0e
+--- /dev/null
++++ b/lib/features/car_rental/screens/my_car_rentals_screen.dart
+@@ -0,0 +1,207 @@
++import 'package:flutter/material.dart';
++import 'package:provider/provider.dart';
++import 'package:iconsax_flutter/iconsax_flutter.dart';
++
++import '../../../core/constants/app_colors.dart';
++import '../../../core/constants/app_text_styles.dart';
++import '../../../core/localization/app_localizations.dart';
++import '../../../core/providers/providers.dart';
++import '../services/car_rental_service.dart';
++
++class MyCarRentalsScreen extends StatefulWidget {
++  const MyCarRentalsScreen({super.key});
++
++  @override
++  State<MyCarRentalsScreen> createState() => _MyCarRentalsScreenState();
++}
++
++class _MyCarRentalsScreenState extends State<MyCarRentalsScreen> {
++  List<CarRentalBooking>? _bookings; // null = couldn't load
++  bool _loading = true;
++
++  @override
++  void initState() {
++    super.initState();
++    _load();
++  }
++
++  Future<void> _load() async {
++    setState(() => _loading = true);
++    final userId = context.read<AuthProvider>().user?.id;
++    final bookings = userId == null
++        ? <CarRentalBooking>[]
++        : await CarRentalBookingsService.fetchUserBookings(userId);
++    if (!mounted) return;
++    setState(() {
++      _bookings = bookings;
++      _loading = false;
++    });
++  }
++
++  Future<void> _cancel(CarRentalBooking booking, AppLocalizations l10n) async {
++    final confirmed = await showDialog<bool>(
++      context: context,
++      builder: (context) => AlertDialog(
++        title: Text(l10n.t('car_rental.cancel_booking')),
++        actions: [
++          TextButton(
++            onPressed: () => Navigator.of(context).pop(false),
++            child: Text(l10n.t('common.cancel')),
++          ),
++          TextButton(
++            onPressed: () => Navigator.of(context).pop(true),
++            child: Text(l10n.t('car_rental.cancel_booking')),
++          ),
++        ],
++      ),
++    );
++    if (confirmed != true) return;
++
++    final ok = await CarRentalBookingsService.cancelBooking(booking.id);
++    if (!mounted) return;
++    if (ok) {
++      _load();
++    } else {
++      ScaffoldMessenger.of(context).showSnackBar(
++        SnackBar(content: Text(l10n.t('car_rental.error_booking', params: {'error': ''}))),
++      );
++    }
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final l10n = context.l10n;
++
++    return Scaffold(
++      backgroundColor: AppColors.background,
++      appBar: AppBar(
++        title: Text(l10n.t('car_rental.my_bookings')),
++        leading: IconButton(
++          icon: const Icon(Iconsax.arrow_left_2, size: 20),
++          onPressed: () => Navigator.of(context).pop(),
++        ),
++      ),
++      body: RefreshIndicator(
++        onRefresh: _load,
++        child: _buildBody(l10n),
++      ),
++    );
++  }
++
++  Widget _buildBody(AppLocalizations l10n) {
++    if (_loading) {
++      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
++    }
++
++    if (_bookings == null) {
++      // Backend endpoint isn't reachable/wired up yet — be honest about it
++      // rather than pretending there are no bookings.
++      return ListView(
++        children: [
++          const SizedBox(height: 80),
++          const Icon(Iconsax.cloud, size: 48, color: AppColors.mediumGrey),
++          const SizedBox(height: 16),
++          Padding(
++            padding: const EdgeInsets.symmetric(horizontal: 32),
++            child: Text(
++              l10n.t('car_rental.error_booking', params: {'error': ''}),
++              textAlign: TextAlign.center,
++              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.mediumGrey),
++            ),
++          ),
++        ],
++      );
++    }
++
++    if (_bookings!.isEmpty) {
++      return ListView(
++        children: [
++          const SizedBox(height: 80),
++          const Icon(Iconsax.car, size: 48, color: AppColors.mediumGrey),
++          const SizedBox(height: 16),
++          Center(
++            child: Text(
++              l10n.t('car_rental.no_cars'),
++              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.mediumGrey),
++            ),
++          ),
++        ],
++      );
++    }
++
++    final active = _bookings!.where((b) => !b.isPast && !b.isCancelled).toList();
++    final past = _bookings!.where((b) => b.isPast || b.isCancelled).toList();
++
++    return ListView(
++      padding: const EdgeInsets.all(20),
++      children: [
++        if (active.isNotEmpty) ...[
++          Text(l10n.t('car_rental.active_bookings'), style: AppTextStyles.labelLarge),
++          const SizedBox(height: 12),
++          for (final booking in active) ...[
++            _BookingCard(booking: booking, l10n: l10n, onCancel: () => _cancel(booking, l10n)),
++            const SizedBox(height: 12),
++          ],
++          const SizedBox(height: 12),
++        ],
++        if (past.isNotEmpty) ...[
++          Text(l10n.t('car_rental.past_rentals'), style: AppTextStyles.labelLarge),
++          const SizedBox(height: 12),
++          for (final booking in past) ...[
++            _BookingCard(booking: booking, l10n: l10n, onCancel: null),
++            const SizedBox(height: 12),
++          ],
++        ],
++      ],
++    );
++  }
++}
++
++class _BookingCard extends StatelessWidget {
++  final CarRentalBooking booking;
++  final AppLocalizations l10n;
++  final VoidCallback? onCancel;
++
++  const _BookingCard({required this.booking, required this.l10n, this.onCancel});
++
++  String _formatDate(DateTime date) => '${date.day}/${date.month}/${date.year}';
++
++  @override
++  Widget build(BuildContext context) {
++    return Container(
++      padding: const EdgeInsets.all(16),
++      decoration: BoxDecoration(
++        color: AppColors.white,
++        borderRadius: BorderRadius.circular(14),
++      ),
++      child: Column(
++        crossAxisAlignment: CrossAxisAlignment.start,
++        children: [
++          Text(
++            booking.carName ?? l10n.t('car_rental.default_car_name'),
++            style: AppTextStyles.labelLarge,
++          ),
++          const SizedBox(height: 6),
++          Text(
++            '${_formatDate(booking.startDate)} - ${_formatDate(booking.endDate)}',
++            style: AppTextStyles.bodySmall.copyWith(color: AppColors.mediumGrey),
++          ),
++          if (booking.totalPrice != null) ...[
++            const SizedBox(height: 6),
++            Text('DJF${booking.totalPrice}', style: AppTextStyles.bodyMedium),
++          ],
++          if (onCancel != null) ...[
++            const SizedBox(height: 12),
++            Align(
++              alignment: Alignment.centerRight,
++              child: TextButton(
++                onPressed: onCancel,
++                child: Text(l10n.t('car_rental.cancel_booking')),
++              ),
++            ),
++          ],
++        ],
++      ),
++    );
++  }
++}
+diff --git a/lib/features/car_rental/services/car_rental_service.dart b/lib/features/car_rental/services/car_rental_service.dart
+index 03f1c17..eedef8d 100644
+--- a/lib/features/car_rental/services/car_rental_service.dart
++++ b/lib/features/car_rental/services/car_rental_service.dart
+@@ -1,5 +1,86 @@
+ import '../../../core/network/api_client.dart';
+ 
++class CarRentalBooking {
++  final String id;
++  final String carId;
++  final String? carName;
++  final DateTime startDate;
++  final DateTime endDate;
++  final int? totalPrice;
++  final String status;
++
++  CarRentalBooking({
++    required this.id,
++    required this.carId,
++    this.carName,
++    required this.startDate,
++    required this.endDate,
++    this.totalPrice,
++    required this.status,
++  });
++
++  bool get isPast => endDate.isBefore(DateTime.now());
++  bool get isCancelled => status.toLowerCase() == 'cancelled';
++
++  factory CarRentalBooking.fromApi(Map<String, dynamic> map) {
++    DateTime parseDate(dynamic value) {
++      if (value is String) return DateTime.tryParse(value) ?? DateTime.now();
++      return DateTime.now();
++    }
++
++    return CarRentalBooking(
++      id: (map['id'] ?? map['_id'] ?? map['bookingId'])?.toString() ?? '',
++      carId: (map['carId'] ?? map['car']?['id'])?.toString() ?? '',
++      carName: map['car']?['name']?.toString() ?? map['carName']?.toString(),
++      startDate: parseDate(map['startDate']),
++      endDate: parseDate(map['endDate']),
++      totalPrice: (map['totalPrice'] ?? map['total'] ?? map['price']) is num
++          ? ((map['totalPrice'] ?? map['total'] ?? map['price']) as num)
++                .toInt()
++          : null,
++      status: map['status']?.toString() ?? 'confirmed',
++    );
++  }
++}
++
++class CarRentalBookingsService {
++  CarRentalBookingsService._();
++
++  /// Backend contract expected: `GET /car-rentals/bookings/user/{userId}`
++  /// returning a list of booking objects. Returns null (not an empty list)
++  /// on failure, so the screen can tell "no bookings yet" apart from
++  /// "couldn't reach the server" and show the right message for each.
++  static Future<List<CarRentalBooking>?> fetchUserBookings(
++    String userId,
++  ) async {
++    try {
++      final resp = await ApiClient.get('/car-rentals/bookings/user/$userId');
++      final list = resp is List
++          ? resp
++          : (resp is Map && resp['items'] is List)
++          ? resp['items'] as List
++          : null;
++      if (list == null) return null;
++      return list
++          .whereType<Map>()
++          .map((e) => CarRentalBooking.fromApi(Map<String, dynamic>.from(e)))
++          .toList();
++    } catch (_) {
++      return null;
++    }
++  }
++
++  /// Backend contract expected: `POST /car-rentals/bookings/{bookingId}/cancel`
++  static Future<bool> cancelBooking(String bookingId) async {
++    try {
++      await ApiClient.post('/car-rentals/bookings/$bookingId/cancel', {});
++      return true;
++    } catch (_) {
++      return false;
++    }
++  }
++}
++
+ class CarRentalCar {
+   final String id;
+   final String name;
+diff --git a/pubspec.yaml b/pubspec.yaml
+index 6b8ec63..8f4ad3c 100644
+--- a/pubspec.yaml
++++ b/pubspec.yaml
+@@ -27,7 +27,7 @@ dependencies:
+   badges: ^3.1.2
+   percent_indicator: ^4.2.3
+   lottie: ^3.3.1
+-  iconsax: ^0.0.8
++  iconsax_flutter: ^1.0.0
+   flutter_staggered_animations: ^1.1.1
+   readmore: ^3.0.0
+   dotted_border: ^2.1.0

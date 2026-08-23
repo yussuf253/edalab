@@ -43,34 +43,34 @@ model UpdateActionLog {
 }
 
 model User {
-  id                       String           @id @default(cuid())
-  email                    String           @unique
+  id                       String             @id @default(cuid())
+  email                    String             @unique
   passwordHash             String
   firstName                String
   lastName                 String
   phone                    String?
   avatarUrl                String?
   dateOfBirth              DateTime?
-  points                   Int              @default(0)
-  banned                   Boolean          @default(false)
+  points                   Int                @default(0)
+  banned                   Boolean            @default(false)
   banReason                String?
-  createdAt                DateTime         @default(now())
-  updatedAt                DateTime         @updatedAt
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
   addresses                Address[]
   appointments             Appointment[]
-  participantConversations Conversation[]   @relation("ConversationParticipant")
-  conversations            Conversation[]   @relation("ConversationOwner")
+  participantConversations Conversation[]     @relation("ConversationParticipant")
+  conversations            Conversation[]     @relation("ConversationOwner")
   deviceTokens             DeviceToken[]
   hotelBookings            HotelBooking[]
   laundryOrders            LaundryOrder[]
-  ownedLaundryServices     LaundryService[] @relation("LaundryServiceOwner")
+  ownedLaundryServices     LaundryService[]   @relation("LaundryServiceOwner")
   notifications            Notification[]
-  assignedDeliveryOrders   Order[]          @relation("DeliveryAssignee")
+  assignedDeliveryOrders   Order[]            @relation("DeliveryAssignee")
   orders                   Order[]
   carRentalBookings        CarRentalBooking[]
   paymentMethods           PaymentMethod[]
   proProfile               ProProfile?
-  assignedRideBookings     RideBooking[]    @relation("RideDriver")
+  assignedRideBookings     RideBooking[]      @relation("RideDriver")
   rideBookings             RideBooking[]
   userCoupons              UserCoupon[]
   wishlistItems            WishlistItem[]
@@ -364,7 +364,7 @@ model Product {
 // Car rental bookings
 // Dedicated table for rental bookings to avoid overloading Order model.
 model CarRentalBooking {
-  id              String       @id @default(cuid())
+  id              String          @id @default(cuid())
   userId          String
   carId           String
   carName         String
@@ -372,19 +372,19 @@ model CarRentalBooking {
   startDate       DateTime
   endDate         DateTime
   totalDays       Int
-  pricePerDay     Decimal      @db.Decimal(10, 2)
-  subtotal        Decimal      @db.Decimal(10, 2)
-  tax             Decimal      @db.Decimal(10, 2)
-  total           Decimal      @db.Decimal(10, 2)
+  pricePerDay     Decimal         @db.Decimal(10, 2)
+  subtotal        Decimal         @db.Decimal(10, 2)
+  tax             Decimal         @db.Decimal(10, 2)
+  total           Decimal         @db.Decimal(10, 2)
   status          CarRentalStatus @default(PENDING)
   pickupLocation  String?
   dropoffLocation String?
   notes           String?
   metadata        Json?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
-  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([status])
@@ -418,10 +418,10 @@ model Restaurant {
 }
 
 model RestaurantMenuCategory {
-  id           String     @id @default(cuid())
+  id           String @id @default(cuid())
   restaurantId String
   name         String
-  sortOrder    Int        @default(0)
+sortOrder    Int        @default(0)
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   items        RestaurantMenuItem[]
 }
@@ -432,14 +432,15 @@ model RestaurantMenuItem {
   categoryId         String?
   name               String
   description        String
-  price              Decimal    @db.Decimal(10, 2)
+  price              Decimal @db.Decimal(10, 2)
   imageUrl           String?
-  isPopular          Boolean    @default(false)
-  isAvailable        Boolean    @default(true)
+  isPopular          Boolean @default(false)
+  isAvailable        Boolean @default(true)
   customizationsJson Json?
   restaurant         Restaurant @relation(fields: [restaurantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   category           RestaurantMenuCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: NoAction)
 }
+
 
 model Doctor {
   id               String         @id

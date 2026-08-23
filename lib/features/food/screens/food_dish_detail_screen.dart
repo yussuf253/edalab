@@ -38,6 +38,10 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
   bool _isLoading = true;
   bool _hasTrackedDishView = false;
 
+  // groupId -> selected optionIds within that group.
+  final Map<String, Set<String>> _selectedOptions = {};
+  bool _defaultsApplied = false;
+
   @override
   void initState() {
     super.initState();
@@ -114,6 +118,104 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
     );
   }
 
+  void _applyDefaultSelectionsIfNeeded(MenuItem item) {
+    if (_defaultsApplied) return;
+    _defaultsApplied = true;
+    final needsDefaults = item.customizationGroups.any(
+      (g) => g.required && g.options.isNotEmpty,
+    );
+    if (!needsDefaults) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        for (final group in item.customizationGroups) {
+          if (group.required && group.options.isNotEmpty) {
+            _selectedOptions.putIfAbsent(
+              group.id,
+              () => {group.options.first.id},
+            );
+          }
+        }
+      });
+    });
+  }
+
+  void _toggleOption(CustomizationGroup group, CustomizationOption option) {
+    setState(() {
+      final current = _selectedOptions.putIfAbsent(group.id, () => {});
+      if (group.multiSelect) {
+        if (current.contains(option.id)) {
+          current.remove(option.id);
+        } else {
+          if (group.maxSelections != null &&
+              current.length >= group.maxSelections!) {
+            return;
+          }
+          current.add(option.id);
+        }
+      } else {
+        current
+          ..clear()
+          ..add(option.id);
+      }
+    });
+  }
+
+  double get _customizationsDelta {
+    final item = _item;
+    if (item == null) return 0;
+    var total = 0.0;
+    for (final group in item.customizationGroups) {
+      final selected = _selectedOptions[group.id] ?? const {};
+      for (final option in group.options) {
+        if (selected.contains(option.id)) total += option.priceDelta;
+      }
+    }
+    return total;
+  }
+
+  List<SelectedCustomization> get _selectedCustomizationsList {
+    final item = _item;
+    if (item == null) return const [];
+    final result = <SelectedCustomization>[];
+    for (final group in item.customizationGroups) {
+      final selected = _selectedOptions[group.id] ?? const {};
+      for (final option in group.options) {
+        if (selected.contains(option.id)) {
+          result.add(
+            SelectedCustomization(
+              groupId: group.id,
+              groupName: group.name,
+              optionId: option.id,
+              optionName: option.name,
+              priceDelta: option.priceDelta,
+            ),
+          );
+        }
+      }
+    }
+    return result;
+  }
+
+  bool get _requiredGroupsSatisfied {
+    final item = _item;
+    if (item == null) return true;
+    for (final group in item.customizationGroups) {
+      if (group.required && (_selectedOptions[group.id]?.isEmpty ?? true)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /// A stable signature for the current selection, used to give
+  /// differently-customized cart lines of the same dish distinct IDs.
+  String get _selectionSignature {
+    final parts = _selectedCustomizationsList.map((s) => s.optionId).toList()
+      ..sort();
+    return parts.join('|');
+  }
+
   _DishLookupResult? _findDishInRestaurants(List<RestaurantModel> restaurants) {
     for (final restaurant in restaurants) {
       for (final category in restaurant.menu) {
@@ -137,6 +239,9 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
     final cartProvider = context.watch<CartProvider>();
     final wishlistProvider = context.watch<WishlistProvider>();
     final item = _item;
+    if (item != null) {
+      _applyDefaultSelectionsIfNeeded(item);
+    }
     final existingItems = cartProvider.getModuleItems('food');
     final existing = existingItems.cast<CartItem?>().firstWhere(
       (cartItem) => cartItem?.id == widget.itemId,
@@ -286,38 +391,106 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                             height: 1.6,
                           ),
                         ),
-                        if ((item.customizations ?? const []).isNotEmpty) ...[
-                          const SizedBox(height: 20),
-                          Text(
-                            l10n.t('food_detail.customizations'),
-                            style: AppTextStyles.h4,
-                          ),
-                          const SizedBox(height: 10),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: (item.customizations ?? const [])
-                                .map(
-                                  (option) => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.white,
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: AppColors.lightGrey,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      option,
-                                      style: AppTextStyles.labelSmall,
+                        for (final group in item.customizationGroups) ...[
+                          const SizedBox(height: 22),
+                          Row(
+                            children: [
+                              Text(group.name, style: AppTextStyles.h4),
+                              if (group.required) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.food.withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    l10n.t('food_detail.required'),
+                                    style: AppTextStyles.labelSmall.copyWith(
+                                      color: AppColors.food,
                                     ),
                                   ),
-                                )
-                                .toList(),
+                                ),
+                              ] else if (group.multiSelect) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  l10n.t('food_detail.optional'),
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: AppColors.grey,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
+                          const SizedBox(height: 10),
+                          ...group.options.map((option) {
+                            final isSelected = (_selectedOptions[group.id] ??
+                                    const {})
+                                .contains(option.id);
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(12),
+                                onTap: () => _toggleOption(group, option),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? AppColors.food.withValues(alpha: 0.08)
+                                        : AppColors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppColors.food
+                                          : AppColors.lightGrey,
+                                      width: isSelected ? 1.5 : 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        group.multiSelect
+                                            ? (isSelected
+                                                  ? Icons.check_box_rounded
+                                                  : Icons
+                                                        .check_box_outline_blank_rounded)
+                                            : (isSelected
+                                                  ? Icons
+                                                        .radio_button_checked_rounded
+                                                  : Icons
+                                                        .radio_button_unchecked_rounded),
+                                        size: 20,
+                                        color: isSelected
+                                            ? AppColors.food
+                                            : AppColors.grey,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          option.name,
+                                          style: AppTextStyles.bodyMedium,
+                                        ),
+                                      ),
+                                      if (option.priceDelta > 0)
+                                        Text(
+                                          '+DJF${option.priceDelta.toStringAsFixed(0)}',
+                                          style: AppTextStyles.bodyMedium.copyWith(
+                                            color: AppColors.food,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
                         ],
                         const SizedBox(height: 28),
                         Row(
@@ -407,18 +580,19 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
           child: AppButton(
             text: item == null
                 ? l10n.t('food_detail.back_to_menu')
-                : existing == null
+                : (item.customizationGroups.isEmpty && existing != null)
                 ? l10n.t(
-                    'food_detail.add_to_cart',
-                    params: {
-                      'amount': (item.price * quantity).toStringAsFixed(2),
-                    },
-                  )
-                : l10n.t(
                     'food_detail.view_cart',
                     params: {
                       'amount': cartProvider
                           .getModuleSubtotal('food')
+                          .toStringAsFixed(2),
+                    },
+                  )
+                : l10n.t(
+                    'food_detail.add_to_cart',
+                    params: {
+                      'amount': ((item.price + _customizationsDelta) * quantity)
                           .toStringAsFixed(2),
                     },
                   ),
@@ -426,32 +600,12 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
             onPressed: () {
               if (item == null) {
                 context.pop();
-              } else if (existing == null) {
-                cartProvider.addItem(
-                  CartItem(
-                    id: item.id,
-                    name: item.name,
-                    price: item.price,
-                    quantity: quantity,
-                    moduleType: 'food',
-                    brand: _restaurantName,
-                  ),
-                );
-                AnalyticsService.instance.track(
-                  AnalyticsEvents.checkoutEntryTapped,
-                  properties: {
-                    'module': 'food',
-                    'source': 'dish_detail',
-                    'entity_type': 'dish',
-                    'entity_id': item.id,
-                    'quantity': quantity,
-                    'unit_price': item.price,
-                    'line_total': item.price * quantity,
-                    'restaurant_name': _restaurantName,
-                  },
-                );
-                context.pop();
-              } else {
+                return;
+              }
+
+              final hasCustomizations = item.customizationGroups.isNotEmpty;
+
+              if (!hasCustomizations && existing != null) {
                 AnalyticsService.instance.track(
                   AnalyticsEvents.viewCartTapped,
                   properties: {
@@ -462,7 +616,52 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                   },
                 );
                 context.push('/food/cart');
+                return;
               }
+
+              if (hasCustomizations && !_requiredGroupsSatisfied) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.t('food_detail.select_required')),
+                  ),
+                );
+                return;
+              }
+
+              final unitPrice = item.price + _customizationsDelta;
+              final selections = _selectedCustomizationsList;
+              final cartLineId = hasCustomizations
+                  ? '${item.id}::$_selectionSignature'
+                  : item.id;
+
+              cartProvider.addItem(
+                CartItem(
+                  id: cartLineId,
+                  name: item.name,
+                  price: unitPrice,
+                  quantity: quantity,
+                  moduleType: 'food',
+                  brand: _restaurantName,
+                  description: selections.isEmpty
+                      ? null
+                      : selections.map((s) => s.optionName).join(', '),
+                ),
+              );
+              AnalyticsService.instance.track(
+                AnalyticsEvents.checkoutEntryTapped,
+                properties: {
+                  'module': 'food',
+                  'source': 'dish_detail',
+                  'entity_type': 'dish',
+                  'entity_id': item.id,
+                  'quantity': quantity,
+                  'unit_price': unitPrice,
+                  'line_total': unitPrice * quantity,
+                  'restaurant_name': _restaurantName,
+                  'customizations': selections.map((s) => s.optionId).toList(),
+                },
+              );
+              context.pop();
             },
           ),
         ),

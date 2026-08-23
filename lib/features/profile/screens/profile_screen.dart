@@ -296,7 +296,7 @@ class ProfileScreen extends StatelessWidget {
                     child: Text(
                       l10n.t(
                         'profile.app_version_label',
-                        params: {'version': '1.6.0'},
+                        params: {'version': '1.7.0'},
                       ),
                       style: AppTextStyles.caption,
                     ),

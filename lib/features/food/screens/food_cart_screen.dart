@@ -265,6 +265,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                           qty: item.quantity,
                           price: item.price,
                           brand: item.brand,
+                          customizations: item.description,
                           onIncrement: () {
                             AnalyticsService.instance.track(
                               AnalyticsEvents.cartAdjustmentInitiated,
@@ -567,6 +568,7 @@ class _CartRow extends StatelessWidget {
   final VoidCallback onIncrement;
   final VoidCallback onDecrement;
   final String? brand;
+  final String? customizations;
 
   const _CartRow({
     required this.name,
@@ -575,6 +577,7 @@ class _CartRow extends StatelessWidget {
     required this.onIncrement,
     required this.onDecrement,
     this.brand,
+    this.customizations,
   });
 
   @override
@@ -613,6 +616,18 @@ class _CartRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (brand != null) Text(brand!, style: AppTextStyles.caption),
+                if (customizations != null && customizations!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2, bottom: 2),
+                    child: Text(
+                      customizations!,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.food,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 Text(
                   'DJF ${price.toStringAsFixed(2)}',
                   style: AppTextStyles.priceSmall.copyWith(fontSize: 13),

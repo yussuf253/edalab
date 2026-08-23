@@ -10,6 +10,8 @@ import '../localization/app_localizations.dart';
 import '../modules/module_access_service.dart';
 import '../models/models.dart';
 import '../providers/auth_provider.dart';
+import '../providers/city_availability_provider.dart';
+import '../../features/city_gate/screens/city_not_available_screen.dart';
 import '../widgets/example_version_check.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
@@ -97,12 +99,13 @@ void openAppRoute(String route) {
 
 GoRouter createAppRouter({
   required AuthProvider authProvider,
+  required CityAvailabilityProvider cityAvailabilityProvider,
   required bool hasSeenOnboarding,
   required bool hasSeenHomeOnboarding,
 }) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    refreshListenable: authProvider,
+    refreshListenable: Listenable.merge([authProvider, cityAvailabilityProvider]),
     // Onboarding général → /onboarding
     // Home onboarding → géré via redirect sur /home-services
     initialLocation: hasSeenOnboarding ? '/' : '/home-onboarding',
@@ -112,6 +115,13 @@ GoRouter createAppRouter({
         return path == '/banned' ? null : '/banned';
       }
       if (path == '/banned' && !authProvider.isBanned) {
+        return authProvider.isLoggedIn ? '/' : '/login';
+      }
+      // City rollout gate: block everything outside an active service zone.
+      if (cityAvailabilityProvider.isBlocking) {
+        return path == '/city-unavailable' ? null : '/city-unavailable';
+      }
+      if (path == '/city-unavailable' && !cityAvailabilityProvider.isBlocking) {
         return authProvider.isLoggedIn ? '/' : '/login';
       }
       // Home onboarding : s'affiche une seule fois au premier accès à /home-services
@@ -149,6 +159,12 @@ GoRouter createAppRouter({
         builder: (context, state) => BannedUserScreen(
           banReason: state.extra as String? ?? authProvider.banReason,
         ),
+      ),
+
+      // ── City rollout gate ──────────────────────────────────────────────
+      GoRoute(
+        path: '/city-unavailable',
+        builder: (context, state) => const CityNotAvailableScreen(),
       ),
 
       // ── Main App Shell ───────────────────────────────────────────────────

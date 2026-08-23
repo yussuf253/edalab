@@ -28,6 +28,7 @@ Future<void> main() async {
   final userLocationProvider = UserLocationProvider();
   final moduleProvider = ModuleProvider();
   final appVersionProvider = AppVersionProvider();
+  final cityAvailabilityProvider = CityAvailabilityProvider();
   await languageProvider.initialize();
   await moduleProvider.hydrateFromStorage();
   await AnalyticsService.instance.initialize(
@@ -41,6 +42,7 @@ Future<void> main() async {
 
   final router = createAppRouter(
     authProvider: authProvider,
+    cityAvailabilityProvider: cityAvailabilityProvider,
     hasSeenOnboarding: hasSeenOnboarding,
     hasSeenHomeOnboarding: hasSeenHomeOnboarding,
   );
@@ -74,6 +76,7 @@ Future<void> main() async {
         ChangeNotifierProvider.value(value: userLocationProvider),
         ChangeNotifierProvider.value(value: moduleProvider),
         ChangeNotifierProvider.value(value: appVersionProvider),
+        ChangeNotifierProvider.value(value: cityAvailabilityProvider),
         ChangeNotifierProvider(create: (_) => PaymentProvider()),
         ChangeNotifierProxyProvider2<
           AuthProvider,
@@ -108,6 +111,7 @@ Future<void> main() async {
         notificationProvider: notificationProvider,
         moduleProvider: moduleProvider,
         appVersionProvider: appVersionProvider,
+        cityAvailabilityProvider: cityAvailabilityProvider,
       ),
     );
     RealtimeService().connect();
@@ -169,6 +173,7 @@ Future<void> _bootstrapAppServices({
   required NotificationProvider notificationProvider,
   required ModuleProvider moduleProvider,
   required AppVersionProvider appVersionProvider,
+  required CityAvailabilityProvider cityAvailabilityProvider,
 }) async {
   ApiClient.warmUpBackendInBackground();
 
@@ -178,6 +183,7 @@ Future<void> _bootstrapAppServices({
     languageProvider.initialize(),
     notificationProvider.initialize(),
     moduleProvider.initialize(),
+    cityAvailabilityProvider.checkAvailability(),
   ]);
 
   // Redirect banned users to the banned screen

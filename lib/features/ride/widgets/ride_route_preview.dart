@@ -9,6 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../services/ride_map_icons.dart';
 
 class RideMapPoint {
   final String label;
@@ -130,6 +131,12 @@ class RideRoutePreview extends StatefulWidget {
   final IconData? overlayStatusIcon;
   final String? overlayStatusMessage;
 
+  /// Ambient markers for other available drivers near the user — shown as
+  /// small muted car icons to convey "drivers are nearby", the way
+  /// Uber/Bolt/Careem do on their home/booking screens. These don't affect
+  /// the camera bounds fit — only pickup/destination/driver do.
+  final List<RideMapPoint> nearbyDrivers;
+
   const RideRoutePreview({
     super.key,
     required this.title,
@@ -148,15 +155,69 @@ class RideRoutePreview extends StatefulWidget {
     this.routePolyline,
     this.overlayStatusIcon,
     this.overlayStatusMessage,
+    this.nearbyDrivers = const [],
   });
 
   @override
   State<RideRoutePreview> createState() => _RideRoutePreviewState();
 }
 
-class _RideRoutePreviewState extends State<RideRoutePreview> {
+class _RideRoutePreviewState extends State<RideRoutePreview>
+    with SingleTickerProviderStateMixin {
   GoogleMapController? _mapController;
   final Completer<void> _mapReady = Completer<void>();
+
+  // Custom car-icon bitmaps (loaded async, cached by RideMapIcons).
+  BitmapDescriptor? _driverCarIcon;
+  BitmapDescriptor? _nearbyCarIcon;
+
+  // Smoothly animates the assigned-driver marker between position updates
+  // instead of letting it jump on every location poll.
+  late final AnimationController _driverAnimController;
+  RideMapPoint? _driverAnimFrom;
+  RideMapPoint? _driverAnimTo;
+  RideMapPoint? _displayedDriver;
+  double _driverBearing = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _displayedDriver = widget.driver;
+    _driverAnimTo = widget.driver;
+    unawaited(_loadCarIcons());
+
+    _driverAnimController =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 900),
+        )..addListener(() {
+          final from = _driverAnimFrom;
+          final to = _driverAnimTo;
+          if (from == null || to == null || !mounted) return;
+          final t = Curves.easeInOut.transform(_driverAnimController.value);
+          setState(() {
+            _displayedDriver = RideMapPoint(
+              label: to.label,
+              latitude: from.latitude + (to.latitude - from.latitude) * t,
+              longitude: from.longitude + (to.longitude - from.longitude) * t,
+              color: to.color,
+              icon: to.icon,
+            );
+          });
+        });
+  }
+
+  Future<void> _loadCarIcons() async {
+    final results = await Future.wait([
+      RideMapIcons.car(color: AppColors.ride),
+      RideMapIcons.car(color: AppColors.mediumGrey, muted: true, logicalSize: 56),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _driverCarIcon = results[0];
+      _nearbyCarIcon = results[1];
+    });
+  }
 
   @override
   void didUpdateWidget(covariant RideRoutePreview oldWidget) {
@@ -164,10 +225,38 @@ class _RideRoutePreviewState extends State<RideRoutePreview> {
     if (_pointsChanged(oldWidget, widget)) {
       unawaited(_fitBounds());
     }
+
+    final newDriver = widget.driver;
+    final previousDisplayed = _displayedDriver;
+    final driverMoved =
+        newDriver != null &&
+        (previousDisplayed == null ||
+            previousDisplayed.latitude != newDriver.latitude ||
+            previousDisplayed.longitude != newDriver.longitude);
+
+    if (driverMoved) {
+      if (previousDisplayed != null) {
+        _driverBearing = bearingBetweenLatLng(
+          previousDisplayed.latitude,
+          previousDisplayed.longitude,
+          newDriver.latitude,
+          newDriver.longitude,
+        );
+      }
+      _driverAnimFrom = previousDisplayed ?? newDriver;
+      _driverAnimTo = newDriver;
+      _driverAnimController
+        ..stop()
+        ..value = 0
+        ..forward();
+    } else if (newDriver == null && previousDisplayed != null) {
+      setState(() => _displayedDriver = null);
+    }
   }
 
   @override
   void dispose() {
+    _driverAnimController.dispose();
     _mapController?.dispose();
     super.dispose();
   }
@@ -190,7 +279,19 @@ class _RideRoutePreviewState extends State<RideRoutePreview> {
       if (widget.pickup != null) _markerForPoint('pickup', widget.pickup!),
       if (widget.destination != null)
         _markerForPoint('destination', widget.destination!),
-      if (widget.driver != null) _markerForPoint('driver', widget.driver!),
+      if (_displayedDriver != null)
+        _markerForPoint(
+          'driver',
+          _displayedDriver!,
+          icon: _driverCarIcon,
+          rotation: _driverBearing,
+        ),
+      for (var i = 0; i < widget.nearbyDrivers.length; i++)
+        _markerForPoint(
+          'nearby_driver_$i',
+          widget.nearbyDrivers[i],
+          icon: _nearbyCarIcon,
+        ),
     };
 
     final polylines = <Polyline>{
@@ -216,11 +317,11 @@ class _RideRoutePreviewState extends State<RideRoutePreview> {
           color: AppColors.ride,
           width: 6,
         ),
-      if (widget.driver != null && widget.destination != null)
+      if (_displayedDriver != null && widget.destination != null)
         Polyline(
           polylineId: const PolylineId('driver-to-destination'),
           points: [
-            LatLng(widget.driver!.latitude, widget.driver!.longitude),
+            LatLng(_displayedDriver!.latitude, _displayedDriver!.longitude),
             LatLng(widget.destination!.latitude, widget.destination!.longitude),
           ],
           color: AppColors.warning,
@@ -397,13 +498,21 @@ class _RideRoutePreviewState extends State<RideRoutePreview> {
         !same(oldWidget.driver, newWidget.driver);
   }
 
-  Marker _markerForPoint(String markerId, RideMapPoint point) {
+  Marker _markerForPoint(
+    String markerId,
+    RideMapPoint point, {
+    BitmapDescriptor? icon,
+    double rotation = 0,
+  }) {
     final hue = _hueForColor(point.color);
     return Marker(
       markerId: MarkerId(markerId),
       position: LatLng(point.latitude, point.longitude),
       infoWindow: InfoWindow(title: point.label),
-      icon: BitmapDescriptor.defaultMarkerWithHue(hue),
+      icon: icon ?? BitmapDescriptor.defaultMarkerWithHue(hue),
+      rotation: icon != null ? rotation : 0,
+      anchor: const Offset(0.5, 0.5),
+      flat: icon != null,
     );
   }
 
