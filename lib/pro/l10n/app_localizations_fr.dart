@@ -240,16 +240,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get onboardingSignIn => 'Se connecter';
 
   @override
-  String get edaLabProWelcomeTitle => 'Welcome';
+  String get edaLabProWelcomeTitle => 'Bienvenue';
 
   @override
-  String get edaLabProWelcomeDescription => 'Welcome';
+  String get edaLabProWelcomeDescription => 'Bienvenue';
 
   @override
-  String get edaLabProWelcomeSignInButton => 'Sign In';
+  String get edaLabProWelcomeSignInButton => 'Se connecter';
 
   @override
-  String get edaLabProWelcomeCreateAccountButton => 'Create Account';
+  String get edaLabProWelcomeCreateAccountButton => 'Créer un compte';
 
   @override
   String get onboardingFlowQueued => 'En attente';
@@ -967,10 +967,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get offline => 'Hors ligne';
 
   @override
-  String get completeLabel => 'Complete';
+  String get completeLabel => 'Terminé';
 
   @override
-  String get doneLabel => 'Done';
+  String get doneLabel => 'Terminé';
 
   @override
   String get modules => 'Modules';
@@ -1000,7 +1000,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Informations de base sur le produit';
 
   @override
-  String get storeLabel => 'Store';
+  String get storeLabel => 'Magasin';
 
   @override
   String get pharmacyLabel => 'Pharmacie';
@@ -3202,7 +3202,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get serviceListingUpdated => 'Liste de services mise à jour.';
 
   @override
-  String get itemLabel => 'Item';
+  String get itemLabel => 'Article';
 
   @override
   String get weekdays => 'Jours de la semaine';

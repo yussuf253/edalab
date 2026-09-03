@@ -237,16 +237,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get onboardingSignIn => 'تسجيل الدخول';
 
   @override
-  String get edaLabProWelcomeTitle => 'Welcome';
+  String get edaLabProWelcomeTitle => 'مرحباً';
 
   @override
-  String get edaLabProWelcomeDescription => 'Welcome';
+  String get edaLabProWelcomeDescription => 'مرحباً';
 
   @override
-  String get edaLabProWelcomeSignInButton => 'Sign In';
+  String get edaLabProWelcomeSignInButton => 'تسجيل الدخول';
 
   @override
-  String get edaLabProWelcomeCreateAccountButton => 'Create Account';
+  String get edaLabProWelcomeCreateAccountButton => 'إنشاء حساب';
 
   @override
   String get onboardingFlowQueued => 'في الانتظار';
@@ -944,10 +944,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get offline => 'غير متصل';
 
   @override
-  String get completeLabel => 'Complete';
+  String get completeLabel => 'مكتمل';
 
   @override
-  String get doneLabel => 'Done';
+  String get doneLabel => 'تم';
 
   @override
   String get modules => 'وحدات';
@@ -974,7 +974,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get basicDetailsProductSubtitle => 'معلومات أساسية عن المنتج';
 
   @override
-  String get storeLabel => 'Store';
+  String get storeLabel => 'المتجر';
 
   @override
   String get pharmacyLabel => 'الصيدلية';
@@ -3111,10 +3111,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get serviceListingUpdated => 'تم تحديث قائمة الخدمات.';
 
   @override
-  String get itemLabel => 'Item';
+  String get itemLabel => 'عنصر';
 
   @override
-  String get weekdays => 'Weekdays';
+  String get weekdays => 'أيام الأسبوع';
 
   @override
   String get saveChanges => 'حفظ التغييرات';

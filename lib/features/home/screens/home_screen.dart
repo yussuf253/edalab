@@ -501,6 +501,14 @@ class _ServicesGrid extends StatelessWidget {
         bgColor: AppColors.laundryBg,
         route: '/laundry',
       ),
+      _ServiceItem(
+        key: 'grocery',
+        assetPath: 'assets/icons/grocery.png',
+        title: l10n.t('home.grocery'),
+        color: AppColors.grocery,
+        bgColor: AppColors.groceryBg,
+        route: '/grocery',
+      ),
     ].where((service) => enabledModules.contains(service.key)).toList();
 
     if (services.isEmpty) {
