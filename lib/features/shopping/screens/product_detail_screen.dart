@@ -164,13 +164,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     color: AppColors.extraLightGrey,
                     child: Stack(
                       children: [
-                        Center(
-                          child: Icon(
-                            Icons.shopping_bag_rounded,
-                            size: 100,
-                            color: AppColors.shopping.withValues(alpha: 0.3),
+                        // Show network image if available, otherwise fallback icon
+                        if (_product.images.isNotEmpty && _product.images.first.isNotEmpty)
+                          Positioned.fill(
+                            child: Image.network(
+                              _product.images.first,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Center(
+                                child: Icon(
+                                  Icons.shopping_bag_rounded,
+                                  size: 100,
+                                  color: AppColors.shopping.withValues(alpha: 0.3),
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          Center(
+                            child: Icon(
+                              Icons.shopping_bag_rounded,
+                              size: 100,
+                              color: AppColors.shopping.withValues(alpha: 0.3),
+                            ),
                           ),
-                        ),
                         if (_product.badge != null)
                           Positioned(
                             top: 20,
@@ -190,6 +206,33 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   color: AppColors.white,
                                 ),
                               ),
+                            ),
+                          ),
+                        // Image gallery indicator if multiple images
+                        if (_product.images.length > 1)
+                          Positioned(
+                            bottom: 12,
+                            left: 0,
+                            right: 0,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: _product.images
+                                  .take(5)
+                                  .toList()
+                                  .asMap()
+                                  .entries
+                                  .map((entry) => Container(
+                                        width: 8,
+                                        height: 8,
+                                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: entry.key == 0
+                                              ? AppColors.white
+                                              : AppColors.white.withValues(alpha: 0.5),
+                                        ),
+                                      ))
+                                  .toList(),
                             ),
                           ),
                       ],

@@ -970,6 +970,7 @@ class AppLocalizations {
       'shopping.title': 'Shopping',
       'shopping.search_hint': 'Search stores, brands, categories...',
       'shopping.all': 'All',
+      'shopping.local_stores': 'Local Stores',
       'shopping.hero_title': 'Explore shops',
       'shopping.hero_subtitle': 'Open a store to browse all of its products',
       'shopping.no_shops': 'No shops found.',
@@ -2463,6 +2464,7 @@ class AppLocalizations {
       'shopping.title': 'Shopping',
       'shopping.search_hint': 'Rechercher boutiques, marques, catégories...',
       'shopping.all': 'Tout',
+      'shopping.local_stores': 'Boutiques locales',
       'shopping.hero_title': 'Explorez les boutiques',
       'shopping.hero_subtitle':
           'Ouvrez une boutique pour parcourir tous ses produits',
@@ -3756,6 +3758,7 @@ class AppLocalizations {
       'shopping.title': 'التسوق',
       'shopping.search_hint': 'ابحث عن المتاجر والعلامات والفئات...',
       'shopping.all': 'الكل',
+      'shopping.local_stores': 'المتاجر المحلية',
       'shopping.hero_title': 'استكشف المتاجر أولا',
       'shopping.hero_subtitle': 'افتح متجرا لتصفح جميع منتجاته',
       'shopping.no_shops': 'لم يتم العثور على متاجر.',

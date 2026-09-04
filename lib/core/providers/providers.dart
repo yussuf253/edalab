@@ -1,4 +1,5 @@
 export 'cart_provider.dart';
+export 'aliexpress_provider.dart';
 export 'auth_provider.dart';
 export 'language_provider.dart';
 export 'notification_provider.dart';

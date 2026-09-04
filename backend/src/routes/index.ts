@@ -15,6 +15,7 @@ import promotionsRoutes from './promotions.routes';
 import ridesRoutes from './rides.routes';
 import carRentalsRoutes from './car-rentals.routes';
 import usersRoutes from './users.routes';
+import aliexpressRoutes from './aliexpress.routes';
 import realtimeRoutes from './realtime.routes';
 
 const router = Router();
@@ -42,6 +43,7 @@ router.use('/rides', ridesRoutes);
 router.use('/car-rentals', carRentalsRoutes);
 router.use('/promotions', promotionsRoutes);
 router.use('/notifications', notificationsRoutes);
+router.use('/aliexpress', aliexpressRoutes);
 router.use('/realtime', realtimeRoutes);
 
 export default router;

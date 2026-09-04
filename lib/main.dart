@@ -97,6 +97,7 @@ Future<void> main() async {
           },
         ),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => AliExpressProvider()),
       ],
       child: EdaLabApp(router: router),
     ),
