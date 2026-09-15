@@ -477,6 +477,11 @@ type PharmacyGeoPoint = {
 };
 
 const djiboutiPharmacyGeoByName: Record<string, PharmacyGeoPoint> = {
+  'pharmacie aska': {
+    latitude: 11.1559,
+    longitude: 42.7125,
+    address: 'Ali Sabieh Town Center',
+  },
   'pharmacie dawo': {
     latitude: 11.5858,
     longitude: 43.1457,
@@ -684,6 +689,51 @@ function serializeProduct(product: CatalogProductWithCategory) {
   };
 }
 
+/**
+ * Shapes a Medicine row like a legacy PHARMACY Product payload so existing
+ * clients (PharmacyModel.fromApi, medicine detail, search) keep working
+ * without any app changes.
+ */
+function serializeMedicineAsProduct(
+  medicine: Prisma.MedicineGetPayload<{ include: { pharmacy: true; category: true } }>,
+) {
+  return {
+    id: medicine.id,
+    moduleType: ModuleType.PHARMACY,
+    categoryId: medicine.categoryId,
+    category: medicine.category?.name ?? medicine.categoryId,
+    name: medicine.name,
+    brand: medicine.pharmacy.name,
+    description: medicine.description,
+    price: toNumber(medicine.price),
+    originalPrice: toNumber(medicine.originalPrice),
+    unit: medicine.unit,
+    dosage: medicine.dosage,
+    packageSize: medicine.packageSize,
+    requiresPrescription: medicine.requiresPrescription,
+    rating: toNumber(medicine.rating),
+    reviewCount: medicine.reviewCount,
+    images: readJsonStringArray(medicine.imageUrlsJson),
+    tags: readJsonStringArray(medicine.tagsJson),
+    features: readJsonStringArray(medicine.featuresJson),
+    badge: medicine.badge,
+    inStock: medicine.inStock,
+    isOrganic: false,
+    // Legacy clients (PharmacyModel.fromApi) and pro order-matching read
+    // metadata.sourceBusiness — keep it populated from the pharmacy row.
+    metadata: {
+      ...(medicine.metadata &&
+      typeof medicine.metadata === 'object' &&
+      !Array.isArray(medicine.metadata)
+        ? (medicine.metadata as Record<string, unknown>)
+        : {}),
+      sourceBusiness: medicine.pharmacy.name,
+    },
+    shopId: medicine.pharmacyId,
+    shopName: medicine.pharmacy.name,
+  };
+}
+
 function serializeShoppingStore(
   store: Awaited<ReturnType<typeof prisma.shoppingStore.findMany>>[number],
   products: CatalogProductWithCategory[],
@@ -726,122 +776,62 @@ router.get(
 
     const zoneKey = await resolveCityZoneKey(req.query as Record<string, unknown>);
 
-    const products = await prisma.product.findMany({
+    const pharmacies = await prisma.pharmacy.findMany({
       where: {
-        moduleType: ModuleType.PHARMACY,
+        active: true,
         ...cityZoneFilter(zoneKey),
       },
-      select: {
-        id: true,
-        name: true,
-        brand: true,
-        price: true,
-        rating: true,
-        reviewCount: true,
-        requiresPrescription: true,
-        metadata: true,
+      include: {
+        medicines: {
+          select: {
+            price: true,
+            requiresPrescription: true,
+          },
+        },
       },
-      orderBy: [{ reviewCount: 'desc' }, { rating: 'desc' }],
+      orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
     });
 
-    const grouped = new Map<
-      string,
-      {
-        businessName: string;
-        ratingWeightedSum: number;
-        ratingWeight: number;
-        fallbackRatingSum: number;
-        fallbackCount: number;
-        reviewCount: number;
-        prescriptionCount: number;
-        productCount: number;
-        minPrice: number | null;
-      }
-    >();
-
-    for (const product of products) {
-      const metadata =
-        product.metadata &&
-        typeof product.metadata === 'object' &&
-        !Array.isArray(product.metadata)
-          ? (product.metadata as Record<string, unknown>)
-          : null;
-      const sourceBusiness =
-        metadata?.sourceBusiness?.toString().trim() ||
-        product.brand?.trim() ||
-        'Pharmacy';
-      const key = normalizeBusinessName(sourceBusiness);
-      const current =
-        grouped.get(key) ??
-        {
-          businessName: sourceBusiness,
-          ratingWeightedSum: 0,
-          ratingWeight: 0,
-          fallbackRatingSum: 0,
-          fallbackCount: 0,
-          reviewCount: 0,
-          prescriptionCount: 0,
-          productCount: 0,
-          minPrice: null,
-        };
-
-      const rating = toNumber(product.rating) ?? 0;
-      const reviewCount = product.reviewCount ?? 0;
-      if (reviewCount > 0) {
-        current.ratingWeightedSum += rating * reviewCount;
-        current.ratingWeight += reviewCount;
-      } else {
-        current.fallbackRatingSum += rating;
-        current.fallbackCount += 1;
-      }
-      current.reviewCount += reviewCount;
-      current.productCount += 1;
-      if (product.requiresPrescription) {
-        current.prescriptionCount += 1;
-      }
-      const price = toNumber(product.price);
-      if (price != null) {
-        current.minPrice =
-          current.minPrice == null ? price : Math.min(current.minPrice, price);
-      }
-      grouped.set(key, current);
-    }
-
-    const pharmacies = Array.from(grouped.entries())
-      .map(([key, value]) => {
-        const geo = pharmacyGeoForBusiness(value.businessName);
+    const directory = pharmacies
+      .map((pharmacy) => {
+        const medicines = pharmacy.medicines;
         const distanceKm =
-          hasSearchLocation && geo != null
+          hasSearchLocation &&
+          pharmacy.latitude != null &&
+          pharmacy.longitude != null
             ? haversineDistanceKm(
-                geo.latitude,
-                geo.longitude,
+                pharmacy.latitude,
+                pharmacy.longitude,
                 latitude!,
                 longitude!,
               )
             : null;
-        const rating =
-          value.ratingWeight > 0
-            ? value.ratingWeightedSum / value.ratingWeight
-            : value.fallbackCount > 0
-            ? value.fallbackRatingSum / value.fallbackCount
-            : 0;
+        const prices = medicines
+          .map((medicine) => toNumber(medicine.price))
+          .filter((price): price is number => price != null);
 
         return {
-          id: `pharmacy-${slugifyStoreName(key)}`,
-          name: value.businessName,
-          businessKey: key,
-          rating: Number(rating.toFixed(2)),
-          reviewCount: value.reviewCount,
-          productCount: value.productCount,
-          prescriptionCount: value.prescriptionCount,
-          minPrice: value.minPrice == null ? null : Number(value.minPrice.toFixed(2)),
-          location: geo == null
-            ? null
-            : {
-                latitude: geo.latitude,
-                longitude: geo.longitude,
-                address: geo.address ?? null,
-              },
+          id: pharmacy.id,
+          name: pharmacy.name,
+          businessKey: normalizeBusinessName(pharmacy.name),
+          rating: toNumber(pharmacy.rating) ?? 0,
+          reviewCount: pharmacy.reviewCount,
+          productCount: medicines.length,
+          prescriptionCount: medicines.filter(
+            (medicine) => medicine.requiresPrescription,
+          ).length,
+          minPrice:
+            prices.length === 0
+              ? null
+              : Number(Math.min(...prices).toFixed(2)),
+          location:
+            pharmacy.latitude == null || pharmacy.longitude == null
+              ? null
+              : {
+                  latitude: pharmacy.latitude,
+                  longitude: pharmacy.longitude,
+                  address: pharmacy.address ?? null,
+                },
           distanceKm:
             distanceKm == null ? null : Number(distanceKm.toFixed(3)),
         };
@@ -851,7 +841,7 @@ router.get(
         return entry.distanceKm != null && entry.distanceKm <= radiusKm;
       });
 
-    pharmacies.sort((left, right) => {
+    directory.sort((left, right) => {
       if (sortBy === 'rating') {
         const byRating = (right.rating ?? 0) - (left.rating ?? 0);
         if (byRating !== 0) return byRating;
@@ -869,7 +859,7 @@ router.get(
       return compareNullableNumberAsc(left.distanceKm, right.distanceKm);
     });
 
-    res.json(pharmacies);
+    res.json(directory);
   }),
 );
 
@@ -934,6 +924,23 @@ router.get(
     const categoryId = req.query.categoryId?.toString();
     const zoneKey = await resolveCityZoneKey(req.query as Record<string, unknown>);
 
+    // Pharmacy medicines now live in their own table; keep the legacy
+    // products endpoint shape so the app keeps working unchanged.
+    if (moduleType === ModuleType.PHARMACY) {
+      const medicines = await prisma.medicine.findMany({
+        where: {
+          ...(categoryId ? { categoryId } : {}),
+          pharmacy: cityZoneFilter(zoneKey),
+        },
+        include: {
+          pharmacy: true,
+          category: true,
+        },
+        orderBy: [{ createdAt: 'desc' }],
+      });
+      return res.json(medicines.map(serializeMedicineAsProduct));
+    }
+
     const products = await prisma.product.findMany({
       where: {
         ...(moduleType ? { moduleType } : {}),
@@ -982,6 +989,17 @@ router.get(
   '/products/:id',
   asyncHandler(async (req, res) => {
     const productId = getParam(req.params.id, 'productId');
+
+    // Medicines are served through the same legacy endpoint so existing
+    // clients (medicine detail screen, search) keep working unchanged.
+    const medicine = await prisma.medicine.findUnique({
+      where: { id: productId },
+      include: { pharmacy: true, category: true },
+    });
+    if (medicine) {
+      return res.json(serializeMedicineAsProduct(medicine));
+    }
+
     const product = await prisma.product.findUnique({
       where: { id: productId },
       include: {

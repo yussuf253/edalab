@@ -1207,10 +1207,12 @@ function pharmacyBusinessFromOrderItem(item: {
   brand?: string | null;
   metadata?: unknown;
   product?: { metadata?: unknown } | null;
+  medicine?: { pharmacy?: { name?: unknown } | null } | null;
 }) {
   const productMetadata = readMetadataMap(item.product?.metadata);
   const itemMetadata = readMetadataMap(item.metadata);
   const candidates = [
+    item.medicine?.pharmacy?.name,
     productMetadata?.sourceBusiness,
     itemMetadata?.sourceBusiness,
     itemMetadata?.selectedPharmacy,
@@ -1246,6 +1248,7 @@ function pharmacyOrderMatchesBindings(
     brand: string | null;
     metadata: unknown;
     product: { metadata: unknown } | null;
+    medicine?: { pharmacy?: { name?: unknown } | null } | null;
   }>,
 ) {
   if (bindings.pharmacyBusinesses.length === 0) {
@@ -1660,9 +1663,8 @@ export async function resolveBindings(
           })
         : Promise.resolve([]),
       activeModules.includes(ProModule.PHARMACY)
-        ? prisma.product.findMany({
-            where: { moduleType: ModuleType.PHARMACY },
-            select: { metadata: true },
+        ? prisma.pharmacy.findMany({
+            select: { name: true },
           })
         : Promise.resolve([]),
       needsLaundry
@@ -1696,21 +1698,12 @@ export async function resolveBindings(
     .filter((service) => matchesBusinessName(businessName, service.name))
     .map((service) => service.id);
 
-  const pharmacyBusinesses = new Set<string>();
-  for (const product of pharmacyProducts) {
-    const metadata =
-      product.metadata && typeof product.metadata === 'object'
-        ? (product.metadata as Record<string, unknown>)
-        : null;
-    const sourceBusiness = metadata?.sourceBusiness?.toString();
-    if (
-      sourceBusiness != null &&
-      matchesBusinessName(businessName, sourceBusiness)
-    ) {
-      pharmacyBusinesses.add(sourceBusiness);
-    }
-  }
-  bindings.pharmacyBusinesses = Array.from(pharmacyBusinesses);
+  // Pharmacies are first-class rows now; bind by pharmacy name match.
+  bindings.pharmacyBusinesses = pharmacyProducts
+    .filter((pharmacy) =>
+      matchesBusinessName(businessName, pharmacy.name),
+    )
+    .map((pharmacy) => pharmacy.name);
 
   return bindings;
 }
@@ -2089,27 +2082,13 @@ async function buildPharmacySummary(
     );
   }
 
-  const allProducts = await prisma.product.findMany({
-    where: { moduleType: ModuleType.PHARMACY },
+  const filteredProducts = await prisma.medicine.findMany({
+    where: { pharmacy: { name: { in: bindings.pharmacyBusinesses } } },
     select: {
       id: true,
       requiresPrescription: true,
-      metadata: true,
       inStock: true,
     },
-  });
-
-  const filteredProducts = allProducts.filter((product) => {
-    const metadata =
-      product.metadata &&
-      typeof product.metadata === 'object' &&
-      !Array.isArray(product.metadata)
-        ? (product.metadata as Record<string, unknown>)
-        : null;
-    return isBoundPharmacyBusiness(
-      bindings.pharmacyBusinesses,
-      metadata?.sourceBusiness?.toString() ?? null,
-    );
   });
 
   const pharmacyOrderCandidates = await prisma.order.findMany({
@@ -2128,6 +2107,13 @@ async function buildPharmacySummary(
           metadata: true,
           product: {
             select: { metadata: true },
+          },
+          medicine: {
+            select: {
+              pharmacy: {
+                select: { name: true },
+              },
+            },
           },
         },
       },
@@ -3421,6 +3407,13 @@ router.get(
                   product: {
                     select: { shopId: true, metadata: true },
                   },
+                  medicine: {
+                    select: {
+                      pharmacy: {
+                        select: { name: true },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -3448,6 +3441,13 @@ router.get(
                   product: {
                     select: { shopId: true, metadata: true },
                   },
+                  medicine: {
+                    select: {
+                      pharmacy: {
+                        select: { name: true },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -3467,6 +3467,13 @@ router.get(
                 include: {
                   product: {
                     select: { shopId: true, metadata: true },
+                  },
+                  medicine: {
+                    select: {
+                      pharmacy: {
+                        select: { name: true },
+                      },
+                    },
                   },
                 },
               },
@@ -3549,6 +3556,13 @@ router.get(
                   product: {
                     select: { shopId: true, metadata: true },
                   },
+                  medicine: {
+                    select: {
+                      pharmacy: {
+                        select: { name: true },
+                      },
+                    },
+                  },
                 },
               },
             },
@@ -3575,6 +3589,13 @@ router.get(
                 include: {
                   product: {
                     select: { shopId: true, metadata: true },
+                  },
+                  medicine: {
+                    select: {
+                      pharmacy: {
+                        select: { name: true },
+                      },
+                    },
                   },
                 },
               },
@@ -4002,8 +4023,10 @@ router.get(
               },
             },
           }),
-      prisma.product.findMany({
-        where: { moduleType: ModuleType.PHARMACY },
+      prisma.medicine.findMany({
+        where: bindings.pharmacyBusinesses.length
+          ? { pharmacy: { name: { in: bindings.pharmacyBusinesses } } }
+          : {},
         select: {
           id: true,
           name: true,
@@ -4011,6 +4034,9 @@ router.get(
           price: true,
           requiresPrescription: true,
           metadata: true,
+          pharmacy: {
+            select: { name: true },
+          },
           category: {
             select: {
               name: true,
@@ -4034,6 +4060,13 @@ router.get(
                   metadata: true,
                 },
               },
+              medicine: {
+                select: {
+                  pharmacy: {
+                    select: { name: true },
+                  },
+                },
+              },
             },
           },
         },
@@ -4041,21 +4074,7 @@ router.get(
     ]);
 
     const pharmacyItems: typeof allPharmacyProducts =
-      bindings.pharmacyBusinesses.length === 0
-        ? []
-        : allPharmacyProducts.filter((product) => {
-            const metadata =
-              product.metadata &&
-              typeof product.metadata === 'object' &&
-              !Array.isArray(product.metadata)
-                ? (product.metadata as Record<string, unknown>)
-                : null;
-            const sourceBusiness = metadata?.sourceBusiness?.toString();
-            return isBoundPharmacyBusiness(
-              bindings.pharmacyBusinesses,
-              sourceBusiness ?? null,
-            );
-          });
+      bindings.pharmacyBusinesses.length === 0 ? [] : allPharmacyProducts;
 
     const pharmacyOrders =
       bindings.pharmacyBusinesses.length === 0
@@ -4297,14 +4316,7 @@ router.get(
         ],
       },
       pharmacy: pharmacyItems.map((product) => {
-        const metadata =
-          product.metadata &&
-          typeof product.metadata === 'object' &&
-          !Array.isArray(product.metadata)
-            ? (product.metadata as Record<string, unknown>)
-            : null;
-        const sourceBusiness =
-          metadata?.sourceBusiness?.toString() ?? 'Pharmacy';
+        const sourceBusiness = product.pharmacy?.name ?? 'Pharmacy';
 
         return {
           id: product.id,

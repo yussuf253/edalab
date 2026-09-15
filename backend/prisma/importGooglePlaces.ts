@@ -1184,8 +1184,10 @@ async function pruneStaleData(extracted: ExtractionResult) {
         : { id: { startsWith: PREFIXES.shoppingProduct } },
   });
 
+  // Pharmacy stale pruning now targets Medicine rows (plus their pharmacy
+  // shells) instead of Product rows.
   const pharmacyProductIds = extracted.pharmacyProducts.map((entry) => entry.id);
-  await prisma.product.deleteMany({
+  await prisma.medicine.deleteMany({
     where:
       pharmacyProductIds.length > 0
         ? {
@@ -1193,6 +1195,12 @@ async function pruneStaleData(extracted: ExtractionResult) {
             NOT: { id: { in: pharmacyProductIds } },
           }
         : { id: { startsWith: PREFIXES.pharmacyProduct } },
+  });
+  await prisma.pharmacy.deleteMany({
+    where: {
+      id: { startsWith: 'phx-gps' },
+      medicines: { none: {} },
+    },
   });
 
   const menuItemIds = extracted.restaurants.map((entry) => entry.menuItem.id);
@@ -1502,15 +1510,37 @@ async function applyToDatabase(extracted: ExtractionResult, options: ImportOptio
     });
   }
 
+  // Pharmacy imports go to the dedicated Pharmacy/Medicine tables now.
   for (const product of extracted.pharmacyProducts) {
-    await prisma.product.upsert({
+    const pharmacyName =
+      (product.metadata as Record<string, unknown> | null)?.sourceBusiness
+        ?.toString()
+        .trim() || product.brand || 'Unknown Pharmacy';
+    const slug = pharmacyName
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    // 'phx-gps' prefix lets pruneStaleData remove empty imported pharmacies.
+    const pharmacyId = `phx-gps-${slug}`;
+
+    await prisma.pharmacy.upsert({
+      where: { id: pharmacyId },
+      update: { name: pharmacyName },
+      create: {
+        id: pharmacyId,
+        name: pharmacyName,
+        slug,
+        cityZone: ['djibouti_ville'],
+      },
+    });
+
+    await prisma.medicine.upsert({
       where: { id: product.id },
       update: {
-        moduleType: product.moduleType,
+        pharmacyId,
         categoryId: product.categoryId,
-        shopId: product.shopId,
         name: product.name,
-        brand: product.brand,
         description: product.description,
         price: product.price,
         originalPrice: product.originalPrice,
@@ -1520,22 +1550,17 @@ async function applyToDatabase(extracted: ExtractionResult, options: ImportOptio
         packageSize: product.packageSize,
         requiresPrescription: product.requiresPrescription,
         imageUrlsJson: product.imageUrlsJson,
-        colorsJson: product.colorsJson,
-        sizesJson: product.sizesJson,
         tagsJson: product.tagsJson,
         featuresJson: product.featuresJson,
         badge: product.badge,
         inStock: product.inStock,
-        isOrganic: product.isOrganic,
         metadata: product.metadata,
       },
       create: {
         id: product.id,
-        moduleType: product.moduleType,
+        pharmacyId,
         categoryId: product.categoryId,
-        shopId: product.shopId,
         name: product.name,
-        brand: product.brand,
         description: product.description,
         price: product.price,
         originalPrice: product.originalPrice,
@@ -1545,13 +1570,10 @@ async function applyToDatabase(extracted: ExtractionResult, options: ImportOptio
         packageSize: product.packageSize,
         requiresPrescription: product.requiresPrescription,
         imageUrlsJson: product.imageUrlsJson,
-        colorsJson: product.colorsJson,
-        sizesJson: product.sizesJson,
         tagsJson: product.tagsJson,
         featuresJson: product.featuresJson,
         badge: product.badge,
         inStock: product.inStock,
-        isOrganic: product.isOrganic,
         metadata: product.metadata,
       },
     });

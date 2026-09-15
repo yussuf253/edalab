@@ -298,20 +298,20 @@ model AppModule {
 /// Mirrors the client-side CityZone list in `lib/core/config/service_zones.dart`.
 /// Per-location module activation lives in [ZoneModuleConfig].
 model ServiceZone {
-  id             String   @id
-  zoneKey        String   @unique
-  name           String
-  nameFr         String?
-  nameEn         String?
-  nameAr         String?
-  centerLatitude Float
+  id              String             @id
+  zoneKey         String             @unique
+  name            String
+  nameFr          String?
+  nameEn          String?
+  nameAr          String?
+  centerLatitude  Float
   centerLongitude Float
-  radiusKm       Float    @default(5)
-  active         Boolean  @default(false)
-  sortOrder      Int      @default(0)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  moduleConfigs  ZoneModuleConfig[]
+  radiusKm        Float              @default(5)
+  active          Boolean            @default(false)
+  sortOrder       Int                @default(0)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  moduleConfigs   ZoneModuleConfig[]
 
   @@index([active, sortOrder])
 }
@@ -342,13 +342,73 @@ model ProductCategory {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
   products   Product[]
+  medicines  Medicine[]
+}
+
+/// A pharmacy business (e.g. "Pharmacie Aska"). Medicines it stocks live in
+/// [Medicine] rows pointed at this model via pharmacyId. Replaces the old
+/// scheme where pharmacies were implicit groups of PHARMACY-typed Products.
+model Pharmacy {
+  id          String     @id
+  name        String
+  slug        String     @unique
+  cityZone    String[]   @default([])
+  description String?
+  imageUrl    String?
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  phone       String?
+  rating      Decimal    @default(0) @db.Decimal(3, 2)
+  reviewCount Int        @default(0)
+  isOpen      Boolean    @default(true)
+  active      Boolean    @default(true)
+  metadata    Json?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  medicines   Medicine[]
+
+  @@index([active])
+}
+
+/// A medicine stocked by a pharmacy. Replaces PHARMACY-typed rows in
+/// [Product]; kept separate so pharmacy inventory does not overload the
+/// shopping/grocery product pipeline.
+model Medicine {
+  id                   String           @id
+  pharmacyId           String
+  categoryId           String?
+  name                 String
+  description          String
+  price                Decimal          @db.Decimal(10, 2)
+  originalPrice        Decimal?         @db.Decimal(10, 2)
+  unit                 String?
+  dosage               String?
+  packageSize          String?
+  requiresPrescription Boolean          @default(false)
+  rating               Decimal          @default(0) @db.Decimal(3, 2)
+  reviewCount          Int              @default(0)
+  imageUrlsJson        Json?
+  tagsJson             Json?
+  featuresJson         Json?
+  badge                String?
+  inStock              Boolean          @default(true)
+  metadata             Json?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime @updatedAt
+  pharmacy             Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+  category             ProductCategory? @relation(fields: [categoryId], references: [id])
+  orderItems           OrderItem[]
+
+  @@index([pharmacyId])
+  @@index([categoryId])
 }
 
 model ShoppingStore {
   id             String    @id
   name           String
   slug           String    @unique
-  cityZone       String[]   @default([])
+  cityZone       String[]  @default([])
   tagline        String?
   description    String?
   imageUrl       String?
@@ -370,7 +430,7 @@ model Product {
   categoryId           String?
   name                 String
   brand                String?
-  cityZone             String[]   @default([])
+  cityZone             String[]         @default([])
   description          String
   price                Decimal          @db.Decimal(10, 2)
   originalPrice        Decimal?         @db.Decimal(10, 2)
@@ -443,7 +503,7 @@ model Restaurant {
   id             String                   @id
   name           String
   cuisine        String
-  cityZone       String[]   @default([])
+  cityZone       String[]                 @default([])
   rating         Decimal                  @default(0) @db.Decimal(3, 2)
   reviewCount    Int                      @default(0)
   deliveryTime   String?
@@ -459,35 +519,34 @@ model Restaurant {
 }
 
 model RestaurantMenuCategory {
-  id           String @id @default(cuid())
+  id           String               @id @default(cuid())
   restaurantId String
   name         String
-sortOrder    Int        @default(0)
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  sortOrder    Int                  @default(0)
+  restaurant   Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   items        RestaurantMenuItem[]
 }
 
 model RestaurantMenuItem {
-  id                 String     @id
+  id                 String                  @id
   restaurantId       String
   categoryId         String?
   name               String
   description        String
-  price              Decimal @db.Decimal(10, 2)
+  price              Decimal                 @db.Decimal(10, 2)
   imageUrl           String?
-  isPopular          Boolean @default(false)
-  isAvailable        Boolean @default(true)
+  isPopular          Boolean                 @default(false)
+  isAvailable        Boolean                 @default(true)
   customizationsJson Json?
-  restaurant         Restaurant @relation(fields: [restaurantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  restaurant         Restaurant              @relation(fields: [restaurantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   category           RestaurantMenuCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: NoAction)
 }
-
 
 model Doctor {
   id               String         @id
   name             String
   specialty        String
-  cityZone         String[]   @default([])
+  cityZone         String[]       @default([])
   rating           Decimal        @default(0) @db.Decimal(3, 2)
   reviewCount      Int            @default(0)
   experience       String?
@@ -528,7 +587,7 @@ model HomeServiceProvider {
   id               String              @id
   categoryId       String
   name             String
-  cityZone         String[]   @default([])
+  cityZone         String[]            @default([])
   title            String
   rating           Decimal             @default(0) @db.Decimal(3, 2)
   reviewCount      Int                 @default(0)
@@ -586,7 +645,7 @@ model Hotel {
   name          String
   address       String
   city          String
-  cityZone      String[]   @default([])
+  cityZone      String[]       @default([])
   rating        Decimal        @default(0) @db.Decimal(3, 2)
   reviewsCount  Int            @default(0)
   pricePerNight Decimal        @db.Decimal(10, 2)
@@ -677,7 +736,7 @@ model LaundryService {
   id                String         @id
   name              String
   description       String
-  cityZone          String[]   @default([])
+  cityZone          String[]       @default([])
   price             Decimal        @db.Decimal(10, 2)
   unit              String
   iconUrl           String?
@@ -768,6 +827,8 @@ model OrderItem {
   labTest       LabTest? @relation(fields: [labTestId], references: [id])
   order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product       Product? @relation(fields: [productId], references: [id])
+  medicineId    String?
+  medicine      Medicine? @relation(fields: [medicineId], references: [id])
 
   @@index([orderId])
 }

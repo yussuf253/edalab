@@ -5,7 +5,6 @@ import {
   djiboutiHomeServiceProviders,
   djiboutiHotels,
   djiboutiLaundryServices,
-  djiboutiPharmacyProducts,
   djiboutiRestaurantMenuCategories,
   djiboutiRestaurantMenuItems,
   djiboutiRestaurants,
@@ -268,14 +267,105 @@ async function seedProducts() {
       inStock: true,
       isOrganic: false,
     },
-    ...djiboutiPharmacyProducts,
   ];
+
+  // Pharmacy medicines moved to the dedicated Pharmacy/Medicine tables —
+  // stop seeding PHARMACY-typed products and clear any legacy ones.
+  await prisma.product.deleteMany({
+    where: { moduleType: ModuleType.PHARMACY },
+  });
 
   for (const product of products) {
     await prisma.product.upsert({
       where: { id: product.id },
       update: product,
       create: product,
+    });
+  }
+}
+
+/**
+ * Seeds Pharmacie Aska (Ali Sabieh) in the dedicated Pharmacy/Medicine
+ * tables. Kept as a no-op-safe upsert; medicines link to their pharmacy.
+ */
+async function seedPharmacies() {
+  const pharmacy = {
+    id: 'phx-pharmacie-aska',
+    name: 'Pharmacie Aska',
+    slug: 'pharmacie-aska',
+    cityZone: ['ali_sabieh'],
+    description: 'Neighborhood pharmacy in central Ali Sabieh.',
+    address: 'Ali Sabieh Town Center',
+    latitude: 11.1559,
+    longitude: 42.7125,
+    rating: 4.5,
+    reviewCount: 11,
+    isOpen: true,
+    active: true,
+  };
+
+  await prisma.pharmacy.upsert({
+    where: { id: pharmacy.id },
+    update: pharmacy,
+    create: pharmacy,
+  });
+
+  const medicines = [
+    {
+      id: 'phx-aska-1',
+      pharmacyId: pharmacy.id,
+      categoryId: 'pharmacy-pain-relief',
+      name: 'Paracetamol 500mg',
+      description: 'Everyday pain and fever relief stocked at the Pharmacie Aska counter.',
+      price: 4.99,
+      unit: 'box',
+      dosage: 'Take 1-2 tablets every 4-6 hours',
+      packageSize: '20 Tablets',
+      requiresPrescription: false,
+      rating: 4.4,
+      reviewCount: 5,
+      tagsJson: ['Local Pharmacy'],
+      featuresJson: ['Everyday fever relief'],
+    },
+    {
+      id: 'phx-aska-2',
+      pharmacyId: pharmacy.id,
+      categoryId: 'pharmacy-antibiotics',
+      name: 'Amoxicillin 500mg',
+      description: 'Prescription antibiotic available after pharmacist review.',
+      price: 12.99,
+      unit: 'box',
+      dosage: 'Take 1 capsule every 8 hours as prescribed',
+      packageSize: '16 Capsules',
+      requiresPrescription: true,
+      rating: 4.5,
+      reviewCount: 4,
+      tagsJson: ['Prescription'],
+      featuresJson: ['Requires pharmacist review'],
+    },
+    {
+      id: 'phx-aska-3',
+      pharmacyId: pharmacy.id,
+      categoryId: 'pharmacy-vitamins',
+      name: 'Vitamin C 1000mg',
+      description: 'Immune-support vitamin for daily use.',
+      price: 9.49,
+      unit: 'tube',
+      dosage: '1 tablet daily',
+      packageSize: '10 Effervescent Tablets',
+      requiresPrescription: false,
+      rating: 4.3,
+      reviewCount: 3,
+      tagsJson: ['Vitamins'],
+      featuresJson: ['Immune support'],
+    },
+  ];
+
+  for (const medicine of medicines) {
+    await prisma.medicine.upsert({
+      where: { id: medicine.id },
+      update: medicine,
+      create: medicine,
     });
   }
 }
@@ -785,13 +875,13 @@ async function seedServiceZones() {
  * Tags listings with no city coverage yet.
  *
  * `cityZone` is an array — a listing can operate in several cities at once,
- * and an EMPTY list means visible in every city. The sample/seed catalog
- * describes businesses in Ali Sabieh — the only live city — so rows with no
- * coverage are tagged `['ali_sabieh']` to keep that city's catalogs
- * populated. Clear the arrays in Supabase instead to make a listing global.
+ * and an EMPTY list means visible in every city. Un-tagged rows default to
+ * Djibouti-ville, the flagship city the main catalog describes (Ali Sabieh
+ * listings are tagged explicitly in their seed data). Update this constant
+ * if the default city changes.
  */
 async function seedCityZoneDefaults() {
-  const defaultZones = ['ali_sabieh'];
+  const defaultZones = ['djibouti_ville'];
   await prisma.restaurant.updateMany({
     where: { cityZone: { isEmpty: true } },
     data: { cityZone: defaultZones },
@@ -832,6 +922,7 @@ async function main() {
   await seedProducts();
   await seedDoctors();
   await seedHealthServices();
+  await seedPharmacies();
   await seedRestaurants();
   await seedHotels();
   await seedRideCategories();
