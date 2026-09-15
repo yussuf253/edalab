@@ -7,6 +7,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -50,27 +51,27 @@ class _SearchScreenState extends State<SearchScreen> {
       final moduleIds = <String>[];
 
       if (_enabledModules.contains('food')) {
-        futures.add(ApiClient.get('/catalog/restaurants'));
+        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/restaurants')));
         moduleIds.add('food');
       }
       if (_enabledModules.contains('doctor')) {
-        futures.add(ApiClient.get('/catalog/doctors'));
+        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/doctors')));
         moduleIds.add('doctor');
       }
       if (_enabledModules.contains('shopping')) {
-        futures.add(ApiClient.get('/catalog/products?moduleType=shopping'));
+        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=shopping')));
         moduleIds.add('shopping');
       }
       if (_enabledModules.contains('pharmacy')) {
-        futures.add(ApiClient.get('/catalog/products?moduleType=pharmacy'));
+        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=pharmacy')));
         moduleIds.add('pharmacy');
       }
       if (_enabledModules.contains('hotel')) {
-        futures.add(ApiClient.get('/catalog/hotels'));
+        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/hotels')));
         moduleIds.add('hotel');
       }
       if (_enabledModules.contains('grocery')) {
-        futures.add(ApiClient.get('/catalog/products?moduleType=grocery'));
+        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=grocery')));
         moduleIds.add('grocery');
       }
 
@@ -129,27 +130,27 @@ class _SearchScreenState extends State<SearchScreen> {
       final moduleIds = <String>[];
 
       if (_enabledModules.contains('food')) {
-        futures.add(ApiClient.get('/catalog/restaurants'));
+        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/restaurants')));
         moduleIds.add('food');
       }
       if (_enabledModules.contains('doctor')) {
-        futures.add(ApiClient.get('/catalog/doctors'));
+        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/doctors')));
         moduleIds.add('doctor');
       }
       if (_enabledModules.contains('shopping')) {
-        futures.add(ApiClient.get('/catalog/products?moduleType=shopping'));
+        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=shopping')));
         moduleIds.add('shopping');
       }
       if (_enabledModules.contains('pharmacy')) {
-        futures.add(ApiClient.get('/catalog/products?moduleType=pharmacy'));
+        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=pharmacy')));
         moduleIds.add('pharmacy');
       }
       if (_enabledModules.contains('hotel')) {
-        futures.add(ApiClient.get('/catalog/hotels'));
+        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/hotels')));
         moduleIds.add('hotel');
       }
       if (_enabledModules.contains('grocery')) {
-        futures.add(ApiClient.get('/catalog/products?moduleType=grocery'));
+        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=grocery')));
         moduleIds.add('grocery');
       }
 

@@ -654,9 +654,179 @@ async function seedAccountData() {
   }
 }
 
+// Djibouti service zones, mirroring the client-side list in
+// `lib/core/config/service_zones.dart` — keep each zone's `active` flag in
+// sync with the client-side `isActive`. All zones start with every module
+// active; flip individual ZoneModuleConfig rows to deactivate per city.
+const SERVICE_ZONES = [
+  {
+    id: 'zone-ali-sabieh',
+    zoneKey: 'ali_sabieh',
+    name: 'Ali Sabieh',
+    nameFr: 'Ali Sabieh',
+    nameEn: 'Ali Sabieh',
+    nameAr: 'علي صبيح',
+    centerLatitude: 11.15583,
+    centerLongitude: 42.7125,
+    radiusKm: 5,
+    active: true,
+    sortOrder: 1,
+  },
+  {
+    id: 'zone-djibouti-ville',
+    zoneKey: 'djibouti_ville',
+    name: 'Djibouti-ville',
+    nameFr: 'Djibouti-ville',
+    nameEn: 'Djibouti City',
+    nameAr: 'مدينة جيبوتي',
+    centerLatitude: 11.59444,
+    centerLongitude: 43.14806,
+    radiusKm: 12,
+    active: false, // matches client-side isActive — flip when the city launches
+    sortOrder: 2,
+  },
+  {
+    id: 'zone-arta',
+    zoneKey: 'arta',
+    name: 'Arta',
+    nameFr: 'Arta',
+    nameEn: 'Arta',
+    nameAr: 'أرتا',
+    centerLatitude: 11.52361,
+    centerLongitude: 42.84722,
+    radiusKm: 4,
+    active: false,
+    sortOrder: 3,
+  },
+  {
+    id: 'zone-tadjourah',
+    zoneKey: 'tadjourah',
+    name: 'Tadjourah',
+    nameFr: 'Tadjourah',
+    nameEn: 'Tadjourah',
+    nameAr: 'تاجورة',
+    centerLatitude: 11.783,
+    centerLongitude: 42.883,
+    radiusKm: 4,
+    active: false,
+    sortOrder: 4,
+  },
+  {
+    id: 'zone-dikhil',
+    zoneKey: 'dikhil',
+    name: 'Dikhil',
+    nameFr: 'Dikhil',
+    nameEn: 'Dikhil',
+    nameAr: 'دخيل',
+    centerLatitude: 11.10833,
+    centerLongitude: 42.37111,
+    radiusKm: 4,
+    active: false,
+    sortOrder: 5,
+  },
+  {
+    id: 'zone-obock',
+    zoneKey: 'obock',
+    name: 'Obock',
+    nameFr: 'Obock',
+    nameEn: 'Obock',
+    nameAr: 'أبخ',
+    centerLatitude: 11.967,
+    centerLongitude: 43.283,
+    radiusKm: 4,
+    active: false,
+    sortOrder: 6,
+  },
+];
+
+async function seedServiceZones() {
+  const modules = [
+    ModuleType.SHOPPING,
+    ModuleType.FOOD,
+    ModuleType.DOCTOR,
+    ModuleType.HOTEL,
+    ModuleType.RIDE,
+    ModuleType.PHARMACY,
+    ModuleType.GROCERY,
+    ModuleType.HOME_SERVICES,
+    ModuleType.LAUNDRY,
+  ];
+
+  for (const zone of SERVICE_ZONES) {
+    await prisma.serviceZone.upsert({
+      where: { zoneKey: zone.zoneKey },
+      update: {
+        name: zone.name,
+        nameFr: zone.nameFr,
+        nameEn: zone.nameEn,
+        nameAr: zone.nameAr,
+        centerLatitude: zone.centerLatitude,
+        centerLongitude: zone.centerLongitude,
+        radiusKm: zone.radiusKm,
+        active: zone.active,
+        sortOrder: zone.sortOrder,
+      },
+      create: zone,
+    });
+
+    for (const moduleType of modules) {
+      await prisma.zoneModuleConfig.upsert({
+        where: {
+          zoneId_moduleType: { zoneId: zone.id, moduleType },
+        },
+        update: {},
+        create: { zoneId: zone.id, moduleType, active: true },
+      });
+    }
+  }
+}
+
+/**
+ * Tags every untagged listing with the zone where they actually operate.
+ *
+ * The sample/seed catalog describes businesses in Ali Sabieh — the only live
+ * city — so untagged rows are tagged `ali_sabieh` to keep that city's
+ * catalogs populated. Rows left with a null cityZone stay visible in every
+ * zone (see the backend's cityZoneFilter), so pick a different default here
+ * as new cities launch.
+ */
+async function seedCityZoneDefaults() {
+  const defaultZone = 'ali_sabieh';
+  await prisma.restaurant.updateMany({
+    where: { cityZone: null },
+    data: { cityZone: defaultZone },
+  });
+  await prisma.shoppingStore.updateMany({
+    where: { cityZone: null },
+    data: { cityZone: defaultZone },
+  });
+  await prisma.product.updateMany({
+    where: { cityZone: null },
+    data: { cityZone: defaultZone },
+  });
+  await prisma.hotel.updateMany({
+    where: { cityZone: null },
+    data: { cityZone: defaultZone },
+  });
+  await prisma.doctor.updateMany({
+    where: { cityZone: null },
+    data: { cityZone: defaultZone },
+  });
+  await prisma.homeServiceProvider.updateMany({
+    where: { cityZone: null },
+    data: { cityZone: defaultZone },
+  });
+  await prisma.laundryService.updateMany({
+    where: { cityZone: null },
+    data: { cityZone: defaultZone },
+  });
+}
+
 async function main() {
   await seedUsers();
   await seedAppModules();
+  await seedServiceZones();
+  await seedCityZoneDefaults();
   await seedCategories();
   await seedShoppingStores();
   await seedProducts();

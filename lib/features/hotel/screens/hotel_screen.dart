@@ -9,6 +9,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
+import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -36,7 +37,7 @@ class _HotelScreenState extends State<HotelScreen> {
 
   Future<void> _loadHotels() async {
     try {
-      final response = await ApiClient.get('/catalog/hotels');
+      final response = await ApiClient.get(ZoneScope.appendZone('/catalog/hotels'));
       final items = (response as List)
           .map(
             (item) =>

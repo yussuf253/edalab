@@ -11,6 +11,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
+import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
@@ -54,9 +55,10 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
 
   Future<void> _loadStore() async {
     try {
-      final response =
-          await ApiClient.get('/catalog/shopping-stores/${widget.storeId}')
-              as Map;
+      final response = await ApiClient.get(
+            ZoneScope.appendZone('/catalog/shopping-stores/${widget.storeId}'),
+          )
+          as Map;
       final data = Map<String, dynamic>.from(response);
       final products = (data['products'] as List? ?? const [])
           .map(

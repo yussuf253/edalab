@@ -5,6 +5,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
+import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -42,7 +43,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
 
   Future<void> _loadServices() async {
     try {
-      final response = await ApiClient.get('/catalog/laundry-services');
+      final response = await ApiClient.get(ZoneScope.appendZone('/catalog/laundry-services'));
       final items = (response as List)
           .map(
             (item) =>

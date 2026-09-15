@@ -11,6 +11,7 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/auth_gate.dart';
 
@@ -230,7 +231,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
 
   Future<void> _loadServices() async {
     try {
-      final response = await ApiClient.get('/catalog/laundry-services');
+      final response = await ApiClient.get(ZoneScope.appendZone('/catalog/laundry-services'));
       final items = (response as List)
           .map(
             (item) =>

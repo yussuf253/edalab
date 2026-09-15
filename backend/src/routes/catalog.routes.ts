@@ -4,8 +4,58 @@ import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
 import { toNumber } from '../utils/serializers';
+import { resolveServiceZoneForPoint } from '../utils/module-settings';
 
 const router = Router();
+
+const ALL_ZONES_WILDCARD = 'all';
+
+/**
+ * Builds a Prisma `cityZone` where-clause from a `zone` query parameter.
+ *
+ * Accepted values:
+ *  - a zone key (e.g. `djibouti_ville`) → matches rows tagged with that zone
+ *    OR rows with no zone tag (legacy/global listings stay visible).
+ *  - `all` (or absent) → no filtering (everything, everywhere).
+ *
+ * Legacy rows with a null cityZone are always included so the rollout stays
+ * backwards compatible until every listing is tagged.
+ */
+function cityZoneFilter(zoneParam: unknown) {
+  const zone = zoneParam?.toString().trim();
+  if (zone == null || zone.length === 0 || zone.toLowerCase() === ALL_ZONES_WILDCARD) {
+    return {};
+  }
+  return {
+    OR: [{ cityZone: zone }, { cityZone: null }],
+  };
+}
+
+/**
+ * Resolves the effective zone filter for a request: an explicit `zone` param
+ * wins; otherwise the caller's latitude/longitude are matched against active
+ * service zones. Returns the zone key to filter by, or null for "all".
+ */
+async function resolveCityZoneKey(query: Record<string, unknown>) {
+  const zoneParam = query.zone?.toString().trim();
+  if (zoneParam != null && zoneParam.length > 0) {
+    return zoneParam.toLowerCase() === ALL_ZONES_WILDCARD ? null : zoneParam;
+  }
+
+  const latitude = Number(query.latitude);
+  const longitude = Number(query.longitude);
+  if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+    try {
+      const zone = await resolveServiceZoneForPoint(latitude, longitude);
+      if (zone != null) {
+        return zone.zoneKey;
+      }
+    } catch {
+      // Fall through to unfiltered.
+    }
+  }
+  return null;
+}
 
 const ECOLOGICAL_CLEANING_CATEGORY = {
   id: 'hs-ecological-cleaning',
@@ -675,9 +725,12 @@ router.get(
     const radiusKm =
       radiusRaw != null && radiusRaw > 0 ? Math.min(radiusRaw, 25) : 5;
 
+    const zoneKey = await resolveCityZoneKey(req.query as Record<string, unknown>);
+
     const products = await prisma.product.findMany({
       where: {
         moduleType: ModuleType.PHARMACY,
+        ...cityZoneFilter(zoneKey),
       },
       select: {
         id: true,
@@ -823,8 +876,10 @@ router.get(
 
 router.get(
   '/shopping-stores',
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
+    const zoneKey = await resolveCityZoneKey(req.query as Record<string, unknown>);
     const stores = await prisma.shoppingStore.findMany({
+      where: cityZoneFilter(zoneKey),
       include: {
         products: {
           where: { moduleType: ModuleType.SHOPPING },
@@ -846,8 +901,9 @@ router.get(
   '/shopping-stores/:id',
   asyncHandler(async (req, res) => {
     const storeId = getParam(req.params.id, 'storeId');
+    const zoneKey = await resolveCityZoneKey(req.query as Record<string, unknown>);
     const store = await prisma.shoppingStore.findFirst({
-      where: { slug: storeId },
+      where: { slug: storeId, ...cityZoneFilter(zoneKey) },
     });
     if (!store) {
       return res.status(404).json({ error: 'Store not found.' });
@@ -877,11 +933,13 @@ router.get(
       ? (moduleTypeParam as ModuleType)
       : undefined;
     const categoryId = req.query.categoryId?.toString();
+    const zoneKey = await resolveCityZoneKey(req.query as Record<string, unknown>);
 
     const products = await prisma.product.findMany({
       where: {
         ...(moduleType ? { moduleType } : {}),
         ...(categoryId ? { categoryId } : {}),
+        ...cityZoneFilter(zoneKey),
       },
       include: {
         category: true,
@@ -943,8 +1001,10 @@ router.get(
 
 router.get(
   '/doctors',
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
+    const zoneKey = await resolveCityZoneKey(req.query as Record<string, unknown>);
     const doctors = await prisma.doctor.findMany({
+      where: cityZoneFilter(zoneKey),
       orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
     });
 
@@ -1069,6 +1129,7 @@ router.get(
       ? requestedRadiusRaw
       : null;
 
+    const zoneKey = await resolveCityZoneKey(req.query as Record<string, unknown>);
     const providers = await prisma.homeServiceProvider.findMany({
       where: {
         ...(categorySlug
@@ -1079,6 +1140,7 @@ router.get(
               }
             : {}),
         ...(availableOnly ? { isAvailable: true } : {}),
+        ...cityZoneFilter(zoneKey),
       },
       include: {
         category: true,
@@ -1191,8 +1253,10 @@ router.get(
 
 router.get(
   '/restaurants',
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
+    const zoneKey = await resolveCityZoneKey(req.query as Record<string, unknown>);
     const restaurants = await prisma.restaurant.findMany({
+      where: cityZoneFilter(zoneKey),
       include: {
         menuCategories: {
           orderBy: { sortOrder: 'asc' },
@@ -1264,8 +1328,10 @@ router.get(
 
 router.get(
   '/hotels',
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
+    const zoneKey = await resolveCityZoneKey(req.query as Record<string, unknown>);
     const hotels = await prisma.hotel.findMany({
+      where: cityZoneFilter(zoneKey),
       orderBy: [{ rating: 'desc' }, { reviewsCount: 'desc' }],
     });
 
@@ -1339,9 +1405,10 @@ router.get(
 
 router.get(
   '/laundry-services',
-  asyncHandler(async (_req, res) => {
+  asyncHandler(async (req, res) => {
+    const zoneKey = await resolveCityZoneKey(req.query as Record<string, unknown>);
     const services = await prisma.laundryService.findMany({
-      where: { active: true },
+      where: { active: true, ...cityZoneFilter(zoneKey) },
       select: {
         id: true,
         name: true,

@@ -294,6 +294,44 @@ model AppModule {
   @@index([active, sortOrder])
 }
 
+/// A city/town where eDalab operates or plans to operate.
+/// Mirrors the client-side CityZone list in `lib/core/config/service_zones.dart`.
+/// Per-location module activation lives in [ZoneModuleConfig].
+model ServiceZone {
+  id             String   @id
+  zoneKey        String   @unique
+  name           String
+  nameFr         String?
+  nameEn         String?
+  nameAr         String?
+  centerLatitude Float
+  centerLongitude Float
+  radiusKm       Float    @default(5)
+  active         Boolean  @default(false)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  moduleConfigs  ZoneModuleConfig[]
+
+  @@index([active, sortOrder])
+}
+
+/// Per-location module activation: one row per (zone, module) pair.
+/// A module is usable in a zone when the global AppModule.active is true
+/// AND this row's active is true.
+model ZoneModuleConfig {
+  id         String      @id @default(cuid())
+  zoneId     String
+  moduleType ModuleType
+  active     Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  zone       ServiceZone @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+
+  @@unique([zoneId, moduleType])
+  @@index([moduleType, active])
+}
+
 model ProductCategory {
   id         String     @id
   moduleType ModuleType
@@ -310,6 +348,7 @@ model ShoppingStore {
   id             String    @id
   name           String
   slug           String    @unique
+  cityZone       String?
   tagline        String?
   description    String?
   imageUrl       String?
@@ -331,6 +370,7 @@ model Product {
   categoryId           String?
   name                 String
   brand                String?
+  cityZone             String?
   description          String
   price                Decimal          @db.Decimal(10, 2)
   originalPrice        Decimal?         @db.Decimal(10, 2)
@@ -403,6 +443,7 @@ model Restaurant {
   id             String                   @id
   name           String
   cuisine        String
+  cityZone       String?
   rating         Decimal                  @default(0) @db.Decimal(3, 2)
   reviewCount    Int                      @default(0)
   deliveryTime   String?
@@ -446,6 +487,7 @@ model Doctor {
   id               String         @id
   name             String
   specialty        String
+  cityZone         String?
   rating           Decimal        @default(0) @db.Decimal(3, 2)
   reviewCount      Int            @default(0)
   experience       String?
@@ -486,6 +528,7 @@ model HomeServiceProvider {
   id               String              @id
   categoryId       String
   name             String
+  cityZone         String?
   title            String
   rating           Decimal             @default(0) @db.Decimal(3, 2)
   reviewCount      Int                 @default(0)
@@ -543,6 +586,7 @@ model Hotel {
   name          String
   address       String
   city          String
+  cityZone      String?
   rating        Decimal        @default(0) @db.Decimal(3, 2)
   reviewsCount  Int            @default(0)
   pricePerNight Decimal        @db.Decimal(10, 2)
@@ -633,6 +677,7 @@ model LaundryService {
   id                String         @id
   name              String
   description       String
+  cityZone          String?
   price             Decimal        @db.Decimal(10, 2)
   unit              String
   iconUrl           String?

@@ -10,6 +10,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
+import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
@@ -50,7 +51,9 @@ class _GroceryScreenState extends State<GroceryScreen> {
           .toList();
       // Fetch categories from backend
       try {
-        final catResp = await ApiClient.get('/catalog/categories?moduleType=grocery');
+        final catResp = await ApiClient.get(
+          ZoneScope.appendZone('/catalog/categories?moduleType=grocery'),
+        );
         final cats = (catResp as List)
             .map((c) => GroceryCategory(
                   id: (c as Map)['id']?.toString() ?? '',

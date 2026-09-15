@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 import '../config/service_zones.dart';
+import '../config/zone_scope.dart';
 
 enum CityAvailabilityStatus {
   /// Initial state — check hasn't run yet.
@@ -106,6 +107,9 @@ class CityAvailabilityProvider extends ChangeNotifier {
       }
 
       _resolveZones(position.latitude, position.longitude);
+      // Publish the matched zone so per-location module data fetches can tag
+      // their API calls with it (see [ZoneScope.appendZone]).
+      ZoneScope.update(_matchedZone?.id);
       _status = _matchedZone != null
           ? CityAvailabilityStatus.available
           : CityAvailabilityStatus.outOfZone;

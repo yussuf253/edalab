@@ -11,6 +11,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/config/zone_scope.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -57,7 +58,7 @@ class _FoodScreenState extends State<FoodScreen> {
 
   Future<void> _loadRestaurants() async {
     try {
-      final response = await ApiClient.get('/catalog/restaurants');
+      final response = await ApiClient.get(ZoneScope.appendZone('/catalog/restaurants'));
       final items = (response as List)
           .map(
             (item) =>

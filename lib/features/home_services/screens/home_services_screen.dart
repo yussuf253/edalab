@@ -8,6 +8,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
+import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -147,7 +148,10 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
     try {
       final results = await Future.wait([
         ApiClient.get('/catalog/home-service-categories', forceRefresh: true),
-        ApiClient.get('/catalog/home-service-providers', forceRefresh: true),
+        ApiClient.get(
+          ZoneScope.appendZone('/catalog/home-service-providers'),
+          forceRefresh: true,
+        ),
       ]);
       final categories = (results[0] as List)
           .map(

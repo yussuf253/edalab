@@ -7,6 +7,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
+import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
@@ -892,7 +893,7 @@ class _PopularRestaurants extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<dynamic>(
-      future: ApiClient.get('/catalog/restaurants'),
+      future: ApiClient.get(ZoneScope.appendZone('/catalog/restaurants')),
       builder: (context, snapshot) {
         final restaurants = snapshot.hasData
             ? ((snapshot.data as List)
@@ -1042,7 +1043,7 @@ class _TopDoctors extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<dynamic>(
-      future: ApiClient.get('/catalog/doctors'),
+      future: ApiClient.get(ZoneScope.appendZone('/catalog/doctors')),
       builder: (context, snapshot) {
         final doctors = snapshot.hasData
             ? ((snapshot.data as List)
@@ -1162,7 +1163,7 @@ class _TrendingProducts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<dynamic>(
-      future: ApiClient.get('/catalog/products?moduleType=shopping'),
+      future: ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=shopping')),
       builder: (context, snapshot) {
         final products = snapshot.hasData
             ? ((snapshot.data as List)

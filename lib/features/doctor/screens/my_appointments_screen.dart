@@ -8,6 +8,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/models/models.dart';
 
@@ -26,7 +27,7 @@ class MyAppointmentsScreen extends StatelessWidget {
     };
 
     try {
-      final doctorsResponse = await ApiClient.get('/catalog/doctors');
+      final doctorsResponse = await ApiClient.get(ZoneScope.appendZone('/catalog/doctors'));
       final doctors = (doctorsResponse as List)
           .map(
             (entry) =>

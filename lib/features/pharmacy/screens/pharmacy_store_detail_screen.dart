@@ -7,6 +7,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
+import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -52,7 +53,9 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
   Future<void> _loadStore() async {
     try {
       final response = await ApiClient.get(
-        '/catalog/pharmacies?sort=distance${_locationQueryForDistance()}',
+        ZoneScope.appendZone(
+          '/catalog/pharmacies?sort=distance${_locationQueryForDistance()}',
+        ),
       );
       final pharmacies = (response as List)
           .map(
@@ -130,7 +133,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
   Future<void> _loadMedicines() async {
     try {
       final response = await ApiClient.get(
-        '/catalog/products?moduleType=pharmacy',
+        ZoneScope.appendZone('/catalog/products?moduleType=pharmacy'),
       );
       final all = (response as List)
           .map(

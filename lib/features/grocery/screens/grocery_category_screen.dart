@@ -8,6 +8,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
+import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -34,8 +35,12 @@ class GroceryCategoryScreen extends StatelessWidget {
       ),
       body: FutureBuilder<List<dynamic>>(
         future: Future.wait([
-          ApiClient.get('/catalog/products?moduleType=grocery&categoryId=$categoryId'),
-          ApiClient.get('/catalog/categories?moduleType=grocery'),
+          ApiClient.get(
+            ZoneScope.appendZone(
+              '/catalog/products?moduleType=grocery&categoryId=$categoryId',
+            ),
+          ),
+          ApiClient.get(ZoneScope.appendZone('/catalog/categories?moduleType=grocery')),
         ]),
         builder: (context, snapshot) {
           final loading = snapshot.connectionState == ConnectionState.waiting;
