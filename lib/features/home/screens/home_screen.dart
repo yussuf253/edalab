@@ -766,27 +766,28 @@ class _SpecialOffers extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final offers = [
       _OfferData(
-        '40% OFF',
-        'Fresh Groceries',
-        'Free delivery on orders above DJF 30',
+        l10n.t('home.offer.grocery_discount'),
+        l10n.t('home.offer.grocery_title'),
+        l10n.t('home.offer.grocery_subtitle'),
         AppColors.grocery,
         Icons.local_grocery_store_rounded,
         moduleId: 'grocery',
       ),
       _OfferData(
-        '25% OFF',
-        'Medicine Delivery',
-        'Upload prescription & save more',
+        l10n.t('home.offer.pharmacy_discount'),
+        l10n.t('home.offer.pharmacy_title'),
+        l10n.t('home.offer.pharmacy_subtitle'),
         AppColors.pharmacy,
         Icons.medication_rounded,
         moduleId: 'pharmacy',
       ),
       _OfferData(
-        'Free Ride',
-        'First 3 Rides Free',
-        'New user exclusive offer',
+        l10n.t('home.offer.ride_discount'),
+        l10n.t('home.offer.ride_title'),
+        l10n.t('home.offer.ride_subtitle'),
         AppColors.ride,
         Icons.directions_car_rounded,
         moduleId: 'ride',
@@ -798,7 +799,7 @@ class _SpecialOffers extends StatelessWidget {
     }
 
     return SizedBox(
-      height: 118,
+      height: 92,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -808,7 +809,7 @@ class _SpecialOffers extends StatelessWidget {
           final offer = offers[index];
           return Container(
             width: 280,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: offer.color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(16),
@@ -817,13 +818,13 @@ class _SpecialOffers extends StatelessWidget {
             child: Row(
               children: [
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 42,
+                  height: 42,
                   decoration: BoxDecoration(
                     color: offer.color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(offer.icon, color: offer.color, size: 26),
+                  child: Icon(offer.icon, color: offer.color, size: 22),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
@@ -845,7 +846,7 @@ class _SpecialOffers extends StatelessWidget {
                           style: AppTextStyles.badge.copyWith(fontSize: 11),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         offer.title,
                         style: AppTextStyles.labelLarge,

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/analytics/analytics_events.dart';
 import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/money_format.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
@@ -193,23 +194,23 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
                       children: [
                         _SumRow(
                           l10n.t('cart.subtotal'),
-                          'DJF${subtotal.toStringAsFixed(2)}',
+                          'DJF${formatDjf(subtotal)}',
                         ),
                         _SumRow(
                           l10n.t('cart.delivery'),
-                          'DJF${deliveryFee.toStringAsFixed(2)}',
+                          'DJF${formatDjf(deliveryFee)}',
                         ),
                         const Divider(height: 20),
                         _SumRow(
                           l10n.t('cart.total'),
-                          'DJF${total.toStringAsFixed(2)}',
+                          'DJF${formatDjf(total)}',
                           bold: true,
                         ),
                         const SizedBox(height: 16),
                         AppButton(
                           text: l10n.t(
                             'cart.continue_checkout',
-                            params: {'amount': total.toStringAsFixed(2)},
+                            params: {'amount': formatDjf(total)},
                           ),
                           color: AppColors.pharmacy,
                           onPressed: () async {
@@ -312,7 +313,7 @@ class _ItemRow extends StatelessWidget {
                 Text(desc, style: AppTextStyles.caption),
                 const SizedBox(height: 4),
                 Text(
-                  'DJF ${price.toStringAsFixed(2)}',
+                  'DJF ${formatDjf(price)}',
                   style: AppTextStyles.priceSmall.copyWith(
                     color: AppColors.pharmacy,
                     fontSize: 13,

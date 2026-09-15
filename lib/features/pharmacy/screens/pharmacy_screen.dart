@@ -10,8 +10,10 @@ import 'package:provider/provider.dart';
 import '../../../core/analytics/analytics_events.dart';
 import '../../../core/analytics/analytics_service.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/money_format.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../widgets/medicine_stock_badge.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/config/zone_scope.dart';
@@ -864,12 +866,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                                       style: AppTextStyles.caption,
                                     ),
                                     const SizedBox(height: 4),
-                                    Text(
-                                      medicine.category,
-                                      style: AppTextStyles.labelSmall.copyWith(
-                                        color: AppColors.pharmacy,
-                                      ),
-                                    ),
+                                    MedicineStockBadge(medicine: medicine),
                                   ],
                                 ),
                               ),
@@ -877,7 +874,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    'DJF${medicine.price.toStringAsFixed(2)}',
+                                    'DJF${formatDjf(medicine.price)}',
                                     style: AppTextStyles.priceSmall.copyWith(
                                       color: AppColors.pharmacy,
                                     ),
@@ -1037,7 +1034,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                           ),
                         ),
                         Text(
-                          'DJF${moduleTotal.toStringAsFixed(2)}',
+                          'DJF${formatDjf(moduleTotal)}',
                           style: AppTextStyles.labelLarge.copyWith(
                             color: AppColors.white,
                           ),

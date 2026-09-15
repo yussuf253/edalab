@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/money_format.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
@@ -11,6 +12,7 @@ import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../widgets/medicine_stock_badge.dart';
 
 class PharmacyStoreDetailScreen extends StatefulWidget {
   const PharmacyStoreDetailScreen({
@@ -514,12 +516,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                                       style: AppTextStyles.caption,
                                     ),
                                     const SizedBox(height: 4),
-                                    Text(
-                                      medicine.category,
-                                      style: AppTextStyles.labelSmall.copyWith(
-                                        color: AppColors.pharmacy,
-                                      ),
-                                    ),
+                                    MedicineStockBadge(medicine: medicine),
                                   ],
                                 ),
                               ),
@@ -528,7 +525,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    'DJF${medicine.price.toStringAsFixed(2)}',
+                                    'DJF${formatDjf(medicine.price)}',
                                     style: AppTextStyles.priceSmall.copyWith(
                                       color: AppColors.pharmacy,
                                     ),
@@ -628,7 +625,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                         ),
                       ),
                       Text(
-                        'DJF${moduleTotal.toStringAsFixed(2)}',
+                        'DJF${formatDjf(moduleTotal)}',
                         style: AppTextStyles.labelLarge.copyWith(
                           color: AppColors.white,
                         ),

@@ -10,6 +10,7 @@ import '../../../core/models/models.dart';
 import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/utils/money_format.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
@@ -585,16 +586,17 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                 ? l10n.t(
                     'food_detail.view_cart',
                     params: {
-                      'amount': cartProvider
-                          .getModuleSubtotal('food')
-                          .toStringAsFixed(2),
+                      'amount': formatDjf(
+                        cartProvider.getModuleSubtotal('food'),
+                      ),
                     },
                   )
                 : l10n.t(
                     'food_detail.add_to_cart',
                     params: {
-                      'amount': ((item.price + _customizationsDelta) * quantity)
-                          .toStringAsFixed(2),
+                      'amount': formatDjf(
+                        (item.price + _customizationsDelta) * quantity,
+                      ),
                     },
                   ),
             color: AppColors.food,

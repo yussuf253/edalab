@@ -9,6 +9,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/utils/money_format.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
@@ -27,10 +28,9 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _medicine = PharmacyModel.sampleItems.firstWhere(
-      (item) => item.id == widget.medicineId,
-      orElse: () => PharmacyModel.sampleItems.first,
-    );
+    // Placeholder only — never rendered because the body shows the shimmer
+    // while _isLoading is true. Replaced as soon as the API responds.
+    _medicine = PharmacyModel.sampleItems.first;
     _loadMedicine();
   }
 
@@ -156,7 +156,9 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                   Text(medicine.name, style: AppTextStyles.h2),
                   const SizedBox(height: 4),
                   Text(
-                    '${medicine.category} • ${medicine.size}',
+                    medicine.category.isEmpty
+                        ? l10n.t('medicine_detail.uncategorized')
+                        : medicine.category,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.grey,
                     ),
@@ -165,7 +167,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        'DJF ${medicine.price.toStringAsFixed(2)}',
+                        'DJF ${formatDjf(medicine.price)}',
                         style: AppTextStyles.price.copyWith(
                           color: AppColors.pharmacy,
                           fontSize: 24,
@@ -178,13 +180,19 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.successLight,
+                          color: medicine.inStock
+                              ? AppColors.successLight
+                              : AppColors.warningLight,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          l10n.t('medicine_detail.in_stock'),
+                          medicine.inStock
+                              ? l10n.t('medicine_detail.in_stock')
+                              : l10n.t('medicine_detail.out_of_stock'),
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.success,
+                            color: medicine.inStock
+                                ? AppColors.success
+                                : AppColors.warning,
                           ),
                         ),
                       ),
@@ -240,7 +248,9 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            medicine.dosage,
+                            medicine.dosage.isEmpty
+                                ? l10n.t('medicine_detail.use_as_directed')
+                                : medicine.dosage,
                             style: AppTextStyles.bodyMedium,
                           ),
                         ),
@@ -281,7 +291,9 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                 ],
               ),
       ),
-      bottomNavigationBar: SafeArea(
+      bottomNavigationBar: _isLoading
+          ? null
+          : SafeArea(
         minimum: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: isInCart
             ? GestureDetector(
@@ -340,7 +352,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                         ),
                       ),
                       Text(
-                        'DJF${moduleTotal.toStringAsFixed(2)}',
+                        'DJF${formatDjf(moduleTotal)}',
                         style: AppTextStyles.labelLarge.copyWith(
                           color: AppColors.white,
                         ),
@@ -352,10 +364,11 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
             : AppButton(
                 text: l10n.t(
                   'medicine_detail.add_to_cart',
-                  params: {'amount': medicine.price.toStringAsFixed(2)},
+                  params: {'amount': formatDjf(medicine.price)},
                 ),
                 color: AppColors.pharmacy,
-                onPressed: () {
+                onPressed: medicine.inStock
+                    ? () {
                   AnalyticsService.instance.track(
                     AnalyticsEvents.cartAdjustmentInitiated,
                     properties: {
@@ -379,7 +392,8 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                       description: medicine.description,
                     ),
                   );
-                },
+                }
+                    : null,
               ),
       ),
     );

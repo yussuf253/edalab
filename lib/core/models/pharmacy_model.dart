@@ -11,6 +11,7 @@ class PharmacyModel {
   final double rating;
   final int reviewsCount;
   final String? sourceBusiness;
+  final bool inStock;
 
   PharmacyModel({
     required this.id,
@@ -25,6 +26,7 @@ class PharmacyModel {
     required this.rating,
     required this.reviewsCount,
     this.sourceBusiness,
+    this.inStock = true,
   });
 
   factory PharmacyModel.fromApi(Map<String, dynamic> json) {
@@ -38,14 +40,14 @@ class PharmacyModel {
       category:
           json['category']?.toString() ??
           json['categoryId']?.toString() ??
-          'General',
+          '',
       price: (json['price'] as num?)?.toDouble() ?? 0,
       description: json['description']?.toString() ?? '',
       imageUrl: (json['images'] as List?)?.isNotEmpty == true
           ? json['images'][0]?.toString()
           : json['imageUrl']?.toString(),
       requiresPrescription: json['requiresPrescription'] as bool? ?? false,
-      dosage: json['dosage']?.toString() ?? 'Use as directed.',
+      dosage: json['dosage']?.toString() ?? '',
       size: json['packageSize']?.toString() ?? json['size']?.toString() ?? '',
       rating: (json['rating'] as num?)?.toDouble() ?? 0,
       reviewsCount:
@@ -55,6 +57,7 @@ class PharmacyModel {
       sourceBusiness:
           metadata['sourceBusiness']?.toString() ??
           json['shopName']?.toString(),
+      inStock: json['inStock'] as bool? ?? true,
     );
   }
 
