@@ -13,13 +13,12 @@ const ALL_ZONES_WILDCARD = 'all';
 /**
  * Builds a Prisma `cityZone` where-clause from a `zone` query parameter.
  *
- * Accepted values:
- *  - a zone key (e.g. `djibouti_ville`) → matches rows tagged with that zone
- *    OR rows with no zone tag (legacy/global listings stay visible).
+ * `cityZone` is an array of zone keys — a listing can operate in several
+ * cities at once. Accepted `zone` values:
+ *  - a zone key (e.g. `djibouti_ville`) → matches rows whose cityZone list
+ *    contains that key OR rows with an empty list (global listings stay
+ *    visible in every city).
  *  - `all` (or absent) → no filtering (everything, everywhere).
- *
- * Legacy rows with a null cityZone are always included so the rollout stays
- * backwards compatible until every listing is tagged.
  */
 function cityZoneFilter(zoneParam: unknown) {
   const zone = zoneParam?.toString().trim();
@@ -27,7 +26,7 @@ function cityZoneFilter(zoneParam: unknown) {
     return {};
   }
   return {
-    OR: [{ cityZone: zone }, { cityZone: null }],
+    OR: [{ cityZone: { has: zone } }, { cityZone: { isEmpty: true } }],
   };
 }
 

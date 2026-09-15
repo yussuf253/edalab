@@ -348,7 +348,7 @@ model ShoppingStore {
   id             String    @id
   name           String
   slug           String    @unique
-  cityZone       String?
+  cityZone       String[]   @default([])
   tagline        String?
   description    String?
   imageUrl       String?
@@ -370,7 +370,7 @@ model Product {
   categoryId           String?
   name                 String
   brand                String?
-  cityZone             String?
+  cityZone             String[]   @default([])
   description          String
   price                Decimal          @db.Decimal(10, 2)
   originalPrice        Decimal?         @db.Decimal(10, 2)
@@ -443,7 +443,7 @@ model Restaurant {
   id             String                   @id
   name           String
   cuisine        String
-  cityZone       String?
+  cityZone       String[]   @default([])
   rating         Decimal                  @default(0) @db.Decimal(3, 2)
   reviewCount    Int                      @default(0)
   deliveryTime   String?
@@ -487,7 +487,7 @@ model Doctor {
   id               String         @id
   name             String
   specialty        String
-  cityZone         String?
+  cityZone         String[]   @default([])
   rating           Decimal        @default(0) @db.Decimal(3, 2)
   reviewCount      Int            @default(0)
   experience       String?
@@ -528,7 +528,7 @@ model HomeServiceProvider {
   id               String              @id
   categoryId       String
   name             String
-  cityZone         String?
+  cityZone         String[]   @default([])
   title            String
   rating           Decimal             @default(0) @db.Decimal(3, 2)
   reviewCount      Int                 @default(0)
@@ -586,7 +586,7 @@ model Hotel {
   name          String
   address       String
   city          String
-  cityZone      String?
+  cityZone      String[]   @default([])
   rating        Decimal        @default(0) @db.Decimal(3, 2)
   reviewsCount  Int            @default(0)
   pricePerNight Decimal        @db.Decimal(10, 2)
@@ -677,7 +677,7 @@ model LaundryService {
   id                String         @id
   name              String
   description       String
-  cityZone          String?
+  cityZone          String[]   @default([])
   price             Decimal        @db.Decimal(10, 2)
   unit              String
   iconUrl           String?

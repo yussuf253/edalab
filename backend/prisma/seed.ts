@@ -782,43 +782,43 @@ async function seedServiceZones() {
 }
 
 /**
- * Tags every untagged listing with the zone where they actually operate.
+ * Tags listings with no city coverage yet.
  *
- * The sample/seed catalog describes businesses in Ali Sabieh — the only live
- * city — so untagged rows are tagged `ali_sabieh` to keep that city's
- * catalogs populated. Rows left with a null cityZone stay visible in every
- * zone (see the backend's cityZoneFilter), so pick a different default here
- * as new cities launch.
+ * `cityZone` is an array — a listing can operate in several cities at once,
+ * and an EMPTY list means visible in every city. The sample/seed catalog
+ * describes businesses in Ali Sabieh — the only live city — so rows with no
+ * coverage are tagged `['ali_sabieh']` to keep that city's catalogs
+ * populated. Clear the arrays in Supabase instead to make a listing global.
  */
 async function seedCityZoneDefaults() {
-  const defaultZone = 'ali_sabieh';
+  const defaultZones = ['ali_sabieh'];
   await prisma.restaurant.updateMany({
-    where: { cityZone: null },
-    data: { cityZone: defaultZone },
+    where: { cityZone: { isEmpty: true } },
+    data: { cityZone: defaultZones },
   });
   await prisma.shoppingStore.updateMany({
-    where: { cityZone: null },
-    data: { cityZone: defaultZone },
+    where: { cityZone: { isEmpty: true } },
+    data: { cityZone: defaultZones },
   });
   await prisma.product.updateMany({
-    where: { cityZone: null },
-    data: { cityZone: defaultZone },
+    where: { cityZone: { isEmpty: true } },
+    data: { cityZone: defaultZones },
   });
   await prisma.hotel.updateMany({
-    where: { cityZone: null },
-    data: { cityZone: defaultZone },
+    where: { cityZone: { isEmpty: true } },
+    data: { cityZone: defaultZones },
   });
   await prisma.doctor.updateMany({
-    where: { cityZone: null },
-    data: { cityZone: defaultZone },
+    where: { cityZone: { isEmpty: true } },
+    data: { cityZone: defaultZones },
   });
   await prisma.homeServiceProvider.updateMany({
-    where: { cityZone: null },
-    data: { cityZone: defaultZone },
+    where: { cityZone: { isEmpty: true } },
+    data: { cityZone: defaultZones },
   });
   await prisma.laundryService.updateMany({
-    where: { cityZone: null },
-    data: { cityZone: defaultZone },
+    where: { cityZone: { isEmpty: true } },
+    data: { cityZone: defaultZones },
   });
 }
 
