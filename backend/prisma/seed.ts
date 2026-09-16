@@ -165,13 +165,17 @@ async function seedAppModules() {
   ];
 
   for (const module of modules) {
+    // `active` is intentionally only set on create: reseeding must never
+    // re-enable a module an admin has deactivated in the live database.
+    // New rows still get the seed's `active: true` (matching the schema
+    // default) so fresh databases start with everything on.
+    const { active: _active, ...rest } = module;
     await prisma.appModule.upsert({
       where: { moduleType: module.moduleType },
       update: {
-        name: module.name,
-        slug: module.slug,
-        active: module.active,
-        sortOrder: module.sortOrder,
+        name: rest.name,
+        slug: rest.slug,
+        sortOrder: rest.sortOrder,
       },
       create: module,
     });
