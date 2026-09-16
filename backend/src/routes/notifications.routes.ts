@@ -1,4 +1,5 @@
 import {
+  DeviceAudience,
   DevicePlatform,
   NotificationModule,
   NotificationPriority,
@@ -9,6 +10,7 @@ import { z } from 'zod';
 
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
+import { requireAuth } from '../middleware/auth';
 import { getParam } from '../utils/http';
 
 const router = Router();
@@ -33,6 +35,7 @@ const registerDeviceTokenSchema = z.object({
   userId: z.string().min(1),
   token: z.string().min(1),
   platform: z.nativeEnum(DevicePlatform).optional(),
+  audience: z.enum(['USER', 'PRO']).optional(),
 });
 
 function inferTypeFromModule(module: NotificationModule): NotificationType {
@@ -240,21 +243,51 @@ router.patch(
 
 router.post(
   '/device-tokens',
+  requireAuth,
   asyncHandler(async (req, res) => {
     const body = registerDeviceTokenSchema.parse({
       ...req.body,
       platform: parsePlatform(req.body.platform),
     });
+    const audience =
+      body.audience ??
+      (req.auth?.accountType === 'pro' ? DeviceAudience.PRO : DeviceAudience.USER);
 
+    // Enforce token-to-identity binding: a pro account registers pushes for
+    // its profile's user id, a user account for its own id. This prevents a
+    // caller from binding a token to an arbitrary userId (push spoofing).
+    let allowedUserId = req.auth!.userId;
+    if (req.auth!.accountType === 'pro') {
+      const profile = await prisma.proProfile.findUnique({
+        where: { accountId: req.auth!.userId },
+        select: { userId: true },
+      });
+      if (!profile) {
+        return res
+          .status(403)
+          .json({ error: 'No pro profile is linked to this account yet.' });
+      }
+      allowedUserId = profile.userId;
+    }
+    if (body.userId !== allowedUserId) {
+      return res
+        .status(403)
+        .json({ error: 'Device tokens can only be registered for the authenticated user.' });
+    }
+
+    // The user and pro apps can share one FCM token per device, so tokens are
+    // keyed by (token, audience) instead of token alone. Otherwise whichever
+    // app registers last silently steals push delivery from the other.
     const record = await prisma.deviceToken.upsert({
-      where: { token: body.token },
+      where: { token_audience: { token: body.token, audience } },
       create: {
-        userId: body.userId,
+        userId: allowedUserId,
         token: body.token,
+        audience,
         platform: body.platform ?? DevicePlatform.UNKNOWN,
       },
       update: {
-        userId: body.userId,
+        userId: allowedUserId,
         platform: body.platform ?? DevicePlatform.UNKNOWN,
         lastSeenAt: new Date(),
       },
@@ -264,6 +297,7 @@ router.post(
       id: record.id,
       userId: record.userId,
       token: record.token,
+      audience: record.audience,
       platform: record.platform,
       lastSeenAt: record.lastSeenAt,
     });

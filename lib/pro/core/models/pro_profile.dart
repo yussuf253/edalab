@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 enum ProProfileType { shop, provider, doctor, delivery, rider }
 
 enum ProModule {
@@ -120,6 +122,12 @@ class ProProfile {
             ? ProProfileType.delivery
             : ProProfileType.rider;
       default:
+        // Keep the legacy shop default so existing sessions keep working, but
+        // surface the mismatch loudly: a silently mis-typed profile lands the
+        // pro on the wrong dashboard with no visible error.
+        debugPrint(
+          'ProProfile: unknown profile type "$rawType" — falling back to shop.',
+        );
         return ProProfileType.shop;
     }
   }
@@ -164,6 +172,11 @@ class ProProfile {
       case 'ecologique':
         return ProModule.ecologicalCleaning;
       default:
+        // Keep the legacy shopping default, but flag unrecognized module keys
+        // so backend/app vocabulary drift is visible during development.
+        debugPrint(
+          'ProProfile: unknown module "$raw" — falling back to shopping.',
+        );
         return ProModule.shopping;
     }
   }

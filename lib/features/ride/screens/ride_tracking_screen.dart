@@ -548,6 +548,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
       case 'accepted':
         return 0.28;
       case 'arriving':
+      case 'driver_arriving': // Backend serializes RideStatus.DRIVER_ARRIVING lowercase.
         return 0.46;
       case 'in_progress':
         return 0.7;

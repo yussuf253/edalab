@@ -21,6 +21,7 @@ class NotificationProvider extends ChangeNotifier {
   String _scope = 'guest';
   String? _currentUserId;
   String? _lastSessionSignature;
+  String? _pendingPushToken;
 
   bool get isLoading => _isLoading;
   bool get isSyncing => _isSyncing;
@@ -68,6 +69,7 @@ class NotificationProvider extends ChangeNotifier {
 
     if (nextUserId != null) {
       await refreshFromServer(nextUserId);
+      await _flushPendingPushToken();
     }
 
     await _seedSmartNotifications(
@@ -93,7 +95,15 @@ class NotificationProvider extends ChangeNotifier {
 
     if (userId != null) {
       await refreshFromServer(userId);
+      await _flushPendingPushToken();
     }
+  }
+
+  Future<void> _flushPendingPushToken() async {
+    final pending = _pendingPushToken;
+    if (pending == null || _currentUserId == null) return;
+    _pendingPushToken = null;
+    await syncPushToken(pending);
   }
 
   Future<void> addNotification(
@@ -211,8 +221,16 @@ class NotificationProvider extends ChangeNotifier {
   }
 
   Future<void> syncPushToken(String token) async {
+    if (token.isEmpty) return;
     final userId = _currentUserId;
-    if (userId == null || token.isEmpty) return;
+    if (userId == null) {
+      // No session yet (e.g. pro app before login): queue the token so it is
+      // registered as soon as a session is established, instead of silently
+      // dropping it and leaving the device unreachable for pushes.
+      _pendingPushToken = token;
+      return;
+    }
+    _pendingPushToken = null;
     final platform = kIsWeb ? 'web' : defaultTargetPlatform.name.toLowerCase();
     await _repository.registerPushToken(
       userId: userId,

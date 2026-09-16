@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart'; // pro/app.dart
@@ -14,6 +13,7 @@ import '../core/services/notification_sync_service.dart'; // ✅ User
 import '../core/services/push_notification_service.dart'; // ✅ User
 import '../core/storage/app_preferences.dart'; // ✅ User
 import 'core/providers/pro_auth_provider.dart'; // ✅ Pro (spécifique Pro)
+import '../core/providers/city_availability_provider.dart'; // ✅ User
 import 'core/router/pro_app_router.dart'; // ✅ Pro
 import 'core/services/pro_inbox_sync_service.dart'; // ✅ Pro
 
@@ -26,6 +26,7 @@ Future<void> main() async {
   final languageProvider = LanguageProvider();
   final notificationProvider = NotificationProvider();
   final proAuthProvider = ProAuthProvider();
+  final cityAvailabilityProvider = CityAvailabilityProvider();
 
   await Future.wait([
     languageProvider.initialize(),
@@ -33,19 +34,9 @@ Future<void> main() async {
     proAuthProvider.initialize(),
   ]);
 
-  // Redirect banned pro users to the banned screen
-  if (proAuthProvider.isBanned) {
-    Future.delayed(const Duration(milliseconds: 100), () {
-      try {
-        final context = proNavigatorKey.currentContext;
-        if (context != null && context.mounted) {
-          context.go('/banned', extra: proAuthProvider.banReason);
-        }
-      } catch (e) {
-        print('Banned redirect error: $e');
-      }
-    });
-  }
+  // NOTE: banned-pro redirection is handled declaratively by the pro router's
+  // redirect guard (pro_app_router.dart), which reacts to proAuthProvider
+  // changes via refreshListenable — no imperative navigation needed here.
 
   await notificationProvider.syncProSession(
     userId: proAuthProvider.currentProfile?.userId,
@@ -69,6 +60,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider.value(value: languageProvider),
         ChangeNotifierProvider.value(value: proAuthProvider),
+        ChangeNotifierProvider.value(value: cityAvailabilityProvider),
         ChangeNotifierProxyProvider<ProAuthProvider, NotificationProvider>(
           create: (_) => notificationProvider,
           update: (_, proAuth, notifications) {
@@ -95,6 +87,7 @@ Future<void> main() async {
         title: 'EdaLab Pro',
         router: createProAppRouter(
           proAuthProvider: proAuthProvider,
+          cityAvailabilityProvider: cityAvailabilityProvider,
           hasSeenOnboarding: hasSeenProOnboarding,
         ),
       ),
@@ -107,6 +100,9 @@ Future<void> main() async {
     proAuthProvider: proAuthProvider,
   );
 
+  // Pro operatives also work inside active service zones only — run the same
+  // city gate as the user app (the router blocks every route while blocking).
+  unawaited(cityAvailabilityProvider.checkAvailability());
   unawaited(NotificationSyncService.instance.syncNow(showAlerts: false));
   unawaited(_initializePush(notificationProvider));
 }

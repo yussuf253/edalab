@@ -35,9 +35,22 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   bool _isLoading = true;
   bool _isSending = false;
   bool _isRefreshingConversation = false;
+  bool _hasLoadError = false;
+  int _consecutiveFailures = 0;
   Timer? _liveRefreshTimer;
   NotificationProvider? _notificationProvider;
   Set<String> _seenNotificationIds = const <String>{};
+
+  /// Poll cadence backs off when the backend is unreachable so an offline
+  /// device doesn't fire a force-refresh every 5 seconds indefinitely.
+  static const Duration _basePollInterval = Duration(seconds: 5);
+  static const Duration _maxPollInterval = Duration(seconds: 60);
+
+  Duration get _currentPollInterval {
+    final backoffFactor = 1 << _consecutiveFailures.clamp(0, 4);
+    final scaled = _basePollInterval * backoffFactor;
+    return scaled > _maxPollInterval ? _maxPollInterval : scaled;
+  }
 
   String? _actorUserId(BuildContext context) {
     return context.read<AuthProvider>().user?.id;
@@ -45,10 +58,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   String _senderRole(BuildContext context) {
     return 'USER';
-  }
-
-  Future<void> _refreshProInboxSummary() async {
-    // No action needed since ProAuthProvider is removed
   }
 
   @override
@@ -102,8 +111,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   void _startLiveRefresh() {
     _liveRefreshTimer?.cancel();
-    _liveRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+    // One-shot timer chain (rather than a periodic timer) so each tick can
+    // re-evaluate the backoff cadence after failures or successes.
+    _liveRefreshTimer = Timer(_currentPollInterval, () {
+      if (!mounted) return;
       _refreshConversationSilently();
+      _startLiveRefresh();
     });
   }
 
@@ -195,6 +208,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         _conversation = nextConversation;
         _messages = nextMessages;
         _isLoading = false;
+        _hasLoadError = false;
+        _consecutiveFailures = 0;
       });
 
       if (nextLastMessageId != null &&
@@ -210,11 +225,18 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           '/messages/conversations/${widget.conversationId}/read',
           {'actorUserId': actorUserId},
         );
-        await _refreshProInboxSummary();
       }
     } catch (_) {
+      _consecutiveFailures += 1;
       if (!mounted) return;
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+        // Only surface a full error state when we have nothing to show;
+        // otherwise keep the last good transcript visible.
+        if (_conversation == null) {
+          _hasLoadError = true;
+        }
+      });
     } finally {
       _isRefreshingConversation = false;
     }
@@ -270,6 +292,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       ),
       body: _isLoading
           ? const SimpleListShimmer(itemCount: 6)
+          : _hasLoadError && conversation == null
+          ? _buildErrorView(l10n)
           : Column(
               children: [
                 if (conversation != null)
@@ -462,5 +486,37 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   String _formatTime(DateTime? value) {
     if (value == null) return '';
     return DateFormat.Hm().format(value);
+  }
+
+  Widget _buildErrorView(AppLocalizations l10n) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.wifi_off_rounded,
+              size: 40,
+              color: AppColors.mediumGrey,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.t('no_internet.title'),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: () {
+                setState(() => _isLoading = true);
+                _loadConversation();
+              },
+              child: Text(l10n.t('tracking.retry')),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

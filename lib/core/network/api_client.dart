@@ -149,6 +149,10 @@ class ApiClient {
     await _writePersistedToken(token);
   }
 
+  /// Auth headers for non-ApiClient channels (e.g. the SSE realtime stream)
+  /// so the backend can identify the connected session.
+  static Future<Map<String, String>> authHeaders() => _headers();
+
   static Future<Map<String, String>> _headers() async {
     final headers = <String, String>{'Content-Type': 'application/json'};
 

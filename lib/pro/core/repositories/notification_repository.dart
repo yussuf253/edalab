@@ -65,6 +65,7 @@ class NotificationRepository {
         'userId': userId,
         'token': token,
         'platform': platform,
+        'audience': 'PRO',
       });
     } catch (_) {}
   }

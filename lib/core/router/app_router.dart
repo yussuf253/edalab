@@ -91,9 +91,19 @@ final GlobalKey<NavigatorState> _shellNavigatorKey =
 
 GlobalKey<NavigatorState> get rootNavigatorKey => _rootNavigatorKey;
 
+/// Top-level tab roots managed by the shell — pushing these would stack a
+/// second shell instance on top of the first, so we navigate to them instead.
+const _shellTabRoots = {'/', '/messages', '/cart', '/orders', '/profile'};
+
 void openAppRoute(String route) {
   final context = _rootNavigatorKey.currentContext;
   if (context == null) return;
+  if (_shellTabRoots.contains(route)) {
+    // Tab roots replace the stack (and clear any pushed screens above the
+    // shell) so a notification tap lands on a clean tab.
+    context.go(route);
+    return;
+  }
   context.push(route);
 }
 
@@ -201,13 +211,9 @@ GoRouter createAppRouter({
         builder: (context, state) =>
             ChatScreen(conversationId: state.pathParameters['id']!),
       ),
-      GoRoute(
-        path: '/pro/messages/chat/:id',
-        builder: (context, state) => ChatScreen(
-          conversationId: state.pathParameters['id']!,
-          isProView: true,
-        ),
-      ),
+      // NOTE: /pro/messages/chat/:id intentionally lives only in the Pro app
+      // (lib/pro/core/router/pro_app_router.dart). The user app has no
+      // ProAuthProvider, so a pro-view ChatScreen here would crash on send.
 
       // ── Search ──────────────────────────────────────────────────────────
       GoRoute(

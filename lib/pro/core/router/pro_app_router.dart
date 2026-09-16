@@ -1,3 +1,4 @@
+import 'package:edalab/core/providers/city_availability_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +15,7 @@ import '../../features/doctor/screens/doctor_home_care_queue_screen.dart';
 import '../../features/dashboard/screens/pro_dashboard_screen.dart';
 import '../../features/doctor/screens/doctor_schedule_settings_screen.dart';
 import '../../features/doctor/screens/doctor_setup_screen.dart';
+import '../../features/entry/screens/pro_city_gate_screen.dart';
 import '../../features/entry/screens/pro_entry_screen.dart';
 import '../../features/onboarding/screens/pro_onboarding_screen.dart';
 import '../../features/provider/screens/provider_availability_screen.dart';
@@ -38,9 +40,23 @@ final GlobalKey<NavigatorState> _proNavigatorKey = GlobalKey<NavigatorState>();
 // Export for use in pro_auth_provider.dart
 GlobalKey<NavigatorState> get proNavigatorKey => _proNavigatorKey;
 
+/// Dashboard tab roots managed by ProDashboardScreen's internal index —
+/// pushing them would stack a second dashboard on top of the current one.
+const _proDashboardRoots = {
+  ProRoutePaths.dashboard,
+  ProRoutePaths.operations,
+  ProRoutePaths.inbox,
+  ProRoutePaths.insights,
+  ProRoutePaths.account,
+};
+
 void openProAppRoute(String route) {
   final context = _proNavigatorKey.currentContext;
   if (context == null) return;
+  if (_proDashboardRoots.contains(route)) {
+    context.go(route);
+    return;
+  }
   context.push(route);
 }
 
@@ -55,13 +71,47 @@ Widget _withProfile(
   return builder(profile);
 }
 
+/// Maps a pro route path prefix to the ProModule it requires, or null for
+/// paths available to every profile (dashboard, inbox, account, chat…).
+ProModule? _moduleForPath(String path) {
+  const table = <String, ProModule>{
+    '/pro/shop/queue': ProModule.shopping,
+    '/pro/shop/products': ProModule.shopping,
+    '/pro/shop/store-setup': ProModule.shopping,
+    '/pro/shop/restaurant-menu': ProModule.food,
+    '/pro/provider/queue': ProModule.services,
+    '/pro/provider/job': ProModule.services,
+    '/pro/provider/availability': ProModule.services,
+    '/pro/provider/schedule': ProModule.services,
+    '/pro/doctor/setup': ProModule.doctor,
+    '/pro/doctor/appointments': ProModule.doctor,
+    '/pro/doctor/home-care': ProModule.doctor,
+    '/pro/doctor/availability': ProModule.doctor,
+    '/pro/doctor/schedule': ProModule.doctor,
+    '/pro/delivery/queue': ProModule.shoppingDelivery,
+    '/pro/delivery/active-delivery': ProModule.shoppingDelivery,
+    '/pro/rider/queue': ProModule.ride,
+    '/pro/rider/active-trip': ProModule.ride,
+  };
+  for (final entry in table.entries) {
+    if (path == entry.key || path.startsWith('${entry.key}/')) {
+      return entry.value;
+    }
+  }
+  return null;
+}
+
 GoRouter createProAppRouter({
   required ProAuthProvider proAuthProvider,
+  required CityAvailabilityProvider cityAvailabilityProvider,
   required bool hasSeenOnboarding,
 }) {
   return GoRouter(
     navigatorKey: _proNavigatorKey,
-    refreshListenable: proAuthProvider,
+    refreshListenable: Listenable.merge([
+      proAuthProvider,
+      cityAvailabilityProvider,
+    ]),
     initialLocation: hasSeenOnboarding
         ? ProRoutePaths.entry
         : ProRoutePaths.onboarding,
@@ -74,6 +124,28 @@ GoRouter createProAppRouter({
         return proAuthProvider.isAuthenticated
             ? ProRoutePaths.entry
             : ProRoutePaths.login;
+      }
+      // City rollout gate: pro operatives work inside active service zones
+      // only. Blocks every route while the availability check is failing,
+      // mirroring the user app's gate.
+      if (cityAvailabilityProvider.isBlocking) {
+        return path == '/city-unavailable' ? null : '/city-unavailable';
+      }
+      if (path == '/city-unavailable' && !cityAvailabilityProvider.isBlocking) {
+        return proAuthProvider.isAuthenticated
+            ? ProRoutePaths.entry
+            : ProRoutePaths.login;
+      }
+      // Profile-module gate: block pro feature routes whose module isn't in
+      // the profile's activeModules, so a disabled module's screens stay
+      // unreachable even by deep link or stale push notification.
+      final profile = proAuthProvider.currentProfile;
+      if (profile != null) {
+        final requiredModule = _moduleForPath(path);
+        if (requiredModule != null &&
+            !profile.activeModules.contains(requiredModule)) {
+          return ProRoutePaths.homeForProfileType(profile.type);
+        }
       }
       return null;
     },
@@ -103,6 +175,10 @@ GoRouter createProAppRouter({
         builder: (context, state) => ProBannedScreen(
           banReason: state.extra as String? ?? proAuthProvider.banReason,
         ),
+      ),
+      GoRoute(
+        path: '/city-unavailable',
+        builder: (context, state) => const ProCityGateScreen(),
       ),
       GoRoute(
         path: ProRoutePaths.dashboard,

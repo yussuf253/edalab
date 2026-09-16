@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 import 'core/analytics/analytics_service.dart';
@@ -21,6 +20,9 @@ import 'core/storage/app_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Load the persisted session token before any provider can issue requests,
+  // mirroring the Pro app's bootstrap so both variants initialize identically.
+  await ApiClient.initialize(scope: ApiSessionScope.user);
   final hasSeenOnboarding = await AppPreferences.hasSeenOnboarding();
   final hasSeenHomeOnboarding = await AppPreferences.hasSeenHomeOnboarding();
   final authProvider = AuthProvider();
@@ -201,19 +203,9 @@ Future<void> _bootstrapAppServices({
   // foreground/resume observers never race with startup.
   unawaited(ModuleSyncService.instance.refresh());
 
-  // Redirect banned users to the banned screen
-  if (authProvider.isBanned) {
-    Future.delayed(const Duration(milliseconds: 100), () {
-      try {
-        final context = rootNavigatorKey.currentContext;
-        if (context != null && context.mounted) {
-          context.go('/banned', extra: authProvider.user?.banReason);
-        }
-      } catch (e) {
-        print('Banned redirect error: $e');
-      }
-    });
-  }
+  // NOTE: banned-user redirection is handled declaratively by the router's
+  // redirect guard (app_router.dart), which reacts to authProvider changes via
+  // refreshListenable — no imperative navigation needed here.
 
   await notificationProvider.syncSession(
     authProvider: authProvider,

@@ -12,6 +12,8 @@ type PushPayload = {
   priority: string;
   dedupeKey?: string | null;
   metadata?: Record<string, unknown>;
+  /** Which app surface the push targets; defaults to the user app. */
+  audience?: 'USER' | 'PRO';
 };
 
 let initialized = false;
@@ -77,7 +79,10 @@ export async function sendPushToUser(payload: PushPayload) {
   if (!ensureFirebaseAdmin()) return;
 
   const tokens = await prisma.deviceToken.findMany({
-    where: { userId: payload.userId },
+    where: {
+      userId: payload.userId,
+      audience: payload.audience ?? 'USER',
+    },
     orderBy: { updatedAt: 'desc' },
     take: 20,
   });

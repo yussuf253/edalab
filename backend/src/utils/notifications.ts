@@ -19,6 +19,8 @@ type NotificationPayload = {
   dedupeKey?: string | null;
   metadata?: Prisma.InputJsonValue;
   priority?: NotificationPriority;
+  /** Which app surface the notification targets; defaults to the user app. */
+  audience?: 'USER' | 'PRO';
 };
 
 export async function createBackendNotification({
@@ -31,6 +33,7 @@ export async function createBackendNotification({
   dedupeKey,
   metadata,
   priority = NotificationPriority.HIGH,
+  audience = 'USER',
 }: NotificationPayload) {
   if (dedupeKey) {
     const existing = await prisma.notification.findFirst({
@@ -65,6 +68,7 @@ export async function createBackendNotification({
     title,
     body,
     route,
+    audience,
     module: module.toString().toLowerCase(),
     priority: priority.toString().toLowerCase(),
     dedupeKey,
@@ -90,6 +94,7 @@ export async function createMessageNotification({
   entityId,
   moduleType,
   dedupeKey,
+  audience,
 }: {
   userId: string;
   conversationId: string;
@@ -101,6 +106,7 @@ export async function createMessageNotification({
   entityId: string;
   moduleType: ModuleType;
   dedupeKey: string;
+  audience?: 'USER' | 'PRO';
 }) {
   return createBackendNotification({
     userId,
@@ -110,6 +116,7 @@ export async function createMessageNotification({
     body,
     route,
     dedupeKey,
+    audience: audience ?? (route.startsWith('/pro/') ? 'PRO' : 'USER'),
     metadata: {
       kind: 'message',
       conversationId,

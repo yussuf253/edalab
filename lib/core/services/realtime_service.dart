@@ -11,10 +11,15 @@ class RealtimeService {
   http.Client? _client;
   final Map<String, List<Function(dynamic)>> _subscribers = {};
   bool _isConnected = false;
+  bool _isReconnecting = false;
+  Timer? _reconnectTimer;
+  int _reconnectAttempts = 0;
+  static const Duration _baseReconnectDelay = Duration(seconds: 2);
+  static const Duration _maxReconnectDelay = Duration(minutes: 2);
 
   /// Connect to the SSE server
   Future<void> connect() async {
-    if (_isConnected) return;
+    if (_isConnected || _isReconnecting) return;
 
     try {
       final sseUrl = '${ApiClient.baseUrl}/realtime/events';
@@ -22,11 +27,15 @@ class RealtimeService {
 
       _client = http.Client();
       final request = http.Request('GET', Uri.parse(sseUrl));
+      request.headers.addAll(await ApiClient.authHeaders());
 
       final response = await _client!.send(request);
 
       if (response.statusCode == 200) {
         _isConnected = true;
+        _isReconnecting = false;
+        _reconnectTimer?.cancel();
+        _reconnectAttempts = 0;
         print('SSE connected successfully');
 
         // Listen to the stream
@@ -45,12 +54,12 @@ class RealtimeService {
               onDone: () {
                 _isConnected = false;
                 print('SSE connection closed');
-                _reconnect();
+                _scheduleReconnect();
               },
               onError: (error) {
                 print('SSE error: $error');
                 _isConnected = false;
-                _reconnect();
+                _scheduleReconnect();
               },
             );
       } else {
@@ -59,16 +68,33 @@ class RealtimeService {
     } catch (e) {
       print('Failed to connect SSE: $e');
       _isConnected = false;
-      await Future.delayed(Duration(seconds: 5));
-      await connect();
+      _client?.close();
+      _client = null;
+      _scheduleReconnect();
     }
   }
 
-  /// Reconnect to the SSE server
-  Future<void> _reconnect() async {
-    print('Attempting to reconnect...');
-    await Future.delayed(Duration(seconds: 5));
-    await connect();
+  /// Reconnect with exponential backoff so a downed backend cannot pin the
+  /// CPU with a tight 5-second retry loop while also re-authenticating each
+  /// attempt with the freshest session token.
+  void _scheduleReconnect() {
+    if (_isReconnecting || _reconnectTimer?.isActive == true) return;
+    _isReconnecting = true;
+
+    final delay = Duration(
+      milliseconds: (_baseReconnectDelay.inMilliseconds *
+              (1 << _reconnectAttempts.clamp(0, 6)))
+          .clamp(
+            _baseReconnectDelay.inMilliseconds,
+            _maxReconnectDelay.inMilliseconds,
+          ),
+    );
+    _reconnectAttempts += 1;
+
+    _reconnectTimer = Timer(delay, () async {
+      _isReconnecting = false;
+      await connect();
+    });
   }
 
   /// Handle incoming SSE messages
@@ -130,6 +156,9 @@ class RealtimeService {
 
   /// Disconnect from the SSE server
   void disconnect() {
+    _reconnectTimer?.cancel();
+    _isReconnecting = false;
+    _reconnectAttempts = 0;
     _client?.close();
     _client = null;
     _isConnected = false;
