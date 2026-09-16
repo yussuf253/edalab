@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:animate_do/animate_do.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
@@ -63,6 +64,45 @@ class _HomeScreenState extends State<HomeScreen> {
         moduleProvider.isEnabled('grocery') ||
         moduleProvider.isEnabled('pharmacy') ||
         moduleProvider.isEnabled('ride');
+
+    // ── Config-not-ready guard ────────────────────────────────────────────
+    // Until the persisted module config is loaded (fresh install: nothing
+    // stored yet, server fetch still in flight), the enabled set only
+    // reflects hardcoded defaults. Show a shimmer instead of flashing all
+    // modules on for a moment.
+    if (!moduleProvider.isReady) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: _buildHomeAppBar(context, user, displayName, locationDisplay),
+        body: AppShimmer(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                ShimmerBlock(width: 140, height: 22),
+                SizedBox(height: 28),
+                ShimmerBlock(width: double.infinity, height: 20),
+                SizedBox(height: 14),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    ShimmerBlock(width: 72, height: 72, radius: 18),
+                    ShimmerBlock(width: 72, height: 72, radius: 18),
+                    ShimmerBlock(width: 72, height: 72, radius: 18),
+                    ShimmerBlock(width: 72, height: 72, radius: 18),
+                  ],
+                ),
+                SizedBox(height: 28),
+                ShimmerBlock(width: double.infinity, height: 160, radius: 16),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    // ──────────────────────────────────────────────────────────────────────
 
     // ── Single-module fast-path ──────────────────────────────────────────────
     // When exactly one module is active, render its screen directly so the

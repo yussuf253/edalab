@@ -1,6 +1,7 @@
 {
   "hosting": {
-    "public": "web",
+    "site": "edalab",
+    "public": "hosting-public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -41,15 +42,11 @@
     "rewrites": [
       {
         "source": "/",
-        "destination": "/index.html"
+        "destination": "/privacy-policy.html"
       },
       {
-        "source": "/fr",
-        "destination": "/fr/index"
-      },
-      {
-        "source": "/ar",
-        "destination": "/ar/index"
+        "source": "/privacy-policy",
+        "destination": "/privacy-policy.html"
       }
     ]
   },

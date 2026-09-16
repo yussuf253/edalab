@@ -10,6 +10,7 @@ import 'core/network/api_client.dart';
 import 'core/providers/providers.dart';
 import 'core/providers/app_version_provider.dart';
 import 'core/router/app_router.dart';
+import 'core/services/module_sync_service.dart';
 import 'core/services/notification_sync_service.dart';
 import 'core/services/push_notification_service.dart';
 import 'core/services/app_version_service.dart';
@@ -39,6 +40,9 @@ Future<void> main() async {
     authProvider: authProvider,
     languageProvider: languageProvider,
   );
+  // Keeps module activation live: refreshes on app resume + periodic poll,
+  // so admin toggles apply without an app restart.
+  ModuleSyncService.instance.start(moduleProvider);
 
   final router = createAppRouter(
     authProvider: authProvider,
@@ -186,6 +190,10 @@ Future<void> _bootstrapAppServices({
     moduleProvider.initialize(),
     cityAvailabilityProvider.checkAvailability(),
   ]);
+
+  // Bootstrapped after the module provider's first server sync so the
+  // foreground/resume observers never race with startup.
+  unawaited(ModuleSyncService.instance.refresh());
 
   // Redirect banned users to the banned screen
   if (authProvider.isBanned) {
