@@ -9,6 +9,7 @@ import 'core/analytics/analytics_service.dart';
 import 'core/network/api_client.dart';
 import 'core/providers/providers.dart';
 import 'core/providers/app_version_provider.dart';
+import 'core/providers/connectivity_provider.dart';
 import 'core/router/app_router.dart';
 import 'core/services/module_sync_service.dart';
 import 'core/services/notification_sync_service.dart';
@@ -30,6 +31,7 @@ Future<void> main() async {
   final moduleProvider = ModuleProvider();
   final appVersionProvider = AppVersionProvider();
   final cityAvailabilityProvider = CityAvailabilityProvider();
+  final connectivityProvider = ConnectivityProvider();
   await languageProvider.initialize();
   await moduleProvider.hydrateFromStorage();
   await AnalyticsService.instance.initialize(
@@ -81,6 +83,7 @@ Future<void> main() async {
         ChangeNotifierProvider.value(value: moduleProvider),
         ChangeNotifierProvider.value(value: appVersionProvider),
         ChangeNotifierProvider.value(value: cityAvailabilityProvider),
+        ChangeNotifierProvider.value(value: connectivityProvider),
         ChangeNotifierProvider(create: (_) => PaymentProvider()),
         ChangeNotifierProxyProvider2<
           AuthProvider,
@@ -117,6 +120,7 @@ Future<void> main() async {
         moduleProvider: moduleProvider,
         appVersionProvider: appVersionProvider,
         cityAvailabilityProvider: cityAvailabilityProvider,
+        connectivityProvider: connectivityProvider,
       ),
     );
     RealtimeService().connect();
@@ -179,6 +183,7 @@ Future<void> _bootstrapAppServices({
   required ModuleProvider moduleProvider,
   required AppVersionProvider appVersionProvider,
   required CityAvailabilityProvider cityAvailabilityProvider,
+  required ConnectivityProvider connectivityProvider,
 }) async {
   ApiClient.warmUpBackendInBackground();
 
@@ -189,6 +194,7 @@ Future<void> _bootstrapAppServices({
     notificationProvider.initialize(),
     moduleProvider.initialize(),
     cityAvailabilityProvider.checkAvailability(),
+    connectivityProvider.initialize(),
   ]);
 
   // Bootstrapped after the module provider's first server sync so the

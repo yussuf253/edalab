@@ -70,18 +70,17 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
       if (!mounted) return;
       setState(() {
         _store = ShoppingStoreModel.fromApi(data);
-        _products = products.isEmpty ? ProductModel.sampleProducts : products;
+        _products = products;
         _isLoading = false;
       });
       _trackStoreViewed(source: 'remote');
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _store = ShoppingStoreModel.sampleStores.first;
-        _products = ProductModel.sampleProducts;
+        _products = const [];
         _isLoading = false;
       });
-      _trackStoreViewed(source: 'fallback_sample');
+      _trackStoreViewed(source: 'error');
     }
   }
 

@@ -61,23 +61,10 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
       return;
     }
 
-    final localMatch = _findDishInRestaurants(
-      RestaurantModel.sampleRestaurants,
-    );
-    if (localMatch != null) {
-      if (!mounted) return;
-      setState(() {
-        _item = localMatch.item;
-        _restaurantName = localMatch.restaurantName;
-        _categoryName = localMatch.categoryName;
-        _isLoading = false;
-      });
-      _trackDishViewed(source: 'local_sample_catalog');
-      return;
-    }
-
     try {
-      final response = await ApiClient.get(ZoneScope.appendZone('/catalog/restaurants'));
+      final response = await ApiClient.get(
+        ZoneScope.appendZone('/catalog/restaurants'),
+      );
       final restaurants = (response as List)
           .map(
             (item) =>

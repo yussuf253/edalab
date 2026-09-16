@@ -23,7 +23,7 @@ class RideBookingScreen extends StatefulWidget {
 
 class _RideBookingScreenState extends State<RideBookingScreen> {
   int _selectedVehicle = 0;
-  List<RideCategory> _categories = RideModel.sampleCategories;
+  List<RideCategory> _categories = const [];
   bool _isLoading = true;
   RideRouteDetails? _routeDetails;
   bool _isLoadingRoute = true;
@@ -45,7 +45,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
           )
           .toList();
       if (!mounted) return;
-      final nextCategories = items.isEmpty ? RideModel.sampleCategories : items;
+      final nextCategories = items;
       setState(() {
         _categories = nextCategories;
         final maxIndex = nextCategories.isEmpty ? 0 : nextCategories.length - 1;

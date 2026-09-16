@@ -30,7 +30,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
     super.initState();
     // Placeholder only — never rendered because the body shows the shimmer
     // while _isLoading is true. Replaced as soon as the API responds.
-    _medicine = PharmacyModel.sampleItems.first;
+    _medicine = PharmacyModel.fromApi(const {});
     _loadMedicine();
   }
 

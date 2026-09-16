@@ -46,7 +46,7 @@ class _HotelScreenState extends State<HotelScreen> {
           .toList();
       if (!mounted) return;
       setState(() {
-        _hotels = items.isEmpty ? HotelModel.sampleHotels : items;
+        _hotels = items;
         _isLoading = false;
       });
       AnalyticsService.instance.track(
@@ -67,7 +67,7 @@ class _HotelScreenState extends State<HotelScreen> {
           'module': 'hotel',
           'entity_type': 'hotel',
           'result_count': _hotels.length,
-          'source': 'fallback_sample',
+          'source': 'error',
         },
       );
     }

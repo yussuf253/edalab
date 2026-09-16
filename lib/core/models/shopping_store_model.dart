@@ -76,47 +76,4 @@ class ShoppingStoreModel {
     );
   }
 
-  static List<ShoppingStoreModel> sampleStores = [
-    ShoppingStoreModel(
-      id: 'nike',
-      name: 'Nike',
-      tagline: 'Performance shoes, apparel, and everyday essentials.',
-      imageUrl: '',
-      rating: 4.8,
-      reviewCount: 2340,
-      productCount: 24,
-      categories: const ['Shoes', 'Clothing', 'Accessories'],
-      badge: 'Popular',
-      minPrice: 39.99,
-      maxPrice: 189.99,
-      highlights: const ['Fast shipping', 'New drops weekly'],
-    ),
-    ShoppingStoreModel(
-      id: 'apple',
-      name: 'Apple',
-      tagline: 'Premium devices, audio, and accessories.',
-      imageUrl: '',
-      rating: 4.9,
-      reviewCount: 5600,
-      productCount: 16,
-      categories: const ['Electronics', 'Accessories'],
-      badge: 'Top Rated',
-      minPrice: 49.99,
-      maxPrice: 1299.99,
-      highlights: const ['Official products', '1-year warranty'],
-    ),
-    ShoppingStoreModel(
-      id: 'levi-s',
-      name: "Levi's",
-      tagline: 'Timeless denim and casual essentials.',
-      imageUrl: '',
-      rating: 4.6,
-      reviewCount: 1800,
-      productCount: 18,
-      categories: const ['Clothing'],
-      minPrice: 29.99,
-      maxPrice: 119.99,
-      highlights: const ['Classic fits', 'Seasonal discounts'],
-    ),
-  ];
 }

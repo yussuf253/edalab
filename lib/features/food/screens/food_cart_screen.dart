@@ -61,20 +61,10 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
     final subtotal = cartProvider.getModuleSubtotal('food');
     final restaurantName = items.isNotEmpty && items.first.brand != null
         ? items.first.brand!
-        : 'Burger Palace';
-    final restaurant = RestaurantModel.sampleRestaurants.firstWhere(
-      (entry) => entry.name == restaurantName,
-      orElse: () => RestaurantModel.sampleRestaurants.first,
-    );
-    final recommendedItems = restaurant.menu
-        .expand((category) => category.items)
-        .where(
-          (menuItem) => !items.any((cartItem) => cartItem.id == menuItem.id),
-        )
-        .take(3)
-        .toList();
+        : l10n.t('food.title');
+    final recommendedItems = <MenuItem>[];
 
-    // Sample static fees
+    // Delivery/service fees come from the checkout configuration
     final deliveryFee = items.isEmpty ? 0.0 : 2.99;
     final serviceFee = items.isEmpty ? 0.0 : 1.50;
     final tipAmount = items.isEmpty ? 0.0 : _tip;

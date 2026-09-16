@@ -76,12 +76,8 @@ class _DoctorAppointmentDetailScreenState
             Map<String, dynamic>.from(response as Map),
           );
         } catch (_) {
-          for (final item in DoctorModel.sampleDoctors) {
-            if (item.id == doctorId) {
-              doctor = item;
-              break;
-            }
-          }
+          // Doctor lookup failed — fall back to appointment-only details.
+          doctor = null;
         }
       }
 

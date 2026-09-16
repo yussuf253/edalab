@@ -25,8 +25,8 @@ class GroceryScreen extends StatefulWidget {
 
 class _GroceryScreenState extends State<GroceryScreen> {
   final TextEditingController _searchController = TextEditingController();
-  List<GroceryModel> _items = GroceryModel.sampleItems;
-  List<GroceryCategory> _categories = GroceryModel.sampleCategories;
+  List<GroceryModel> _items = const [];
+  List<GroceryCategory> _categories = const [];
   bool _isLoading = true;
   String _searchQuery = '';
   Timer? _searchDebounce;
@@ -62,14 +62,14 @@ class _GroceryScreenState extends State<GroceryScreen> {
                 ))
             .toList();
         if (mounted) {
-          setState(() => _categories = cats.isEmpty ? GroceryModel.sampleCategories : cats);
+          setState(() => _categories = cats);
         }
       } catch (_) {
-        // Keep sample categories on failure
+        // Keep currently loaded categories on failure
       }
       if (!mounted) return;
       setState(() {
-        _items = items.isEmpty ? GroceryModel.sampleItems : items;
+        _items = items;
         _isLoading = false;
       });
       AnalyticsService.instance.track(
@@ -90,7 +90,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
           'module': 'grocery',
           'entity_type': 'product',
           'result_count': _items.length,
-          'source': 'fallback_sample',
+          'source': 'error',
         },
       );
     }
@@ -155,7 +155,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
                 name: item.categoryName ?? item.categoryId,
               );
             }
-            return categoryMap.isEmpty ? GroceryModel.sampleCategories : categoryMap.values.toList();
+            return categoryMap.values.toList();
           }();
 
     return PopScope(

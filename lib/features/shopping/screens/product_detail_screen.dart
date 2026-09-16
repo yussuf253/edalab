@@ -33,10 +33,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _product = ProductModel.sampleProducts.firstWhere(
-      (p) => p.id == widget.productId,
-      orElse: () => ProductModel.sampleProducts.first,
-    );
+    // Placeholder only — never rendered because the body shows the shimmer
+    // while _isLoading is true. Replaced as soon as the API responds.
+    _product = ProductModel.fromApi(const {});
     _loadProduct();
   }
 
@@ -56,7 +55,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _trackProductViewed(source: 'fallback_sample');
+      _trackProductViewed(source: 'error');
     }
   }
 

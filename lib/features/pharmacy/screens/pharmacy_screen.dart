@@ -36,7 +36,7 @@ class PharmacyScreen extends StatefulWidget {
 class _PharmacyScreenState extends State<PharmacyScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  List<PharmacyModel> _medicines = PharmacyModel.sampleItems;
+  List<PharmacyModel> _medicines = const [];
   List<_PharmacyDirectoryItem> _pharmacies = const [];
   bool _isLoadingMedicines = true;
   bool _isLoadingPharmacies = true;
@@ -88,7 +88,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
           .toList();
       if (!mounted) return;
       setState(() {
-        _medicines = items.isEmpty ? PharmacyModel.sampleItems : items;
+        _medicines = items;
         _isLoadingMedicines = false;
       });
       AnalyticsService.instance.track(
@@ -109,7 +109,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
           'module': 'pharmacy',
           'entity_type': 'medicine',
           'result_count': _medicines.length,
-          'source': 'fallback_sample',
+          'source': 'error',
         },
       );
     }

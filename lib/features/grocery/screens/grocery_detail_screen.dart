@@ -31,10 +31,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _item = GroceryModel.sampleItems.firstWhere(
-      (item) => item.id == widget.productId,
-      orElse: () => GroceryModel.sampleItems.first,
-    );
+    _item = GroceryModel.fromApi(const {});
     _loadItem();
   }
 

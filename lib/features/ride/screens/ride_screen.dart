@@ -39,7 +39,7 @@ class _RideScreenState extends State<RideScreen> {
 
   _RidePlace? _pickupPlace;
   _RidePlace? _destinationPlace;
-  List<RideCategory> _rideCategories = RideModel.sampleCategories;
+  List<RideCategory> _rideCategories = const [];
   bool _isLoading = true;
   bool _hasLocationPermission = false;
   bool _isResolvingPickup = true;
@@ -124,7 +124,7 @@ class _RideScreenState extends State<RideScreen> {
           .toList();
       if (!mounted) return;
       setState(() {
-        _rideCategories = items.isEmpty ? RideModel.sampleCategories : items;
+        _rideCategories = items;
         _isLoading = false;
       });
       AnalyticsService.instance.track(
@@ -145,7 +145,7 @@ class _RideScreenState extends State<RideScreen> {
           'module': 'ride',
           'entity_type': 'ride_category',
           'result_count': _rideCategories.length,
-          'source': 'fallback_sample',
+          'source': 'error',
         },
       );
     }

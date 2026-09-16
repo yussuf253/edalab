@@ -82,7 +82,7 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
   ];
 
   late final TextEditingController _searchController;
-  List<DoctorModel> _providers = DoctorModel.sampleDoctors;
+  List<DoctorModel> _providers = const [];
   bool _isLoading = true;
   String _selectedCategoryId = 'all';
 
@@ -119,17 +119,13 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
 
       if (!mounted) return;
       setState(() {
-        _providers = items.isEmpty
-            ? DoctorModel.sampleDoctors.where(_isHomeCareProvider).toList()
-            : items;
+        _providers = items;
         _isLoading = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _providers = DoctorModel.sampleDoctors
-            .where(_isHomeCareProvider)
-            .toList();
+        _providers = const [];
         _isLoading = false;
       });
     }

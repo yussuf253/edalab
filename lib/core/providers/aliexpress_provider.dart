@@ -132,8 +132,7 @@ class AliExpressProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('[AliExpress] Trending products failed: $e');
       _trendingError = 'Unable to load trending products.';
-      // Fallback to sample data
-      _trendingProducts = ProductModel.sampleProducts;
+      _trendingProducts = const [];
     } finally {
       _isLoadingTrending = false;
       notifyListeners();

@@ -82,18 +82,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
       });
     } catch (_) {
       if (!mounted) return;
-      setState(() {
-        _hotel = HotelModel.sampleHotels.firstWhere(
-          (hotel) => hotel.id == widget.hotelId,
-          orElse: () => HotelModel.sampleHotels.first,
-        );
-        _selectedRoomId = _hotel.roomOptions
-            .where((room) => room.available)
-            .map((room) => room.id)
-            .cast<String?>()
-            .firstWhere((roomId) => roomId != null, orElse: () => null);
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 

@@ -54,7 +54,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
 
       if (!mounted) return;
       setState(() {
-        _stores = stores.isEmpty ? ShoppingStoreModel.sampleStores : stores;
+        _stores = stores;
         if (_selectedCategory != 'all' &&
             !_stores.any(
               (store) => store.categories.contains(_selectedCategory),
@@ -75,7 +75,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _stores = ShoppingStoreModel.sampleStores;
+        _stores = const [];
         _isLoading = false;
       });
       AnalyticsService.instance.track(
@@ -83,8 +83,8 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
         properties: {
           'module': 'shopping',
           'entity_type': 'store',
-          'result_count': _stores.length,
-          'source': 'fallback_sample',
+          'result_count': 0,
+          'source': 'error',
         },
       );
     }

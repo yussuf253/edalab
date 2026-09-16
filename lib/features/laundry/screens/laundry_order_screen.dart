@@ -34,7 +34,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
   int _selectedDate = 0;
   String? _selectedTimeSlot;
   Map<String, int> _itemCounts = <String, int>{};
-  List<LaundryService> _services = LaundryModel.sampleServices;
+  List<LaundryService> _services = const [];
   bool _isLoading = true;
 
   String? get _requestedServiceId {
@@ -240,7 +240,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
           .toList();
       if (!mounted) return;
       setState(() {
-        _services = items.isEmpty ? LaundryModel.sampleServices : items;
+        _services = items;
         _applyInitialServiceSelection(_services);
         _syncServiceState(resetDate: true);
         _isLoading = false;

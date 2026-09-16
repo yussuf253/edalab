@@ -22,9 +22,7 @@ class MyAppointmentsScreen extends StatelessWidget {
     }
 
     final appointments = await ApiClient.get('/appointments/${auth.user!.id}');
-    Map<String, DoctorModel> doctorsById = {
-      for (final doctor in DoctorModel.sampleDoctors) doctor.id: doctor,
-    };
+    Map<String, DoctorModel> doctorsById = <String, DoctorModel>{};
 
     try {
       final doctorsResponse = await ApiClient.get(ZoneScope.appendZone('/catalog/doctors'));

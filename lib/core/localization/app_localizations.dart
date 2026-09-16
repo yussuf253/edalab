@@ -2019,6 +2019,10 @@ class AppLocalizations {
           'Location access was permanently denied. Please enable it from your device settings.',
       'city_gate.open_settings_button': 'Open Settings',
       'city_gate.error_message': "We couldn't check your location right now.",
+      'no_internet.title': 'No Internet Connection',
+      'no_internet.message':
+          'You appear to be offline. Please check your connection and try again.',
+      'no_internet.retry_button': 'Try again',
       'ride.no_recent_places':
           "You haven't taken any rides yet — your recent drop-offs will show up here.",
       'ride.mode_ride': 'Ride',
@@ -3310,6 +3314,10 @@ class AppLocalizations {
       'city_gate.open_settings_button': 'Ouvrir les réglages',
       'city_gate.error_message':
           'Impossible de vérifier votre position pour le moment.',
+      'no_internet.title': 'Pas de connexion Internet',
+      'no_internet.message':
+          'Vous semblez être hors ligne. Vérifiez votre connexion et réessayez.',
+      'no_internet.retry_button': 'Réessayer',
       'ride.no_recent_places':
           "Vous n'avez pas encore pris de course — vos destinations récentes apparaîtront ici.",
       'ride.mode_ride': 'Course',
@@ -4587,6 +4595,9 @@ class AppLocalizations {
           'تم رفض الوصول إلى الموقع بشكل دائم. يرجى تفعيله من إعدادات جهازك.',
       'city_gate.open_settings_button': 'فتح الإعدادات',
       'city_gate.error_message': 'تعذر التحقق من موقعك في الوقت الحالي.',
+      'no_internet.title': 'لا يوجد اتصال بالإنترنت',
+      'no_internet.message': 'يبدو أنك غير متصل. يرجى التحقق من اتصالك والمحاولة مرة أخرى.',
+      'no_internet.retry_button': 'إعادة المحاولة',
       'ride.no_recent_places':
           'لم تقم بأي رحلة بعد — ستظهر وجهاتك الأخيرة هنا.',
       'ride.mode_ride': 'رحلة',

@@ -64,92 +64,6 @@ class CarRentalCar {
     );
   }
 
-  /// Sample fallback cars when API is not yet seeded
-  static List<CarRentalCar> get sampleCars => [
-        const CarRentalCar(
-          id: 'car-001',
-          name: 'Toyota Yaris',
-          type: 'Economy',
-          description:
-              '2022 Toyota Yaris – fuel-efficient city car, perfect for daily errands or short trips around Djibouti City.',
-          pricePerDay: 6500,
-          unit: 'per day',
-          badge: 'Best Value',
-          imageUrl: null,
-          imageUrls: [],
-          features: ['AC', 'Bluetooth', 'USB Charging', 'Backup Camera'],
-          seats: 5,
-          transmission: 'Automatic',
-          fuelType: 'Petrol',
-          year: 2022,
-          mileage: 'Unlimited',
-          available: true,
-        ),
-        const CarRentalCar(
-          id: 'car-002',
-          name: 'Hyundai Tucson',
-          type: 'SUV',
-          description:
-              '2023 Hyundai Tucson – spacious SUV with premium features. Great for families or longer journeys.',
-          pricePerDay: 12000,
-          unit: 'per day',
-          badge: 'Popular',
-          imageUrl: null,
-          imageUrls: [],
-          features: ['AC', 'Sunroof', 'Bluetooth', 'GPS', 'Leather Seats'],
-          seats: 5,
-          transmission: 'Automatic',
-          fuelType: 'Diesel',
-          year: 2023,
-          mileage: 'Unlimited',
-          available: true,
-        ),
-        const CarRentalCar(
-          id: 'car-003',
-          name: 'Toyota Hiace',
-          type: 'Van',
-          description:
-              '2021 Toyota Hiace – 12-seat van for group travel, airport transfers, or cargo needs.',
-          pricePerDay: 18000,
-          unit: 'per day',
-          badge: null,
-          imageUrl: null,
-          imageUrls: [],
-          features: ['AC', 'Large Cargo Space', 'Multiple Seats'],
-          seats: 12,
-          transmission: 'Manual',
-          fuelType: 'Diesel',
-          year: 2021,
-          mileage: 'Unlimited',
-          available: true,
-        ),
-        const CarRentalCar(
-          id: 'car-004',
-          name: 'Toyota Land Cruiser',
-          type: 'SUV',
-          description:
-              '2022 Toyota Land Cruiser – premium 4x4 for off-road adventures or executive transfers.',
-          pricePerDay: 25000,
-          unit: 'per day',
-          badge: 'Premium',
-          imageUrl: null,
-          imageUrls: [],
-          features: [
-            'AC',
-            '4WD',
-            'GPS',
-            'Leather Seats',
-            'Sunroof',
-            'Bluetooth'
-          ],
-          seats: 7,
-          transmission: 'Automatic',
-          fuelType: 'Diesel',
-          year: 2022,
-          mileage: 'Unlimited',
-          available: true,
-        ),
-      ];
 }
 
 class CarRentalBooking {
@@ -228,9 +142,9 @@ class CarRentalService {
           .map((item) =>
               CarRentalCar.fromApi(Map<String, dynamic>.from(item as Map)))
           .toList();
-      return cars.isEmpty ? CarRentalCar.sampleCars : cars;
+      return cars;
     } catch (_) {
-      return CarRentalCar.sampleCars;
+      return const [];
     }
   }
 

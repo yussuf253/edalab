@@ -28,7 +28,7 @@ class _FoodScreenState extends State<FoodScreen> {
   String _selectedSort = 'top_rated';
   String _selectedCategoryFilter = 'all';
   String _searchQuery = '';
-  List<RestaurantModel> _restaurants = RestaurantModel.sampleRestaurants;
+  List<RestaurantModel> _restaurants = const [];
   bool _isLoading = true;
   Timer? _searchDebounce;
   String _lastTrackedSearch = '';
@@ -67,9 +67,7 @@ class _FoodScreenState extends State<FoodScreen> {
           .toList();
       if (!mounted) return;
       setState(() {
-        _restaurants = items.isEmpty
-            ? RestaurantModel.sampleRestaurants
-            : items;
+        _restaurants = items;
         final categoryKeys = _restaurants
             .map((restaurant) => _categoryKey(restaurant.category))
             .toSet();
@@ -91,7 +89,7 @@ class _FoodScreenState extends State<FoodScreen> {
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _restaurants = RestaurantModel.sampleRestaurants;
+        _restaurants = const [];
         _isLoading = false;
       });
       AnalyticsService.instance.track(
@@ -99,8 +97,8 @@ class _FoodScreenState extends State<FoodScreen> {
         properties: {
           'module': 'food',
           'entity_type': 'restaurant',
-          'result_count': _restaurants.length,
-          'source': 'fallback_sample',
+          'result_count': 0,
+          'source': 'error',
         },
       );
     }

@@ -945,7 +945,7 @@ class _PopularRestaurants extends StatelessWidget {
                   )
                   .take(3)
                   .toList())
-            : RestaurantModel.sampleRestaurants.take(3).toList();
+            : const <RestaurantModel>[];
 
         return SizedBox(
           height: 230,
@@ -1095,7 +1095,7 @@ class _TopDoctors extends StatelessWidget {
                   )
                   .take(3)
                   .toList())
-            : DoctorModel.sampleDoctors.take(3).toList();
+            : const <DoctorModel>[];
 
         return SizedBox(
           height: 110,
@@ -1215,7 +1215,7 @@ class _TrendingProducts extends StatelessWidget {
                   )
                   .take(3)
                   .toList())
-            : ProductModel.sampleProducts.take(3).toList();
+            : const <ProductModel>[];
 
         return SizedBox(
           height: 260,

@@ -28,6 +28,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
   String _searchQuery = '';
   late RestaurantModel _restaurant;
   bool _isLoading = true;
+  bool _loadFailed = false;
   Timer? _searchDebounce;
   String _lastTrackedSearch = '';
   bool _hasTrackedRestaurantView = false;
@@ -35,10 +36,19 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _restaurant = RestaurantModel.sampleRestaurants.firstWhere(
-      (r) => r.id == widget.restaurantId,
-      orElse: () => RestaurantModel.sampleRestaurants.first,
-    );
+    _restaurant = RestaurantModel.fromApi(const {
+      'id': '',
+      'name': '',
+      'category': '',
+      'cuisine': '',
+      'rating': 0,
+      'reviewCount': 0,
+      'deliveryTime': '',
+      'deliveryFee': 'Free',
+      'distance': 0,
+      'tags': [],
+      'menu': [],
+    });
     _loadRestaurant();
   }
 
@@ -57,8 +67,11 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
       _trackRestaurantViewed(source: 'remote');
     } catch (_) {
       if (!mounted) return;
-      setState(() => _isLoading = false);
-      _trackRestaurantViewed(source: 'fallback_sample');
+      setState(() {
+        _isLoading = false;
+        _loadFailed = true;
+      });
+      _trackRestaurantViewed(source: 'error');
     }
   }
 
@@ -289,6 +302,36 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
               ),
               child: _isLoading
                   ? const _RestaurantDetailShimmer()
+                  : _loadFailed
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 48),
+                        child: Column(
+                          children: [
+                            Icon(
+                              Icons.cloud_off_rounded,
+                              size: 56,
+                              color: Colors.grey.shade400,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              l10n.t('food.no_restaurants'),
+                              style: AppTextStyles.h3,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            FilledButton.icon(
+                              onPressed: () {
+                                setState(() => _isLoading = true);
+                                _loadRestaurant();
+                              },
+                              icon: const Icon(Icons.refresh_rounded),
+                              label: Text(l10n.t('city_gate.retry_button')),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

@@ -283,16 +283,4 @@ class LaundryService {
 }
 
 class LaundryModel {
-  static List<LaundryService> sampleServices = [
-    LaundryService(
-      id: 'l1',
-      name: 'Wash & Fold',
-      profileName: 'Laundry King Djibouti',
-      description: 'Laundry service inspired by Djibouti market tariffs.',
-      price: 6000.0,
-      unit: 'per order',
-      iconUrl: 'wash',
-      bookingConfig: LaundryBookingConfig.fromApi(null, fallbackPrice: 6000),
-    ),
-  ];
 }

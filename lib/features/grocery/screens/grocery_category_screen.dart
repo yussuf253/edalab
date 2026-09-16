@@ -56,9 +56,7 @@ class GroceryCategoryScreen extends StatelessWidget {
                       ),
                     )
                     .toList())
-              : GroceryModel.sampleItems
-                    .where((item) => item.categoryId == categoryId)
-                    .toList();
+              : <GroceryModel>[];
 
           // Build categories list from server result when available
           final serverCategories = categoriesData != null
@@ -69,14 +67,14 @@ class GroceryCategoryScreen extends StatelessWidget {
                         iconUrl: (c as Map)['iconKey']?.toString(),
                       ))
                   .toList()
-              : GroceryModel.sampleCategories;
+              : <GroceryCategory>[];
 
           final title = items.isNotEmpty
               ? (items.first.categoryName ?? items.first.categoryId)
               : serverCategories
                     .firstWhere(
                       (category) => category.id == categoryId,
-                      orElse: () => GroceryModel.sampleCategories.first,
+                      orElse: () => GroceryCategory(id: '', name: ''),
                     )
                     .name;
 

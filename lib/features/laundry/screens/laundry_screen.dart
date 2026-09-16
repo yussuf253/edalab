@@ -18,7 +18,7 @@ class LaundryScreen extends StatefulWidget {
 }
 
 class _LaundryScreenState extends State<LaundryScreen> {
-  List<LaundryService> _services = LaundryModel.sampleServices;
+  List<LaundryService> _services = const [];
   bool _isLoading = true;
 
   IconData _getIcon(String _) {
@@ -52,7 +52,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
           .toList();
       if (!mounted) return;
       setState(() {
-        _services = items.isEmpty ? LaundryModel.sampleServices : items;
+        _services = items;
         _isLoading = false;
       });
     } catch (_) {

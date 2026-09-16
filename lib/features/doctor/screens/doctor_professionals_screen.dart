@@ -31,7 +31,7 @@ class DoctorProfessionalsScreen extends StatefulWidget {
 
 class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
   late final TextEditingController _searchController;
-  List<DoctorModel> _providers = DoctorModel.sampleDoctors;
+  List<DoctorModel> _providers = const [];
   bool _isLoading = true;
 
   @override
@@ -55,7 +55,7 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
           .toList();
       if (!mounted) return;
       setState(() {
-        _providers = items.isEmpty ? DoctorModel.sampleDoctors : items;
+        _providers = items;
         _isLoading = false;
       });
     } catch (_) {
