@@ -11,6 +11,7 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
+import '../../../core/utils/money_format.dart';
 
 class GroceryCartScreen extends StatefulWidget {
   const GroceryCartScreen({super.key});
@@ -193,23 +194,23 @@ class _GroceryCartScreenState extends State<GroceryCartScreen> {
                       children: [
                         _SumRow(
                           l10n.t('cart.subtotal'),
-                          'DJF ${subtotal.toStringAsFixed(2)}',
+                          'DJF ${money(subtotal)}',
                         ),
                         _SumRow(
                           l10n.t('cart.delivery'),
-                          'DJF ${deliveryFee.toStringAsFixed(2)}',
+                          'DJF ${money(deliveryFee)}',
                         ),
                         const Divider(height: 20),
                         _SumRow(
                           l10n.t('cart.total'),
-                          'DJF ${total.toStringAsFixed(2)}',
+                          'DJF ${money(total)}',
                           bold: true,
                         ),
                         const SizedBox(height: 16),
                         AppButton(
                           text: l10n.t(
                             'cart.checkout_amount',
-                            params: {'amount': total.toStringAsFixed(2)},
+                            params: {'amount': money(total)},
                           ),
                           color: AppColors.grocery,
                           onPressed: () async {
@@ -346,7 +347,7 @@ class _ItemRow extends StatelessWidget {
             ),
           ),
           Text(
-            'DJF ${price.toStringAsFixed(2)}',
+            'DJF ${money(price)}',
             style: AppTextStyles.labelLarge,
           ),
         ],

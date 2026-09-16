@@ -14,6 +14,7 @@ import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../widgets/house_help_booking_map.dart';
+import '../../../core/utils/money_format.dart';
 
 class HomeServiceBookingScreen extends StatefulWidget {
   final String providerId;
@@ -308,7 +309,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
     final total =
         basePrice * shiftMultiplier * sizeMultiplier * planMultiplier +
         suppliesFee;
-    return double.parse(total.toStringAsFixed(2));
+    return double.parse(money(total));
   }
 
   String _formatAmount(double amount) {
@@ -316,7 +317,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
     if ((amount - rounded).abs() < 0.01) {
       return rounded.toInt().toString();
     }
-    return amount.toStringAsFixed(2);
+    return money(amount);
   }
 
   String _localizedHouseHelpPlanLabel(String value, AppLocalizations l10n) {

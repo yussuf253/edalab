@@ -9,6 +9,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/message_launcher.dart';
+import '../../../core/utils/money_format.dart';
 
 class FoodOrderTrackingScreen extends StatefulWidget {
   final String orderId;
@@ -26,13 +27,29 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
   String? _error;
   Timer? _pollTimer;
 
+  /// Terminal statuses that stop background polling: there is nothing new to
+  /// fetch once an order is delivered, cancelled or refunded.
+  static const _terminalStatuses = {'COMPLETED', 'CANCELLED', 'REFUNDED'};
+
   @override
   void initState() {
     super.initState();
     _loadOrder();
-    _pollTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+    _startPolling();
+  }
+
+  void _startPolling() {
+    _pollTimer ??= Timer.periodic(const Duration(seconds: 10), (_) {
       _loadOrder(forceRefresh: true);
     });
+  }
+
+  void _syncPollingWithStatus() {
+    final status = _order?['status']?.toString().toUpperCase() ?? '';
+    if (_terminalStatuses.contains(status)) {
+      _pollTimer?.cancel();
+      _pollTimer = null;
+    }
   }
 
   Future<void> _loadOrder({bool forceRefresh = true}) async {
@@ -47,6 +64,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
         _isLoading = false;
         _error = null;
       });
+      _syncPollingWithStatus();
     } catch (error) {
       if (!mounted) return;
       setState(() {
@@ -60,6 +78,10 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
   void dispose() {
     _pollTimer?.cancel();
     super.dispose();
+  }
+
+  bool _isCancelledStatus(String currentStatus) {
+    return currentStatus == 'CANCELLED' || currentStatus == 'REFUNDED';
   }
 
   bool _statusReached(String currentStatus, List<String> statuses) {
@@ -148,14 +170,67 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
             ? Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Text(_error!, textAlign: TextAlign.center),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_error!, textAlign: TextAlign.center),
+                      const SizedBox(height: 16),
+                      FilledButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _isLoading = true;
+                            _error = null;
+                          });
+                          _loadOrder();
+                        },
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: Text(l10n.t('tracking.retry')),
+                      ),
+                    ],
+                  ),
                 ),
               )
             : SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
                 child: Column(
                   children: [
-                    Container(
+                    if (_isCancelledStatus(status))
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: AppColors.warning.withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.cancel_rounded,
+                              color: AppColors.warning,
+                              size: 48,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              l10n.t('tracking.status_cancelled'),
+                              style: AppTextStyles.h2.copyWith(
+                                color: AppColors.dark,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              displayOrderId,
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: AppColors.mediumGrey,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
@@ -196,6 +271,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
+                    if (!_isCancelledStatus(status))
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -347,13 +423,13 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                           ...items.map(
                             (item) => _OrderRow(
                               '${item['quantity']}x ${item['name']}',
-                              'DJF${((item['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                              'DJF${money((item['total'] as num?)?.toDouble() ?? 0)}',
                             ),
                           ),
                           const Divider(height: 20),
                           _OrderRow(
                             l10n.t('food_tracking.total'),
-                            'DJF${((order?['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                            'DJF${money((order?['total'] as num?)?.toDouble() ?? 0)}',
                             bold: true,
                           ),
                         ],

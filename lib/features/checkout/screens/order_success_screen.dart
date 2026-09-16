@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/utils/money_format.dart';
 
 class OrderSuccessScreen extends StatefulWidget {
   final Map<String, dynamic>? orderData;
@@ -150,7 +151,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
                       ),
                       _InfoRow(
                         l10n.t('order_success.amount'),
-                        'DJF${amount.toStringAsFixed(2)}',
+                        'DJF${money(amount)}',
                       ),
                       _InfoRow(l10n.t('order_success.payment'), payment),
                       _InfoRow(l10n.t('order_success.delivery'), delivery),

@@ -12,6 +12,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class ShoppingOrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -254,12 +255,11 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                                           (item['quantity'] as num?)?.toInt() ??
                                           1,
                                       price:
-                                          ((item['total'] as num?)
+                                          money((item['total'] as num?)
                                                       ?.toDouble() ??
                                                   (item['price'] as num?)
                                                       ?.toDouble() ??
-                                                  0)
-                                              .toStringAsFixed(2),
+                                                  0),
                                       variant: [
                                         if ((item['color']?.toString() ?? '')
                                             .isNotEmpty)
@@ -468,7 +468,7 @@ class _ShoppingHero extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  'DJF${total.toStringAsFixed(2)}',
+                  'DJF${money(total)}',
                   style: AppTextStyles.h4.copyWith(color: AppColors.white),
                 ),
               ],

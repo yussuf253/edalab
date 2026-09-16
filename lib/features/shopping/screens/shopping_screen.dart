@@ -16,6 +16,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class ShoppingScreen extends StatefulWidget {
   const ShoppingScreen({super.key});
@@ -1089,7 +1090,7 @@ class _AliExpressProductCard extends StatelessWidget {
                           const SizedBox(width: 8),
                         ],
                         Text(
-                          'DJF${product.price.toStringAsFixed(2)}',
+                          'DJF${money(product.price)}',
                           style: AppTextStyles.priceSmall,
                         ),
                         const Spacer(),

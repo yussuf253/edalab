@@ -36,12 +36,15 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
   @override
   void initState() {
     super.initState();
-    _loadOrder();
+    _loadOrder(forceRefresh: true);
   }
 
-  Future<void> _loadOrder() async {
+  Future<void> _loadOrder({bool forceRefresh = false}) async {
     try {
-      final response = await ApiClient.get('/orders/detail/${widget.orderId}');
+      final response = await ApiClient.get(
+        '/orders/detail/${widget.orderId}',
+        forceRefresh: forceRefresh,
+      );
       if (!mounted) return;
       setState(() {
         _order = Map<String, dynamic>.from(response as Map);
@@ -51,10 +54,14 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _error = error.toString();
+        _error = ApiClient.userFacingError(error);
         _isLoading = false;
       });
     }
+  }
+
+  bool _isTerminalStatus(String status) {
+    return status == 'COMPLETED' || status == 'CANCELLED' || status == 'REFUNDED';
   }
 
   String _actionLabel(String status, AppLocalizations l10n) {
@@ -63,6 +70,9 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
         return l10n.swipeToCompleteDelivery;
       case 'COMPLETED':
         return l10n.deliveryCompleted;
+      case 'CANCELLED':
+      case 'REFUNDED':
+        return l10n.completedLabel;
       default:
         return l10n.swipeToStartDelivery;
     }
@@ -546,13 +556,22 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 28),
-                                SwipeableButton(
-                                  label: _isUpdating
-                                      ? l10n.updating
-                                      : _actionLabel(status, l10n),
-                                  baseColor: AppColors.ride,
-                                  onSwipe: _advanceStatus,
-                                ),
+                                if (_isUpdating)
+                                  const Center(
+                                    child: SizedBox(
+                                      width: 28,
+                                      height: 28,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                      ),
+                                    ),
+                                  )
+                                else if (!_isTerminalStatus(status))
+                                  SwipeableButton(
+                                    label: _actionLabel(status, l10n),
+                                    baseColor: AppColors.ride,
+                                    onSwipe: _advanceStatus,
+                                  ),
                               ],
                             ),
                           ),

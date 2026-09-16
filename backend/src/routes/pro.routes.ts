@@ -325,6 +325,12 @@ function serializeProProfile(profile: {
   };
 }
 
+const terminalOrderStatuses: OrderStatus[] = [
+  OrderStatus.COMPLETED,
+  OrderStatus.CANCELLED,
+  OrderStatus.REFUNDED,
+];
+
 const liveOrderStatuses: OrderStatus[] = [
   OrderStatus.PENDING,
   OrderStatus.CONFIRMED,
@@ -2858,8 +2864,19 @@ router.post(
       return res.status(409).json({ error: 'Delivery request already claimed.' });
     }
 
-    const updatedOrder = await prisma.order.update({
-      where: { id: order.id },
+    if (terminalOrderStatuses.includes(order.status)) {
+      return res
+        .status(409)
+        .json({ error: 'Delivery request is no longer available.' });
+    }
+
+    // Claim atomically: the where clause re-checks ownership so two couriers
+    // racing on the same request cannot both succeed.
+    const claimResult = await prisma.order.updateMany({
+      where: {
+        id: order.id,
+        OR: [{ deliveryUserId: null }, { deliveryUserId: userId }],
+      },
       data: {
         deliveryUserId: userId,
         status:
@@ -2869,8 +2886,20 @@ router.post(
             ? OrderStatus.DISPATCHED
             : order.status,
       },
+    });
+
+    if (claimResult.count === 0) {
+      return res.status(409).json({ error: 'Delivery request already claimed.' });
+    }
+
+    const updatedOrder = await prisma.order.findUnique({
+      where: { id: order.id },
       include: { items: true },
     });
+
+    if (!updatedOrder) {
+      return res.status(404).json({ error: 'Delivery request not found.' });
+    }
 
     await notifyOrderLifecycle({
       userId: updatedOrder.userId,
@@ -2981,6 +3010,25 @@ router.post(
 
     if (!order || order.deliveryUserId !== userId) {
       return res.status(404).json({ error: 'Assigned delivery request not found.' });
+    }
+
+    if (order.status === body.status) {
+      return res.json({
+        id: order.id,
+        status: order.status,
+        deliveryUserId: order.deliveryUserId,
+      });
+    }
+
+    // Couriers may only advance their delivery forward one step at a time.
+    const allowedDeliveryTransitions: Partial<Record<OrderStatus, OrderStatus[]>> = {
+      [OrderStatus.DISPATCHED]: [OrderStatus.IN_PROGRESS],
+      [OrderStatus.IN_PROGRESS]: [OrderStatus.COMPLETED],
+    };
+    if (!(allowedDeliveryTransitions[order.status] ?? []).includes(body.status)) {
+      return res.status(409).json({
+        error: `Invalid status transition from ${order.status} to ${body.status} for this delivery.`,
+      });
     }
 
     const updatedOrder = await prisma.order.update({
@@ -3842,6 +3890,7 @@ router.get(
         moduleType: {
           in: [ModuleType.SHOPPING, ModuleType.FOOD, ModuleType.PHARMACY],
         },
+        status: { in: liveOrderStatuses },
         OR: [{ deliveryUserId: null }, { deliveryUserId: userId }],
       },
       include: {

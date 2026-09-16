@@ -16,6 +16,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class ShoppingStoreDetailScreen extends StatefulWidget {
   final String storeId;
@@ -592,7 +593,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          'DJF${product.price.toStringAsFixed(2)}',
+                                          'DJF${money(product.price)}',
                                           style: AppTextStyles.priceSmall,
                                         ),
                                       ),
@@ -695,7 +696,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'DJF${moduleTotal.toStringAsFixed(2)}',
+                      'DJF${money(moduleTotal)}',
                       style: AppTextStyles.button,
                     ),
                   ],

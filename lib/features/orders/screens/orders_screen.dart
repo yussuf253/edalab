@@ -12,6 +12,7 @@ import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/money_format.dart';
 
 String _canonicalOrderModuleType(String? moduleType) {
   final normalized = (moduleType ?? '').toUpperCase();
@@ -882,7 +883,7 @@ class _OrderList extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 1),
                                       Text(
-                                        'DJF${amount.toStringAsFixed(2)}',
+                                        'DJF${money(amount)}',
                                         style: AppTextStyles.priceSmall
                                             .copyWith(color: _getColor(module)),
                                       ),

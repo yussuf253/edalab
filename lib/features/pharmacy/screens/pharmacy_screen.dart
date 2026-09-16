@@ -124,7 +124,9 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
     ];
     final query = queryParts.join('&');
     try {
-      final response = await ApiClient.get(ZoneScope.appendZone('/catalog/pharmacies?$query'));
+      final response = await ApiClient.get(
+        ZoneScope.appendZone('/catalog/pharmacies?$query'),
+      );
       final pharmacies = (response as List)
           .map(
             (entry) => _PharmacyDirectoryItem.fromApi(
@@ -629,7 +631,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 12),
-                                GestureDetector(
+                                /*GestureDetector(
                                   onTap: _openPrescriptionSheet,
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
@@ -647,7 +649,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                                       ),
                                     ),
                                   ),
-                                ),
+                                ),*/
                               ],
                             ),
                           ),

@@ -8,6 +8,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class CartHubScreen extends StatefulWidget {
   const CartHubScreen({super.key});
@@ -301,7 +302,7 @@ class _CartModuleTile extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'DJF ${section.subtotal.toStringAsFixed(2)}',
+                  'DJF ${money(section.subtotal)}',
                   style: AppTextStyles.priceSmall.copyWith(
                     color: section.accent,
                   ),

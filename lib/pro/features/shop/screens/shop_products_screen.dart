@@ -10,6 +10,7 @@ import '../../../core/router/pro_route_paths.dart';
 import '../widgets/shop_module_bottom_nav.dart';
 import 'shop_product_create_screen.dart';
 import 'shop_store_setup_screen.dart';
+import '../../../../core/utils/money_format.dart';
 
 class ShopProductsScreen extends StatefulWidget {
   final String userId;
@@ -197,7 +198,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
   String _formatPrice(dynamic value) {
     final parsed = double.tryParse(value?.toString() ?? '');
     if (parsed == null) return '';
-    return '\$${parsed.toStringAsFixed(2)}';
+    return '\$${money(parsed)}';
   }
 
   void _changeModule(String module) {

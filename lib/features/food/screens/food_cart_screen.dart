@@ -12,6 +12,7 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
+import '../../../core/utils/money_format.dart';
 
 class FoodCartScreen extends StatefulWidget {
   const FoodCartScreen({super.key});
@@ -219,8 +220,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                         ? l10n.t(
                                             'food_cart.free_delivery_more',
                                             params: {
-                                              'amount': freeDeliveryGap
-                                                  .toStringAsFixed(2),
+                                              'amount': money(freeDeliveryGap),
                                             },
                                           )
                                         : l10n.t(
@@ -472,31 +472,31 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                       children: [
                         _SummLine(
                           l10n.t('cart.subtotal'),
-                          'DJF ${subtotal.toStringAsFixed(2)}',
+                          'DJF ${money(subtotal)}',
                         ),
                         _SummLine(
                           l10n.t('cart.delivery'),
-                          'DJF ${deliveryFee.toStringAsFixed(2)}',
+                          'DJF ${money(deliveryFee)}',
                         ),
                         _SummLine(
                           l10n.t('cart.tip'),
-                          'DJF ${tipAmount.toStringAsFixed(2)}',
+                          'DJF ${money(tipAmount)}',
                         ),
                         _SummLine(
                           l10n.t('cart.service_fee'),
-                          'DJF ${serviceFee.toStringAsFixed(2)}',
+                          'DJF ${money(serviceFee)}',
                         ),
                         const Divider(height: 24),
                         _SummLine(
                           l10n.t('cart.total'),
-                          'DJF ${total.toStringAsFixed(2)}',
+                          'DJF ${money(total)}',
                           bold: true,
                         ),
                         const SizedBox(height: 16),
                         AppButton(
                           text: l10n.t(
                             'cart.continue_checkout',
-                            params: {'amount': total.toStringAsFixed(2)},
+                            params: {'amount': money(total)},
                           ),
                           color: AppColors.food,
                           onPressed: () async {
@@ -619,7 +619,7 @@ class _CartRow extends StatelessWidget {
                     ),
                   ),
                 Text(
-                  'DJF ${price.toStringAsFixed(2)}',
+                  'DJF ${money(price)}',
                   style: AppTextStyles.priceSmall.copyWith(fontSize: 13),
                 ),
               ],
@@ -712,7 +712,7 @@ class _RecommendedFoodCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                'DJF ${item.price.toStringAsFixed(2)}',
+                'DJF ${money(item.price)}',
                 style: AppTextStyles.priceSmall,
               ),
               const SizedBox(height: 8),

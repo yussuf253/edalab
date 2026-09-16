@@ -15,6 +15,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class GroceryScreen extends StatefulWidget {
   const GroceryScreen({super.key});
@@ -455,7 +456,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Text(
-                                                'DJF${item.price.toStringAsFixed(2)}',
+                                                'DJF${money(item.price)}',
                                                 style: AppTextStyles.priceSmall
                                                     .copyWith(
                                                       color: AppColors.grocery,
@@ -560,7 +561,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'DJF${moduleTotal.toStringAsFixed(2)}',
+                        'DJF${money(moduleTotal)}',
                         style: AppTextStyles.button,
                       ),
                     ],

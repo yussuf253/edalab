@@ -8,6 +8,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class WishlistScreen extends StatefulWidget {
   const WishlistScreen({super.key});
@@ -151,7 +152,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                               children: [
                                 Text(
                                   item['price'] != null
-                                      ? 'DJF${(item['price'] as num).toStringAsFixed(2)}'
+                                      ? 'DJF${money(item['price'] as num)}'
                                       : l10n.t('wishlist.saved'),
                                   style: AppTextStyles.priceSmall,
                                 ),

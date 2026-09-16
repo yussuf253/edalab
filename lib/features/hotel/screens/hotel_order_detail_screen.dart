@@ -7,6 +7,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class HotelOrderDetailScreen extends StatefulWidget {
   final String bookingId;
@@ -265,19 +266,19 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
                         ),
                         _HotelRowData(
                           l10n.t('hotel_tracking.subtotal'),
-                          'DJF${((data['subtotal'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                          'DJF${((data['subtotal'] as num?)?.toDouble() ?? money(0))}',
                         ),
                         _HotelRowData(
                           l10n.t('hotel_tracking.taxes'),
-                          'DJF${((data['tax'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                          'DJF${((data['tax'] as num?)?.toDouble() ?? money(0))}',
                         ),
                         _HotelRowData(
                           l10n.t('hotel_tracking.fees'),
-                          'DJF${((data['deliveryFee'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                          'DJF${((data['deliveryFee'] as num?)?.toDouble() ?? money(0))}',
                         ),
                         _HotelRowData(
                           l10n.t('hotel_tracking.total'),
-                          'DJF${((data['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                          'DJF${((data['total'] as num?)?.toDouble() ?? money(0))}',
                         ),
                       ],
                     ),
@@ -349,7 +350,7 @@ class _HotelHero extends StatelessWidget {
           Text(
             AppLocalizations.of(context).t(
               'hotel_tracking.total_stay',
-              params: {'amount': total.toStringAsFixed(2)},
+              params: {'amount': money(total)},
             ),
             style: AppTextStyles.labelLarge.copyWith(color: AppColors.white),
           ),

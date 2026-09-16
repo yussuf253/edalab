@@ -11,6 +11,7 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
+import '../../../core/utils/money_format.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -276,17 +277,17 @@ class _CartScreenState extends State<CartScreen> {
                     children: [
                       _summaryRow(
                         l10n.t('cart.subtotal'),
-                        'DJF${subtotal.toStringAsFixed(2)}',
+                        'DJF${money(subtotal)}',
                       ),
                       _summaryRow(
                         l10n.t('cart.shipping'),
                         shipping == 0
                             ? l10n.t('shopping_cart.free_upper')
-                            : 'DJF${shipping.toStringAsFixed(2)}',
+                            : 'DJF${money(shipping)}',
                       ),
                       _summaryRow(
                         l10n.t('cart.tax'),
-                        'DJF${tax.toStringAsFixed(2)}',
+                        'DJF${money(tax)}',
                       ),
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 8),
@@ -294,14 +295,14 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                       _summaryRow(
                         l10n.t('cart.total'),
-                        'DJF${total.toStringAsFixed(2)}',
+                        'DJF${money(total)}',
                         isTotal: true,
                       ),
                       const SizedBox(height: 16),
                       AppButton(
                         text: l10n.t(
                           'cart.checkout_amount',
-                          params: {'amount': total.toStringAsFixed(2)},
+                          params: {'amount': money(total)},
                         ),
                         onPressed: () async {
                           AnalyticsService.instance.track(

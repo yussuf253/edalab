@@ -10,6 +10,7 @@ import '../../../../features/ride/utils/ride_map_launcher.dart';
 import '../../../../features/ride/widgets/ride_route_preview.dart';
 import '../../../core/utils/pro_message_launcher.dart';
 import '../../../core/widgets/swipeable_button.dart';
+import '../../../../core/utils/money_format.dart';
 
 class RiderActiveTripScreen extends StatefulWidget {
   final String rideId;
@@ -293,7 +294,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                     ),
                                     if (fare != null)
                                       Text(
-                                        '\$${fare.toStringAsFixed(2)}',
+                                        '\$${money(fare)}',
                                         style: AppTextStyles.h4.copyWith(
                                           color: AppColors.ride,
                                         ),

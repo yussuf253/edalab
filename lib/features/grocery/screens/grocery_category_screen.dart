@@ -12,6 +12,7 @@ import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class GroceryCategoryScreen extends StatelessWidget {
   final String categoryId;
@@ -197,7 +198,7 @@ class GroceryCategoryScreen extends StatelessWidget {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Text(
-                                                'DJF${item.price.toStringAsFixed(2)}',
+                                                'DJF${money(item.price)}',
                                                 style: AppTextStyles.priceSmall
                                                     .copyWith(
                                                       color: AppColors.grocery,
@@ -297,7 +298,7 @@ class GroceryCategoryScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'DJF${moduleTotal.toStringAsFixed(2)}',
+                      'DJF${money(moduleTotal)}',
                       style: AppTextStyles.button,
                     ),
                   ],

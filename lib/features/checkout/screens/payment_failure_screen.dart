@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/utils/money_format.dart';
 
 class PaymentFailureScreen extends StatefulWidget {
   final Map<String, dynamic>? paymentData;
@@ -137,7 +138,7 @@ class _PaymentFailureScreenState extends State<PaymentFailureScreen> {
                       _InfoRow(l10n.t('payment_failure.module'), moduleName),
                       _InfoRow(
                         l10n.t('payment_failure.amount'),
-                        'DJF ${amount.toStringAsFixed(2)}',
+                        'DJF ${money(amount)}',
                       ),
                     ],
                   ),

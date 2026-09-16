@@ -13,6 +13,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class PharmacyOrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -252,12 +253,11 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
                                           (item['quantity'] as num?)?.toInt() ??
                                           1,
                                       total:
-                                          ((item['total'] as num?)
+                                          money((item['total'] as num?)
                                                       ?.toDouble() ??
                                                   (item['price'] as num?)
                                                       ?.toDouble() ??
-                                                  0)
-                                              .toStringAsFixed(2),
+                                                  0),
                                     ),
                                   )
                                   .toList(),
@@ -502,7 +502,7 @@ class _PharmacyHero extends StatelessWidget {
           Text(
             AppLocalizations.of(context).t(
               'pharmacy_tracking.total',
-              params: {'amount': total.toStringAsFixed(2)},
+              params: {'amount': money(total)},
             ),
             style: AppTextStyles.labelLarge.copyWith(color: AppColors.white),
           ),

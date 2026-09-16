@@ -15,6 +15,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class HotelBookingScreen extends StatefulWidget {
   final String hotelId;
@@ -674,20 +675,20 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                               'hotel_booking.room_rate',
                               params: {'count': '$_nights'},
                             ),
-                            'DJF${roomRate.toStringAsFixed(2)}',
+                            'DJF${money(roomRate)}',
                           ),
                           _HotelSummaryRow(
                             l10n.t('hotel_booking.service_fee'),
-                            'DJF${serviceFee.toStringAsFixed(2)}',
+                            'DJF${money(serviceFee)}',
                           ),
                           _HotelSummaryRow(
                             l10n.t('hotel_booking.tax'),
-                            'DJF${tax.toStringAsFixed(2)}',
+                            'DJF${money(tax)}',
                           ),
                           const Divider(height: 20),
                           _HotelSummaryRow(
                             l10n.t('hotel_booking.total'),
-                            'DJF${total.toStringAsFixed(2)}',
+                            'DJF${money(total)}',
                             bold: true,
                           ),
                         ],
@@ -697,7 +698,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                     AppButton(
                       text: l10n.t(
                         'hotel_booking.confirm',
-                        params: {'amount': total.toStringAsFixed(2)},
+                        params: {'amount': money(total)},
                       ),
                       color: AppColors.hotel,
                       isLoading: _isSubmitting,

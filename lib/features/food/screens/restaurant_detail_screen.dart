@@ -13,6 +13,7 @@ import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
   final String restaurantId;
@@ -706,7 +707,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'DJF${moduleTotal.toStringAsFixed(2)}',
+                      'DJF${money(moduleTotal)}',
                       style: AppTextStyles.button,
                     ),
                   ],
@@ -921,7 +922,7 @@ class _MenuItemCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'DJF${item.price.toStringAsFixed(2)}',
+                    'DJF${money(item.price)}',
                     style: AppTextStyles.priceSmall,
                   ),
                 ],

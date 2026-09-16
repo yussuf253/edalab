@@ -343,7 +343,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                         Row(
                           children: [
                             Text(
-                              'DJF${item.price.toStringAsFixed(2)}',
+                              'DJF${money(item.price)}',
                               style: AppTextStyles.price.copyWith(fontSize: 28),
                             ),
                             if (item.isPopular) ...[

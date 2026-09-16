@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/contact_launcher.dart';
+import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/utils/pro_message_launcher.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../rider/screens/rider_active_delivery_screen.dart';
@@ -26,6 +28,8 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
   final Set<String> _busyIds = <String>{};
   List<Map<String, dynamic>> _items = const [];
   bool _isLoading = true;
+  bool _hasError = false;
+  String? _errorMessage;
   String _selectedLane = 'open';
   String _selectedModule = 'all';
 
@@ -51,21 +55,31 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
       setState(() {
         _items = items;
         _isLoading = false;
+        _hasError = false;
+        _errorMessage = null;
       });
     } catch (error) {
       if (!mounted) return;
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.toString().replaceFirst('Exception: ', '')),
-        ),
-      );
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+        _errorMessage = error.toString().replaceFirst('Exception: ', '');
+      });
     }
   }
 
   Future<void> _claimItem(Map<String, dynamic> item) async {
     final id = item['id']?.toString() ?? '';
     if (id.isEmpty) return;
+
+    final proAuth = context.read<ProAuthProvider>();
+    final isOnline = proAuth.currentProfile?.isOnline ?? true;
+    if (!isOnline) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.goOnlineBeforeClaimingDeliveries)),
+      );
+      return;
+    }
 
     setState(() => _busyIds.add(id));
     try {
@@ -210,6 +224,32 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
                     const SizedBox(height: 10),
                     Text(l10n.loadingDispatchQueue),
                   ],
+                ),
+              )
+            else if (_hasError)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.cloud_off_rounded,
+                        size: 34,
+                        color: AppColors.mediumGrey,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        _errorMessage ?? l10n.noDeliveryRequestsMatch,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        onPressed: _loadQueue,
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: Text(l10n.retry),
+                      ),
+                    ],
+                  ),
                 ),
               )
             else if (filteredItems.isEmpty)

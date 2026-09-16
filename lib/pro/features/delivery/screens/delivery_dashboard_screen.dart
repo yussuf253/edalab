@@ -134,9 +134,18 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
     return int.tryParse(match?.group(0) ?? '') ?? 0;
   }
 
-  ProDashboardMetric? _metricAt(List<ProDashboardMetric> stats, int index) {
-    if (index < 0 || index >= stats.length) return null;
-    return stats[index];
+  /// Looks a stat up by its stable backend key first, falling back to the
+  /// positional index for older payloads.
+  ProDashboardMetric? _metricByKey(
+    List<ProDashboardMetric> stats,
+    String key,
+    int fallbackIndex,
+  ) {
+    for (final metric in stats) {
+      if (metric.key == key) return metric;
+    }
+    if (fallbackIndex < 0 || fallbackIndex >= stats.length) return null;
+    return stats[fallbackIndex];
   }
 
   int _laneItemCount(ProDashboardModuleSummary summary) {
@@ -233,16 +242,20 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
               data?.moduleSummaries ?? const <ProDashboardModuleSummary>[];
           final highlight = data?.highlightedRequest;
 
+          // The backend labels these stats explicitly; resolve by key so the
+          // pills match what the courier actually sees in the queue.
+          final activeStat = _metricByKey(stats, 'active', 0);
+          final completedStat = _metricByKey(stats, 'completed', 1);
+          final openStat = _metricByKey(stats, 'coverage', 3);
+
           final activeRequests =
-              _numericValue(_metricAt(stats, 0)?.value ?? '') > 0
-              ? _numericValue(_metricAt(stats, 0)!.value)
+              _numericValue(activeStat?.value ?? '') > 0
+              ? _numericValue(activeStat!.value)
               : _totalLaneItems(summaries);
-          final hotJobs = _numericValue(_metricAt(stats, 1)?.value ?? '') > 0
-              ? _numericValue(_metricAt(stats, 1)!.value)
+          final openJobs = _numericValue(openStat?.value ?? '') > 0
+              ? _numericValue(openStat!.value)
               : _urgentItems(summaries);
-          final coverage = _numericValue(_metricAt(stats, 2)?.value ?? '') > 0
-              ? _numericValue(_metricAt(stats, 2)!.value)
-              : activeModules.length;
+          final completedToday = _numericValue(completedStat?.value ?? '');
 
           if (snapshot.connectionState == ConnectionState.waiting &&
               data == null) {
@@ -269,8 +282,8 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                 const SizedBox(height: 12),
                 _DeliverySnapshotStrip(
                   activeRequests: activeRequests,
-                  hotJobs: hotJobs,
-                  coverageZones: coverage,
+                  openRequests: openJobs,
+                  completedToday: completedToday,
                   l10n: l10n,
                 ),
                 if (highlight != null) ...[
@@ -440,14 +453,14 @@ class _DeliveryDispatchHero extends StatelessWidget {
 
 class _DeliverySnapshotStrip extends StatelessWidget {
   final int activeRequests;
-  final int hotJobs;
-  final int coverageZones;
+  final int openRequests;
+  final int completedToday;
   final AppLocalizations l10n;
 
   const _DeliverySnapshotStrip({
     required this.activeRequests,
-    required this.hotJobs,
-    required this.coverageZones,
+    required this.openRequests,
+    required this.completedToday,
     required this.l10n,
   });
 
@@ -465,17 +478,17 @@ class _DeliverySnapshotStrip extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _SnapshotPill(
-            label: l10n.urgentLabel,
-            value: '$hotJobs',
+            label: l10n.openRequestsLabel,
+            value: '$openRequests',
             color: AppColors.warning,
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: _SnapshotPill(
-            label: l10n.zonesLabel,
-            value: '$coverageZones',
-            color: AppColors.info,
+            label: l10n.completedLabel,
+            value: '$completedToday',
+            color: AppColors.success,
           ),
         ),
       ],

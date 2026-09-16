@@ -12,6 +12,7 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/utils/money_format.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String productId;
@@ -583,7 +584,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'DJF${(_product.price * _quantity).toStringAsFixed(2)}',
+                      'DJF${money(_product.price * _quantity)}',
                       style: AppTextStyles.price,
                     ),
                   ],

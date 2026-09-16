@@ -9,6 +9,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class LaundryTrackingScreen extends StatefulWidget {
   final String orderId;
@@ -355,7 +356,7 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                           const Divider(height: 20),
                           _DetailRow(
                             l10n.t('laundry_tracking.total'),
-                            'DJF${((order?['total'] as num?)?.toDouble() ?? 0).toStringAsFixed(2)}',
+                            'DJF${((order?['total'] as num?)?.toDouble() ?? money(0))}',
                             bold: true,
                           ),
                         ],

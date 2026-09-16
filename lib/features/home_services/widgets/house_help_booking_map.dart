@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/models/home_service_model.dart';
+import '../../../core/utils/money_format.dart';
 
 class HouseHelpBookingMap extends StatefulWidget {
   final double selectedLatitude;
@@ -77,7 +78,7 @@ class _HouseHelpBookingMapState extends State<HouseHelpBookingMap> {
             title: provider.name,
             snippet: distance == null
                 ? provider.title
-                : '${distance.toStringAsFixed(2)} km',
+                : '${money(distance)} km',
           ),
         ),
       );

@@ -11,6 +11,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/utils/money_format.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final Map<String, dynamic>? checkoutData;
@@ -291,7 +292,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 ),
                               ),
                               Text(
-                                'DJF ${item.total.toStringAsFixed(2)}',
+                                'DJF ${money(item.total)}',
                                 style: AppTextStyles.labelMedium,
                               ),
                             ],
@@ -422,7 +423,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         l10n.t(option.$2),
                         option.$3 == 0
                             ? l10n.t('checkout.free')
-                            : 'DJF ${option.$3.toStringAsFixed(2)}',
+                            : 'DJF ${money(option.$3)}',
                         _selectedDeliveryOption == i,
                       ),
                     ),
@@ -617,27 +618,27 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 children: [
                   _SumRow(
                     l10n.t('checkout.subtotal'),
-                    'DJF ${subtotal.toStringAsFixed(2)}',
+                    'DJF ${money(subtotal)}',
                   ),
                   _SumRow(
                     l10n.t('checkout.delivery'),
                     shipping <= 0.0
                         ? l10n.t('checkout.free')
-                        : 'DJF ${shipping.toStringAsFixed(2)}',
+                        : 'DJF ${money(shipping)}',
                   ),
                   _SumRow(
                     l10n.t('checkout.tax'),
-                    'DJF ${tax.toStringAsFixed(2)}',
+                    'DJF ${money(tax)}',
                   ),
                   if (tip > 0)
                     _SumRow(
                       l10n.t('checkout.tip'),
-                      'DJF ${tip.toStringAsFixed(2)}',
+                      'DJF ${money(tip)}',
                     ),
                   if (discount > 0)
                     _SumRow(
                       l10n.t('checkout.discount'),
-                      '-DJF ${discount.toStringAsFixed(2)}',
+                      '-DJF ${money(discount)}',
                       isDiscount: true,
                     ),
                   if (cartProvider.promoCode != null)
@@ -649,7 +650,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   const Divider(height: 20),
                   _SumRow(
                     l10n.t('checkout.total'),
-                    'DJF ${total.toStringAsFixed(2)}',
+                    'DJF ${money(total)}',
                     bold: true,
                   ),
                 ],
@@ -663,7 +664,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 'checkout.place_order',
                 params: {
                   'module': _moduleLabel(context, moduleType),
-                  'amount': total.toStringAsFixed(2),
+                  'amount': money(total),
                 },
               ),
               onPressed: () async {

@@ -16,6 +16,7 @@ import '../../../core/widgets/app_button.dart';
 import '../services/ride_route_service.dart';
 import '../utils/ride_map_launcher.dart';
 import '../widgets/ride_route_preview.dart';
+import '../../../core/utils/money_format.dart';
 
 class RideBookingSummaryScreen extends StatefulWidget {
   final Map<String, dynamic> bookingData;
@@ -218,16 +219,16 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
                   const SizedBox(height: 14),
                   _SummaryRow(
                     l10n.t('ride_summary.base_fare'),
-                    'DJF ${estimatedFare.toStringAsFixed(2)}',
+                    'DJF ${money(estimatedFare)}',
                   ),
                   _SummaryRow(
                     l10n.t('ride_summary.tax'),
-                    'DJF ${tax.toStringAsFixed(2)}',
+                    'DJF ${money(tax)}',
                   ),
                   const Divider(height: 24),
                   _SummaryRow(
                     l10n.t('ride_summary.total'),
-                    'DJF ${total.toStringAsFixed(2)}',
+                    'DJF ${money(total)}',
                     isTotal: true,
                   ),
                 ],
@@ -239,7 +240,7 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
               child: AppButton(
                 text: l10n.t(
                   'ride_booking.confirm',
-                  params: {'amount': total.toStringAsFixed(2)},
+                  params: {'amount': money(total)},
                 ),
                 color: AppColors.ride,
                 isLoading: _isSubmitting,

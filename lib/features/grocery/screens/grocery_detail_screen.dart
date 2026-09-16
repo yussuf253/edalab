@@ -13,6 +13,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/utils/money_format.dart';
 
 class GroceryDetailScreen extends StatefulWidget {
   final String productId;
@@ -232,7 +233,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                             ),
                             const Spacer(),
                             Text(
-                              'DJF${_item.price.toStringAsFixed(2)}',
+                              'DJF${money(_item.price)}',
                               style: AppTextStyles.price.copyWith(
                                 color: AppColors.grocery,
                               ),
@@ -389,7 +390,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'DJF${(_item.price * _quantity).toStringAsFixed(2)}',
+                            'DJF${money(_item.price * _quantity)}',
                             style: AppTextStyles.price,
                           ),
                         ],
@@ -443,7 +444,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'DJF${moduleTotal.toStringAsFixed(2)}',
+                      'DJF${money(moduleTotal)}',
                       style: AppTextStyles.button,
                     ),
                   ],

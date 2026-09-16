@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../core/constants/pro_design_system.dart';
+import '../../../../core/utils/money_format.dart';
 
 class ProSuperAdminScreen extends StatefulWidget {
   const ProSuperAdminScreen({super.key});
@@ -191,7 +192,7 @@ class _MetricTile extends StatelessWidget {
           const Spacer(),
           Text(
             data.value is double
-                ? '\$${(data.value as double).toStringAsFixed(2)}'
+                ? '\$${money(data.value as double)}'
                 : '${data.value}',
             style: Theme.of(
               context,
@@ -266,7 +267,7 @@ class _ActivityList extends StatelessWidget {
                   Text(item.status, style: const TextStyle(fontSize: 12)),
                   if (item.amount != null)
                     Text(
-                      '\$${item.amount!.toStringAsFixed(2)}',
+                      '\$${money(item.amount!)}',
                       style: const TextStyle(fontWeight: FontWeight.w800),
                     ),
                 ],

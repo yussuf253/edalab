@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/utils/money_format.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final String orderId;
@@ -264,7 +265,7 @@ class OrderDetailScreen extends StatelessWidget {
     }
   }
 
-  String _money(double value) => 'DJF ${value.toStringAsFixed(2)}';
+  String _money(double value) => 'DJF ${money(value)}';
 
   String _formatDate(String? raw) {
     if (raw == null || raw.trim().isEmpty) return '-';

@@ -1,3 +1,5 @@
+import '../utils/money_format.dart';
+
 class RestaurantModel {
   final String id;
   final String name;
@@ -85,10 +87,19 @@ class RestaurantModel {
   }
 
   static String _formatDeliveryFee(dynamic value) {
-    if (value == null) return 'Free';
-    final amount = (value as num?)?.toDouble();
+    // The API may deliver the fee as a number (500) or a string ("500",
+    // "Free") depending on the source, so never hard-cast.
+    final double? amount;
+    if (value is num) {
+      amount = value.toDouble();
+    } else if (value is String) {
+      final normalized = value.trim().replaceAll(RegExp(r'[^0-9.]'), '');
+      amount = double.tryParse(normalized);
+    } else {
+      amount = null;
+    }
     if (amount == null || amount <= 0) return 'Free';
-    return 'DJF${amount.toStringAsFixed(2)}';
+    return 'DJF${money(amount)}';
   }
 
 }

@@ -13,6 +13,7 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../services/ride_route_service.dart';
 import '../utils/ride_map_launcher.dart';
 import '../widgets/ride_route_preview.dart';
+import '../../../core/utils/money_format.dart';
 
 class RideBookingScreen extends StatefulWidget {
   final Map<String, dynamic>? bookingData;
@@ -454,7 +455,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                         ),
                                       ),
                                       Text(
-                                        'DJF${estPrice.toStringAsFixed(2)}',
+                                        'DJF${money(estPrice)}',
                                         style: AppTextStyles.labelLarge
                                             .copyWith(
                                               color: sel
