@@ -118,7 +118,9 @@ GoRouter createAppRouter({
     refreshListenable: Listenable.merge([authProvider, cityAvailabilityProvider]),
     // Onboarding général → /onboarding
     // Home onboarding → géré via redirect sur /home-services
-    initialLocation: hasSeenOnboarding ? '/' : '/home-onboarding',
+    // First launch → the full general onboarding (/onboarding). The home
+    // services onboarding still shows once on the first /home-services visit.
+    initialLocation: hasSeenOnboarding ? '/' : '/onboarding',
     redirect: (context, state) {
       final path = state.uri.path;
       if (authProvider.isBanned) {

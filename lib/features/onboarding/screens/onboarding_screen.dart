@@ -68,59 +68,36 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         ),
         ringColor: const Color(0xFFC4F0D4),
         nodes: [
+          // First-step spotlight: Food, Pharmacy, Grocery, Shopping only.
           _OrbitNodeData(
             assetPath: 'assets/icons/food.png',
-            alignment: Alignment(0.00, -0.92),
-            size: 50,
-            backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
-            tintColor: AppColors.primary,
-          ),
-          _OrbitNodeData(
-            assetPath: 'assets/icons/shopping.png',
-            alignment: Alignment(0.64, -0.68),
-            size: 50,
-            backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
-            tintColor: AppColors.primary,
-          ),
-          _OrbitNodeData(
-            assetPath: 'assets/icons/doctor.png',
-            alignment: Alignment(0.90, -0.12),
-            size: 50,
-            backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
-            tintColor: AppColors.primary,
-          ),
-          _OrbitNodeData(
-            assetPath: 'assets/icons/hotel.png',
-            alignment: Alignment(0.72, 0.58),
-            size: 50,
-            backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
-            tintColor: AppColors.primary,
-          ),
-          _OrbitNodeData(
-            assetPath: 'assets/icons/car.png',
-            alignment: Alignment(0.04, 0.92),
-            size: 50,
+            fallbackIcon: Icons.restaurant_rounded,
+            alignment: const Alignment(0.00, -0.94),
+            size: 58,
             backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
             tintColor: AppColors.primary,
           ),
           _OrbitNodeData(
             assetPath: 'assets/icons/pharmacy.png',
-            alignment: Alignment(-0.64, 0.70),
-            size: 50,
+            fallbackIcon: Icons.local_pharmacy_rounded,
+            alignment: const Alignment(0.90, -0.20),
+            size: 58,
             backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
             tintColor: AppColors.primary,
           ),
           _OrbitNodeData(
-            assetPath: 'assets/icons/repair-service.png',
-            alignment: Alignment(-0.90, 0.16),
-            size: 50,
+            assetPath: '',
+            fallbackIcon: Icons.shopping_basket_rounded,
+            alignment: const Alignment(0.00, 0.94),
+            size: 58,
             backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
             tintColor: AppColors.primary,
           ),
           _OrbitNodeData(
-            assetPath: 'assets/icons/laundry.png',
-            alignment: Alignment(-0.70, -0.58),
-            size: 50,
+            assetPath: 'assets/icons/shopping.png',
+            fallbackIcon: Icons.shopping_bag_rounded,
+            alignment: const Alignment(-0.90, -0.20),
+            size: 58,
             backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
             tintColor: AppColors.primary,
           ),
@@ -497,17 +474,26 @@ class _OrbitHero extends StatelessWidget {
             ),
           ],
         ),
-        child: Padding(
-          padding: EdgeInsets.all(node.size * 0.24),
-          child: Image.asset(
-            node.assetPath,
-            fit: BoxFit.contain,
-            color: node.tintColor,
-            colorBlendMode: node.tintColor == null ? null : BlendMode.srcIn,
-            errorBuilder: (context, error, stackTrace) =>
-                Icon(Icons.image_not_supported_outlined, color: AppColors.grey),
-          ),
-        ),
+        child: node.assetPath.isEmpty
+            ? Icon(
+                node.fallbackIcon ?? Icons.image_not_supported_outlined,
+                color: node.tintColor ?? AppColors.grey,
+                size: node.size * 0.46,
+              )
+            : Padding(
+                padding: EdgeInsets.all(node.size * 0.24),
+                child: Image.asset(
+                  node.assetPath,
+                  fit: BoxFit.contain,
+                  color: node.tintColor,
+                  colorBlendMode: node.tintColor == null ? null : BlendMode.srcIn,
+                  errorBuilder: (context, error, stackTrace) => Icon(
+                    node.fallbackIcon ?? Icons.image_not_supported_outlined,
+                    color: node.tintColor ?? AppColors.grey,
+                    size: node.size * 0.46,
+                  ),
+                ),
+              ),
       ),
     );
   }
@@ -601,10 +587,12 @@ class _OrbitNodeData {
     required this.alignment,
     required this.size,
     required this.backgroundColor,
+    this.fallbackIcon,
     this.tintColor,
   });
 
   final String assetPath;
+  final IconData? fallbackIcon;
   final Alignment alignment;
   final double size;
   final Color backgroundColor;

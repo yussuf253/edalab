@@ -20,14 +20,14 @@ class SupportedLanguage {
 class LanguageProvider extends ChangeNotifier {
   static const supportedLanguages = [
     SupportedLanguage(
-      locale: Locale('en'),
-      nativeName: 'English',
-      englishName: 'English',
-    ),
-    SupportedLanguage(
       locale: Locale('fr'),
       nativeName: 'Francais',
       englishName: 'French',
+    ),
+    SupportedLanguage(
+      locale: Locale('en'),
+      nativeName: 'English',
+      englishName: 'English',
     ),
     SupportedLanguage(
       locale: Locale('ar'),
@@ -36,7 +36,9 @@ class LanguageProvider extends ChangeNotifier {
     ),
   ];
 
-  Locale _locale = AppLocalizations.fallbackLocale;
+  // French first: the onboarding language picker shows the current default
+  // at the top and the fallback locale below resolves to 'fr' as well.
+  Locale _locale = const Locale('fr');
 
   Locale get locale => _locale;
 

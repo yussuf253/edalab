@@ -8,8 +8,12 @@ class AppLocalizations {
 
   final Locale locale;
 
-  static const fallbackLocale = Locale('en');
-  static const supportedLocales = [Locale('en'), Locale('fr'), Locale('ar')];
+  // French is the default app language for first-time users (Djibouti market);
+  // users who pick another language keep their choice persisted.
+  static const fallbackLocale = Locale('fr');
+  // French first so it is the resolved locale when the device locale is
+  // unsupported or the resolution defaults.
+  static const supportedLocales = [Locale('fr'), Locale('en'), Locale('ar')];
 
   static const delegate = _AppLocalizationsDelegate();
 
@@ -685,9 +689,9 @@ class AppLocalizations {
       'onboarding.skip': 'Skip',
       'onboarding.next': 'Next',
       'onboarding.get_started': 'Get Started',
-      'onboarding.page1_title': 'All Your Needs\nIn One App',
+      'onboarding.page1_title': 'Everything Delivered\nTo Your Door',
       'onboarding.page1_subtitle':
-          'Shop, eat, ride, book hotels, consult doctors, and more - all from a single, beautiful app.',
+          'Food, pharmacy, groceries and shopping - order from your favorite stores and get it delivered fast.',
       'onboarding.page2_title': 'Lightning Fast\nDelivery',
       'onboarding.page2_subtitle':
           'Get your orders delivered in minutes. Track every step of the way with real-time updates.',
@@ -2189,9 +2193,9 @@ class AppLocalizations {
       'onboarding.skip': 'Passer',
       'onboarding.next': 'Suivant',
       'onboarding.get_started': 'Commencer',
-      'onboarding.page1_title': 'Tous vos besoins\ndans une seule app',
+      'onboarding.page1_title': 'Tout est livré\nchez vous',
       'onboarding.page1_subtitle':
-          'Commandez, réservez des hôtels, consultez des médecins et plus encore depuis une seule belle application.',
+          'Repas, pharmacie, courses et shopping - commandez dans vos magasins préférés et faites-vous livrer rapidement.',
       'onboarding.page2_title': 'Livraison ultra\nrapide',
       'onboarding.page2_subtitle':
           'Recevez vos commandes en quelques minutes. Suivez chaque étape avec des mises à jour en temps réel.',
@@ -3515,9 +3519,9 @@ class AppLocalizations {
       'onboarding.skip': 'تخطي',
       'onboarding.next': 'التالي',
       'onboarding.get_started': 'ابدأ',
-      'onboarding.page1_title': 'كل الخدمات\nفي تطبيق واحد',
+      'onboarding.page1_title': 'كل شيء\nيصلك إلى بابك',
       'onboarding.page1_subtitle':
-          'تسوّق، اطلب الطعام، احجز المشاوير والفنادق، واستشر الأطباء وغير ذلك من تطبيق واحد جميل.',
+          'الطعام، الصيدلية، البقالة والتسوق - اطلب من متاجرك المفضلة واستلم طلباتك بسرعة.',
       'onboarding.page2_title': 'توصيل سريع\nجداً',
       'onboarding.page2_subtitle':
           'استلم طلباتك خلال دقائق. تابع كل خطوة بتحديثات مباشرة.',

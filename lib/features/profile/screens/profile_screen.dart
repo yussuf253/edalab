@@ -4,11 +4,77 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/notification_bell.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  int _orderCount = 0;
+  double _totalSpent = 0;
+  bool _statsLoaded = false;
+  String? _loadedForUserId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSpendStats();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadSpendStats();
+  }
+
+  /// Computes order count and total spent from the same order-history
+  /// endpoints the orders screen uses, so the header reflects real activity
+  /// instead of placeholder values.
+  Future<void> _loadSpendStats() async {
+    final userId = context.read<AuthProvider>().user?.id;
+    if (userId == null || _loadedForUserId == userId) return;
+    _loadedForUserId = userId;
+
+    int count = 0;
+    double spent = 0;
+
+    Future<void> accumulate(dynamic data) async {
+      if (data is! List) return;
+      count += data.length;
+      for (final entry in data) {
+        if (entry is! Map) continue;
+        final total = entry['total'] ?? entry['fee'] ?? entry['estimatedFare'];
+        if (total is num) spent += total.toDouble();
+      }
+    }
+
+    try {
+      final results = await Future.wait([
+        ApiClient.get('/orders/$userId'),
+        ApiClient.get('/appointments/$userId'),
+        ApiClient.get('/rides/user/$userId'),
+      ]);
+      for (final data in results) {
+        await accumulate(data);
+      }
+    } catch (_) {
+      // Leave stats at zero on failure; they will retry on next mount.
+      _loadedForUserId = null;
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _orderCount = count;
+      _totalSpent = spent;
+      _statsLoaded = true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +195,9 @@ class ProfileScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _Stat(
-                            user != null ? '12' : '0',
+                            _statsLoaded || user == null
+                                ? '$_orderCount'
+                                : '—',
                             l10n.t('profile.orders'),
                             valueColor: AppColors.dark,
                             labelColor: AppColors.grey,
@@ -140,7 +208,9 @@ class ProfileScreen extends StatelessWidget {
                             color: AppColors.extraLightGrey,
                           ),
                           _Stat(
-                            user != null ? 'DJF450' : 'DJF0',
+                            _statsLoaded || user == null
+                                ? 'DJF${_totalSpent.toInt()}'
+                                : '—',
                             l10n.t('profile.spent'),
                             valueColor: AppColors.dark,
                             labelColor: AppColors.grey,
@@ -184,12 +254,6 @@ class ProfileScreen extends StatelessWidget {
                     l10n.t('profile.addresses'),
                     AppColors.secondary,
                     onTap: () => context.push('/profile/addresses'),
-                  ),
-                  _MenuItem(
-                    Icons.credit_card_rounded,
-                    l10n.t('profile.payment_methods'),
-                    AppColors.food,
-                    onTap: () => context.push('/profile/payment-methods'),
                   ),
                   const SizedBox(height: 20),
 
