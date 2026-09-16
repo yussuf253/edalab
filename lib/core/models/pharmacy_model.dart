@@ -12,6 +12,13 @@ class PharmacyModel {
   final int reviewsCount;
   final String? sourceBusiness;
   final bool inStock;
+  /// Units available. Null when the backend does not report a quantity.
+  final int? stockQty;
+  /// Quantity at or below which the item is considered low stock.
+  final int lowStockThreshold;
+  /// True when stock is non-zero but at or below [lowStockThreshold].
+  bool get isLowStock =>
+      inStock && stockQty != null && stockQty! <= lowStockThreshold;
 
   PharmacyModel({
     required this.id,
@@ -27,6 +34,8 @@ class PharmacyModel {
     required this.reviewsCount,
     this.sourceBusiness,
     this.inStock = true,
+    this.stockQty,
+    this.lowStockThreshold = 5,
   });
 
   factory PharmacyModel.fromApi(Map<String, dynamic> json) {
@@ -58,6 +67,12 @@ class PharmacyModel {
           metadata['sourceBusiness']?.toString() ??
           json['shopName']?.toString(),
       inStock: json['inStock'] as bool? ?? true,
+      stockQty: metadata['stockQty'] is num
+          ? (metadata['stockQty'] as num).toInt()
+          : null,
+      lowStockThreshold: metadata['lowStockThreshold'] is num
+          ? (metadata['lowStockThreshold'] as num).toInt()
+          : 5,
     );
   }
 
