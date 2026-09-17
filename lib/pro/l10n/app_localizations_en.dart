@@ -3349,4 +3349,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryCreated => "Category created.";
   @override
   String get categoryDeleted => "Category deleted.";
+
+  @override
+  String get redeemRestaurantTitle => "Have a redeem code?";
+  @override
+  String get redeemRestaurantSubtitle => "Enter the code we gave you to link your existing restaurant instead of creating a new one.";
+  @override
+  String get redeemCodeLabel => "Restaurant redeem code";
+  @override
+  String get redeemCodeHint => "e.g. A7K2M9QP";
+  @override
+  String get redeemRestaurantButton => "Link Restaurant";
+  @override
+  String get redeemingRestaurantButton => "Linking...";
+  @override
+  String get restaurantRedeemedSuccessfully => "Restaurant linked successfully.";
+  @override
+  String get orDividerLabel => "or";
 }

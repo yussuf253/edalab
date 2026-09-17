@@ -9,7 +9,7 @@ import {
   ProProfileType,
   RideStatus,
 } from '@prisma/client';
-import { randomUUID } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db';
@@ -88,6 +88,10 @@ const createRestaurantSchema = z.object({
   name: z.string().trim().min(2).max(120).optional(),
   cuisine: z.string().trim().min(2).max(80).optional(),
   imageUrl: z.string().trim().url().optional().or(z.literal('')),
+});
+
+const redeemRestaurantSchema = z.object({
+  code: z.string().trim().min(4).max(32),
 });
 
 const createPharmacyBusinessSchema = z.object({
@@ -643,6 +647,30 @@ async function ensureUniqueSlug(
   }
 
   return slug;
+}
+
+const RESTAURANT_REDEEM_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+
+function generateRestaurantRedeemCode() {
+  let code = '';
+  for (let index = 0; index < 8; index += 1) {
+    code += RESTAURANT_REDEEM_CODE_ALPHABET[randomInt(
+      RESTAURANT_REDEEM_CODE_ALPHABET.length,
+    )];
+  }
+  return code;
+}
+
+async function nextRestaurantRedeemCode() {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    const candidate = generateRestaurantRedeemCode();
+    const existing = await prisma.restaurant.findUnique({
+      where: { redeemCode: candidate },
+      select: { id: true },
+    });
+    if (!existing) return candidate;
+  }
+  throw new Error('Could not generate a unique restaurant redeem code.');
 }
 
 function matchesBusinessName(query: string, candidate: string) {
@@ -4523,6 +4551,7 @@ router.post(
           cuisine: body.cuisine?.trim() || 'General',
           imageUrl: body.imageUrl?.trim() || null,
           isOpen: true,
+          redeemCode: await nextRestaurantRedeemCode(),
         },
       }));
 
@@ -4578,6 +4607,95 @@ router.post(
       id: restaurant.id,
       name: restaurant.name,
       created: matchingRestaurant == null,
+      bindings,
+    });
+  }),
+);
+
+// POST /pro/:userId/restaurant/redeem — link an existing restaurant to this
+// shop profile by redeeming its secret code. Intended for owners whose
+// restaurant already exists in the catalog but is not yet bound to a profile.
+router.post(
+  '/:userId/restaurant/redeem',
+  asyncHandler(async (req, res) => {
+    const userId = getParam(req.params.userId, 'userId');
+    const body = redeemRestaurantSchema.parse(req.body);
+    const profile = await prisma.proProfile.findUnique({ where: { userId } });
+
+    if (!profile || profile.type !== ProProfileType.SHOP) {
+      return res.status(404).json({ error: 'Shop pro profile not found.' });
+    }
+
+    if (!profile.activeModules.includes(ProModule.FOOD)) {
+      return res.status(400).json({
+        error: 'Food is not enabled for this shop profile.',
+      });
+    }
+
+    const code = body.code.trim().toUpperCase();
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { redeemCode: code },
+    });
+
+    if (!restaurant) {
+      return res.status(404).json({
+        error: 'Invalid redeem code. Check the code and try again.',
+      });
+    }
+
+    // If the restaurant is already bound to another profile, reject so one
+    // restaurant cannot be claimed by two different shops.
+    const existingOwner = await prisma.proProfile.findFirst({
+      where: {
+        id: { not: profile.id },
+        type: ProProfileType.SHOP,
+        bindings: {
+          path: ['restaurantIds'],
+          array_contains: restaurant.id,
+        },
+      },
+      select: { userId: true },
+    });
+
+    if (existingOwner) {
+      return res.status(409).json({
+        error:
+          'This restaurant is already linked to another shop profile.',
+      });
+    }
+
+    const resolvedBindings = await resolveBindings(
+      profile.businessName,
+      profile.activeModules,
+    );
+    const ownedLaundryServiceIds = await syncLaundryOwnership(
+      profile.userId,
+      profile.type,
+      profile.activeModules,
+      resolvedBindings,
+    );
+    const bindings = {
+      ...resolvedBindings,
+      laundryServiceIds: ownedLaundryServiceIds,
+      restaurantIds: Array.from(
+        new Set([...resolvedBindings.restaurantIds, restaurant.id]),
+      ),
+      restaurantNames: Array.from(
+        new Set([...resolvedBindings.restaurantNames, restaurant.name]),
+      ),
+    };
+
+    await prisma.proProfile.update({
+      where: { userId },
+      data: {
+        bindings,
+      },
+    });
+
+    res.json({
+      id: restaurant.id,
+      name: restaurant.name,
+      cuisine: restaurant.cuisine,
       bindings,
     });
   }),

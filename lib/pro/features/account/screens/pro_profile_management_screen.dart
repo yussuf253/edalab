@@ -368,6 +368,12 @@ class _ProProfileManagementScreenState
     var isUploadingImage = false;
     var isSubmitting = false;
 
+    // Redeem-code flow: when no restaurant is linked yet, the owner can
+    // link an existing restaurant by entering its redeem code instead of
+    // creating a brand-new restaurant row.
+    final redeemCodeController = TextEditingController();
+    var isRedeeming = false;
+
     await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -450,6 +456,38 @@ class _ProProfileManagementScreenState
               } catch (error) {
                 if (!mounted || !sheetContext.mounted) return;
                 setModalState(() => isSubmitting = false);
+                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                  SnackBar(content: Text(ApiClient.userFacingError(error))),
+                );
+              }
+            }
+
+            Future<void> redeem() async {
+              if (isRedeeming || isSubmitting) return;
+              final code = redeemCodeController.text.trim().toUpperCase();
+              if (code.length < 4) {
+                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                  SnackBar(content: Text(l10n.redeemCodeLabel)),
+                );
+                return;
+              }
+              setModalState(() => isRedeeming = true);
+              try {
+                await ApiClient.post(
+                  '/pro/${profile.userId}/restaurant/redeem',
+                  {'code': code},
+                );
+                if (!mounted || !sheetContext.mounted) return;
+                Navigator.of(sheetContext).pop();
+                ScaffoldMessenger.of(sheetContext).showSnackBar(
+                  SnackBar(
+                    content: Text(l10n.restaurantRedeemedSuccessfully),
+                  ),
+                );
+                await _refreshInsights();
+              } catch (error) {
+                if (!mounted || !sheetContext.mounted) return;
+                setModalState(() => isRedeeming = false);
                 ScaffoldMessenger.of(sheetContext).showSnackBar(
                   SnackBar(content: Text(ApiClient.userFacingError(error))),
                 );
@@ -565,6 +603,71 @@ class _ProProfileManagementScreenState
                         ),
                       ),
                     ),
+                    if (existingRestaurant == null) ...[
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          const Expanded(child: Divider()),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                            ),
+                            child: Text(
+                              l10n.orDividerLabel,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
+                          ),
+                          const Expanded(child: Divider()),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        l10n.redeemRestaurantTitle,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w800),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        l10n.redeemRestaurantSubtitle,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: redeemCodeController,
+                        textCapitalization: TextCapitalization.characters,
+                        decoration: InputDecoration(
+                          labelText: l10n.redeemCodeLabel,
+                          hintText: l10n.redeemCodeHint,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed:
+                              isRedeeming || isSubmitting ? null : redeem,
+                          icon: isRedeeming
+                              ? const SizedBox(
+                                  height: 16,
+                                  width: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.redeem_outlined),
+                          label: Text(
+                            isRedeeming
+                                ? l10n.redeemingRestaurantButton
+                                : l10n.redeemRestaurantButton,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -575,6 +678,7 @@ class _ProProfileManagementScreenState
     );
     nameController.dispose();
     cuisineController.dispose();
+    redeemCodeController.dispose();
   }
 
   Future<void> _openPharmacyEditor({

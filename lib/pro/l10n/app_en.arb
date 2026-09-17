@@ -1274,5 +1274,13 @@
   "inspectionVisit": "Inspection Visit",
   "maintenanceSupport": "Maintenance Support",
   "livingRoomFurnitureCleaning": "Living Room & Furniture Cleaning",
-  "officeBusinessCleaning": "Office & Business Cleaning"
+  "officeBusinessCleaning": "Office & Business Cleaning",
+  "redeemRestaurantTitle": "Have a redeem code?",
+  "redeemRestaurantSubtitle": "Enter the code we gave you to link your existing restaurant instead of creating a new one.",
+  "redeemCodeLabel": "Restaurant redeem code",
+  "redeemCodeHint": "e.g. A7K2M9QP",
+  "redeemRestaurantButton": "Link Restaurant",
+  "redeemingRestaurantButton": "Linking...",
+  "restaurantRedeemedSuccessfully": "Restaurant linked successfully.",
+  "orDividerLabel": "or"
 }

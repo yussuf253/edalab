@@ -3418,4 +3418,21 @@ class AppLocalizationsFr extends AppLocalizations {
   String get categoryCreated => "Cat\u00e9gorie cr\u00e9\u00e9e.";
   @override
   String get categoryDeleted => "Cat\u00e9gorie supprim\u00e9e.";
+
+  @override
+  String get redeemRestaurantTitle => "Vous avez un code ?";
+  @override
+  String get redeemRestaurantSubtitle => "Saisissez le code que nous vous avons fourni pour lier votre restaurant existant au lieu d'en cr\u00e9er un nouveau.";
+  @override
+  String get redeemCodeLabel => "Code de liaison du restaurant";
+  @override
+  String get redeemCodeHint => "ex. A7K2M9QP";
+  @override
+  String get redeemRestaurantButton => "Lier le restaurant";
+  @override
+  String get redeemingRestaurantButton => "Liaison...";
+  @override
+  String get restaurantRedeemedSuccessfully => "Restaurant li\u00e9 avec succ\u00e8s.";
+  @override
+  String get orDividerLabel => "ou";
 }

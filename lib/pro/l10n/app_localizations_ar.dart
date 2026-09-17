@@ -3323,4 +3323,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get categoryCreated => "\u062a\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0641\u0626\u0629.";
   @override
   String get categoryDeleted => "\u062a\u0645 \u062d\u0630\u0641 \u0627\u0644\u0641\u0626\u0629.";
+
+  @override
+  String get redeemRestaurantTitle => "\u0644\u062f\u064a\u0643 \u0631\u0645\u0632\u061f";
+  @override
+  String get redeemRestaurantSubtitle => "\u0623\u062f\u062e\u0644 \u0627\u0644\u0631\u0645\u0632 \u0627\u0644\u0630\u064a \u0645\u0646\u062d\u0646\u0627\u0647 \u0644\u0643 \u0644\u0631\u0628\u0637 \u0645\u0637\u0639\u0645\u0643 \u0627\u0644\u062d\u0627\u0644\u064a \u0628\u062f\u0644\u0627\u064b \u0645\u0646 \u0625\u0646\u0634\u0627\u0621 \u0645\u0637\u0639\u0645 \u062c\u062f\u064a\u062f.";
+  @override
+  String get redeemCodeLabel => "\u0631\u0645\u0632 \u0631\u0628\u0637 \u0627\u0644\u0645\u0637\u0639\u0645";
+  @override
+  String get redeemCodeHint => "\u0645\u062b\u0627\u0644: A7K2M9QP";
+  @override
+  String get redeemRestaurantButton => "\u0631\u0628\u0637 \u0627\u0644\u0645\u0637\u0639\u0645";
+  @override
+  String get redeemingRestaurantButton => "\u062c\u0627\u0631\u064a \u0627\u0644\u0631\u0628\u0637...";
+  @override
+  String get restaurantRedeemedSuccessfully => "\u062a\u0645 \u0631\u0628\u0637 \u0627\u0644\u0645\u0637\u0639\u0645 \u0628\u0646\u062c\u0627\u062d.";
+  @override
+  String get orDividerLabel => "\u0623\u0648";
 }

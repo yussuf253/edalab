@@ -505,6 +505,7 @@ model Restaurant {
   id             String                   @id
   name           String
   cuisine        String
+  redeemCode     String?                  @unique
   cityZone       String[]                 @default([])
   rating         Decimal                  @default(0) @db.Decimal(3, 2)
   reviewCount    Int                      @default(0)

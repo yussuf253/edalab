@@ -6017,6 +6017,15 @@ abstract class AppLocalizations {
   String get menuItemDeleted;
   String get categoryCreated;
   String get categoryDeleted;
+
+  String get redeemRestaurantTitle;
+  String get redeemRestaurantSubtitle;
+  String get redeemCodeLabel;
+  String get redeemCodeHint;
+  String get redeemRestaurantButton;
+  String get redeemingRestaurantButton;
+  String get restaurantRedeemedSuccessfully;
+  String get orDividerLabel;
 }
 
 class _AppLocalizationsDelegate

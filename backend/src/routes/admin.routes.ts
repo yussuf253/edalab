@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import type { NextFunction, Request, Response } from 'express';
+import { randomInt } from 'crypto';
 import { prisma } from '../db';
 import { requireAuth } from '../middleware/auth';
 import { asyncHandler } from '../utils/async-handler';
@@ -293,6 +294,55 @@ router.patch(
       },
     });
     res.json(account);
+  }),
+);
+
+const RESTAURANT_REDEEM_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+
+async function nextRestaurantRedeemCode() {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    let code = '';
+    for (let index = 0; index < 8; index += 1) {
+      code += RESTAURANT_REDEEM_CODE_ALPHABET[randomInt(
+        RESTAURANT_REDEEM_CODE_ALPHABET.length,
+      )];
+    }
+    const existing = await prisma.restaurant.findUnique({
+      where: { redeemCode: code },
+      select: { id: true },
+    });
+    if (!existing) return code;
+  }
+  throw new Error('Could not generate a unique restaurant redeem code.');
+}
+
+// GET /admin/restaurant-redeem-code/:restaurantId — reveal a restaurant's redeem code.
+router.get(
+  '/restaurant-redeem-code/:restaurantId',
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.restaurantId);
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id },
+      select: { id: true, name: true, redeemCode: true },
+    });
+    if (!restaurant) {
+      return res.status(404).json({ error: 'Restaurant not found.' });
+    }
+    res.json(restaurant);
+  }),
+);
+
+// POST /admin/restaurant-redeem-code/:restaurantId/regenerate — issue a fresh code.
+router.post(
+  '/restaurant-redeem-code/:restaurantId/regenerate',
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.restaurantId);
+    const restaurant = await prisma.restaurant.update({
+      where: { id },
+      data: { redeemCode: await nextRestaurantRedeemCode() },
+      select: { id: true, name: true, redeemCode: true },
+    });
+    res.json(restaurant);
   }),
 );
 

@@ -1251,5 +1251,13 @@
   "generalHomeTasks": "مهام منزلية عامة",
   "generalHomeService": "خدمة منزلية عامة",
   "inspectionVisit": "زيارة فحص",
-  "maintenanceSupport": "دعم الصيانة"
+  "maintenanceSupport": "دعم الصيانة",
+  "redeemRestaurantTitle": "لديك رمز؟",
+  "redeemRestaurantSubtitle": "أدخل الرمز الذي منحناه لك لربط مطعمك الحالي بدلاً من إنشاء مطعم جديد.",
+  "redeemCodeLabel": "رمز ربط المطعم",
+  "redeemCodeHint": "مثال: A7K2M9QP",
+  "redeemRestaurantButton": "ربط المطعم",
+  "redeemingRestaurantButton": "جاري الربط...",
+  "restaurantRedeemedSuccessfully": "تم ربط المطعم بنجاح.",
+  "orDividerLabel": "أو"
 }

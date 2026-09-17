@@ -1302,5 +1302,13 @@
   "livingRoomFurnitureCleaning": "Nettoyage salon et meubles",
   "officeBusinessCleaning": "Nettoyage bureaux et entreprises",
   "postConstructionCleaning": "Nettoyage après construction",
-  "ecologicalDisinfection": "Désinfection écologique"
+  "ecologicalDisinfection": "Désinfection écologique",
+  "redeemRestaurantTitle": "Vous avez un code ?",
+  "redeemRestaurantSubtitle": "Saisissez le code que nous vous avons fourni pour lier votre restaurant existant au lieu d'en créer un nouveau.",
+  "redeemCodeLabel": "Code de liaison du restaurant",
+  "redeemCodeHint": "ex. A7K2M9QP",
+  "redeemRestaurantButton": "Lier le restaurant",
+  "redeemingRestaurantButton": "Liaison...",
+  "restaurantRedeemedSuccessfully": "Restaurant lié avec succès.",
+  "orDividerLabel": "ou"
 }
