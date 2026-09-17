@@ -6,8 +6,8 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 
 /// Small availability indicator used on medicine cards, placed in the space
-/// under the medicine name. Deliberately shows only "In stock" or
-/// "Out of stock" — exact stock quantities are not surfaced to customers.
+/// under the medicine name. Deliberately shows only "Available" or
+/// "Not available" — exact stock quantities are not surfaced to customers.
 class MedicineStockBadge extends StatelessWidget {
   final PharmacyModel medicine;
 

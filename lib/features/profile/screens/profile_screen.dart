@@ -195,9 +195,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           _Stat(
-                            _statsLoaded || user == null
-                                ? '$_orderCount'
-                                : '—',
+                            _statsLoaded || user == null ? '$_orderCount' : '—',
                             l10n.t('profile.orders'),
                             valueColor: AppColors.dark,
                             labelColor: AppColors.grey,
@@ -360,7 +358,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Text(
                       l10n.t(
                         'profile.app_version_label',
-                        params: {'version': '1.7.0'},
+                        params: {'version': '1.8.0'},
                       ),
                       style: AppTextStyles.caption,
                     ),
