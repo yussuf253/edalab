@@ -5156,8 +5156,14 @@ router.post(
 
     if (requestedModule === 'pharmacy') {
       if (!profile.activeModules.includes(ProModule.PHARMACY)) {
-        return res.status(400).json({
-          error: 'Pharmacy is not enabled for this shop profile.',
+        // Graceful empty response: the profile-management screen fetches both
+        // shopping and pharmacy product lists for every shop profile, so a
+        // food-only shop must get an empty payload here rather than a 400
+        // that would fail the whole details load.
+        return res.json({
+          module: requestedModule,
+          stores: [],
+          products: [],
         });
       }
       if (bindings.pharmacyBusinesses.length === 0) {
@@ -5360,8 +5366,14 @@ router.get(
     const bindings = normalizeBindings(hydratedProfile.bindings);
     if (requestedModule === 'pharmacy') {
       if (!profile.activeModules.includes(ProModule.PHARMACY)) {
-        return res.status(400).json({
-          error: 'Pharmacy is not enabled for this shop profile.',
+        // Graceful empty response: the profile-management screen fetches both
+        // shopping and pharmacy product lists for every shop profile, so a
+        // food-only shop must get an empty payload here rather than a 400
+        // that would fail the whole details load.
+        return res.json({
+          module: requestedModule,
+          stores: [],
+          products: [],
         });
       }
       if (bindings.pharmacyBusinesses.length === 0) {
@@ -5478,8 +5490,12 @@ router.get(
     }
 
     if (!profile.activeModules.includes(ProModule.SHOPPING)) {
-      return res.status(400).json({
-        error: 'Shopping is not enabled for this shop profile.',
+      // Same graceful-empty treatment as the pharmacy branch above: shop
+      // profiles without the shopping module simply have no stores.
+      return res.json({
+        module: requestedModule,
+        stores: [],
+        products: [],
       });
     }
     if (bindings.shoppingStoreIds.length === 0) {
