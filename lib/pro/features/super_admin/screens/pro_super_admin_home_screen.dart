@@ -197,20 +197,32 @@ class _AdminToolsPanel extends StatelessWidget {
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: ProDesignSystem.spacing12),
-          _AdminToolTile(
-            icon: Icons.monitor_heart_outlined,
-            title: 'Operations Control Center',
-            subtitle:
-                'Fulfillment, rides, care, hotel, laundry, and account '
-                'management with ban controls.',
-            onTap: () => context.push(ProRoutePaths.superAdmin),
-          ),
-          const SizedBox(height: ProDesignSystem.spacing12),
-          _AdminToolTile(
-            icon: Icons.logout_rounded,
-            title: 'Sign out',
-            subtitle: 'End the super admin session on this device.',
-            onTap: onSignOut,
+          // The container paints a background color, which would hide the
+          // ListTiles' ink splashes — give them a transparent Material to
+          // paint against instead.
+          Material(
+            type: MaterialType.transparency,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _AdminToolTile(
+                  icon: Icons.monitor_heart_outlined,
+                  title: 'Operations Control Center',
+                  subtitle:
+                      'Fulfillment, rides, care, hotel, laundry, and account '
+                      'management with ban controls.',
+                  onTap: () => context.push(ProRoutePaths.superAdmin),
+                ),
+                const SizedBox(height: ProDesignSystem.spacing12),
+                _AdminToolTile(
+                  icon: Icons.logout_rounded,
+                  title: 'Sign out',
+                  subtitle: 'End the super admin session on this device.',
+                  onTap: onSignOut,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -925,7 +937,9 @@ class _StatsPanel extends StatelessWidget {
             mainAxisSpacing: ProDesignSystem.spacing12,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: 1.45,
+            // Taller cells (1.15 vs 1.45) so tile content fits at this
+            // grid density.
+            childAspectRatio: 1.15,
             children: [
               _StatTile(
                 label: 'Users',
@@ -1004,6 +1018,8 @@ class _StatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // FittedBox scales the content down if the device's text scaling makes
+    // it taller than the fixed grid cell — overflow is impossible.
     return Container(
       padding: const EdgeInsets.all(ProDesignSystem.spacing12),
       decoration: BoxDecoration(
@@ -1011,24 +1027,26 @@ class _StatTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(ProDesignSystem.radiusMedium),
         border: Border.all(color: AppColors.lightGrey),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: AppColors.primaryDark, size: 22),
-          // Fixed spacing, not a Spacer(): this column has unbounded height
-          // from its parent grid cell context.
-          const SizedBox(height: ProDesignSystem.spacing8),
-          Text(
-            value,
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(label, style: Theme.of(context).textTheme.bodySmall),
-        ],
+      alignment: Alignment.centerLeft,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: AppColors.primaryDark, size: 22),
+            const SizedBox(height: ProDesignSystem.spacing8),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(label, style: Theme.of(context).textTheme.bodySmall),
+          ],
+        ),
       ),
     );
   }
