@@ -675,10 +675,15 @@ class _ProProfileManagementScreenState
           },
         );
       },
-    );
-    nameController.dispose();
-    cuisineController.dispose();
-    redeemCodeController.dispose();
+    ).whenComplete(() {
+      // Dispose only after the sheet's exit animation fully completes —
+      // disposing immediately after await still races the sheet's final
+      // rebuild, which crashes with "TextEditingController was used after
+      // being disposed" during the dismiss transition.
+      nameController.dispose();
+      cuisineController.dispose();
+      redeemCodeController.dispose();
+    });
   }
 
   Future<void> _openPharmacyEditor({
@@ -793,8 +798,7 @@ class _ProProfileManagementScreenState
           },
         );
       },
-    );
-    nameController.dispose();
+    ).whenComplete(nameController.dispose);
   }
 
   List<String> _splitTextList(String raw) {
@@ -1183,16 +1187,16 @@ class _ProProfileManagementScreenState
           },
         );
       },
-    );
-
-    locationController.dispose();
-    phoneController.dispose();
-    responseTimeController.dispose();
-    servicesController.dispose();
-    bookingModesController.dispose();
-    weekdaysController.dispose();
-    saturdayController.dispose();
-    sundayController.dispose();
+    ).whenComplete(() {
+      locationController.dispose();
+      phoneController.dispose();
+      responseTimeController.dispose();
+      servicesController.dispose();
+      bookingModesController.dispose();
+      weekdaysController.dispose();
+      saturdayController.dispose();
+      sundayController.dispose();
+    });
   }
 
   Future<void> _openLaundryServiceEditor({
@@ -1780,19 +1784,19 @@ class _ProProfileManagementScreenState
           },
         );
       },
-    );
-
-    nameController.dispose();
-    descriptionController.dispose();
-    priceController.dispose();
-    unitController.dispose();
-    itemCatalogController.dispose();
-    pickupSlotsController.dispose();
-    turnaroundHoursController.dispose();
-    minNoticeHoursController.dispose();
-    maxAdvanceDaysController.dispose();
-    taxRateController.dispose();
-    deliveryFeeController.dispose();
+    ).whenComplete(() {
+      nameController.dispose();
+      descriptionController.dispose();
+      priceController.dispose();
+      unitController.dispose();
+      itemCatalogController.dispose();
+      pickupSlotsController.dispose();
+      turnaroundHoursController.dispose();
+      minNoticeHoursController.dispose();
+      maxAdvanceDaysController.dispose();
+      taxRateController.dispose();
+      deliveryFeeController.dispose();
+    });
   }
 
   Future<void> _openDoctorSettingsEditor(Map<String, dynamic> item) async {
@@ -2058,15 +2062,15 @@ class _ProProfileManagementScreenState
           },
         );
       },
-    );
-
-    locationController.dispose();
-    phoneController.dispose();
-    whatsappController.dispose();
-    careModesController.dispose();
-    weekdaysController.dispose();
-    saturdayController.dispose();
-    sundayController.dispose();
+    ).whenComplete(() {
+      locationController.dispose();
+      phoneController.dispose();
+      whatsappController.dispose();
+      careModesController.dispose();
+      weekdaysController.dispose();
+      saturdayController.dispose();
+      sundayController.dispose();
+    });
   }
 
   Future<_ProfileInsights> _loadInsights() async {

@@ -299,6 +299,85 @@ router.patch(
 
 const RESTAURANT_REDEEM_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
+// GET /admin/pro-profiles/:id/binding-names — resolve the profile's binding
+// IDs to real business names so admins can review them by name.
+router.get(
+  '/pro-profiles/:id/binding-names',
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id);
+    const profile = await prisma.proProfile.findUnique({
+      where: { id },
+      select: { bindings: true },
+    });
+    if (!profile) {
+      return res.status(404).json({ error: 'Pro profile not found.' });
+    }
+
+    const bindings = (profile.bindings ?? {}) as Record<string, unknown>;
+    const idsFrom = (key: string): string[] => {
+      const raw = bindings[key];
+      return Array.isArray(raw) ? raw.map((entry) => String(entry)) : [];
+    };
+    const unique = (values: string[]) => Array.from(new Set(values));
+
+    const [
+      stores,
+      restaurants,
+      pharmacies,
+      providers,
+      doctors,
+      laundryServices,
+    ] = await Promise.all([
+      prisma.shoppingStore.findMany({
+        where: { id: { in: unique(idsFrom('shoppingStoreIds')) } },
+        select: { id: true, name: true },
+      }),
+      prisma.restaurant.findMany({
+        where: { id: { in: unique(idsFrom('restaurantIds')) } },
+        select: { id: true, name: true },
+      }),
+      prisma.pharmacy.findMany({
+        where: { id: { in: unique(idsFrom('pharmacyBusinesses')) } },
+        select: { id: true, name: true },
+      }),
+      prisma.homeServiceProvider.findMany({
+        where: { id: { in: unique(idsFrom('providerIds')) } },
+        select: { id: true, name: true },
+      }),
+      prisma.doctor.findMany({
+        where: { id: { in: unique(idsFrom('doctorIds')) } },
+        select: { id: true, name: true },
+      }),
+      prisma.laundryService.findMany({
+        where: { id: { in: unique(idsFrom('laundryServiceIds')) } },
+        select: { id: true, name: true },
+      }),
+    ]);
+
+    // Keep the same keys as `bindings` so the client can label them
+    // consistently; every entry maps an id to its display name.
+    res.json({
+      names: {
+        shoppingStoreIds: stores.map((row) => ({ id: row.id, name: row.name })),
+        restaurantIds: restaurants.map((row) => ({
+          id: row.id,
+          name: row.name,
+        })),
+        pharmacyBusinesses: pharmacies.map((row) => ({
+          id: row.id,
+          name: row.name,
+        })),
+        providerIds: providers.map((row) => ({ id: row.id, name: row.name })),
+        doctorIds: doctors.map((row) => ({ id: row.id, name: row.name })),
+        laundryServiceIds: laundryServices.map((row) => ({
+          id: row.id,
+          name: row.name,
+        })),
+      },
+    });
+  }),
+);
+
 async function nextRestaurantRedeemCode() {
   for (let attempt = 0; attempt < 10; attempt += 1) {
     let code = '';
@@ -343,6 +422,78 @@ router.post(
       select: { id: true, name: true, redeemCode: true },
     });
     res.json(restaurant);
+  }),
+);
+
+// GET /admin/pro-profiles/pending — pro profiles awaiting verification.
+router.get(
+  '/pro-profiles/pending',
+  asyncHandler(async (_req, res) => {
+    const profiles = await prisma.proProfile.findMany({
+      where: { isVerified: false },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        id: true,
+        userId: true,
+        businessName: true,
+        type: true,
+        activeModules: true,
+        avatarUrl: true,
+        isVerified: true,
+        bindings: true,
+        createdAt: true,
+        account: { select: { id: true, email: true, fullName: true, phone: true, banned: true } },
+      },
+    });
+    res.json({ profiles });
+  }),
+);
+
+// POST /admin/pro-profiles/:id/verify — approve a pro profile.
+router.post(
+  '/pro-profiles/:id/verify',
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id);
+    const profile = await prisma.proProfile.update({
+      where: { id },
+      data: { isVerified: true },
+      select: { id: true, businessName: true, isVerified: true },
+    });
+    res.json(profile);
+  }),
+);
+
+// POST /admin/pro-profiles/:id/reject — permanently remove a rejected profile
+// and its linked pro account so the signup can be redone cleanly.
+router.post(
+  '/pro-profiles/:id/reject',
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id);
+    const profile = await prisma.proProfile.findUnique({
+      where: { id },
+      select: { id: true, accountId: true, businessName: true },
+    });
+    if (!profile) {
+      return res.status(404).json({ error: 'Pro profile not found.' });
+    }
+
+    // Prevent admins from rejecting already-verified profiles by mistake.
+    const existing = await prisma.proProfile.findUnique({
+      where: { id },
+      select: { isVerified: true },
+    });
+    if (existing?.isVerified) {
+      return res
+        .status(409)
+        .json({ error: 'This profile is already verified and cannot be rejected.' });
+    }
+
+    await prisma.proProfile.delete({ where: { id } });
+    if (profile.accountId) {
+      await prisma.proAccount.deleteMany({ where: { id: profile.accountId } });
+    }
+
+    res.json({ id: profile.id, rejected: true, businessName: profile.businessName });
   }),
 );
 

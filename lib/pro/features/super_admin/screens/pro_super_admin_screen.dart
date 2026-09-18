@@ -186,10 +186,15 @@ class _MetricTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return _Panel(
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(data.icon, color: AppColors.primaryDark),
-          const Spacer(),
+          // Fixed spacing instead of a Spacer(): this Column lives inside
+          // _Panel's own Column, which hands down unbounded height — a flex
+          // child there crashes with "non-zero flex but unbounded
+          // constraints".
+          const SizedBox(height: ProDesignSystem.spacing12),
           Text(
             data.value is double
                 ? '\$${money(data.value as double)}'

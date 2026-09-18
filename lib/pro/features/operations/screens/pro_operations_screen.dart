@@ -90,27 +90,33 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             color: AppColors.shopping,
             onTap: () => _open(ProRoutePaths.shopProducts),
           ),
-          _OperationAction(
-            title: l10n.shoppingLane,
-            subtitle: l10n.shoppingLaneSubtitle,
-            icon: Icons.shopping_bag_outlined,
-            color: AppColors.shopping,
-            onTap: () => _open('${ProRoutePaths.shopQueue}?module=shopping'),
-          ),
-          _OperationAction(
-            title: l10n.foodLane,
-            subtitle: l10n.foodLaneSubtitle,
-            icon: Icons.restaurant_menu,
-            color: AppColors.food,
-            onTap: () => _open('${ProRoutePaths.shopQueue}?module=food'),
-          ),
-          _OperationAction(
-            title: l10n.pharmacyLane,
-            subtitle: l10n.pharmacyLaneSubtitle,
-            icon: Icons.local_pharmacy_outlined,
-            color: AppColors.pharmacy,
-            onTap: () => _open('${ProRoutePaths.shopQueue}?module=pharmacy'),
-          ),
+          // Module lanes only appear for modules this profile actually
+          // enabled — don't advertise lanes the shop can't use.
+          if (_providerHasModule(profile, ProModule.shopping))
+            _OperationAction(
+              title: l10n.shoppingLane,
+              subtitle: l10n.shoppingLaneSubtitle,
+              icon: Icons.shopping_bag_outlined,
+              color: AppColors.shopping,
+              onTap: () => _open('${ProRoutePaths.shopQueue}?module=shopping'),
+            ),
+          if (_providerHasModule(profile, ProModule.food))
+            _OperationAction(
+              title: l10n.foodLane,
+              subtitle: l10n.foodLaneSubtitle,
+              icon: Icons.restaurant_menu,
+              color: AppColors.food,
+              onTap: () => _open('${ProRoutePaths.shopQueue}?module=food'),
+            ),
+          if (_providerHasModule(profile, ProModule.pharmacy))
+            _OperationAction(
+              title: l10n.pharmacyLane,
+              subtitle: l10n.pharmacyLaneSubtitle,
+              icon: Icons.local_pharmacy_outlined,
+              color: AppColors.pharmacy,
+              onTap: () =>
+                  _open('${ProRoutePaths.shopQueue}?module=pharmacy'),
+            ),
         ];
       case ProProfileType.provider:
         final hasServices = _providerHasModule(profile, ProModule.services);

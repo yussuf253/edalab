@@ -78,10 +78,9 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
   void _onProfileSelected(ProProfileType type) {
     setState(() {
       _selectedProfileType = type;
+      // Start with nothing pre-selected so only the modules the merchant
+      // explicitly checks end up in their profile.
       _selectedModules.clear();
-      _selectedModules.addAll(
-        ProModuleHelper.getDefaultModulesForProfile(type),
-      );
       _submissionMessage = null;
     });
   }

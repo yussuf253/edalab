@@ -23,7 +23,10 @@ class ProModuleHelper {
   }
 
   static List<ProModule> getDefaultModulesForProfile(ProProfileType type) {
-    return getModulesForProfile(type);
+    // Only the primary (first) module is a sensible fallback — never grant
+    // every module for the profile type by default.
+    final modules = getModulesForProfile(type);
+    return modules.isEmpty ? const [] : [modules.first];
   }
 
   static List<ProModule> sanitizeModules(
