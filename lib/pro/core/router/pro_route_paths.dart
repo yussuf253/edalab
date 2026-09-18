@@ -17,6 +17,10 @@ class ProRoutePaths {
   static const profileManagement = '/pro/profile/manage';
   static const superAdmin = '/pro/super-admin';
   static const superAdminHome = '/pro/super-admin-home';
+  static const adminUsers = '/pro/admin/users';
+  static const adminProAccounts = '/pro/admin/pro-accounts';
+  static const adminOrders = '/pro/admin/orders';
+  static const adminRestaurants = '/pro/admin/restaurants';
 
   static const shopHome = '/pro/shop';
   static const shopQueue = '/pro/shop/queue';

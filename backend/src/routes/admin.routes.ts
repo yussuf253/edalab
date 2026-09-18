@@ -497,4 +497,410 @@ router.post(
   }),
 );
 
+// ---------------------------------------------------------------------------
+// Data management: paginated + searchable record lists
+// ---------------------------------------------------------------------------
+
+function parsePagination(query: Request['query']) {
+  const page = Math.max(1, Number(query.page) || 1);
+  const take = Math.min(100, Math.max(1, Number(query.take) || 25));
+  const search = String(query.search ?? '').trim();
+  return { page, take, search, skip: (page - 1) * take };
+}
+
+function hasBannedField(model: string) {
+  // Only User and ProAccount carry ban state.
+  return model === 'user' || model === 'proAccount';
+}
+
+// GET /admin/users — paginated customer accounts with order counts.
+router.get(
+  '/users',
+  asyncHandler(async (req, res) => {
+    const { page, take, search, skip } = parsePagination(req.query);
+    const where = search
+      ? {
+          OR: [
+            { email: { contains: search, mode: 'insensitive' as const } },
+            { firstName: { contains: search, mode: 'insensitive' as const } },
+            { lastName: { contains: search, mode: 'insensitive' as const } },
+            { phone: { contains: search } },
+          ],
+        }
+      : {};
+
+    const [total, users] = await Promise.all([
+      prisma.user.count({ where }),
+      prisma.user.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          banned: true,
+          banReason: true,
+          createdAt: true,
+          proProfile: { select: { businessName: true, type: true } },
+          _count: { select: { orders: true, rideBookings: true } },
+        },
+      }),
+    ]);
+
+    res.json({
+      users: users.map((user) => ({
+        id: user.id,
+        email: user.email,
+        name: [user.firstName, user.lastName].filter(Boolean).join(' '),
+        phone: user.phone,
+        banned: user.banned,
+        banReason: user.banReason,
+        createdAt: user.createdAt,
+        isPro: user.proProfile != null,
+        proBusinessName: user.proProfile?.businessName ?? null,
+        orders: user._count.orders,
+        rides: user._count.rideBookings,
+      })),
+      total,
+      page,
+      take,
+    });
+  }),
+);
+
+// GET /admin/pro-accounts — paginated pro accounts with profile summary.
+router.get(
+  '/pro-accounts',
+  asyncHandler(async (req, res) => {
+    const { page, take, search, skip } = parsePagination(req.query);
+    const where = search
+      ? {
+          OR: [
+            { email: { contains: search, mode: 'insensitive' as const } },
+            { fullName: { contains: search, mode: 'insensitive' as const } },
+            { phone: { contains: search } },
+          ],
+        }
+      : {};
+
+    const [total, accounts] = await Promise.all([
+      prisma.proAccount.count({ where }),
+      prisma.proAccount.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          phone: true,
+          banned: true,
+          banReason: true,
+          createdAt: true,
+          proProfile: {
+            select: {
+              id: true,
+              businessName: true,
+              type: true,
+              isVerified: true,
+              activeModules: true,
+            },
+          },
+        },
+      }),
+    ]);
+
+    res.json({ accounts, total, page, take });
+  }),
+);
+
+// GET /admin/pro-profiles — paginated profiles with type/verification filters.
+router.get(
+  '/pro-profiles',
+  asyncHandler(async (req, res) => {
+    const { page, take, search, skip } = parsePagination(req.query);
+    const type = String(req.query.type ?? '').toUpperCase();
+    const verification = String(req.query.verification ?? ''); // '', 'verified', 'pending'
+
+    const where: Record<string, unknown> = {};
+    if (search) {
+      where.businessName = { contains: search, mode: 'insensitive' };
+    }
+    if (['SHOP', 'PROVIDER', 'DOCTOR', 'DELIVERY', 'RIDER'].includes(type)) {
+      where.type = type;
+    }
+    if (verification === 'verified') {
+      where.isVerified = true;
+    } else if (verification === 'pending') {
+      where.isVerified = false;
+    }
+
+    const [total, profiles] = await Promise.all([
+      prisma.proProfile.count({ where }),
+      prisma.proProfile.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+        select: {
+          id: true,
+          userId: true,
+          businessName: true,
+          type: true,
+          activeModules: true,
+          isVerified: true,
+          isOnline: true,
+          createdAt: true,
+          account: { select: { email: true, banned: true } },
+        },
+      }),
+    ]);
+
+    res.json({ profiles, total, page, take });
+  }),
+);
+
+// POST /admin/pro-profiles/:id/verify-toggle — flip verification.
+router.post(
+  '/pro-profiles/:id/verify-toggle',
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id);
+    const existing = await prisma.proProfile.findUnique({
+      where: { id },
+      select: { isVerified: true, businessName: true },
+    });
+    if (!existing) {
+      return res.status(404).json({ error: 'Pro profile not found.' });
+    }
+    const profile = await prisma.proProfile.update({
+      where: { id },
+      data: { isVerified: !existing.isVerified },
+      select: { id: true, businessName: true, isVerified: true },
+    });
+    res.json(profile);
+  }),
+);
+
+// GET /admin/orders — unified paginated orders across modules.
+router.get(
+  '/orders',
+  asyncHandler(async (req, res) => {
+    const { page, take, search, skip } = parsePagination(req.query);
+    const module = String(req.query.module ?? ''); // '', 'order', 'ride', 'laundry', 'hotel', 'appointment'
+    const status = String(req.query.status ?? '').toUpperCase();
+
+    const userWhere = search
+      ? {
+          user: {
+            OR: [
+              { email: { contains: search, mode: 'insensitive' as const } },
+              { firstName: { contains: search, mode: 'insensitive' as const } },
+              { lastName: { contains: search, mode: 'insensitive' as const } },
+            ],
+          },
+        }
+      : {};
+
+    const sections: Array<Promise<unknown>> = [];
+    const wants = (name: string) => module === '' || module === name;
+    const statusFor = (values: string[]) =>
+      status && values.includes(status) ? { status: status as never } : {};
+
+    const buildOrders = wants('order')
+      ? prisma.order.findMany({
+          where: { ...userWhere, ...statusFor(['DRAFT', 'PENDING', 'CONFIRMED', 'PROCESSING', 'DISPATCHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'REFUNDED']) },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take,
+          select: {
+            id: true,
+            moduleType: true,
+            status: true,
+            total: true,
+            createdAt: true,
+            user: { select: { email: true, firstName: true, lastName: true } },
+          },
+        })
+      : Promise.resolve([]);
+    const countOrders = wants('order')
+      ? prisma.order.count({ where: userWhere })
+      : Promise.resolve(0);
+
+    const buildRides = wants('ride')
+      ? prisma.rideBooking.findMany({
+          where: { ...userWhere, ...statusFor(['REQUESTED', 'ACCEPTED', 'ARRIVING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']) },
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take,
+          select: {
+            id: true,
+            status: true,
+            total: true,
+            createdAt: true,
+            user: { select: { email: true, firstName: true, lastName: true } },
+          },
+        })
+      : Promise.resolve([]);
+    const countRides = wants('ride')
+      ? prisma.rideBooking.count({ where: userWhere })
+      : Promise.resolve(0);
+
+    const buildLaundry = wants('laundry')
+      ? prisma.laundryOrder.findMany({
+          where: userWhere,
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take,
+          select: {
+            id: true,
+            status: true,
+            total: true,
+            createdAt: true,
+            user: { select: { email: true, firstName: true, lastName: true } },
+          },
+        })
+      : Promise.resolve([]);
+    const countLaundry = wants('laundry')
+      ? prisma.laundryOrder.count({ where: userWhere })
+      : Promise.resolve(0);
+
+    const buildHotels = wants('hotel')
+      ? prisma.hotelBooking.findMany({
+          where: userWhere,
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take,
+          select: {
+            id: true,
+            status: true,
+            total: true,
+            createdAt: true,
+            user: { select: { email: true, firstName: true, lastName: true } },
+          },
+        })
+      : Promise.resolve([]);
+    const countHotels = wants('hotel')
+      ? prisma.hotelBooking.count({ where: userWhere })
+      : Promise.resolve(0);
+
+    const buildAppointments = wants('appointment')
+      ? prisma.appointment.findMany({
+          where: userWhere,
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take,
+          select: {
+            id: true,
+            status: true,
+            createdAt: true,
+            user: { select: { email: true, firstName: true, lastName: true } },
+          },
+        })
+      : Promise.resolve([]);
+    const countAppointments = wants('appointment')
+      ? prisma.appointment.count({ where: userWhere })
+      : Promise.resolve(0);
+
+    const [orders, countO, rides, countR, laundry, countL, hotels, countH, appointments, countA] =
+      await Promise.all([
+        buildOrders,
+        countOrders,
+        buildRides,
+        countRides,
+        buildLaundry,
+        countLaundry,
+        buildHotels,
+        countHotels,
+        buildAppointments,
+        countAppointments,
+      ]);
+
+    const normalize = (
+      kind: string,
+      rows: Array<Record<string, unknown>>,
+    ) =>
+      rows.map((row) => {
+        const user = row.user as { email: string; firstName: string; lastName: string };
+        return {
+          id: String(row.id),
+          kind,
+          moduleType: row.moduleType != null ? String(row.moduleType) : null,
+          status: String(row.status),
+          total: row.total != null ? Number(row.total) : null,
+          createdAt: row.createdAt,
+          customer: [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email,
+          customerEmail: user.email,
+          createdAtIso: new Date(row.createdAt as string | number | Date).toISOString(),
+        };
+      });
+
+    const all = [
+      ...normalize('order', orders as Array<Record<string, unknown>>),
+      ...normalize('ride', rides as Array<Record<string, unknown>>),
+      ...normalize('laundry', laundry as Array<Record<string, unknown>>),
+      ...normalize('hotel', hotels as Array<Record<string, unknown>>),
+      ...normalize('appointment', appointments as Array<Record<string, unknown>>),
+    ].sort(
+      (a, b) =>
+        new Date(b.createdAtIso).getTime() - new Date(a.createdAtIso).getTime(),
+    );
+
+    res.json({
+      orders: all.slice(0, take),
+      total: Number(countO) + Number(countR) + Number(countL) + Number(countH) + Number(countA),
+      page,
+      take,
+    });
+  }),
+);
+
+// GET /admin/restaurants — paginated catalog with redeem codes.
+router.get(
+  '/restaurants',
+  asyncHandler(async (req, res) => {
+    const { page, take, search, skip } = parsePagination(req.query);
+    const where = search
+      ? { name: { contains: search, mode: 'insensitive' as const } }
+      : {};
+
+    const [total, restaurants] = await Promise.all([
+      prisma.restaurant.count({ where }),
+      prisma.restaurant.findMany({
+        where,
+        orderBy: { name: 'asc' },
+        skip,
+        take,
+        select: {
+          id: true,
+          name: true,
+          cuisine: true,
+          imageUrl: true,
+          redeemCode: true,
+        },
+      }),
+    ]);
+
+    res.json({ restaurants, total, page, take });
+  }),
+);
+
+// POST /admin/restaurants/:id/regenerate-code — issue a fresh redeem code.
+router.post(
+  '/restaurants/:id/regenerate-code',
+  asyncHandler(async (req, res) => {
+    const id = String(req.params.id);
+    const restaurant = await prisma.restaurant.update({
+      where: { id },
+      data: { redeemCode: await nextRestaurantRedeemCode() },
+      select: { id: true, name: true, redeemCode: true },
+    });
+    res.json(restaurant);
+  }),
+);
+
 export default router;

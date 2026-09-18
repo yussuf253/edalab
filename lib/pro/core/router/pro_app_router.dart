@@ -30,6 +30,7 @@ import '../../features/shop/screens/shop_products_screen.dart';
 import '../../features/restaurant/screens/restaurant_menu_screen.dart';
 import '../../features/shop/screens/shop_store_setup_screen.dart';
 import '../../features/auth/screens/pro_banned_screen.dart';
+import '../../features/super_admin/screens/pro_admin_data_screens.dart';
 import '../../features/super_admin/screens/pro_super_admin_home_screen.dart';
 import '../../features/super_admin/screens/pro_super_admin_screen.dart';
 import '../models/pro_profile.dart';
@@ -208,6 +209,22 @@ GoRouter createProAppRouter({
       GoRoute(
         path: ProRoutePaths.superAdminHome,
         builder: (context, state) => const ProSuperAdminHomeScreen(),
+      ),
+      GoRoute(
+        path: ProRoutePaths.adminUsers,
+        builder: (context, state) => const AdminUsersScreen(),
+      ),
+      GoRoute(
+        path: ProRoutePaths.adminProAccounts,
+        builder: (context, state) => const AdminProAccountsScreen(),
+      ),
+      GoRoute(
+        path: ProRoutePaths.adminOrders,
+        builder: (context, state) => const AdminOrdersScreen(),
+      ),
+      GoRoute(
+        path: ProRoutePaths.adminRestaurants,
+        builder: (context, state) => const AdminRestaurantsScreen(),
       ),
       GoRoute(
         path: ProRoutePaths.profileManagement,
