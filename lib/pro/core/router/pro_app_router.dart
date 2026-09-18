@@ -220,7 +220,9 @@ GoRouter createProAppRouter({
       ),
       GoRoute(
         path: ProRoutePaths.adminOrders,
-        builder: (context, state) => const AdminOrdersScreen(),
+        builder: (context, state) => AdminOrdersScreen(
+          initialModule: state.uri.queryParameters['module'] ?? '',
+        ),
       ),
       GoRoute(
         path: ProRoutePaths.adminRestaurants,

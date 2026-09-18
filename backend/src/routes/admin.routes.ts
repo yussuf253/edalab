@@ -728,12 +728,12 @@ router.get(
         })
       : Promise.resolve([]);
     const countOrders = wants('order')
-      ? prisma.order.count({ where: userWhere })
+      ? prisma.order.count({ where: { ...userWhere, ...(status ? { status: status as never } : {}) } })
       : Promise.resolve(0);
 
     const buildRides = wants('ride')
       ? prisma.rideBooking.findMany({
-          where: { ...userWhere, ...statusFor(['REQUESTED', 'ACCEPTED', 'ARRIVING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']) },
+          where: { ...userWhere, ...statusFor(['REQUESTED', 'ACCEPTED', 'DRIVER_ARRIVING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']) },
           orderBy: { createdAt: 'desc' },
           skip,
           take,
@@ -747,12 +747,15 @@ router.get(
         })
       : Promise.resolve([]);
     const countRides = wants('ride')
-      ? prisma.rideBooking.count({ where: userWhere })
+      ? prisma.rideBooking.count({ where: { ...userWhere, ...(status ? { status: status as never } : {}) } })
       : Promise.resolve(0);
 
     const buildLaundry = wants('laundry')
       ? prisma.laundryOrder.findMany({
-          where: userWhere,
+          where: {
+            ...userWhere,
+            ...statusFor(['PENDING', 'SCHEDULED', 'PICKED_UP', 'CLEANING', 'OUT_FOR_DELIVERY', 'COMPLETED', 'CANCELLED']),
+          },
           orderBy: { createdAt: 'desc' },
           skip,
           take,
@@ -766,12 +769,15 @@ router.get(
         })
       : Promise.resolve([]);
     const countLaundry = wants('laundry')
-      ? prisma.laundryOrder.count({ where: userWhere })
+      ? prisma.laundryOrder.count({ where: { ...userWhere, ...(status ? { status: status as never } : {}) } })
       : Promise.resolve(0);
 
     const buildHotels = wants('hotel')
       ? prisma.hotelBooking.findMany({
-          where: userWhere,
+          where: {
+            ...userWhere,
+            ...statusFor(['PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED']),
+          },
           orderBy: { createdAt: 'desc' },
           skip,
           take,
@@ -785,12 +791,15 @@ router.get(
         })
       : Promise.resolve([]);
     const countHotels = wants('hotel')
-      ? prisma.hotelBooking.count({ where: userWhere })
+      ? prisma.hotelBooking.count({ where: { ...userWhere, ...(status ? { status: status as never } : {}) } })
       : Promise.resolve(0);
 
     const buildAppointments = wants('appointment')
       ? prisma.appointment.findMany({
-          where: userWhere,
+          where: {
+            ...userWhere,
+            ...statusFor(['UPCOMING', 'PENDING', 'APPROVED', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'REJECTED']),
+          },
           orderBy: { createdAt: 'desc' },
           skip,
           take,
@@ -803,7 +812,7 @@ router.get(
         })
       : Promise.resolve([]);
     const countAppointments = wants('appointment')
-      ? prisma.appointment.count({ where: userWhere })
+      ? prisma.appointment.count({ where: { ...userWhere, ...(status ? { status: status as never } : {}) } })
       : Promise.resolve(0);
 
     const [orders, countO, rides, countR, laundry, countL, hotels, countH, appointments, countA] =

@@ -541,7 +541,9 @@ class _AdminProAccountsScreenState extends State<AdminProAccountsScreen> {
 }
 
 class AdminOrdersScreen extends StatefulWidget {
-  const AdminOrdersScreen({super.key});
+  const AdminOrdersScreen({super.key, this.initialModule = ''});
+
+  final String initialModule;
 
   @override
   State<AdminOrdersScreen> createState() => _AdminOrdersScreenState();
@@ -556,7 +558,7 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
   bool _loadingMore = false;
   Object? _error;
   String _search = '';
-  String _module = '';
+  late String _module = widget.initialModule;
   static const _moduleOptions = <String, String>{
     '': 'All modules',
     'order': 'Store orders',

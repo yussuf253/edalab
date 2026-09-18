@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../core/constants/pro_design_system.dart';
 import '../../../../core/utils/money_format.dart';
+import '../../../core/router/pro_route_paths.dart';
 
 class ProSuperAdminScreen extends StatefulWidget {
   const ProSuperAdminScreen({super.key});
@@ -143,25 +145,37 @@ class _MetricsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tiles = [
-      _MetricData('Users', metrics.users, Icons.people_outline),
-      _MetricData('Pro accounts', metrics.proAccounts, Icons.badge_outlined),
-      _MetricData('Orders', metrics.orders, Icons.receipt_long_outlined),
-      _MetricData('Rides', metrics.rides, Icons.local_taxi_outlined),
-      _MetricData('Appointments', metrics.appointments, Icons.event_note),
+      _MetricData('Users', metrics.users, Icons.people_outline,
+          route: ProRoutePaths.adminUsers),
+      _MetricData('Pro accounts', metrics.proAccounts, Icons.badge_outlined,
+          route: ProRoutePaths.adminProAccounts),
+      _MetricData('Orders', metrics.orders, Icons.receipt_long_outlined,
+          route: '${ProRoutePaths.adminOrders}?module=order'),
+      _MetricData('Rides', metrics.rides, Icons.local_taxi_outlined,
+          route: '${ProRoutePaths.adminOrders}?module=ride'),
+      _MetricData('Appointments', metrics.appointments, Icons.event_note,
+          route: '${ProRoutePaths.adminOrders}?module=appointment'),
       _MetricData(
         'Laundry',
         metrics.laundryOrders,
         Icons.local_laundry_service,
+        route: '${ProRoutePaths.adminOrders}?module=laundry',
       ),
-      _MetricData('Hotels', metrics.hotelBookings, Icons.hotel_outlined),
-      _MetricData('Revenue', metrics.revenueTotal, Icons.payments_outlined),
-      _MetricData('Today orders', metrics.todayOrders, Icons.today_outlined),
-      _MetricData('Today rides', metrics.todayRides, Icons.route_outlined),
-      _MetricData('Banned users', metrics.bannedUsers, Icons.block_outlined),
+      _MetricData('Hotels', metrics.hotelBookings, Icons.hotel_outlined,
+          route: '${ProRoutePaths.adminOrders}?module=hotel'),
+      _MetricData('Revenue', metrics.revenueTotal, Icons.payments_outlined,
+          route: '${ProRoutePaths.adminOrders}?module=order'),
+      _MetricData('Today orders', metrics.todayOrders, Icons.today_outlined,
+          route: '${ProRoutePaths.adminOrders}?module=order'),
+      _MetricData('Today rides', metrics.todayRides, Icons.route_outlined,
+          route: '${ProRoutePaths.adminOrders}?module=ride'),
+      _MetricData('Banned users', metrics.bannedUsers, Icons.block_outlined,
+          route: ProRoutePaths.adminUsers),
       _MetricData(
         'Banned Pro',
         metrics.bannedProAccounts,
         Icons.admin_panel_settings_outlined,
+        route: ProRoutePaths.adminProAccounts,
       ),
     ];
 
@@ -174,22 +188,35 @@ class _MetricsGrid extends StatelessWidget {
       // Original compact ratio. Overflow is impossible regardless: each
       // _MetricTile FittedBox-scales its content to the cell.
       childAspectRatio: 1.45,
-      children: tiles.map((tile) => _MetricTile(data: tile)).toList(),
+      children: tiles
+          .map(
+            (tile) => _MetricTile(
+              data: tile,
+              onTap: tile.route == null
+                  ? null
+                  : () => context.push(tile.route!),
+            ),
+          )
+          .toList(),
     );
   }
 }
 
 class _MetricTile extends StatelessWidget {
-  const _MetricTile({required this.data});
+  const _MetricTile({required this.data, this.onTap});
 
   final _MetricData data;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     // Built directly (not via _Panel) so this Column receives the grid
     // cell's tight height. FittedBox scales the content down if the device's
     // text scaling makes it taller than the cell — overflow is impossible.
-    return Container(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
       padding: const EdgeInsets.all(ProDesignSystem.spacing12),
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -223,6 +250,7 @@ class _MetricTile extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -405,11 +433,12 @@ class _Panel extends StatelessWidget {
 }
 
 class _MetricData {
-  const _MetricData(this.label, this.value, this.icon);
+  const _MetricData(this.label, this.value, this.icon, {this.route});
 
   final String label;
   final num value;
   final IconData icon;
+  final String? route;
 }
 
 class _AdminOverview {
