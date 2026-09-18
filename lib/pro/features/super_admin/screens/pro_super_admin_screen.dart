@@ -186,34 +186,43 @@ class _MetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Panel(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(data.icon, color: AppColors.primaryDark, size: 22),
-          // Fixed spacing instead of a Spacer(): this Column lives inside
-          // _Panel's own Column, which hands down unbounded height — a flex
-          // child there crashes with "non-zero flex but unbounded
-          // constraints".
-          const SizedBox(height: ProDesignSystem.spacing8),
-          Text(
-            data.value is double
-                ? 'DJF ${money(data.value as double)}'
-                : '${data.value}',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
+    // Built directly (not via _Panel) so this Column receives the grid
+    // cell's tight height. FittedBox scales the content down if the device's
+    // text scaling makes it taller than the cell — overflow is impossible.
+    return Container(
+      padding: const EdgeInsets.all(ProDesignSystem.spacing12),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.lightGrey),
+      ),
+      alignment: Alignment.centerLeft,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(data.icon, color: AppColors.primaryDark, size: 22),
+            const SizedBox(height: ProDesignSystem.spacing8),
+            Text(
+              data.value is double
+                  ? 'DJF ${money(data.value as double)}'
+                  : '${data.value}',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            data.label,
-            style: Theme.of(context).textTheme.bodySmall,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+            Text(
+              data.label,
+              style: Theme.of(context).textTheme.bodySmall,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -385,7 +394,10 @@ class _Panel extends StatelessWidget {
             ),
             const SizedBox(height: ProDesignSystem.spacing12),
           ],
-          child,
+          // This Container paints a background color, which would hide any
+          // ListTile's own background and ink splashes — give descendants a
+          // transparent Material to paint against instead.
+          Material(type: MaterialType.transparency, child: child),
         ],
       ),
     );
