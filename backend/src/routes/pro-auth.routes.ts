@@ -423,6 +423,24 @@ router.post(
       avatarUrl?: string | null;
       bindingOverrides?: { providerIds?: string[]; laundryServiceIds?: string[] };
     };
+
+    // Super admins never get pro profiles — their home is the admin
+    // control center. Block creation even if a client forces the flow.
+    const adminEmails = (process.env.SUPER_ADMIN_EMAILS || process.env.SUPER_ADMIN_EMAIL || 'admin@edalab.com')
+      .split(',')
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean);
+    const accountEmail = account.email.toLowerCase().trim();
+    const isSuperAdminEmail =
+      adminEmails.includes(accountEmail) ||
+      accountEmail.startsWith('admin@') ||
+      accountEmail.includes('+admin@');
+    if (isSuperAdminEmail) {
+      return res.status(403).json({
+        error: 'Super admin accounts cannot create pro profiles.',
+      });
+    }
+
     const profileType: ProProfileType = parsedBody.type;
     const requestedModules: ProModule[] = parsedBody.activeModules;
     const businessName: string = parsedBody.businessName;

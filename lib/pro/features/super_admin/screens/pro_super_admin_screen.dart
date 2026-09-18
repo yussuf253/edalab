@@ -171,7 +171,9 @@ class _MetricsGrid extends StatelessWidget {
       mainAxisSpacing: ProDesignSystem.spacing12,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.45,
+      // Taller cells: at 1.45 the tile content (icon + spacing + value +
+      // label) overflowed the fixed cell height by a few pixels.
+      childAspectRatio: 1.15,
       children: tiles.map((tile) => _MetricTile(data: tile)).toList(),
     );
   }
@@ -189,21 +191,28 @@ class _MetricTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(data.icon, color: AppColors.primaryDark),
+          Icon(data.icon, color: AppColors.primaryDark, size: 22),
           // Fixed spacing instead of a Spacer(): this Column lives inside
           // _Panel's own Column, which hands down unbounded height — a flex
           // child there crashes with "non-zero flex but unbounded
           // constraints".
-          const SizedBox(height: ProDesignSystem.spacing12),
+          const SizedBox(height: ProDesignSystem.spacing8),
           Text(
             data.value is double
-                ? '\$${money(data.value as double)}'
+                ? 'DJF ${money(data.value as double)}'
                 : '${data.value}',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          Text(data.label, style: Theme.of(context).textTheme.bodySmall),
+          Text(
+            data.label,
+            style: Theme.of(context).textTheme.bodySmall,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
