@@ -43,6 +43,12 @@ class _ProLoginScreenState extends State<ProLoginScreen> {
       if (!mounted) return;
       final profile = proAuth.currentProfile;
       if (profile == null) {
+        // Super admins have no pro profile — go to the admin home instead
+        // of pro-profile signup.
+        if (proAuth.isSuperAdmin) {
+          context.go(ProRoutePaths.superAdminHome);
+          return;
+        }
         context.go(ProRoutePaths.signup);
         return;
       }
