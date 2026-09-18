@@ -171,9 +171,9 @@ class _MetricsGrid extends StatelessWidget {
       mainAxisSpacing: ProDesignSystem.spacing12,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      // Taller cells: at 1.45 the tile content (icon + spacing + value +
-      // label) overflowed the fixed cell height by a few pixels.
-      childAspectRatio: 1.15,
+      // Original compact ratio. Overflow is impossible regardless: each
+      // _MetricTile FittedBox-scales its content to the cell.
+      childAspectRatio: 1.45,
       children: tiles.map((tile) => _MetricTile(data: tile)).toList(),
     );
   }
