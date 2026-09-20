@@ -126,6 +126,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   bool _loadingMore = false;
   Object? _error;
   String _search = '';
+  String _banFilter = ''; // '', 'pro', 'banned', 'active'
 
   @override
   void initState() {
@@ -145,9 +146,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       _error = null;
     });
     try {
+      final banParam = _banFilter == 'pro'
+          ? ''
+          : '&banned=$_banFilter';
+      final proParam = _banFilter == 'pro' ? '&proOnly=true' : '';
       final response = Map<String, dynamic>.from(
         await ApiClient.get(
-          '/admin/users?page=1&take=25&search=$_search',
+          '/admin/users?page=1&take=25&search=$_search$banParam$proParam',
           forceRefresh: true,
         ) as Map,
       );
@@ -175,7 +180,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     try {
       final response = Map<String, dynamic>.from(
         await ApiClient.get(
-          '/admin/users?page=${_page + 1}&take=25&search=$_search',
+          '/admin/users?page=${_page + 1}&take=25&search=$_search'
+          '${_banFilter == 'pro' ? '' : '&banned=$_banFilter'}'
+          '${_banFilter == 'pro' ? '&proOnly=true' : ''}',
           forceRefresh: true,
         ) as Map,
       );
@@ -233,6 +240,37 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                 setState(() => _search = _searchController.text.trim());
                 _load();
               },
+            ),
+          ),
+          SizedBox(
+            height: 48,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(
+                horizontal: ProDesignSystem.spacing12,
+                vertical: ProDesignSystem.spacing8,
+              ),
+              children: [
+                for (final entry in const {
+                  '': 'All users',
+                  'pro': 'PRO only',
+                  'banned': 'Banned',
+                  'active': 'Active',
+                }.entries)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      right: ProDesignSystem.spacing8,
+                    ),
+                    child: ChoiceChip(
+                      label: Text(entry.value),
+                      selected: _banFilter == entry.key,
+                      onSelected: (_) {
+                        setState(() => _banFilter = entry.key);
+                        _load();
+                      },
+                    ),
+                  ),
+              ],
             ),
           ),
           Expanded(
@@ -337,6 +375,7 @@ class _AdminProAccountsScreenState extends State<AdminProAccountsScreen> {
   bool _loadingMore = false;
   Object? _error;
   String _search = '';
+  String _filter = ''; // '', 'verified', 'pending', 'banned', 'active'
 
   @override
   void initState() {
@@ -350,6 +389,16 @@ class _AdminProAccountsScreenState extends State<AdminProAccountsScreen> {
     super.dispose();
   }
 
+  String get _accountsQuery {
+    final verification = _filter == 'verified' || _filter == 'pending'
+        ? '&verification=$_filter'
+        : '';
+    final banned = _filter == 'banned' || _filter == 'active'
+        ? '&banned=${_filter == 'banned' ? 'banned' : 'active'}'
+        : '';
+    return 'search=$_search$verification$banned';
+  }
+
   Future<void> _load() async {
     setState(() {
       _loading = true;
@@ -358,7 +407,7 @@ class _AdminProAccountsScreenState extends State<AdminProAccountsScreen> {
     try {
       final response = Map<String, dynamic>.from(
         await ApiClient.get(
-          '/admin/pro-accounts?page=1&take=25&search=$_search',
+          '/admin/pro-accounts?page=1&take=25&$_accountsQuery',
           forceRefresh: true,
         ) as Map,
       );
@@ -386,7 +435,7 @@ class _AdminProAccountsScreenState extends State<AdminProAccountsScreen> {
     try {
       final response = Map<String, dynamic>.from(
         await ApiClient.get(
-          '/admin/pro-accounts?page=${_page + 1}&take=25&search=$_search',
+          '/admin/pro-accounts?page=${_page + 1}&take=25&$_accountsQuery',
           forceRefresh: true,
         ) as Map,
       );
@@ -446,6 +495,38 @@ class _AdminProAccountsScreenState extends State<AdminProAccountsScreen> {
                 setState(() => _search = _searchController.text.trim());
                 _load();
               },
+            ),
+          ),
+          SizedBox(
+            height: 48,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(
+                horizontal: ProDesignSystem.spacing12,
+                vertical: ProDesignSystem.spacing8,
+              ),
+              children: [
+                for (final entry in const {
+                  '': 'All accounts',
+                  'verified': 'Verified',
+                  'pending': 'Pending',
+                  'banned': 'Banned',
+                  'active': 'Active',
+                }.entries)
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      right: ProDesignSystem.spacing8,
+                    ),
+                    child: ChoiceChip(
+                      label: Text(entry.value),
+                      selected: _filter == entry.key,
+                      onSelected: (_) {
+                        setState(() => _filter = entry.key);
+                        _load();
+                      },
+                    ),
+                  ),
+              ],
             ),
           ),
           Expanded(

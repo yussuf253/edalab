@@ -518,16 +518,24 @@ router.get(
   '/users',
   asyncHandler(async (req, res) => {
     const { page, take, search, skip } = parsePagination(req.query);
-    const where = search
-      ? {
-          OR: [
-            { email: { contains: search, mode: 'insensitive' as const } },
-            { firstName: { contains: search, mode: 'insensitive' as const } },
-            { lastName: { contains: search, mode: 'insensitive' as const } },
-            { phone: { contains: search } },
-          ],
-        }
-      : {};
+    // '', 'banned', 'active'
+    const banFilter = String(req.query.banned ?? '');
+    const proOnly = String(req.query.proOnly ?? '') === 'true';
+    const where = {
+      ...(search
+        ? {
+            OR: [
+              { email: { contains: search, mode: 'insensitive' as const } },
+              { firstName: { contains: search, mode: 'insensitive' as const } },
+              { lastName: { contains: search, mode: 'insensitive' as const } },
+              { phone: { contains: search } },
+            ],
+          }
+        : {}),
+      ...(banFilter === 'banned' ? { banned: true } : {}),
+      ...(banFilter === 'active' ? { banned: false } : {}),
+      ...(proOnly ? { proProfile: { isNot: null } } : {}),
+    } as Record<string, unknown>;
 
     const [total, users] = await Promise.all([
       prisma.user.count({ where }),
@@ -577,15 +585,29 @@ router.get(
   '/pro-accounts',
   asyncHandler(async (req, res) => {
     const { page, take, search, skip } = parsePagination(req.query);
-    const where = search
-      ? {
-          OR: [
-            { email: { contains: search, mode: 'insensitive' as const } },
-            { fullName: { contains: search, mode: 'insensitive' as const } },
-            { phone: { contains: search } },
-          ],
-        }
-      : {};
+    // '', 'banned', 'active'
+    const banFilter = String(req.query.banned ?? '');
+    // '', 'verified', 'pending' — filters by the linked profile's verification
+    const verification = String(req.query.verification ?? '');
+    const where = {
+      ...(search
+        ? {
+            OR: [
+              { email: { contains: search, mode: 'insensitive' as const } },
+              { fullName: { contains: search, mode: 'insensitive' as const } },
+              { phone: { contains: search } },
+            ],
+          }
+        : {}),
+      ...(banFilter === 'banned' ? { banned: true } : {}),
+      ...(banFilter === 'active' ? { banned: false } : {}),
+      ...(verification === 'verified'
+        ? { proProfile: { is: { isVerified: true } } }
+        : {}),
+      ...(verification === 'pending'
+        ? { proProfile: { is: { isVerified: false } } }
+        : {}),
+    } as Record<string, unknown>;
 
     const [total, accounts] = await Promise.all([
       prisma.proAccount.count({ where }),
