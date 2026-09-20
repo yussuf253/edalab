@@ -898,6 +898,314 @@ router.get(
   }),
 );
 
+// ---------------------------------------------------------------------------
+// Per-module records: dedicated list + detail + status actions for each vertical.
+// GET /admin/records/:kind — kind ∈ order|ride|laundry|hotel|appointment
+// POST /admin/records/:kind/:id/status — force a status transition.
+
+const RECORD_KINDS = ['order', 'ride', 'laundry', 'hotel', 'appointment'] as const;
+type RecordKind = (typeof RECORD_KINDS)[number];
+
+const RECORD_STATUS_SETS: Record<RecordKind, string[]> = {
+  order: ['DRAFT', 'PENDING', 'CONFIRMED', 'PROCESSING', 'DISPATCHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'REFUNDED'],
+  ride: ['REQUESTED', 'ACCEPTED', 'DRIVER_ARRIVING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
+  laundry: ['PENDING', 'SCHEDULED', 'PICKED_UP', 'CLEANING', 'OUT_FOR_DELIVERY', 'COMPLETED', 'CANCELLED'],
+  hotel: ['PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED'],
+  appointment: ['UPCOMING', 'PENDING', 'APPROVED', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'REJECTED'],
+};
+
+const RECORD_TERMINAL: Record<RecordKind, string[]> = {
+  order: ['COMPLETED', 'CANCELLED', 'REFUNDED'],
+  ride: ['COMPLETED', 'CANCELLED'],
+  laundry: ['COMPLETED', 'CANCELLED'],
+  hotel: ['CHECKED_OUT', 'CANCELLED'],
+  appointment: ['COMPLETED', 'CANCELLED', 'NO_SHOW', 'REJECTED'],
+};
+
+function parseRecordKind(raw: string): RecordKind | null {
+  return (RECORD_KINDS as readonly string[]).includes(raw) ? (raw as RecordKind) : null;
+}
+
+const recordUserSelect = { email: true, firstName: true, lastName: true } as const;
+
+type RecordRow = Record<string, unknown>;
+
+// Per-kind detail include: business context the list view doesn't carry.
+const RECORD_DETAIL_INCLUDES: Record<RecordKind, Record<string, boolean | Record<string, Record<string, boolean>>>> = {
+  order: {
+    items: true,
+    address: { select: { label: true, line1: true, city: true, phone: true } },
+    deliveryAssignee: { select: recordUserSelect },
+  },
+  ride: {
+    pickupAddress: { select: { label: true, line1: true, city: true } },
+    dropoffAddress: { select: { label: true, line1: true, city: true } },
+    rideCategory: { select: { name: true } },
+    driverUser: { select: recordUserSelect },
+  },
+  laundry: {
+    service: { select: { name: true } },
+    address: { select: { label: true, line1: true, city: true, phone: true } },
+  },
+  hotel: {
+    hotel: { select: { name: true, city: true } },
+  },
+  appointment: {
+    doctor: { select: { name: true, specialty: true } },
+  },
+};
+
+const RECORD_LIST_INCLUDES: Record<RecordKind, Record<string, boolean | Record<string, Record<string, boolean>>>> = {
+  order: {},
+  ride: { rideCategory: { select: { name: true } } },
+  laundry: { service: { select: { name: true } } },
+  hotel: { hotel: { select: { name: true } } },
+  appointment: { doctor: { select: { name: true } } },
+};
+
+async function findRecord(kind: RecordKind, id: string, include: Record<string, unknown>) {
+  switch (kind) {
+    case 'order':
+      return prisma.order.findFirst({ where: { id }, include });
+    case 'ride':
+      return prisma.rideBooking.findFirst({ where: { id }, include });
+    case 'laundry':
+      return prisma.laundryOrder.findFirst({ where: { id }, include });
+    case 'hotel':
+      return prisma.hotelBooking.findFirst({ where: { id }, include });
+    case 'appointment':
+      return prisma.appointment.findFirst({ where: { id }, include });
+  }
+}
+
+async function updateRecordStatus(kind: RecordKind, id: string, status: string) {
+  const data = { status: status as never };
+  switch (kind) {
+    case 'order':
+      return prisma.order.update({ where: { id }, data });
+    case 'ride':
+      return prisma.rideBooking.update({ where: { id }, data });
+    case 'laundry':
+      return prisma.laundryOrder.update({ where: { id }, data });
+    case 'hotel':
+      return prisma.hotelBooking.update({ where: { id }, data });
+    case 'appointment':
+      return prisma.appointment.update({ where: { id }, data });
+  }
+}
+
+// Field names differ per model; map each kind to a normalized shape.
+function normalizeRecord(kind: RecordKind, row: RecordRow, detail: boolean) {
+  const user = row.user as { email: string; firstName: string; lastName: string } | null;
+  const money = (v: unknown) => (v != null ? Number(v) : null);
+  const date = (v: unknown) => (v != null ? new Date(v as string | number | Date).toISOString() : null);
+
+  const base: RecordRow = {
+    id: String(row.id),
+    kind,
+    status: String(row.status),
+    createdAtIso: date(row.createdAt),
+    customer: user ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email : 'Unknown',
+    customerEmail: user?.email ?? null,
+  };
+
+  if (kind === 'order') {
+    const address = row.address as RecordRow | null;
+    const assignee = row.deliveryAssignee as { firstName: string; lastName: string; email: string } | null;
+    return {
+      ...base,
+      moduleType: row.moduleType != null ? String(row.moduleType) : null,
+      subtotal: money(row.subtotal),
+      tax: money(row.tax),
+      deliveryFee: money(row.deliveryFee),
+      discount: money(row.discount),
+      total: money(row.total),
+      notes: row.notes ?? null,
+      deliveryAddress: address
+        ? [address.label, address.line1, address.city].filter(Boolean).join(', ')
+        : null,
+      deliveryPhone: address?.phone ?? null,
+      courier: assignee
+        ? [assignee.firstName, assignee.lastName].filter(Boolean).join(' ') || assignee.email
+        : null,
+      items: detail
+        ? ((row.items as Array<RecordRow>) ?? []).map((item) => ({
+            name: String(item.name),
+            quantity: Number(item.quantity),
+            unitPrice: money(item.unitPrice),
+            lineTotal: money(item.lineTotal),
+          }))
+        : undefined,
+    };
+  }
+  if (kind === 'ride') {
+    const category = row.rideCategory as { name: string } | null;
+    const driver = row.driverUser as { firstName: string; lastName: string; email: string } | null;
+    return {
+      ...base,
+      pickupLabel: row.pickupLabel ?? null,
+      dropoffLabel: row.dropoffLabel ?? null,
+      distanceKm: money(row.distanceKm),
+      total: money(row.total),
+      etaLabel: row.etaLabel ?? null,
+      driverName: row.driverName ?? null,
+      driverPhone: row.driverPhone ?? null,
+      vehicleName: row.vehicleName ?? null,
+      categoryName: category?.name ?? null,
+      driverAccount: driver
+        ? [driver.firstName, driver.lastName].filter(Boolean).join(' ') || driver.email
+        : null,
+    };
+  }
+  if (kind === 'laundry') {
+    const service = row.service as { name: string } | null;
+    const address = row.address as RecordRow | null;
+    return {
+      ...base,
+      serviceName: service?.name ?? null,
+      itemCount: Number(row.itemCount ?? 0),
+      itemBreakdown: row.itemBreakdown ?? null,
+      pickupAtIso: date(row.pickupAt),
+      timeSlot: row.timeSlot ?? null,
+      subtotal: money(row.subtotal),
+      total: money(row.total),
+      deliveryAddress: address
+        ? [address.label, address.line1, address.city].filter(Boolean).join(', ')
+        : null,
+    };
+  }
+  if (kind === 'hotel') {
+    const hotel = row.hotel as { name: string; city: string } | null;
+    return {
+      ...base,
+      hotelName: hotel?.name ?? null,
+      hotelCity: hotel?.city ?? null,
+      roomType: row.roomType ?? null,
+      guestName: row.guestName ?? null,
+      guestEmail: row.guestEmail ?? null,
+      guestPhone: row.guestPhone ?? null,
+      checkInAtIso: date(row.checkInAt),
+      checkOutAtIso: date(row.checkOutAt),
+      nights: Number(row.nights ?? 0),
+      guestCount: Number(row.guestCount ?? 0),
+      total: money(row.total),
+    };
+  }
+  // appointment
+  const doctor = row.doctor as { name: string; specialty: string } | null;
+  return {
+    ...base,
+    doctorName: doctor?.name ?? null,
+    doctorSpecialty: doctor?.specialty ?? null,
+    appointmentAtIso: date(row.appointmentAt),
+    timeSlot: row.timeSlot ?? null,
+    appointmentType: row.appointmentType ?? null,
+    notes: row.notes ?? null,
+  };
+}
+
+router.get(
+  '/records/:kind',
+  asyncHandler(async (req, res) => {
+    const kind = parseRecordKind(String(req.params.kind));
+    if (!kind) return res.status(404).json({ error: 'Unknown record kind.' });
+
+    const { page, take, search, skip } = parsePagination(req.query);
+    const status = typeof req.query.status === 'string' ? req.query.status : '';
+    if (status && !RECORD_STATUS_SETS[kind].includes(status)) {
+      return res.status(400).json({ error: `Invalid status for ${kind}.` });
+    }
+
+    const userWhere = search
+      ? {
+          user: {
+            OR: [
+              { email: { contains: search, mode: 'insensitive' as const } },
+              { firstName: { contains: search, mode: 'insensitive' as const } },
+              { lastName: { contains: search, mode: 'insensitive' as const } },
+            ],
+          },
+        }
+      : {};
+    const where = {
+      ...userWhere,
+      ...(status ? { status: status as never } : {}),
+    };
+
+    const modelByKind = {
+      order: prisma.order,
+      ride: prisma.rideBooking,
+      laundry: prisma.laundryOrder,
+      hotel: prisma.hotelBooking,
+      appointment: prisma.appointment,
+    } as const;
+
+    const model = modelByKind[kind];
+    // Prisma delegates don't share a common call signature across these models
+    // with includes; go through the loose escape hatch.
+    const delegate = model as unknown as {
+      findMany(args: Record<string, unknown>): Promise<Array<RecordRow>>;
+      count(args: Record<string, unknown>): Promise<number>;
+    };
+
+    const [rows, total] = await Promise.all([
+      delegate.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+        include: RECORD_LIST_INCLUDES[kind],
+      }),
+      delegate.count({ where }),
+    ]);
+
+    res.json({
+      records: rows.map((row) => normalizeRecord(kind, row, false)),
+      total,
+      page,
+      take,
+    });
+  }),
+);
+
+router.get(
+  '/records/:kind/:id',
+  asyncHandler(async (req, res) => {
+    const kind = parseRecordKind(String(req.params.kind));
+    if (!kind) return res.status(404).json({ error: 'Unknown record kind.' });
+
+    const row = await findRecord(kind, String(req.params.id), RECORD_DETAIL_INCLUDES[kind]);
+    if (!row) return res.status(404).json({ error: 'Record not found.' });
+
+    res.json({
+      record: normalizeRecord(kind, row as RecordRow, true),
+      allowedStatuses: RECORD_STATUS_SETS[kind],
+      terminalStatuses: RECORD_TERMINAL[kind],
+    });
+  }),
+);
+
+router.post(
+  '/records/:kind/:id/status',
+  asyncHandler(async (req, res) => {
+    const kind = parseRecordKind(String(req.params.kind));
+    if (!kind) return res.status(404).json({ error: 'Unknown record kind.' });
+
+    const status = String(req.body?.status ?? '');
+    if (!RECORD_STATUS_SETS[kind].includes(status)) {
+      return res.status(400).json({
+        error: `Invalid status '${status}' for ${kind}. Allowed: ${RECORD_STATUS_SETS[kind].join(', ')}`,
+      });
+    }
+
+    const existing = await findRecord(kind, String(req.params.id), {});
+    if (!existing) return res.status(404).json({ error: 'Record not found.' });
+
+    const updated = await updateRecordStatus(kind, String(req.params.id), status);
+    res.json({ record: normalizeRecord(kind, updated as RecordRow, false) });
+  }),
+);
+
 // POST /admin/restaurants/:id/regenerate-code — issue a fresh redeem code.
 router.post(
   '/restaurants/:id/regenerate-code',

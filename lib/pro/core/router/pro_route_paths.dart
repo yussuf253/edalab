@@ -20,6 +20,11 @@ class ProRoutePaths {
   static const adminUsers = '/pro/admin/users';
   static const adminProAccounts = '/pro/admin/pro-accounts';
   static const adminOrders = '/pro/admin/orders';
+  static const adminStoreOrders = '/pro/admin/store-orders';
+  static const adminRides = '/pro/admin/rides';
+  static const adminLaundry = '/pro/admin/laundry';
+  static const adminHotels = '/pro/admin/hotels';
+  static const adminAppointments = '/pro/admin/appointments';
   static const adminRestaurants = '/pro/admin/restaurants';
 
   static const shopHome = '/pro/shop';

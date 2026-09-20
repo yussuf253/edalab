@@ -31,6 +31,7 @@ import '../../features/restaurant/screens/restaurant_menu_screen.dart';
 import '../../features/shop/screens/shop_store_setup_screen.dart';
 import '../../features/auth/screens/pro_banned_screen.dart';
 import '../../features/super_admin/screens/pro_admin_data_screens.dart';
+import '../../features/super_admin/screens/pro_admin_module_ops_screens.dart';
 import '../../features/super_admin/screens/pro_super_admin_home_screen.dart';
 import '../../features/super_admin/screens/pro_super_admin_screen.dart';
 import '../models/pro_profile.dart';
@@ -223,6 +224,26 @@ GoRouter createProAppRouter({
         builder: (context, state) => AdminOrdersScreen(
           initialModule: state.uri.queryParameters['module'] ?? '',
         ),
+      ),
+      GoRoute(
+        path: ProRoutePaths.adminStoreOrders,
+        builder: (context, state) => const AdminStoreOrdersScreen(),
+      ),
+      GoRoute(
+        path: ProRoutePaths.adminRides,
+        builder: (context, state) => const AdminRidesScreen(),
+      ),
+      GoRoute(
+        path: ProRoutePaths.adminLaundry,
+        builder: (context, state) => const AdminLaundryScreen(),
+      ),
+      GoRoute(
+        path: ProRoutePaths.adminHotels,
+        builder: (context, state) => const AdminHotelsScreen(),
+      ),
+      GoRoute(
+        path: ProRoutePaths.adminAppointments,
+        builder: (context, state) => const AdminAppointmentsScreen(),
       ),
       GoRoute(
         path: ProRoutePaths.adminRestaurants,
