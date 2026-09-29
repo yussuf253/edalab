@@ -1,0 +1,82 @@
+restaurant,nom,categorie,prix,description,image_url
+Lados,Burger poulet,Fast-food,600,Burger garni de poulet et de crudités.,https://images.getrecipekit.com/20250317180336-istock-1460555840-modified-60be4f4e-4961-4288-90a4-d7ea7f8a31ec.jpg?quality=90&width=650
+Lados,Lados poulet,Fast-food,800,"Lados au poulet, servi avec garniture et sauce.",https://rosewoodoven.com/cdn-cgi/image/fit%3Dcontain%2Cwidth%3D768%2Cquality%3D80%2Cformat%3Dauto/assets/images/1770508921387-j7fdvzuz.webp
+Lados,Lados poulet fromage,Fast-food,1000,Lados au poulet avec fromage et garniture.,https://rosewoodoven.com/cdn-cgi/image/fit%3Dcontain%2Cwidth%3D768%2Cquality%3D80%2Cformat%3Dauto/assets/images/1770508921387-j7fdvzuz.webp
+Lados,Lados viande hachée,Fast-food,800,Lados garni de viande hachée et de sauce.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/shawarma_beef.jpg
+Lados,Lados viande,Fast-food,800,Lados garni de viande et de crudités.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/shawarma_beef.jpg
+Lados,Lados Nugget,Fast-food,900,Lados garni de nuggets de poulet.,https://blue.kumparan.com/image/upload/fl_progressive%2Cfl_lossy%2Cc_fill%2Cf_auto%2Cq_auto%3Abest%2Cw_640/v1634025439/01j00bknket94fexcbamxtr0s2.jpg
+Lados,Lados poisson,Fast-food,800,Lados garni de poisson et de sauce.,https://assets.annahar.com/ContentFilesArchive/462822Image1-1180x677_d.jpg
+Lados,EECH poulet,Fast-food,700,Préparation au poulet selon la recette du restaurant.,https://chefjeni.com/cdn/shop/files/ChickenSkewers.jpg?v=1761079703&width=1445
+Lados,EECH viande,Fast-food,700,Préparation à la viande selon la recette du restaurant.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/beef_skewers.jpg
+Lados,Nugget,Fast-food,500,Nuggets de poulet croustillants.,https://blue.kumparan.com/image/upload/fl_progressive%2Cfl_lossy%2Cc_fill%2Cf_auto%2Cq_auto%3Abest%2Cw_640/v1634025439/01j00bknket94fexcbamxtr0s2.jpg
+Lados,Brochette bœuf,Fast-food,200,Brochette de bœuf grillée.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/beef_skewers.jpg
+Lados,Brochette poulet,Fast-food,250,Brochette de poulet grillée.,https://chefjeni.com/cdn/shop/files/ChickenSkewers.jpg?v=1761079703&width=1445
+Lados,Fadira normal,Fast-food,300,"Fadira classique, préparée avec garniture et sauce.",https://images.rawpixel.com/image_social_landscape/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTEwL2ZyZWVpbWFnZXNjb21wYW55X2NoaWNrZW5fdGFjb3NfdG9wcGVkX3dpdGhfcGljb19kZV9nYWxsb19hbmRfY18yZTQ3Mzk2Mi04ZDE0LTRkNzUtOTgzZi03YmY1ZjVhN2E2OTNfMS5qcGc.jpg
+Lados,Fadira poulet,Fast-food,500,Fadira au poulet avec garniture.,https://images.rawpixel.com/image_social_landscape/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTEwL2ZyZWVpbWFnZXNjb21wYW55X2NoaWNrZW5fdGFjb3NfdG9wcGVkX3dpdGhfcGljb19kZV9nYWxsb19hbmRfY18yZTQ3Mzk2Mi04ZDE0LTRkNzUtOTgzZi03YmY1ZjVhN2E2OTNfMS5qcGc.jpg
+Lados,Fadira spécial,Fast-food,800,Fadira spéciale avec garniture généreuse.,https://images.rawpixel.com/image_social_landscape/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTEwL2ZyZWVpbWFnZXNjb21wYW55X2NoaWNrZW5fdGFjb3NfdG9wcGVkX3dpdGhfcGljb19kZV9nYWxsb19hbmRfY18yZTQ3Mzk2Mi04ZDE0LTRkNzUtOTgzZi03YmY1ZjVhN2E2OTNfMS5qcGc.jpg
+Lados,Fadira Pakistanais,Fast-food,1000,"Fadira façon pakistanaise, préparée avec garniture et épices.",https://images.rawpixel.com/image_social_landscape/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTEwL2ZyZWVpbWFnZXNjb21wYW55X2NoaWNrZW5fdGFjb3NfdG9wcGVkX3dpdGhfcGljb19kZV9nYWxsb19hbmRfY18yZTQ3Mzk2Mi04ZDE0LTRkNzUtOTgzZi03YmY1ZjVhN2E2OTNfMS5qcGc.jpg
+Lados,Hafteen viande,Fast-food,600,Hafteen à la viande avec garniture.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/shawarma_beef.jpg
+Lados,Hafteen viande hachée,Fast-food,600,Hafteen à la viande hachée.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/shawarma_beef.jpg
+Lados,Hafteen poulet,Fast-food,800,Hafteen au poulet.,https://rosewoodoven.com/cdn-cgi/image/fit%3Dcontain%2Cwidth%3D768%2Cquality%3D80%2Cformat%3Dauto/assets/images/1770508921387-j7fdvzuz.webp
+Lados,Hafteen poisson,Fast-food,800,Hafteen au poisson.,https://assets.annahar.com/ContentFilesArchive/462822Image1-1180x677_d.jpg
+Lados,Max 2,Fast-food,400,Formule Max 2 selon la préparation du restaurant.,https://images.getrecipekit.com/20250317180336-istock-1460555840-modified-60be4f4e-4961-4288-90a4-d7ea7f8a31ec.jpg?quality=90&width=650
+Lados,Max 3,Fast-food,500,Formule Max 3 selon la préparation du restaurant.,https://images.getrecipekit.com/20250317180336-istock-1460555840-modified-60be4f4e-4961-4288-90a4-d7ea7f8a31ec.jpg?quality=90&width=650
+Lados,Chawarima poulet,Fast-food,700,Chawarima au poulet avec garniture et sauce.,https://rosewoodoven.com/cdn-cgi/image/fit%3Dcontain%2Cwidth%3D768%2Cquality%3D80%2Cformat%3Dauto/assets/images/1770508921387-j7fdvzuz.webp
+Lados,Chawarima ½ poulet,Fast-food,400,Demi portion de chawarima au poulet.,https://rosewoodoven.com/cdn-cgi/image/fit%3Dcontain%2Cwidth%3D768%2Cquality%3D80%2Cformat%3Dauto/assets/images/1770508921387-j7fdvzuz.webp
+Lados,Chawarima poisson,Fast-food,700,Chawarima au poisson.,https://assets.annahar.com/ContentFilesArchive/462822Image1-1180x677_d.jpg
+Lados,Chawarima viande,Fast-food,400,Chawarima à la viande.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/shawarma_beef.jpg
+Lados,Chawarima viande hachée,Fast-food,400,Chawarima à la viande hachée.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/shawarma_beef.jpg
+Lados,Iskoulab viande hachée,Fast-food,500,Iskoulab à la viande hachée.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/shawarma_beef.jpg
+Lados,Iskoulab viande,Fast-food,600,Iskoulab à la viande.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/shawarma_beef.jpg
+Lados,Iskoulab poulet,Fast-food,700,Iskoulab au poulet.,https://rosewoodoven.com/cdn-cgi/image/fit%3Dcontain%2Cwidth%3D768%2Cquality%3D80%2Cformat%3Dauto/assets/images/1770508921387-j7fdvzuz.webp
+Lados,Frite,Accompagnements,200,Portion de frites croustillantes.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/french_fries.jpg
+Lados,Orange,Jus & boissons,200,Jus d'orange frais.,https://cdn-s-www.leprogres.fr/images/3c63e7ce-6310-4ea3-a88a-fc9942a9870f/NW_raw/photo-shutterstock-1676563145.jpg
+Lados,Banane,Jus & boissons,200,Jus de banane frais.,https://commons.wikimedia.org/wiki/Special:Redirect/file/Banana_juice_in_a_container.jpg
+Lados,Mangue,Jus & boissons,300,Jus de mangue frais.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/mango.jpg
+Lados,Melon,Jus & boissons,300,Jus de melon frais.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/cantaloupe.jpg
+Lados,Avocat,Jus & boissons,300,Jus d'avocat frais.,https://media-assets.swiggy.com/swiggy/image/upload/fl_lossy%2Cf_auto%2Cq_auto/FOOD_CATALOG/IMAGES/CMS/2025/5/25/0b6b4f1d-1180-449d-aadb-f22bcb9eb380_03857531-ae15-45b1-9ec0-dc129df68871.jpg
+Lados,Papaye,Jus & boissons,300,Jus de papaye frais.,https://suckhoedoisong.qltns.mediacdn.vn/324455921873985536/2022/11/3/11-1667410641502977312786.jpg
+Lados,Pastèque,Jus & boissons,300,Jus de pastèque frais.,https://commons.wikimedia.org/wiki/Special:Redirect/file/Watermelon_juice_in_a_glass.jpg
+Lados,Goyave,Jus & boissons,300,Jus de goyave frais.,https://giadinh.mediacdn.vn/296230595582509056/2021/6/21/ep-oi-16242507673521784335867.jpg
+Lados,Cocktail,Jus & boissons,350,Cocktail de fruits frais.,https://www.sunich.org/img/uploads/1709083080-SunIch-web-FruitSalad-4.webp
+Lados,Expresso,Boissons chaudes,250,Café espresso.,https://www.sunich.org/img/uploads/1709083080-SunIch-web-FruitSalad-4.webp
+Lados,Buna,Boissons chaudes,100,Café buna traditionnel.,https://www.jekabpilslaiks.lv/uploads/news/2023/08/01/large_20230801060757_408a8.jpg
+Lados,Thé,Boissons chaudes,50,Thé chaud.,https://globalsymbols.com/uploads/production/image/imagefile/59185/129_59186_54d70027-fbaa-4878-919b-95535ba9a064.png
+Lados,Lipton,Boissons chaudes,150,Thé Lipton chaud.,https://globalsymbols.com/uploads/production/image/imagefile/59185/129_59186_54d70027-fbaa-4878-919b-95535ba9a064.png
+Lados,Thé vert,Boissons chaudes,50,Thé vert chaud.,https://globalsymbols.com/uploads/production/image/imagefile/59185/129_59186_54d70027-fbaa-4878-919b-95535ba9a064.png
+Lados,"Eau 0,5 L",Boissons fraîches,50,Bouteille d'eau de 50 cl.,https://mcprod.spinneys-egypt.com/media/catalog/product/cache/74c1057f7991b4edb2bc7bdaa94de933/a/i/aisfoyv_5uxw4zj5udmelcsm.jpeg
+Lados,"Eau 1,5 L",Boissons fraîches,100,"Bouteille d'eau de 1,5 L.",https://mcprod.spinneys-egypt.com/media/catalog/product/cache/74c1057f7991b4edb2bc7bdaa94de933/a/i/aisfoyv_5uxw4zj5udmelcsm.jpeg
+Lados,Coca 50 cl,Boissons fraîches,50,Coca-Cola 50 cl.,https://licoresbrisol.com.pe/web/webimg/1617_1_1000.png
+Lados,Coca 400 ml,Boissons fraîches,100,Coca-Cola 400 ml.,https://licoresbrisol.com.pe/web/webimg/1617_1_1000.png
+Royal Coffee & Fast-Food,Tacos au poulet,Fast-food,800,"Tacos garni de poulet, légumes et sauce.",https://images.rawpixel.com/image_social_landscape/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTEwL2ZyZWVpbWFnZXNjb21wYW55X2NoaWNrZW5fdGFjb3NfdG9wcGVkX3dpdGhfcGljb19kZV9nYWxsb19hbmRfY18yZTQ3Mzk2Mi04ZDE0LTRkNzUtOTgzZi03YmY1ZjVhN2E2OTNfMS5qcGc.jpg
+Royal Coffee & Fast-Food,Tacos à la viande,Fast-food,800,"Tacos garni de viande, légumes et sauce.",https://teresasrecipes.com/images/d6c56b20-68c0-4e85-96eb-34399545cf3e.jpg
+Royal Coffee & Fast-Food,Tacos tender au poulet,Fast-food,800,Tacos avec poulet tender croustillant.,https://images.rawpixel.com/image_social_landscape/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTEwL2ZyZWVpbWFnZXNjb21wYW55X2NoaWNrZW5fdGFjb3NfdG9wcGVkX3dpdGhfcGljb19kZV9nYWxsb19hbmRfY18yZTQ3Mzk2Mi04ZDE0LTRkNzUtOTgzZi03YmY1ZjVhN2E2OTNfMS5qcGc.jpg
+Royal Coffee & Fast-Food,Tacos au bol,Fast-food,800,Tacos servi en bol avec garniture.,https://images.rawpixel.com/image_social_landscape/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTEwL2ZyZWVpbWFnZXNjb21wYW55X2NoaWNrZW5fdGFjb3NfdG9wcGVkX3dpdGhfcGljb19kZV9nYWxsb19hbmRfY18yZTQ3Mzk2Mi04ZDE0LTRkNzUtOTgzZi03YmY1ZjVhN2E2OTNfMS5qcGc.jpg
+Royal Coffee & Fast-Food,Wrap au poulet & légumes,Fast-food,600,Wrap au poulet et légumes frais.,https://rosewoodoven.com/cdn-cgi/image/fit%3Dcontain%2Cwidth%3D768%2Cquality%3D80%2Cformat%3Dauto/assets/images/1770508921387-j7fdvzuz.webp
+Royal Coffee & Fast-Food,Burger au poulet,Fast-food,600,Burger au poulet avec crudités et sauce.,https://images.getrecipekit.com/20250317180336-istock-1460555840-modified-60be4f4e-4961-4288-90a4-d7ea7f8a31ec.jpg?quality=90&width=650
+Royal Coffee & Fast-Food,Poulet crispy,Fast-food,500,Poulet croustillant pané.,https://blue.kumparan.com/image/upload/fl_progressive%2Cfl_lossy%2Cc_fill%2Cf_auto%2Cq_auto%3Abest%2Cw_640/v1634025439/01j00bknket94fexcbamxtr0s2.jpg
+Royal Coffee & Fast-Food,Frites,Accompagnements,300,Portion de frites croustillantes.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/french_fries.jpg
+Royal Coffee & Fast-Food,Combo tacos,Menus combo,950,Tacos accompagné d'accompagnements selon la formule.,https://images.rawpixel.com/image_social_landscape/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTEwL2ZyZWVpbWFnZXNjb21wYW55X2NoaWNrZW5fdGFjb3NfdG9wcGVkX3dpdGhfcGljb19kZV9nYWxsb19hbmRfY18yZTQ3Mzk2Mi04ZDE0LTRkNzUtOTgzZi03YmY1ZjVhN2E2OTNfMS5qcGc.jpg
+Royal Coffee & Fast-Food,Combo burger,Menus combo,750,Burger accompagné d'accompagnements selon la formule.,https://images.getrecipekit.com/20250317180336-istock-1460555840-modified-60be4f4e-4961-4288-90a4-d7ea7f8a31ec.jpg?quality=90&width=650
+Royal Coffee & Fast-Food,Crispy + frites,Menus combo,650,Poulet crispy accompagné de frites.,https://blue.kumparan.com/image/upload/fl_progressive%2Cfl_lossy%2Cc_fill%2Cf_auto%2Cq_auto%3Abest%2Cw_640/v1634025439/01j00bknket94fexcbamxtr0s2.jpg
+Royal Coffee & Fast-Food,Tacos + frites + crispy,Menus combo,1200,Tacos accompagné de frites et de poulet crispy.,https://blue.kumparan.com/image/upload/fl_progressive%2Cfl_lossy%2Cc_fill%2Cf_auto%2Cq_auto%3Abest%2Cw_640/v1634025439/01j00bknket94fexcbamxtr0s2.jpg
+Royal Coffee & Fast-Food,Burger + frites + crispy,Menus combo,1000,Burger accompagné de frites et de poulet crispy.,https://blue.kumparan.com/image/upload/fl_progressive%2Cfl_lossy%2Cc_fill%2Cf_auto%2Cq_auto%3Abest%2Cw_640/v1634025439/01j00bknket94fexcbamxtr0s2.jpg
+Royal Coffee & Fast-Food,Jus d'orange,Jus & softs,300,Jus d'orange frais.,https://cdn-s-www.leprogres.fr/images/3c63e7ce-6310-4ea3-a88a-fc9942a9870f/NW_raw/photo-shutterstock-1676563145.jpg
+Royal Coffee & Fast-Food,Cocktail,Jus & softs,300,Cocktail de fruits frais.,https://www.sunich.org/img/uploads/1709083080-SunIch-web-FruitSalad-4.webp
+Royal Coffee & Fast-Food,Papaye,Jus & softs,250,Jus de papaye frais.,https://suckhoedoisong.qltns.mediacdn.vn/324455921873985536/2022/11/3/11-1667410641502977312786.jpg
+Royal Coffee & Fast-Food,Pastèque,Jus & softs,250,Jus de pastèque frais.,https://commons.wikimedia.org/wiki/Special:Redirect/file/Watermelon_juice_in_a_glass.jpg
+Royal Coffee & Fast-Food,Melon,Jus & softs,300,Jus de melon frais.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/cantaloupe.jpg
+Royal Coffee & Fast-Food,Banane,Jus & softs,200,Jus de banane frais.,https://commons.wikimedia.org/wiki/Special:Redirect/file/Banana_juice_in_a_container.jpg
+Royal Coffee & Fast-Food,Citron,Jus & softs,150,Jus de citron frais.,https://dabas.blob.core.windows.net/media/menigo-foodservice/203913_0.jpg
+Royal Coffee & Fast-Food,Coca-Cola,Jus & softs,100,Coca-Cola frais.,https://licoresbrisol.com.pe/web/webimg/1617_1_1000.png
+Royal Coffee & Fast-Food,Sambusa viande,Sambusa,50,Sambusa croustillant farci à la viande.,https://snapcalorie-webflow-website.s3.us-east-2.amazonaws.com/media/food_pics_v2/medium/meat_samosa.jpg
+Royal Coffee & Fast-Food,Sambusa poulet,Sambusa,50,Sambusa croustillant farci au poulet.,https://blue.kumparan.com/image/upload/fl_progressive%2Cfl_lossy%2Cc_fill%2Cf_auto%2Cq_auto%3Abest%2Cw_640/v1634025439/01j00bknket94fexcbamxtr0s2.jpg
+Royal Coffee & Fast-Food,Cappuccino,Cafétéria & thé,500,Café cappuccino avec mousse de lait.,https://www.pngall.com/wp-content/uploads/3/Espresso-PNG-Free-Download.png
+Royal Coffee & Fast-Food,Espresso,Cafétéria & thé,300,Café espresso.,https://i.shgcdn.com/f7ed9fd1-70f6-41ce-a8c2-be8092ddb063/-/format/auto/-/preview/3000x3000/-/quality/lighter/
+Royal Coffee & Fast-Food,Ice Latte,Cafétéria & thé,250,Latte froid servi avec des glaçons.,https://theburleighcafe.com.au/cdn/shop/files/Latte-4.jpg?v=1758713555&width=1445
+Royal Coffee & Fast-Food,Ice Chocolate,Cafétéria & thé,250,Boisson chocolatée froide.,https://www.pngall.com/wp-content/uploads/3/Espresso-PNG-Free-Download.png
+Royal Coffee & Fast-Food,Latte,Cafétéria & thé,150,Café latte au lait.,https://theburleighcafe.com.au/cdn/shop/files/Latte-4.jpg?v=1758713555&width=1445
+Royal Coffee & Fast-Food,Café noir,Cafétéria & thé,100,Café noir.,https://www.jekabpilslaiks.lv/uploads/news/2023/08/01/large_20230801060757_408a8.jpg
+Royal Coffee & Fast-Food,Thé,Cafétéria & thé,100,Thé chaud.,https://globalsymbols.com/uploads/production/image/imagefile/59185/129_59186_54d70027-fbaa-4878-919b-95535ba9a064.png
+Royal Coffee & Fast-Food,Royal salade de fruits,Desserts fruités,500,Salade composée de fruits frais.,https://www.sunich.org/img/uploads/1709083080-SunIch-web-FruitSalad-4.webp
+Royal Coffee & Fast-Food,Pastèque + banane + raisin sec,Desserts fruités,200,"Mélange de pastèque, banane et raisins secs.",https://www.sunich.org/img/uploads/1709083080-SunIch-web-FruitSalad-4.webp

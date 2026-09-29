@@ -311,13 +311,36 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                     height: 280,
                     width: double.infinity,
                     color: AppColors.extraLightGrey,
-                    child: Center(
-                      child: Icon(
-                        Icons.fastfood_rounded,
-                        size: 90,
-                        color: AppColors.food.withValues(alpha: 0.3),
-                      ),
-                    ),
+                    child: item.imageUrl != null &&
+                        item.imageUrl!.trim().isNotEmpty
+                        ? Image.network(
+                            item.imageUrl!,
+                            width: double.infinity,
+                            height: 280,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => Center(
+                              child: Icon(
+                                Icons.fastfood_rounded,
+                                size: 90,
+                                color: AppColors.food.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            loadingBuilder: (context, child, progress) =>
+                                progress == null
+                                    ? child
+                                    : const Center(
+                                        child: CircularProgressIndicator(
+                                          color: AppColors.food,
+                                        ),
+                                      ),
+                          )
+                        : Center(
+                            child: Icon(
+                              Icons.fastfood_rounded,
+                              size: 90,
+                              color: AppColors.food.withValues(alpha: 0.3),
+                            ),
+                          ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(20),
@@ -632,6 +655,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                   quantity: quantity,
                   moduleType: 'food',
                   brand: _restaurantName,
+                  imageUrl: item.imageUrl,
                   description: selections.isEmpty
                       ? null
                       : selections.map((s) => s.optionName).join(', '),

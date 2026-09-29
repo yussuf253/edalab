@@ -256,6 +256,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                           price: item.price,
                           brand: item.brand,
                           customizations: item.description,
+                          imageUrl: item.imageUrl,
                           onIncrement: () {
                             AnalyticsService.instance.track(
                               AnalyticsEvents.cartAdjustmentInitiated,
@@ -428,6 +429,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                   quantity: 1,
                                   moduleType: 'food',
                                   brand: restaurantName,
+                                  imageUrl: menuItem.imageUrl,
                                 ),
                               );
                               AnalyticsService.instance.track(
@@ -559,6 +561,7 @@ class _CartRow extends StatelessWidget {
   final VoidCallback onDecrement;
   final String? brand;
   final String? customizations;
+  final String? imageUrl;
 
   const _CartRow({
     required this.name,
@@ -568,6 +571,7 @@ class _CartRow extends StatelessWidget {
     required this.onDecrement,
     this.brand,
     this.customizations,
+    this.imageUrl,
   });
 
   @override
@@ -589,10 +593,22 @@ class _CartRow extends StatelessWidget {
               color: AppColors.extraLightGrey,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              Icons.fastfood_rounded,
-              color: AppColors.food.withValues(alpha: 0.3),
-            ),
+            clipBehavior: Clip.antiAlias,
+            child: imageUrl != null && imageUrl!.trim().isNotEmpty
+                ? Image.network(
+                    imageUrl!,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Icon(
+                      Icons.fastfood_rounded,
+                      color: AppColors.food.withValues(alpha: 0.3),
+                    ),
+                  )
+                : Icon(
+                    Icons.fastfood_rounded,
+                    color: AppColors.food.withValues(alpha: 0.3),
+                  ),
           ),
           const SizedBox(width: 12),
           Expanded(
