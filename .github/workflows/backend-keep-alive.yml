@@ -1,0 +1,41 @@
+# Keeps the Render free-tier backend from sleeping after 15 minutes of
+# inactivity. Render needs ~1 minute to wake a sleeping instance, which makes
+# the apps feel frozen, so this pings /health on a schedule around the clock.
+#
+# Notes on free-tier limits:
+# - Scheduled workflows run on GitHub's shared runners and can be delayed by
+#   a few minutes at busy times; */5 keeps the gap safely under Render's
+#   15-minute idle limit even with drift.
+# - GitHub disables scheduled workflows after 60 days of no repo activity.
+#   Any push to the repo re-enables them.
+name: Backend keep-alive
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # allows manual runs from the Actions tab
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backend-keep-alive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health endpoint
+        run: |
+          for i in 1 2 3; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 120 \
+              https://edalab.onrender.com/api/health)
+            echo "attempt $i -> HTTP $code"
+            if [ "$code" = "200" ]; then
+              exit 0
+            fi
+            sleep 30
+          done
+          echo "Backend did not return 200 after 3 attempts"
+          exit 1
