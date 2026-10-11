@@ -187,7 +187,7 @@ Future<void> _bootstrapAppServices({
   required CityAvailabilityProvider cityAvailabilityProvider,
   required ConnectivityProvider connectivityProvider,
 }) async {
-  ApiClient.warmUpBackendInBackground();
+  ApiClient.startKeepAlive();
 
   await Future.wait([
     authProvider.initialize(),

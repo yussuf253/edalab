@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -73,6 +74,25 @@ class _ProProfileManagementScreenState
   void dispose() {
     _businessNameController.dispose();
     super.dispose();
+  }
+
+  /// Disposes sheet controllers only after the modal's exit animation has
+  /// fully finished. [Future.whenComplete] fires as soon as the future
+  /// resolves, but the sheet's widget tree keeps rebuilding while the
+  /// keyboard insets and route transition animate out — rebuilding a
+  /// TextFormField against an already-disposed controller crashes with
+  /// "A TextEditingController was used after being disposed" (and a
+  /// follow-up _dependents.isEmpty assertion). Waiting one frame after the
+  /// sheet's own animation completes (plus the keyboard settle) sidesteps
+  /// that race.
+  void _disposeControllersAfterExit(List<TextEditingController> controllers) {
+    unawaited(
+      Future<void>.delayed(const Duration(milliseconds: 450)).then((_) {
+        for (final controller in controllers) {
+          controller.dispose();
+        }
+      }),
+    );
   }
 
   Future<void> _pickAndUploadAvatar() async {
@@ -676,13 +696,11 @@ class _ProProfileManagementScreenState
         );
       },
     ).whenComplete(() {
-      // Dispose only after the sheet's exit animation fully completes —
-      // disposing immediately after await still races the sheet's final
-      // rebuild, which crashes with "TextEditingController was used after
-      // being disposed" during the dismiss transition.
-      nameController.dispose();
-      cuisineController.dispose();
-      redeemCodeController.dispose();
+      _disposeControllersAfterExit([
+        nameController,
+        cuisineController,
+        redeemCodeController,
+      ]);
     });
   }
 
@@ -798,7 +816,9 @@ class _ProProfileManagementScreenState
           },
         );
       },
-    ).whenComplete(nameController.dispose);
+    ).whenComplete(() {
+      _disposeControllersAfterExit([nameController]);
+    });
   }
 
   List<String> _splitTextList(String raw) {
@@ -1188,14 +1208,16 @@ class _ProProfileManagementScreenState
         );
       },
     ).whenComplete(() {
-      locationController.dispose();
-      phoneController.dispose();
-      responseTimeController.dispose();
-      servicesController.dispose();
-      bookingModesController.dispose();
-      weekdaysController.dispose();
-      saturdayController.dispose();
-      sundayController.dispose();
+      _disposeControllersAfterExit([
+        locationController,
+        phoneController,
+        responseTimeController,
+        servicesController,
+        bookingModesController,
+        weekdaysController,
+        saturdayController,
+        sundayController,
+      ]);
     });
   }
 
@@ -1785,17 +1807,19 @@ class _ProProfileManagementScreenState
         );
       },
     ).whenComplete(() {
-      nameController.dispose();
-      descriptionController.dispose();
-      priceController.dispose();
-      unitController.dispose();
-      itemCatalogController.dispose();
-      pickupSlotsController.dispose();
-      turnaroundHoursController.dispose();
-      minNoticeHoursController.dispose();
-      maxAdvanceDaysController.dispose();
-      taxRateController.dispose();
-      deliveryFeeController.dispose();
+      _disposeControllersAfterExit([
+        nameController,
+        descriptionController,
+        priceController,
+        unitController,
+        itemCatalogController,
+        pickupSlotsController,
+        turnaroundHoursController,
+        minNoticeHoursController,
+        maxAdvanceDaysController,
+        taxRateController,
+        deliveryFeeController,
+      ]);
     });
   }
 
@@ -2063,13 +2087,15 @@ class _ProProfileManagementScreenState
         );
       },
     ).whenComplete(() {
-      locationController.dispose();
-      phoneController.dispose();
-      whatsappController.dispose();
-      careModesController.dispose();
-      weekdaysController.dispose();
-      saturdayController.dispose();
-      sundayController.dispose();
+      _disposeControllersAfterExit([
+        locationController,
+        phoneController,
+        whatsappController,
+        careModesController,
+        weekdaysController,
+        saturdayController,
+        sundayController,
+      ]);
     });
   }
 
@@ -2417,9 +2443,19 @@ class _ProProfileManagementScreenState
                   final pharmacyName = details.pharmacyBusinesses.isNotEmpty
                       ? details.pharmacyBusinesses.first
                       : l10n.notConnected;
-
-                  return Column(
-                    children: [
+                  // Only offer the storefront claim/edit cards for modules
+                  // this shop actually selected at signup — a food-only shop
+                  // shouldn't see shopping/pharmacy claiming cards (and vice
+                  // versa). Backend enforces the same rule per endpoint.
+                  final hasShoppingModule = currentProfile.activeModules
+                      .contains(ProModule.shopping);
+                  final hasFoodModule = currentProfile.activeModules.contains(
+                    ProModule.food,
+                  );
+                  final hasPharmacyModule = currentProfile.activeModules
+                      .contains(ProModule.pharmacy);
+                  final claimCards = <Widget>[
+                    if (hasShoppingModule)
                       _InlineProfileEditorCard(
                         icon: Icons.store_mall_directory_outlined,
                         title: l10n.shoppingStoreProfile,
@@ -2427,7 +2463,7 @@ class _ProProfileManagementScreenState
                         subtitle: l10n.editStoreNameTaglineDescription,
                         onTap: () => _openShoppingStoreSetupEditor(store),
                       ),
-                      const SizedBox(height: ProDesignSystem.spacing12),
+                    if (hasFoodModule)
                       _InlineProfileEditorCard(
                         icon: Icons.restaurant_menu_outlined,
                         title: l10n.restaurantProfile,
@@ -2437,7 +2473,7 @@ class _ProProfileManagementScreenState
                             : l10n.editRestaurantNameCuisineImage,
                         onTap: () => _openRestaurantEditor(restaurant),
                       ),
-                      const SizedBox(height: ProDesignSystem.spacing12),
+                    if (hasPharmacyModule)
                       _InlineProfileEditorCard(
                         icon: Icons.local_pharmacy_outlined,
                         title: l10n.pharmacyProfile,
@@ -2452,6 +2488,19 @@ class _ProProfileManagementScreenState
                           suggestedName: currentProfile.businessName,
                         ),
                       ),
+                  ];
+
+                  if (claimCards.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Column(
+                    children: [
+                      for (var i = 0; i < claimCards.length; i++) ...[
+                        if (i > 0)
+                          const SizedBox(height: ProDesignSystem.spacing12),
+                        claimCards[i],
+                      ],
                     ],
                   );
                 },

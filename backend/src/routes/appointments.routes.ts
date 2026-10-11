@@ -1,11 +1,19 @@
-import { AppointmentStatus, ModuleType } from '@prisma/client';
+import {
+  AppointmentStatus,
+  ModuleType,
+  NotificationModule,
+  NotificationType,
+} from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
 import { isModuleEnabled, moduleName } from '../utils/module-settings';
-import { createAppointmentCreatedNotification } from '../utils/notifications';
+import {
+  createAppointmentCreatedNotification,
+  notifySuperAdmins,
+} from '../utils/notifications';
 
 const router = Router();
 
@@ -212,7 +220,32 @@ router.patch(
     const appointment = await prisma.appointment.update({
       where: { id: appointmentId },
       data: { status: body.status },
+      include: { doctor: true },
     });
+
+    if (
+      appointment.status === AppointmentStatus.CANCELLED ||
+      appointment.status === AppointmentStatus.REJECTED
+    ) {
+      await notifySuperAdmins({
+        title:
+          appointment.status === AppointmentStatus.REJECTED
+            ? 'Appointment rejected'
+            : 'Appointment cancelled',
+        body: `An appointment with ${appointment.doctor.name} was moved to ${appointment.status.toLowerCase()}.`,
+        module: NotificationModule.DOCTOR,
+        type: NotificationType.APPOINTMENT,
+        route: '/pro/admin/appointments',
+        dedupeKey: `appointment-status:${appointment.id}:${appointment.status}`,
+        metadata: {
+          appointmentId: appointment.id,
+          doctorId: appointment.doctorId,
+          status: appointment.status,
+          userId: appointment.userId,
+          source: 'user_status_flow',
+        },
+      });
+    }
 
     res.json(serializeAppointment(appointment));
   }),

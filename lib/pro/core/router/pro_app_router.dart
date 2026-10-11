@@ -1,4 +1,3 @@
-import 'package:edalab/core/providers/city_availability_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +14,6 @@ import '../../features/doctor/screens/doctor_home_care_queue_screen.dart';
 import '../../features/dashboard/screens/pro_dashboard_screen.dart';
 import '../../features/doctor/screens/doctor_schedule_settings_screen.dart';
 import '../../features/doctor/screens/doctor_setup_screen.dart';
-import '../../features/entry/screens/pro_city_gate_screen.dart';
 import '../../features/entry/screens/pro_entry_screen.dart';
 import '../../features/onboarding/screens/pro_onboarding_screen.dart';
 import '../../features/provider/screens/provider_availability_screen.dart';
@@ -30,6 +28,7 @@ import '../../features/shop/screens/shop_products_screen.dart';
 import '../../features/restaurant/screens/restaurant_menu_screen.dart';
 import '../../features/shop/screens/shop_store_setup_screen.dart';
 import '../../features/auth/screens/pro_banned_screen.dart';
+import '../../features/super_admin/screens/pro_admin_notifications_screen.dart';
 import '../../features/super_admin/screens/pro_admin_data_screens.dart';
 import '../../features/super_admin/screens/pro_admin_module_ops_screens.dart';
 import '../../features/super_admin/screens/pro_super_admin_home_screen.dart';
@@ -74,27 +73,36 @@ Widget _withProfile(
   return builder(profile);
 }
 
-/// Maps a pro route path prefix to the ProModule it requires, or null for
-/// paths available to every profile (dashboard, inbox, account, chat…).
-ProModule? _moduleForPath(String path) {
-  const table = <String, ProModule>{
-    '/pro/shop/queue': ProModule.shopping,
-    '/pro/shop/products': ProModule.shopping,
-    '/pro/shop/store-setup': ProModule.shopping,
-    '/pro/shop/restaurant-menu': ProModule.food,
-    '/pro/provider/queue': ProModule.services,
-    '/pro/provider/job': ProModule.services,
-    '/pro/provider/availability': ProModule.services,
-    '/pro/provider/schedule': ProModule.services,
-    '/pro/doctor/setup': ProModule.doctor,
-    '/pro/doctor/appointments': ProModule.doctor,
-    '/pro/doctor/home-care': ProModule.doctor,
-    '/pro/doctor/availability': ProModule.doctor,
-    '/pro/doctor/schedule': ProModule.doctor,
-    '/pro/delivery/queue': ProModule.shoppingDelivery,
-    '/pro/delivery/active-delivery': ProModule.shoppingDelivery,
-    '/pro/rider/queue': ProModule.ride,
-    '/pro/rider/active-trip': ProModule.ride,
+/// Maps a pro route path prefix to the set of ProModules that grant access,
+/// or null for paths available to every profile (dashboard, inbox, account,
+/// chat…). A profile passes the gate when it holds ANY module in the set —
+/// e.g. the shop queue/products screens are shared by shopping, food and
+/// pharmacy storefronts, so a food-only (restaurant) shop must not be
+/// bounced just because it lacks the shopping module.
+Set<ProModule>? _modulesForPath(String path) {
+  const storefrontModules = {
+    ProModule.shopping,
+    ProModule.food,
+    ProModule.pharmacy,
+  };
+  const table = <String, Set<ProModule>>{
+    '/pro/shop/queue': storefrontModules,
+    '/pro/shop/products': storefrontModules,
+    '/pro/shop/store-setup': storefrontModules,
+    '/pro/shop/restaurant-menu': {ProModule.food},
+    '/pro/provider/queue': {ProModule.services},
+    '/pro/provider/job': {ProModule.services},
+    '/pro/provider/availability': {ProModule.services},
+    '/pro/provider/schedule': {ProModule.services},
+    '/pro/doctor/setup': {ProModule.doctor},
+    '/pro/doctor/appointments': {ProModule.doctor},
+    '/pro/doctor/home-care': {ProModule.doctor},
+    '/pro/doctor/availability': {ProModule.doctor},
+    '/pro/doctor/schedule': {ProModule.doctor},
+    '/pro/delivery/queue': {ProModule.shoppingDelivery},
+    '/pro/delivery/active-delivery': {ProModule.shoppingDelivery},
+    '/pro/rider/queue': {ProModule.ride},
+    '/pro/rider/active-trip': {ProModule.ride},
   };
   for (final entry in table.entries) {
     if (path == entry.key || path.startsWith('${entry.key}/')) {
@@ -106,15 +114,11 @@ ProModule? _moduleForPath(String path) {
 
 GoRouter createProAppRouter({
   required ProAuthProvider proAuthProvider,
-  required CityAvailabilityProvider cityAvailabilityProvider,
   required bool hasSeenOnboarding,
 }) {
   return GoRouter(
     navigatorKey: _proNavigatorKey,
-    refreshListenable: Listenable.merge([
-      proAuthProvider,
-      cityAvailabilityProvider,
-    ]),
+    refreshListenable: proAuthProvider,
     initialLocation: hasSeenOnboarding
         ? ProRoutePaths.entry
         : ProRoutePaths.onboarding,
@@ -128,25 +132,14 @@ GoRouter createProAppRouter({
             ? ProRoutePaths.entry
             : ProRoutePaths.login;
       }
-      // City rollout gate: pro operatives work inside active service zones
-      // only. Blocks every route while the availability check is failing,
-      // mirroring the user app's gate.
-      if (cityAvailabilityProvider.isBlocking) {
-        return path == '/city-unavailable' ? null : '/city-unavailable';
-      }
-      if (path == '/city-unavailable' && !cityAvailabilityProvider.isBlocking) {
-        return proAuthProvider.isAuthenticated
-            ? ProRoutePaths.entry
-            : ProRoutePaths.login;
-      }
       // Profile-module gate: block pro feature routes whose module isn't in
       // the profile's activeModules, so a disabled module's screens stay
       // unreachable even by deep link or stale push notification.
       final profile = proAuthProvider.currentProfile;
       if (profile != null) {
-        final requiredModule = _moduleForPath(path);
-        if (requiredModule != null &&
-            !profile.activeModules.contains(requiredModule)) {
+        final requiredModules = _modulesForPath(path);
+        if (requiredModules != null &&
+            !profile.activeModules.any(requiredModules.contains)) {
           return ProRoutePaths.homeForProfileType(profile.type);
         }
       }
@@ -180,10 +173,6 @@ GoRouter createProAppRouter({
         ),
       ),
       GoRoute(
-        path: '/city-unavailable',
-        builder: (context, state) => const ProCityGateScreen(),
-      ),
-      GoRoute(
         path: ProRoutePaths.dashboard,
         builder: (context, state) => const ProDashboardScreen(),
       ),
@@ -210,6 +199,10 @@ GoRouter createProAppRouter({
       GoRoute(
         path: ProRoutePaths.superAdminHome,
         builder: (context, state) => const ProSuperAdminHomeScreen(),
+      ),
+      GoRoute(
+        path: ProRoutePaths.superAdminNotifications,
+        builder: (context, state) => const ProAdminNotificationsScreen(),
       ),
       GoRoute(
         path: ProRoutePaths.adminUsers,

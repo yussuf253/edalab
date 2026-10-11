@@ -14,6 +14,7 @@ class AppPreferences {
   static const _localeCodeKey = 'locale_code';
   static const _proProfileJsonKey = 'pro_profile_json';
   static const _proAccountJsonKey = 'pro_account_json';
+  static const _proAdminUserIdKey = 'pro_admin_user_id';
   static const _hasSeenProOnboardingKey = 'has_seen_pro_onboarding';
   static const _analyticsDeviceIdKey = 'analytics_device_id';
   static const _moduleConfigJsonKey = 'module_config_json';
@@ -188,6 +189,23 @@ class AppPreferences {
   static Future<void> clearProAccountJson() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_proAccountJsonKey);
+  }
+
+  /// Notification-inbox user id for super admin pro sessions. Super admins
+  /// have no pro profile, so the backend hands their session a dedicated
+  /// admin inbox id for notifications and push token registration.
+  static Future<String?> getProAdminUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_proAdminUserIdKey);
+  }
+
+  static Future<void> setProAdminUserId(String? value) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (value == null || value.isEmpty) {
+      await prefs.remove(_proAdminUserIdKey);
+      return;
+    }
+    await prefs.setString(_proAdminUserIdKey, value);
   }
 
   static Future<bool> hasSeenProOnboarding() async {

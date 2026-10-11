@@ -1,4 +1,4 @@
-import { ProModule, ProProfileType } from '@prisma/client';
+import { ProModule, ProProfileType, NotificationModule, NotificationType } from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db';
@@ -12,6 +12,10 @@ import { asyncHandler } from '../utils/async-handler';
 import { signAccessToken } from '../utils/jwt';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { parseFullName } from '../utils/serializers';
+import {
+  notifySuperAdmins,
+  resolveSuperAdminNotificationUserId,
+} from '../utils/notifications';
 import { supabaseAdmin } from '../services/supabase-admin.service';
 import { env } from '../config/env';
 
@@ -194,6 +198,16 @@ router.post(
       },
     });
 
+    await notifySuperAdmins({
+      title: 'New pro signup',
+      body: `${account.email} registered a pro account (email verification pending).`,
+      module: NotificationModule.ACCOUNT,
+      type: NotificationType.SYSTEM,
+      route: '/pro/admin/pro-accounts',
+      dedupeKey: `pro-account-signup:${account.id}`,
+      metadata: { accountId: account.id, email: account.email },
+    });
+
     // Return message about email verification - don't return account data yet
     res.status(201).json({
       message: 'Please check your email to verify your account before signing in.',
@@ -236,6 +250,7 @@ router.post(
       token,
       account: serializeProAccount(account),
       profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
+      adminUserId: await resolveSuperAdminNotificationUserId(account.email),
     });
   }),
 );
@@ -283,6 +298,7 @@ router.post(
       account: serializeProAccount(account),
       profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
       token: tokenResult,
+      adminUserId: await resolveSuperAdminNotificationUserId(account.email),
     });
   }),
 );
@@ -381,6 +397,7 @@ router.get(
     res.json({
       account: serializeProAccount(account),
       profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
+      adminUserId: await resolveSuperAdminNotificationUserId(account.email),
     });
   }),
 );
@@ -513,6 +530,23 @@ router.post(
         bindings,
         isOnline: true,
         isVerified: false,
+      },
+    });
+
+    await notifySuperAdmins({
+      title: 'Pro profile pending verification',
+      body: `${profile.businessName} (${profileType.toLowerCase()}) completed a pro signup and is awaiting review.`,
+      module: NotificationModule.ACCOUNT,
+      type: NotificationType.SYSTEM,
+      route: '/pro/admin/pro-accounts',
+      dedupeKey: `pro-profile-created:${profile.id}`,
+      metadata: {
+        profileId: profile.id,
+        userId: profile.userId,
+        accountId: account.id,
+        businessName: profile.businessName,
+        type: profileType,
+        activeModules: sanitizedModules,
       },
     });
 

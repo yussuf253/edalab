@@ -1,10 +1,17 @@
-import { ModuleType, OrderStatus, Prisma } from '@prisma/client';
+import {
+  ModuleType,
+  NotificationModule,
+  NotificationType,
+  OrderStatus,
+  Prisma,
+} from '@prisma/client';
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
 import { toNumber } from '../utils/serializers';
+import { notifySuperAdmins } from '../utils/notifications';
 
 /**
  * Car Rental Module
@@ -418,6 +425,21 @@ router.post(
 
     const booking = result.booking;
 
+    await notifySuperAdmins({
+      title: 'New car rental booking',
+      body: `A customer booked ${booking.carName} (${booking.totalDays} day${booking.totalDays === 1 ? '' : 's'}).`,
+      module: NotificationModule.RIDE,
+      type: NotificationType.ORDER,
+      route: '/pro/admin/orders',
+      dedupeKey: `car-rental-created:${booking.id}`,
+      metadata: {
+        bookingId: booking.id,
+        carId: booking.carId,
+        carName: booking.carName,
+        userId: booking.userId,
+      },
+    });
+
     res.status(201).json(serializeBooking({
       id: booking.id,
       userId: booking.userId,
@@ -559,6 +581,20 @@ router.post(
       }
 
       return cancelledBooking;
+    });
+
+    await notifySuperAdmins({
+      title: 'Car rental cancelled',
+      body: `The booking for ${updated.carName} was cancelled.`,
+      module: NotificationModule.RIDE,
+      type: NotificationType.ORDER,
+      route: '/pro/admin/orders',
+      dedupeKey: `car-rental-cancelled:${updated.id}`,
+      metadata: {
+        bookingId: updated.id,
+        carName: updated.carName,
+        userId: updated.userId,
+      },
     });
 
     res.json({

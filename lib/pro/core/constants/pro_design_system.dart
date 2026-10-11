@@ -255,57 +255,57 @@ class ModernStatCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            LayoutBuilder(builder: (context, constraints) {
-              // Hide the label entirely when the available width is very small
-              final showLabel = constraints.maxWidth > 64;
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (showLabel)
-                    Expanded(
-                      child: Text(
-                        label,
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                          color: const Color(0xFF6B7280),
-                          fontWeight: FontWeight.w600,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+            // Value and icon share the top row; the label gets the full card
+            // width below, so it is never squeezed to nothing on narrow
+            // screens (three of these sit side by side on the dashboard).
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    value,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      // Theme-aware value color — a hardcoded near-black
+                      // disappears against dark mode's dark background.
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+                if (icon != null) ...[
+                  const SizedBox(width: ProDesignSystem.spacing8),
+                  Container(
+                    padding: const EdgeInsets.all(ProDesignSystem.spacing6),
+                    decoration: BoxDecoration(
+                      color: (iconColor ?? const Color(0xFF039D55)).withValues(
+                        alpha: 0.1,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        ProDesignSystem.radiusSmall,
                       ),
                     ),
-                  if (showLabel && icon != null)
-                    const SizedBox(width: ProDesignSystem.spacing12),
-                  if (icon != null)
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(minWidth: 40),
-                      child: Container(
-                        padding: const EdgeInsets.all(ProDesignSystem.spacing6),
-                        decoration: BoxDecoration(
-                          color: (iconColor ?? const Color(0xFF039D55)).withValues(
-                            alpha: 0.1,
-                          ),
-                          borderRadius: BorderRadius.circular(
-                            ProDesignSystem.radiusSmall,
-                          ),
-                        ),
-                        child: Icon(
-                          icon,
-                          size: 14,
-                          color: iconColor ?? const Color(0xFF039D55),
-                        ),
-                      ),
+                    child: Icon(
+                      icon,
+                      size: 14,
+                      color: iconColor ?? const Color(0xFF039D55),
                     ),
+                  ),
                 ],
-              );
-            }),
-            const SizedBox(height: ProDesignSystem.spacing8),
+              ],
+            ),
+            const SizedBox(height: ProDesignSystem.spacing4),
             Text(
-              value,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF1A1A2E),
+              label,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                // Theme-aware so the label stays readable on the dark
+                // scaffold in dark mode (the card background is a
+                // translucent tint, not an opaque surface).
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

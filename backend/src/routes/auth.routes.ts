@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { NotificationModule, NotificationType } from '@prisma/client';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { signAccessToken } from '../utils/jwt';
 import { parseFullName, sanitizeUser } from '../utils/serializers';
+import { notifySuperAdmins } from '../utils/notifications';
 import { supabaseAdmin } from '../services/supabase-admin.service';
 import { env } from '../config/env';
 
@@ -75,6 +77,16 @@ router.post(
     });
 
     // Return message about email verification - don't return token yet
+    await notifySuperAdmins({
+      title: 'New user signup',
+      body: `${user.email} created a customer account.`,
+      module: NotificationModule.ACCOUNT,
+      type: NotificationType.SYSTEM,
+      route: '/pro/admin/users',
+      dedupeKey: `user-signup:${user.id}`,
+      metadata: { userId: user.id, email: user.email, source: 'register' },
+    });
+
     res.status(201).json({
       message: 'Please check your email to verify your account before signing in.',
       email: user.email,

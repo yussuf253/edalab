@@ -11,6 +11,7 @@ import '../utils/pro_module_helper.dart';
 class ProAuthProvider extends ChangeNotifier {
   ProAccount? _currentAccount;
   ProProfile? _currentProfile;
+  String? _adminUserId;
   bool _isLoading = false;
   bool _isInitialized = false;
   bool _emailVerificationRequired = false;
@@ -19,6 +20,16 @@ class ProAuthProvider extends ChangeNotifier {
 
   ProAccount? get currentAccount => _currentAccount;
   ProProfile? get currentProfile => _currentProfile;
+
+  /// Notification-inbox user id for super admin sessions. Super admins have
+  /// no pro profile, so the backend hands them a dedicated admin inbox id
+  /// (`adminUserId`) — without it their notification feed would be empty.
+  String? get adminUserId => _adminUserId;
+
+  /// The user id whose notifications this session should load and sync push
+  /// tokens for: the pro profile's user, or the admin inbox id for super
+  /// admin sessions.
+  String? get notificationUserId => _currentProfile?.userId ?? _adminUserId;
   bool get isLoading => _isLoading;
   bool get isInitialized => _isInitialized;
   bool get isAuthenticated => _currentAccount != null;
@@ -381,6 +392,17 @@ class ProAuthProvider extends ChangeNotifier {
         ? _profileFromApi(Map<String, dynamic>.from(rawProfile))
         : null;
 
+    // Present whenever the backend knows the session identity: null for
+    // regular pro profiles, the admin inbox id for super admin emails.
+    // Key absence (older backend) keeps the restored fallback untouched.
+    if (response.containsKey('adminUserId')) {
+      final rawAdminUserId = response['adminUserId'];
+      _adminUserId =
+          rawAdminUserId is String && rawAdminUserId.isNotEmpty
+          ? rawAdminUserId
+          : null;
+    }
+
     await _persistLocalSession();
   }
 
@@ -400,6 +422,8 @@ class ProAuthProvider extends ChangeNotifier {
     } else {
       await AppPreferences.clearProProfileJson();
     }
+
+    await AppPreferences.setProAdminUserId(_adminUserId);
   }
 
   Future<void> _restoreLocalSession() async {
@@ -422,16 +446,20 @@ class ProAuthProvider extends ChangeNotifier {
         ),
       );
     }
+
+    _adminUserId = await AppPreferences.getProAdminUserId();
   }
 
   Future<void> _clearLocalSession({required bool clearToken}) async {
     _currentAccount = null;
     _currentProfile = null;
+    _adminUserId = null;
     _emailVerificationRequired = false;
     _pendingVerificationEmail = null;
     _unreadInboxCount = 0;
     await AppPreferences.clearProAccountJson();
     await AppPreferences.clearProProfileJson();
+    await AppPreferences.setProAdminUserId(null);
     if (clearToken) {
       await ApiClient.setToken(null);
     }

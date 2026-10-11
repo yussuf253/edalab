@@ -12,6 +12,7 @@ import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { requireAuth } from '../middleware/auth';
 import { getParam } from '../utils/http';
+import { resolveSuperAdminNotificationUserId } from '../utils/notifications';
 
 const router = Router();
 
@@ -262,12 +263,27 @@ router.post(
         where: { accountId: req.auth!.userId },
         select: { userId: true },
       });
-      if (!profile) {
-        return res
-          .status(403)
-          .json({ error: 'No pro profile is linked to this account yet.' });
+      if (profile) {
+        allowedUserId = profile.userId;
+      } else {
+        // Super admins intentionally have no pro profile — bind their
+        // tokens to the admin notification inbox user instead of failing,
+        // otherwise the admin app could never receive push notifications.
+        const account = await prisma.proAccount.findUnique({
+          where: { id: req.auth!.userId },
+          select: { email: true },
+        });
+        const adminUserId =
+          account != null
+            ? await resolveSuperAdminNotificationUserId(account.email)
+            : null;
+        if (!adminUserId) {
+          return res
+            .status(403)
+            .json({ error: 'No pro profile is linked to this account yet.' });
+        }
+        allowedUserId = adminUserId;
       }
-      allowedUserId = profile.userId;
     }
     if (body.userId !== allowedUserId) {
       return res

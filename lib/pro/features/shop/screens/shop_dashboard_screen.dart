@@ -42,17 +42,6 @@ int _attentionCountFromSummary(ProDashboardModuleSummary summary) {
   return 0;
 }
 
-String _moduleLabel(String module, AppLocalizations l10n) {
-  switch (module) {
-    case 'food':
-      return l10n.foodLabel;
-    case 'pharmacy':
-      return l10n.pharmacyLabel;
-    default:
-      return l10n.shoppingLabel;
-  }
-}
-
 Color _moduleColor(String module) {
   switch (module) {
     case 'food':
@@ -152,7 +141,18 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
   }
 
   Future<void> _openProducts() async {
-    await context.push(ProRoutePaths.shopProducts);
+    // The shared products screen only manages shopping/pharmacy catalogs.
+    // A food-only shop manages its products through the restaurant menu
+    // screen instead, so route there rather than to an empty storefront tab.
+    final hasFood = widget.profile.activeModules.contains(ProModule.food);
+    final hasShoppingOrPharmacy = widget.profile.activeModules.contains(
+          ProModule.shopping,
+        ) ||
+        widget.profile.activeModules.contains(ProModule.pharmacy);
+    final path = hasFood && !hasShoppingOrPharmacy
+        ? ProRoutePaths.restaurantMenu
+        : ProRoutePaths.shopProducts;
+    await context.push(path);
     if (!mounted) return;
     await _refreshDashboard();
   }
@@ -227,7 +227,6 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
               children: [
                 _DashboardHero(
                   businessName: widget.profile.businessName,
-                  scopeNote: data?.scopeNote,
                   onOpenOrders: () => _openQueue(),
                   onOpenProducts: _openProducts,
                   l10n: l10n,
@@ -241,11 +240,8 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
                 ),
                 const SizedBox(height: ProDesignSystem.spacing20),
                 _StoreManagementPanel(
-                  moduleSummaries: summaries,
                   onOpenOrders: () => _openQueue(),
                   onOpenProducts: _openProducts,
-                  onOpenModuleQueue: (module) =>
-                      _openQueue(initialModule: module),
                   l10n: l10n,
                 ),
                 if (summaries.any((s) => s.module == 'food')) ...[
@@ -295,14 +291,12 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
 
 class _DashboardHero extends StatelessWidget {
   final String businessName;
-  final String? scopeNote;
   final VoidCallback onOpenOrders;
   final VoidCallback onOpenProducts;
   final AppLocalizations l10n;
 
   const _DashboardHero({
     required this.businessName,
-    required this.scopeNote,
     required this.onOpenOrders,
     required this.onOpenProducts,
     required this.l10n,
@@ -334,17 +328,6 @@ class _DashboardHero extends StatelessWidget {
               context,
             ).textTheme.bodySmall?.copyWith(color: Colors.white70),
           ),
-          if (scopeNote?.trim().isNotEmpty == true) ...[
-            const SizedBox(height: ProDesignSystem.spacing12),
-            Text(
-              scopeNote!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.white70),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
           const SizedBox(height: ProDesignSystem.spacing16),
           Row(
             children: [
@@ -475,17 +458,13 @@ class _PulseTile extends StatelessWidget {
 }
 
 class _StoreManagementPanel extends StatelessWidget {
-  final List<ProDashboardModuleSummary> moduleSummaries;
   final VoidCallback onOpenOrders;
   final VoidCallback onOpenProducts;
-  final ValueChanged<String> onOpenModuleQueue;
   final AppLocalizations l10n;
 
   const _StoreManagementPanel({
-    required this.moduleSummaries,
     required this.onOpenOrders,
     required this.onOpenProducts,
-    required this.onOpenModuleQueue,
     required this.l10n,
   });
 
@@ -535,49 +514,6 @@ class _StoreManagementPanel extends StatelessWidget {
               ),
             ],
           ),
-          if (moduleSummaries.isNotEmpty) ...[
-            const SizedBox(height: ProDesignSystem.spacing16),
-            Wrap(
-              spacing: ProDesignSystem.spacing8,
-              runSpacing: ProDesignSystem.spacing8,
-              children: moduleSummaries
-                  .map(
-                    (summary) => Chip(
-                      avatar: Container(
-                        padding: const EdgeInsets.all(ProDesignSystem.spacing4),
-                        decoration: BoxDecoration(
-                          color: _moduleColor(
-                            summary.module,
-                          ).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(
-                            ProDesignSystem.radiusSmall,
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.local_offer_outlined,
-                          size: 14,
-                          color: _moduleColor(summary.module),
-                        ),
-                      ),
-                      label: Text(
-                        '${_moduleLabel(summary.module, l10n)} ${_orderCountFromSummary(summary)}',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      backgroundColor: _moduleColor(
-                        summary.module,
-                      ).withValues(alpha: 0.08),
-                      side: BorderSide(
-                        color: _moduleColor(
-                          summary.module,
-                        ).withValues(alpha: 0.2),
-                      ),
-                      onDeleted: () => onOpenModuleQueue(summary.module),
-                      deleteIcon: const SizedBox.shrink(),
-                    ),
-                  )
-                  .toList(growable: false),
-            ),
-          ],
         ],
       ),
     );

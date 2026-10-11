@@ -119,40 +119,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         ? subtotal
         : cartProvider.discount;
     final total = subtotal + shipping + tax + tip - discount;
+    // (id, label key, subtitle key, icon, color)
     final paymentMethods = [
       (
-        'Credit Card',
-        '•••• 4242',
-        Icons.credit_card_rounded,
-        AppColors.primary,
-      ),
-      (
-        'WaafiPay',
-        'EVC Plus / mobile wallet',
+        'waafipay',
+        'checkout.waafipay',
+        'checkout.waafipay_description',
         Icons.account_balance_wallet_rounded,
         AppColors.food,
       ),
       (
-        'Apple Pay',
-        'john.doe@apple.com',
-        Icons.phone_iphone_rounded,
-        AppColors.dark,
-      ),
-      (
-        'PayPal',
-        'john.doe@paypal.com',
-        Icons.account_balance_wallet_rounded,
-        AppColors.secondary,
-      ),
-      (
-        'Cash on Delivery',
+        'cash_on_delivery',
+        'checkout.cash_on_delivery',
         'checkout.pay_when_delivered',
         Icons.attach_money_rounded,
         AppColors.success,
       ),
     ];
-    final paymentName = paymentMethods[_selectedPayment].$1;
-    final isWaafiPay = paymentName == 'WaafiPay';
+    final paymentName = l10n.t(paymentMethods[_selectedPayment].$2);
+    final isWaafiPay = paymentMethods[_selectedPayment].$1 == 'waafipay';
     final moduleLabel = moduleName ?? _moduleLabel(context, moduleType);
     final selectedDeliveryLabel = l10n.t(
       _deliveryOptions[_selectedDeliveryOption].$1,
@@ -465,7 +450,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(14),
-                    border: sel ? Border.all(color: p.$4, width: 2) : null,
+                    border: sel ? Border.all(color: p.$5, width: 2) : null,
                   ),
                   child: Row(
                     children: [
@@ -473,23 +458,21 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: p.$4.withValues(alpha: 0.12),
+                          color: p.$5.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(p.$3, color: p.$4, size: 22),
+                        child: Icon(p.$4, color: p.$5, size: 22),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(p.$1, style: AppTextStyles.labelMedium),
                             Text(
-                              p.$2.startsWith('checkout.')
-                                  ? l10n.t(p.$2)
-                                  : p.$2,
-                              style: AppTextStyles.caption,
+                              l10n.t(p.$2),
+                              style: AppTextStyles.labelMedium,
                             ),
+                            Text(l10n.t(p.$3), style: AppTextStyles.caption),
                           ],
                         ),
                       ),
@@ -499,10 +482,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: sel ? p.$4 : AppColors.lightGrey,
+                            color: sel ? p.$5 : AppColors.lightGrey,
                             width: 2,
                           ),
-                          color: sel ? p.$4 : Colors.transparent,
+                          color: sel ? p.$5 : Colors.transparent,
                         ),
                         child: sel
                             ? const Icon(
@@ -771,7 +754,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           SnackBar(
                             content: Text(
                               waafiResult.message ??
-                                  'Could not start WaafiPay payment.',
+                                  l10n.t('checkout.waafipay_start_failed'),
                             ),
                             backgroundColor: AppColors.error,
                           ),

@@ -111,16 +111,6 @@ class _ProInsightsScreenState extends State<ProInsightsScreen> {
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                if (data.scopeNote?.isNotEmpty == true) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    data.scopeNote!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.grey,
-                      height: 1.45,
-                    ),
-                  ),
-                ],
                 const SizedBox(height: 18),
                 if (data.stats.isNotEmpty)
                   for (var index = 0; index < data.stats.length; index += 2)

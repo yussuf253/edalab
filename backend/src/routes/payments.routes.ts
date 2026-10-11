@@ -16,6 +16,7 @@ import { asyncHandler } from '../utils/async-handler';
 import {
   createBackendNotification,
   createOrderCreatedNotification,
+  notifySuperAdmins,
 } from '../utils/notifications';
 
 const router = Router();
@@ -593,6 +594,29 @@ if (
       });
 
       await notifyProvidersForPaidOrder(order);
+    }
+
+    if (cancelled) {
+      const declineReason = [responseMsg, state]
+        .map((entry) => (entry ?? '').trim())
+        .filter(Boolean)
+        .join(' · ');
+      await notifySuperAdmins({
+        title: 'Payment failed',
+        body: declineReason.length > 0
+          ? `A payment was declined (${declineReason}).`
+          : 'A payment was declined.',
+        module: NotificationModule.ORDERS,
+        type: NotificationType.ORDER,
+        route: '/pro/admin/orders',
+        dedupeKey: `payment-failed:${order.id}:${referenceId ?? 'unknown'}`,
+        metadata: {
+          orderId: order.id,
+          responseCode: responseCode ?? null,
+          state: state ?? null,
+          userId: order.userId,
+        },
+      });
     }
 
     if (paid) {

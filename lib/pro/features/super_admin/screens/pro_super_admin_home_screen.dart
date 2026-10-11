@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../core/constants/pro_design_system.dart';
+import '../../../core/providers/notification_provider.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../../core/utils/money_format.dart';
@@ -128,6 +129,45 @@ class _ProSuperAdminHomeScreenState extends State<ProSuperAdminHomeScreen> {
         backgroundColor: AppColors.primaryDark,
         foregroundColor: AppColors.white,
         actions: [
+          Consumer<NotificationProvider>(
+            builder: (context, notifications, _) {
+              final unread = notifications.unreadCount;
+              return IconButton(
+                tooltip: 'Activity feed',
+                onPressed: () =>
+                    context.push(ProRoutePaths.superAdminNotifications),
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.notifications_outlined),
+                    if (unread > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 1,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            unread > 9 ? '9+' : '$unread',
+                            style: const TextStyle(
+                              color: AppColors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
           IconButton(
             tooltip: 'Sign out',
             icon: const Icon(Icons.logout),
@@ -234,6 +274,16 @@ class _AdminToolsPanel extends StatelessWidget {
                   title: 'Order Explorer',
                   subtitle: 'All orders across store, rides, laundry, hotels, and care.',
                   onTap: () => context.push(ProRoutePaths.adminOrders),
+                ),
+                const SizedBox(height: ProDesignSystem.spacing12),
+                _AdminToolTile(
+                  icon: Icons.notifications_active_outlined,
+                  title: 'Activity Feed',
+                  subtitle:
+                      'Live feed of signups, orders, bookings, and '
+                      'cancellations from across the platform.',
+                  onTap: () =>
+                      context.push(ProRoutePaths.superAdminNotifications),
                 ),
                 const SizedBox(height: ProDesignSystem.spacing12),
                 _AdminToolTile(

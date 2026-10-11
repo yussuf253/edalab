@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { ModuleType, PaymentMethodType } from '@prisma/client';
+import {
+  ModuleType,
+  NotificationModule,
+  NotificationType,
+  PaymentMethodType,
+} from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
@@ -7,6 +12,7 @@ import { getParam } from '../utils/http';
 import { hashPassword, verifyPassword } from '../utils/password';
 import { signAccessToken } from '../utils/jwt';
 import { parseFullName, sanitizeUser, toNumber } from '../utils/serializers';
+import { notifySuperAdmins } from '../utils/notifications';
 import { supabaseAdmin } from '../services/supabase-admin.service';
 import { env } from '../config/env';
 
@@ -108,6 +114,16 @@ router.post(
           orderBy: [{ isDefault: 'desc' }, { updatedAt: 'desc' }],
         },
       },
+    });
+
+    await notifySuperAdmins({
+      title: 'New user signup',
+      body: `${user.email} created a customer account.`,
+      module: NotificationModule.ACCOUNT,
+      type: NotificationType.SYSTEM,
+      route: '/pro/admin/users',
+      dedupeKey: `user-signup:${user.id}`,
+      metadata: { userId: user.id, email: user.email, source: 'users_create' },
     });
 
     res.status(201).json({

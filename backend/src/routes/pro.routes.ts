@@ -15,7 +15,7 @@ import { z } from 'zod';
 import { prisma } from '../db';
 import { asyncHandler } from '../utils/async-handler';
 import { getParam } from '../utils/http';
-import { createBackendNotification } from '../utils/notifications';
+import { createBackendNotification, notifySuperAdmins } from '../utils/notifications';
 import { toNumber } from '../utils/serializers';
 
 const router = Router();
@@ -501,6 +501,32 @@ async function notifyOrderLifecycle(params: {
       error: error instanceof Error ? error.message : String(error),
     });
   }
+
+  // Keep the super admin informed when an order goes south (cancellation or
+  // refund) — routine forward progress stays customer-facing only.
+  if (
+    params.status === OrderStatus.CANCELLED ||
+    params.status === OrderStatus.REFUNDED
+  ) {
+    await notifySuperAdmins({
+      title:
+        params.status === OrderStatus.REFUNDED
+          ? 'Order refunded'
+          : 'Order cancelled',
+      body: `A ${moduleLabel} order is now ${statusLabel}.`,
+      module: NotificationModule.ORDERS,
+      type: NotificationType.ORDER,
+      route: '/pro/admin/orders',
+      dedupeKey: `order-status:${params.orderId}:${params.status}`,
+      metadata: {
+        orderId: params.orderId,
+        moduleType: params.moduleType,
+        status: params.status,
+        userId: params.userId,
+        source: 'pro_status_flow',
+      },
+    });
+  }
 }
 
 function allowedProviderOrderTransitions(
@@ -579,6 +605,23 @@ async function notifyRideLifecycle(params: {
       error: error instanceof Error ? error.message : String(error),
     });
   }
+
+  if (params.status === RideStatus.CANCELLED) {
+    await notifySuperAdmins({
+      title: 'Ride cancelled',
+      body: `A ride is now ${statusLabel}.`,
+      module: NotificationModule.RIDE,
+      type: NotificationType.RIDE,
+      route: '/pro/admin/rides',
+      dedupeKey: `ride-status:${params.rideId}:${params.status}`,
+      metadata: {
+        rideId: params.rideId,
+        status: params.status,
+        userId: params.userId,
+        source: 'pro_status_flow',
+      },
+    });
+  }
 }
 
 async function notifyAppointmentLifecycle(params: {
@@ -609,6 +652,30 @@ async function notifyAppointmentLifecycle(params: {
       appointmentId: params.appointmentId,
       status: params.status,
       error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
+  if (
+    params.status === AppointmentStatus.CANCELLED ||
+    params.status === AppointmentStatus.REJECTED
+  ) {
+    await notifySuperAdmins({
+      title:
+        params.status === AppointmentStatus.REJECTED
+          ? 'Appointment rejected'
+          : 'Appointment cancelled',
+      body: `An appointment is now ${statusLabel}.`,
+      module: NotificationModule.DOCTOR,
+      type: NotificationType.APPOINTMENT,
+      route: '/pro/admin/appointments',
+      dedupeKey: `appointment-status:${params.appointmentId}:${params.status}`,
+      metadata: {
+        appointmentId: params.appointmentId,
+        doctorId: params.doctorId,
+        status: params.status,
+        userId: params.userId,
+        source: 'pro_status_flow',
+      },
     });
   }
 }
@@ -2673,8 +2740,6 @@ async function buildDashboard(profile: {
 
       return {
         headline: 'Store operations',
-        scopeNote:
-          'This workspace is limited to the store, restaurant, and pharmacy businesses bound to this profile. If a module shows no business, update the business name so it matches the real listing.',
         stats: [
           {
             key: 'modules',

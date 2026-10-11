@@ -37,6 +37,14 @@ class ApiClient {
   static const Duration _warmUpCooldown = Duration(minutes: 2);
   static const Duration _warmUpTimeout = Duration(seconds: 8);
   static const int _warmUpAttempts = 2;
+  // Render free-tier services sleep after 15 min without inbound requests and
+  // take ~1 min to wake. Ping well inside that window; the ping timeout must
+  // tolerate a full cold start because Render holds the first request open
+  // while the service spins up (that slow ping also wakes the service).
+  static const Duration _keepAliveInterval = Duration(minutes: 5);
+  static const Duration _keepAliveTimeout = Duration(seconds: 90);
+  static Timer? _keepAliveTimer;
+  static Future<void>? _keepAliveInFlight;
   static DateTime? _lastConnectionLogAt;
   static DateTime? _lastWarmUpAt;
   static Future<void>? _warmUpInFlight;
@@ -101,6 +109,59 @@ class ApiClient {
 
   static void warmUpBackendInBackground({bool force = false}) {
     unawaited(warmUpBackend(force: force));
+  }
+
+  /// Pings the backend on a fixed schedule so the Render instance never
+  /// accumulates 15 minutes of inactivity while the app is open. Call once
+  /// from the app entry point; the timer lives for the app's lifetime.
+  ///
+  /// Note: Dart timers pause while the app is backgrounded, so this keeps
+  /// the server warm only while the app is in the foreground. Pair it with
+  /// an external pinger (e.g. cron-job.org / UptimeRobot hitting /health
+  /// every 10 min) for 24/7 coverage.
+  static void startKeepAlive() {
+    _keepAliveTimer?.cancel();
+    // Fire once immediately so the first screens don't race a cold start —
+    // the ping hangs until the service is up, then real requests are fast.
+    unawaited(_pingForKeepAlive());
+    _keepAliveTimer = Timer.periodic(_keepAliveInterval, (_) {
+      unawaited(_pingForKeepAlive());
+    });
+  }
+
+  static void stopKeepAlive() {
+    _keepAliveTimer?.cancel();
+    _keepAliveTimer = null;
+  }
+
+  static Future<void> _pingForKeepAlive() async {
+    // Never overlap pings: a cold-start ping can take ~1 min.
+    if (_keepAliveInFlight != null) return;
+    final ping = _pingHealth();
+    _keepAliveInFlight = ping;
+    try {
+      await ping;
+    } finally {
+      if (identical(_keepAliveInFlight, ping)) {
+        _keepAliveInFlight = null;
+      }
+    }
+  }
+
+  static Future<void> _pingHealth() async {
+    final uri = Uri.parse('$baseUrl/health');
+    try {
+      final response = await _httpClient.get(uri).timeout(_keepAliveTimeout);
+      if (kDebugMode && response.statusCode != 200) {
+        debugPrint('[ApiClient] keep-alive ping: HTTP ${response.statusCode}');
+      }
+    } on TimeoutException {
+      if (kDebugMode) debugPrint('[ApiClient] keep-alive ping timed out');
+    } on SocketException {
+      // No network right now — the next tick retries.
+    } on http.ClientException {
+      // Ignore — the next tick retries.
+    }
   }
 
   static Future<void> _runWarmUpRequest() async {
