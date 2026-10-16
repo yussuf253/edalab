@@ -118,8 +118,11 @@ async function callAliExpressRaw(apiPath, businessParams, options) {
     if (options?.accessToken) {
         allParams.access_token = options.accessToken;
     }
-    // For Business APIs, `method` is the api_path (already in businessParams)
-    // For System APIs, api_path is part of the URL path
+    // Business API `method` is part of the signed query parameters. System API
+    // paths are signed separately as a prefix and are not sent as `method`.
+    if (!systemApi) {
+        allParams.method = apiPath;
+    }
     // Generate signature
     const sign = signRequest(allParams, apiPath, systemApi);
     allParams.sign = sign;
@@ -133,7 +136,6 @@ async function callAliExpressRaw(apiPath, businessParams, options) {
     else {
         // Business Interface: {base}/sync?method={api_path}&{query}
         requestUrl = `${baseHost}/sync`;
-        allParams.method = apiPath;
     }
     // Build query string
     const queryString = Object.entries(allParams)
