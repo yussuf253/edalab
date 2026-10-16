@@ -2,11 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const zod_1 = require("zod");
+const client_1 = require("@prisma/client");
 const db_1 = require("../db");
 const async_handler_1 = require("../utils/async-handler");
 const password_1 = require("../utils/password");
 const jwt_1 = require("../utils/jwt");
 const serializers_1 = require("../utils/serializers");
+const notifications_1 = require("../utils/notifications");
 const supabase_admin_service_1 = require("../services/supabase-admin.service");
 const env_1 = require("../config/env");
 const router = (0, express_1.Router)();
@@ -64,6 +66,15 @@ router.post('/register', (0, async_handler_1.asyncHandler)(async (req, res) => {
         },
     });
     // Return message about email verification - don't return token yet
+    await (0, notifications_1.notifySuperAdmins)({
+        title: 'New user signup',
+        body: `${user.email} created a customer account.`,
+        module: client_1.NotificationModule.ACCOUNT,
+        type: client_1.NotificationType.SYSTEM,
+        route: '/pro/admin/users',
+        dedupeKey: `user-signup:${user.id}`,
+        metadata: { userId: user.id, email: user.email, source: 'register' },
+    });
     res.status(201).json({
         message: 'Please check your email to verify your account before signing in.',
         email: user.email,

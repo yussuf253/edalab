@@ -14,10 +14,11 @@ const MANAGED_MODULES: readonly ModuleDefinition[] = [
   { moduleType: ModuleType.DOCTOR, id: 'doctor', name: 'Doctor', sortOrder: 3 },
   { moduleType: ModuleType.HOTEL, id: 'hotel', name: 'Hotel', sortOrder: 4 },
   { moduleType: ModuleType.RIDE, id: 'ride', name: 'Ride', sortOrder: 5 },
-  { moduleType: ModuleType.PHARMACY, id: 'pharmacy', name: 'Pharmacy', sortOrder: 6 },
-  { moduleType: ModuleType.GROCERY, id: 'grocery', name: 'Grocery', sortOrder: 7 },
-  { moduleType: ModuleType.HOME_SERVICES, id: 'home-services', name: 'Home Services', sortOrder: 8 },
-  { moduleType: ModuleType.LAUNDRY, id: 'laundry', name: 'Laundry', sortOrder: 9 },
+  { moduleType: ModuleType.PARCEL, id: 'parcel', name: 'Parcel Delivery', sortOrder: 6 },
+  { moduleType: ModuleType.PHARMACY, id: 'pharmacy', name: 'Pharmacy', sortOrder: 7 },
+  { moduleType: ModuleType.GROCERY, id: 'grocery', name: 'Grocery', sortOrder: 8 },
+  { moduleType: ModuleType.HOME_SERVICES, id: 'home-services', name: 'Home Services', sortOrder: 9 },
+  { moduleType: ModuleType.LAUNDRY, id: 'laundry', name: 'Laundry', sortOrder: 10 },
 ];
 
 const moduleMap = new Map<ModuleType, ModuleDefinition>(

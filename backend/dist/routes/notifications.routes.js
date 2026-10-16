@@ -5,7 +5,9 @@ const express_1 = require("express");
 const zod_1 = require("zod");
 const db_1 = require("../db");
 const async_handler_1 = require("../utils/async-handler");
+const auth_1 = require("../middleware/auth");
 const http_1 = require("../utils/http");
+const notifications_1 = require("../utils/notifications");
 const router = (0, express_1.Router)();
 const createNotificationSchema = zod_1.z.object({
     userId: zod_1.z.string().min(1),
@@ -26,6 +28,7 @@ const registerDeviceTokenSchema = zod_1.z.object({
     userId: zod_1.z.string().min(1),
     token: zod_1.z.string().min(1),
     platform: zod_1.z.nativeEnum(client_1.DevicePlatform).optional(),
+    audience: zod_1.z.enum(['USER', 'PRO']).optional(),
 });
 function inferTypeFromModule(module) {
     switch (module) {
@@ -207,20 +210,62 @@ router.patch('/:id/read', (0, async_handler_1.asyncHandler)(async (req, res) => 
         updated: result.count > 0,
     });
 }));
-router.post('/device-tokens', (0, async_handler_1.asyncHandler)(async (req, res) => {
+router.post('/device-tokens', auth_1.requireAuth, (0, async_handler_1.asyncHandler)(async (req, res) => {
     const body = registerDeviceTokenSchema.parse({
         ...req.body,
         platform: parsePlatform(req.body.platform),
     });
+    const audience = body.audience ??
+        (req.auth?.accountType === 'pro' ? client_1.DeviceAudience.PRO : client_1.DeviceAudience.USER);
+    // Enforce token-to-identity binding: a pro account registers pushes for
+    // its profile's user id, a user account for its own id. This prevents a
+    // caller from binding a token to an arbitrary userId (push spoofing).
+    let allowedUserId = req.auth.userId;
+    if (req.auth.accountType === 'pro') {
+        const profile = await db_1.prisma.proProfile.findUnique({
+            where: { accountId: req.auth.userId },
+            select: { userId: true },
+        });
+        if (profile) {
+            allowedUserId = profile.userId;
+        }
+        else {
+            // Super admins intentionally have no pro profile — bind their
+            // tokens to the admin notification inbox user instead of failing,
+            // otherwise the admin app could never receive push notifications.
+            const account = await db_1.prisma.proAccount.findUnique({
+                where: { id: req.auth.userId },
+                select: { email: true },
+            });
+            const adminUserId = account != null
+                ? await (0, notifications_1.resolveSuperAdminNotificationUserId)(account.email)
+                : null;
+            if (!adminUserId) {
+                return res
+                    .status(403)
+                    .json({ error: 'No pro profile is linked to this account yet.' });
+            }
+            allowedUserId = adminUserId;
+        }
+    }
+    if (body.userId !== allowedUserId) {
+        return res
+            .status(403)
+            .json({ error: 'Device tokens can only be registered for the authenticated user.' });
+    }
+    // The user and pro apps can share one FCM token per device, so tokens are
+    // keyed by (token, audience) instead of token alone. Otherwise whichever
+    // app registers last silently steals push delivery from the other.
     const record = await db_1.prisma.deviceToken.upsert({
-        where: { token: body.token },
+        where: { token_audience: { token: body.token, audience } },
         create: {
-            userId: body.userId,
+            userId: allowedUserId,
             token: body.token,
+            audience,
             platform: body.platform ?? client_1.DevicePlatform.UNKNOWN,
         },
         update: {
-            userId: body.userId,
+            userId: allowedUserId,
             platform: body.platform ?? client_1.DevicePlatform.UNKNOWN,
             lastSeenAt: new Date(),
         },
@@ -229,6 +274,7 @@ router.post('/device-tokens', (0, async_handler_1.asyncHandler)(async (req, res)
         id: record.id,
         userId: record.userId,
         token: record.token,
+        audience: record.audience,
         platform: record.platform,
         lastSeenAt: record.lastSeenAt,
     });

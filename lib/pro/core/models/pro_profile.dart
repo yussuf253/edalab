@@ -12,6 +12,7 @@ enum ProModule {
   shoppingDelivery,
   foodDelivery,
   pharmacyDelivery,
+  parcelDelivery,
   ride,
   ecologicalCleaning,
 }
@@ -55,8 +56,10 @@ class ProProfile {
 
   factory ProProfile.fromJson(Map<String, dynamic> json) {
     final rawModules = (json['activeModules'] as List<dynamic>? ?? const []);
-    final parsedModules =
-        rawModules.map(_moduleFromRaw).toSet().toList(growable: false);
+    final parsedModules = rawModules
+        .map(_moduleFromRaw)
+        .toSet()
+        .toList(growable: false);
 
     return ProProfile(
       id: json['id'] as String? ?? '',
@@ -116,6 +119,7 @@ class ProProfile {
             ProModule.shoppingDelivery,
             ProModule.foodDelivery,
             ProModule.pharmacyDelivery,
+            ProModule.parcelDelivery,
           }.contains(module),
         );
         return isDeliveryProfile
@@ -164,6 +168,10 @@ class ProProfile {
       case 'pharmacyDelivery':
       case 'pharmacy_delivery':
         return ProModule.pharmacyDelivery;
+      case 'PARCEL_DELIVERY':
+      case 'parcelDelivery':
+      case 'parcel_delivery':
+        return ProModule.parcelDelivery;
       case 'ride':
       case 'rider':
         return ProModule.ride;

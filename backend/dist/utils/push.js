@@ -59,7 +59,10 @@ async function sendPushToUser(payload) {
     if (!ensureFirebaseAdmin())
         return;
     const tokens = await db_1.prisma.deviceToken.findMany({
-        where: { userId: payload.userId },
+        where: {
+            userId: payload.userId,
+            audience: payload.audience ?? 'USER',
+        },
         orderBy: { updatedAt: 'desc' },
         take: 20,
     });

@@ -9,6 +9,7 @@ const http_1 = require("../utils/http");
 const password_1 = require("../utils/password");
 const jwt_1 = require("../utils/jwt");
 const serializers_1 = require("../utils/serializers");
+const notifications_1 = require("../utils/notifications");
 const supabase_admin_service_1 = require("../services/supabase-admin.service");
 const env_1 = require("../config/env");
 const router = (0, express_1.Router)();
@@ -96,6 +97,15 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
                 orderBy: [{ isDefault: 'desc' }, { updatedAt: 'desc' }],
             },
         },
+    });
+    await (0, notifications_1.notifySuperAdmins)({
+        title: 'New user signup',
+        body: `${user.email} created a customer account.`,
+        module: client_1.NotificationModule.ACCOUNT,
+        type: client_1.NotificationType.SYSTEM,
+        route: '/pro/admin/users',
+        dedupeKey: `user-signup:${user.id}`,
+        metadata: { userId: user.id, email: user.email, source: 'users_create' },
     });
     res.status(201).json({
         message: 'Please check your email to verify your account before signing in.',

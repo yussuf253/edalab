@@ -8,6 +8,7 @@ import '../../features/auth/screens/pro_register_screen.dart';
 import '../../features/auth/screens/pro_signup_screen.dart';
 import '../../features/account/screens/pro_profile_management_screen.dart';
 import '../../features/delivery/screens/delivery_queue_screen.dart';
+import '../../features/delivery/screens/parcel_delivery_queue_screen.dart';
 import '../../features/doctor/screens/doctor_appointments_queue_screen.dart';
 import '../../features/doctor/screens/doctor_availability_screen.dart';
 import '../../features/doctor/screens/doctor_home_care_queue_screen.dart';
@@ -100,6 +101,7 @@ Set<ProModule>? _modulesForPath(String path) {
     '/pro/doctor/availability': {ProModule.doctor},
     '/pro/doctor/schedule': {ProModule.doctor},
     '/pro/delivery/queue': {ProModule.shoppingDelivery},
+    '/pro/delivery/parcels': {ProModule.parcelDelivery},
     '/pro/delivery/active-delivery': {ProModule.shoppingDelivery},
     '/pro/rider/queue': {ProModule.ride},
     '/pro/rider/active-trip': {ProModule.ride},
@@ -413,6 +415,16 @@ GoRouter createProAppRouter({
         builder: (context, state) => _withProfile(
           context,
           (profile) => DeliveryQueueScreen(
+            userId: profile.userId,
+            businessName: profile.businessName,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: ProRoutePaths.parcelDeliveryQueue,
+        builder: (context, state) => _withProfile(
+          context,
+          (profile) => ParcelDeliveryQueueScreen(
             userId: profile.userId,
             businessName: profile.businessName,
           ),

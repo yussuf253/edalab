@@ -9,6 +9,7 @@ import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/utils/pro_module_helper.dart';
 import '../../rider/screens/rider_active_delivery_screen.dart';
 import 'delivery_queue_screen.dart';
+import 'parcel_delivery_queue_screen.dart';
 
 class DeliveryDashboardScreen extends StatefulWidget {
   final ProProfile profile;
@@ -57,6 +58,19 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => DeliveryQueueScreen(
+          userId: widget.profile.userId,
+          businessName: widget.profile.businessName,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    await _refreshDashboard();
+  }
+
+  Future<void> _openParcelQueue() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ParcelDeliveryQueueScreen(
           userId: widget.profile.userId,
           businessName: widget.profile.businessName,
         ),
@@ -192,6 +206,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
             ProModule.shoppingDelivery,
             ProModule.foodDelivery,
             ProModule.pharmacyDelivery,
+            ProModule.parcelDelivery,
           }.contains(module),
         )
         .toList(growable: false);
@@ -204,6 +219,12 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
         backgroundColor: AppColors.food,
         foregroundColor: AppColors.white,
         actions: [
+          if (widget.profile.activeModules.contains(ProModule.parcelDelivery))
+            IconButton(
+              tooltip: 'Parcel dispatch',
+              icon: const Icon(Icons.inventory_2_outlined),
+              onPressed: _openParcelQueue,
+            ),
           IconButton(
             icon: const Icon(Icons.list_alt_outlined),
             onPressed: _openQueue,
@@ -248,8 +269,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
           final completedStat = _metricByKey(stats, 'completed', 1);
           final openStat = _metricByKey(stats, 'coverage', 3);
 
-          final activeRequests =
-              _numericValue(activeStat?.value ?? '') > 0
+          final activeRequests = _numericValue(activeStat?.value ?? '') > 0
               ? _numericValue(activeStat!.value)
               : _totalLaneItems(summaries);
           final openJobs = _numericValue(openStat?.value ?? '') > 0

@@ -53,6 +53,7 @@ class ProRoutePaths {
 
   static const deliveryHome = '/pro/delivery';
   static const deliveryQueue = '/pro/delivery/queue';
+  static const parcelDeliveryQueue = '/pro/delivery/parcels';
   static String deliveryActive(String orderId) =>
       '/pro/delivery/active-delivery/$orderId';
 
@@ -94,6 +95,8 @@ class ProRoutePaths {
       case ProModule.foodDelivery:
       case ProModule.pharmacyDelivery:
         return deliveryQueue;
+      case ProModule.parcelDelivery:
+        return parcelDeliveryQueue;
       case ProModule.ride:
         return riderQueue;
       case ProModule.ecologicalCleaning:

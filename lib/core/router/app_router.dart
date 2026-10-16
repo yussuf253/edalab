@@ -51,6 +51,7 @@ import '../../features/ride/screens/ride_screen.dart';
 import '../../features/ride/screens/ride_booking_screen.dart';
 import '../../features/ride/screens/ride_booking_summary_screen.dart';
 import '../../features/ride/screens/ride_tracking_screen.dart';
+import '../../features/parcel/screens/parcel_screen.dart';
 import '../../features/car_rental/screens/car_rental_screen.dart';
 import '../../features/car_rental/screens/car_rental_detail_screen.dart';
 import '../../features/car_rental/services/car_rental_service.dart';
@@ -115,7 +116,10 @@ GoRouter createAppRouter({
 }) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    refreshListenable: Listenable.merge([authProvider, cityAvailabilityProvider]),
+    refreshListenable: Listenable.merge([
+      authProvider,
+      cityAvailabilityProvider,
+    ]),
     // Onboarding général → /onboarding
     // Home onboarding → géré via redirect sur /home-services
     // First launch → the full general onboarding (/onboarding). The home
@@ -422,6 +426,10 @@ GoRouter createAppRouter({
 
       // ── Ride ─────────────────────────────────────────────────────────────
       GoRoute(path: '/ride', builder: (context, state) => const RideScreen()),
+      GoRoute(
+        path: '/parcel',
+        builder: (context, state) => const ParcelScreen(),
+      ),
       GoRoute(
         path: '/ride/book',
         builder: (context, state) => RideBookingScreen(

@@ -114,8 +114,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
               subtitle: l10n.pharmacyLaneSubtitle,
               icon: Icons.local_pharmacy_outlined,
               color: AppColors.pharmacy,
-              onTap: () =>
-                  _open('${ProRoutePaths.shopQueue}?module=pharmacy'),
+              onTap: () => _open('${ProRoutePaths.shopQueue}?module=pharmacy'),
             ),
         ];
       case ProProfileType.provider:
@@ -212,6 +211,14 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             color: AppColors.food,
             onTap: () => _open(ProRoutePaths.deliveryQueue),
           ),
+          if (profile.activeModules.contains(ProModule.parcelDelivery))
+            _OperationAction(
+              title: 'Parcel delivery',
+              subtitle: 'Accept requests and manage parcel handoffs.',
+              icon: Icons.inventory_2_outlined,
+              color: AppColors.shopping,
+              onTap: () => _open(ProRoutePaths.parcelDeliveryQueue),
+            ),
         ];
       case ProProfileType.rider:
         return [

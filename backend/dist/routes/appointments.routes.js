@@ -162,7 +162,28 @@ router.patch('/:appointmentId/status', (0, async_handler_1.asyncHandler)(async (
     const appointment = await db_1.prisma.appointment.update({
         where: { id: appointmentId },
         data: { status: body.status },
+        include: { doctor: true },
     });
+    if (appointment.status === client_1.AppointmentStatus.CANCELLED ||
+        appointment.status === client_1.AppointmentStatus.REJECTED) {
+        await (0, notifications_1.notifySuperAdmins)({
+            title: appointment.status === client_1.AppointmentStatus.REJECTED
+                ? 'Appointment rejected'
+                : 'Appointment cancelled',
+            body: `An appointment with ${appointment.doctor.name} was moved to ${appointment.status.toLowerCase()}.`,
+            module: client_1.NotificationModule.DOCTOR,
+            type: client_1.NotificationType.APPOINTMENT,
+            route: '/pro/admin/appointments',
+            dedupeKey: `appointment-status:${appointment.id}:${appointment.status}`,
+            metadata: {
+                appointmentId: appointment.id,
+                doctorId: appointment.doctorId,
+                status: appointment.status,
+                userId: appointment.userId,
+                source: 'user_status_flow',
+            },
+        });
+    }
     res.json(serializeAppointment(appointment));
 }));
 exports.default = router;

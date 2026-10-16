@@ -5,9 +5,12 @@ const express_1 = require("express");
 const zod_1 = require("zod");
 const db_1 = require("../db");
 const auth_1 = require("../middleware/auth");
+const pro_routes_1 = require("./pro.routes");
 const async_handler_1 = require("../utils/async-handler");
 const jwt_1 = require("../utils/jwt");
 const password_1 = require("../utils/password");
+const serializers_1 = require("../utils/serializers");
+const notifications_1 = require("../utils/notifications");
 const supabase_admin_service_1 = require("../services/supabase-admin.service");
 const env_1 = require("../config/env");
 const router = (0, express_1.Router)();
@@ -78,6 +81,7 @@ function allowedModulesForProfile(type) {
                 client_1.ProModule.SHOPPING_DELIVERY,
                 client_1.ProModule.FOOD_DELIVERY,
                 client_1.ProModule.PHARMACY_DELIVERY,
+                client_1.ProModule.PARCEL_DELIVERY,
             ];
         case client_1.ProProfileType.RIDER:
             return [client_1.ProModule.RIDE];
@@ -138,6 +142,15 @@ router.post('/register', (0, async_handler_1.asyncHandler)(async (req, res) => {
             passwordHash: await (0, password_1.hashPassword)(body.password),
         },
     });
+    await (0, notifications_1.notifySuperAdmins)({
+        title: 'New pro signup',
+        body: `${account.email} registered a pro account (email verification pending).`,
+        module: client_1.NotificationModule.ACCOUNT,
+        type: client_1.NotificationType.SYSTEM,
+        route: '/pro/admin/pro-accounts',
+        dedupeKey: `pro-account-signup:${account.id}`,
+        metadata: { accountId: account.id, email: account.email },
+    });
     // Return message about email verification - don't return account data yet
     res.status(201).json({
         message: 'Please check your email to verify your account before signing in.',
@@ -172,6 +185,7 @@ router.post('/login', (0, async_handler_1.asyncHandler)(async (req, res) => {
         token,
         account: serializeProAccount(account),
         profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
+        adminUserId: await (0, notifications_1.resolveSuperAdminNotificationUserId)(account.email),
     });
 }));
 // Handle email confirmation redirect from Supabase
@@ -209,6 +223,7 @@ router.post('/confirm', (0, async_handler_1.asyncHandler)(async (req, res) => {
         account: serializeProAccount(account),
         profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
         token: tokenResult,
+        adminUserId: await (0, notifications_1.resolveSuperAdminNotificationUserId)(account.email),
     });
 }));
 // GET endpoint for email confirmation (called by frontend after redirect)
@@ -287,6 +302,123 @@ router.get('/me', auth_1.requireAuth, (0, async_handler_1.asyncHandler)(async (r
     res.json({
         account: serializeProAccount(account),
         profile: account.proProfile ? serializeProProfile(account.proProfile) : null,
+        adminUserId: await (0, notifications_1.resolveSuperAdminNotificationUserId)(account.email),
+    });
+}));
+// POST /pro-auth/profile — completes signup after email verification: picks
+// profile type + active modules + business name, matching `proProfileSetupSchema`
+// above. This creates the underlying `User` row too, since pro-auth accounts
+// don't go through the regular consumer registration flow.
+router.post('/profile', auth_1.requireAuth, (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const accountId = proAccountIdFromRequest(req);
+    if (accountId == null) {
+        return res
+            .status(403)
+            .json({ error: 'This endpoint requires a pro account session.' });
+    }
+    const account = await db_1.prisma.proAccount.findUnique({
+        where: { id: accountId },
+        include: { proProfile: true },
+    });
+    if (!account) {
+        return res.status(404).json({ error: 'Pro account not found.' });
+    }
+    if (account.proProfile) {
+        // Profile already completed — treat as idempotent success rather
+        // than erroring, in case of a retried request.
+        return res.json({
+            account: serializeProAccount(account),
+            profile: serializeProProfile(account.proProfile),
+        });
+    }
+    const parsedBody = proProfileSetupSchema.parse(req.body);
+    // Super admins never get pro profiles — their home is the admin
+    // control center. Block creation even if a client forces the flow.
+    const adminEmails = (process.env.SUPER_ADMIN_EMAILS || process.env.SUPER_ADMIN_EMAIL || 'admin@edalab.com')
+        .split(',')
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean);
+    const accountEmail = account.email.toLowerCase().trim();
+    const isSuperAdminEmail = adminEmails.includes(accountEmail) ||
+        accountEmail.startsWith('admin@') ||
+        accountEmail.includes('+admin@');
+    if (isSuperAdminEmail) {
+        return res.status(403).json({
+            error: 'Super admin accounts cannot create pro profiles.',
+        });
+    }
+    const profileType = parsedBody.type;
+    const requestedModules = parsedBody.activeModules;
+    const businessName = parsedBody.businessName;
+    const avatarUrl = parsedBody.avatarUrl;
+    const bindingOverrides = parsedBody.bindingOverrides;
+    const sanitizedModules = sanitizeModulesForProfile(profileType, requestedModules);
+    // Pro-auth accounts don't have a matching `User` row (that table backs
+    // the separate consumer signup flow) — find one by email if this person
+    // also has a consumer account, otherwise create one now.
+    let user = await db_1.prisma.user.findUnique({ where: { email: account.email } });
+    if (user) {
+        const existingProfile = await db_1.prisma.proProfile.findUnique({
+            where: { userId: user.id },
+        });
+        if (existingProfile) {
+            return res.status(409).json({
+                error: 'This email is already linked to a different pro profile.',
+            });
+        }
+    }
+    else {
+        const { firstName, lastName } = (0, serializers_1.parseFullName)(account.fullName);
+        user = await db_1.prisma.user.create({
+            data: {
+                email: account.email,
+                passwordHash: account.passwordHash,
+                firstName,
+                lastName,
+                phone: account.phone,
+            },
+        });
+    }
+    const resolvedBindingsRaw = await (0, pro_routes_1.resolveBindings)(businessName, sanitizedModules);
+    let bindings = normalizeBindingsForProfileType(profileType, resolvedBindingsRaw);
+    if (bindingOverrides) {
+        const overrides = await (0, pro_routes_1.sanitizeProviderBindingOverrides)(sanitizedModules, bindingOverrides);
+        bindings = { ...bindings, ...overrides };
+    }
+    const ownedLaundryServiceIds = await (0, pro_routes_1.syncLaundryOwnership)(user.id, profileType, sanitizedModules, bindings);
+    bindings = { ...bindings, laundryServiceIds: ownedLaundryServiceIds };
+    const profile = await db_1.prisma.proProfile.create({
+        data: {
+            userId: user.id,
+            accountId: account.id,
+            type: profileType,
+            activeModules: sanitizedModules,
+            businessName: businessName,
+            avatarUrl: avatarUrl?.trim() || null,
+            bindings,
+            isOnline: true,
+            isVerified: false,
+        },
+    });
+    await (0, notifications_1.notifySuperAdmins)({
+        title: 'Pro profile pending verification',
+        body: `${profile.businessName} (${profileType.toLowerCase()}) completed a pro signup and is awaiting review.`,
+        module: client_1.NotificationModule.ACCOUNT,
+        type: client_1.NotificationType.SYSTEM,
+        route: '/pro/admin/pro-accounts',
+        dedupeKey: `pro-profile-created:${profile.id}`,
+        metadata: {
+            profileId: profile.id,
+            userId: profile.userId,
+            accountId: account.id,
+            businessName: profile.businessName,
+            type: profileType,
+            activeModules: sanitizedModules,
+        },
+    });
+    res.status(201).json({
+        account: serializeProAccount(account),
+        profile: serializeProProfile(profile),
     });
 }));
 exports.default = router;

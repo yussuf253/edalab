@@ -397,8 +397,7 @@ class ProAuthProvider extends ChangeNotifier {
     // Key absence (older backend) keeps the restored fallback untouched.
     if (response.containsKey('adminUserId')) {
       final rawAdminUserId = response['adminUserId'];
-      _adminUserId =
-          rawAdminUserId is String && rawAdminUserId.isNotEmpty
+      _adminUserId = rawAdminUserId is String && rawAdminUserId.isNotEmpty
           ? rawAdminUserId
           : null;
     }
@@ -500,6 +499,8 @@ class ProAuthProvider extends ChangeNotifier {
         return 'FOOD_DELIVERY';
       case ProModule.pharmacyDelivery:
         return 'PHARMACY_DELIVERY';
+      case ProModule.parcelDelivery:
+        return 'PARCEL_DELIVERY';
       case ProModule.ride:
         return 'RIDE';
       case ProModule.ecologicalCleaning:

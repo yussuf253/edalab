@@ -90,6 +90,13 @@ class ModuleAccessService {
       sortOrder: 5,
     ),
     ManagedModule(
+      id: 'parcel',
+      name: 'Parcel Delivery',
+      moduleType: 'PARCEL',
+      active: true,
+      sortOrder: 6,
+    ),
+    ManagedModule(
       id: 'pharmacy',
       name: 'Pharmacy',
       moduleType: 'PHARMACY',
@@ -125,6 +132,7 @@ class ModuleAccessService {
     '/doctor': 'doctor',
     '/hotel': 'hotel',
     '/ride': 'ride',
+    '/parcel': 'parcel',
     '/pharmacy': 'pharmacy',
     '/grocery': 'grocery',
     '/home-services': 'home-services',
@@ -210,6 +218,8 @@ class ModuleAccessService {
         return 'hotel';
       case 'ride':
         return 'ride';
+      case 'parcel':
+        return 'parcel';
       case 'pharmacy':
         return 'pharmacy';
       case 'grocery':
@@ -239,6 +249,8 @@ class ModuleAccessService {
         return 'HOTEL';
       case 'ride':
         return 'RIDE';
+      case 'parcel':
+        return 'PARCEL';
       case 'pharmacy':
         return 'PHARMACY';
       case 'grocery':

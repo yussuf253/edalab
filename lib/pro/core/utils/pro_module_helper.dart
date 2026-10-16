@@ -16,6 +16,7 @@ class ProModuleHelper {
           ProModule.shoppingDelivery,
           ProModule.foodDelivery,
           ProModule.pharmacyDelivery,
+          ProModule.parcelDelivery,
         ];
       case ProProfileType.rider:
         return [ProModule.ride];
@@ -63,6 +64,8 @@ class ProModuleHelper {
         return 'Food Delivery';
       case ProModule.pharmacyDelivery:
         return 'Pharmacy Delivery';
+      case ProModule.parcelDelivery:
+        return 'Parcel Delivery';
       case ProModule.ride:
         return 'Ride';
       case ProModule.ecologicalCleaning:
@@ -90,6 +93,8 @@ class ProModuleHelper {
         return 'Handle restaurant pickups and food delivery dispatches.';
       case ProModule.pharmacyDelivery:
         return 'Complete pharmacy deliveries with medicine-sensitive handling.';
+      case ProModule.parcelDelivery:
+        return 'Accept parcel requests and manage pickup through proof of delivery.';
       case ProModule.ride:
         return 'Accept ride requests, manage trips, and track rider earnings.';
       case ProModule.ecologicalCleaning:
@@ -108,6 +113,8 @@ class ProModuleHelper {
       case ProModule.pharmacy:
       case ProModule.pharmacyDelivery:
         return AppColors.pharmacy;
+      case ProModule.parcelDelivery:
+        return AppColors.shopping;
       case ProModule.services:
         return AppColors.homeServices;
       case ProModule.laundry:
@@ -141,6 +148,8 @@ class ProModuleHelper {
         return Icons.delivery_dining;
       case ProModule.pharmacyDelivery:
         return Icons.medication_outlined;
+      case ProModule.parcelDelivery:
+        return Icons.inventory_2_outlined;
       case ProModule.ride:
         return Icons.local_taxi;
       case ProModule.ecologicalCleaning:

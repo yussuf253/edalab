@@ -70,6 +70,9 @@ const createRestaurantSchema = zod_1.z.object({
     cuisine: zod_1.z.string().trim().min(2).max(80).optional(),
     imageUrl: zod_1.z.string().trim().url().optional().or(zod_1.z.literal('')),
 });
+const redeemRestaurantSchema = zod_1.z.object({
+    code: zod_1.z.string().trim().min(4).max(32),
+});
 const createPharmacyBusinessSchema = zod_1.z.object({
     name: zod_1.z.string().trim().min(2).max(120).optional(),
 });
@@ -255,6 +258,11 @@ function serializeProProfile(profile) {
         updatedAt: profile.updatedAt,
     };
 }
+const terminalOrderStatuses = [
+    client_1.OrderStatus.COMPLETED,
+    client_1.OrderStatus.CANCELLED,
+    client_1.OrderStatus.REFUNDED,
+];
 const liveOrderStatuses = [
     client_1.OrderStatus.PENDING,
     client_1.OrderStatus.CONFIRMED,
@@ -404,6 +412,28 @@ async function notifyOrderLifecycle(params) {
             error: error instanceof Error ? error.message : String(error),
         });
     }
+    // Keep the super admin informed when an order goes south (cancellation or
+    // refund) — routine forward progress stays customer-facing only.
+    if (params.status === client_1.OrderStatus.CANCELLED ||
+        params.status === client_1.OrderStatus.REFUNDED) {
+        await (0, notifications_1.notifySuperAdmins)({
+            title: params.status === client_1.OrderStatus.REFUNDED
+                ? 'Order refunded'
+                : 'Order cancelled',
+            body: `A ${moduleLabel} order is now ${statusLabel}.`,
+            module: client_1.NotificationModule.ORDERS,
+            type: client_1.NotificationType.ORDER,
+            route: '/pro/admin/orders',
+            dedupeKey: `order-status:${params.orderId}:${params.status}`,
+            metadata: {
+                orderId: params.orderId,
+                moduleType: params.moduleType,
+                status: params.status,
+                userId: params.userId,
+                source: 'pro_status_flow',
+            },
+        });
+    }
 }
 function allowedProviderOrderTransitions(moduleType, currentStatus) {
     const isServiceFlow = moduleType === client_1.ModuleType.HOME_SERVICES || moduleType === client_1.ModuleType.HOUSE_HELP;
@@ -468,6 +498,22 @@ async function notifyRideLifecycle(params) {
             error: error instanceof Error ? error.message : String(error),
         });
     }
+    if (params.status === client_1.RideStatus.CANCELLED) {
+        await (0, notifications_1.notifySuperAdmins)({
+            title: 'Ride cancelled',
+            body: `A ride is now ${statusLabel}.`,
+            module: client_1.NotificationModule.RIDE,
+            type: client_1.NotificationType.RIDE,
+            route: '/pro/admin/rides',
+            dedupeKey: `ride-status:${params.rideId}:${params.status}`,
+            metadata: {
+                rideId: params.rideId,
+                status: params.status,
+                userId: params.userId,
+                source: 'pro_status_flow',
+            },
+        });
+    }
 }
 async function notifyAppointmentLifecycle(params) {
     const statusLabel = formatModule(params.status);
@@ -493,6 +539,26 @@ async function notifyAppointmentLifecycle(params) {
             appointmentId: params.appointmentId,
             status: params.status,
             error: error instanceof Error ? error.message : String(error),
+        });
+    }
+    if (params.status === client_1.AppointmentStatus.CANCELLED ||
+        params.status === client_1.AppointmentStatus.REJECTED) {
+        await (0, notifications_1.notifySuperAdmins)({
+            title: params.status === client_1.AppointmentStatus.REJECTED
+                ? 'Appointment rejected'
+                : 'Appointment cancelled',
+            body: `An appointment is now ${statusLabel}.`,
+            module: client_1.NotificationModule.DOCTOR,
+            type: client_1.NotificationType.APPOINTMENT,
+            route: '/pro/admin/appointments',
+            dedupeKey: `appointment-status:${params.appointmentId}:${params.status}`,
+            metadata: {
+                appointmentId: params.appointmentId,
+                doctorId: params.doctorId,
+                status: params.status,
+                userId: params.userId,
+                source: 'pro_status_flow',
+            },
         });
     }
 }
@@ -522,6 +588,26 @@ async function ensureUniqueSlug(baseValue, exists) {
         slug = `${baseSlug}-${suffix}`;
     }
     return slug;
+}
+const RESTAURANT_REDEEM_CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+function generateRestaurantRedeemCode() {
+    let code = '';
+    for (let index = 0; index < 8; index += 1) {
+        code += RESTAURANT_REDEEM_CODE_ALPHABET[(0, crypto_1.randomInt)(RESTAURANT_REDEEM_CODE_ALPHABET.length)];
+    }
+    return code;
+}
+async function nextRestaurantRedeemCode() {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+        const candidate = generateRestaurantRedeemCode();
+        const existing = await db_1.prisma.restaurant.findUnique({
+            where: { redeemCode: candidate },
+            select: { id: true },
+        });
+        if (!existing)
+            return candidate;
+    }
+    throw new Error('Could not generate a unique restaurant redeem code.');
 }
 function matchesBusinessName(query, candidate) {
     const left = normalizeText(query);
@@ -939,6 +1025,7 @@ function pharmacyBusinessFromOrderItem(item) {
     const productMetadata = readMetadataMap(item.product?.metadata);
     const itemMetadata = readMetadataMap(item.metadata);
     const candidates = [
+        item.medicine?.pharmacy?.name,
         productMetadata?.sourceBusiness,
         itemMetadata?.sourceBusiness,
         itemMetadata?.selectedPharmacy,
@@ -1199,9 +1286,8 @@ async function resolveBindings(businessName, activeModules) {
             })
             : Promise.resolve([]),
         activeModules.includes(client_1.ProModule.PHARMACY)
-            ? db_1.prisma.product.findMany({
-                where: { moduleType: client_1.ModuleType.PHARMACY },
-                select: { metadata: true },
+            ? db_1.prisma.pharmacy.findMany({
+                select: { name: true },
             })
             : Promise.resolve([]),
         needsLaundry
@@ -1225,18 +1311,10 @@ async function resolveBindings(businessName, activeModules) {
     bindings.laundryServiceIds = laundryServices
         .filter((service) => matchesBusinessName(businessName, service.name))
         .map((service) => service.id);
-    const pharmacyBusinesses = new Set();
-    for (const product of pharmacyProducts) {
-        const metadata = product.metadata && typeof product.metadata === 'object'
-            ? product.metadata
-            : null;
-        const sourceBusiness = metadata?.sourceBusiness?.toString();
-        if (sourceBusiness != null &&
-            matchesBusinessName(businessName, sourceBusiness)) {
-            pharmacyBusinesses.add(sourceBusiness);
-        }
-    }
-    bindings.pharmacyBusinesses = Array.from(pharmacyBusinesses);
+    // Pharmacies are first-class rows now; bind by pharmacy name match.
+    bindings.pharmacyBusinesses = pharmacyProducts
+        .filter((pharmacy) => matchesBusinessName(businessName, pharmacy.name))
+        .map((pharmacy) => pharmacy.name);
     return bindings;
 }
 function normalizeResolvedBindingsForProfileType(type, bindings) {
@@ -1491,22 +1569,13 @@ async function buildPharmacySummary(todayStart, bindings, businessName) {
     if (bindings.pharmacyBusinesses.length === 0) {
         return emptyShopSummary('pharmacy', 'Pharmacy Store', 'Review Pharmacy Binding', businessName);
     }
-    const allProducts = await db_1.prisma.product.findMany({
-        where: { moduleType: client_1.ModuleType.PHARMACY },
+    const filteredProducts = await db_1.prisma.medicine.findMany({
+        where: { pharmacy: { name: { in: bindings.pharmacyBusinesses } } },
         select: {
             id: true,
             requiresPrescription: true,
-            metadata: true,
             inStock: true,
         },
-    });
-    const filteredProducts = allProducts.filter((product) => {
-        const metadata = product.metadata &&
-            typeof product.metadata === 'object' &&
-            !Array.isArray(product.metadata)
-            ? product.metadata
-            : null;
-        return isBoundPharmacyBusiness(bindings.pharmacyBusinesses, metadata?.sourceBusiness?.toString() ?? null);
     });
     const pharmacyOrderCandidates = await db_1.prisma.order.findMany({
         where: { moduleType: client_1.ModuleType.PHARMACY },
@@ -1524,6 +1593,13 @@ async function buildPharmacySummary(todayStart, bindings, businessName) {
                     metadata: true,
                     product: {
                         select: { metadata: true },
+                    },
+                    medicine: {
+                        select: {
+                            pharmacy: {
+                                select: { name: true },
+                            },
+                        },
                     },
                 },
             },
@@ -1957,7 +2033,6 @@ async function buildDashboard(profile) {
             }, 0);
             return {
                 headline: 'Store operations',
-                scopeNote: 'This workspace is limited to the store, restaurant, and pharmacy businesses bound to this profile. If a module shows no business, update the business name so it matches the real listing.',
                 stats: [
                     {
                         key: 'modules',
@@ -2118,8 +2193,18 @@ router.post('/:userId/claim-delivery', (0, async_handler_1.asyncHandler)(async (
     if (order.deliveryUserId && order.deliveryUserId !== userId) {
         return res.status(409).json({ error: 'Delivery request already claimed.' });
     }
-    const updatedOrder = await db_1.prisma.order.update({
-        where: { id: order.id },
+    if (terminalOrderStatuses.includes(order.status)) {
+        return res
+            .status(409)
+            .json({ error: 'Delivery request is no longer available.' });
+    }
+    // Claim atomically: the where clause re-checks ownership so two couriers
+    // racing on the same request cannot both succeed.
+    const claimResult = await db_1.prisma.order.updateMany({
+        where: {
+            id: order.id,
+            OR: [{ deliveryUserId: null }, { deliveryUserId: userId }],
+        },
         data: {
             deliveryUserId: userId,
             status: order.status === client_1.OrderStatus.PENDING ||
@@ -2128,8 +2213,17 @@ router.post('/:userId/claim-delivery', (0, async_handler_1.asyncHandler)(async (
                 ? client_1.OrderStatus.DISPATCHED
                 : order.status,
         },
+    });
+    if (claimResult.count === 0) {
+        return res.status(409).json({ error: 'Delivery request already claimed.' });
+    }
+    const updatedOrder = await db_1.prisma.order.findUnique({
+        where: { id: order.id },
         include: { items: true },
     });
+    if (!updatedOrder) {
+        return res.status(404).json({ error: 'Delivery request not found.' });
+    }
     await notifyOrderLifecycle({
         userId: updatedOrder.userId,
         orderId: updatedOrder.id,
@@ -2215,6 +2309,23 @@ router.post('/:userId/delivery-status', (0, async_handler_1.asyncHandler)(async 
     });
     if (!order || order.deliveryUserId !== userId) {
         return res.status(404).json({ error: 'Assigned delivery request not found.' });
+    }
+    if (order.status === body.status) {
+        return res.json({
+            id: order.id,
+            status: order.status,
+            deliveryUserId: order.deliveryUserId,
+        });
+    }
+    // Couriers may only advance their delivery forward one step at a time.
+    const allowedDeliveryTransitions = {
+        [client_1.OrderStatus.DISPATCHED]: [client_1.OrderStatus.IN_PROGRESS],
+        [client_1.OrderStatus.IN_PROGRESS]: [client_1.OrderStatus.COMPLETED],
+    };
+    if (!(allowedDeliveryTransitions[order.status] ?? []).includes(body.status)) {
+        return res.status(409).json({
+            error: `Invalid status transition from ${order.status} to ${body.status} for this delivery.`,
+        });
     }
     const updatedOrder = await db_1.prisma.order.update({
         where: { id: order.id },
@@ -2554,6 +2665,13 @@ router.get('/:userId/shop-queue', (0, async_handler_1.asyncHandler)(async (req, 
                             product: {
                                 select: { shopId: true, metadata: true },
                             },
+                            medicine: {
+                                select: {
+                                    pharmacy: {
+                                        select: { name: true },
+                                    },
+                                },
+                            },
                         },
                     },
                 },
@@ -2581,6 +2699,13 @@ router.get('/:userId/shop-queue', (0, async_handler_1.asyncHandler)(async (req, 
                             product: {
                                 select: { shopId: true, metadata: true },
                             },
+                            medicine: {
+                                select: {
+                                    pharmacy: {
+                                        select: { name: true },
+                                    },
+                                },
+                            },
                         },
                     },
                 },
@@ -2600,6 +2725,13 @@ router.get('/:userId/shop-queue', (0, async_handler_1.asyncHandler)(async (req, 
                         include: {
                             product: {
                                 select: { shopId: true, metadata: true },
+                            },
+                            medicine: {
+                                select: {
+                                    pharmacy: {
+                                        select: { name: true },
+                                    },
+                                },
                             },
                         },
                     },
@@ -2670,6 +2802,13 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
                             product: {
                                 select: { shopId: true, metadata: true },
                             },
+                            medicine: {
+                                select: {
+                                    pharmacy: {
+                                        select: { name: true },
+                                    },
+                                },
+                            },
                         },
                     },
                 },
@@ -2696,6 +2835,13 @@ router.get('/:userId/provider-queue', (0, async_handler_1.asyncHandler)(async (r
                         include: {
                             product: {
                                 select: { shopId: true, metadata: true },
+                            },
+                            medicine: {
+                                select: {
+                                    pharmacy: {
+                                        select: { name: true },
+                                    },
+                                },
                             },
                         },
                     },
@@ -2880,6 +3026,7 @@ router.get('/:userId/delivery-queue', (0, async_handler_1.asyncHandler)(async (r
             moduleType: {
                 in: [client_1.ModuleType.SHOPPING, client_1.ModuleType.FOOD, client_1.ModuleType.PHARMACY],
             },
+            status: { in: liveOrderStatuses },
             OR: [{ deliveryUserId: null }, { deliveryUserId: userId }],
         },
         include: {
@@ -3036,8 +3183,10 @@ router.get('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async
                     },
                 },
             }),
-        db_1.prisma.product.findMany({
-            where: { moduleType: client_1.ModuleType.PHARMACY },
+        db_1.prisma.medicine.findMany({
+            where: bindings.pharmacyBusinesses.length
+                ? { pharmacy: { name: { in: bindings.pharmacyBusinesses } } }
+                : {},
             select: {
                 id: true,
                 name: true,
@@ -3045,6 +3194,9 @@ router.get('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async
                 price: true,
                 requiresPrescription: true,
                 metadata: true,
+                pharmacy: {
+                    select: { name: true },
+                },
                 category: {
                     select: {
                         name: true,
@@ -3068,22 +3220,19 @@ router.get('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async
                                 metadata: true,
                             },
                         },
+                        medicine: {
+                            select: {
+                                pharmacy: {
+                                    select: { name: true },
+                                },
+                            },
+                        },
                     },
                 },
             },
         }),
     ]);
-    const pharmacyItems = bindings.pharmacyBusinesses.length === 0
-        ? []
-        : allPharmacyProducts.filter((product) => {
-            const metadata = product.metadata &&
-                typeof product.metadata === 'object' &&
-                !Array.isArray(product.metadata)
-                ? product.metadata
-                : null;
-            const sourceBusiness = metadata?.sourceBusiness?.toString();
-            return isBoundPharmacyBusiness(bindings.pharmacyBusinesses, sourceBusiness ?? null);
-        });
+    const pharmacyItems = bindings.pharmacyBusinesses.length === 0 ? [] : allPharmacyProducts;
     const pharmacyOrders = bindings.pharmacyBusinesses.length === 0
         ? []
         : pharmacyOrderCandidates.filter((order) => pharmacyOrderMatchesBindings(bindings, order.items));
@@ -3251,12 +3400,7 @@ router.get('/:userId/shop-availability', (0, async_handler_1.asyncHandler)(async
             ],
         },
         pharmacy: pharmacyItems.map((product) => {
-            const metadata = product.metadata &&
-                typeof product.metadata === 'object' &&
-                !Array.isArray(product.metadata)
-                ? product.metadata
-                : null;
-            const sourceBusiness = metadata?.sourceBusiness?.toString() ?? 'Pharmacy';
+            const sourceBusiness = product.pharmacy?.name ?? 'Pharmacy';
             return {
                 id: product.id,
                 name: product.name,
@@ -3372,6 +3516,7 @@ router.post('/:userId/restaurant', (0, async_handler_1.asyncHandler)(async (req,
                 cuisine: body.cuisine?.trim() || 'General',
                 imageUrl: body.imageUrl?.trim() || null,
                 isOpen: true,
+                redeemCode: await nextRestaurantRedeemCode(),
             },
         }));
     if (matchingRestaurant) {
@@ -3408,6 +3553,69 @@ router.post('/:userId/restaurant', (0, async_handler_1.asyncHandler)(async (req,
         id: restaurant.id,
         name: restaurant.name,
         created: matchingRestaurant == null,
+        bindings,
+    });
+}));
+// POST /pro/:userId/restaurant/redeem — link an existing restaurant to this
+// shop profile by redeeming its secret code. Intended for owners whose
+// restaurant already exists in the catalog but is not yet bound to a profile.
+router.post('/:userId/restaurant/redeem', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const body = redeemRestaurantSchema.parse(req.body);
+    const profile = await db_1.prisma.proProfile.findUnique({ where: { userId } });
+    if (!profile || profile.type !== client_1.ProProfileType.SHOP) {
+        return res.status(404).json({ error: 'Shop pro profile not found.' });
+    }
+    if (!profile.activeModules.includes(client_1.ProModule.FOOD)) {
+        return res.status(400).json({
+            error: 'Food is not enabled for this shop profile.',
+        });
+    }
+    const code = body.code.trim().toUpperCase();
+    const restaurant = await db_1.prisma.restaurant.findUnique({
+        where: { redeemCode: code },
+    });
+    if (!restaurant) {
+        return res.status(404).json({
+            error: 'Invalid redeem code. Check the code and try again.',
+        });
+    }
+    // If the restaurant is already bound to another profile, reject so one
+    // restaurant cannot be claimed by two different shops.
+    const existingOwner = await db_1.prisma.proProfile.findFirst({
+        where: {
+            id: { not: profile.id },
+            type: client_1.ProProfileType.SHOP,
+            bindings: {
+                path: ['restaurantIds'],
+                array_contains: restaurant.id,
+            },
+        },
+        select: { userId: true },
+    });
+    if (existingOwner) {
+        return res.status(409).json({
+            error: 'This restaurant is already linked to another shop profile.',
+        });
+    }
+    const resolvedBindings = await resolveBindings(profile.businessName, profile.activeModules);
+    const ownedLaundryServiceIds = await syncLaundryOwnership(profile.userId, profile.type, profile.activeModules, resolvedBindings);
+    const bindings = {
+        ...resolvedBindings,
+        laundryServiceIds: ownedLaundryServiceIds,
+        restaurantIds: Array.from(new Set([...resolvedBindings.restaurantIds, restaurant.id])),
+        restaurantNames: Array.from(new Set([...resolvedBindings.restaurantNames, restaurant.name])),
+    };
+    await db_1.prisma.proProfile.update({
+        where: { userId },
+        data: {
+            bindings,
+        },
+    });
+    res.json({
+        id: restaurant.id,
+        name: restaurant.name,
+        cuisine: restaurant.cuisine,
         bindings,
     });
 }));
@@ -3762,8 +3970,14 @@ router.post('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(asyn
     let sourceBusiness;
     if (requestedModule === 'pharmacy') {
         if (!profile.activeModules.includes(client_1.ProModule.PHARMACY)) {
-            return res.status(400).json({
-                error: 'Pharmacy is not enabled for this shop profile.',
+            // Graceful empty response: the profile-management screen fetches both
+            // shopping and pharmacy product lists for every shop profile, so a
+            // food-only shop must get an empty payload here rather than a 400
+            // that would fail the whole details load.
+            return res.json({
+                module: requestedModule,
+                stores: [],
+                products: [],
             });
         }
         if (bindings.pharmacyBusinesses.length === 0) {
@@ -3935,8 +4149,14 @@ router.get('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(async
     const bindings = normalizeBindings(hydratedProfile.bindings);
     if (requestedModule === 'pharmacy') {
         if (!profile.activeModules.includes(client_1.ProModule.PHARMACY)) {
-            return res.status(400).json({
-                error: 'Pharmacy is not enabled for this shop profile.',
+            // Graceful empty response: the profile-management screen fetches both
+            // shopping and pharmacy product lists for every shop profile, so a
+            // food-only shop must get an empty payload here rather than a 400
+            // that would fail the whole details load.
+            return res.json({
+                module: requestedModule,
+                stores: [],
+                products: [],
             });
         }
         if (bindings.pharmacyBusinesses.length === 0) {
@@ -4035,8 +4255,12 @@ router.get('/:userId/shopping-products', (0, async_handler_1.asyncHandler)(async
         });
     }
     if (!profile.activeModules.includes(client_1.ProModule.SHOPPING)) {
-        return res.status(400).json({
-            error: 'Shopping is not enabled for this shop profile.',
+        // Same graceful-empty treatment as the pharmacy branch above: shop
+        // profiles without the shopping module simply have no stores.
+        return res.json({
+            module: requestedModule,
+            stores: [],
+            products: [],
         });
     }
     if (bindings.shoppingStoreIds.length === 0) {
@@ -4943,5 +5167,270 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
         },
     });
     res.status(201).json(serializeProProfile(profile));
+}));
+// ──────────────────────────────────────────────────────────────────────
+// Restaurant menu management (categories + items) for FOOD-module SHOP
+// pro profiles. Mirrors the shopping-products authorization pattern:
+// the profile must be type SHOP with FOOD active, and every write is
+// scoped to the restaurant(s) matched via bindings.restaurantIds.
+// ──────────────────────────────────────────────────────────────────────
+const menuCategoryUpsertSchema = zod_1.z.object({
+    name: zod_1.z.string().trim().min(1),
+    sortOrder: zod_1.z.coerce.number().int().optional(),
+});
+const customizationOptionSchema = zod_1.z.object({
+    id: zod_1.z.string().trim().min(1),
+    name: zod_1.z.string().trim().min(1),
+    priceDelta: zod_1.z.coerce.number().optional().default(0),
+});
+const customizationGroupSchema = zod_1.z.object({
+    id: zod_1.z.string().trim().min(1),
+    name: zod_1.z.string().trim().min(1),
+    type: zod_1.z.enum(['single', 'multiple']).optional().default('single'),
+    required: zod_1.z.boolean().optional().default(false),
+    maxSelections: zod_1.z.coerce.number().int().optional(),
+    options: zod_1.z.array(customizationOptionSchema).default([]),
+});
+const menuItemUpsertSchema = zod_1.z.object({
+    restaurantId: zod_1.z.string().trim().optional(),
+    categoryId: zod_1.z.string().trim().nullable().optional(),
+    name: zod_1.z.string().trim().min(1),
+    description: zod_1.z.string().trim().optional().default(''),
+    price: zod_1.z.coerce.number().nonnegative(),
+    imageUrl: zod_1.z.string().trim().optional().nullable(),
+    isPopular: zod_1.z.boolean().optional(),
+    isAvailable: zod_1.z.boolean().optional(),
+    customizationGroups: zod_1.z.array(customizationGroupSchema).optional().default([]),
+});
+async function requireFoodShopProfile(userId) {
+    const profile = await db_1.prisma.proProfile.findUnique({ where: { userId } });
+    if (!profile || profile.type !== client_1.ProProfileType.SHOP) {
+        return {
+            ok: false,
+            status: 404,
+            body: { error: 'Shop pro profile not found.' },
+        };
+    }
+    if (!profile.activeModules.includes(client_1.ProModule.FOOD)) {
+        return {
+            ok: false,
+            status: 400,
+            body: { error: 'Food is not enabled for this shop profile.' },
+        };
+    }
+    const hydratedProfile = await hydrateProfileBindingsIfMissing(profile);
+    const bindings = normalizeBindings(hydratedProfile.bindings);
+    if (bindings.restaurantIds.length === 0) {
+        return {
+            ok: false,
+            status: 403,
+            body: {
+                error: 'No matching restaurant is currently bound to this profile. Update the pro profile business name to match the real restaurant listing.',
+            },
+        };
+    }
+    return { ok: true, profile, restaurantIds: bindings.restaurantIds };
+}
+// GET /pro/:userId/restaurant-menu — the bound restaurant(s), categories and items.
+router.get('/:userId/restaurant-menu', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const auth = await requireFoodShopProfile(userId);
+    if (!auth.ok) {
+        return res.status(auth.status).json(auth.body);
+    }
+    const restaurants = await db_1.prisma.restaurant.findMany({
+        where: { id: { in: auth.restaurantIds } },
+        include: {
+            menuCategories: { orderBy: { sortOrder: 'asc' } },
+            menuItems: { orderBy: { name: 'asc' } },
+        },
+    });
+    res.json({
+        restaurants: restaurants.map((restaurant) => ({
+            id: restaurant.id,
+            name: restaurant.name,
+            categories: restaurant.menuCategories.map((category) => ({
+                id: category.id,
+                name: category.name,
+                sortOrder: category.sortOrder,
+            })),
+            items: restaurant.menuItems.map((item) => ({
+                id: item.id,
+                categoryId: item.categoryId,
+                name: item.name,
+                description: item.description,
+                price: (0, serializers_1.toNumber)(item.price),
+                imageUrl: item.imageUrl,
+                isPopular: item.isPopular,
+                isAvailable: item.isAvailable,
+                customizations: item.customizationsJson ?? [],
+            })),
+        })),
+    });
+}));
+// POST /pro/:userId/restaurant-menu/categories
+router.post('/:userId/restaurant-menu/categories', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const auth = await requireFoodShopProfile(userId);
+    if (!auth.ok) {
+        return res.status(auth.status).json(auth.body);
+    }
+    const body = menuCategoryUpsertSchema.parse(req.body);
+    const restaurantId = req.body.restaurantId ?? auth.restaurantIds[0];
+    if (!auth.restaurantIds.includes(restaurantId)) {
+        return res.status(403).json({ error: 'Restaurant is not bound to this profile.' });
+    }
+    const category = await db_1.prisma.restaurantMenuCategory.create({
+        data: {
+            restaurantId,
+            name: body.name,
+            sortOrder: body.sortOrder ?? 0,
+        },
+    });
+    res.status(201).json(category);
+}));
+// PATCH /pro/:userId/restaurant-menu/categories/:categoryId
+router.patch('/:userId/restaurant-menu/categories/:categoryId', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const categoryId = (0, http_1.getParam)(req.params.categoryId, 'categoryId');
+    const auth = await requireFoodShopProfile(userId);
+    if (!auth.ok) {
+        return res.status(auth.status).json(auth.body);
+    }
+    const body = menuCategoryUpsertSchema.partial().parse(req.body);
+    const existing = await db_1.prisma.restaurantMenuCategory.findUnique({
+        where: { id: categoryId },
+    });
+    if (!existing || !auth.restaurantIds.includes(existing.restaurantId)) {
+        return res.status(404).json({ error: 'Menu category not found.' });
+    }
+    const category = await db_1.prisma.restaurantMenuCategory.update({
+        where: { id: categoryId },
+        data: {
+            name: body.name ?? undefined,
+            sortOrder: body.sortOrder ?? undefined,
+        },
+    });
+    res.json(category);
+}));
+// DELETE /pro/:userId/restaurant-menu/categories/:categoryId
+// Items in this category are NOT deleted — they fall back to "uncategorized"
+// (see categoryId's onDelete: SetNull in schema.prisma) rather than being lost.
+router.delete('/:userId/restaurant-menu/categories/:categoryId', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const categoryId = (0, http_1.getParam)(req.params.categoryId, 'categoryId');
+    const auth = await requireFoodShopProfile(userId);
+    if (!auth.ok) {
+        return res.status(auth.status).json(auth.body);
+    }
+    const existing = await db_1.prisma.restaurantMenuCategory.findUnique({
+        where: { id: categoryId },
+    });
+    if (!existing || !auth.restaurantIds.includes(existing.restaurantId)) {
+        return res.status(404).json({ error: 'Menu category not found.' });
+    }
+    await db_1.prisma.restaurantMenuCategory.delete({ where: { id: categoryId } });
+    res.json({ success: true });
+}));
+// POST /pro/:userId/restaurant-menu/items
+router.post('/:userId/restaurant-menu/items', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const auth = await requireFoodShopProfile(userId);
+    if (!auth.ok) {
+        return res.status(auth.status).json(auth.body);
+    }
+    const body = menuItemUpsertSchema.parse(req.body);
+    const restaurantId = body.restaurantId ?? auth.restaurantIds[0];
+    if (!auth.restaurantIds.includes(restaurantId)) {
+        return res.status(403).json({ error: 'Restaurant is not bound to this profile.' });
+    }
+    if (body.categoryId) {
+        const category = await db_1.prisma.restaurantMenuCategory.findUnique({
+            where: { id: body.categoryId },
+        });
+        if (!category || category.restaurantId !== restaurantId) {
+            return res.status(400).json({ error: 'Menu category does not belong to this restaurant.' });
+        }
+    }
+    const item = await db_1.prisma.restaurantMenuItem.create({
+        data: {
+            id: (0, crypto_1.randomUUID)(),
+            restaurantId,
+            categoryId: body.categoryId ?? null,
+            name: body.name,
+            description: body.description ?? '',
+            price: new client_1.Prisma.Decimal(body.price),
+            imageUrl: body.imageUrl ?? null,
+            isPopular: body.isPopular ?? false,
+            isAvailable: body.isAvailable ?? true,
+            customizationsJson: body.customizationGroups.length > 0
+                ? { groups: body.customizationGroups }
+                : [],
+        },
+    });
+    res.status(201).json({
+        ...item,
+        price: (0, serializers_1.toNumber)(item.price),
+        customizations: item.customizationsJson ?? [],
+    });
+}));
+// PATCH /pro/:userId/restaurant-menu/items/:itemId
+router.patch('/:userId/restaurant-menu/items/:itemId', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const itemId = (0, http_1.getParam)(req.params.itemId, 'itemId');
+    const auth = await requireFoodShopProfile(userId);
+    if (!auth.ok) {
+        return res.status(auth.status).json(auth.body);
+    }
+    const existing = await db_1.prisma.restaurantMenuItem.findUnique({ where: { id: itemId } });
+    if (!existing || !auth.restaurantIds.includes(existing.restaurantId)) {
+        return res.status(404).json({ error: 'Menu item not found.' });
+    }
+    const body = menuItemUpsertSchema.partial().parse(req.body);
+    if (body.categoryId) {
+        const category = await db_1.prisma.restaurantMenuCategory.findUnique({
+            where: { id: body.categoryId },
+        });
+        if (!category || category.restaurantId !== existing.restaurantId) {
+            return res.status(400).json({ error: 'Menu category does not belong to this restaurant.' });
+        }
+    }
+    const item = await db_1.prisma.restaurantMenuItem.update({
+        where: { id: itemId },
+        data: {
+            categoryId: body.categoryId === undefined ? undefined : body.categoryId,
+            name: body.name ?? undefined,
+            description: body.description ?? undefined,
+            price: body.price === undefined ? undefined : new client_1.Prisma.Decimal(body.price),
+            imageUrl: body.imageUrl === undefined ? undefined : body.imageUrl,
+            isPopular: body.isPopular ?? undefined,
+            isAvailable: body.isAvailable ?? undefined,
+            customizationsJson: body.customizationGroups === undefined
+                ? undefined
+                : body.customizationGroups.length > 0
+                    ? { groups: body.customizationGroups }
+                    : [],
+        },
+    });
+    res.json({
+        ...item,
+        price: (0, serializers_1.toNumber)(item.price),
+        customizations: item.customizationsJson ?? [],
+    });
+}));
+// DELETE /pro/:userId/restaurant-menu/items/:itemId
+router.delete('/:userId/restaurant-menu/items/:itemId', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const userId = (0, http_1.getParam)(req.params.userId, 'userId');
+    const itemId = (0, http_1.getParam)(req.params.itemId, 'itemId');
+    const auth = await requireFoodShopProfile(userId);
+    if (!auth.ok) {
+        return res.status(auth.status).json(auth.body);
+    }
+    const existing = await db_1.prisma.restaurantMenuItem.findUnique({ where: { id: itemId } });
+    if (!existing || !auth.restaurantIds.includes(existing.restaurantId)) {
+        return res.status(404).json({ error: 'Menu item not found.' });
+    }
+    await db_1.prisma.restaurantMenuItem.delete({ where: { id: itemId } });
+    res.json({ success: true });
 }));
 exports.default = router;

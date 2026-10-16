@@ -7,6 +7,7 @@ const db_1 = require("../db");
 const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
 const serializers_1 = require("../utils/serializers");
+const notifications_1 = require("../utils/notifications");
 /**
  * Car Rental Module
  *
@@ -341,6 +342,20 @@ router.post('/bookings', (0, async_handler_1.asyncHandler)(async (req, res) => {
         return { booking, order };
     });
     const booking = result.booking;
+    await (0, notifications_1.notifySuperAdmins)({
+        title: 'New car rental booking',
+        body: `A customer booked ${booking.carName} (${booking.totalDays} day${booking.totalDays === 1 ? '' : 's'}).`,
+        module: client_1.NotificationModule.RIDE,
+        type: client_1.NotificationType.ORDER,
+        route: '/pro/admin/orders',
+        dedupeKey: `car-rental-created:${booking.id}`,
+        metadata: {
+            bookingId: booking.id,
+            carId: booking.carId,
+            carName: booking.carName,
+            userId: booking.userId,
+        },
+    });
     res.status(201).json(serializeBooking({
         id: booking.id,
         userId: booking.userId,
@@ -416,5 +431,82 @@ router.get('/bookings/user/:userId', (0, async_handler_1.asyncHandler)(async (re
         updatedAt: b.updatedAt,
     }));
     res.json(serialized);
+}));
+// POST /api/car-rentals/bookings/:bookingId/cancel — cancel a booking
+router.post('/bookings/:bookingId/cancel', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const bookingId = (0, http_1.getParam)(req.params.bookingId, 'bookingId');
+    const booking = await db_1.prisma.carRentalBooking.findUnique({
+        where: { id: bookingId },
+    });
+    if (!booking) {
+        return res.status(404).json({ error: 'Booking not found.' });
+    }
+    if (booking.status === 'CANCELLED') {
+        return res.status(400).json({ error: 'Booking is already cancelled.' });
+    }
+    if (booking.status === 'COMPLETED') {
+        return res.status(400).json({ error: 'Completed bookings cannot be cancelled.' });
+    }
+    if (booking.startDate <= new Date()) {
+        return res
+            .status(400)
+            .json({ error: 'This rental has already started and cannot be cancelled.' });
+    }
+    // Keep the linked accounting Order in sync too (created alongside the
+    // booking in POST /bookings — see the $transaction above). The Order
+    // doesn't have a direct FK to the booking, only bookingId in its JSON
+    // metadata, so we look it up the same way.
+    const updated = await db_1.prisma.$transaction(async (tx) => {
+        const cancelledBooking = await tx.carRentalBooking.update({
+            where: { id: bookingId },
+            data: { status: 'CANCELLED' },
+        });
+        const relatedOrder = await tx.order.findFirst({
+            where: { metadata: { path: ['bookingId'], equals: bookingId } },
+        });
+        if (relatedOrder) {
+            await tx.order.update({
+                where: { id: relatedOrder.id },
+                data: { status: client_1.OrderStatus.CANCELLED },
+            });
+        }
+        return cancelledBooking;
+    });
+    await (0, notifications_1.notifySuperAdmins)({
+        title: 'Car rental cancelled',
+        body: `The booking for ${updated.carName} was cancelled.`,
+        module: client_1.NotificationModule.RIDE,
+        type: client_1.NotificationType.ORDER,
+        route: '/pro/admin/orders',
+        dedupeKey: `car-rental-cancelled:${updated.id}`,
+        metadata: {
+            bookingId: updated.id,
+            carName: updated.carName,
+            userId: updated.userId,
+        },
+    });
+    res.json({
+        success: true,
+        booking: serializeBooking({
+            id: updated.id,
+            userId: updated.userId,
+            carId: updated.carId,
+            carName: updated.carName,
+            carType: updated.carType,
+            startDate: updated.startDate,
+            endDate: updated.endDate,
+            totalDays: updated.totalDays,
+            pricePerDay: updated.pricePerDay,
+            subtotal: updated.subtotal,
+            tax: updated.tax,
+            total: updated.total,
+            status: updated.status,
+            pickupLocation: updated.pickupLocation ?? null,
+            dropoffLocation: updated.dropoffLocation ?? null,
+            notes: updated.notes ?? null,
+            createdAt: updated.createdAt,
+            updatedAt: updated.updatedAt,
+        }),
+    });
 }));
 exports.default = router;

@@ -184,6 +184,7 @@ class ProDrawer extends StatelessWidget {
       case ProModule.shoppingDelivery:
       case ProModule.foodDelivery:
       case ProModule.pharmacyDelivery:
+      case ProModule.parcelDelivery:
       case ProModule.ride:
       case ProModule.ecologicalCleaning:
         return ProRoutePaths.queueForModule(module);

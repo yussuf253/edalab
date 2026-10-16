@@ -401,6 +401,28 @@ router.all('/waafipay/callback/:result', (0, async_handler_1.asyncHandler)(async
         });
         await notifyProvidersForPaidOrder(order);
     }
+    if (cancelled) {
+        const declineReason = [responseMsg, state]
+            .map((entry) => (entry ?? '').trim())
+            .filter(Boolean)
+            .join(' · ');
+        await (0, notifications_1.notifySuperAdmins)({
+            title: 'Payment failed',
+            body: declineReason.length > 0
+                ? `A payment was declined (${declineReason}).`
+                : 'A payment was declined.',
+            module: client_1.NotificationModule.ORDERS,
+            type: client_1.NotificationType.ORDER,
+            route: '/pro/admin/orders',
+            dedupeKey: `payment-failed:${order.id}:${referenceId ?? 'unknown'}`,
+            metadata: {
+                orderId: order.id,
+                responseCode: responseCode ?? null,
+                state: state ?? null,
+                userId: order.userId,
+            },
+        });
+    }
     if (paid) {
         return res.redirect(`${webOrigin}/payment/success?orderId=${order.id}`);
     }

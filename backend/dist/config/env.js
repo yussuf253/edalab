@@ -34,5 +34,10 @@ const envSchema = zod_1.z.object({
     WAAFIPAY_PRODUCTION: zod_1.z.coerce.boolean().default(true),
     WAAFIPAY_CALLBACK_HTML_REDIRECT: zod_1.z.coerce.boolean().default(false),
     DEEP_LINK_URL: zod_1.z.string().optional(),
+    // AliExpress Open Platform
+    ALIEXPRESS_APP_KEY: zod_1.z.string().optional(),
+    ALIEXPRESS_APP_SECRET: zod_1.z.string().optional(),
+    ALIEXPRESS_GATEWAY_URL: zod_1.z.string().default('https://api-sg.aliexpress.com'),
+    ALIEXPRESS_TRACKING_ID: zod_1.z.string().optional(),
 });
 exports.env = envSchema.parse(process.env);

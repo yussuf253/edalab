@@ -116,6 +116,7 @@ function allowedModulesForProfile(type: ProProfileType): ProModule[] {
         ProModule.SHOPPING_DELIVERY,
         ProModule.FOOD_DELIVERY,
         ProModule.PHARMACY_DELIVERY,
+        ProModule.PARCEL_DELIVERY,
       ];
     case ProProfileType.RIDER:
       return [ProModule.RIDE];

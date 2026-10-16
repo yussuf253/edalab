@@ -224,6 +224,8 @@ function orderModuleLabel(moduleType: ModuleType): string {
       return 'doctor';
     case ModuleType.RIDE:
       return 'ride';
+    case ModuleType.PARCEL:
+      return 'parcel';
   }
 }
 

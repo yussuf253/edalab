@@ -66,6 +66,8 @@ model User {
   ownedLaundryServices     LaundryService[]   @relation("LaundryServiceOwner")
   notifications            Notification[]
   assignedDeliveryOrders   Order[]            @relation("DeliveryAssignee")
+  parcelDeliveries         ParcelDelivery[]    @relation("ParcelCustomer")
+  assignedParcelDeliveries ParcelDelivery[]    @relation("ParcelCourier")
   orders                   Order[]
   carRentalBookings        CarRentalBooking[]
   paymentMethods           PaymentMethod[]
@@ -836,6 +838,31 @@ model OrderItem {
   @@index([orderId])
 }
 
+model ParcelDelivery {
+  id                 String       @id @default(cuid())
+  userId             String
+  courierUserId      String?
+  senderName         String
+  senderPhone        String
+  recipientName      String
+  recipientPhone     String
+  pickupAddress      String
+  dropoffAddress     String
+  packageDescription String
+  packageSize        ParcelSize
+  status             ParcelStatus @default(REQUESTED)
+  deliveryFee        Decimal      @db.Decimal(10, 2)
+  currency           String       @default("DJF")
+  notes              String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  customer           User         @relation("ParcelCustomer", fields: [userId], references: [id], onDelete: Cascade)
+  courier            User?        @relation("ParcelCourier", fields: [courierUserId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([status, courierUserId, createdAt])
+}
+
 model HealthServiceCategory {
   id          String    @id @default(cuid())
   name        String
@@ -883,6 +910,7 @@ enum ModuleType {
   DOCTOR
   HOTEL
   RIDE
+  PARCEL
   LAUNDRY
   HOME_SERVICES
   HOUSE_HELP
@@ -899,6 +927,21 @@ enum OrderStatus {
   COMPLETED
   CANCELLED
   REFUNDED
+}
+
+enum ParcelSize {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum ParcelStatus {
+  REQUESTED
+  ACCEPTED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
 }
 
 enum AppointmentStatus {
@@ -1028,5 +1071,6 @@ enum ProModule {
   SHOPPING_DELIVERY
   FOOD_DELIVERY
   PHARMACY_DELIVERY
+  PARCEL_DELIVERY
   RIDE
 }

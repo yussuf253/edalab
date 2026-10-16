@@ -18,6 +18,7 @@ import '../../food/screens/food_screen.dart';
 import '../../doctor/screens/doctor_screen.dart';
 import '../../shopping/screens/shopping_screen.dart';
 import '../../ride/screens/ride_screen.dart';
+import '../../parcel/screens/parcel_screen.dart';
 import '../../pharmacy/screens/pharmacy_screen.dart';
 import '../../hotel/screens/hotel_screen.dart';
 import '../../home_services/screens/home_services_screen.dart';
@@ -120,6 +121,8 @@ class _HomeScreenState extends State<HomeScreen> {
           moduleScreen = const ShoppingScreen();
         case 'ride':
           moduleScreen = const RideScreen();
+        case 'parcel':
+          moduleScreen = const ParcelScreen();
         case 'pharmacy':
           moduleScreen = const PharmacyScreen();
         case 'hotel':
@@ -517,6 +520,14 @@ class _ServicesGrid extends StatelessWidget {
         color: AppColors.ride,
         bgColor: AppColors.rideBg,
         route: '/ride',
+      ),
+      _ServiceItem(
+        key: 'parcel',
+        assetPath: 'assets/icons/package.png',
+        title: l10n.t('home.parcel'),
+        color: AppColors.shopping,
+        bgColor: AppColors.shoppingBg,
+        route: '/parcel',
       ),
       _ServiceItem(
         key: 'pharmacy',
@@ -1204,7 +1215,9 @@ class _TrendingProducts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<dynamic>(
-      future: ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=shopping')),
+      future: ApiClient.get(
+        ZoneScope.appendZone('/catalog/products?moduleType=shopping'),
+      ),
       builder: (context, snapshot) {
         final products = snapshot.hasData
             ? ((snapshot.data as List)

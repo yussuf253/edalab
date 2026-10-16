@@ -6,7 +6,53 @@ const db_1 = require("../db");
 const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
 const serializers_1 = require("../utils/serializers");
+const module_settings_1 = require("../utils/module-settings");
 const router = (0, express_1.Router)();
+const ALL_ZONES_WILDCARD = 'all';
+/**
+ * Builds a Prisma `cityZone` where-clause from a `zone` query parameter.
+ *
+ * `cityZone` is an array of zone keys — a listing can operate in several
+ * cities at once. Accepted `zone` values:
+ *  - a zone key (e.g. `djibouti_ville`) → matches rows whose cityZone list
+ *    contains that key OR rows with an empty list (global listings stay
+ *    visible in every city).
+ *  - `all` (or absent) → no filtering (everything, everywhere).
+ */
+function cityZoneFilter(zoneParam) {
+    const zone = zoneParam?.toString().trim();
+    if (zone == null || zone.length === 0 || zone.toLowerCase() === ALL_ZONES_WILDCARD) {
+        return {};
+    }
+    return {
+        OR: [{ cityZone: { has: zone } }, { cityZone: { isEmpty: true } }],
+    };
+}
+/**
+ * Resolves the effective zone filter for a request: an explicit `zone` param
+ * wins; otherwise the caller's latitude/longitude are matched against active
+ * service zones. Returns the zone key to filter by, or null for "all".
+ */
+async function resolveCityZoneKey(query) {
+    const zoneParam = query.zone?.toString().trim();
+    if (zoneParam != null && zoneParam.length > 0) {
+        return zoneParam.toLowerCase() === ALL_ZONES_WILDCARD ? null : zoneParam;
+    }
+    const latitude = Number(query.latitude);
+    const longitude = Number(query.longitude);
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+        try {
+            const zone = await (0, module_settings_1.resolveServiceZoneForPoint)(latitude, longitude);
+            if (zone != null) {
+                return zone.zoneKey;
+            }
+        }
+        catch {
+            // Fall through to unfiltered.
+        }
+    }
+    return null;
+}
 const ECOLOGICAL_CLEANING_CATEGORY = {
     id: 'hs-ecological-cleaning',
     name: 'Ecological Cleaning',
@@ -291,6 +337,11 @@ function compareNullableNumberAsc(left, right) {
     return left - right;
 }
 const djiboutiPharmacyGeoByName = {
+    'pharmacie aska': {
+        latitude: 11.1559,
+        longitude: 42.7125,
+        address: 'Ali Sabieh Town Center',
+    },
     'pharmacie dawo': {
         latitude: 11.5858,
         longitude: 43.1457,
@@ -473,6 +524,48 @@ function serializeProduct(product) {
         shopName: product.shop?.name ?? product.brand,
     };
 }
+/**
+ * Shapes a Medicine row like a legacy PHARMACY Product payload so existing
+ * clients (PharmacyModel.fromApi, medicine detail, search) keep working
+ * without any app changes.
+ */
+function serializeMedicineAsProduct(medicine) {
+    return {
+        id: medicine.id,
+        moduleType: client_1.ModuleType.PHARMACY,
+        categoryId: medicine.categoryId,
+        category: medicine.category?.name ?? medicine.categoryId,
+        name: medicine.name,
+        brand: medicine.pharmacy.name,
+        description: medicine.description,
+        price: (0, serializers_1.toNumber)(medicine.price),
+        originalPrice: (0, serializers_1.toNumber)(medicine.originalPrice),
+        unit: medicine.unit,
+        dosage: medicine.dosage,
+        packageSize: medicine.packageSize,
+        requiresPrescription: medicine.requiresPrescription,
+        rating: (0, serializers_1.toNumber)(medicine.rating),
+        reviewCount: medicine.reviewCount,
+        images: readJsonStringArray(medicine.imageUrlsJson),
+        tags: readJsonStringArray(medicine.tagsJson),
+        features: readJsonStringArray(medicine.featuresJson),
+        badge: medicine.badge,
+        inStock: medicine.inStock,
+        isOrganic: false,
+        // Legacy clients (PharmacyModel.fromApi) and pro order-matching read
+        // metadata.sourceBusiness — keep it populated from the pharmacy row.
+        metadata: {
+            ...(medicine.metadata &&
+                typeof medicine.metadata === 'object' &&
+                !Array.isArray(medicine.metadata)
+                ? medicine.metadata
+                : {}),
+            sourceBusiness: medicine.pharmacy.name,
+        },
+        shopId: medicine.pharmacyId,
+        shopName: medicine.pharmacy.name,
+    };
+}
 function serializeShoppingStore(store, products) {
     const categories = Array.from(new Set(products
         .map((item) => item.category?.name ?? item.categoryId)
@@ -500,93 +593,50 @@ router.get('/pharmacies', (0, async_handler_1.asyncHandler)(async (req, res) => 
     const sortBy = req.query.sort?.toString().trim().toLowerCase() ?? 'distance';
     const radiusRaw = toFiniteNumber(req.query.radiusKm);
     const radiusKm = radiusRaw != null && radiusRaw > 0 ? Math.min(radiusRaw, 25) : 5;
-    const products = await db_1.prisma.product.findMany({
+    const zoneKey = await resolveCityZoneKey(req.query);
+    const pharmacies = await db_1.prisma.pharmacy.findMany({
         where: {
-            moduleType: client_1.ModuleType.PHARMACY,
+            active: true,
+            ...cityZoneFilter(zoneKey),
         },
-        select: {
-            id: true,
-            name: true,
-            brand: true,
-            price: true,
-            rating: true,
-            reviewCount: true,
-            requiresPrescription: true,
-            metadata: true,
+        include: {
+            medicines: {
+                select: {
+                    price: true,
+                    requiresPrescription: true,
+                },
+            },
         },
-        orderBy: [{ reviewCount: 'desc' }, { rating: 'desc' }],
+        orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
     });
-    const grouped = new Map();
-    for (const product of products) {
-        const metadata = product.metadata &&
-            typeof product.metadata === 'object' &&
-            !Array.isArray(product.metadata)
-            ? product.metadata
+    const directory = pharmacies
+        .map((pharmacy) => {
+        const medicines = pharmacy.medicines;
+        const distanceKm = hasSearchLocation &&
+            pharmacy.latitude != null &&
+            pharmacy.longitude != null
+            ? haversineDistanceKm(pharmacy.latitude, pharmacy.longitude, latitude, longitude)
             : null;
-        const sourceBusiness = metadata?.sourceBusiness?.toString().trim() ||
-            product.brand?.trim() ||
-            'Pharmacy';
-        const key = normalizeBusinessName(sourceBusiness);
-        const current = grouped.get(key) ??
-            {
-                businessName: sourceBusiness,
-                ratingWeightedSum: 0,
-                ratingWeight: 0,
-                fallbackRatingSum: 0,
-                fallbackCount: 0,
-                reviewCount: 0,
-                prescriptionCount: 0,
-                productCount: 0,
-                minPrice: null,
-            };
-        const rating = (0, serializers_1.toNumber)(product.rating) ?? 0;
-        const reviewCount = product.reviewCount ?? 0;
-        if (reviewCount > 0) {
-            current.ratingWeightedSum += rating * reviewCount;
-            current.ratingWeight += reviewCount;
-        }
-        else {
-            current.fallbackRatingSum += rating;
-            current.fallbackCount += 1;
-        }
-        current.reviewCount += reviewCount;
-        current.productCount += 1;
-        if (product.requiresPrescription) {
-            current.prescriptionCount += 1;
-        }
-        const price = (0, serializers_1.toNumber)(product.price);
-        if (price != null) {
-            current.minPrice =
-                current.minPrice == null ? price : Math.min(current.minPrice, price);
-        }
-        grouped.set(key, current);
-    }
-    const pharmacies = Array.from(grouped.entries())
-        .map(([key, value]) => {
-        const geo = pharmacyGeoForBusiness(value.businessName);
-        const distanceKm = hasSearchLocation && geo != null
-            ? haversineDistanceKm(geo.latitude, geo.longitude, latitude, longitude)
-            : null;
-        const rating = value.ratingWeight > 0
-            ? value.ratingWeightedSum / value.ratingWeight
-            : value.fallbackCount > 0
-                ? value.fallbackRatingSum / value.fallbackCount
-                : 0;
+        const prices = medicines
+            .map((medicine) => (0, serializers_1.toNumber)(medicine.price))
+            .filter((price) => price != null);
         return {
-            id: `pharmacy-${slugifyStoreName(key)}`,
-            name: value.businessName,
-            businessKey: key,
-            rating: Number(rating.toFixed(2)),
-            reviewCount: value.reviewCount,
-            productCount: value.productCount,
-            prescriptionCount: value.prescriptionCount,
-            minPrice: value.minPrice == null ? null : Number(value.minPrice.toFixed(2)),
-            location: geo == null
+            id: pharmacy.id,
+            name: pharmacy.name,
+            businessKey: normalizeBusinessName(pharmacy.name),
+            rating: (0, serializers_1.toNumber)(pharmacy.rating) ?? 0,
+            reviewCount: pharmacy.reviewCount,
+            productCount: medicines.length,
+            prescriptionCount: medicines.filter((medicine) => medicine.requiresPrescription).length,
+            minPrice: prices.length === 0
+                ? null
+                : Number(Math.min(...prices).toFixed(2)),
+            location: pharmacy.latitude == null || pharmacy.longitude == null
                 ? null
                 : {
-                    latitude: geo.latitude,
-                    longitude: geo.longitude,
-                    address: geo.address ?? null,
+                    latitude: pharmacy.latitude,
+                    longitude: pharmacy.longitude,
+                    address: pharmacy.address ?? null,
                 },
             distanceKm: distanceKm == null ? null : Number(distanceKm.toFixed(3)),
         };
@@ -596,7 +646,7 @@ router.get('/pharmacies', (0, async_handler_1.asyncHandler)(async (req, res) => 
             return true;
         return entry.distanceKm != null && entry.distanceKm <= radiusKm;
     });
-    pharmacies.sort((left, right) => {
+    directory.sort((left, right) => {
         if (sortBy === 'rating') {
             const byRating = (right.rating ?? 0) - (left.rating ?? 0);
             if (byRating !== 0)
@@ -617,10 +667,12 @@ router.get('/pharmacies', (0, async_handler_1.asyncHandler)(async (req, res) => 
         }
         return compareNullableNumberAsc(left.distanceKm, right.distanceKm);
     });
-    res.json(pharmacies);
+    res.json(directory);
 }));
-router.get('/shopping-stores', (0, async_handler_1.asyncHandler)(async (_req, res) => {
+router.get('/shopping-stores', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const zoneKey = await resolveCityZoneKey(req.query);
     const stores = await db_1.prisma.shoppingStore.findMany({
+        where: cityZoneFilter(zoneKey),
         include: {
             products: {
                 where: { moduleType: client_1.ModuleType.SHOPPING },
@@ -635,8 +687,9 @@ router.get('/shopping-stores', (0, async_handler_1.asyncHandler)(async (_req, re
 }));
 router.get('/shopping-stores/:id', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const storeId = (0, http_1.getParam)(req.params.id, 'storeId');
+    const zoneKey = await resolveCityZoneKey(req.query);
     const store = await db_1.prisma.shoppingStore.findFirst({
-        where: { slug: storeId },
+        where: { slug: storeId, ...cityZoneFilter(zoneKey) },
     });
     if (!store) {
         return res.status(404).json({ error: 'Store not found.' });
@@ -660,10 +713,28 @@ router.get('/products', (0, async_handler_1.asyncHandler)(async (req, res) => {
         ? moduleTypeParam
         : undefined;
     const categoryId = req.query.categoryId?.toString();
+    const zoneKey = await resolveCityZoneKey(req.query);
+    // Pharmacy medicines now live in their own table; keep the legacy
+    // products endpoint shape so the app keeps working unchanged.
+    if (moduleType === client_1.ModuleType.PHARMACY) {
+        const medicines = await db_1.prisma.medicine.findMany({
+            where: {
+                ...(categoryId ? { categoryId } : {}),
+                pharmacy: cityZoneFilter(zoneKey),
+            },
+            include: {
+                pharmacy: true,
+                category: true,
+            },
+            orderBy: [{ createdAt: 'desc' }],
+        });
+        return res.json(medicines.map(serializeMedicineAsProduct));
+    }
     const products = await db_1.prisma.product.findMany({
         where: {
             ...(moduleType ? { moduleType } : {}),
             ...(categoryId ? { categoryId } : {}),
+            ...cityZoneFilter(zoneKey),
         },
         include: {
             category: true,
@@ -673,8 +744,36 @@ router.get('/products', (0, async_handler_1.asyncHandler)(async (req, res) => {
     });
     res.json(products.map((product) => serializeProduct(product)));
 }));
+router.get('/categories', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const moduleTypeParam = req.query.moduleType?.toString().toUpperCase();
+    const moduleType = moduleTypeParam && moduleTypeParam in client_1.ModuleType
+        ? moduleTypeParam
+        : undefined;
+    const categories = await db_1.prisma.productCategory.findMany({
+        where: {
+            ...(moduleType ? { moduleType } : {}),
+        },
+        orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+    res.json(categories.map((c) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        sortOrder: c.sortOrder,
+        active: c.active,
+    })));
+}));
 router.get('/products/:id', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const productId = (0, http_1.getParam)(req.params.id, 'productId');
+    // Medicines are served through the same legacy endpoint so existing
+    // clients (medicine detail screen, search) keep working unchanged.
+    const medicine = await db_1.prisma.medicine.findUnique({
+        where: { id: productId },
+        include: { pharmacy: true, category: true },
+    });
+    if (medicine) {
+        return res.json(serializeMedicineAsProduct(medicine));
+    }
     const product = await db_1.prisma.product.findUnique({
         where: { id: productId },
         include: {
@@ -687,8 +786,10 @@ router.get('/products/:id', (0, async_handler_1.asyncHandler)(async (req, res) =
     }
     res.json(serializeProduct(product));
 }));
-router.get('/doctors', (0, async_handler_1.asyncHandler)(async (_req, res) => {
+router.get('/doctors', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const zoneKey = await resolveCityZoneKey(req.query);
     const doctors = await db_1.prisma.doctor.findMany({
+        where: cityZoneFilter(zoneKey),
         orderBy: [{ rating: 'desc' }, { reviewCount: 'desc' }],
     });
     res.json(doctors.map((doctor) => ({
@@ -793,6 +894,7 @@ router.get('/home-service-providers', (0, async_handler_1.asyncHandler)(async (r
         : requestedRadiusRaw != null && requestedRadiusRaw > 0
             ? requestedRadiusRaw
             : null;
+    const zoneKey = await resolveCityZoneKey(req.query);
     const providers = await db_1.prisma.homeServiceProvider.findMany({
         where: {
             ...(categorySlug
@@ -803,6 +905,7 @@ router.get('/home-service-providers', (0, async_handler_1.asyncHandler)(async (r
                 }
                 : {}),
             ...(availableOnly ? { isAvailable: true } : {}),
+            ...cityZoneFilter(zoneKey),
         },
         include: {
             category: true,
@@ -892,8 +995,10 @@ router.get('/home-service-providers/:id', (0, async_handler_1.asyncHandler)(asyn
     }
     res.json(serializeHomeServiceProvider(provider));
 }));
-router.get('/restaurants', (0, async_handler_1.asyncHandler)(async (_req, res) => {
+router.get('/restaurants', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const zoneKey = await resolveCityZoneKey(req.query);
     const restaurants = await db_1.prisma.restaurant.findMany({
+        where: cityZoneFilter(zoneKey),
         include: {
             menuCategories: {
                 orderBy: { sortOrder: 'asc' },
@@ -952,8 +1057,10 @@ router.get('/restaurants/:id', (0, async_handler_1.asyncHandler)(async (req, res
         menu: serializeRestaurantMenu(restaurant),
     });
 }));
-router.get('/hotels', (0, async_handler_1.asyncHandler)(async (_req, res) => {
+router.get('/hotels', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const zoneKey = await resolveCityZoneKey(req.query);
     const hotels = await db_1.prisma.hotel.findMany({
+        where: cityZoneFilter(zoneKey),
         orderBy: [{ rating: 'desc' }, { reviewsCount: 'desc' }],
     });
     res.json(hotels.map((hotel) => ({
@@ -1007,9 +1114,10 @@ router.get('/ride-categories', (0, async_handler_1.asyncHandler)(async (_req, re
         timeToArrive: category.etaLabel,
     })));
 }));
-router.get('/laundry-services', (0, async_handler_1.asyncHandler)(async (_req, res) => {
+router.get('/laundry-services', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const zoneKey = await resolveCityZoneKey(req.query);
     const services = await db_1.prisma.laundryService.findMany({
-        where: { active: true },
+        where: { active: true, ...cityZoneFilter(zoneKey) },
         select: {
             id: true,
             name: true,

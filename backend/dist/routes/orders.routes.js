@@ -175,6 +175,18 @@ function enrichOrderItemMetadata(item) {
             metadata.productImage ??= productImage;
         }
     }
+    // Medicines live in their own table — resolve the pharmacy identity from
+    // the medicine relation when present.
+    if (item.medicine) {
+        metadata.sourceBusiness ??= item.medicine.pharmacy.name;
+        metadata.shopName ??= item.medicine.pharmacy.name;
+        metadata.productName ??= item.medicine.name;
+        metadata.productDescription ??= item.medicine.description;
+        const medicineImage = firstImageFromJson(item.medicine.imageUrlsJson);
+        if (medicineImage != null) {
+            metadata.productImage ??= medicineImage;
+        }
+    }
     return metadata;
 }
 function resolveOrderModuleName(order) {
@@ -336,6 +348,11 @@ router.get('/detail/:orderId', (0, async_handler_1.asyncHandler)(async (req, res
                             shop: true,
                         },
                     },
+                    medicine: {
+                        include: {
+                            pharmacy: true,
+                        },
+                    },
                 },
             },
             deliveryAssignee: true,
@@ -427,6 +444,11 @@ router.get('/:userId', (0, async_handler_1.asyncHandler)(async (req, res) => {
                         product: {
                             include: {
                                 shop: true,
+                            },
+                        },
+                        medicine: {
+                            include: {
+                                pharmacy: true,
                             },
                         },
                     },
@@ -710,6 +732,11 @@ router.post('/pharmacy-prescription', (0, async_handler_1.asyncHandler)(async (r
                             shop: true,
                         },
                     },
+                    medicine: {
+                        include: {
+                            pharmacy: true,
+                        },
+                    },
                 },
             },
             deliveryAssignee: true,
@@ -773,7 +800,11 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
             notes: body.notes ?? null,
             items: {
                 create: body.items.map((item) => ({
-                    productId: item.productId ?? null,
+                    // Pharmacy line items reference Medicine rows now; everything
+                    // else keeps the legacy Product link.
+                    ...(body.moduleType === client_1.ModuleType.PHARMACY
+                        ? { medicineId: item.productId ?? null }
+                        : { productId: item.productId ?? null }),
                     externalRefId: item.id ?? null,
                     name: item.name,
                     brand: item.brand ?? null,
@@ -792,6 +823,11 @@ router.post('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
                     product: {
                         include: {
                             shop: true,
+                        },
+                    },
+                    medicine: {
+                        include: {
+                            pharmacy: true,
                         },
                     },
                 },
