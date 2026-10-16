@@ -16,7 +16,8 @@ class ParcelScreen extends StatefulWidget {
 }
 
 class _ParcelScreenState extends State<ParcelScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final _routeFormKey = GlobalKey<FormState>();
+  final _detailsFormKey = GlobalKey<FormState>();
   final _senderName = TextEditingController();
   final _senderPhone = TextEditingController();
   final _recipientName = TextEditingController();
@@ -32,6 +33,8 @@ class _ParcelScreenState extends State<ParcelScreen> {
   };
   List<Map<String, dynamic>> _parcels = const [];
   String _size = 'SMALL';
+  int _activeTab = 0;
+  int _step = 0;
   bool _loading = true;
   bool _submitting = false;
   String? _error;
@@ -109,7 +112,13 @@ class _ParcelScreenState extends State<ParcelScreen> {
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate() || _submitting) return;
+    if (_submitting) return;
+    if (_step == 0) {
+      if (!_routeFormKey.currentState!.validate()) return;
+      setState(() => _step = 1);
+      return;
+    }
+    if (!_detailsFormKey.currentState!.validate()) return;
     final user = context.read<AuthProvider>().user;
     if (user == null) {
       ScaffoldMessenger.of(
@@ -138,6 +147,10 @@ class _ParcelScreenState extends State<ParcelScreen> {
       _dropoffAddress.clear();
       _description.clear();
       _notes.clear();
+      setState(() {
+        _step = 0;
+        _activeTab = 1;
+      });
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(_text('request_created'))));
@@ -193,6 +206,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
     String? Function(String?)? validator,
     TextInputType? keyboardType,
     int maxLines = 1,
+    IconData? icon,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -203,7 +217,21 @@ class _ParcelScreenState extends State<ParcelScreen> {
         maxLines: maxLines,
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
+          prefixIcon: icon == null ? null : Icon(icon),
+          filled: true,
+          fillColor: AppColors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.lightGrey),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.lightGrey),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 12,
             vertical: 13,
@@ -215,140 +243,580 @@ class _ParcelScreenState extends State<ParcelScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final fee = (_fees[_size] as num?)?.toInt() ?? 0;
     return Scaffold(
-      appBar: AppBar(title: Text(_text('title'))),
-      body: RefreshIndicator(
-        onRefresh: _load,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-          children: [
-            Text(
-              _text('new_request'),
-              style: Theme.of(context).textTheme.titleLarge,
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text(_text('title')),
+        backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            child: SegmentedButton<int>(
+              segments: [
+                ButtonSegment(
+                  value: 0,
+                  icon: const Icon(Icons.send_outlined),
+                  label: Text(_text('new_request')),
+                ),
+                ButtonSegment(
+                  value: 1,
+                  icon: const Icon(Icons.route_outlined),
+                  label: Text(_text('my_parcels')),
+                ),
+              ],
+              selected: {_activeTab},
+              onSelectionChanged: (selection) => setState(() {
+                _activeTab = selection.first;
+                _step = 0;
+              }),
             ),
-            const SizedBox(height: 12),
-            Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _field(_senderName, _text('sender_name')),
-                  _field(
-                    _senderPhone,
-                    _text('sender_phone'),
-                    validator: (value) => _required(value, minLength: 5),
-                    keyboardType: TextInputType.phone,
-                  ),
-                  const Divider(height: 24),
-                  _field(
-                    _pickupAddress,
-                    _text('pickup_address'),
-                    validator: (value) => _required(value, minLength: 5),
-                    maxLines: 2,
-                  ),
-                  _field(_recipientName, _text('recipient_name')),
-                  _field(
-                    _recipientPhone,
-                    _text('recipient_phone'),
-                    validator: (value) => _required(value, minLength: 5),
-                    keyboardType: TextInputType.phone,
-                  ),
-                  _field(
-                    _dropoffAddress,
-                    _text('dropoff_address'),
-                    validator: (value) => _required(value, minLength: 5),
-                    maxLines: 2,
-                  ),
-                  _field(_description, _text('package_description')),
-                  DropdownButtonFormField<String>(
-                    initialValue: _size,
-                    decoration: InputDecoration(
-                      labelText: _text('package_size'),
-                      border: const OutlineInputBorder(),
-                    ),
-                    items: [
-                      for (final size in ['SMALL', 'MEDIUM', 'LARGE'])
-                        DropdownMenuItem(
-                          value: size,
-                          child: Text(_text('size_${size.toLowerCase()}')),
-                        ),
-                    ],
-                    onChanged: (value) =>
-                        setState(() => _size = value ?? 'SMALL'),
-                  ),
-                  const SizedBox(height: 12),
-                  _field(
-                    _notes,
-                    _text('notes_optional'),
-                    validator: (_) => null,
-                    maxLines: 2,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '${_text('delivery_fee')}: $fee DJF',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                      ),
-                      FilledButton.icon(
-                        onPressed: _submitting ? null : _submit,
-                        icon: _submitting
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.send_outlined),
-                        label: Text(_text('send_request')),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+          ),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: _activeTab == 0 ? _buildSendFlow() : _buildTracking(),
             ),
-            const SizedBox(height: 28),
-            Row(
+          ),
+        ],
+      ),
+      bottomNavigationBar: _activeTab == 0 ? _buildActionBar() : null,
+    );
+  }
+
+  Widget _buildSendFlow() {
+    return SingleChildScrollView(
+      key: const ValueKey('parcel-send'),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHero(),
+          const SizedBox(height: 20),
+          _buildStepHeader(),
+          const SizedBox(height: 16),
+          if (_step == 0) _buildRouteStep() else _buildDetailsStep(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHero() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppColors.primarySurface,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Icon(
+              Icons.inventory_2_outlined,
+              color: AppColors.primary,
+              size: 30,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    _text('my_parcels'),
-                    style: Theme.of(context).textTheme.titleLarge,
+                Text(
+                  _text('hero_title'),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.dark,
                   ),
                 ),
-                IconButton(
-                  onPressed: _load,
-                  tooltip: _text('refresh'),
-                  icon: const Icon(Icons.refresh),
+                const SizedBox(height: 4),
+                Text(
+                  _text('hero_subtitle'),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: AppColors.grey),
                 ),
               ],
             ),
-            if (_loading)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: CircularProgressIndicator(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepHeader() {
+    final firstStep = _step == 0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                _text(firstStep ? 'step_route' : 'step_package'),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+              ),
+            ),
+            Text(
+              firstStep ? '01 / 02' : '02 / 02',
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: AppColors.grey,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(99),
+          child: LinearProgressIndicator(
+            value: firstStep ? 0.5 : 1,
+            minHeight: 5,
+            backgroundColor: AppColors.lightGrey.withValues(alpha: 0.45),
+            color: AppColors.primary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRouteStep() {
+    return Form(
+      key: _routeFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            _text('route_hint'),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.grey),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: AppColors.lightGrey.withValues(alpha: 0.7),
+              ),
+            ),
+            child: Column(
+              children: [
+                _field(
+                  _pickupAddress,
+                  _text('pickup_address'),
+                  validator: (value) => _required(value, minLength: 5),
+                  maxLines: 1,
+                  icon: Icons.radio_button_checked,
                 ),
-              )
-            else if (_error != null)
-              ListTile(
-                leading: const Icon(Icons.cloud_off_outlined),
-                title: Text(_error!),
-                trailing: TextButton(
-                  onPressed: _load,
-                  child: Text(_text('retry')),
+                Padding(
+                  padding: const EdgeInsets.only(left: 21, bottom: 10),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      width: 2,
+                      height: 19,
+                      color: AppColors.lightGrey,
+                    ),
+                  ),
                 ),
-              )
-            else if (_parcels.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Text(_text('empty'), textAlign: TextAlign.center),
+                _field(
+                  _dropoffAddress,
+                  _text('dropoff_address'),
+                  validator: (value) => _required(value, minLength: 5),
+                  icon: Icons.location_on_outlined,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          _infoStrip(Icons.schedule_outlined, _text('courier_eta')),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailsStep() {
+    return Form(
+      key: _detailsFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _routeSummary(),
+          const SizedBox(height: 20),
+          Text(
+            _text('package_size'),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              _sizeOption('SMALL', Icons.mail_outline),
+              const SizedBox(width: 8),
+              _sizeOption('MEDIUM', Icons.inventory_2_outlined),
+              const SizedBox(width: 8),
+              _sizeOption('LARGE', Icons.all_inbox_outlined),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _field(
+            _description,
+            _text('package_description'),
+            icon: Icons.description_outlined,
+          ),
+          Text(
+            _text('sender_details'),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 10),
+          _field(_senderName, _text('sender_name'), icon: Icons.person_outline),
+          _field(
+            _senderPhone,
+            _text('sender_phone'),
+            validator: (value) => _required(value, minLength: 5),
+            keyboardType: TextInputType.phone,
+            icon: Icons.phone_outlined,
+          ),
+          Text(
+            _text('recipient_details'),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 10),
+          _field(
+            _recipientName,
+            _text('recipient_name'),
+            icon: Icons.person_add_alt_outlined,
+          ),
+          _field(
+            _recipientPhone,
+            _text('recipient_phone'),
+            validator: (value) => _required(value, minLength: 5),
+            keyboardType: TextInputType.phone,
+            icon: Icons.phone_outlined,
+          ),
+          _field(
+            _notes,
+            _text('notes_optional'),
+            validator: (_) => null,
+            maxLines: 2,
+            icon: Icons.note_alt_outlined,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _routeSummary() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.lightGrey.withValues(alpha: 0.7)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.route_outlined, color: AppColors.primary),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _pickupAddress.text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  _dropoffAddress.text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            tooltip: _text('edit_route'),
+            onPressed: () => setState(() => _step = 0),
+            icon: const Icon(Icons.edit_outlined, size: 18),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sizeOption(String size, IconData icon) {
+    final selected = _size == size;
+    final fee = (_fees[size] as num?)?.toInt() ?? 0;
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => setState(() => _size = size),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 6),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.primarySurface : AppColors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected ? AppColors.primary : AppColors.lightGrey,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, color: selected ? AppColors.primary : AppColors.grey),
+              const SizedBox(height: 7),
+              Text(
+                _text('size_${size.toLowerCase()}'),
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 4),
+              Text('$fee DJF', style: Theme.of(context).textTheme.bodySmall),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _infoStrip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      decoration: BoxDecoration(
+        color: AppColors.warningLight,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppColors.dark),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(label, style: Theme.of(context).textTheme.bodySmall),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionBar() {
+    final fee = (_fees[_size] as num?)?.toInt() ?? 0;
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          border: Border(
+            top: BorderSide(color: AppColors.lightGrey.withValues(alpha: 0.7)),
+          ),
+        ),
+        child: Row(
+          children: [
+            if (_step == 1) ...[
+              IconButton(
+                onPressed: () => setState(() => _step = 0),
+                tooltip: _text('back'),
+                icon: const Icon(Icons.arrow_back),
+              ),
+              const SizedBox(width: 4),
+            ],
+            if (_step == 1)
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _text('delivery_fee'),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    Text(
+                      '$fee DJF',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
               )
             else
-              for (final parcel in _parcels) _parcelTile(parcel),
+              const Spacer(),
+            FilledButton.icon(
+              onPressed: _submitting ? null : _submit,
+              icon: _submitting
+                  ? const SizedBox(
+                      width: 17,
+                      height: 17,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(
+                      _step == 0
+                          ? Icons.arrow_forward
+                          : Icons.local_shipping_outlined,
+                    ),
+              label: Text(_text(_step == 0 ? 'continue' : 'send_request')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTracking() {
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: CustomScrollView(
+        key: const ValueKey('parcel-tracking'),
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+            sliver: SliverToBoxAdapter(child: _buildTrackingHeader()),
+          ),
+          if (_loading)
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (_error != null)
+            SliverFillRemaining(hasScrollBody: false, child: _errorState())
+          else if (_parcels.isEmpty)
+            SliverFillRemaining(hasScrollBody: false, child: _emptyState())
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              sliver: SliverList.builder(
+                itemCount: _parcels.length,
+                itemBuilder: (context, index) => _parcelTile(_parcels[index]),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrackingHeader() {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _text('track_title'),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _text('track_subtitle'),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: AppColors.grey),
+              ),
+            ],
+          ),
+        ),
+        IconButton(
+          onPressed: _load,
+          tooltip: _text('refresh'),
+          icon: const Icon(Icons.refresh),
+        ),
+      ],
+    );
+  }
+
+  Widget _emptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 76,
+              height: 76,
+              decoration: const BoxDecoration(
+                color: AppColors.primarySurface,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.outbox_outlined,
+                color: AppColors.primary,
+                size: 34,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              _text('empty'),
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              _text('empty_hint'),
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.grey),
+            ),
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              onPressed: () => setState(() => _activeTab = 0),
+              icon: const Icon(Icons.add),
+              label: Text(_text('new_request')),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _errorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.cloud_off_outlined,
+              size: 40,
+              color: AppColors.grey,
+            ),
+            const SizedBox(height: 12),
+            Text(_error!, textAlign: TextAlign.center),
+            const SizedBox(height: 10),
+            TextButton.icon(
+              onPressed: _load,
+              icon: const Icon(Icons.refresh),
+              label: Text(_text('retry')),
+            ),
           ],
         ),
       ),
@@ -360,55 +828,174 @@ class _ParcelScreenState extends State<ParcelScreen> {
     final courier = parcel['courier'] is Map
         ? Map<String, dynamic>.from(parcel['courier'] as Map)
         : null;
+    final progress = _statusProgress(status);
     return Card(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
+      color: AppColors.white,
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(15),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(
-                  Icons.local_shipping_outlined,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _statusLabel(status),
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: AppColors.primarySurface,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.local_shipping_outlined,
+                    color: AppColors.primary,
                   ),
                 ),
-                Text('${(parcel['deliveryFee'] as num?)?.toInt() ?? 0} DJF'),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _statusLabel(status),
+                        style: const TextStyle(fontWeight: FontWeight.w800),
+                      ),
+                      Text(
+                        '${(parcel['deliveryFee'] as num?)?.toInt() ?? 0} DJF · ${_text('size_${(parcel['packageSize'] ?? 'SMALL').toString().toLowerCase()}')}',
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: AppColors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+                if (status == 'REQUESTED')
+                  IconButton(
+                    onPressed: () => _cancel(parcel),
+                    tooltip: _text('cancel_request'),
+                    icon: const Icon(Icons.close),
+                  ),
               ],
             ),
+            const SizedBox(height: 14),
+            _trackingProgress(progress),
+            const SizedBox(height: 15),
+            _routeLine(
+              _text('from'),
+              parcel['pickupAddress']?.toString() ?? '',
+              Icons.radio_button_checked,
+            ),
             const SizedBox(height: 10),
-            Text('${_text('from')}: ${parcel['pickupAddress']}'),
-            const SizedBox(height: 4),
-            Text('${_text('to')}: ${parcel['dropoffAddress']}'),
-            const SizedBox(height: 4),
+            _routeLine(
+              _text('to'),
+              parcel['dropoffAddress']?.toString() ?? '',
+              Icons.location_on_outlined,
+            ),
+            const Divider(height: 22),
             Text(
-              '${parcel['packageDescription']} · ${_text('size_${(parcel['packageSize'] ?? 'SMALL').toString().toLowerCase()}')}',
+              parcel['packageDescription']?.toString() ?? '',
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
             if (courier != null) ...[
-              const Divider(height: 20),
-              Text('${_text('courier')}: ${courier['name'] ?? ''}'),
-              if ((courier['phone']?.toString() ?? '').isNotEmpty)
-                Text('${_text('phone')}: ${courier['phone']}'),
-            ],
-            if (status == 'REQUESTED')
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  onPressed: () => _cancel(parcel),
-                  icon: const Icon(Icons.close, size: 18),
-                  label: Text(_text('cancel_request')),
-                ),
+              const SizedBox(height: 10),
+              _infoStrip(
+                Icons.person_outline,
+                '${_text('courier')}: ${courier['name'] ?? ''} · ${courier['phone'] ?? ''}',
               ),
+            ],
           ],
         ),
       ),
+    );
+  }
+
+  Widget _trackingProgress(double progress) {
+    return Column(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(99),
+          child: LinearProgressIndicator(
+            value: progress,
+            minHeight: 5,
+            backgroundColor: AppColors.extraLightGrey,
+            color: AppColors.primary,
+          ),
+        ),
+        const SizedBox(height: 7),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                _text('status_accepted'),
+                maxLines: 2,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: AppColors.grey),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                _text('status_picked_up'),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: AppColors.grey),
+              ),
+            ),
+            Expanded(
+              child: Text(
+                _text('status_delivered'),
+                textAlign: TextAlign.end,
+                maxLines: 2,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: AppColors.grey),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  double _statusProgress(String status) {
+    switch (status.toUpperCase()) {
+      case 'ACCEPTED':
+        return 0.25;
+      case 'PICKED_UP':
+        return 0.55;
+      case 'IN_TRANSIT':
+        return 0.8;
+      case 'DELIVERED':
+        return 1;
+      default:
+        return 0;
+    }
+  }
+
+  Widget _routeLine(String title, String address, IconData icon) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: AppColors.primary),
+        const SizedBox(width: 9),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: AppColors.grey),
+              ),
+              const SizedBox(height: 2),
+              Text(address, style: Theme.of(context).textTheme.bodyMedium),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

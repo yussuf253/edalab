@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import '../modules/module_access_service.dart';
 import '../network/api_client.dart';
 import '../storage/app_preferences.dart';
+import '../config/zone_scope.dart';
 
 class ModuleProvider extends ChangeNotifier {
   ModuleProvider({ModuleAccessService? accessService})
@@ -12,6 +13,7 @@ class ModuleProvider extends ChangeNotifier {
 
   final ModuleAccessService _accessService;
   bool _isLoading = false;
+
   /// True once the persisted configuration has been loaded from storage.
   /// Before this, [modules] only reflects hardcoded defaults — UI should not
   /// trust it (a fresh install would briefly show every module as enabled).
@@ -19,6 +21,7 @@ class ModuleProvider extends ChangeNotifier {
   String? _errorMessage;
 
   bool get isLoading => _isLoading;
+
   /// True when the module configuration can be trusted (storage loaded;
   /// server sync may still be in flight afterwards).
   bool get isReady => _hydrated;
@@ -72,26 +75,43 @@ class ModuleProvider extends ChangeNotifier {
   /// In-flight guard so lifecycle/pull-to-refresh/timer triggers don't stack
   /// duplicate requests.
   Future<void>? _pendingRefresh;
+  String? _pendingZoneKey;
 
   Future<void> refreshFromServer() {
-    // Coalesce concurrent calls onto a single request.
+    final requestedZoneKey = ZoneScope.currentZoneKey;
     final existing = _pendingRefresh;
-    if (existing != null) return existing;
+    if (existing != null) {
+      final inFlightZoneKey = _pendingZoneKey;
+      if (inFlightZoneKey == requestedZoneKey) return existing;
+      return existing.then((_) {
+        if (ZoneScope.currentZoneKey != inFlightZoneKey) {
+          return refreshFromServer();
+        }
+      });
+    }
 
-    final task = _refreshFromServerInternal().whenComplete(() {
-      _pendingRefresh = null;
-    });
+    _pendingZoneKey = requestedZoneKey;
+    final task = _refreshFromServerInternal(zoneKey: requestedZoneKey)
+        .whenComplete(() {
+          _pendingRefresh = null;
+          _pendingZoneKey = null;
+        });
     _pendingRefresh = task;
     return task;
   }
 
-  Future<void> _refreshFromServerInternal() async {
+  Future<void> _refreshFromServerInternal({required String? zoneKey}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final response = await ApiClient.get('/modules', forceRefresh: true);
+      final response = await ApiClient.get(
+        zoneKey == null
+            ? '/modules'
+            : '/modules?zone=${Uri.encodeQueryComponent(zoneKey)}',
+        forceRefresh: true,
+      );
       if (response is! List) {
         throw Exception('Invalid module configuration payload.');
       }

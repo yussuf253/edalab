@@ -64,7 +64,11 @@ router.get(
   '/',
   asyncHandler(async (_req, res) => {
     try {
-      const modules = await listManagedModules();
+      const zoneKey = _req.query.zone?.toString().trim();
+      const zone = zoneKey ? await findServiceZoneByKey(zoneKey) : null;
+      const modules = zone
+        ? await listModulesForZone(zone.id)
+        : await listManagedModules();
       return res.json(modules);
     } catch {
       // Keep the app functional while the DB schema is being migrated.
@@ -145,6 +149,7 @@ router.put(
       doctor: 'DOCTOR',
       hotel: 'HOTEL',
       ride: 'RIDE',
+      parcel: 'PARCEL',
       pharmacy: 'PHARMACY',
       grocery: 'GROCERY',
       'home-services': 'HOME_SERVICES',

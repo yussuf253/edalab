@@ -37,7 +37,11 @@ async function requireSuperAdmin(req, res, next) {
 // ── Global module list (unchanged behavior) ─────────────────────────────────
 router.get('/', (0, async_handler_1.asyncHandler)(async (_req, res) => {
     try {
-        const modules = await (0, module_settings_1.listManagedModules)();
+        const zoneKey = _req.query.zone?.toString().trim();
+        const zone = zoneKey ? await (0, module_settings_1.findServiceZoneByKey)(zoneKey) : null;
+        const modules = zone
+            ? await (0, module_settings_1.listModulesForZone)(zone.id)
+            : await (0, module_settings_1.listManagedModules)();
         return res.json(modules);
     }
     catch {
@@ -102,6 +106,7 @@ router.put('/zones/:zoneKey/modules/:moduleId', auth_1.requireAuth, requireSuper
         doctor: 'DOCTOR',
         hotel: 'HOTEL',
         ride: 'RIDE',
+        parcel: 'PARCEL',
         pharmacy: 'PHARMACY',
         grocery: 'GROCERY',
         'home-services': 'HOME_SERVICES',

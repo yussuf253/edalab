@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
 import 'core/analytics/analytics_service.dart';
+import 'core/config/zone_scope.dart';
 import 'core/network/api_client.dart';
 import 'core/providers/providers.dart';
 import 'core/providers/app_version_provider.dart';
@@ -47,6 +48,14 @@ Future<void> main() async {
   // Keeps module activation live: refreshes on app resume + periodic poll,
   // so admin toggles apply without an app restart.
   ModuleSyncService.instance.start(moduleProvider);
+  var lastModuleZoneKey = ZoneScope.currentZoneKey;
+  cityAvailabilityProvider.addListener(() {
+    final zoneKey = ZoneScope.currentZoneKey;
+    if (zoneKey == lastModuleZoneKey) return;
+    lastModuleZoneKey = zoneKey;
+    unawaited(moduleProvider.refreshFromServer());
+  });
+  unawaited(moduleProvider.refreshFromServer());
 
   final router = createAppRouter(
     authProvider: authProvider,

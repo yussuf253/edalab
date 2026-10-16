@@ -131,12 +131,20 @@ async function seedAppModules() {
       sortOrder: 5,
     },
     {
+      id: 'module-parcel',
+      moduleType: ModuleType.PARCEL,
+      name: 'Parcel Delivery',
+      slug: 'parcel',
+      active: true,
+      sortOrder: 6,
+    },
+    {
       id: 'module-pharmacy',
       moduleType: ModuleType.PHARMACY,
       name: 'Pharmacy',
       slug: 'pharmacy',
       active: true,
-      sortOrder: 6,
+      sortOrder: 7,
     },
     {
       id: 'module-grocery',
@@ -144,7 +152,7 @@ async function seedAppModules() {
       name: 'Grocery',
       slug: 'grocery',
       active: true,
-      sortOrder: 7,
+      sortOrder: 8,
     },
     {
       id: 'module-home-services',
@@ -152,7 +160,7 @@ async function seedAppModules() {
       name: 'Home Services',
       slug: 'home-services',
       active: true,
-      sortOrder: 8,
+      sortOrder: 9,
     },
     {
       id: 'module-laundry',
@@ -160,7 +168,7 @@ async function seedAppModules() {
       name: 'Laundry',
       slug: 'laundry',
       active: true,
-      sortOrder: 9,
+      sortOrder: 10,
     },
   ];
 
@@ -840,6 +848,7 @@ async function seedServiceZones() {
     ModuleType.DOCTOR,
     ModuleType.HOTEL,
     ModuleType.RIDE,
+    ModuleType.PARCEL,
     ModuleType.PHARMACY,
     ModuleType.GROCERY,
     ModuleType.HOME_SERVICES,

@@ -101,28 +101,28 @@ class ModuleAccessService {
       name: 'Pharmacy',
       moduleType: 'PHARMACY',
       active: true,
-      sortOrder: 6,
+      sortOrder: 7,
     ),
     ManagedModule(
       id: 'grocery',
       name: 'Grocery',
       moduleType: 'GROCERY',
       active: true,
-      sortOrder: 7,
+      sortOrder: 8,
     ),
     ManagedModule(
       id: 'home-services',
       name: 'Home Services',
       moduleType: 'HOME_SERVICES',
       active: true,
-      sortOrder: 8,
+      sortOrder: 9,
     ),
     ManagedModule(
       id: 'laundry',
       name: 'Laundry',
       moduleType: 'LAUNDRY',
       active: true,
-      sortOrder: 9,
+      sortOrder: 10,
     ),
   ];
 
