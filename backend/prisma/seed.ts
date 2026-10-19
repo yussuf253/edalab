@@ -514,6 +514,80 @@ async function seedRideCategories() {
   }
 }
 
+async function seedCarRentalCars() {
+  const cars = [
+    {
+      id: 'rental-car-yaris',
+      name: 'Toyota Yaris',
+      type: 'Economy',
+      pricePerDay: 6500,
+      seats: 5,
+      transmission: 'Automatic',
+      fuelType: 'Petrol',
+      year: 2022,
+      badge: 'Best value',
+      imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=1200&q=85',
+      features: ['Air conditioning', 'Bluetooth', 'USB charging'],
+    },
+    {
+      id: 'rental-car-tucson',
+      name: 'Hyundai Tucson',
+      type: 'SUV',
+      pricePerDay: 12000,
+      seats: 5,
+      transmission: 'Automatic',
+      fuelType: 'Diesel',
+      year: 2023,
+      badge: 'SUV',
+      imageUrl: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=85',
+      features: ['Air conditioning', 'Bluetooth', 'Cruise control'],
+    },
+    {
+      id: 'rental-car-hiace',
+      name: 'Toyota Hiace',
+      type: 'Van',
+      pricePerDay: 18000,
+      seats: 12,
+      transmission: 'Manual',
+      fuelType: 'Diesel',
+      year: 2021,
+      badge: null,
+      imageUrl: 'https://images.unsplash.com/photo-1566933293069-b55c7f326dd4?auto=format&fit=crop&w=1200&q=85',
+      features: ['Air conditioning', 'Large passenger cabin'],
+    },
+  ];
+
+  for (const car of cars) {
+    await prisma.product.upsert({
+      where: { id: car.id },
+      update: {},
+      create: {
+        id: car.id,
+        moduleType: ModuleType.RIDE,
+        name: car.name,
+        brand: car.type,
+        description: `${car.year} ${car.name}, ${car.transmission}, ${car.fuelType}, ${car.seats} seats.`,
+        price: car.pricePerDay,
+        unit: 'per day',
+        badge: car.badge,
+        imageUrlsJson: [car.imageUrl],
+        featuresJson: car.features,
+        tagsJson: [car.type],
+        inStock: true,
+        metadata: {
+          rentalCar: true,
+          type: car.type,
+          seats: car.seats,
+          transmission: car.transmission,
+          fuelType: car.fuelType,
+          year: car.year,
+          mileage: 'Unlimited',
+        },
+      },
+    });
+  }
+}
+
 async function seedLaundryServices() {
   for (const service of djiboutiLaundryServices) {
     await prisma.laundryService.upsert({
@@ -939,6 +1013,7 @@ async function main() {
   await seedRestaurants();
   await seedHotels();
   await seedRideCategories();
+  await seedCarRentalCars();
   await seedLaundryServices();
   await seedHomeServices();
   await seedPromotions();

@@ -4,6 +4,7 @@ exports.defaultManagedModules = defaultManagedModules;
 exports.moduleName = moduleName;
 exports.isManagedModule = isManagedModule;
 exports.isModuleEnabled = isModuleEnabled;
+exports.isModuleEnabledForZone = isModuleEnabledForZone;
 exports.listManagedModules = listManagedModules;
 exports.listServiceZones = listServiceZones;
 exports.resolveServiceZoneForPoint = resolveServiceZoneForPoint;
@@ -53,6 +54,26 @@ async function isModuleEnabled(moduleType) {
     const canonical = canonicalModuleType(moduleType);
     const config = await db_1.prisma.appModule.findUnique({
         where: { moduleType: canonical },
+        select: { active: true },
+    });
+    return config?.active ?? true;
+}
+async function isModuleEnabledForZone(moduleType, zoneKey) {
+    if (!(await isModuleEnabled(moduleType)))
+        return false;
+    const normalizedZoneKey = zoneKey?.trim();
+    if (!normalizedZoneKey)
+        return true;
+    const zone = await findServiceZoneByKey(normalizedZoneKey);
+    if (!zone)
+        return true;
+    const config = await db_1.prisma.zoneModuleConfig.findUnique({
+        where: {
+            zoneId_moduleType: {
+                zoneId: zone.id,
+                moduleType: canonicalModuleType(moduleType),
+            },
+        },
         select: { active: true },
     });
     return config?.active ?? true;

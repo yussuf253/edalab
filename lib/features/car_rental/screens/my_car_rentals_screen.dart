@@ -55,15 +55,21 @@ class _MyCarRentalsScreenState extends State<MyCarRentalsScreen> {
         ],
       ),
     );
-    if (confirmed != true) return;
+    if (confirmed != true || !mounted) return;
 
-    final ok = await CarRentalBookingsService.cancelBooking(booking.id);
+    final userId = context.read<AuthProvider>().user?.id;
+    if (userId == null) return;
+    final ok = await CarRentalBookingsService.cancelBooking(booking.id, userId);
     if (!mounted) return;
     if (ok) {
       _load();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.t('car_rental.error_booking', params: {'error': ''}))),
+        SnackBar(
+          content: Text(
+            l10n.t('car_rental.error_booking', params: {'error': ''}),
+          ),
+        ),
       );
     }
   }
@@ -81,16 +87,15 @@ class _MyCarRentalsScreenState extends State<MyCarRentalsScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: RefreshIndicator(
-        onRefresh: _load,
-        child: _buildBody(l10n),
-      ),
+      body: RefreshIndicator(onRefresh: _load, child: _buildBody(l10n)),
     );
   }
 
   Widget _buildBody(AppLocalizations l10n) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
     }
 
     if (_bookings == null) {
@@ -106,7 +111,9 @@ class _MyCarRentalsScreenState extends State<MyCarRentalsScreen> {
             child: Text(
               l10n.t('car_rental.error_booking', params: {'error': ''}),
               textAlign: TextAlign.center,
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.mediumGrey),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.mediumGrey,
+              ),
             ),
           ),
         ],
@@ -122,30 +129,52 @@ class _MyCarRentalsScreenState extends State<MyCarRentalsScreen> {
           Center(
             child: Text(
               l10n.t('car_rental.no_cars'),
-              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.mediumGrey),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.mediumGrey,
+              ),
             ),
           ),
         ],
       );
     }
 
-    final active = _bookings!.where((b) => !b.isPast && !b.isCancelled).toList();
-    final past = _bookings!.where((b) => b.isPast || b.isCancelled).toList();
+    final active = _bookings!
+        .where(
+          (booking) =>
+              !booking.isPast && !booking.isCancelled && !booking.isCompleted,
+        )
+        .toList();
+    final past = _bookings!
+        .where(
+          (booking) =>
+              booking.isPast || booking.isCancelled || booking.isCompleted,
+        )
+        .toList();
 
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
         if (active.isNotEmpty) ...[
-          Text(l10n.t('car_rental.active_bookings'), style: AppTextStyles.labelLarge),
+          Text(
+            l10n.t('car_rental.active_bookings'),
+            style: AppTextStyles.labelLarge,
+          ),
           const SizedBox(height: 12),
           for (final booking in active) ...[
-            _BookingCard(booking: booking, l10n: l10n, onCancel: () => _cancel(booking, l10n)),
+            _BookingCard(
+              booking: booking,
+              l10n: l10n,
+              onCancel: () => _cancel(booking, l10n),
+            ),
             const SizedBox(height: 12),
           ],
           const SizedBox(height: 12),
         ],
         if (past.isNotEmpty) ...[
-          Text(l10n.t('car_rental.past_rentals'), style: AppTextStyles.labelLarge),
+          Text(
+            l10n.t('car_rental.past_rentals'),
+            style: AppTextStyles.labelLarge,
+          ),
           const SizedBox(height: 12),
           for (final booking in past) ...[
             _BookingCard(booking: booking, l10n: l10n, onCancel: null),
@@ -162,7 +191,11 @@ class _BookingCard extends StatelessWidget {
   final AppLocalizations l10n;
   final VoidCallback? onCancel;
 
-  const _BookingCard({required this.booking, required this.l10n, this.onCancel});
+  const _BookingCard({
+    required this.booking,
+    required this.l10n,
+    this.onCancel,
+  });
 
   String _formatDate(DateTime date) => '${date.day}/${date.month}/${date.year}';
 
@@ -184,13 +217,17 @@ class _BookingCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             '${_formatDate(booking.startDate)} - ${_formatDate(booking.endDate)}',
-            style: AppTextStyles.bodySmall.copyWith(color: AppColors.mediumGrey),
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.mediumGrey,
+            ),
           ),
+          const SizedBox(height: 7),
+          _statusPill(booking),
           if (booking.totalPrice != null) ...[
             const SizedBox(height: 6),
             Text('DJF${booking.totalPrice}', style: AppTextStyles.bodyMedium),
           ],
-          if (onCancel != null) ...[
+          if (onCancel != null && booking.canCancel) ...[
             const SizedBox(height: 12),
             Align(
               alignment: Alignment.centerRight,
@@ -201,6 +238,28 @@ class _BookingCard extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  Widget _statusPill(CarRentalBooking booking) {
+    final isCancelled = booking.isCancelled;
+    final isCompleted = booking.isCompleted || booking.isPast;
+    final label = isCancelled
+        ? l10n.t('car_rental.status_cancelled')
+        : isCompleted
+        ? l10n.t('car_rental.status_completed')
+        : l10n.t('car_rental.status_confirmed');
+    final color = isCancelled ? AppColors.error : AppColors.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+      decoration: BoxDecoration(
+        color: (isCancelled ? AppColors.errorLight : AppColors.successLight),
+        borderRadius: BorderRadius.circular(7),
+      ),
+      child: Text(
+        label,
+        style: AppTextStyles.labelSmall.copyWith(color: color),
       ),
     );
   }

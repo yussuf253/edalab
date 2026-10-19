@@ -60,6 +60,27 @@ export async function isModuleEnabled(moduleType: ModuleType) {
   return config?.active ?? true;
 }
 
+export async function isModuleEnabledForZone(
+  moduleType: ModuleType,
+  zoneKey?: string,
+) {
+  if (!(await isModuleEnabled(moduleType))) return false;
+  const normalizedZoneKey = zoneKey?.trim();
+  if (!normalizedZoneKey) return true;
+  const zone = await findServiceZoneByKey(normalizedZoneKey);
+  if (!zone) return true;
+  const config = await prisma.zoneModuleConfig.findUnique({
+    where: {
+      zoneId_moduleType: {
+        zoneId: zone.id,
+        moduleType: canonicalModuleType(moduleType),
+      },
+    },
+    select: { active: true },
+  });
+  return config?.active ?? true;
+}
+
 export async function listManagedModules() {
   const records = await prisma.appModule.findMany({
     where: {

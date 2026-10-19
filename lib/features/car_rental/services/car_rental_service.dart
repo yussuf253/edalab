@@ -1,4 +1,5 @@
 import '../../../core/network/api_client.dart';
+import '../../../core/config/zone_scope.dart';
 
 class CarRentalBooking {
   final String id;
@@ -8,6 +9,9 @@ class CarRentalBooking {
   final DateTime endDate;
   final int? totalPrice;
   final String status;
+  final int totalDays;
+  final String? pickupLocation;
+  final String? dropoffLocation;
 
   CarRentalBooking({
     required this.id,
@@ -17,10 +21,16 @@ class CarRentalBooking {
     required this.endDate,
     this.totalPrice,
     required this.status,
+    this.totalDays = 1,
+    this.pickupLocation,
+    this.dropoffLocation,
   });
 
   bool get isPast => endDate.isBefore(DateTime.now());
-  bool get isCancelled => status.toLowerCase() == 'cancelled';
+  bool get isCancelled => status.toUpperCase() == 'CANCELLED';
+  bool get isCompleted => status.toUpperCase() == 'COMPLETED';
+  bool get canCancel =>
+      !isCancelled && !isCompleted && startDate.isAfter(DateTime.now());
 
   factory CarRentalBooking.fromApi(Map<String, dynamic> map) {
     DateTime parseDate(dynamic value) {
@@ -35,10 +45,12 @@ class CarRentalBooking {
       startDate: parseDate(map['startDate']),
       endDate: parseDate(map['endDate']),
       totalPrice: (map['totalPrice'] ?? map['total'] ?? map['price']) is num
-          ? ((map['totalPrice'] ?? map['total'] ?? map['price']) as num)
-                .toInt()
+          ? ((map['totalPrice'] ?? map['total'] ?? map['price']) as num).toInt()
           : null,
       status: map['status']?.toString() ?? 'confirmed',
+      totalDays: (map['totalDays'] as num?)?.toInt() ?? 1,
+      pickupLocation: map['pickupLocation']?.toString(),
+      dropoffLocation: map['dropoffLocation']?.toString(),
     );
   }
 }
@@ -71,9 +83,11 @@ class CarRentalBookingsService {
   }
 
   /// Backend contract expected: `POST /car-rentals/bookings/{bookingId}/cancel`
-  static Future<bool> cancelBooking(String bookingId) async {
+  static Future<bool> cancelBooking(String bookingId, String userId) async {
     try {
-      await ApiClient.post('/car-rentals/bookings/$bookingId/cancel', {});
+      await ApiClient.post('/car-rentals/bookings/$bookingId/cancel', {
+        'userId': userId,
+      });
       return true;
     } catch (_) {
       return false;
@@ -92,6 +106,11 @@ class CarRentalCar {
   final int year;
   final String? badge;
   final List<String> features;
+  final String description;
+  final String? imageUrl;
+  final List<String> imageUrls;
+  final String mileage;
+  final bool available;
 
   CarRentalCar({
     required this.id,
@@ -104,6 +123,11 @@ class CarRentalCar {
     required this.year,
     this.badge,
     required this.features,
+    this.description = '',
+    this.imageUrl,
+    this.imageUrls = const [],
+    this.mileage = 'Unlimited',
+    this.available = true,
   });
 
   factory CarRentalCar.fromApi(Map<String, dynamic> map) {
@@ -115,7 +139,7 @@ class CarRentalCar {
           (map['metadata']?['seats'] as num?)?.toInt() ??
           (map['seats'] as num?)?.toInt() ??
           4,
-      pricePerDay: (map['price'] as num?)?.toInt() ?? 0,
+      pricePerDay: ((map['pricePerDay'] ?? map['price']) as num?)?.toInt() ?? 0,
       transmission:
           map['metadata']?['transmission']?.toString() ??
           map['transmission']?.toString() ??
@@ -133,13 +157,25 @@ class CarRentalCar {
           (map['featuresJson'] as List?)?.map((e) => e.toString()).toList() ??
           (map['features'] as List?)?.map((e) => e.toString()).toList() ??
           [],
+      description: map['description']?.toString() ?? '',
+      imageUrl: map['imageUrl']?.toString(),
+      imageUrls:
+          (map['imageUrls'] as List?)?.map((e) => e.toString()).toList() ??
+          (map['imageUrlsJson'] as List?)?.map((e) => e.toString()).toList() ??
+          [],
+      mileage: map['mileage']?.toString() ?? 'Unlimited',
+      available: map['available'] as bool? ?? map['inStock'] as bool? ?? true,
     );
   }
 }
 
 class CarRentalService {
-  static Future<List<CarRentalCar>> fetchCars() async {
-    final resp = await ApiClient.get('/car-rentals');
+  static Future<List<CarRentalCar>> fetchCars({String? type}) async {
+    final params = <String, String>{};
+    if (type != null && type.isNotEmpty) params['type'] = type;
+    final query = Uri(queryParameters: params).query;
+    final path = '/car-rentals${query.isEmpty ? '' : '?$query'}';
+    final resp = await ApiClient.get(ZoneScope.appendZone(path));
     if (resp is List) {
       return resp
           .whereType<Map>()
@@ -153,5 +189,54 @@ class CarRentalService {
           .toList();
     }
     return [];
+  }
+
+  static Future<CarRentalCar> fetchCar(String carId) async {
+    final response = await ApiClient.get(
+      ZoneScope.appendZone('/car-rentals/$carId'),
+      forceRefresh: true,
+    );
+    return CarRentalCar.fromApi(Map<String, dynamic>.from(response as Map));
+  }
+
+  static Future<bool> checkAvailability({
+    required String carId,
+    required DateTime startDate,
+    required DateTime endDate,
+  }) async {
+    final query = Uri(
+      queryParameters: {
+        'carId': carId,
+        'startDate': startDate.toUtc().toIso8601String(),
+        'endDate': endDate.toUtc().toIso8601String(),
+      },
+    ).query;
+    final response = await ApiClient.get(
+      ZoneScope.appendZone('/car-rentals/bookings/availability?$query'),
+      forceRefresh: true,
+    );
+    return (response as Map)['available'] as bool? ?? false;
+  }
+
+  static Future<CarRentalBooking> createBooking({
+    required String userId,
+    required String carId,
+    required DateTime startDate,
+    required DateTime endDate,
+    required String pickupLocation,
+    String? dropoffLocation,
+    String? notes,
+  }) async {
+    final response = await ApiClient.post('/car-rentals/bookings', {
+      'userId': userId,
+      'carId': carId,
+      'startDate': startDate.toUtc().toIso8601String(),
+      'endDate': endDate.toUtc().toIso8601String(),
+      'pickupLocation': pickupLocation,
+      'dropoffLocation': ?dropoffLocation,
+      'notes': ?notes,
+      'zone': ?ZoneScope.currentZoneKey,
+    });
+    return CarRentalBooking.fromApi(Map<String, dynamic>.from(response as Map));
   }
 }

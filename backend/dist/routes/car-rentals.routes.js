@@ -8,6 +8,7 @@ const async_handler_1 = require("../utils/async-handler");
 const http_1 = require("../utils/http");
 const serializers_1 = require("../utils/serializers");
 const notifications_1 = require("../utils/notifications");
+const module_settings_1 = require("../utils/module-settings");
 /**
  * Car Rental Module
  *
@@ -115,7 +116,9 @@ const createCarRentalBookingSchema = zod_1.z.object({
     pickupLocation: zod_1.z.string().trim().min(1).max(200),
     dropoffLocation: zod_1.z.string().trim().max(200).optional(),
     notes: zod_1.z.string().trim().max(500).optional(),
+    zone: zod_1.z.string().trim().optional(),
 });
+const cancelBookingSchema = zod_1.z.object({ userId: zod_1.z.string().min(1) });
 // ─── Serializers ────────────────────────────────────────────────────────────
 function serializeCarFromProduct(product) {
     const metadata = product.metadata && typeof product.metadata === 'object' && !Array.isArray(product.metadata)
@@ -174,22 +177,31 @@ function serializeBooking(booking) {
 // ─── Routes ─────────────────────────────────────────────────────────────────
 // GET /api/car-rentals — list all available rental cars
 router.get('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const zoneKey = req.query.zone?.toString().trim();
+    if (!(await (0, module_settings_1.isModuleEnabledForZone)(client_1.ModuleType.RIDE, zoneKey))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(client_1.ModuleType.RIDE)} module is currently disabled.`,
+        });
+    }
     const typeFilter = req.query.type?.toString().trim();
     const minSeats = req.query.minSeats ? Number(req.query.minSeats) : undefined;
+    const productFilters = [
+        { metadata: { path: ['rentalCar'], equals: true } },
+    ];
+    if (typeFilter) {
+        productFilters.push({ metadata: { path: ['type'], equals: typeFilter } });
+    }
     const products = await db_1.prisma.product.findMany({
         where: {
             moduleType: client_1.ModuleType.RIDE,
             inStock: true,
-            metadata: {
-                path: ['rentalCar'],
-                equals: true,
-            },
-            ...(typeFilter
+            AND: productFilters,
+            ...(zoneKey
                 ? {
-                    metadata: {
-                        path: ['type'],
-                        equals: typeFilter,
-                    },
+                    OR: [
+                        { cityZone: { isEmpty: true } },
+                        { cityZone: { has: zoneKey } },
+                    ],
                 }
                 : {}),
         },
@@ -205,6 +217,12 @@ router.get('/', (0, async_handler_1.asyncHandler)(async (req, res) => {
 }));
 // GET /api/car-rentals/:carId — single car details
 router.get('/:carId', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const zoneKey = req.query.zone?.toString().trim();
+    if (!(await (0, module_settings_1.isModuleEnabledForZone)(client_1.ModuleType.RIDE, zoneKey))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(client_1.ModuleType.RIDE)} module is currently disabled.`,
+        });
+    }
     const carId = (0, http_1.getParam)(req.params.carId, 'carId');
     const product = await db_1.prisma.product.findFirst({
         where: {
@@ -226,6 +244,11 @@ router.get('/:carId', (0, async_handler_1.asyncHandler)(async (req, res) => {
 // After adding the model, swap to: prisma.carRentalBooking.create(...)
 router.post('/bookings', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const body = createCarRentalBookingSchema.parse(req.body);
+    if (!(await (0, module_settings_1.isModuleEnabledForZone)(client_1.ModuleType.RIDE, body.zone))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(client_1.ModuleType.RIDE)} module is currently disabled.`,
+        });
+    }
     const car = await db_1.prisma.product.findFirst({
         where: {
             id: body.carId,
@@ -242,7 +265,9 @@ router.post('/bookings', (0, async_handler_1.asyncHandler)(async (req, res) => {
     }
     const startDate = new Date(body.startDate);
     const endDate = new Date(body.endDate);
-    if (endDate <= startDate) {
+    if (!Number.isFinite(startDate.getTime()) ||
+        !Number.isFinite(endDate.getTime()) ||
+        endDate <= startDate) {
         return res.status(400).json({ error: 'End date must be after start date.' });
     }
     const totalDays = Math.max(1, Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
@@ -253,22 +278,22 @@ router.post('/bookings', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const carMetadata = car.metadata && typeof car.metadata === 'object' && !Array.isArray(car.metadata)
         ? car.metadata
         : {};
-    // Check availability: ensure no existing confirmed/active bookings overlap
-    const overlapping = await db_1.prisma.carRentalBooking.findFirst({
-        where: {
-            carId: body.carId,
-            status: { in: ['PENDING', 'CONFIRMED', 'ACTIVE'] },
-            AND: [
-                { startDate: { lte: endDate } },
-                { endDate: { gte: startDate } },
-            ],
-        },
-    });
-    if (overlapping) {
-        return res.status(409).json({ error: 'Car is already booked for the selected dates.' });
-    }
-    // Transactionally create CarRentalBooking and an Order record for accounting
+    // Serialize booking attempts per car so concurrent requests cannot claim
+    // overlapping dates between the availability check and insert.
     const result = await db_1.prisma.$transaction(async (tx) => {
+        await tx.$queryRaw(client_1.Prisma.sql `SELECT pg_advisory_xact_lock(hashtext(${body.carId}))`);
+        const overlapping = await tx.carRentalBooking.findFirst({
+            where: {
+                carId: body.carId,
+                status: { in: ['PENDING', 'CONFIRMED', 'ACTIVE'] },
+                startDate: { lt: endDate },
+                endDate: { gt: startDate },
+            },
+            select: { id: true },
+        });
+        if (overlapping) {
+            return { conflict: true };
+        }
         const booking = await tx.carRentalBooking.create({
             data: {
                 userId: body.userId,
@@ -339,8 +364,13 @@ router.post('/bookings', (0, async_handler_1.asyncHandler)(async (req, res) => {
             },
             include: { items: true },
         });
-        return { booking, order };
+        return { booking, order, conflict: false };
     });
+    if (result.conflict) {
+        return res
+            .status(409)
+            .json({ error: 'Car is already booked for the selected dates.' });
+    }
     const booking = result.booking;
     await (0, notifications_1.notifySuperAdmins)({
         title: 'New car rental booking',
@@ -380,6 +410,12 @@ router.post('/bookings', (0, async_handler_1.asyncHandler)(async (req, res) => {
 // Availability check endpoint
 // GET /api/car-rentals/bookings/availability?carId=...&startDate=...&endDate=...
 router.get('/bookings/availability', (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const zoneKey = req.query.zone?.toString().trim();
+    if (!(await (0, module_settings_1.isModuleEnabledForZone)(client_1.ModuleType.RIDE, zoneKey))) {
+        return res.status(403).json({
+            error: `${(0, module_settings_1.moduleName)(client_1.ModuleType.RIDE)} module is currently disabled.`,
+        });
+    }
     const carId = req.query.carId?.toString();
     const start = req.query.startDate?.toString();
     const end = req.query.endDate?.toString();
@@ -388,17 +424,28 @@ router.get('/bookings/availability', (0, async_handler_1.asyncHandler)(async (re
     }
     const startDate = new Date(start);
     const endDate = new Date(end);
-    if (endDate <= startDate) {
+    if (!Number.isFinite(startDate.getTime()) ||
+        !Number.isFinite(endDate.getTime()) ||
+        endDate <= startDate) {
         return res.status(400).json({ error: 'End date must be after start date.' });
     }
+    const car = await db_1.prisma.product.findFirst({
+        where: {
+            id: carId,
+            moduleType: client_1.ModuleType.RIDE,
+            inStock: true,
+            metadata: { path: ['rentalCar'], equals: true },
+        },
+        select: { id: true },
+    });
+    if (!car)
+        return res.status(404).json({ error: 'Car not found or unavailable.' });
     const overlapping = await db_1.prisma.carRentalBooking.findFirst({
         where: {
             carId,
             status: { in: ['PENDING', 'CONFIRMED', 'ACTIVE'] },
-            AND: [
-                { startDate: { lte: endDate } },
-                { endDate: { gte: startDate } },
-            ],
+            startDate: { lt: endDate },
+            endDate: { gt: startDate },
         },
     });
     res.json({ available: !Boolean(overlapping) });
@@ -435,10 +482,14 @@ router.get('/bookings/user/:userId', (0, async_handler_1.asyncHandler)(async (re
 // POST /api/car-rentals/bookings/:bookingId/cancel — cancel a booking
 router.post('/bookings/:bookingId/cancel', (0, async_handler_1.asyncHandler)(async (req, res) => {
     const bookingId = (0, http_1.getParam)(req.params.bookingId, 'bookingId');
+    const { userId } = cancelBookingSchema.parse(req.body);
     const booking = await db_1.prisma.carRentalBooking.findUnique({
         where: { id: bookingId },
     });
     if (!booking) {
+        return res.status(404).json({ error: 'Booking not found.' });
+    }
+    if (booking.userId !== userId) {
         return res.status(404).json({ error: 'Booking not found.' });
     }
     if (booking.status === 'CANCELLED') {

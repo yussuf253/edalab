@@ -132,6 +132,7 @@ class ModuleAccessService {
     '/doctor': 'doctor',
     '/hotel': 'hotel',
     '/ride': 'ride',
+    '/car-rental': 'ride',
     '/parcel': 'parcel',
     '/pharmacy': 'pharmacy',
     '/grocery': 'grocery',
