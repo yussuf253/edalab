@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../storage/app_preferences.dart';
+import 'supabase_gateway.dart';
 
 enum ApiSessionScope { user, pro }
 
@@ -84,6 +85,8 @@ class ApiClient {
   }
 
   static Future<void> warmUpBackend({bool force = false}) async {
+    // Nothing to warm up in direct mode.
+    if (SupabaseGateway.isActive) return;
     final now = DateTime.now();
     final isCoolingDown =
         !force &&
@@ -121,6 +124,10 @@ class ApiClient {
   /// every 10 min) for 24/7 coverage.
   static void startKeepAlive() {
     _keepAliveTimer?.cancel();
+    // Direct Supabase builds have no Render instance to keep warm — pinging
+    // the deleted backend would only burn a connection (and up to 90s of
+    // timeout) every cycle.
+    if (SupabaseGateway.isActive) return;
     // Fire once immediately so the first screens don't race a cold start —
     // the ping hangs until the service is up, then real requests are fast.
     unawaited(_pingForKeepAlive());
@@ -297,6 +304,12 @@ class ApiClient {
     final trimmed = rawUrl?.trim() ?? '';
     if (trimmed.isEmpty) return null;
 
+    // Direct Supabase builds have no Render origin to proxy through, so
+    // storage links resolve straight against the project instead.
+    if (SupabaseGateway.isActive) {
+      return SupabaseGateway.normalizeStorageUrl(trimmed);
+    }
+
     final parsed = Uri.tryParse(trimmed);
     if (parsed == null) return trimmed;
 
@@ -395,7 +408,9 @@ class ApiClient {
   }
 
   static String _cacheKey(String endpoint) =>
-      '$baseUrl|$endpoint|${_token ?? ''}';
+      SupabaseGateway.isActive
+          ? 'supabase|$endpoint|${_token ?? ''}'
+          : '$baseUrl|$endpoint|${_token ?? ''}';
 
   static bool _isRetryableGetStatus(int statusCode) =>
       statusCode == 408 || statusCode == 429 || statusCode >= 500;
@@ -483,7 +498,59 @@ class ApiClient {
     }
   }
 
+  static const Object _gatewayMiss = Object();
+
+  /// Runs a call through the Supabase gateway when that route is migrated.
+  ///
+  /// Returns [_gatewayMiss] when the path has no gateway route yet so the
+  /// caller can fall through to the HTTP backend while the port is in flight.
+  static Future<dynamic> _tryGateway(
+    String method,
+    String endpoint, {
+    Map<String, dynamic>? data,
+  }) async {
+    if (!SupabaseGateway.isActive) return _gatewayMiss;
+    try {
+      return await SupabaseGateway.request(
+        method,
+        endpoint,
+        body: data,
+        onBanned: _onBanned?.call,
+      );
+    } on GatewayUnrouted {
+      return _gatewayMiss;
+    }
+  }
+
+  /// In direct Supabase mode there is no backend to fall back to: the Render
+  /// service is deleted, so an unrouted path used to burn the full 20s
+  /// timeout × retries (the "1 minute start" feel) before failing. Fail fast
+  /// with a clear message instead — and surface it in debug so a missing
+  /// gateway route is obvious during development.
+  static Never _throwUnrouted(String method, String endpoint) {
+    if (kDebugMode) {
+      debugPrint(
+        '[ApiClient] No Supabase gateway route for $method $endpoint '
+        '(direct mode: not falling back to the backend)',
+      );
+    }
+    throw Exception(
+      '$method $endpoint is not available yet. Please try again later.',
+    );
+  }
+
   static Future<dynamic> _performGet(String endpoint, String cacheKey) async {
+    final gatewayResult = await _tryGateway('GET', endpoint);
+    if (!identical(gatewayResult, _gatewayMiss)) {
+      final encoded = json.encode(gatewayResult);
+      _getCache[cacheKey] = _CachedResponse(
+        body: encoded,
+        cachedAt: DateTime.now(),
+      );
+      return _decodeBody(encoded);
+    }
+    if (SupabaseGateway.isActive) _throwUnrouted('GET', endpoint);
+
     final uri = Uri.parse('$baseUrl$endpoint');
     final requestHeaders = await _headers();
 
@@ -555,6 +622,13 @@ class ApiClient {
     String endpoint,
     Map<String, dynamic> data,
   ) async {
+    final gatewayResult = await _tryGateway('POST', endpoint, data: data);
+    if (!identical(gatewayResult, _gatewayMiss)) {
+      clearCache();
+      return _decodeBody(json.encode(gatewayResult));
+    }
+    if (SupabaseGateway.isActive) _throwUnrouted('POST', endpoint);
+
     late http.Response response;
     try {
       response = await _httpClient
@@ -593,6 +667,13 @@ class ApiClient {
     String endpoint,
     Map<String, dynamic> data,
   ) async {
+    final gatewayResult = await _tryGateway('PATCH', endpoint, data: data);
+    if (!identical(gatewayResult, _gatewayMiss)) {
+      clearCache();
+      return _decodeBody(json.encode(gatewayResult));
+    }
+    if (SupabaseGateway.isActive) _throwUnrouted('PATCH', endpoint);
+
     late http.Response response;
     try {
       response = await _httpClient
@@ -628,6 +709,14 @@ class ApiClient {
   }
 
   static Future<dynamic> delete(String endpoint) async {
+    final gatewayResult = await _tryGateway('DELETE', endpoint);
+    if (!identical(gatewayResult, _gatewayMiss)) {
+      clearCache();
+      if (gatewayResult == null) return null;
+      return _decodeBody(json.encode(gatewayResult));
+    }
+    if (SupabaseGateway.isActive) _throwUnrouted('DELETE', endpoint);
+
     late http.Response response;
     try {
       response = await _httpClient

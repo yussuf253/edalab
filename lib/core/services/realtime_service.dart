@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../network/api_client.dart';
+import '../network/supabase_gateway.dart';
 
 class RealtimeService {
   static final RealtimeService _instance = RealtimeService._internal();
@@ -19,6 +20,11 @@ class RealtimeService {
 
   /// Connect to the SSE server
   Future<void> connect() async {
+    // The Render backend that served `/realtime/events` is deleted: a connect
+    // attempt would hang (no response, no timeout) and then retry forever.
+    // Direct Supabase builds keep updates flowing through the periodic
+    // NotificationSyncService poll instead.
+    if (SupabaseGateway.isActive) return;
     if (_isConnected || _isReconnecting) return;
 
     try {

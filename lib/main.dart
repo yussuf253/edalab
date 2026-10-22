@@ -17,10 +17,14 @@ import 'core/services/push_notification_service.dart';
 import 'core/services/app_version_service.dart';
 import 'core/services/deep_link_service.dart';
 import 'core/services/realtime_service.dart';
+import 'core/services/supabase_service.dart';
 import 'core/storage/app_preferences.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Direct Supabase mode (when built with SUPABASE_URL/SUPABASE_ANON_KEY);
+  // no-op while the backend API is still the active transport.
+  await SupabaseService.initialize();
   // Load the persisted session token before any provider can issue requests,
   // mirroring the Pro app's bootstrap so both variants initialize identically.
   await ApiClient.initialize(scope: ApiSessionScope.user);

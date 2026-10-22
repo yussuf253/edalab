@@ -5,9 +5,14 @@ import '../analytics/analytics_service.dart';
 import '../localization/app_localizations.dart';
 import '../models/user_model.dart';
 import '../network/api_client.dart';
+import '../services/supabase_service.dart';
 import '../storage/app_preferences.dart';
 
 class AuthProvider extends ChangeNotifier {
+  /// True when the app was built with Supabase defines and should authenticate
+  /// via Supabase Auth + PostgREST instead of the Render backend.
+  bool get directMode => SupabaseService.isConfigured;
+
   UserModel? _user;
   bool _isLoggedIn = false;
   bool _isLoading = false;
@@ -145,13 +150,28 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = Map<String, dynamic>.from(
-        await ApiClient.post('/auth/login', {
-              'email': email.trim(),
-              'password': password,
-            })
-            as Map,
-      );
+      final Map<String, dynamic> response;
+      if (directMode) {
+        final profile = await SupabaseService.signInAndLoadProfile(email, password);
+        if (profile == null) {
+          _errorMessage = 'Your account could not be found.';
+          _isLoading = false;
+          _user = null;
+          _isLoggedIn = false;
+          _syncAnalyticsIdentity();
+          notifyListeners();
+          return false;
+        }
+        response = profile;
+      } else {
+        response = Map<String, dynamic>.from(
+          await ApiClient.post('/auth/login', {
+                'email': email.trim(),
+                'password': password,
+              })
+              as Map,
+        );
+      }
 
       // Check if user is banned (backend returns 403 with banned status)
       if (response['banned'] == true) {
@@ -166,11 +186,13 @@ class AuthProvider extends ChangeNotifier {
         return false;
       }
 
-      final userResponse = Map<String, dynamic>.from(response['user'] as Map);
+      final Map<String, dynamic> userResponse = directMode
+          ? response
+          : Map<String, dynamic>.from(response['user'] as Map);
       await _setUserFromResponse(userResponse);
       await _persistSession(
         userId: _user!.id,
-        token: response['token'] as String?,
+        token: directMode ? null : response['token'] as String?,
       );
       AnalyticsService.instance.track(
         AnalyticsEvents.authLoginSucceeded,
@@ -212,6 +234,21 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      if (directMode) {
+        await SupabaseService.signUp(name, email, phone, password);
+        // GoTrue only creates a session after email verification.
+        _emailVerificationRequired = true;
+        _pendingVerificationEmail = email.trim();
+        _errorMessage =
+            'Check your email to verify your account before signing in.';
+        _isLoading = false;
+        _user = null;
+        _isLoggedIn = false;
+        _syncAnalyticsIdentity();
+        notifyListeners();
+        return false;
+      }
+
       final response = Map<String, dynamic>.from(
         await ApiClient.post('/auth/register', {
               'name': name.trim(),
@@ -276,6 +313,26 @@ class AuthProvider extends ChangeNotifier {
     String? userId;
     try {
       await ApiClient.initialize();
+
+      if (directMode) {
+        // Supabase persists the session itself; restore the profile from it.
+        final profile = await SupabaseService.fetchUserProfile();
+        if (profile == null) {
+          _user = null;
+          _isLoggedIn = false;
+          _errorMessage = null;
+          return;
+        }
+        await _setUserFromResponse(profile);
+        await AppPreferences.setCurrentUserId(_user!.id);
+        AnalyticsService.instance.track(
+          AnalyticsEvents.authSessionRestored,
+          properties: {'source': 'supabase_session'},
+        );
+        _errorMessage = null;
+        return;
+      }
+
       userId = await AppPreferences.getCurrentUserId();
       if (userId == null || userId.isEmpty) {
         _user = null;
@@ -593,6 +650,11 @@ class AuthProvider extends ChangeNotifier {
     _syncAnalyticsIdentity();
     await AppPreferences.clearCurrentUserId();
     await ApiClient.setToken(null);
+    if (directMode) {
+      try {
+        await SupabaseService.auth?.signOut();
+      } catch (_) {}
+    }
     notifyListeners();
   }
 }

@@ -20,7 +20,7 @@ class DeepLinkService {
 
     // Handle initial link if app was launched from a deep link
     try {
-      final initialLink = await _appLinks.getInitialAppLink();
+      final initialLink = await _appLinks.getInitialLink();
       if (initialLink != null) {
         _handleDeepLink(initialLink.toString(), context);
       }
