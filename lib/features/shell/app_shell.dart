@@ -19,8 +19,16 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final path = GoRouterState.of(context).uri.path;
-    final currentIndex = _currentIndexForPath(path);
     final cartCount = context.watch<CartProvider>().itemCount;
+    // The cart only holds items from the shopping/food/grocery/pharmacy
+    // modules (see cart_hub_screen) — when every one of them is disabled,
+    // the tab has nothing to show and disappears from the bar.
+    final moduleProvider = context.watch<ModuleProvider>();
+    final showCartTab =
+        moduleProvider.isEnabled('shopping') ||
+        moduleProvider.isEnabled('food') ||
+        moduleProvider.isEnabled('grocery') ||
+        moduleProvider.isEnabled('pharmacy');
     final navItems = [
       _NavItem(
         assetPath: AppAssets.navHome,
@@ -32,11 +40,12 @@ class AppShell extends StatelessWidget {
         label: l10n.t('module.orders'),
         path: '/orders',
       ),
-      _NavItem(
-        assetPath: AppAssets.navCart,
-        label: l10n.t('cart.title'),
-        path: '/cart',
-      ),
+      if (showCartTab)
+        _NavItem(
+          assetPath: AppAssets.navCart,
+          label: l10n.t('cart.title'),
+          path: '/cart',
+        ),
       _NavItem(
         assetPath: AppAssets.navMessages,
         label: l10n.t('messages.title'),
@@ -48,6 +57,7 @@ class AppShell extends StatelessWidget {
         path: '/profile',
       ),
     ];
+    final currentIndex = _indexOfPath(path, navItems);
 
     return Scaffold(
       body: widgetChildWithSafeBackground(child),
@@ -99,14 +109,15 @@ class AppShell extends StatelessWidget {
     return ColoredBox(color: AppColors.background, child: child);
   }
 
-  int _currentIndexForPath(String path) {
+  /// Highlight index derived from the *actual* tab list, so hiding the cart
+  /// tab doesn't shift every highlight after it (messages, profile).
+  int _indexOfPath(String path, List<_NavItem> items) {
     if (path == '/' || path.startsWith('/search')) return 0;
 
-    const navPaths = ['/orders', '/cart', '/messages', '/profile'];
-    for (var index = 0; index < navPaths.length; index++) {
-      final navPath = navPaths[index];
+    for (var index = 0; index < items.length; index++) {
+      final navPath = items[index].path;
       if (path == navPath || path.startsWith('$navPath/')) {
-        return index + 1;
+        return index;
       }
     }
 

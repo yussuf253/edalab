@@ -2,7 +2,9 @@ import 'package:edalab/features/onboarding/screens/home_onboarding_screen.dart';
 import 'package:edalab/features/onboarding/screens/onboarding_screen.dart';
 
 import '../../core/config/app_config.dart';
+import 'package:edalab/features/doctor/screens/book_lab_test_screen.dart';
 import 'package:edalab/features/doctor/screens/lab_tests_screen.dart';
+import 'package:edalab/features/doctor/screens/book_physiotherapy_screen.dart';
 import 'package:edalab/features/doctor/screens/physiotherapy_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -387,6 +389,30 @@ GoRouter createAppRouter({
             categoryId: extra['categoryId']?.toString(),
             categoryLabel: extra['label']?.toString(),
           );
+        },
+      ),
+      GoRoute(
+        path: '/doctor/lab-tests/book',
+        builder: (context, state) {
+          final extra = state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : <String, dynamic>{};
+          final test = extra['test'];
+          if (test is! LabTestModel) return const LabTestsScreen();
+          return BookLabTestScreen(test: test);
+        },
+      ),
+      GoRoute(
+        path: '/doctor/physiotherapy/book',
+        builder: (context, state) {
+          final extra = state.extra is Map
+              ? Map<String, dynamic>.from(state.extra as Map)
+              : <String, dynamic>{};
+          final service = extra['service'];
+          if (service is! PhysiotherapyServiceModel) {
+            return const PhysiotherapyScreen();
+          }
+          return BookPhysiotherapyScreen(service: service);
         },
       ),
       GoRoute(

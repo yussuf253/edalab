@@ -13,3 +13,4 @@ export 'laundry_model.dart';
 export 'shopping_store_model.dart';
 export 'app_notification_model.dart';
 export 'lab_test_model.dart';
+export 'physiotherapy_service_model.dart';

@@ -1,16 +1,13 @@
 import 'package:edalab/core/widgets/app_search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
-import '../../../core/models/cart_model.dart';
 import '../../../core/models/physiotherapy_service_model.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/app_button.dart';
 
@@ -83,7 +80,16 @@ class _PhysiotherapyScreenState extends State<PhysiotherapyScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _ServiceDetailsBottomSheet(service: service),
+      builder: (sheetContext) => _ServiceDetailsBottomSheet(
+        service: service,
+        onBook: () {
+          Navigator.of(sheetContext).pop();
+          context.push(
+            '/doctor/physiotherapy/book',
+            extra: {'service': service},
+          );
+        },
+      ),
     );
   }
 
@@ -314,8 +320,12 @@ class _ServiceCard extends StatelessWidget {
 
 class _ServiceDetailsBottomSheet extends StatelessWidget {
   final PhysiotherapyServiceModel service;
+  final VoidCallback onBook;
 
-  const _ServiceDetailsBottomSheet({required this.service});
+  const _ServiceDetailsBottomSheet({
+    required this.service,
+    required this.onBook,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -548,7 +558,7 @@ class _ServiceDetailsBottomSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              // Add to Cart bottom bar
+              // Booking bottom bar
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -588,29 +598,10 @@ class _ServiceDetailsBottomSheet extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: AppButton(
-                          text: 'Add to Cart',
-                          icon: Icons.shopping_cart_outlined,
-                          color: AppColors.primary,
-                          onPressed: () {
-                            final cart = context.read<CartProvider>();
-                            cart.addItem(
-                              CartItem(
-                                id: service.id,
-                                name: service.name,
-                                price: service.price,
-                                moduleType: 'doctor',
-                                description: service.description,
-                                imageUrl: service.imageUrl,
-                              ),
-                            );
-                            context.pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${service.name} added to cart'),
-                                backgroundColor: AppColors.success,
-                              ),
-                            );
-                          },
+                          text: l10n.t('physio_booking.book'),
+                          icon: Icons.event_available_rounded,
+                          color: AppColors.secondary,
+                          onPressed: onBook,
                         ),
                       ),
                     ],

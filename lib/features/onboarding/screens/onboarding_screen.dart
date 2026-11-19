@@ -107,8 +107,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         heroType: _OnboardingHeroType.speed,
         title: l10n.t('onboarding.page2_title'),
         subtitle: l10n.t('onboarding.page2_subtitle'),
-        heroAssetPath: 'assets/images/onboarding/delivery.png',
-        centerIcon: Icons.flash_on_rounded,
+        // Services pros (home-services staff) instead of the delivery rider.
+        heroAssetPath: 'assets/images/banners/home-service-banner.png',
+        centerIcon: Icons.home_repair_service_rounded,
         ctaColor: AppColors.primary,
         backgroundGradient: const LinearGradient(
           colors: [Color(0xFFF2FFFB), Color(0xFFDBFCEB)],

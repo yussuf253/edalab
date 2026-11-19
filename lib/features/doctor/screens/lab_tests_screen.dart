@@ -1,16 +1,13 @@
 import 'package:edalab/core/widgets/app_search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
-import '../../../core/models/cart_model.dart';
 import '../../../core/models/lab_test_model.dart';
 import '../../../core/network/api_client.dart';
-import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/app_button.dart';
 
@@ -80,7 +77,13 @@ class _LabTestsScreenState extends State<LabTestsScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _TestDetailsBottomSheet(test: test),
+      builder: (sheetContext) => _TestDetailsBottomSheet(
+        test: test,
+        onBook: () {
+          Navigator.of(sheetContext).pop();
+          context.push('/doctor/lab-tests/book', extra: {'test': test});
+        },
+      ),
     );
   }
 
@@ -311,8 +314,9 @@ class _TestCard extends StatelessWidget {
 
 class _TestDetailsBottomSheet extends StatelessWidget {
   final LabTestModel test;
+  final VoidCallback onBook;
 
-  const _TestDetailsBottomSheet({required this.test});
+  const _TestDetailsBottomSheet({required this.test, required this.onBook});
 
   @override
   Widget build(BuildContext context) {
@@ -510,7 +514,7 @@ class _TestDetailsBottomSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              // Add to Cart bottom bar
+              // Booking bottom bar
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -550,29 +554,10 @@ class _TestDetailsBottomSheet extends StatelessWidget {
                       const SizedBox(width: 16),
                       Expanded(
                         child: AppButton(
-                          text: 'Add to Cart',
-                          icon: Icons.shopping_cart_outlined,
+                          text: l10n.t('lab_booking.book'),
+                          icon: Icons.event_available_rounded,
                           color: AppColors.primary,
-                          onPressed: () {
-                            final cart = context.read<CartProvider>();
-                            cart.addItem(
-                              CartItem(
-                                id: test.id,
-                                name: test.name,
-                                price: test.price,
-                                moduleType: 'doctor',
-                                description: test.description,
-                                imageUrl: test.imageUrl,
-                              ),
-                            );
-                            context.pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${test.name} added to cart'),
-                                backgroundColor: AppColors.success,
-                              ),
-                            );
-                          },
+                          onPressed: onBook,
                         ),
                       ),
                     ],

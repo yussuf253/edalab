@@ -18,6 +18,17 @@ class ModuleProvider extends ChangeNotifier {
   /// Before this, [modules] only reflects hardcoded defaults — UI should not
   /// trust it (a fresh install would briefly show every module as enabled).
   bool _hydrated = false;
+
+  /// True while [modules] only reflects the hardcoded defaults because no
+  /// configuration has ever been persisted (fresh install). The defaults
+  /// show every module as enabled, so UI should keep its loading skeleton
+  /// up until the first server sync lands instead of flashing all modules.
+  bool _usingDefaults = false;
+
+  /// True once a server sync has completed at least once this app run
+  /// (success or failure). While it hasn't, UI may show its loading
+  /// skeleton — the startup state, not a per-request spinner.
+  bool _hasSyncedOnce = false;
   String? _errorMessage;
 
   bool get isLoading => _isLoading;
@@ -25,6 +36,13 @@ class ModuleProvider extends ChangeNotifier {
   /// True when the module configuration can be trusted (storage loaded;
   /// server sync may still be in flight afterwards).
   bool get isReady => _hydrated;
+
+  /// True while the enabled set is only the hardcoded defaults (nothing
+  /// persisted yet — see [_usingDefaults]).
+  bool get isUsingDefaults => _usingDefaults;
+
+  /// True after the first server sync of this run has settled.
+  bool get hasSyncedOnce => _hasSyncedOnce;
   String? get errorMessage => _errorMessage;
   List<ManagedModule> get modules => _accessService.modules;
   Set<String> get enabledModuleIds => _accessService.enabledModuleIds;
@@ -35,12 +53,14 @@ class ModuleProvider extends ChangeNotifier {
   Future<void> hydrateFromStorage() async {
     final raw = await AppPreferences.getModuleConfigJson();
     if (raw == null || raw.trim().isEmpty) {
+      _usingDefaults = true;
       _accessService.applyModules(const []);
       _hydrated = true;
       notifyListeners();
       return;
     }
 
+    var appliedStoredConfig = false;
     try {
       final decoded = json.decode(raw);
       if (decoded is! List) {
@@ -56,12 +76,14 @@ class ModuleProvider extends ChangeNotifier {
           .toList();
       if (modules.isNotEmpty) {
         _accessService.applyModules(modules);
+        appliedStoredConfig = true;
       }
     } catch (_) {
       if (kDebugMode) {
         debugPrint('Failed to hydrate module configuration from storage.');
       }
     } finally {
+      _usingDefaults = !appliedStoredConfig;
       _hydrated = true;
       notifyListeners();
     }
@@ -123,6 +145,7 @@ class ModuleProvider extends ChangeNotifier {
           )
           .toList();
       _accessService.applyModules(modules);
+      _usingDefaults = modules.isEmpty;
       await AppPreferences.setModuleConfigJson(
         json.encode(modules.map((module) => module.toJson()).toList()),
       );
@@ -132,6 +155,7 @@ class ModuleProvider extends ChangeNotifier {
       // Persisted config still stands; the next trigger (app resume,
       // pull-to-refresh) will retry.
     } finally {
+      _hasSyncedOnce = true;
       _isLoading = false;
       notifyListeners();
     }

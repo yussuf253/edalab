@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:animate_do/animate_do.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -71,36 +70,23 @@ class _HomeScreenState extends State<HomeScreen> {
     // stored yet, server fetch still in flight), the enabled set only
     // reflects hardcoded defaults. Show a shimmer instead of flashing all
     // modules on for a moment.
-    if (!moduleProvider.isReady) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: _buildHomeAppBar(context, user, displayName, locationDisplay),
-        body: AppShimmer(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                ShimmerBlock(width: 140, height: 22),
-                SizedBox(height: 28),
-                ShimmerBlock(width: double.infinity, height: 20),
-                SizedBox(height: 14),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    ShimmerBlock(width: 72, height: 72, radius: 18),
-                    ShimmerBlock(width: 72, height: 72, radius: 18),
-                    ShimmerBlock(width: 72, height: 72, radius: 18),
-                    ShimmerBlock(width: 72, height: 72, radius: 18),
-                  ],
-                ),
-                SizedBox(height: 28),
-                ShimmerBlock(width: double.infinity, height: 160, radius: 16),
-              ],
-            ),
-          ),
-        ),
+    //
+    // Hydration is awaited before the first frame, so the real wait is the
+    // *first server sync* of this app run — on a fresh install nothing is
+    // stored yet (the enabled set would just be the all-active defaults),
+    // and even with a stored config the sync is what makes the screen
+    // current. Keep the shimmer up until it settles instead of flashing
+    // content that is about to change.
+    final isInitialSyncPending =
+        moduleProvider.isLoading && !moduleProvider.hasSyncedOnce;
+    if (!moduleProvider.isReady || isInitialSyncPending) {
+      return _buildInitialSyncShimmer(
+        user: user,
+        displayName: displayName,
+        locationDisplay: locationDisplay,
+        enabledModuleIds: enabledModuleIds,
+        hasEnabledOfferModules: hasEnabledOfferModules,
+        moduleProvider: moduleProvider,
       );
     }
     // ──────────────────────────────────────────────────────────────────────
@@ -162,63 +148,60 @@ class _HomeScreenState extends State<HomeScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: FadeInLeft(
-                  duration: const Duration(milliseconds: 240),
-                  child: Row(
-                    children: [
-                      // Avatar
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child:
-                            user?.avatarUrl != null &&
-                                user!.avatarUrl!.trim().isNotEmpty
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(14),
-                                child: Image.network(
-                                  user.avatarUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, error, stackTrace) =>
-                                      const Icon(
-                                        Icons.person_rounded,
-                                        color: AppColors.white,
-                                        size: 24,
-                                      ),
-                                ),
-                              )
-                            : const Icon(
-                                Icons.person_rounded,
-                                color: AppColors.white,
-                                size: 24,
-                              ),
+                child: Row(
+                  children: [
+                    // Avatar
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      const SizedBox(width: 12),
-                      // Greeting
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              locationDisplay,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.grey,
+                      child:
+                          user?.avatarUrl != null &&
+                              user!.avatarUrl!.trim().isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(14),
+                              child: Image.network(
+                                user.avatarUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, error, stackTrace) =>
+                                    const Icon(
+                                      Icons.person_rounded,
+                                      color: AppColors.white,
+                                      size: 24,
+                                    ),
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                            )
+                          : const Icon(
+                              Icons.person_rounded,
+                              color: AppColors.white,
+                              size: 24,
                             ),
-                            const SizedBox(height: 2),
-                            Text(displayName, style: AppTextStyles.h4),
-                          ],
-                        ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Greeting
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            locationDisplay,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.grey,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(displayName, style: AppTextStyles.h4),
+                        ],
                       ),
-                      // Notification bell
-                      const NotificationBell(),
-                    ],
-                  ),
+                    ),
+                    // Notification bell
+                    const NotificationBell(),
+                  ],
                 ),
               ),
             ),
@@ -227,14 +210,10 @@ class _HomeScreenState extends State<HomeScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: FadeInUp(
-                  delay: const Duration(milliseconds: 20),
-                  duration: const Duration(milliseconds: 240),
-                  child: AppSearchBar(
-                    hint: l10n.t('common.search_services'),
-                    readOnly: true,
-                    onTap: () => context.push('/search'),
-                  ),
+                child: AppSearchBar(
+                  hint: l10n.t('common.search_services'),
+                  readOnly: true,
+                  onTap: () => context.push('/search'),
                 ),
               ),
             ),
@@ -243,11 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                child: FadeInUp(
-                  delay: const Duration(milliseconds: 40),
-                  duration: const Duration(milliseconds: 240),
-                  child: _PromoBanner(),
-                ),
+                child: _PromoBanner(),
               ),
             ),
 
@@ -255,16 +230,12 @@ class _HomeScreenState extends State<HomeScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
-                child: FadeInUp(
-                  delay: const Duration(milliseconds: 60),
-                  duration: const Duration(milliseconds: 240),
-                  child: Column(
-                    children: [
-                      SectionHeader(title: l10n.t('home.services')),
-                      const SizedBox(height: 14),
-                      _ServicesGrid(enabledModules: enabledModuleIds),
-                    ],
-                  ),
+                child: Column(
+                  children: [
+                    SectionHeader(title: l10n.t('home.services')),
+                    const SizedBox(height: 14),
+                    _ServicesGrid(enabledModules: enabledModuleIds),
+                  ],
                 ),
               ),
             ),
@@ -274,20 +245,16 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                  child: FadeInUp(
-                    delay: const Duration(milliseconds: 80),
-                    duration: const Duration(milliseconds: 240),
-                    child: Column(
-                      children: [
-                        SectionHeader(
-                          title: '${l10n.t('home.special_offers')} 🔥',
-                          //actionText: l10n.t('common.see_all'),
-                          //onAction: () => context.push('/promotions'),
-                        ),
-                        const SizedBox(height: 12),
-                        _SpecialOffers(enabledModules: enabledModuleIds),
-                      ],
-                    ),
+                  child: Column(
+                    children: [
+                      SectionHeader(
+                        title: '${l10n.t('home.special_offers')} 🔥',
+                        //actionText: l10n.t('common.see_all'),
+                        //onAction: () => context.push('/promotions'),
+                      ),
+                      const SizedBox(height: 12),
+                      _SpecialOffers(enabledModules: enabledModuleIds),
+                    ],
                   ),
                 ),
               ),
@@ -297,20 +264,16 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                  child: FadeInUp(
-                    delay: const Duration(milliseconds: 100),
-                    duration: const Duration(milliseconds: 240),
-                    child: Column(
-                      children: [
-                        SectionHeader(
-                          title: l10n.t('home.popular_restaurants'),
-                          actionText: l10n.t('common.see_all'),
-                          onAction: () => context.push('/food'),
-                        ),
-                        const SizedBox(height: 16),
-                        _PopularRestaurants(),
-                      ],
-                    ),
+                  child: Column(
+                    children: [
+                      SectionHeader(
+                        title: l10n.t('home.popular_restaurants'),
+                        actionText: l10n.t('common.see_all'),
+                        onAction: () => context.push('/food'),
+                      ),
+                      const SizedBox(height: 16),
+                      _PopularRestaurants(),
+                    ],
                   ),
                 ),
               ),
@@ -320,20 +283,16 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                  child: FadeInUp(
-                    delay: const Duration(milliseconds: 120),
-                    duration: const Duration(milliseconds: 240),
-                    child: Column(
-                      children: [
-                        SectionHeader(
-                          title: l10n.t('home.top_doctors'),
-                          actionText: l10n.t('common.see_all'),
-                          onAction: () => context.push('/doctor'),
-                        ),
-                        const SizedBox(height: 16),
-                        _TopDoctors(),
-                      ],
-                    ),
+                  child: Column(
+                    children: [
+                      SectionHeader(
+                        title: l10n.t('home.top_doctors'),
+                        actionText: l10n.t('common.see_all'),
+                        onAction: () => context.push('/doctor'),
+                      ),
+                      const SizedBox(height: 16),
+                      _TopDoctors(),
+                    ],
                   ),
                 ),
               ),
@@ -343,26 +302,236 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(0, 20, 0, 24),
-                  child: FadeInUp(
-                    delay: const Duration(milliseconds: 140),
-                    duration: const Duration(milliseconds: 240),
-                    child: Column(
-                      children: [
-                        SectionHeader(
-                          title: l10n.t('home.trending_products'),
-                          actionText: l10n.t('common.see_all'),
-                          onAction: () => context.push('/shopping'),
-                        ),
-                        const SizedBox(height: 16),
-                        _TrendingProducts(),
-                      ],
-                    ),
+                  child: Column(
+                    children: [
+                      SectionHeader(
+                        title: l10n.t('home.trending_products'),
+                        actionText: l10n.t('common.see_all'),
+                        onAction: () => context.push('/shopping'),
+                      ),
+                      const SizedBox(height: 16),
+                      _TrendingProducts(),
+                    ],
                   ),
                 ),
               ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 20)),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Skeleton shown from the first frame until the initial module sync of
+  /// this run settles.
+  ///
+  /// It mirrors the loaded layout section by section — same SafeArea +
+  /// CustomScrollView, same paddings, same section order, sizes and
+  /// visibility predicates — so nothing on screen moves when the real
+  /// content replaces it.
+  Widget _buildInitialSyncShimmer({
+    required dynamic user,
+    required String displayName,
+    required String locationDisplay,
+    required Set<String> enabledModuleIds,
+    required bool hasEnabledOfferModules,
+    required ModuleProvider moduleProvider,
+  }) {
+    // Single-module runs keep the home AppBar and drop straight into that
+    // module's own screen, so mirror that shell instead of the hub.
+    if (enabledModuleIds.length == 1) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: _buildHomeAppBar(context, user, displayName, locationDisplay),
+        body: ModuleFeedShimmer(
+          accentColor: AppColors.primary,
+          showSearch: true,
+          showBanner: true,
+          showRoundCategories: true,
+        ),
+      );
+    }
+
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+    // Greeting line boxes: bodySmall (12 × 1.5) over h4 (18 × 1.4), and the
+    // SectionHeader row is a single h4 line — all scaled like real Text is.
+    final locationLineBox = 12 * 1.5 * textScale;
+    final nameLineBox = 18 * 1.4 * textScale;
+    final sectionHeaderHeight = 18 * 1.4 * textScale;
+    final serviceCount = _serviceModuleKeys
+        .where((moduleId) => enabledModuleIds.contains(moduleId))
+        .length;
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: AppShimmer(
+          child: CustomScrollView(
+            slivers: [
+              // Greeting row — same spot as the loaded header row.
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  child: Row(
+                    children: [
+                      const ShimmerBlock(width: 48, height: 48, radius: 14),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              height: locationLineBox,
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: ShimmerBlock(
+                                  width: 110,
+                                  height: 12,
+                                  radius: 6,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            SizedBox(
+                              height: nameLineBox,
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: ShimmerBlock(
+                                  width: 150,
+                                  height: 18,
+                                  radius: 6,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const ShimmerBlock(width: 48, height: 48, radius: 14),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Search bar — AppSearchBar is 50 tall with radiusLg.
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: const ShimmerBlock(
+                    width: double.infinity,
+                    height: 50,
+                    radius: AppSpacing.radiusLg,
+                  ),
+                ),
+              ),
+
+              // Promo banner — 132 tall, radius 20.
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                  child: const ShimmerBlock(
+                    width: double.infinity,
+                    height: 132,
+                    radius: 20,
+                  ),
+                ),
+              ),
+
+              // Services grid.
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
+                  child: Column(
+                    children: [
+                      _shimmerSectionHeader(
+                        titleWidth: 96,
+                        height: sectionHeaderHeight,
+                      ),
+                      const SizedBox(height: 14),
+                      _ServicesGridShimmer(count: serviceCount),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Special offers (grocery / pharmacy / ride).
+              if (hasEnabledOfferModules)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                    child: Column(
+                      children: [
+                        _shimmerSectionHeader(
+                          titleWidth: 130,
+                          height: sectionHeaderHeight,
+                        ),
+                        const SizedBox(height: 12),
+                        _shimmerCardRow(height: 92, cardWidth: 280),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Popular restaurants (food).
+              if (moduleProvider.isEnabled('food'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: Column(
+                      children: [
+                        _shimmerSectionHeader(
+                          titleWidth: 150,
+                          height: sectionHeaderHeight,
+                          showAction: true,
+                        ),
+                        const SizedBox(height: 16),
+                        _shimmerCardRow(height: 230, cardWidth: 220),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Top doctors.
+              if (moduleProvider.isEnabled('doctor'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: Column(
+                      children: [
+                        _shimmerSectionHeader(
+                          titleWidth: 130,
+                          height: sectionHeaderHeight,
+                          showAction: true,
+                        ),
+                        const SizedBox(height: 16),
+                        _shimmerCardRow(height: 110, cardWidth: 260),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Trending products (shopping).
+              if (moduleProvider.isEnabled('shopping'))
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 24),
+                    child: Column(
+                      children: [
+                        _shimmerSectionHeader(
+                          titleWidth: 160,
+                          height: sectionHeaderHeight,
+                          showAction: true,
+                        ),
+                        const SizedBox(height: 16),
+                        _shimmerCardRow(height: 260, cardWidth: 180),
+                      ],
+                    ),
+                  ),
+                ),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 20)),
+            ],
+          ),
         ),
       ),
     );
@@ -472,14 +641,7 @@ class _ServicesGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final textScale = MediaQuery.textScalerOf(
-      context,
-    ).scale(1.0).clamp(1.0, 1.35);
-    final serviceGridAspectRatio =
-        (0.82 -
-                (l10n.languageCode == 'en' ? 0.0 : 0.05) -
-                ((textScale - 1.0) * 0.12))
-            .clamp(0.72, 0.84);
+    final serviceGridAspectRatio = _servicesGridAspectRatio(context);
     final services = [
       _ServiceItem(
         key: 'food',
@@ -788,6 +950,214 @@ class _NarrowServiceCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Module ids the home services grid knows how to render — keeps the
+/// skeleton's tile count in step with the loaded grid.
+const _serviceModuleKeys = <String>{
+  'food',
+  'shopping',
+  'doctor',
+  'hotel',
+  'ride',
+  'parcel',
+  'pharmacy',
+  'home-services',
+  'laundry',
+  'grocery',
+};
+
+/// Aspect ratio of the 4-column services grid, shared by the loaded grid and
+/// its skeleton so both lay out identically.
+double _servicesGridAspectRatio(BuildContext context) {
+  final textScale = MediaQuery.textScalerOf(
+    context,
+  ).scale(1.0).clamp(1.0, 1.35);
+  final ratio =
+      0.82 -
+      (context.l10n.languageCode == 'en' ? 0.0 : 0.05) -
+      ((textScale - 1.0) * 0.12);
+  return ratio.clamp(0.72, 0.84).toDouble();
+}
+
+/// Section-title placeholder with the same line box as [SectionHeader]
+/// (h4: 18px × 1.4, scaled by the system text scale).
+Widget _shimmerSectionHeader({
+  required double titleWidth,
+  required double height,
+  bool showAction = false,
+}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: SizedBox(
+      height: height,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          ShimmerBlock(width: titleWidth, height: 18),
+          if (showAction) const ShimmerBlock(width: 52, height: 14, radius: 7),
+        ],
+      ),
+    ),
+  );
+}
+
+/// Horizontal card rail with the same geometry as the loaded sections
+/// (20px side padding, 14px gap between cards).
+Widget _shimmerCardRow({
+  required double height,
+  required double cardWidth,
+  double radius = 16,
+  int cards = 2,
+}) {
+  return SizedBox(
+    height: height,
+    child: SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const NeverScrollableScrollPhysics(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            for (var i = 0; i < cards; i++) ...[
+              if (i > 0) const SizedBox(width: 14),
+              ShimmerBlock(width: cardWidth, height: height, radius: radius),
+            ],
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+/// Services grid skeleton: reproduces the loaded grid's branching layouts
+/// (0 / 1 / 2 / 3 / 4+ enabled modules) with the same dimensions.
+class _ServicesGridShimmer extends StatelessWidget {
+  const _ServicesGridShimmer({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    if (count == 0) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: Center(child: ShimmerBlock(width: 180, height: 14, radius: 7)),
+      );
+    }
+
+    // 2 modules: two wide cards side by side (74 tall = 14 padding + 46 icon).
+    if (count == 2) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            Expanded(
+              child: ShimmerBlock(
+                width: double.infinity,
+                height: 74,
+                radius: 20,
+              ),
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: ShimmerBlock(
+                width: double.infinity,
+                height: 74,
+                radius: 20,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 3 modules: two normal slots + one wide slot, 80 tall.
+    if (count == 3) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: SizedBox(
+          height: 80,
+          child: Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: ShimmerBlock(
+                  width: double.infinity,
+                  height: 80,
+                  radius: 20,
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                flex: 1,
+                child: ShimmerBlock(
+                  width: double.infinity,
+                  height: 80,
+                  radius: 20,
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                flex: 2,
+                child: ShimmerBlock(
+                  width: double.infinity,
+                  height: 80,
+                  radius: 20,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 1 or 4+ modules: the same 4-column grid the loaded view uses.
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 4,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 8,
+          childAspectRatio: _servicesGridAspectRatio(context),
+        ),
+        itemCount: count,
+        itemBuilder: (context, index) => const _GridServiceTileShimmer(),
+      ),
+    );
+  }
+}
+
+/// One grid cell: icon block over label block, matching the loaded tile
+/// (transparent cell, 54–58px icon, centred label underneath).
+class _GridServiceTileShimmer extends StatelessWidget {
+  const _GridServiceTileShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final iconSize = constraints.maxHeight >= 92 ? 58.0 : 54.0;
+        final gap = constraints.maxHeight >= 92 ? 7.0 : 6.0;
+        return Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            ShimmerBlock(width: iconSize, height: iconSize, radius: 18),
+            SizedBox(height: gap),
+            Expanded(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ShimmerBlock(width: 52, height: 12, radius: 6),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

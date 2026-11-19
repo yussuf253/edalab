@@ -744,9 +744,9 @@ class AppLocalizations {
       'onboarding.page1_title': 'Everything Delivered\nTo Your Door',
       'onboarding.page1_subtitle':
           'Food, pharmacy, groceries and shopping - order from your favorite stores and get it delivered fast.',
-      'onboarding.page2_title': 'Lightning Fast\nDelivery',
+      'onboarding.page2_title': 'Home Service Pros\nAt Your Door',
       'onboarding.page2_subtitle':
-          'Get your orders delivered in minutes. Track every step of the way with real-time updates.',
+          'Book verified pros for cleaning, repairs, plumbing and more — at a time that works for you.',
       'onboarding.page3_title': 'Trusted &\nSecure',
       'onboarding.page3_subtitle':
           'Your payments and data are always secure. Verified sellers, certified doctors, licensed drivers.',
@@ -1202,6 +1202,23 @@ class AppLocalizations {
           'Tap a service to see available health tests and consultations.',
       'doctor.browse_all': 'Browse All Services',
       'doctor.lab_tests': 'Lab Tests at Home',
+      'lab_booking.title': 'Book Lab Test',
+      'lab_booking.book': 'Book Test',
+      'lab_booking.home_collection': 'Home sample collection',
+      'lab_booking.notes_hint':
+          'Symptoms, access details, or anything the nurse should know...',
+      'lab_booking.confirm': 'Confirm Booking',
+      'lab_booking.login_required': 'Please log in to book your lab test.',
+      'lab_booking.failed': 'Failed to book: {error}',
+      'physio_booking.title': 'Book Physiotherapy',
+      'physio_booking.book': 'Book Session',
+      'physio_booking.home_visit': 'Home physiotherapy session',
+      'physio_booking.notes_hint':
+          'Pain area, mobility notes, or anything the therapist should know...',
+      'physio_booking.confirm': 'Confirm Booking',
+      'physio_booking.login_required':
+          'Please log in to book your physiotherapy session.',
+      'physio_booking.failed': 'Failed to book: {error}',
       'doctor.consultation': 'Doctor Consultation',
       'doctor.physiotherapy': 'Physiotherapy',
       'doctor.search_tests_hint': 'Search lab tests...',
@@ -2380,9 +2397,9 @@ class AppLocalizations {
       'onboarding.page1_title': 'Tout est livré\nchez vous',
       'onboarding.page1_subtitle':
           'Repas, pharmacie, courses et shopping - commandez dans vos magasins préférés et faites-vous livrer rapidement.',
-      'onboarding.page2_title': 'Livraison ultra\nrapide',
+      'onboarding.page2_title': 'Des pros de service\nà votre porte',
       'onboarding.page2_subtitle':
-          'Recevez vos commandes en quelques minutes. Suivez chaque étape avec des mises à jour en temps réel.',
+          'Réservez des pros vérifiés pour le ménage, les réparations, la plomberie et plus encore — à l\'heure qui vous convient.',
       'onboarding.page3_title': 'Fiable et\nsécurisé',
       'onboarding.page3_subtitle':
           'Vos paiements et vos données sont toujours protégés. Vendeurs vérifiés, médecins certifiés, chauffeurs agréés.',
@@ -2908,6 +2925,24 @@ class AppLocalizations {
           'Touchez un service pour voir les tests et consultations disponibles.',
       'doctor.browse_all': 'Voir tous les services',
       'doctor.lab_tests': 'Tests de labo à domicile',
+      'lab_booking.title': 'Réserver un test de laboratoire',
+      'lab_booking.book': 'Réserver le test',
+      'lab_booking.home_collection': 'Prélèvement à domicile',
+      'lab_booking.notes_hint':
+          'Symptômes, accès au domicile ou toute information utile à l\'infirmier...',
+      'lab_booking.confirm': 'Confirmer la réservation',
+      'lab_booking.login_required':
+          'Veuillez vous connecter pour réserver votre test.',
+      'lab_booking.failed': 'Échec de la réservation : {error}',
+      'physio_booking.title': 'Réserver une séance de kinésithérapie',
+      'physio_booking.book': 'Réserver la séance',
+      'physio_booking.home_visit': 'Séance de kinésithérapie à domicile',
+      'physio_booking.notes_hint':
+          'Zone douloureuse, mobilité ou toute information utile au kinésithérapeute...',
+      'physio_booking.confirm': 'Confirmer la réservation',
+      'physio_booking.login_required':
+          'Veuillez vous connecter pour réserver votre séance.',
+      'physio_booking.failed': 'Échec de la réservation : {error}',
       'doctor.consultation': 'Consultation médicale',
       'doctor.physiotherapy': 'Physiothérapie',
       'doctor.search_tests_hint': 'Rechercher des analyses...',
@@ -3843,9 +3878,9 @@ class AppLocalizations {
       'onboarding.page1_title': 'كل شيء\nيصلك إلى بابك',
       'onboarding.page1_subtitle':
           'الطعام، الصيدلية، البقالة والتسوق - اطلب من متاجرك المفضلة واستلم طلباتك بسرعة.',
-      'onboarding.page2_title': 'توصيل سريع\nجداً',
+      'onboarding.page2_title': 'خدمات منزلية\nإلى بابك',
       'onboarding.page2_subtitle':
-          'استلم طلباتك خلال دقائق. تابع كل خطوة بتحديثات مباشرة.',
+          'احجز محترفين موثوقين للتنظيف والإصلاح والسباكة والمزيد — في الوقت الذي يناسبك.',
       'onboarding.page3_title': 'موثوق\nوآمن',
       'onboarding.page3_subtitle':
           'مدفوعاتك وبياناتك آمنة دائماً. باعة موثقون، أطباء معتمدون، وسائقون مرخصون.',
@@ -4334,6 +4369,22 @@ class AppLocalizations {
       'doctor.tap_service': 'اضغط على خدمة لرؤية الفحوصات والاستشارات المتاحة.',
       'doctor.browse_all': 'تصفح جميع الخدمات',
       'doctor.lab_tests': 'التحاليل الطبية',
+      'lab_booking.title': 'حجز تحليل طبي',
+      'lab_booking.book': 'احجز التحليل',
+      'lab_booking.home_collection': 'سحب العينة في المنزل',
+      'lab_booking.notes_hint':
+          'الأعراض أو تفاصيل الوصول أو أي معلومات يجب أن يعرفها الممرض...',
+      'lab_booking.confirm': 'تأكيد الحجز',
+      'lab_booking.login_required': 'يرجى تسجيل الدخول لحجز التحليل.',
+      'lab_booking.failed': 'تعذر الحجز: {error}',
+      'physio_booking.title': 'حجز جلسة علاج طبيعي',
+      'physio_booking.book': 'احجز الجلسة',
+      'physio_booking.home_visit': 'جلسة علاج طبيعي في المنزل',
+      'physio_booking.notes_hint':
+          'منطقة الألم أو الحركة أو أي معلومات يجب أن يعرفها المعالج...',
+      'physio_booking.confirm': 'تأكيد الحجز',
+      'physio_booking.login_required': 'يرجى تسجيل الدخول لحجز الجلسة.',
+      'physio_booking.failed': 'تعذر الحجز: {error}',
       'doctor.consultation': 'استشارة طبية',
       'doctor.physiotherapy': 'العلاج الطبيعي',
       'doctor.search_tests_hint': 'البحث عن فحوصات...',

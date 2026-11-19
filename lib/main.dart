@@ -20,7 +20,23 @@ import 'core/services/realtime_service.dart';
 import 'core/services/supabase_service.dart';
 import 'core/storage/app_preferences.dart';
 
-Future<void> main() async {
+Future<void> main() {
+  // `animate_do` 3.3.x ships a leftover `print("animate: $animate")` debug
+  // statement that fires for every animated widget (dozens of lines per
+  // second on the home screen). Filter just that line; everything else
+  // prints as usual.
+  return runZoned(
+    () => _main(),
+    zoneSpecification: ZoneSpecification(
+      print: (self, parent, zone, line) {
+        if (line.startsWith('animate: ')) return;
+        parent.print(zone, line);
+      },
+    ),
+  );
+}
+
+Future<void> _main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Direct Supabase mode (when built with SUPABASE_URL/SUPABASE_ANON_KEY);
   // no-op while the backend API is still the active transport.

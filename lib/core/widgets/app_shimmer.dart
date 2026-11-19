@@ -1,22 +1,89 @@
 import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
 
 import '../constants/app_colors.dart';
 
-class AppShimmer extends StatelessWidget {
+/// Skeleton wrapper that makes its [ShimmerBlock]/[ShimmerCircle] descendants
+/// sweep a highlight gradient back and forth.
+///
+/// Deliberately does *not* use the `shimmer` package: it paints through a
+/// `ShaderMaskLayer`, which Impeller cannot hand an inherited opacity to, so
+/// any ancestor opacity layer (a Material page transition, animate_do's
+/// FadeIn*) spams "Contents::SetInheritedOpacity should never be called when
+/// Contents::CanAcceptOpacity returns false" once per frame. Blocks here paint
+/// their animated gradient directly, so no such layer is ever created.
+class AppShimmer extends StatefulWidget {
   final Widget child;
 
   const AppShimmer({super.key, required this.child});
 
   @override
+  State<AppShimmer> createState() => _AppShimmerState();
+}
+
+class _AppShimmerState extends State<AppShimmer>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1500),
+  )..repeat();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Shimmer.fromColors(
+    return _ShimmerScope(
       baseColor: isDark ? AppColors.darkCard : const Color(0xFFE8EBF5),
       highlightColor: isDark ? AppColors.darkSurface : AppColors.white,
-      child: child,
+      animation: _controller,
+      child: widget.child,
     );
   }
+}
+
+/// Palette and clock shared by every skeleton block under one [AppShimmer].
+class _ShimmerScope extends InheritedWidget {
+  const _ShimmerScope({
+    required this.baseColor,
+    required this.highlightColor,
+    required this.animation,
+    required super.child,
+  });
+
+  final Color baseColor;
+  final Color highlightColor;
+  final Animation<double> animation;
+
+  static _ShimmerScope? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<_ShimmerScope>();
+
+  @override
+  bool updateShouldNotify(_ShimmerScope oldWidget) =>
+      baseColor != oldWidget.baseColor ||
+      highlightColor != oldWidget.highlightColor ||
+      animation != oldWidget.animation;
+}
+
+LinearGradient _shimmerGradient({
+  required Color baseColor,
+  required Color highlightColor,
+  required double t,
+}) {
+  const band = 0.25;
+  return LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [baseColor, highlightColor, baseColor],
+    stops: [
+      (t - band).clamp(0.0, 1.0),
+      t.clamp(0.0, 1.0),
+      (t + band).clamp(0.0, 1.0),
+    ],
+  );
 }
 
 class ShimmerBlock extends StatelessWidget {
@@ -35,13 +102,34 @@ class ShimmerBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      margin: margin,
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(radius),
+    final borderRadius = BorderRadius.circular(radius);
+    final scope = _ShimmerScope.maybeOf(context);
+    if (scope == null) {
+      // Standalone fallback: static block, no sweep.
+      return Container(
+        width: width,
+        height: height,
+        margin: margin,
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: borderRadius,
+        ),
+      );
+    }
+    return AnimatedBuilder(
+      animation: scope.animation,
+      builder: (context, _) => Container(
+        width: width,
+        height: height,
+        margin: margin,
+        decoration: BoxDecoration(
+          gradient: _shimmerGradient(
+            baseColor: scope.baseColor,
+            highlightColor: scope.highlightColor,
+            t: scope.animation.value,
+          ),
+          borderRadius: borderRadius,
+        ),
       ),
     );
   }
@@ -55,13 +143,32 @@ class ShimmerCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      margin: margin,
-      decoration: const BoxDecoration(
-        color: AppColors.white,
-        shape: BoxShape.circle,
+    final scope = _ShimmerScope.maybeOf(context);
+    if (scope == null) {
+      return Container(
+        width: size,
+        height: size,
+        margin: margin,
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          shape: BoxShape.circle,
+        ),
+      );
+    }
+    return AnimatedBuilder(
+      animation: scope.animation,
+      builder: (context, _) => Container(
+        width: size,
+        height: size,
+        margin: margin,
+        decoration: BoxDecoration(
+          gradient: _shimmerGradient(
+            baseColor: scope.baseColor,
+            highlightColor: scope.highlightColor,
+            t: scope.animation.value,
+          ),
+          shape: BoxShape.circle,
+        ),
       ),
     );
   }
