@@ -8,6 +8,7 @@ class SectionHeader extends StatelessWidget {
   final String? actionText;
   final VoidCallback? onAction;
   final EdgeInsets? padding;
+  final bool circleAction;
 
   const SectionHeader({
     super.key,
@@ -15,24 +16,63 @@ class SectionHeader extends StatelessWidget {
     this.actionText,
     this.onAction,
     this.padding,
+    this.circleAction = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: padding ?? const EdgeInsets.symmetric(horizontal: 16),
+      padding: padding ?? const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: AppTextStyles.h4),
-          if (actionText != null)
+          Expanded(
+            child: Text(
+              title,
+              style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.w700),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (circleAction)
             GestureDetector(
+              behavior: HitTestBehavior.opaque,
               onTap: onAction,
-              child: Text(
-                actionText!,
-                style: AppTextStyles.labelMedium.copyWith(
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: const BoxDecoration(
                   color: AppColors.primary,
+                  shape: BoxShape.circle,
                 ),
+                child: const Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 16,
+                  color: AppColors.white,
+                ),
+              ),
+            )
+          else if (actionText != null)
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onAction,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    actionText!,
+                    style: AppTextStyles.labelMedium.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 15,
+                    color: AppColors.primary,
+                  ),
+                ],
               ),
             ),
         ],
@@ -94,11 +134,12 @@ class AppChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? color : AppColors.extraLightGrey,
+          color: isSelected ? color : AppColors.white,
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
           border: isSelected
               ? null
-              : Border.all(color: AppColors.lightGrey, width: 1),
+              : Border.all(color: AppColors.border, width: 1),
+          boxShadow: AppSpacing.shadowSm,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

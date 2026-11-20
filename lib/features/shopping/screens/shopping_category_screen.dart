@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 
 class ShoppingCategoryScreen extends StatelessWidget {
   final String categoryId;
@@ -14,12 +15,8 @@ class ShoppingCategoryScreen extends StatelessWidget {
     final l10n = context.l10n;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.t('shopping_category.electronics')),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => context.pop(),
-        ),
+      appBar: ModuleScreenAppBar(
+        title: l10n.t('shopping_category.electronics'),
         actions: [
           IconButton(icon: const Icon(Icons.tune_rounded), onPressed: () {}),
         ],
@@ -39,7 +36,8 @@ class ShoppingCategoryScreen extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppColors.border),
                 boxShadow: AppSpacing.shadowSm,
               ),
               child: Column(

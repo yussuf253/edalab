@@ -450,7 +450,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(14),
-                    border: sel ? Border.all(color: p.$5, width: 2) : null,
+                    border: sel
+                        ? Border.all(color: AppColors.primary, width: 2)
+                        : Border.all(color: AppColors.border),
                   ),
                   child: Row(
                     children: [
@@ -577,7 +579,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
                         l10n.t('checkout.apply'),
@@ -592,10 +594,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
             // Order summary
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: AppColors.primarySurface,
-                borderRadius: BorderRadius.circular(16),
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: AppColors.border),
               ),
               child: Column(
                 children: [
@@ -609,15 +612,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ? l10n.t('checkout.free')
                         : 'DJF ${money(shipping)}',
                   ),
-                  _SumRow(
-                    l10n.t('checkout.tax'),
-                    'DJF ${money(tax)}',
-                  ),
+                  _SumRow(l10n.t('checkout.tax'), 'DJF ${money(tax)}'),
                   if (tip > 0)
-                    _SumRow(
-                      l10n.t('checkout.tip'),
-                      'DJF ${money(tip)}',
-                    ),
+                    _SumRow(l10n.t('checkout.tip'), 'DJF ${money(tip)}'),
                   if (discount > 0)
                     _SumRow(
                       l10n.t('checkout.discount'),
@@ -904,8 +901,8 @@ class _TimeChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           color: selected ? AppColors.primary : AppColors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: selected ? null : Border.all(color: AppColors.lightGrey),
+          borderRadius: BorderRadius.circular(16),
+          border: selected ? null : Border.all(color: AppColors.border),
         ),
         child: Column(
           children: [

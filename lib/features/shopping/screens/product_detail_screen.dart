@@ -29,14 +29,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool _isLoading = true;
   bool _hasTrackedView = false;
 
-  late ProductModel _product;
+  ProductModel? _product;
 
   @override
   void initState() {
     super.initState();
-    // Placeholder only — never rendered because the body shows the shimmer
-    // while _isLoading is true. Replaced as soon as the API responds.
-    _product = ProductModel.fromApi(const {});
     _loadProduct();
   }
 
@@ -68,11 +65,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       properties: {
         'module': 'shopping',
         'entity_type': 'product',
-        'entity_id': _product.id,
+        'entity_id': _product?.id ?? widget.productId,
         'source': source,
-        'price': _product.price,
-        'brand': _product.brand,
-        'in_stock': _product.inStock,
+        'price': _product?.price,
+        'brand': _product?.brand,
+        'in_stock': _product?.inStock,
       },
     );
   }
@@ -97,10 +94,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final l10n = context.l10n;
     final cartProvider = context.watch<CartProvider>();
     final wishlistProvider = context.watch<WishlistProvider>();
-    final isFavorite = wishlistProvider.isFavorite(_product.id);
+    final product = _product;
+    final isFavorite =
+        product != null && wishlistProvider.isFavorite(product.id);
     final cartItems = cartProvider.getModuleItems('shopping');
     final existingCartItem = cartItems.cast<CartItem?>().firstWhere(
-      (item) => item?.id == _product.id,
+      (item) => item?.id == product?.id,
       orElse: () => null,
     );
     final isInCart = existingCartItem != null;
@@ -114,47 +113,50 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
         title: Text(l10n.t('product_detail.title')),
         actions: [
-          IconButton(
-            icon: Icon(
-              isFavorite
-                  ? Icons.favorite_rounded
-                  : Icons.favorite_border_rounded,
-              color: isFavorite ? AppColors.accent : null,
-            ),
-            splashRadius: 24,
-            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-            padding: const EdgeInsets.all(12),
-            onPressed: () {
-              wishlistProvider.toggleFavorite(_product);
-              AnalyticsService.instance.track(
-                AnalyticsEvents.wishlistToggled,
-                properties: {
-                  'module': 'shopping',
-                  'entity_type': 'product',
-                  'entity_id': _product.id,
-                  'is_favorite': !isFavorite,
-                  'source': 'product_detail',
-                },
-              );
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    isFavorite
-                        ? l10n.t('product_detail.removed_wishlist')
-                        : l10n.t('product_detail.added_wishlist'),
+          if (product != null)
+            IconButton(
+              icon: Icon(
+                isFavorite
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
+                color: isFavorite ? AppColors.accent : null,
+              ),
+              splashRadius: 24,
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+              padding: const EdgeInsets.all(12),
+              onPressed: () {
+                wishlistProvider.toggleFavorite(product);
+                AnalyticsService.instance.track(
+                  AnalyticsEvents.wishlistToggled,
+                  properties: {
+                    'module': 'shopping',
+                    'entity_type': 'product',
+                    'entity_id': product.id,
+                    'is_favorite': !isFavorite,
+                    'source': 'product_detail',
+                  },
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      isFavorite
+                          ? l10n.t('product_detail.removed_wishlist')
+                          : l10n.t('product_detail.added_wishlist'),
+                    ),
+                    duration: const Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
                   ),
-                  duration: const Duration(seconds: 1),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-          ),
+                );
+              },
+            ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: _isLoading
-            ? const _ProductDetailShimmer()
-            : Column(
+      body: _isLoading
+          ? const _ProductDetailShimmer()
+          : product == null
+          ? _ProductUnavailable(onRetry: _loadProduct)
+          : SingleChildScrollView(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Product Image
@@ -165,16 +167,19 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     child: Stack(
                       children: [
                         // Show network image if available, otherwise fallback icon
-                        if (_product.images.isNotEmpty && _product.images.first.isNotEmpty)
+                        if (product.images.isNotEmpty &&
+                            product.images.first.isNotEmpty)
                           Positioned.fill(
                             child: Image.network(
-                              _product.images.first,
+                              product.images.first,
                               fit: BoxFit.cover,
                               errorBuilder: (_, _, _) => Center(
                                 child: Icon(
                                   Icons.shopping_bag_rounded,
                                   size: 100,
-                                  color: AppColors.shopping.withValues(alpha: 0.3),
+                                  color: AppColors.shopping.withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
                             ),
@@ -187,7 +192,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               color: AppColors.shopping.withValues(alpha: 0.3),
                             ),
                           ),
-                        if (_product.badge != null)
+                        if (product.badge != null)
                           Positioned(
                             top: 20,
                             left: 20,
@@ -201,7 +206,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                _product.badge!,
+                                product.badge!,
                                 style: AppTextStyles.labelSmall.copyWith(
                                   color: AppColors.white,
                                 ),
@@ -209,29 +214,35 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                           ),
                         // Image gallery indicator if multiple images
-                        if (_product.images.length > 1)
+                        if (product.images.length > 1)
                           Positioned(
                             bottom: 12,
                             left: 0,
                             right: 0,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              children: _product.images
+                              children: product.images
                                   .take(5)
                                   .toList()
                                   .asMap()
                                   .entries
-                                  .map((entry) => Container(
-                                        width: 8,
-                                        height: 8,
-                                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: entry.key == 0
-                                              ? AppColors.white
-                                              : AppColors.white.withValues(alpha: 0.5),
-                                        ),
-                                      ))
+                                  .map(
+                                    (entry) => Container(
+                                      width: 8,
+                                      height: 8,
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: entry.key == 0
+                                            ? AppColors.white
+                                            : AppColors.white.withValues(
+                                                alpha: 0.5,
+                                              ),
+                                      ),
+                                    ),
+                                  )
                                   .toList(),
                             ),
                           ),
@@ -245,13 +256,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       children: [
                         // Brand + Name
                         Text(
-                          _product.brand,
+                          product.brand,
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.primary,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(_product.name, style: AppTextStyles.h2),
+                        Text(product.name, style: AppTextStyles.h2),
                         const SizedBox(height: 12),
                         // Rating + Reviews
                         Row(
@@ -259,7 +270,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ...List.generate(
                               5,
                               (i) => Icon(
-                                i < _product.rating.floor()
+                                i < product.rating.floor()
                                     ? Icons.star_rounded
                                     : Icons.star_half_rounded,
                                 size: 18,
@@ -268,7 +279,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              _product.rating.toString(),
+                              product.rating.toString(),
                               style: AppTextStyles.labelLarge,
                             ),
                             const SizedBox(width: 4),
@@ -276,13 +287,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               l10n.t(
                                 'product_detail.reviews',
                                 params: {
-                                  'count': _product.reviewCount.toString(),
+                                  'count': product.reviewCount.toString(),
                                 },
                               ),
                               style: AppTextStyles.caption,
                             ),
                             const Spacer(),
-                            if (_product.inStock)
+                            if (product.inStock)
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 10,
@@ -308,15 +319,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              'DJF${_product.price}',
+                              'DJF${product.price}',
                               style: AppTextStyles.price.copyWith(fontSize: 28),
                             ),
                             const SizedBox(width: 8),
-                            if (_product.originalPrice != null) ...[
+                            if (product.originalPrice != null) ...[
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 4),
                                 child: Text(
-                                  'DJF${_product.originalPrice}',
+                                  'DJF${product.originalPrice}',
                                   style: AppTextStyles.priceOld.copyWith(
                                     fontSize: 16,
                                   ),
@@ -333,7 +344,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
-                                  '-${_product.discountPercent.toInt()}%',
+                                  '-${product.discountPercent.toInt()}%',
                                   style: AppTextStyles.badge,
                                 ),
                               ),
@@ -345,17 +356,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         const SizedBox(height: 16),
 
                         // Color selection
-                        if (_product.colors.isNotEmpty) ...[
+                        if (product.colors.isNotEmpty) ...[
                           Text(
                             l10n.t('product_detail.color'),
                             style: AppTextStyles.labelLarge,
                           ),
                           const SizedBox(height: 12),
                           Row(
-                            children: List.generate(_product.colors.length, (
-                              i,
-                            ) {
-                              final colorName = _product.colors[i];
+                            children: List.generate(product.colors.length, (i) {
+                              final colorName = product.colors[i];
                               final uicolor =
                                   _colorMap[colorName] ?? AppColors.primary;
                               return GestureDetector(
@@ -367,7 +376,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                       'module': 'shopping',
                                       'filter_type': 'color',
                                       'filter_value': colorName,
-                                      'entity_id': _product.id,
+                                      'entity_id': product.id,
                                     },
                                   );
                                 },
@@ -410,7 +419,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ],
 
                         // Size selection
-                        if (_product.sizes.isNotEmpty) ...[
+                        if (product.sizes.isNotEmpty) ...[
                           Text(
                             l10n.t('product_detail.size'),
                             style: AppTextStyles.labelLarge,
@@ -419,7 +428,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           Wrap(
                             spacing: 10,
                             runSpacing: 10,
-                            children: List.generate(_product.sizes.length, (i) {
+                            children: List.generate(product.sizes.length, (i) {
                               final isSelected = _selectedSize == i;
                               return GestureDetector(
                                 onTap: () {
@@ -429,8 +438,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     properties: {
                                       'module': 'shopping',
                                       'filter_type': 'size',
-                                      'filter_value': _product.sizes[i],
-                                      'entity_id': _product.id,
+                                      'filter_value': product.sizes[i],
+                                      'entity_id': product.id,
                                     },
                                   );
                                 },
@@ -447,7 +456,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
-                                    _product.sizes[i],
+                                    product.sizes[i],
                                     style: AppTextStyles.labelMedium.copyWith(
                                       color: isSelected
                                           ? AppColors.white
@@ -512,7 +521,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          _product.description,
+                          product.description,
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.grey,
                             height: 1.6,
@@ -521,13 +530,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         const SizedBox(height: 24),
 
                         // Features
-                        if (_product.features.isNotEmpty) ...[
+                        if (product.features.isNotEmpty) ...[
                           Text(
                             l10n.t('product_detail.features'),
                             style: AppTextStyles.h4,
                           ),
                           const SizedBox(height: 12),
-                          ..._product.features.map(
+                          ...product.features.map(
                             (f) => Padding(
                               padding: const EdgeInsets.only(bottom: 8),
                               child: Row(
@@ -557,115 +566,168 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ),
                 ],
               ),
-      ),
-      bottomSheet: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
             ),
-          ],
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      bottomSheet: product == null
+          ? null
+          : Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: Row(
                   children: [
-                    Text(
-                      l10n.t('product_detail.total_price'),
-                      style: AppTextStyles.caption,
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.t('product_detail.total_price'),
+                            style: AppTextStyles.caption,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'DJF${money(product.price * _quantity)}',
+                            style: AppTextStyles.price,
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'DJF${money(_product.price * _quantity)}',
-                      style: AppTextStyles.price,
+                    const SizedBox(width: 16),
+                    Flexible(
+                      fit: FlexFit.loose,
+                      child: AppButton(
+                        text: isInCart
+                            ? l10n.t('product_detail.view_cart')
+                            : l10n.t('product_detail.add_to_cart'),
+                        icon: isInCart
+                            ? Icons.arrow_forward_rounded
+                            : Icons.shopping_bag_outlined,
+                        width: 220,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        onPressed: () {
+                          if (isInCart) {
+                            AnalyticsService.instance.track(
+                              AnalyticsEvents.viewCartTapped,
+                              properties: {
+                                'module': 'shopping',
+                                'source': 'product_detail',
+                                'entity_id': product.id,
+                                'cart_item_count': cartProvider
+                                    .getModuleItemCount('shopping'),
+                              },
+                            );
+                            context.push('/shopping/cart');
+                            return;
+                          }
+
+                          final cartItem = CartItem(
+                            id: product.id,
+                            name: product.name,
+                            brand: product.brand.trim().isNotEmpty
+                                ? product.brand
+                                : product.shopName,
+                            price: product.price,
+                            quantity: _quantity,
+                            moduleType: 'shopping',
+                            imageUrl: product.images.isNotEmpty
+                                ? product.images.first
+                                : null,
+                            description: product.description,
+                            shopId: product.shopId,
+                            shopName: product.shopName,
+                            color: product.colors.isNotEmpty
+                                ? product.colors[_selectedColor]
+                                : null,
+                            size: product.sizes.isNotEmpty
+                                ? product.sizes[_selectedSize]
+                                : null,
+                          );
+
+                          cartProvider.addItem(cartItem);
+                          AnalyticsService.instance.track(
+                            AnalyticsEvents.checkoutEntryTapped,
+                            properties: {
+                              'module': 'shopping',
+                              'source': 'product_detail',
+                              'entity_type': 'product',
+                              'entity_id': product.id,
+                              'quantity': _quantity,
+                              'unit_price': product.price,
+                              'line_total': product.price * _quantity,
+                              'selected_color': product.colors.isNotEmpty
+                                  ? product.colors[_selectedColor]
+                                  : null,
+                              'selected_size': product.sizes.isNotEmpty
+                                  ? product.sizes[_selectedSize]
+                                  : null,
+                            },
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 16),
-              Flexible(
-                fit: FlexFit.loose,
-                child: AppButton(
-                  text: isInCart
-                      ? l10n.t('product_detail.view_cart')
-                      : l10n.t('product_detail.add_to_cart'),
-                  icon: isInCart
-                      ? Icons.arrow_forward_rounded
-                      : Icons.shopping_bag_outlined,
-                  width: 220,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  onPressed: () {
-                    if (isInCart) {
-                      AnalyticsService.instance.track(
-                        AnalyticsEvents.viewCartTapped,
-                        properties: {
-                          'module': 'shopping',
-                          'source': 'product_detail',
-                          'entity_id': _product.id,
-                          'cart_item_count': cartProvider.getModuleItemCount(
-                            'shopping',
-                          ),
-                        },
-                      );
-                      context.push('/shopping/cart');
-                      return;
-                    }
+            ),
+    );
+  }
+}
 
-                    final cartItem = CartItem(
-                      id: _product.id,
-                      name: _product.name,
-                      brand: _product.brand.trim().isNotEmpty
-                          ? _product.brand
-                          : _product.shopName,
-                      price: _product.price,
-                      quantity: _quantity,
-                      moduleType: 'shopping',
-                      imageUrl: _product.images.isNotEmpty
-                          ? _product.images.first
-                          : null,
-                      description: _product.description,
-                      shopId: _product.shopId,
-                      shopName: _product.shopName,
-                      color: _product.colors.isNotEmpty
-                          ? _product.colors[_selectedColor]
-                          : null,
-                      size: _product.sizes.isNotEmpty
-                          ? _product.sizes[_selectedSize]
-                          : null,
-                    );
+class _ProductUnavailable extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _ProductUnavailable({required this.onRetry});
 
-                    cartProvider.addItem(cartItem);
-                    AnalyticsService.instance.track(
-                      AnalyticsEvents.checkoutEntryTapped,
-                      properties: {
-                        'module': 'shopping',
-                        'source': 'product_detail',
-                        'entity_type': 'product',
-                        'entity_id': _product.id,
-                        'quantity': _quantity,
-                        'unit_price': _product.price,
-                        'line_total': _product.price * _quantity,
-                        'selected_color': _product.colors.isNotEmpty
-                            ? _product.colors[_selectedColor]
-                            : null,
-                        'selected_size': _product.sizes.isNotEmpty
-                            ? _product.sizes[_selectedSize]
-                            : null,
-                      },
-                    );
-                  },
-                ),
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: AppColors.extraLightGrey,
+                borderRadius: BorderRadius.circular(24),
               ),
-            ],
-          ),
+              child: const Icon(
+                Icons.shopping_bag_outlined,
+                color: AppColors.grey,
+                size: 40,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              l10n.t('product_detail.unavailable_title'),
+              style: AppTextStyles.h4,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.t('product_detail.unavailable_subtitle'),
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            AppButton(
+              text: l10n.t('product_detail.retry'),
+              icon: Icons.refresh_rounded,
+              width: 180,
+              onPressed: onRetry,
+            ),
+          ],
         ),
       ),
     );

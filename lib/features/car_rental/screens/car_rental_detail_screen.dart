@@ -493,10 +493,11 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
 
   Widget _spec(IconData icon, String text) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(11),
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -620,7 +621,8 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -695,9 +697,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         decoration: BoxDecoration(
           color: AppColors.white,
-          border: Border(
-            top: BorderSide(color: AppColors.lightGrey.withValues(alpha: 0.65)),
-          ),
+          border: Border(top: BorderSide(color: AppColors.border)),
         ),
         child: Row(
           children: [

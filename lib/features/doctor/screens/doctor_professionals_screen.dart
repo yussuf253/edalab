@@ -8,6 +8,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
 class DoctorProfessionalsScreen extends StatefulWidget {
@@ -140,13 +141,7 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(widget.categoryLabel),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => context.pop(),
-        ),
-      ),
+      appBar: ModuleScreenAppBar(title: widget.categoryLabel),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -202,6 +197,7 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.white,
                       borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: AppColors.border),
                       boxShadow: AppSpacing.shadowSm,
                     ),
                     child: Row(

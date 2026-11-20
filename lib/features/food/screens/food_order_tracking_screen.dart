@@ -231,104 +231,106 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                       )
                     else
                       Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppColors.food, AppColors.secondaryLight],
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [AppColors.food, AppColors.secondaryLight],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Column(
-                        children: [
-                          const Icon(
-                            Icons.delivery_dining_rounded,
-                            color: AppColors.white,
-                            size: 48,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            l10n.t('food_tracking.estimated_delivery'),
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: Colors.white70,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            eta,
-                            style: AppTextStyles.h2.copyWith(
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.delivery_dining_rounded,
                               color: AppColors.white,
+                              size: 48,
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            displayOrderId,
-                            style: AppTextStyles.labelMedium.copyWith(
-                              color: AppColors.white,
+                            const SizedBox(height: 12),
+                            Text(
+                              l10n.t('food_tracking.estimated_delivery'),
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: Colors.white70,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 4),
+                            Text(
+                              eta,
+                              style: AppTextStyles.h2.copyWith(
+                                color: AppColors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              displayOrderId,
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: AppColors.white,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 24),
                     if (!_isCancelledStatus(status))
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: AppSpacing.shadowSm,
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: AppColors.border),
+                          boxShadow: AppSpacing.shadowSm,
+                        ),
+                        child: Column(
+                          children: [
+                            _TimelineStep(
+                              l10n.t('food_tracking.order_confirmed'),
+                              '',
+                              _statusReached(status, const [
+                                'CONFIRMED',
+                                'PROCESSING',
+                                'DISPATCHED',
+                                'IN_PROGRESS',
+                                'COMPLETED',
+                              ]),
+                              status == 'CONFIRMED',
+                            ),
+                            _TimelineStep(
+                              l10n.t('food_tracking.preparing'),
+                              '',
+                              _statusReached(status, const [
+                                'PROCESSING',
+                                'DISPATCHED',
+                                'IN_PROGRESS',
+                                'COMPLETED',
+                              ]),
+                              status == 'PROCESSING',
+                            ),
+                            _TimelineStep(
+                              l10n.t('food_tracking.on_the_way'),
+                              '',
+                              _statusReached(status, const [
+                                'DISPATCHED',
+                                'IN_PROGRESS',
+                                'COMPLETED',
+                              ]),
+                              status == 'DISPATCHED' || status == 'IN_PROGRESS',
+                            ),
+                            _TimelineStep(
+                              l10n.t('food_tracking.delivered'),
+                              '',
+                              status == 'COMPLETED',
+                              status == 'COMPLETED',
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Column(
-                        children: [
-                          _TimelineStep(
-                            l10n.t('food_tracking.order_confirmed'),
-                            '',
-                            _statusReached(status, const [
-                              'CONFIRMED',
-                              'PROCESSING',
-                              'DISPATCHED',
-                              'IN_PROGRESS',
-                              'COMPLETED',
-                            ]),
-                            status == 'CONFIRMED',
-                          ),
-                          _TimelineStep(
-                            l10n.t('food_tracking.preparing'),
-                            '',
-                            _statusReached(status, const [
-                              'PROCESSING',
-                              'DISPATCHED',
-                              'IN_PROGRESS',
-                              'COMPLETED',
-                            ]),
-                            status == 'PROCESSING',
-                          ),
-                          _TimelineStep(
-                            l10n.t('food_tracking.on_the_way'),
-                            '',
-                            _statusReached(status, const [
-                              'DISPATCHED',
-                              'IN_PROGRESS',
-                              'COMPLETED',
-                            ]),
-                            status == 'DISPATCHED' || status == 'IN_PROGRESS',
-                          ),
-                          _TimelineStep(
-                            l10n.t('food_tracking.delivered'),
-                            '',
-                            status == 'COMPLETED',
-                            status == 'COMPLETED',
-                          ),
-                        ],
-                      ),
-                    ),
                     const SizedBox(height: 20),
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
                       child: Row(

@@ -254,12 +254,12 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                                       quantity:
                                           (item['quantity'] as num?)?.toInt() ??
                                           1,
-                                      price:
-                                          money((item['total'] as num?)
-                                                      ?.toDouble() ??
-                                                  (item['price'] as num?)
-                                                      ?.toDouble() ??
-                                                  0),
+                                      price: money(
+                                        (item['total'] as num?)?.toDouble() ??
+                                            (item['price'] as num?)
+                                                ?.toDouble() ??
+                                            0,
+                                      ),
                                       variant: [
                                         if ((item['color']?.toString() ?? '')
                                             .isNotEmpty)
@@ -498,6 +498,7 @@ class _InfoTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: Row(
@@ -542,6 +543,7 @@ class _SectionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: Column(

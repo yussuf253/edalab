@@ -184,7 +184,8 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.border),
                     boxShadow: AppSpacing.shadowSm,
                   ),
                   child: Row(
@@ -271,6 +272,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                     decoration: BoxDecoration(
                       color: AppColors.white,
                       borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: AppColors.border),
                       boxShadow: AppSpacing.shadowSm,
                     ),
                     child: Row(

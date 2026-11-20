@@ -188,7 +188,8 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Row(
                 children: [
@@ -240,13 +241,11 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
                       duration: const Duration(milliseconds: 200),
                       width: 64,
                       decoration: BoxDecoration(
-                        color: selected
-                            ? AppColors.secondary
-                            : AppColors.white,
-                        borderRadius: BorderRadius.circular(14),
+                        color: selected ? AppColors.secondary : AppColors.white,
+                        borderRadius: BorderRadius.circular(18),
                         border: selected
                             ? null
-                            : Border.all(color: AppColors.lightGrey),
+                            : Border.all(color: AppColors.border),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -254,9 +253,7 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
                           Text(
                             DateFormat('EEE', localeTag).format(date),
                             style: AppTextStyles.caption.copyWith(
-                              color: selected
-                                  ? Colors.white70
-                                  : AppColors.grey,
+                              color: selected ? Colors.white70 : AppColors.grey,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -293,10 +290,10 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: selected ? AppColors.secondary : AppColors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(18),
                       border: selected
                           ? null
-                          : Border.all(color: AppColors.lightGrey),
+                          : Border.all(color: AppColors.border),
                     ),
                     child: Text(
                       _times[index],
@@ -338,7 +335,9 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
                     ),
                   _SummaryRow(
                     l10n.t('doctor_booking.date'),
-                    DateFormat('EEE, MMM d, yyyy').format(_dates[_selectedDate]),
+                    DateFormat(
+                      'EEE, MMM d, yyyy',
+                    ).format(_dates[_selectedDate]),
                   ),
                   _SummaryRow(
                     l10n.t('doctor_booking.time'),

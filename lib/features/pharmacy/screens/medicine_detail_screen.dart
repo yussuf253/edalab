@@ -294,108 +294,110 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
       bottomNavigationBar: _isLoading
           ? null
           : SafeArea(
-        minimum: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        child: isInCart
-            ? GestureDetector(
-                onTap: () {
-                  AnalyticsService.instance.track(
-                    AnalyticsEvents.viewCartTapped,
-                    properties: {
-                      'module': 'pharmacy',
-                      'source': 'medicine_detail_bottom',
-                      'cart_item_count': cartItemCount,
-                    },
-                  );
-                  context.push('/pharmacy/cart');
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.pharmacy,
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.pharmacy.withValues(alpha: 0.22),
-                        blurRadius: 22,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 34,
-                        height: 34,
+              minimum: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+              child: isInCart
+                  ? GestureDetector(
+                      onTap: () {
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.viewCartTapped,
+                          properties: {
+                            'module': 'pharmacy',
+                            'source': 'medicine_detail_bottom',
+                            'cart_item_count': cartItemCount,
+                          },
+                        );
+                        context.push('/pharmacy/cart');
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '$cartItemCount',
-                            style: AppTextStyles.labelMedium.copyWith(
-                              color: AppColors.white,
+                          color: AppColors.pharmacy,
+                          borderRadius: BorderRadius.circular(18),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.pharmacy.withValues(alpha: 0.22),
+                              blurRadius: 22,
+                              offset: const Offset(0, 10),
                             ),
-                          ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  '$cartItemCount',
+                                  style: AppTextStyles.labelMedium.copyWith(
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                l10n.t('medicine_detail.view_cart'),
+                                style: AppTextStyles.button.copyWith(
+                                  color: AppColors.white,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              'DJF${formatDjf(moduleTotal)}',
+                              style: AppTextStyles.labelLarge.copyWith(
+                                color: AppColors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          l10n.t('medicine_detail.view_cart'),
-                          style: AppTextStyles.button.copyWith(
-                            color: AppColors.white,
-                          ),
-                        ),
+                    )
+                  : AppButton(
+                      text: l10n.t(
+                        'medicine_detail.add_to_cart',
+                        params: {'amount': formatDjf(medicine.price)},
                       ),
-                      Text(
-                        'DJF${formatDjf(moduleTotal)}',
-                        style: AppTextStyles.labelLarge.copyWith(
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            : AppButton(
-                text: l10n.t(
-                  'medicine_detail.add_to_cart',
-                  params: {'amount': formatDjf(medicine.price)},
-                ),
-                color: AppColors.pharmacy,
-                onPressed: medicine.inStock
-                    ? () {
-                  AnalyticsService.instance.track(
-                    AnalyticsEvents.cartAdjustmentInitiated,
-                    properties: {
-                      'module': 'pharmacy',
-                      'source': 'medicine_detail',
-                      'action': 'add',
-                      'entity_type': 'medicine',
-                      'entity_id': medicine.id,
-                      'quantity': 1,
-                    },
-                  );
-                  cartProvider.addItem(
-                    CartItem(
-                      id: medicine.id,
-                      name: medicine.name,
-                      price: medicine.price,
-                      moduleType: 'pharmacy',
-                      brand: medicine.sourceBusiness ?? medicine.category,
-                      shopName: medicine.sourceBusiness,
-                      imageUrl: medicine.imageUrl,
-                      description: medicine.description,
+                      color: AppColors.pharmacy,
+                      onPressed: medicine.inStock
+                          ? () {
+                              AnalyticsService.instance.track(
+                                AnalyticsEvents.cartAdjustmentInitiated,
+                                properties: {
+                                  'module': 'pharmacy',
+                                  'source': 'medicine_detail',
+                                  'action': 'add',
+                                  'entity_type': 'medicine',
+                                  'entity_id': medicine.id,
+                                  'quantity': 1,
+                                },
+                              );
+                              cartProvider.addItem(
+                                CartItem(
+                                  id: medicine.id,
+                                  name: medicine.name,
+                                  price: medicine.price,
+                                  moduleType: 'pharmacy',
+                                  brand:
+                                      medicine.sourceBusiness ??
+                                      medicine.category,
+                                  shopName: medicine.sourceBusiness,
+                                  imageUrl: medicine.imageUrl,
+                                  description: medicine.description,
+                                ),
+                              );
+                            }
+                          : null,
                     ),
-                  );
-                }
-                    : null,
-              ),
-      ),
+            ),
     );
   }
 }

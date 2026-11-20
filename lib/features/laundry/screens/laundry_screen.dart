@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../core/widgets/module_screen_app_bar.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -43,7 +45,9 @@ class _LaundryScreenState extends State<LaundryScreen> {
 
   Future<void> _loadServices() async {
     try {
-      final response = await ApiClient.get(ZoneScope.appendZone('/catalog/laundry-services'));
+      final response = await ApiClient.get(
+        ZoneScope.appendZone('/catalog/laundry-services'),
+      );
       final items = (response as List)
           .map(
             (item) =>
@@ -75,19 +79,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('laundry.title')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/');
-              }
-            },
-          ),
-        ),
+        appBar: ModuleScreenAppBar(title: l10n.t('laundry.title')),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(

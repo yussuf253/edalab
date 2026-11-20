@@ -63,16 +63,18 @@ class AppShell extends StatelessWidget {
       body: widgetChildWithSafeBackground(child),
       bottomNavigationBar: SafeArea(
         top: false,
+        minimum: const EdgeInsets.fromLTRB(16, 0, 16, 10),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(6, 6, 6, 4),
+          padding: const EdgeInsets.fromLTRB(4, 7, 4, 7),
           decoration: BoxDecoration(
-            color: AppColors.white.withValues(alpha: 0.98),
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(26),
             boxShadow: [
               BoxShadow(
-                color: AppColors.dark.withValues(alpha: 0.04),
-                blurRadius: 18,
-                offset: const Offset(0, -4),
+                color: AppColors.dark.withValues(alpha: 0.10),
+                blurRadius: 26,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
@@ -83,6 +85,8 @@ class AppShell extends StatelessWidget {
                 child: _NavButton(
                   item: item,
                   isActive: currentIndex == index,
+                  isCenter:
+                      navItems.length.isOdd && index == navItems.length ~/ 2,
                   cartCount: cartCount,
                   onTap: () {
                     AnalyticsService.instance.track(
@@ -131,96 +135,142 @@ class _NavButton extends StatelessWidget {
     required this.isActive,
     required this.cartCount,
     required this.onTap,
+    this.isCenter = false,
   });
 
   final _NavItem item;
   final bool isActive;
   final int cartCount;
   final VoidCallback onTap;
+  final bool isCenter;
 
   @override
   Widget build(BuildContext context) {
-    final foreground = isActive ? AppColors.primaryDark : AppColors.mediumGrey;
+    final foreground = isActive ? AppColors.primary : AppColors.mediumGrey;
+    final badge = item.path == '/cart' && cartCount > 0
+        ? _CartBadge(count: cartCount, onGreen: isCenter)
+        : null;
+
+    // Middle tab of an odd bar becomes the raised green action button.
+    if (isCenter) {
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(999),
+          onTap: onTap,
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(
+              gradient: AppColors.primaryGradient,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0x3300A651),
+                  blurRadius: 14,
+                  offset: Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                ColorFiltered(
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.white,
+                    BlendMode.srcIn,
+                  ),
+                  child: Image.asset(
+                    item.assetPath,
+                    width: 22,
+                    height: 22,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                if (badge != null) Positioned(top: 1, right: 1, child: badge),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                height: 24,
+                height: 26,
                 child: Stack(
                   clipBehavior: Clip.none,
+                  alignment: Alignment.center,
                   children: [
-                    Center(
-                      child: ColorFiltered(
-                        colorFilter: ColorFilter.mode(
-                          foreground,
-                          BlendMode.srcIn,
-                        ),
-                        child: Image.asset(
-                          item.assetPath,
-                          width: 20,
-                          height: 20,
-                          fit: BoxFit.contain,
-                        ),
+                    ColorFiltered(
+                      colorFilter: ColorFilter.mode(
+                        foreground,
+                        BlendMode.srcIn,
+                      ),
+                      child: Image.asset(
+                        item.assetPath,
+                        width: 22,
+                        height: 22,
+                        fit: BoxFit.contain,
                       ),
                     ),
-                    if (item.path == '/cart' && cartCount > 0)
-                      Positioned(
-                        top: -5,
-                        right: 6,
-                        child: Container(
-                          constraints: const BoxConstraints(minWidth: 18),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 1.5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.accent,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            cartCount > 99 ? '99+' : '$cartCount',
-                            textAlign: TextAlign.center,
-                            style: AppTextStyles.badge.copyWith(fontSize: 8),
-                          ),
-                        ),
-                      ),
+                    if (badge != null)
+                      Positioned(top: -4, right: 0, child: badge),
                   ],
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Text(
                 item.label,
                 maxLines: 1,
                 overflow: TextOverflow.visible,
                 softWrap: false,
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: isActive ? AppColors.primaryDark : AppColors.grey,
+                  color: isActive ? AppColors.primary : AppColors.mediumGrey,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                   fontSize: 10,
                   letterSpacing: 0,
                 ),
               ),
-              const SizedBox(height: 2),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOut,
-                height: 2,
-                width: isActive ? 18 : 0,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CartBadge extends StatelessWidget {
+  const _CartBadge({required this.count, this.onGreen = false});
+
+  final int count;
+  final bool onGreen;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minWidth: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+      decoration: BoxDecoration(
+        color: onGreen ? AppColors.white : AppColors.accent,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        count > 99 ? '99+' : '$count',
+        textAlign: TextAlign.center,
+        style: AppTextStyles.badge.copyWith(
+          fontSize: 8,
+          color: onGreen ? AppColors.primary : AppColors.white,
         ),
       ),
     );

@@ -22,6 +22,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/services/media_upload_service.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_search_bar.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
 
 class PharmacyScreen extends StatefulWidget {
@@ -519,17 +520,12 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('pharmacy.title')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/');
-              }
-            },
+        appBar: ModuleScreenAppBar(
+          title: l10n.t('pharmacy.title'),
+          search: AppSearchBar(
+            hint: l10n.t('pharmacy.search_hint'),
+            controller: _searchController,
+            onChanged: _onSearchChanged,
           ),
           actions: [
             Stack(
@@ -583,16 +579,6 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
           children: [
             CustomScrollView(
               slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                    child: AppSearchBar(
-                      hint: l10n.t('pharmacy.search_hint'),
-                      controller: _searchController,
-                      onChanged: _onSearchChanged,
-                    ),
-                  ),
-                ),
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(20),

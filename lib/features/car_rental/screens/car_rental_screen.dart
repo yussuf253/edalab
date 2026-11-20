@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 import '../services/car_rental_service.dart';
 import 'my_car_rentals_screen.dart';
 
@@ -80,10 +81,8 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
     final cars = _filteredCars;
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.t('car_rental.title')),
-        backgroundColor: AppColors.background,
-        scrolledUnderElevation: 0,
+      appBar: ModuleScreenAppBar(
+        title: l10n.t('car_rental.title'),
         actions: [
           IconButton(
             tooltip: l10n.t('car_rental.my_bookings'),

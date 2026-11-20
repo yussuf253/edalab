@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 import '../services/car_rental_service.dart';
 
 class MyCarRentalsScreen extends StatefulWidget {
@@ -80,12 +81,9 @@ class _MyCarRentalsScreenState extends State<MyCarRentalsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.t('car_rental.my_bookings')),
-        leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left_2, size: 20),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+      appBar: ModuleScreenAppBar(
+        title: l10n.t('car_rental.my_bookings'),
+        onBack: () => Navigator.of(context).pop(),
       ),
       body: RefreshIndicator(onRefresh: _load, child: _buildBody(l10n)),
     );

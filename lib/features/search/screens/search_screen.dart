@@ -51,7 +51,9 @@ class _SearchScreenState extends State<SearchScreen> {
       final moduleIds = <String>[];
 
       if (_enabledModules.contains('food')) {
-        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/restaurants')));
+        futures.add(
+          ApiClient.get(ZoneScope.appendZone('/catalog/restaurants')),
+        );
         moduleIds.add('food');
       }
       if (_enabledModules.contains('doctor')) {
@@ -59,11 +61,19 @@ class _SearchScreenState extends State<SearchScreen> {
         moduleIds.add('doctor');
       }
       if (_enabledModules.contains('shopping')) {
-        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=shopping')));
+        futures.add(
+          ApiClient.get(
+            ZoneScope.appendZone('/catalog/products?moduleType=shopping'),
+          ),
+        );
         moduleIds.add('shopping');
       }
       if (_enabledModules.contains('pharmacy')) {
-        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=pharmacy')));
+        futures.add(
+          ApiClient.get(
+            ZoneScope.appendZone('/catalog/products?moduleType=pharmacy'),
+          ),
+        );
         moduleIds.add('pharmacy');
       }
       if (_enabledModules.contains('hotel')) {
@@ -71,7 +81,11 @@ class _SearchScreenState extends State<SearchScreen> {
         moduleIds.add('hotel');
       }
       if (_enabledModules.contains('grocery')) {
-        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=grocery')));
+        futures.add(
+          ApiClient.get(
+            ZoneScope.appendZone('/catalog/products?moduleType=grocery'),
+          ),
+        );
         moduleIds.add('grocery');
       }
 
@@ -130,7 +144,9 @@ class _SearchScreenState extends State<SearchScreen> {
       final moduleIds = <String>[];
 
       if (_enabledModules.contains('food')) {
-        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/restaurants')));
+        futures.add(
+          ApiClient.get(ZoneScope.appendZone('/catalog/restaurants')),
+        );
         moduleIds.add('food');
       }
       if (_enabledModules.contains('doctor')) {
@@ -138,11 +154,19 @@ class _SearchScreenState extends State<SearchScreen> {
         moduleIds.add('doctor');
       }
       if (_enabledModules.contains('shopping')) {
-        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=shopping')));
+        futures.add(
+          ApiClient.get(
+            ZoneScope.appendZone('/catalog/products?moduleType=shopping'),
+          ),
+        );
         moduleIds.add('shopping');
       }
       if (_enabledModules.contains('pharmacy')) {
-        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=pharmacy')));
+        futures.add(
+          ApiClient.get(
+            ZoneScope.appendZone('/catalog/products?moduleType=pharmacy'),
+          ),
+        );
         moduleIds.add('pharmacy');
       }
       if (_enabledModules.contains('hotel')) {
@@ -150,7 +174,11 @@ class _SearchScreenState extends State<SearchScreen> {
         moduleIds.add('hotel');
       }
       if (_enabledModules.contains('grocery')) {
-        futures.add(ApiClient.get(ZoneScope.appendZone('/catalog/products?moduleType=grocery')));
+        futures.add(
+          ApiClient.get(
+            ZoneScope.appendZone('/catalog/products?moduleType=grocery'),
+          ),
+        );
         moduleIds.add('grocery');
       }
 
@@ -176,7 +204,9 @@ class _SearchScreenState extends State<SearchScreen> {
             case 'food':
               searchItem = _SearchItem(
                 title: data['name']?.toString() ?? '',
-                subtitle: data['cuisine']?.toString() ?? context.l10n.t('search.restaurant'),
+                subtitle:
+                    data['cuisine']?.toString() ??
+                    context.l10n.t('search.restaurant'),
                 route: '/food/restaurant/${data['id']}',
                 color: AppColors.food,
                 icon: Icons.restaurant_rounded,
@@ -184,7 +214,9 @@ class _SearchScreenState extends State<SearchScreen> {
             case 'doctor':
               searchItem = _SearchItem(
                 title: data['name']?.toString() ?? '',
-                subtitle: data['specialty']?.toString() ?? context.l10n.t('search.doctor'),
+                subtitle:
+                    data['specialty']?.toString() ??
+                    context.l10n.t('search.doctor'),
                 route: '/doctor/detail/${data['id']}',
                 color: AppColors.doctor,
                 icon: Icons.medical_services_rounded,
@@ -192,7 +224,9 @@ class _SearchScreenState extends State<SearchScreen> {
             case 'shopping':
               searchItem = _SearchItem(
                 title: data['name']?.toString() ?? '',
-                subtitle: data['category']?.toString() ?? context.l10n.t('search.product'),
+                subtitle:
+                    data['category']?.toString() ??
+                    context.l10n.t('search.product'),
                 route: '/shopping/product/${data['id']}',
                 color: AppColors.shopping,
                 icon: Icons.shopping_bag_rounded,
@@ -200,7 +234,9 @@ class _SearchScreenState extends State<SearchScreen> {
             case 'pharmacy':
               searchItem = _SearchItem(
                 title: data['name']?.toString() ?? '',
-                subtitle: data['category']?.toString() ?? context.l10n.t('search.medicine'),
+                subtitle:
+                    data['category']?.toString() ??
+                    context.l10n.t('search.medicine'),
                 route: '/pharmacy/medicine/${data['id']}',
                 color: AppColors.pharmacy,
                 icon: Icons.medication_rounded,
@@ -208,7 +244,8 @@ class _SearchScreenState extends State<SearchScreen> {
             case 'hotel':
               searchItem = _SearchItem(
                 title: data['name']?.toString() ?? '',
-                subtitle: data['city']?.toString() ?? context.l10n.t('search.hotel'),
+                subtitle:
+                    data['city']?.toString() ?? context.l10n.t('search.hotel'),
                 route: '/hotel/detail/${data['id']}',
                 color: AppColors.hotel,
                 icon: Icons.hotel_rounded,
@@ -216,7 +253,9 @@ class _SearchScreenState extends State<SearchScreen> {
             case 'grocery':
               searchItem = _SearchItem(
                 title: data['name']?.toString() ?? '',
-                subtitle: data['category']?.toString() ?? context.l10n.t('module.grocery'),
+                subtitle:
+                    data['category']?.toString() ??
+                    context.l10n.t('module.grocery'),
                 route: '/grocery/product/${data['id']}',
                 color: AppColors.grocery,
                 icon: Icons.local_grocery_store_rounded,
@@ -306,7 +345,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
                       child: Row(
@@ -382,42 +422,48 @@ class _SearchScreenState extends State<SearchScreen> {
               Text(l10n.t('search.quick_access'), style: AppTextStyles.h4),
               const SizedBox(height: 12),
               ...[
-                if (_enabledModules.contains('food')) (
-                  l10n.t('search.order_food'),
-                  Icons.restaurant_rounded,
-                  AppColors.food,
-                  '/food',
-                ),
-                if (_enabledModules.contains('ride')) (
-                  l10n.t('search.book_ride'),
-                  Icons.directions_car_rounded,
-                  AppColors.ride,
-                  '/ride',
-                ),
-                if (_enabledModules.contains('doctor')) (
-                  l10n.t('search.find_doctor'),
-                  Icons.medical_services_rounded,
-                  AppColors.doctor,
-                  '/doctor',
-                ),
-                if (_enabledModules.contains('shopping')) (
-                  l10n.t('search.shop_online'),
-                  Icons.shopping_bag_rounded,
-                  AppColors.shopping,
-                  '/shopping',
-                ),
-                if (_enabledModules.contains('pharmacy')) (
-                  l10n.t('module.pharmacy'),
-                  Icons.medication_rounded,
-                  AppColors.pharmacy,
-                  '/pharmacy',
-                ),
-                if (_enabledModules.contains('grocery')) (
-                  l10n.t('module.grocery'),
-                  Icons.local_grocery_store_rounded,
-                  AppColors.grocery,
-                  '/grocery',
-                ),
+                if (_enabledModules.contains('food'))
+                  (
+                    l10n.t('search.order_food'),
+                    Icons.restaurant_rounded,
+                    AppColors.food,
+                    '/food',
+                  ),
+                if (_enabledModules.contains('ride'))
+                  (
+                    l10n.t('search.book_ride'),
+                    Icons.directions_car_rounded,
+                    AppColors.ride,
+                    '/ride',
+                  ),
+                if (_enabledModules.contains('doctor'))
+                  (
+                    l10n.t('search.find_doctor'),
+                    Icons.medical_services_rounded,
+                    AppColors.doctor,
+                    '/doctor',
+                  ),
+                if (_enabledModules.contains('shopping'))
+                  (
+                    l10n.t('search.shop_online'),
+                    Icons.shopping_bag_rounded,
+                    AppColors.shopping,
+                    '/shopping',
+                  ),
+                if (_enabledModules.contains('pharmacy'))
+                  (
+                    l10n.t('module.pharmacy'),
+                    Icons.medication_rounded,
+                    AppColors.pharmacy,
+                    '/pharmacy',
+                  ),
+                if (_enabledModules.contains('grocery'))
+                  (
+                    l10n.t('module.grocery'),
+                    Icons.local_grocery_store_rounded,
+                    AppColors.grocery,
+                    '/grocery',
+                  ),
               ].map(
                 (item) => GestureDetector(
                   onTap: () => context.push(item.$4),
@@ -426,7 +472,8 @@ class _SearchScreenState extends State<SearchScreen> {
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: AppColors.border),
                       boxShadow: AppSpacing.shadowSm,
                     ),
                     child: Row(

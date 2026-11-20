@@ -41,13 +41,17 @@ class GroceryCategoryScreen extends StatelessWidget {
               '/catalog/products?moduleType=grocery&categoryId=$categoryId',
             ),
           ),
-          ApiClient.get(ZoneScope.appendZone('/catalog/categories?moduleType=grocery')),
+          ApiClient.get(
+            ZoneScope.appendZone('/catalog/categories?moduleType=grocery'),
+          ),
         ]),
         builder: (context, snapshot) {
           final loading = snapshot.connectionState == ConnectionState.waiting;
 
           final productsData = snapshot.hasData ? snapshot.data![0] : null;
-          final categoriesData = snapshot.hasData && snapshot.data!.length > 1 ? snapshot.data![1] : null;
+          final categoriesData = snapshot.hasData && snapshot.data!.length > 1
+              ? snapshot.data![1]
+              : null;
 
           final items = productsData != null
               ? ((productsData as List)
@@ -62,12 +66,14 @@ class GroceryCategoryScreen extends StatelessWidget {
           // Build categories list from server result when available
           final serverCategories = categoriesData != null
               ? (categoriesData as List)
-                  .map((c) => GroceryCategory(
+                    .map(
+                      (c) => GroceryCategory(
                         id: (c as Map)['id']?.toString() ?? '',
                         name: (c as Map)['name']?.toString() ?? '',
                         iconUrl: (c as Map)['iconKey']?.toString(),
-                      ))
-                  .toList()
+                      ),
+                    )
+                    .toList()
               : <GroceryCategory>[];
 
           final title = items.isNotEmpty
@@ -147,7 +153,8 @@ class GroceryCategoryScreen extends StatelessWidget {
                       child: Container(
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: AppColors.border),
                           boxShadow: AppSpacing.shadowSm,
                         ),
                         child: Column(

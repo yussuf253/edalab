@@ -56,10 +56,13 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
 
   Future<void> _loadStore() async {
     try {
-      final response = await ApiClient.get(
-            ZoneScope.appendZone('/catalog/shopping-stores/${widget.storeId}'),
-          )
-          as Map;
+      final response =
+          await ApiClient.get(
+                ZoneScope.appendZone(
+                  '/catalog/shopping-stores/${widget.storeId}',
+                ),
+              )
+              as Map;
       final data = Map<String, dynamic>.from(response);
       final products = (data['products'] as List? ?? const [])
           .map(
@@ -499,7 +502,8 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
                       child: Column(

@@ -474,7 +474,8 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
                       child: Row(
@@ -565,7 +566,8 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
                       child: Column(
@@ -733,7 +735,8 @@ class _BookingField extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.border),
           boxShadow: AppSpacing.shadowSm,
         ),
         child: Column(
@@ -810,9 +813,9 @@ class _SelectableRoomCard extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isSelected ? AppColors.hotel : AppColors.lightGrey,
+            color: isSelected ? AppColors.hotel : AppColors.border,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: AppSpacing.shadowSm,
@@ -985,7 +988,8 @@ class _BookingRoomCardShimmer extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: const Row(
         children: [

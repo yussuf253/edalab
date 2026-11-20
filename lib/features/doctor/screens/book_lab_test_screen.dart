@@ -70,9 +70,7 @@ class _BookLabTestScreenState extends State<BookLabTestScreen> {
     final date = _dates[_selectedDate];
     final timeSlot = _times[_selectedTime];
     final scheduledDate = DateFormat('yyyy-MM-dd').format(date);
-    final scheduledLabel = DateFormat(
-      'EEE, MMM d, yyyy',
-    ).format(date);
+    final scheduledLabel = DateFormat('EEE, MMM d, yyyy').format(date);
     final notes = _notesController.text.trim();
 
     setState(() => _isSubmitting = true);
@@ -187,7 +185,8 @@ class _BookLabTestScreenState extends State<BookLabTestScreen> {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Row(
                 children: [
@@ -240,10 +239,10 @@ class _BookLabTestScreenState extends State<BookLabTestScreen> {
                       width: 64,
                       decoration: BoxDecoration(
                         color: selected ? AppColors.primary : AppColors.white,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(18),
                         border: selected
                             ? null
-                            : Border.all(color: AppColors.lightGrey),
+                            : Border.all(color: AppColors.border),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -251,9 +250,7 @@ class _BookLabTestScreenState extends State<BookLabTestScreen> {
                           Text(
                             DateFormat('EEE', localeTag).format(date),
                             style: AppTextStyles.caption.copyWith(
-                              color: selected
-                                  ? Colors.white70
-                                  : AppColors.grey,
+                              color: selected ? Colors.white70 : AppColors.grey,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -290,10 +287,10 @@ class _BookLabTestScreenState extends State<BookLabTestScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: selected ? AppColors.primary : AppColors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(18),
                       border: selected
                           ? null
-                          : Border.all(color: AppColors.lightGrey),
+                          : Border.all(color: AppColors.border),
                     ),
                     child: Text(
                       _times[index],
@@ -330,7 +327,9 @@ class _BookLabTestScreenState extends State<BookLabTestScreen> {
                   _SummaryRow(l10n.t('doctor_booking.provider'), test.name),
                   _SummaryRow(
                     l10n.t('doctor_booking.date'),
-                    DateFormat('EEE, MMM d, yyyy').format(_dates[_selectedDate]),
+                    DateFormat(
+                      'EEE, MMM d, yyyy',
+                    ).format(_dates[_selectedDate]),
                   ),
                   _SummaryRow(
                     l10n.t('doctor_booking.time'),

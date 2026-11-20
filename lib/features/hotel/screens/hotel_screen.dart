@@ -13,6 +13,7 @@ import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 
 class HotelScreen extends StatefulWidget {
   const HotelScreen({super.key});
@@ -37,7 +38,9 @@ class _HotelScreenState extends State<HotelScreen> {
 
   Future<void> _loadHotels() async {
     try {
-      final response = await ApiClient.get(ZoneScope.appendZone('/catalog/hotels'));
+      final response = await ApiClient.get(
+        ZoneScope.appendZone('/catalog/hotels'),
+      );
       final items = (response as List)
           .map(
             (item) =>
@@ -116,43 +119,28 @@ class _HotelScreenState extends State<HotelScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('hotel.title')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/');
-              }
-            },
+        appBar: ModuleScreenAppBar(
+          title: l10n.t('hotel.title'),
+          search: AppSearchBar(
+            hint: l10n.t('hotel.search_hint'),
+            controller: _searchController,
+            onChanged: _onSearchChanged,
+            suffix: _searchQuery.isEmpty
+                ? null
+                : IconButton(
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: AppColors.mediumGrey,
+                    ),
+                    onPressed: () {
+                      _searchController.clear();
+                      _onSearchChanged('');
+                    },
+                  ),
           ),
         ),
         body: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: AppSearchBar(
-                  hint: l10n.t('hotel.search_hint'),
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  suffix: _searchQuery.isEmpty
-                      ? null
-                      : IconButton(
-                          icon: const Icon(
-                            Icons.close_rounded,
-                            color: AppColors.mediumGrey,
-                          ),
-                          onPressed: () {
-                            _searchController.clear();
-                            _onSearchChanged('');
-                          },
-                        ),
-                ),
-              ),
-            ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),

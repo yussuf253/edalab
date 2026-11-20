@@ -10,6 +10,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/services/media_upload_service.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_card.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -180,7 +181,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           height: 40,
                           decoration: BoxDecoration(
                             color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: AppColors.white,
                               width: 2,
@@ -207,38 +208,45 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            TextFormField(
-              controller: _firstNameController,
-              decoration: InputDecoration(
-                labelText: l10n.t('profile_edit.first_name'),
-                prefixIcon: Icon(Icons.person_outline_rounded),
+            AppCard(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: _firstNameController,
+                    decoration: InputDecoration(
+                      labelText: l10n.t('profile_edit.first_name'),
+                      prefixIcon: Icon(Icons.person_outline_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _lastNameController,
+                    decoration: InputDecoration(
+                      labelText: l10n.t('profile_edit.last_name'),
+                      prefixIcon: Icon(Icons.person_outline_rounded),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: l10n.t('profile_edit.email'),
+                      prefixIcon: const Icon(Icons.email_outlined),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _phoneController,
+                    decoration: InputDecoration(
+                      labelText: l10n.t('profile_edit.phone'),
+                      prefixIcon: Icon(Icons.phone_outlined),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 14),
-            TextFormField(
-              controller: _lastNameController,
-              decoration: InputDecoration(
-                labelText: l10n.t('profile_edit.last_name'),
-                prefixIcon: Icon(Icons.person_outline_rounded),
-              ),
-            ),
-            const SizedBox(height: 14),
-            TextFormField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: l10n.t('profile_edit.email'),
-                prefixIcon: const Icon(Icons.email_outlined),
-              ),
-            ),
-            const SizedBox(height: 14),
-            TextFormField(
-              controller: _phoneController,
-              decoration: InputDecoration(
-                labelText: l10n.t('profile_edit.phone'),
-                prefixIcon: Icon(Icons.phone_outlined),
-              ),
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             AppButton(
               text: l10n.t('profile_edit.save'),
               isLoading: authProvider.isLoading || _isUploadingAvatar,

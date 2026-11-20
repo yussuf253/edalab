@@ -220,7 +220,8 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                       height: 44,
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(18),
                         boxShadow: AppSpacing.shadowMd,
                       ),
                       child: const Icon(
@@ -454,9 +455,9 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                             ? AppColors.white
                                             : AppColors.extraLightGrey,
                                         border: Border.all(
-                                          color: AppColors.lightGrey,
+                                          color: AppColors.border,
                                         ),
-                                        borderRadius: BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(18),
                                       ),
                                       child: Column(
                                         children: [
@@ -496,7 +497,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                                 driverPhone.isNotEmpty
                                             ? AppColors.ride
                                             : AppColors.lightGrey,
-                                        borderRadius: BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(18),
                                       ),
                                       child: Column(
                                         children: [

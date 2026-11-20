@@ -280,7 +280,8 @@ class _ItemRow extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: Row(
@@ -346,10 +347,7 @@ class _ItemRow extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            'DJF ${money(price)}',
-            style: AppTextStyles.labelLarge,
-          ),
+          Text('DJF ${money(price)}', style: AppTextStyles.labelLarge),
         ],
       ),
     );

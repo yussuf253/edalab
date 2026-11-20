@@ -12,8 +12,9 @@ class NotificationBell extends StatelessWidget {
     this.size = 48,
     this.backgroundColor = AppColors.white,
     this.iconColor = AppColors.dark,
-    this.useShadow = true,
+    this.useShadow = false,
     this.compact = false,
+    this.showBorder = true,
   });
 
   final double size;
@@ -21,6 +22,7 @@ class NotificationBell extends StatelessWidget {
   final Color iconColor;
   final bool useShadow;
   final bool compact;
+  final bool showBorder;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,8 @@ class NotificationBell extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(compact ? 12 : 14),
+          shape: BoxShape.circle,
+          border: showBorder ? Border.all(color: AppColors.border) : null,
           boxShadow: useShadow ? AppSpacing.shadowSm : null,
         ),
         child: Stack(
@@ -41,9 +44,9 @@ class NotificationBell extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             Icon(
-              Icons.notifications_outlined,
+              Icons.notifications_none_rounded,
               color: iconColor,
-              size: compact ? 22 : 24,
+              size: compact ? 20 : 22,
             ),
             if (unreadCount > 0)
               Positioned(

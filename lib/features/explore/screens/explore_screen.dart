@@ -94,7 +94,10 @@ class ExploreScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-              child: Text(l10n.t('explore.all_services'), style: AppTextStyles.h4),
+              child: Text(
+                l10n.t('explore.all_services'),
+                style: AppTextStyles.h4,
+              ),
             ),
           ),
           SliverPadding(
@@ -107,7 +110,8 @@ class ExploreScreen extends StatelessWidget {
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: AppColors.border),
                       boxShadow: AppSpacing.shadowSm,
                     ),
                     child: Column(
@@ -143,7 +147,10 @@ class ExploreScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
-              child: Text(l10n.t('explore.quick_actions'), style: AppTextStyles.h4),
+              child: Text(
+                l10n.t('explore.quick_actions'),
+                style: AppTextStyles.h4,
+              ),
             ),
           ),
           SliverToBoxAdapter(
@@ -219,7 +226,8 @@ class _ActionTile extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.border),
           boxShadow: AppSpacing.shadowSm,
         ),
         child: Row(

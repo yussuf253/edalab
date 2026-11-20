@@ -9,10 +9,10 @@ import '../services/car_rental_service.dart';
 
 // ─── Color palette for the rental module ──────────────────────────────────
 // Using a dark teal/slate palette distinct from ride (AppColors.ride = green)
-const _rentalPrimary = Color(0xFF1E3A5F); // deep navy
-const _rentalAccent = Color(0xFF2DD4BF); // teal accent
-const _rentalBg = Color(0xFFF0F9FF); // icy light blue tint
-const _rentalSurface = Color(0xFF0F2744); // darker navy for cards
+const _rentalPrimary = Color(0xFF00A651); // brand green
+const _rentalAccent = Color(0xFF33C176); // light green accent
+const _rentalBg = Color(0xFFF7F8FA); // app background
+const _rentalSurface = Color(0xFF007B3C); // darker green for headers
 
 class CarRentalScreen extends StatefulWidget {
   const CarRentalScreen({super.key});
@@ -129,7 +129,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
               child: Text(
                 type,
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: selected ? _rentalAccent : AppColors.grey,
+                  color: selected ? AppColors.white : AppColors.grey,
                 ),
               ),
             ),
@@ -391,9 +391,9 @@ class _CarCard extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [_rentalPrimary, Color(0xFF2563EB)],
+                            colors: [AppColors.primary, AppColors.primaryLight],
                           ),
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
                           'Book Now',

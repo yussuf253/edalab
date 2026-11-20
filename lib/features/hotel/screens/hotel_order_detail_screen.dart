@@ -348,10 +348,9 @@ class _HotelHero extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            AppLocalizations.of(context).t(
-              'hotel_tracking.total_stay',
-              params: {'amount': money(total)},
-            ),
+            AppLocalizations.of(
+              context,
+            ).t('hotel_tracking.total_stay', params: {'amount': money(total)}),
             style: AppTextStyles.labelLarge.copyWith(color: AppColors.white),
           ),
         ],
@@ -379,6 +378,7 @@ class _TimelineCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: Column(
@@ -499,6 +499,7 @@ class _HotelStatTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: Row(
@@ -543,6 +544,7 @@ class _HotelInfoCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: Column(

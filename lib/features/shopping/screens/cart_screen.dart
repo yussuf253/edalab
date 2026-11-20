@@ -132,7 +132,8 @@ class _CartScreenState extends State<CartScreen> {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
                       child: Row(
@@ -285,10 +286,7 @@ class _CartScreenState extends State<CartScreen> {
                             ? l10n.t('shopping_cart.free_upper')
                             : 'DJF${money(shipping)}',
                       ),
-                      _summaryRow(
-                        l10n.t('cart.tax'),
-                        'DJF${money(tax)}',
-                      ),
+                      _summaryRow(l10n.t('cart.tax'), 'DJF${money(tax)}'),
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 8),
                         child: Divider(),

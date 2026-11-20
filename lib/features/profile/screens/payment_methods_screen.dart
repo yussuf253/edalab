@@ -87,14 +87,18 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l10n.t('payment_methods.cards'), style: AppTextStyles.h4),
+                  Text(
+                    l10n.t('payment_methods.cards'),
+                    style: AppTextStyles.h4,
+                  ),
                   const SizedBox(height: 12),
                   if (_methods.isEmpty)
                     Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Text(
                         l10n.t('payment_methods.empty'),
@@ -119,7 +123,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(18),
                           boxShadow: [
                             BoxShadow(
                               color: color.withValues(alpha: 0.3),
@@ -135,7 +139,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                      method['brand']?.toString() ??
+                                  method['brand']?.toString() ??
                                       method['type']?.toString() ??
                                       l10n.t('payment_methods.payment'),
                                   style: AppTextStyles.h4.copyWith(

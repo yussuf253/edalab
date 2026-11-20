@@ -252,12 +252,12 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
                                       quantity:
                                           (item['quantity'] as num?)?.toInt() ??
                                           1,
-                                      total:
-                                          money((item['total'] as num?)
-                                                      ?.toDouble() ??
-                                                  (item['price'] as num?)
-                                                      ?.toDouble() ??
-                                                  0),
+                                      total: money(
+                                        (item['total'] as num?)?.toDouble() ??
+                                            (item['price'] as num?)
+                                                ?.toDouble() ??
+                                            0,
+                                      ),
                                     ),
                                   )
                                   .toList(),
@@ -500,10 +500,9 @@ class _PharmacyHero extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            AppLocalizations.of(context).t(
-              'pharmacy_tracking.total',
-              params: {'amount': money(total)},
-            ),
+            AppLocalizations.of(
+              context,
+            ).t('pharmacy_tracking.total', params: {'amount': money(total)}),
             style: AppTextStyles.labelLarge.copyWith(color: AppColors.white),
           ),
         ],
@@ -531,6 +530,7 @@ class _FulfillmentCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: Column(
@@ -612,6 +612,7 @@ class _PharmacySection extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: Column(

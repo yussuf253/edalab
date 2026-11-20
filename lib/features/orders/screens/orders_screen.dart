@@ -781,7 +781,8 @@ class _OrderList extends StatelessWidget {
                   padding: const EdgeInsets.all(0),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.border),
                     boxShadow: AppSpacing.shadowSm,
                   ),
                   child: Row(

@@ -221,10 +221,7 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
                     l10n.t('ride_summary.base_fare'),
                     'DJF ${money(estimatedFare)}',
                   ),
-                  _SummaryRow(
-                    l10n.t('ride_summary.tax'),
-                    'DJF ${money(tax)}',
-                  ),
+                  _SummaryRow(l10n.t('ride_summary.tax'), 'DJF ${money(tax)}'),
                   const Divider(height: 24),
                   _SummaryRow(
                     l10n.t('ride_summary.total'),
@@ -419,7 +416,8 @@ class _SummaryCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: child,

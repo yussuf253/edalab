@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../core/widgets/module_screen_app_bar.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/analytics/analytics_events.dart';
@@ -242,43 +244,28 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('home_services.title')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/');
-              }
+        appBar: ModuleScreenAppBar(
+          title: l10n.t('home_services.title'),
+          search: AppSearchBar(
+            hint: l10n.t('home_services.search_hint'),
+            controller: _searchController,
+            readOnly: true,
+            onTap: () {
+              AnalyticsService.instance.track(
+                AnalyticsEvents.entityOpened,
+                properties: {
+                  'module': 'home_services',
+                  'entity_type': 'category_browser',
+                  'entity_id': 'all',
+                  'source': 'home_services_search_bar',
+                },
+              );
+              context.push('/home-services/category/all');
             },
           ),
         ),
         body: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: AppSearchBar(
-                  hint: l10n.t('home_services.search_hint'),
-                  controller: _searchController,
-                  readOnly: true,
-                  onTap: () {
-                    AnalyticsService.instance.track(
-                      AnalyticsEvents.entityOpened,
-                      properties: {
-                        'module': 'home_services',
-                        'entity_type': 'category_browser',
-                        'entity_id': 'all',
-                        'source': 'home_services_search_bar',
-                      },
-                    );
-                    context.push('/home-services/category/all');
-                  },
-                ),
-              ),
-            ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),

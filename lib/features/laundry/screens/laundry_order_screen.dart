@@ -136,10 +136,11 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
     final spec = _itemSpec(item, l10n);
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         children: [
@@ -231,7 +232,9 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
 
   Future<void> _loadServices() async {
     try {
-      final response = await ApiClient.get(ZoneScope.appendZone('/catalog/laundry-services'));
+      final response = await ApiClient.get(
+        ZoneScope.appendZone('/catalog/laundry-services'),
+      );
       final items = (response as List)
           .map(
             (item) =>
@@ -458,7 +461,8 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: Row(
                         children: [
@@ -541,7 +545,8 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.border),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: Text(
                         l10n.t('laundry_order.no_pricing_configured'),
@@ -582,10 +587,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                             width: 60,
                             decoration: BoxDecoration(
                               color: sel ? AppColors.laundry : AppColors.white,
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(18),
                               border: sel
                                   ? null
-                                  : Border.all(color: AppColors.lightGrey),
+                                  : Border.all(color: AppColors.border),
                             ),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -640,10 +645,10 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                                 color: sel
                                     ? AppColors.laundry
                                     : AppColors.white,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(18),
                                 border: sel
                                     ? null
-                                    : Border.all(color: AppColors.lightGrey),
+                                    : Border.all(color: AppColors.border),
                               ),
                               child: Text(
                                 slot,
@@ -667,7 +672,8 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.border),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                     child: Row(
                       children: [
@@ -1019,8 +1025,8 @@ class _ServiceOption extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           color: selected ? AppColors.laundry : AppColors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: selected ? null : Border.all(color: AppColors.lightGrey),
+          borderRadius: BorderRadius.circular(18),
+          border: selected ? null : Border.all(color: AppColors.border),
         ),
         child: Column(
           children: [

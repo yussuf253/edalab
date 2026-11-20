@@ -16,6 +16,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/utils/money_format.dart';
 
 class ShoppingScreen extends StatefulWidget {
@@ -44,7 +45,9 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
 
   Future<void> _loadStores() async {
     try {
-      final response = await ApiClient.get(ZoneScope.appendZone('/catalog/shopping-stores'));
+      final response = await ApiClient.get(
+        ZoneScope.appendZone('/catalog/shopping-stores'),
+      );
       final stores = (response as List)
           .map(
             (entry) => ShoppingStoreModel.fromApi(
@@ -179,17 +182,12 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('shopping.title')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/');
-              }
-            },
+        appBar: ModuleScreenAppBar(
+          title: l10n.t('shopping.title'),
+          search: AppSearchBar(
+            hint: l10n.t('shopping.search_hint'),
+            controller: _searchController,
+            onChanged: _onSearchChanged,
           ),
           actions: [
             IconButton(
@@ -249,16 +247,6 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
         ),
         body: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: AppSearchBar(
-                  hint: l10n.t('shopping.search_hint'),
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                ),
-              ),
-            ),
             // Source toggle: Local Stores vs AliExpress
             SliverToBoxAdapter(
               child: Padding(
@@ -417,8 +405,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                           itemCount: categories.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(width: 8),
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
                           itemBuilder: (context, index) {
                             final category = categories[index];
                             final isSelected = _selectedCategory == category;
@@ -468,10 +455,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
               ),
             // Content: Local stores or AliExpress products
             if (_showAliExpress)
-              _buildAliExpressContent(
-                aliExpressProvider,
-                l10n,
-              )
+              _buildAliExpressContent(aliExpressProvider, l10n)
             else if (_isLoading)
               const SliverToBoxAdapter(
                 child: Padding(
@@ -955,7 +939,11 @@ Widget _buildAliExpressContent(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.shopping_bag_outlined, size: 64, color: AppColors.lightGrey),
+            const Icon(
+              Icons.shopping_bag_outlined,
+              size: 64,
+              color: AppColors.lightGrey,
+            ),
             const SizedBox(height: 16),
             Text(
               'Search for products on AliExpress',
@@ -1011,7 +999,8 @@ class _AliExpressProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasImage = product.images.isNotEmpty && product.images.first.isNotEmpty;
+    final hasImage =
+        product.images.isNotEmpty && product.images.first.isNotEmpty;
     return GestureDetector(
       onTap: onTap,
       child: Container(

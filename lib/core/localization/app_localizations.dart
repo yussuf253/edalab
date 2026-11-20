@@ -1789,6 +1789,10 @@ class AppLocalizations {
       'product_detail.total_price': 'Total Price',
       'product_detail.view_cart': 'View Cart',
       'product_detail.add_to_cart': 'Add to Cart',
+      'product_detail.unavailable_title': 'This product is unavailable',
+      'product_detail.unavailable_subtitle':
+          'We could not load this product right now. Please try again.',
+      'product_detail.retry': 'Try again',
       'store_detail.products': '{count} products',
       'store_detail.search_hint': 'Search in this shop...',
       'store_detail.empty': 'No products found in this shop.',
@@ -3336,6 +3340,10 @@ class AppLocalizations {
       'product_detail.total_price': 'Prix total',
       'product_detail.view_cart': 'Voir le panier',
       'product_detail.add_to_cart': 'Ajouter au panier',
+      'product_detail.unavailable_title': 'Ce produit est indisponible',
+      'product_detail.unavailable_subtitle':
+          'Impossible de charger ce produit pour le moment. Veuillez réessayer.',
+      'product_detail.retry': 'Réessayer',
       'store_detail.products': '{count} produits',
       'store_detail.search_hint': 'Rechercher dans cette boutique...',
       'store_detail.empty': 'Aucun produit trouvé dans cette boutique.',
@@ -4757,6 +4765,10 @@ class AppLocalizations {
       'product_detail.total_price': 'السعر الإجمالي',
       'product_detail.view_cart': 'عرض السلة',
       'product_detail.add_to_cart': 'أضف إلى السلة',
+      'product_detail.unavailable_title': 'هذا المنتج غير متوفر',
+      'product_detail.unavailable_subtitle':
+          'تعذر تحميل هذا المنتج حاليًا. يرجى المحاولة مرة أخرى.',
+      'product_detail.retry': 'إعادة المحاولة',
       'store_detail.products': '{count} منتج',
       'store_detail.search_hint': 'ابحث داخل هذا المتجر...',
       'store_detail.empty': 'لم يتم العثور على منتجات في هذا المتجر.',

@@ -311,8 +311,9 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                     height: 280,
                     width: double.infinity,
                     color: AppColors.extraLightGrey,
-                    child: item.imageUrl != null &&
-                        item.imageUrl!.trim().isNotEmpty
+                    child:
+                        item.imageUrl != null &&
+                            item.imageUrl!.trim().isNotEmpty
                         ? Image.network(
                             item.imageUrl!,
                             width: double.infinity,
@@ -327,12 +328,12 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                             ),
                             loadingBuilder: (context, child, progress) =>
                                 progress == null
-                                    ? child
-                                    : const Center(
-                                        child: CircularProgressIndicator(
-                                          color: AppColors.food,
-                                        ),
-                                      ),
+                                ? child
+                                : const Center(
+                                    child: CircularProgressIndicator(
+                                      color: AppColors.food,
+                                    ),
+                                  ),
                           )
                         : Center(
                             child: Icon(
@@ -416,7 +417,9 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                                     vertical: 3,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.food.withValues(alpha: 0.12),
+                                    color: AppColors.food.withValues(
+                                      alpha: 0.12,
+                                    ),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
@@ -439,9 +442,9 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                           ),
                           const SizedBox(height: 10),
                           ...group.options.map((option) {
-                            final isSelected = (_selectedOptions[group.id] ??
-                                    const {})
-                                .contains(option.id);
+                            final isSelected =
+                                (_selectedOptions[group.id] ?? const {})
+                                    .contains(option.id);
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 8),
                               child: InkWell(
@@ -454,13 +457,13 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? AppColors.food.withValues(alpha: 0.08)
+                                        ? AppColors.primarySurface
                                         : AppColors.white,
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
                                       color: isSelected
-                                          ? AppColors.food
-                                          : AppColors.lightGrey,
+                                          ? AppColors.primary
+                                          : AppColors.border,
                                       width: isSelected ? 1.5 : 1,
                                     ),
                                   ),
@@ -492,10 +495,11 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                                       if (option.priceDelta > 0)
                                         Text(
                                           '+DJF${option.priceDelta.toStringAsFixed(0)}',
-                                          style: AppTextStyles.bodyMedium.copyWith(
-                                            color: AppColors.food,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                          style: AppTextStyles.bodyMedium
+                                              .copyWith(
+                                                color: AppColors.food,
+                                                fontWeight: FontWeight.w600,
+                                              ),
                                         ),
                                     ],
                                   ),
@@ -514,9 +518,8 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                             const Spacer(),
                             Container(
                               decoration: BoxDecoration(
-                                color: AppColors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppColors.lightGrey),
+                                color: AppColors.tile,
+                                borderRadius: BorderRadius.circular(999),
                               ),
                               child: Row(
                                 children: [
@@ -586,8 +589,18 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
               ),
             ),
       bottomSheet: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(color: AppColors.white),
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 20,
+              offset: Offset(0, -6),
+            ),
+          ],
+        ),
         child: SafeArea(
           child: AppButton(
             text: item == null

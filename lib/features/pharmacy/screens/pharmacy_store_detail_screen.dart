@@ -481,7 +481,8 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: AppColors.white,
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: AppColors.border),
                             boxShadow: AppSpacing.shadowSm,
                           ),
                           child: Row(
@@ -689,9 +690,9 @@ class _StoreStatCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
-        border: Border.all(color: AppColors.lightGrey.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
@@ -752,9 +753,9 @@ class _StoreSearchCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
-        border: Border.all(color: AppColors.lightGrey.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [

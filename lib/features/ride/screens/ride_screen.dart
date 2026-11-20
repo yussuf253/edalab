@@ -16,6 +16,7 @@ import '../../../core/models/ride_model.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 import '../widgets/ride_route_preview.dart';
 import '../services/nearby_drivers_service.dart';
 import '../../car_rental/services/car_rental_service.dart';
@@ -312,19 +313,7 @@ class _RideScreenState extends State<RideScreen> {
         },
         child: Scaffold(
           backgroundColor: AppColors.background,
-          appBar: AppBar(
-            title: Text(l10n.t('ride.title')),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/');
-                }
-              },
-            ),
-          ),
+          appBar: ModuleScreenAppBar(title: l10n.t('ride.title')),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -342,7 +331,7 @@ class _RideScreenState extends State<RideScreen> {
                             color: _activeTab == 0
                                 ? AppColors.primary
                                 : AppColors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(999),
                             boxShadow: AppSpacing.shadowSm,
                           ),
                           child: Center(
@@ -368,7 +357,7 @@ class _RideScreenState extends State<RideScreen> {
                             color: _activeTab == 1
                                 ? AppColors.primary
                                 : AppColors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(999),
                             boxShadow: AppSpacing.shadowSm,
                           ),
                           child: Center(
@@ -406,19 +395,7 @@ class _RideScreenState extends State<RideScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('ride.title')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/');
-              }
-            },
-          ),
-        ),
+        appBar: ModuleScreenAppBar(title: l10n.t('ride.title')),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -1687,10 +1664,7 @@ class _AddQuickRidePlace extends StatelessWidget {
                 color: AppColors.extraLightGrey,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(
-                Icons.add_rounded,
-                color: AppColors.mediumGrey,
-              ),
+              child: Icon(Icons.add_rounded, color: AppColors.mediumGrey),
             ),
             const SizedBox(height: 16),
             Text(

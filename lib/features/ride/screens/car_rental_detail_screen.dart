@@ -11,9 +11,9 @@ import '../../../../core/utils/auth_gate.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../services/car_rental_service.dart';
 
-const _rentalPrimary = Color(0xFF1E3A5F);
-const _rentalAccent = Color(0xFF2DD4BF);
-const _rentalBg = Color(0xFFF0F9FF);
+const _rentalPrimary = Color(0xFF00A651);
+const _rentalAccent = Color(0xFF33C176);
+const _rentalBg = Color(0xFFF7F8FA);
 
 class CarRentalDetailScreen extends StatefulWidget {
   final String carId;
@@ -590,7 +590,7 @@ class _DetailAppBar extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [const Color(0xFF0F2744), _rentalPrimary],
+          colors: [AppColors.primaryDark, _rentalPrimary],
         ),
       ),
       child: Center(

@@ -45,7 +45,8 @@ class HelpCenterScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppColors.border),
                 boxShadow: AppSpacing.shadowSm,
               ),
               child: Row(

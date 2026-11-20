@@ -131,6 +131,7 @@ class _PaymentFailureScreenState extends State<PaymentFailureScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: Column(
                     children: [

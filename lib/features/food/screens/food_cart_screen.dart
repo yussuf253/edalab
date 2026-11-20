@@ -148,16 +148,22 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
           : Column(
               children: [
                 // Restaurant name
-                Padding(
-                  padding: const EdgeInsets.all(20),
+                Container(
+                  margin: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.border),
+                  ),
                   child: Row(
                     children: [
                       Container(
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: AppColors.foodBg,
-                          borderRadius: BorderRadius.circular(12),
+                          color: AppColors.primarySurface,
+                          borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Icon(
                           Icons.restaurant_rounded,
@@ -193,8 +199,8 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: AppColors.foodBg,
-                          borderRadius: BorderRadius.circular(14),
+                          color: AppColors.primarySurface,
+                          borderRadius: BorderRadius.circular(18),
                         ),
                         child: Row(
                           children: [
@@ -297,7 +303,8 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: AppColors.border),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,7 +352,8 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: AppColors.border),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -384,9 +392,11 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                       ),
                                       decoration: BoxDecoration(
                                         color: isSelected
-                                            ? AppColors.food
-                                            : AppColors.extraLightGrey,
-                                        borderRadius: BorderRadius.circular(8),
+                                            ? AppColors.primary
+                                            : AppColors.tile,
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                       ),
                                       child: Center(
                                         child: Text(
@@ -458,7 +468,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.white,
                     borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(24),
+                      top: Radius.circular(28),
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -581,7 +591,8 @@ class _CartRow extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: Row(
@@ -590,8 +601,8 @@ class _CartRow extends StatelessWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: AppColors.extraLightGrey,
-              borderRadius: BorderRadius.circular(10),
+              color: AppColors.tile,
+              borderRadius: BorderRadius.circular(14),
             ),
             clipBehavior: Clip.antiAlias,
             child: imageUrl != null && imageUrl!.trim().isNotEmpty
@@ -643,8 +654,8 @@ class _CartRow extends StatelessWidget {
           ),
           Container(
             decoration: BoxDecoration(
-              color: AppColors.extraLightGrey,
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.tile,
+              borderRadius: BorderRadius.circular(999),
             ),
             child: Row(
               children: [
@@ -653,7 +664,7 @@ class _CartRow extends StatelessWidget {
                   child: const SizedBox(
                     width: 28,
                     height: 28,
-                    child: Icon(Icons.remove, size: 16),
+                    child: Icon(Icons.remove_rounded, size: 16),
                   ),
                 ),
                 Padding(
@@ -665,7 +676,7 @@ class _CartRow extends StatelessWidget {
                   child: const SizedBox(
                     width: 28,
                     height: 28,
-                    child: Icon(Icons.add, size: 16),
+                    child: Icon(Icons.add_rounded, size: 16),
                   ),
                 ),
               ],
@@ -727,21 +738,18 @@ class _RecommendedFoodCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                'DJF ${money(item.price)}',
-                style: AppTextStyles.priceSmall,
-              ),
+              Text('DJF ${money(item.price)}', style: AppTextStyles.priceSmall),
               const SizedBox(height: 8),
               GestureDetector(
                 onTap: onAdd,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 7,
+                    horizontal: 14,
+                    vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.food,
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
                     'Add',

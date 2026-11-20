@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import '../../../core/widgets/module_screen_app_bar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/analytics/analytics_events.dart';
@@ -56,11 +58,13 @@ class _GroceryScreenState extends State<GroceryScreen> {
           ZoneScope.appendZone('/catalog/categories?moduleType=grocery'),
         );
         final cats = (catResp as List)
-            .map((c) => GroceryCategory(
-                  id: (c as Map)['id']?.toString() ?? '',
-                  name: (c as Map)['name']?.toString() ?? '',
-                  iconUrl: (c as Map)['iconKey']?.toString(),
-                ))
+            .map(
+              (c) => GroceryCategory(
+                id: (c as Map)['id']?.toString() ?? '',
+                name: (c as Map)['name']?.toString() ?? '',
+                iconUrl: (c as Map)['iconKey']?.toString(),
+              ),
+            )
             .toList();
         if (mounted) {
           setState(() => _categories = cats);
@@ -168,17 +172,12 @@ class _GroceryScreenState extends State<GroceryScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('grocery.title')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/');
-              }
-            },
+        appBar: ModuleScreenAppBar(
+          title: l10n.t('grocery.title'),
+          search: AppSearchBar(
+            hint: l10n.t('grocery.search_hint'),
+            controller: _searchController,
+            onChanged: _onSearchChanged,
           ),
           actions: [
             Stack(
@@ -223,16 +222,6 @@ class _GroceryScreenState extends State<GroceryScreen> {
         ),
         body: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: AppSearchBar(
-                  hint: l10n.t('grocery.search_hint'),
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                ),
-              ),
-            ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(20),

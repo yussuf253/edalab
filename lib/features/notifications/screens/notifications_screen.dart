@@ -39,8 +39,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     final availableModules = {
       for (final item in allNotifications) item.module,
-    }.toList()
-      ..sort((a, b) => a.name.compareTo(b.name));
+    }.toList()..sort((a, b) => a.name.compareTo(b.name));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -78,6 +77,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.white,
                           borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: AppColors.border),
                           boxShadow: AppSpacing.shadowSm,
                         ),
                         child: Row(
@@ -112,7 +112,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                               label: l10n.t('common.all'),
                               selected: _filter == _NotificationFilter.all,
                               onTap: () {
-                                setState(() => _filter = _NotificationFilter.all);
+                                setState(
+                                  () => _filter = _NotificationFilter.all,
+                                );
                               },
                             ),
                             const SizedBox(width: 8),
@@ -171,14 +173,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       : ListView.separated(
                           padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                           itemCount: filteredNotifications.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 10),
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 10),
                           itemBuilder: (context, index) {
                             final notification = filteredNotifications[index];
                             return InkWell(
                               borderRadius: BorderRadius.circular(16),
                               onTap: () async {
                                 await provider.markAsRead(notification.id);
-                                if (!context.mounted || notification.route == null) {
+                                if (!context.mounted ||
+                                    notification.route == null) {
                                   return;
                                 }
                                 context.push(notification.route!);
@@ -189,12 +193,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                 decoration: BoxDecoration(
                                   color: notification.isRead
                                       ? AppColors.white
-                                      : notification.color.withValues(alpha: 0.08),
+                                      : notification.color.withValues(
+                                          alpha: 0.08,
+                                        ),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: notification.isRead
                                         ? AppColors.extraLightGrey
-                                        : notification.color.withValues(alpha: 0.18),
+                                        : notification.color.withValues(
+                                            alpha: 0.18,
+                                          ),
                                   ),
                                   boxShadow: AppSpacing.shadowSm,
                                 ),
@@ -205,7 +213,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                       width: 46,
                                       height: 46,
                                       decoration: BoxDecoration(
-                                        color: notification.color.withValues(alpha: 0.12),
+                                        color: notification.color.withValues(
+                                          alpha: 0.12,
+                                        ),
                                         borderRadius: BorderRadius.circular(14),
                                       ),
                                       child: Icon(
@@ -217,14 +227,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                     const SizedBox(width: 14),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Row(
                                             children: [
                                               Expanded(
                                                 child: Text(
                                                   notification.title,
-                                                  style: AppTextStyles.labelMedium,
+                                                  style:
+                                                      AppTextStyles.labelMedium,
                                                 ),
                                               ),
                                               if (!notification.isRead)
@@ -241,10 +253,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                           const SizedBox(height: 5),
                                           Text(
                                             notification.body,
-                                            style: AppTextStyles.bodySmall.copyWith(
-                                              color: AppColors.grey,
-                                              height: 1.45,
-                                            ),
+                                            style: AppTextStyles.bodySmall
+                                                .copyWith(
+                                                  color: AppColors.grey,
+                                                  height: 1.45,
+                                                ),
                                           ),
                                           const SizedBox(height: 10),
                                           Row(
@@ -257,7 +270,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                               ),
                                               const SizedBox(width: 8),
                                               Text(
-                                                _formatTime(notification.createdAt),
+                                                _formatTime(
+                                                  notification.createdAt,
+                                                ),
                                                 style: AppTextStyles.caption,
                                               ),
                                             ],
@@ -319,15 +334,9 @@ class _StatCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Text(
-              value,
-              style: AppTextStyles.h4.copyWith(color: color),
-            ),
+            Text(value, style: AppTextStyles.h4.copyWith(color: color)),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: AppTextStyles.caption,
-            ),
+            Text(label, style: AppTextStyles.caption),
           ],
         ),
       ),
@@ -404,10 +413,7 @@ class _ModuleChip extends StatelessWidget {
 }
 
 class _Pill extends StatelessWidget {
-  const _Pill({
-    required this.label,
-    required this.color,
-  });
+  const _Pill({required this.label, required this.color});
 
   final String label;
   final Color color;

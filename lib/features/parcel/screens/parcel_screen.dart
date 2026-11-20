@@ -7,6 +7,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/auth_provider.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 
 class ParcelScreen extends StatefulWidget {
   const ParcelScreen({super.key});
@@ -245,16 +246,22 @@ class _ParcelScreenState extends State<ParcelScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(_text('title')),
-        backgroundColor: AppColors.background,
-        scrolledUnderElevation: 0,
-      ),
+      appBar: ModuleScreenAppBar(title: _text('title')),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: SegmentedButton<int>(
+              style: SegmentedButton.styleFrom(
+                backgroundColor: AppColors.white,
+                foregroundColor: AppColors.grey,
+                selectedBackgroundColor: AppColors.primary,
+                selectedForegroundColor: AppColors.white,
+                side: const BorderSide(color: AppColors.border),
+                shape: const StadiumBorder(),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                textStyle: const TextStyle(fontWeight: FontWeight.w700),
+              ),
               segments: [
                 ButtonSegment(
                   value: 0,

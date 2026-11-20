@@ -36,16 +36,14 @@ class AppButton extends StatelessWidget {
     if (isOutlined) {
       return SizedBox(
         width: width ?? double.infinity,
-        height: isSmall ? 42 : 54,
+        height: isSmall ? 44 : 56,
         child: OutlinedButton(
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
             foregroundColor: buttonColor,
             side: BorderSide(color: buttonColor, width: 1.5),
             padding: padding,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            ),
+            shape: const StadiumBorder(),
           ),
           child: _buildChild(buttonColor),
         ),
@@ -54,7 +52,7 @@ class AppButton extends StatelessWidget {
 
     return SizedBox(
       width: width ?? double.infinity,
-      height: isSmall ? 42 : 54,
+      height: isSmall ? 44 : 56,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
@@ -63,9 +61,7 @@ class AppButton extends StatelessWidget {
           disabledBackgroundColor: buttonColor.withValues(alpha: 0.6),
           padding: padding,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          ),
+          shape: const StadiumBorder(),
         ),
         child: _buildChild(foregroundColor),
       ),
@@ -75,7 +71,8 @@ class AppButton extends StatelessWidget {
   Widget _buildChild(Color color) {
     final textStyle = TextStyle(
       fontSize: isSmall ? 14 : 16,
-      fontWeight: FontWeight.w600,
+      fontWeight: FontWeight.w700,
+      letterSpacing: 0.1,
     );
 
     if (isLoading) {

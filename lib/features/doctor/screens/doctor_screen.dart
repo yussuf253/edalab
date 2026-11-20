@@ -6,6 +6,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_search_bar.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 
 class _HealthServiceCategory {
   final String id;
@@ -115,31 +116,16 @@ class _DoctorScreenState extends State<DoctorScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('doctor.title')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/');
-              }
-            },
+        appBar: ModuleScreenAppBar(
+          title: l10n.t('doctor.title'),
+          search: AppSearchBar(
+            hint: l10n.t('doctor.search_hint'),
+            controller: _searchController,
+            onChanged: (value) => setState(() => _searchQuery = value),
           ),
         ),
         body: CustomScrollView(
           slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: AppSearchBar(
-                  hint: l10n.t('doctor.search_hint'),
-                  controller: _searchController,
-                  onChanged: (value) => setState(() => _searchQuery = value),
-                ),
-              ),
-            ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),

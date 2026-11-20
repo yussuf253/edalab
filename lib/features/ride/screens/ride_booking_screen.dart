@@ -272,7 +272,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
               decoration: BoxDecoration(
                 color: AppColors.white,
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
+                  top: Radius.circular(28),
                 ),
                 boxShadow: [
                   BoxShadow(

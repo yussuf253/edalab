@@ -388,7 +388,8 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: AppColors.white,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(color: AppColors.border),
                               boxShadow: AppSpacing.shadowSm,
                             ),
                             child: Column(
@@ -426,7 +427,8 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: AppColors.white,
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: AppColors.border),
                                 boxShadow: AppSpacing.shadowSm,
                               ),
                               child: Column(

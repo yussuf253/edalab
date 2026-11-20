@@ -154,7 +154,10 @@ class _CouponsScreenState extends State<CouponsScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-              child: Text(l10n.t('rewards.available_coupons'), style: AppTextStyles.h4),
+              child: Text(
+                l10n.t('rewards.available_coupons'),
+                style: AppTextStyles.h4,
+              ),
             ),
           ),
           if (_isLoading)
@@ -218,7 +221,8 @@ class _CouponsScreenState extends State<CouponsScreen> {
                   margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: AppColors.border),
                     boxShadow: AppSpacing.shadowSm,
                   ),
                   child: Row(

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/analytics/analytics_events.dart';
@@ -15,6 +16,7 @@ import '../../../core/config/zone_scope.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/notification_bell.dart';
 
 class FoodScreen extends StatefulWidget {
   const FoodScreen({super.key});
@@ -58,7 +60,9 @@ class _FoodScreenState extends State<FoodScreen> {
 
   Future<void> _loadRestaurants() async {
     try {
-      final response = await ApiClient.get(ZoneScope.appendZone('/catalog/restaurants'));
+      final response = await ApiClient.get(
+        ZoneScope.appendZone('/catalog/restaurants'),
+      );
       final items = (response as List)
           .map(
             (item) =>
@@ -142,6 +146,11 @@ class _FoodScreenState extends State<FoodScreen> {
     );
     final restaurants = _filteredRestaurants();
     final quickCategories = _buildFoodCategories(l10n);
+    final locationProvider = context.watch<UserLocationProvider>();
+    final locationLabel =
+        locationProvider.location?.subtitle ??
+        locationProvider.location?.title ??
+        l10n.t('ride.current_location');
 
     return PopScope(
       canPop: context.canPop(),
@@ -151,82 +160,155 @@ class _FoodScreenState extends State<FoodScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('food.title')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/');
-              }
-            },
-          ),
-          actions: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.shopping_bag_outlined),
-                  onPressed: () {
-                    AnalyticsService.instance.track(
-                      AnalyticsEvents.viewCartTapped,
-                      properties: {
-                        'module': 'food',
-                        'source': 'food_screen',
-                        'cart_item_count': cartItemCount,
-                      },
-                    );
-                    context.push('/food/cart');
-                  },
-                ),
-                if (cartItemCount > 0)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      width: 18,
-                      height: 18,
-                      decoration: const BoxDecoration(
-                        color: AppColors.accent,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$cartItemCount',
-                          style: AppTextStyles.badge.copyWith(fontSize: 10),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
+        backgroundColor: AppColors.white,
         body: CustomScrollView(
           slivers: [
+            // Green header: back · deliver-to · bell, then the search pill.
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                child: AppSearchBar(
-                  hint: l10n.t('food.search_hint'),
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  suffix: _searchQuery.isEmpty
-                      ? null
-                      : IconButton(
-                          icon: const Icon(
-                            Icons.close_rounded,
-                            color: AppColors.mediumGrey,
+              child: AnnotatedRegion<SystemUiOverlayStyle>(
+                value: SystemUiOverlayStyle.light,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.vertical(
+                      bottom: Radius.circular(28),
+                    ),
+                  ),
+                  child: SafeArea(
+                    bottom: false,
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(6, 2, 10, 0),
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.arrow_back_rounded,
+                                  size: 22,
+                                ),
+                                color: AppColors.white,
+                                onPressed: () {
+                                  if (context.canPop()) {
+                                    context.pop();
+                                  } else {
+                                    context.go('/');
+                                  }
+                                },
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      l10n.t('food.title'),
+                                      style: const TextStyle(
+                                        color: Color(0xCCFFFFFF),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            locationLabel,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              color: AppColors.white,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ),
+                                        const Icon(
+                                          Icons.keyboard_arrow_down_rounded,
+                                          color: AppColors.white,
+                                          size: 18,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  IconButton(
+                                    color: AppColors.white,
+                                    icon: const Icon(
+                                      Icons.shopping_bag_outlined,
+                                    ),
+                                    onPressed: () {
+                                      AnalyticsService.instance.track(
+                                        AnalyticsEvents.viewCartTapped,
+                                        properties: {
+                                          'module': 'food',
+                                          'source': 'food_screen',
+                                          'cart_item_count': cartItemCount,
+                                        },
+                                      );
+                                      context.push('/food/cart');
+                                    },
+                                  ),
+                                  if (cartItemCount > 0)
+                                    Positioned(
+                                      top: 8,
+                                      right: 8,
+                                      child: Container(
+                                        width: 18,
+                                        height: 18,
+                                        decoration: const BoxDecoration(
+                                          color: AppColors.accent,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Center(
+                                          child: Text(
+                                            '$cartItemCount',
+                                            style: AppTextStyles.badge.copyWith(
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const NotificationBell(
+                                size: 36,
+                                backgroundColor: Colors.transparent,
+                                iconColor: AppColors.white,
+                                compact: true,
+                                showBorder: false,
+                              ),
+                            ],
                           ),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
-                            _onSearchChanged('');
-                          },
                         ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 18),
+                          child: AppSearchBar(
+                            hint: l10n.t('food.search_hint'),
+                            controller: _searchController,
+                            onChanged: _onSearchChanged,
+                            suffix: _searchQuery.isEmpty
+                                ? null
+                                : IconButton(
+                                    icon: const Icon(
+                                      Icons.close_rounded,
+                                      color: AppColors.mediumGrey,
+                                    ),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() => _searchQuery = '');
+                                      _onSearchChanged('');
+                                    },
+                                  ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -299,7 +381,19 @@ class _FoodScreenState extends State<FoodScreen> {
                           color: isSelected
                               ? AppColors.primary
                               : AppColors.white,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(100),
+                          border: isSelected
+                              ? null
+                              : Border.all(color: AppColors.border),
+                          boxShadow: isSelected
+                              ? const [
+                                  BoxShadow(
+                                    color: Color(0x2600A651),
+                                    blurRadius: 12,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ]
+                              : AppSpacing.shadowSm,
                         ),
                         child: Row(
                           children: [
@@ -336,7 +430,7 @@ class _FoodScreenState extends State<FoodScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 22, 20, 4),
                 child: Text(
                   l10n.t('food.popular_nearby'),
-                  style: AppTextStyles.h3,
+                  style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
                 ),
               ),
             ),
@@ -380,94 +474,117 @@ class _FoodScreenState extends State<FoodScreen> {
                 ),
               )
             else
-              SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final restaurant = restaurants[index];
-                  return GestureDetector(
-                    onTap: () {
-                      AnalyticsService.instance.track(
-                        AnalyticsEvents.entityOpened,
-                        properties: {
-                          'module': 'food',
-                          'entity_type': 'restaurant',
-                          'entity_id': restaurant.id,
-                          'position': index + 1,
-                          'result_count': restaurants.length,
-                          'sort_key': _selectedSort,
-                          'query': _searchQuery.trim().toLowerCase(),
-                        },
-                      );
-                      context.push('/food/restaurant/${restaurant.id}');
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: AppSpacing.shadowSm,
-                      ),
-                      child: Row(
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 18,
+                    crossAxisSpacing: 14,
+                    childAspectRatio: 0.8,
+                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final restaurant = restaurants[index];
+                    return GestureDetector(
+                      onTap: () {
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.entityOpened,
+                          properties: {
+                            'module': 'food',
+                            'entity_type': 'restaurant',
+                            'entity_id': restaurant.id,
+                            'position': index + 1,
+                            'result_count': restaurants.length,
+                            'sort_key': _selectedSort,
+                            'query': _searchQuery.trim().toLowerCase(),
+                          },
+                        );
+                        context.push('/food/restaurant/${restaurant.id}');
+                      },
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColors.food.withValues(alpha: 0.3),
-                                  AppColors.food.withValues(alpha: 0.08),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child:
-                                restaurant.imageUrl != null &&
-                                    restaurant.imageUrl!.trim().isNotEmpty
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(14),
-                                    child: Image.network(
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  const ColoredBox(color: AppColors.tile),
+                                  if (restaurant.imageUrl != null &&
+                                      restaurant.imageUrl!.trim().isNotEmpty)
+                                    Image.network(
                                       restaurant.imageUrl!,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, _, _) => Icon(
-                                        Icons.restaurant_rounded,
-                                        color: AppColors.food.withValues(
-                                          alpha: 0.5,
+                                      errorBuilder: (_, _, _) => Center(
+                                        child: Icon(
+                                          Icons.restaurant_rounded,
+                                          size: 34,
+                                          color: AppColors.food.withValues(
+                                            alpha: 0.45,
+                                          ),
                                         ),
-                                        size: 36,
+                                      ),
+                                    )
+                                  else
+                                    Center(
+                                      child: Icon(
+                                        Icons.restaurant_rounded,
+                                        size: 34,
+                                        color: AppColors.food.withValues(
+                                          alpha: 0.45,
+                                        ),
                                       ),
                                     ),
-                                  )
-                                : Icon(
-                                    Icons.restaurant_rounded,
-                                    color: AppColors.food.withValues(
-                                      alpha: 0.5,
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 7,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.dark.withValues(
+                                          alpha: 0.7,
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.star_rounded,
+                                            size: 11,
+                                            color: AppColors.warning,
+                                          ),
+                                          const SizedBox(width: 3),
+                                          Text(
+                                            '${restaurant.rating}',
+                                            style: const TextStyle(
+                                              color: AppColors.white,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    size: 36,
                                   ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        restaurant.name,
-                                        style: AppTextStyles.labelLarge,
-                                      ),
-                                    ),
-                                    Container(
+                                  Positioned(
+                                    top: 8,
+                                    left: 8,
+                                    child: Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 8,
-                                        vertical: 4,
+                                        vertical: 3,
                                       ),
                                       decoration: BoxDecoration(
                                         color: restaurant.isOpen
-                                            ? AppColors.successLight
-                                            : AppColors.errorLight,
+                                            ? AppColors.white
+                                            : AppColors.error,
                                         borderRadius: BorderRadius.circular(
                                           999,
                                         ),
@@ -478,116 +595,76 @@ class _FoodScreenState extends State<FoodScreen> {
                                             : l10n.t('food.closed'),
                                         style: AppTextStyles.labelSmall
                                             .copyWith(
+                                              fontSize: 9,
                                               color: restaurant.isOpen
-                                                  ? AppColors.success
-                                                  : AppColors.error,
+                                                  ? AppColors.primary
+                                                  : AppColors.white,
                                             ),
                                       ),
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  restaurant.cuisine,
-                                  style: AppTextStyles.caption,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 8),
-                                Wrap(
-                                  spacing: 6,
-                                  runSpacing: 6,
-                                  children: restaurant.tags.take(2).map((tag) {
-                                    return Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.foodBg,
-                                        borderRadius: BorderRadius.circular(
-                                          999,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        tag,
-                                        style: AppTextStyles.labelSmall
-                                            .copyWith(color: AppColors.food),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.star_rounded,
-                                      size: 16,
-                                      color: AppColors.warning,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${restaurant.rating}',
-                                      style: AppTextStyles.labelSmall.copyWith(
-                                        color: AppColors.dark,
-                                      ),
-                                    ),
-                                    Text(
-                                      ' (${restaurant.reviewCount}+)',
-                                      style: AppTextStyles.caption,
-                                    ),
-                                    const SizedBox(width: 10),
-                                    const Icon(
-                                      Icons.schedule_rounded,
-                                      size: 14,
-                                      color: AppColors.mediumGrey,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      '${restaurant.deliveryTime} min',
-                                      style: AppTextStyles.caption,
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.delivery_dining_rounded,
-                                      size: 16,
-                                      color: AppColors.primary,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      restaurant.deliveryFee == 'Free'
-                                          ? l10n.t('food.free_delivery')
-                                          : l10n.t(
-                                              'food.delivery_fee',
-                                              params: {
-                                                'fee': restaurant.deliveryFee,
-                                              },
-                                            ),
-                                      style: AppTextStyles.caption.copyWith(
-                                        color: restaurant.deliveryFee == 'Free'
-                                            ? AppColors.success
-                                            : AppColors.grey,
-                                      ),
-                                    ),
-                                    const Spacer(),
-                                    Text(
-                                      '${restaurant.distance.toStringAsFixed(1)} km',
-                                      style: AppTextStyles.caption,
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                  ),
+                                ],
+                              ),
                             ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            restaurant.name,
+                            style: AppTextStyles.labelLarge.copyWith(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            restaurant.cuisine,
+                            style: AppTextStyles.caption,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 5),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.schedule_rounded,
+                                size: 13,
+                                color: AppColors.mediumGrey,
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                restaurant.deliveryTime,
+                                style: AppTextStyles.caption,
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.near_me_outlined,
+                                size: 13,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                '${restaurant.distance.toStringAsFixed(1)} km',
+                                style: AppTextStyles.caption,
+                              ),
+                              const Spacer(),
+                              Text(
+                                restaurant.deliveryFee == 'Free'
+                                    ? l10n.t('food.free_delivery')
+                                    : restaurant.deliveryFee,
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ),
-                  );
-                }, childCount: restaurants.length),
+                    );
+                  }, childCount: restaurants.length),
+                ),
               ),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
           ],
@@ -832,18 +909,17 @@ class _FoodCategory extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              width: 56,
-              height: 56,
+              width: 62,
+              height: 62,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? color.withValues(alpha: 0.2)
-                    : color.withValues(alpha: 0.12),
-                border: isSelected
-                    ? Border.all(color: color.withValues(alpha: 0.55))
-                    : null,
-                borderRadius: BorderRadius.circular(16),
+                color: isSelected ? AppColors.primary : AppColors.tile,
+                shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: 28),
+              child: Icon(
+                icon,
+                color: isSelected ? AppColors.white : color,
+                size: 26,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
@@ -851,7 +927,10 @@ class _FoodCategory extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
-              style: AppTextStyles.labelSmall.copyWith(color: AppColors.dark),
+              style: AppTextStyles.labelSmall.copyWith(
+                color: isSelected ? AppColors.primaryDark : AppColors.dark,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),

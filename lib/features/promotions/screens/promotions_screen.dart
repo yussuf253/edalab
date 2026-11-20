@@ -82,7 +82,10 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text(l10n.t('promotions.title')), centerTitle: false),
+      appBar: AppBar(
+        title: Text(l10n.t('promotions.title')),
+        centerTitle: false,
+      ),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -92,7 +95,8 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.border),
                   boxShadow: AppSpacing.shadowSm,
                 ),
                 child: Row(
@@ -135,11 +139,8 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     itemCount: 3,
                     separatorBuilder: (_, _) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) => const ShimmerBlock(
-                      width: 280,
-                      height: 132,
-                      radius: 20,
-                    ),
+                    itemBuilder: (context, index) =>
+                        const ShimmerBlock(width: 280, height: 132, radius: 20),
                   ),
                 ),
               ),
@@ -263,7 +264,10 @@ class _SpecialOfferCard extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.16),
               borderRadius: BorderRadius.circular(999),
             ),
-            child: Text(_resolvePromoText(deal.discountLabel, l10n), style: AppTextStyles.badge),
+            child: Text(
+              _resolvePromoText(deal.discountLabel, l10n),
+              style: AppTextStyles.badge,
+            ),
           ),
           const Spacer(),
           Text(
@@ -294,7 +298,8 @@ class _DealCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: Row(
@@ -313,7 +318,10 @@ class _DealCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_resolvePromoText(deal.title, l10n), style: AppTextStyles.labelLarge),
+                Text(
+                  _resolvePromoText(deal.title, l10n),
+                  style: AppTextStyles.labelLarge,
+                ),
                 const SizedBox(height: 4),
                 Text(
                   _resolvePromoText(deal.reason ?? deal.description, l10n),
@@ -344,7 +352,8 @@ class _CouponCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: Row(
@@ -363,7 +372,10 @@ class _CouponCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(_resolvePromoText(deal.title, l10n), style: AppTextStyles.labelLarge),
+                Text(
+                  _resolvePromoText(deal.title, l10n),
+                  style: AppTextStyles.labelLarge,
+                ),
                 const SizedBox(height: 4),
                 Text(
                   deal.code ?? _resolvePromoText(deal.discountLabel, l10n),

@@ -10,7 +10,6 @@ import '../../../core/models/models.dart';
 import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
-import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/notification_bell.dart';
 import '../../food/screens/food_screen.dart';
@@ -144,99 +143,45 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // App Bar
+            // Header row: avatar · search pill · bell.
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 12, 14, 0),
                 child: Row(
                   children: [
-                    // Avatar
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.primaryGradient,
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child:
-                          user?.avatarUrl != null &&
-                              user!.avatarUrl!.trim().isNotEmpty
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(14),
-                              child: Image.network(
-                                user.avatarUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, error, stackTrace) =>
-                                    const Icon(
-                                      Icons.person_rounded,
-                                      color: AppColors.white,
-                                      size: 24,
-                                    ),
-                              ),
-                            )
-                          : const Icon(
-                              Icons.person_rounded,
-                              color: AppColors.white,
-                              size: 24,
-                            ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Greeting
+                    _HomeAvatar(user: user, size: 44),
+                    const SizedBox(width: 10),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            locationDisplay,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.grey,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(displayName, style: AppTextStyles.h4),
-                        ],
+                      child: _HomeSearchPill(
+                        hint: l10n.t('common.search_services'),
+                        onTap: () => context.push('/search'),
                       ),
                     ),
-                    // Notification bell
-                    const NotificationBell(),
+                    const SizedBox(width: 2),
+                    const NotificationBell(
+                      size: 42,
+                      backgroundColor: Colors.transparent,
+                      iconColor: AppColors.dark,
+                      showBorder: false,
+                    ),
                   ],
                 ),
               ),
             ),
 
-            // Search Bar
+            // Services Grid — icon tiles straight under the header.
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: AppSearchBar(
-                  hint: l10n.t('common.search_services'),
-                  readOnly: true,
-                  onTap: () => context.push('/search'),
-                ),
+                padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                child: _ServicesGrid(enabledModules: enabledModuleIds),
               ),
             ),
 
             // Promo Banner
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                 child: _PromoBanner(),
-              ),
-            ),
-
-            // Services Grid
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
-                child: Column(
-                  children: [
-                    SectionHeader(title: l10n.t('home.services')),
-                    const SizedBox(height: 14),
-                    _ServicesGrid(enabledModules: enabledModuleIds),
-                  ],
-                ),
               ),
             ),
 
@@ -268,7 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SectionHeader(
                         title: l10n.t('home.popular_restaurants'),
-                        actionText: l10n.t('common.see_all'),
+                        circleAction: true,
                         onAction: () => context.push('/food'),
                       ),
                       const SizedBox(height: 16),
@@ -287,7 +232,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SectionHeader(
                         title: l10n.t('home.top_doctors'),
-                        actionText: l10n.t('common.see_all'),
+                        circleAction: true,
                         onAction: () => context.push('/doctor'),
                       ),
                       const SizedBox(height: 16),
@@ -306,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       SectionHeader(
                         title: l10n.t('home.trending_products'),
-                        actionText: l10n.t('common.see_all'),
+                        circleAction: true,
                         onAction: () => context.push('/shopping'),
                       ),
                       const SizedBox(height: 16),
@@ -354,10 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     final textScale = MediaQuery.textScalerOf(context).scale(1.0);
-    // Greeting line boxes: bodySmall (12 × 1.5) over h4 (18 × 1.4), and the
-    // SectionHeader row is a single h4 line — all scaled like real Text is.
-    final locationLineBox = 12 * 1.5 * textScale;
-    final nameLineBox = 18 * 1.4 * textScale;
+    // The SectionHeader row is a single h4 line — scaled like real Text is.
     final sectionHeaderHeight = 18 * 1.4 * textScale;
     final serviceCount = _serviceModuleKeys
         .where((moduleId) => enabledModuleIds.contains(moduleId))
@@ -369,70 +311,24 @@ class _HomeScreenState extends State<HomeScreen> {
         child: AppShimmer(
           child: CustomScrollView(
             slivers: [
-              // Greeting row — same spot as the loaded header row.
+              // Header row — avatar · search pill · bell.
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 12, 14, 0),
                   child: Row(
-                    children: [
-                      const ShimmerBlock(width: 48, height: 48, radius: 14),
-                      const SizedBox(width: 12),
+                    children: const [
+                      ShimmerBlock(width: 44, height: 44, radius: 22),
+                      SizedBox(width: 10),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              height: locationLineBox,
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: ShimmerBlock(
-                                  width: 110,
-                                  height: 12,
-                                  radius: 6,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            SizedBox(
-                              height: nameLineBox,
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: ShimmerBlock(
-                                  width: 150,
-                                  height: 18,
-                                  radius: 6,
-                                ),
-                              ),
-                            ),
-                          ],
+                        child: ShimmerBlock(
+                          width: double.infinity,
+                          height: 44,
+                          radius: AppSpacing.radiusFull,
                         ),
                       ),
-                      const ShimmerBlock(width: 48, height: 48, radius: 14),
+                      SizedBox(width: 8),
+                      ShimmerBlock(width: 26, height: 26, radius: 13),
                     ],
-                  ),
-                ),
-              ),
-
-              // Search bar — AppSearchBar is 50 tall with radiusLg.
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: const ShimmerBlock(
-                    width: double.infinity,
-                    height: 50,
-                    radius: AppSpacing.radiusLg,
-                  ),
-                ),
-              ),
-
-              // Promo banner — 132 tall, radius 20.
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                  child: const ShimmerBlock(
-                    width: double.infinity,
-                    height: 132,
-                    radius: 20,
                   ),
                 ),
               ),
@@ -440,16 +336,19 @@ class _HomeScreenState extends State<HomeScreen> {
               // Services grid.
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 28, 0, 0),
-                  child: Column(
-                    children: [
-                      _shimmerSectionHeader(
-                        titleWidth: 96,
-                        height: sectionHeaderHeight,
-                      ),
-                      const SizedBox(height: 14),
-                      _ServicesGridShimmer(count: serviceCount),
-                    ],
+                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  child: _ServicesGridShimmer(count: serviceCount),
+                ),
+              ),
+
+              // Promo banner — 132 tall, radius 16.
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                  child: const ShimmerBlock(
+                    width: double.infinity,
+                    height: 132,
+                    radius: 16,
                   ),
                 ),
               ),
@@ -485,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           showAction: true,
                         ),
                         const SizedBox(height: 16),
-                        _shimmerCardRow(height: 230, cardWidth: 220),
+                        _shimmerCardRow(height: 192, cardWidth: 184),
                       ],
                     ),
                   ),
@@ -504,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           showAction: true,
                         ),
                         const SizedBox(height: 16),
-                        _shimmerCardRow(height: 110, cardWidth: 260),
+                        _shimmerCardRow(height: 96, cardWidth: 256),
                       ],
                     ),
                   ),
@@ -523,7 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           showAction: true,
                         ),
                         const SizedBox(height: 16),
-                        _shimmerCardRow(height: 260, cardWidth: 180),
+                        _shimmerCardRow(height: 214, cardWidth: 176),
                       ],
                     ),
                   ),
@@ -558,15 +457,16 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: AppColors.primaryGradient,
-              borderRadius: BorderRadius.circular(14),
+              shape: BoxShape.circle,
             ),
             child: user?.avatarUrl != null && user!.avatarUrl!.trim().isNotEmpty
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
+                ? ClipOval(
                     child: Image.network(
                       user.avatarUrl!,
+                      width: 48,
+                      height: 48,
                       fit: BoxFit.cover,
                       errorBuilder: (_, error, stackTrace) => const Icon(
                         Icons.person_rounded,
@@ -592,12 +492,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   locationDisplay,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.grey,
+                    fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
-                Text(displayName, style: AppTextStyles.h4),
+                Text(
+                  displayName,
+                  style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.w700),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
@@ -615,7 +521,7 @@ class _PromoBanner extends StatelessWidget {
     return Container(
       height: 132,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: AppColors.secondary.withValues(alpha: 0.18),
@@ -734,51 +640,7 @@ class _ServicesGrid extends StatelessWidget {
       );
     }
 
-    // ── 2 modules: two wide cards side-by-side (each spans 2 normal slots) ──
-    if (services.length == 2) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: _WideServiceCard(service: services[0])),
-              const SizedBox(width: 10),
-              Expanded(child: _WideServiceCard(service: services[1])),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // ── 3 modules: two normal cards + one wide card filling remaining space ──
-    if (services.length == 3) {
-      const cardHeight = 80.0;
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: SizedBox(
-          height: cardHeight,
-          child: Row(
-            children: [
-              Expanded(
-                flex: 1,
-                child: _NarrowServiceCard(service: services[0]),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 1,
-                child: _NarrowServiceCard(service: services[1]),
-              ),
-              const SizedBox(width: 8),
-              // Third card spans 2 normal slots → wide horizontal layout
-              Expanded(flex: 2, child: _WideServiceCard(service: services[2])),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // ── 4+ modules: original 4-column grid ───────────────────────────────────
+    // ── Fustgo 4-column icon-tile grid (any module count) ────────────────
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: GridView.builder(
@@ -786,7 +648,7 @@ class _ServicesGrid extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          mainAxisSpacing: 10,
+          mainAxisSpacing: 14,
           crossAxisSpacing: 8,
           childAspectRatio: serviceGridAspectRatio,
         ),
@@ -794,48 +656,48 @@ class _ServicesGrid extends StatelessWidget {
         itemBuilder: (context, index) {
           final service = services[index];
           return GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () => context.push(service.route),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final iconSize = constraints.maxHeight >= 92 ? 58.0 : 54.0;
-                final iconPadding = iconSize >= 58 ? 11.0 : 10.0;
-                final gap = constraints.maxHeight >= 92 ? 7.0 : 6.0;
+                final tileSize = constraints.maxWidth.clamp(46.0, 62.0);
                 return Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     Container(
-                      width: iconSize,
-                      height: iconSize,
+                      width: tileSize,
+                      height: tileSize,
                       decoration: BoxDecoration(
-                        color: AppColors.secondary.withValues(alpha: 0.14),
+                        color: service.bgColor,
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(iconPadding),
+                        padding: EdgeInsets.all(tileSize * 0.25),
                         child: Image.asset(
                           service.assetPath,
                           fit: BoxFit.contain,
-                          color: AppColors.primary,
-                          colorBlendMode: BlendMode.srcIn,
                           errorBuilder: (context, error, stackTrace) {
                             return Icon(
                               Icons.widgets_rounded,
-                              color: AppColors.primary,
-                              size: 28,
+                              color: service.color,
+                              size: 26,
                             );
                           },
                         ),
                       ),
                     ),
-                    SizedBox(height: gap),
-                    Expanded(
-                      child: Text(
-                        service.title,
-                        style: AppTextStyles.labelMedium,
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                    const SizedBox(height: 8),
+                    Text(
+                      service.title,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.dark,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                        height: 1.25,
                       ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 );
@@ -843,112 +705,6 @@ class _ServicesGrid extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-// ── Wide card: horizontal layout (icon left, label right) ────────────────────
-// Used for 2-module layout (each card) and 3-module layout (third card).
-class _WideServiceCard extends StatelessWidget {
-  const _WideServiceCard({required this.service});
-  final _ServiceItem service;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.push(service.route),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.secondary.withValues(alpha: 0.10),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                color: AppColors.secondary.withValues(alpha: 0.16),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Image.asset(
-                  service.assetPath,
-                  fit: BoxFit.contain,
-                  color: AppColors.primary,
-                  colorBlendMode: BlendMode.srcIn,
-                  errorBuilder: (_, __, ___) => Icon(
-                    Icons.widgets_rounded,
-                    color: AppColors.primary,
-                    size: 22,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                service.title,
-                style: AppTextStyles.labelMedium,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ── Narrow card: vertical layout matching original grid cell ─────────────────
-// Used for the first two cards in the 3-module layout.
-class _NarrowServiceCard extends StatelessWidget {
-  const _NarrowServiceCard({required this.service});
-  final _ServiceItem service;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.push(service.route),
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: AppColors.secondary.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(11),
-              child: Image.asset(
-                service.assetPath,
-                fit: BoxFit.contain,
-                color: AppColors.primary,
-                colorBlendMode: BlendMode.srcIn,
-                errorBuilder: (_, __, ___) => Icon(
-                  Icons.widgets_rounded,
-                  color: AppColors.primary,
-                  size: 26,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            service.title,
-            style: AppTextStyles.labelMedium,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
       ),
     );
   }
@@ -990,14 +746,14 @@ Widget _shimmerSectionHeader({
   bool showAction = false,
 }) {
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
+    padding: const EdgeInsets.symmetric(horizontal: 20),
     child: SizedBox(
       height: height,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           ShimmerBlock(width: titleWidth, height: 18),
-          if (showAction) const ShimmerBlock(width: 52, height: 14, radius: 7),
+          if (showAction) const ShimmerBlock(width: 30, height: 30, radius: 15),
         ],
       ),
     ),
@@ -1048,73 +804,7 @@ class _ServicesGridShimmer extends StatelessWidget {
       );
     }
 
-    // 2 modules: two wide cards side by side (74 tall = 14 padding + 46 icon).
-    if (count == 2) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          children: [
-            Expanded(
-              child: ShimmerBlock(
-                width: double.infinity,
-                height: 74,
-                radius: 20,
-              ),
-            ),
-            SizedBox(width: 10),
-            Expanded(
-              child: ShimmerBlock(
-                width: double.infinity,
-                height: 74,
-                radius: 20,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // 3 modules: two normal slots + one wide slot, 80 tall.
-    if (count == 3) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: SizedBox(
-          height: 80,
-          child: Row(
-            children: [
-              Expanded(
-                flex: 1,
-                child: ShimmerBlock(
-                  width: double.infinity,
-                  height: 80,
-                  radius: 20,
-                ),
-              ),
-              SizedBox(width: 8),
-              Expanded(
-                flex: 1,
-                child: ShimmerBlock(
-                  width: double.infinity,
-                  height: 80,
-                  radius: 20,
-                ),
-              ),
-              SizedBox(width: 8),
-              Expanded(
-                flex: 2,
-                child: ShimmerBlock(
-                  width: double.infinity,
-                  height: 80,
-                  radius: 20,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // 1 or 4+ modules: the same 4-column grid the loaded view uses.
+    // Always the same 4-column grid the loaded view uses.
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: GridView.builder(
@@ -1122,7 +812,7 @@ class _ServicesGridShimmer extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          mainAxisSpacing: 10,
+          mainAxisSpacing: 14,
           crossAxisSpacing: 8,
           childAspectRatio: _servicesGridAspectRatio(context),
         ),
@@ -1142,19 +832,13 @@ class _GridServiceTileShimmer extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final iconSize = constraints.maxHeight >= 92 ? 58.0 : 54.0;
-        final gap = constraints.maxHeight >= 92 ? 7.0 : 6.0;
+        final tileSize = constraints.maxWidth.clamp(46.0, 62.0);
         return Column(
           mainAxisSize: MainAxisSize.max,
           children: [
-            ShimmerBlock(width: iconSize, height: iconSize, radius: 18),
-            SizedBox(height: gap),
-            Expanded(
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: ShimmerBlock(width: 52, height: 12, radius: 6),
-              ),
-            ),
+            ShimmerBlock(width: tileSize, height: tileSize, radius: 18),
+            const SizedBox(height: 8),
+            const ShimmerBlock(width: 52, height: 11, radius: 6),
           ],
         );
       },
@@ -1329,7 +1013,7 @@ class _PopularRestaurants extends StatelessWidget {
             : const <RestaurantModel>[];
 
         return SizedBox(
-          height: 230,
+          height: 192,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1339,115 +1023,131 @@ class _PopularRestaurants extends StatelessWidget {
               final restaurant = restaurants[index];
               return GestureDetector(
                 onTap: () => context.push('/food/restaurant/${restaurant.id}'),
-                child: Container(
-                  width: 220,
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: AppSpacing.shadowSm,
-                  ),
+                child: SizedBox(
+                  width: 184,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        height: 120,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              AppColors.food.withValues(alpha: 0.3),
-                              AppColors.food.withValues(alpha: 0.1),
-                            ],
-                          ),
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(16),
-                          ),
-                        ),
-                        child:
-                            restaurant.imageUrl != null &&
-                                restaurant.imageUrl!.trim().isNotEmpty
-                            ? ClipRRect(
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(16),
-                                ),
-                                child: Image.network(
+                      SizedBox(
+                        height: 118,
+                        width: 184,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              const ColoredBox(color: AppColors.tile),
+                              if (restaurant.imageUrl != null &&
+                                  restaurant.imageUrl!.trim().isNotEmpty)
+                                Image.network(
                                   restaurant.imageUrl!,
-                                  width: double.infinity,
-                                  height: double.infinity,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (_, _, _) {
-                                    return Center(
-                                      child: Icon(
-                                        Icons.restaurant_rounded,
-                                        size: 40,
-                                        color: AppColors.food.withValues(
-                                          alpha: 0.5,
+                                  errorBuilder: (_, _, _) => Center(
+                                    child: Icon(
+                                      Icons.restaurant_rounded,
+                                      size: 34,
+                                      color: AppColors.food.withValues(
+                                        alpha: 0.45,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              else
+                                Center(
+                                  child: Icon(
+                                    Icons.restaurant_rounded,
+                                    size: 34,
+                                    color: AppColors.food.withValues(
+                                      alpha: 0.45,
+                                    ),
+                                  ),
+                                ),
+                              Positioned(
+                                top: 8,
+                                right: 8,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 7,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.dark.withValues(
+                                      alpha: 0.7,
+                                    ),
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.star_rounded,
+                                        size: 11,
+                                        color: AppColors.warning,
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        restaurant.rating.toString(),
+                                        style: const TextStyle(
+                                          color: AppColors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
-                                    );
-                                  },
-                                ),
-                              )
-                            : Center(
-                                child: Icon(
-                                  Icons.restaurant_rounded,
-                                  size: 40,
-                                  color: AppColors.food.withValues(alpha: 0.5),
+                                    ],
+                                  ),
                                 ),
                               ),
+                            ],
+                          ),
+                        ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              restaurant.name,
-                              style: AppTextStyles.labelLarge,
+                      const SizedBox(height: 8),
+                      Text(
+                        restaurant.name,
+                        style: AppTextStyles.labelLarge.copyWith(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        restaurant.cuisine,
+                        style: AppTextStyles.caption,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.delivery_dining_rounded,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            restaurant.deliveryTime,
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.grey,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              restaurant.cuisine,
-                              style: AppTextStyles.caption,
+                          ),
+                          const SizedBox(width: 8),
+                          Text('•', style: AppTextStyles.caption),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              restaurant.deliveryFee,
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.star_rounded,
-                                  size: 16,
-                                  color: AppColors.warning,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  restaurant.rating.toString(),
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    color: AppColors.dark,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                const Icon(
-                                  Icons.schedule_rounded,
-                                  size: 14,
-                                  color: AppColors.mediumGrey,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  restaurant.deliveryTime,
-                                  style: AppTextStyles.caption,
-                                ),
-                                const Spacer(),
-                                Text(
-                                  restaurant.deliveryFee,
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -1479,7 +1179,7 @@ class _TopDoctors extends StatelessWidget {
             : const <DoctorModel>[];
 
         return SizedBox(
-          height: 110,
+          height: 96,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1490,12 +1190,11 @@ class _TopDoctors extends StatelessWidget {
               return GestureDetector(
                 onTap: () => context.push('/doctor/detail/${doctor.id}'),
                 child: Container(
-                  width: 260,
-                  padding: const EdgeInsets.all(14),
+                  width: 256,
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: AppSpacing.shadowSm,
+                    color: AppColors.tile,
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: Row(
                     children: [
@@ -1601,7 +1300,7 @@ class _TrendingProducts extends StatelessWidget {
             : const <ProductModel>[];
 
         return SizedBox(
-          height: 260,
+          height: 214,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1611,25 +1310,18 @@ class _TrendingProducts extends StatelessWidget {
               final product = products[index];
               return GestureDetector(
                 onTap: () => context.push('/shopping/product/${product.id}'),
-                child: Container(
-                  width: 180,
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: AppSpacing.shadowSm,
-                  ),
+                child: SizedBox(
+                  width: 176,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Stack(
                         children: [
                           Container(
-                            height: 150,
+                            height: 140,
                             decoration: BoxDecoration(
-                              color: AppColors.extraLightGrey,
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(16),
-                              ),
+                              color: AppColors.tile,
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: Center(
                               child: Icon(
@@ -1704,6 +1396,91 @@ class _TrendingProducts extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Circular avatar shown in the home header.
+class _HomeAvatar extends StatelessWidget {
+  const _HomeAvatar({required this.user, required this.size});
+
+  final dynamic user;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final avatarUrl = user?.avatarUrl as String?;
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        gradient: AppColors.primaryGradient,
+        shape: BoxShape.circle,
+      ),
+      child: avatarUrl != null && avatarUrl.trim().isNotEmpty
+          ? ClipOval(
+              child: Image.network(
+                avatarUrl,
+                width: size,
+                height: size,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => Icon(
+                  Icons.person_rounded,
+                  color: AppColors.white,
+                  size: size * 0.5,
+                ),
+              ),
+            )
+          : Icon(
+              Icons.person_rounded,
+              color: AppColors.white,
+              size: size * 0.5,
+            ),
+    );
+  }
+}
+
+/// Soft grey pill that opens the global search screen.
+class _HomeSearchPill extends StatelessWidget {
+  const _HomeSearchPill({required this.hint, required this.onTap});
+
+  final String hint;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: AppColors.tile,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.search_rounded,
+              size: 19,
+              color: AppColors.mediumGrey,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                hint,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.bodyMedium.copyWith(
+                  fontSize: 13,
+                  color: AppColors.mediumGrey,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

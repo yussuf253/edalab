@@ -150,10 +150,10 @@ class AddressesScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     border: address.isDefault
                         ? Border.all(color: AppColors.primary, width: 1.5)
-                        : null,
+                        : Border.all(color: AppColors.border),
                     boxShadow: AppSpacing.shadowSm,
                   ),
                   child: Row(
@@ -516,7 +516,7 @@ class _AddressSheetState extends State<_AddressSheet> {
           ),
           child: Material(
             color: AppColors.white,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(28),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: SingleChildScrollView(
@@ -602,8 +602,8 @@ class _AddressSheetState extends State<_AddressSheet> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AppColors.background,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.extraLightGrey),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

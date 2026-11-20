@@ -172,7 +172,8 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Row(
                   children: [
@@ -212,6 +213,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: AppColors.white,
+                  border: Border.all(color: AppColors.border),
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Column(
@@ -417,10 +419,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                         width: 60,
                         decoration: BoxDecoration(
                           color: selected ? AppColors.doctor : AppColors.white,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(18),
                           border: selected
                               ? null
-                              : Border.all(color: AppColors.lightGrey),
+                              : Border.all(color: AppColors.border),
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -470,10 +472,10 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: selected ? AppColors.doctor : AppColors.white,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(18),
                         border: selected
                             ? null
-                            : Border.all(color: AppColors.lightGrey),
+                            : Border.all(color: AppColors.border),
                       ),
                       child: Text(
                         _times[index],
@@ -710,8 +712,8 @@ class _TypeCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             color: selected ? AppColors.doctor : AppColors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: selected ? null : Border.all(color: AppColors.lightGrey),
+            borderRadius: BorderRadius.circular(18),
+            border: selected ? null : Border.all(color: AppColors.border),
           ),
           child: Column(
             children: [
@@ -752,11 +754,11 @@ class _OptionChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: selected ? AppColors.doctor : AppColors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: selected ? null : Border.all(color: AppColors.lightGrey),
+          borderRadius: BorderRadius.circular(999),
+          border: selected ? null : Border.all(color: AppColors.border),
         ),
         child: Text(
           label,

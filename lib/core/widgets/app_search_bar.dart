@@ -32,10 +32,18 @@ class AppSearchBar extends StatelessWidget {
     return GestureDetector(
       onTap: readOnly ? onTap : null,
       child: Container(
-        height: 50,
+        height: 52,
         decoration: BoxDecoration(
-          color: AppColors.extraLightGrey,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          border: Border.all(color: AppColors.border),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x08000000),
+              blurRadius: 12,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
         child: TextField(
           controller: controller,
@@ -43,8 +51,19 @@ class AppSearchBar extends StatelessWidget {
           readOnly: readOnly,
           autofocus: autofocus,
           onTap: onTap,
+          cursorColor: AppColors.primary,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppColors.dark,
+          ),
           decoration: InputDecoration(
             hintText: resolvedHint,
+            hintStyle: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.mediumGrey,
+            ),
             prefixIcon: prefix ??
                 const Icon(
                   Icons.search_rounded,
@@ -52,10 +71,15 @@ class AppSearchBar extends StatelessWidget {
                   size: 22,
                 ),
             suffixIcon: suffix,
+            filled: false,
+            isDense: true,
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
           ),
         ),
       ),
