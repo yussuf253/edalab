@@ -187,7 +187,7 @@ class SettingsScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: AppColors.errorLight,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: AppColors.error.withValues(alpha: 0.25),
                       ),
@@ -289,7 +289,7 @@ class SettingsScreen extends StatelessWidget {
                         color: isSelected
                             ? AppColors.primary.withValues(alpha: 0.08)
                             : AppColors.background,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isSelected
                               ? AppColors.primary
@@ -355,7 +355,7 @@ class _SettingTile extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),
         child: Row(
@@ -408,7 +408,7 @@ class _SettingToggle extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(

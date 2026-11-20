@@ -134,17 +134,15 @@ class _DoctorScreenState extends State<DoctorScreen> {
                   child: Container(
                     clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF0E8E68),
-                          AppColors.homeServices,
-                          Color(0xFF57C49A),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                      color: AppColors.doctorBg,
+                      image: const DecorationImage(
+                        image: AssetImage(
+                          'assets/images/headers/header_painreleaf.png',
+                        ),
+                        fit: BoxFit.cover,
+                        alignment: Alignment.centerRight,
                       ),
-                      borderRadius: BorderRadius.circular(22),
-                      boxShadow: AppSpacing.shadowSm,
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
@@ -158,10 +156,8 @@ class _DoctorScreenState extends State<DoctorScreen> {
                                   l10n.t('doctor.home_care_banner_title'),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: AppTextStyles.h3.copyWith(
-                                    color: AppColors.white,
-                                    fontWeight: FontWeight.w800,
-                                    height: 1.2,
+                                  style: AppTextStyles.h4.copyWith(
+                                    height: 1.25,
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -170,8 +166,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: AppTextStyles.bodySmall.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.86),
-                                    height: 1.3,
+                                    height: 1.35,
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -191,7 +186,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                                         l10n.t('doctor.home_care_explore'),
                                         style: AppTextStyles.labelMedium
                                             .copyWith(
-                                              color: AppColors.homeServices,
+                                              color: AppColors.doctor,
                                               fontWeight: FontWeight.w700,
                                             ),
                                       ),
@@ -199,7 +194,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                                       const Icon(
                                         Icons.arrow_forward_rounded,
                                         size: 18,
-                                        color: AppColors.homeServices,
+                                        color: AppColors.doctor,
                                       ),
                                     ],
                                   ),
@@ -207,20 +202,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                               ],
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          Container(
-                            width: 58,
-                            height: 58,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.18),
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: const Icon(
-                              Icons.local_hospital_rounded,
-                              color: AppColors.white,
-                              size: 32,
-                            ),
-                          ),
+                          const SizedBox(width: 84),
                         ],
                       ),
                     ),
@@ -304,7 +286,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                 foregroundColor: AppColors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               child: Text(

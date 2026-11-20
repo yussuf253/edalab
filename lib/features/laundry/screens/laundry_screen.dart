@@ -87,12 +87,13 @@ class _LaundryScreenState extends State<LaundryScreen> {
             children: [
               // Banner
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.laundry, AppColors.secondaryLight],
+                  color: AppColors.laundryBg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.laundry.withValues(alpha: 0.16),
                   ),
-                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   children: [
@@ -102,16 +103,12 @@ class _LaundryScreenState extends State<LaundryScreen> {
                         children: [
                           Text(
                             l10n.t('laundry.hero_title'),
-                            style: AppTextStyles.h3.copyWith(
-                              color: AppColors.white,
-                            ),
+                            style: AppTextStyles.h4,
                           ),
                           const SizedBox(height: 4),
                           Text(
                             l10n.t('laundry.hero_subtitle'),
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: Colors.white70,
-                            ),
+                            style: AppTextStyles.bodySmall,
                           ),
                           const SizedBox(height: 12),
                           GestureDetector(
@@ -129,13 +126,13 @@ class _LaundryScreenState extends State<LaundryScreen> {
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.white,
+                                color: AppColors.laundry,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Text(
                                 l10n.t('laundry.order_now'),
                                 style: AppTextStyles.labelMedium.copyWith(
-                                  color: AppColors.laundry,
+                                  color: AppColors.white,
                                 ),
                               ),
                             ),
@@ -148,13 +145,13 @@ class _LaundryScreenState extends State<LaundryScreen> {
                       width: 70,
                       height: 70,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(
                         Icons.local_laundry_service_rounded,
-                        color: AppColors.white,
-                        size: 36,
+                        color: AppColors.laundry,
+                        size: 32,
                       ),
                     ),
                   ],

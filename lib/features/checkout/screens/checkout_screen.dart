@@ -597,7 +597,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.border),
               ),
               child: Column(

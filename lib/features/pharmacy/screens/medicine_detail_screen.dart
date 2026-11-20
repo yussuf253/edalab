@@ -315,14 +315,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.pharmacy,
-                          borderRadius: BorderRadius.circular(18),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.pharmacy.withValues(alpha: 0.22),
-                              blurRadius: 22,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
+                          borderRadius: BorderRadius.circular(14),
                         ),
                         child: Row(
                           children: [

@@ -55,27 +55,16 @@ class _PaymentFailureScreenState extends State<PaymentFailureScreen> {
                 const Spacer(),
                 // Failure animation placeholder
                 Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.error, Color(0xFFFF6B6B)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                  width: 96,
+                  height: 96,
+                  decoration: const BoxDecoration(
+                    color: AppColors.errorLight,
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.error.withValues(alpha: 0.3),
-                        blurRadius: 30,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
                   ),
                   child: const Icon(
                     Icons.close_rounded,
-                    color: AppColors.white,
-                    size: 60,
+                    color: AppColors.error,
+                    size: 44,
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -98,11 +87,13 @@ class _PaymentFailureScreenState extends State<PaymentFailureScreen> {
                 const SizedBox(height: 32),
                 // Error message
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.error, width: 1),
+                    color: AppColors.errorLight,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AppColors.error.withValues(alpha: 0.25),
+                    ),
                   ),
                   child: Column(
                     children: [
@@ -127,10 +118,10 @@ class _PaymentFailureScreenState extends State<PaymentFailureScreen> {
                 const SizedBox(height: 32),
                 // Payment info
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.border),
                   ),
                   child: Column(

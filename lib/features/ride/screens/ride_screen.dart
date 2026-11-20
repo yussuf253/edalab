@@ -621,7 +621,7 @@ class _RideScreenState extends State<RideScreen> {
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(16),
                           boxShadow: AppSpacing.shadowSm,
                         ),
                         child: Column(
@@ -629,17 +629,27 @@ class _RideScreenState extends State<RideScreen> {
                           children: [
                             Row(
                               children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.rideBg,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Icon(
-                                    _iconForRideCategory(ride.name),
-                                    color: AppColors.ride,
-                                    size: 22,
+                                SizedBox(
+                                  width: 54,
+                                  height: 38,
+                                  child: Image.asset(
+                                    'assets/images/ride/'
+                                    '${_carAssetFor(ride.name)}',
+                                    fit: BoxFit.contain,
+                                    alignment: Alignment.centerLeft,
+                                    errorBuilder: (_, _, _) => Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.rideBg,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Icon(
+                                        _iconForRideCategory(ride.name),
+                                        color: AppColors.ride,
+                                        size: 22,
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 const Spacer(),
@@ -923,6 +933,18 @@ class _RideScreenState extends State<RideScreen> {
     if (lower.contains('xl')) return Icons.airport_shuttle_rounded;
     if (lower.contains('premium')) return Icons.local_taxi_rounded;
     return Icons.directions_car_rounded;
+  }
+
+  /// Car art shipped with the app: the small yatzy for economy, the purple
+  /// saloon for the roomier categories.
+  String _carAssetFor(String name) {
+    final lower = name.toLowerCase();
+    if (lower.contains('quid') ||
+        lower.contains('mini') ||
+        lower.contains('eco')) {
+      return 'yellow_car.png';
+    }
+    return 'purple_car.png';
   }
 
   Future<void> _selectPlace({required bool isPickup}) async {
@@ -1598,7 +1620,7 @@ class _QuickRide extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: AppSpacing.shadowSm,
         ),
         child: Column(
@@ -1648,7 +1670,7 @@ class _AddQuickRidePlace extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: AppColors.lightGrey,
             style: BorderStyle.solid,
@@ -1699,7 +1721,7 @@ class _PlacePickerStatus extends StatelessWidget {
               height: 54,
               decoration: BoxDecoration(
                 color: AppColors.rideBg,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(icon, color: AppColors.ride, size: 26),
             ),

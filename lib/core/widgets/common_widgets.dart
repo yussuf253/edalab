@@ -28,7 +28,7 @@ class SectionHeader extends StatelessWidget {
           Expanded(
             child: Text(
               title,
-              style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.w700),
+              style: AppTextStyles.h4,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -40,14 +40,15 @@ class SectionHeader extends StatelessWidget {
               child: Container(
                 width: 30,
                 height: 30,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
+                decoration: BoxDecoration(
+                  color: AppColors.white,
                   shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.border),
                 ),
                 child: const Icon(
                   Icons.arrow_forward_rounded,
-                  size: 16,
-                  color: AppColors.white,
+                  size: 15,
+                  color: AppColors.dark,
                 ),
               ),
             )
@@ -62,14 +63,13 @@ class SectionHeader extends StatelessWidget {
                     actionText!,
                     style: AppTextStyles.labelMedium.copyWith(
                       color: AppColors.primary,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(width: 2),
                   const Icon(
-                    Icons.arrow_forward_rounded,
-                    size: 15,
+                    Icons.chevron_right_rounded,
+                    size: 17,
                     color: AppColors.primary,
                   ),
                 ],
@@ -103,7 +103,11 @@ class RatingStars extends StatelessWidget {
         } else if (index < rating) {
           return Icon(Icons.star_half_rounded, size: size, color: color);
         }
-        return Icon(Icons.star_outline_rounded, size: size, color: AppColors.lightGrey);
+        return Icon(
+          Icons.star_rounded,
+          size: size,
+          color: AppColors.lightGrey,
+        );
       }),
     );
   }
@@ -131,15 +135,15 @@ class AppChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          color: isSelected ? color : AppColors.white,
+          color: isSelected ? AppColors.primarySurface : AppColors.white,
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-          border: isSelected
-              ? null
-              : Border.all(color: AppColors.border, width: 1),
-          boxShadow: AppSpacing.shadowSm,
+          border: Border.all(
+            color: isSelected ? color : AppColors.border,
+            width: isSelected ? 1.2 : 1,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -147,15 +151,16 @@ class AppChip extends StatelessWidget {
             if (icon != null) ...[
               Icon(
                 icon,
-                size: 16,
-                color: isSelected ? AppColors.white : AppColors.grey,
+                size: 15,
+                color: isSelected ? color : AppColors.mediumGrey,
               ),
               const SizedBox(width: 6),
             ],
             Text(
               label,
               style: AppTextStyles.labelMedium.copyWith(
-                color: isSelected ? AppColors.white : AppColors.dark,
+                color: isSelected ? color : AppColors.grey,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
           ],
@@ -184,18 +189,18 @@ class StatusBadge extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: isCompact ? 8 : 10,
-        vertical: isCompact ? 3 : 5,
+        vertical: isCompact ? 3 : 4,
       ),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+        color: color.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         text,
         style: AppTextStyles.labelSmall.copyWith(
           color: textColor ?? color,
           fontWeight: FontWeight.w700,
-          fontSize: isCompact ? 10.5 : null,
+          fontSize: isCompact ? 10.5 : 11,
         ),
       ),
     );
@@ -227,28 +232,24 @@ class EmptyState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: AppColors.primarySurface,
+              width: 72,
+              height: 72,
+              decoration: const BoxDecoration(
+                color: AppColors.tile,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 40, color: AppColors.primary),
+              child: Icon(icon, size: 32, color: AppColors.mediumGrey),
             ),
-            const SizedBox(height: 24),
-            Text(
-              title,
-              style: AppTextStyles.h3,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 20),
+            Text(title, style: AppTextStyles.h3, textAlign: TextAlign.center),
+            const SizedBox(height: 6),
             Text(
               subtitle,
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
               textAlign: TextAlign.center,
             ),
             if (buttonText != null) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: 22),
               ElevatedButton(
                 onPressed: onButtonPressed,
                 child: Text(buttonText!),
@@ -283,14 +284,10 @@ class ImagePlaceholder extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: color ?? AppColors.extraLightGrey,
+        color: color ?? AppColors.tile,
         borderRadius: BorderRadius.circular(borderRadius),
       ),
-      child: Icon(
-        icon,
-        size: 32,
-        color: AppColors.lightGrey,
-      ),
+      child: Icon(icon, size: 30, color: AppColors.lightGrey),
     );
   }
 }

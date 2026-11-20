@@ -93,14 +93,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
             ),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.hotel.withValues(alpha: 0.4),
-                      AppColors.hotel.withValues(alpha: 0.15),
-                    ],
-                  ),
-                ),
+                decoration: const BoxDecoration(color: AppColors.tile),
                 child: Center(
                   child: Icon(
                     Icons.hotel_rounded,
@@ -238,7 +231,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: AppColors.white,
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppColors.border),
                             boxShadow: AppSpacing.shadowSm,
                           ),
@@ -298,15 +291,9 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
           ? null
           : Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
+                border: Border(top: BorderSide(color: AppColors.border)),
               ),
               child: SafeArea(
                 child: Row(
@@ -557,7 +544,7 @@ class _RoomCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),

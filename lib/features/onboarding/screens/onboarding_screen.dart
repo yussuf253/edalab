@@ -62,11 +62,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         centerIcon: Icons.widgets_rounded,
         ctaColor: AppColors.primary,
         backgroundGradient: const LinearGradient(
-          colors: [Color(0xFFF2FFFB), Color(0xFFDBFCEB)],
+          colors: [AppColors.white, AppColors.primarySurface],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        ringColor: const Color(0xFFC4F0D4),
+        ringColor: AppColors.primaryLight,
         nodes: [
           // First-step spotlight: Food, Pharmacy, Grocery, Shopping only.
           _OrbitNodeData(
@@ -112,7 +112,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         centerIcon: Icons.home_repair_service_rounded,
         ctaColor: AppColors.primary,
         backgroundGradient: const LinearGradient(
-          colors: [Color(0xFFF2FFFB), Color(0xFFDBFCEB)],
+          colors: [AppColors.white, AppColors.primarySurface],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -125,7 +125,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         centerIcon: Icons.verified_user_rounded,
         ctaColor: AppColors.primary,
         backgroundGradient: const LinearGradient(
-          colors: [Color(0xFFF2FFFB), Color(0xFFDBFCEB)],
+          colors: [AppColors.white, AppColors.primarySurface],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -414,18 +414,8 @@ class _OrbitHero extends StatelessWidget {
             height: centerSize,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Colors.white, Color(0xFFF4FAFF)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.dark.withValues(alpha: 0.09),
-                  blurRadius: 20,
-                  offset: const Offset(0, 12),
-                ),
-              ],
+              color: AppColors.white,
+              border: Border.all(color: AppColors.border),
             ),
             child: Padding(
               padding: EdgeInsets.all(compact ? 24 : 28),

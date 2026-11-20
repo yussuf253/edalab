@@ -226,14 +226,20 @@ class _GroceryScreenState extends State<GroceryScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Container(
-                  height: 120,
+                  height: 132,
+                  clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.grocery, AppColors.secondaryLight],
+                    color: AppColors.groceryBg,
+                    image: const DecorationImage(
+                      image: AssetImage(
+                        'assets/images/headers/header_grocery.png',
+                      ),
+                      fit: BoxFit.cover,
+                      alignment: Alignment.centerRight,
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(18),
                   child: Row(
                     children: [
                       Expanded(
@@ -243,36 +249,17 @@ class _GroceryScreenState extends State<GroceryScreen> {
                           children: [
                             Text(
                               l10n.t('grocery.hero_title'),
-                              style: AppTextStyles.h3.copyWith(
-                                color: AppColors.white,
-                              ),
+                              style: AppTextStyles.h4,
                             ),
                             const SizedBox(height: 4),
                             Text(
                               l10n.t('grocery.hero_subtitle'),
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: Colors.white70,
-                              ),
+                              style: AppTextStyles.bodySmall,
                             ),
                           ],
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          l10n.t('grocery.shop_now'),
-                          style: AppTextStyles.labelMedium.copyWith(
-                            color: AppColors.grocery,
-                          ),
-                        ),
-                      ),
+                      const SizedBox(width: 96),
                     ],
                   ),
                 ),
@@ -323,6 +310,7 @@ class _GroceryScreenState extends State<GroceryScreen> {
                           .map(
                             (category) => _GroceryCategoryCard(
                               symbol: _groceryCategorySymbol(category.name),
+                              imagePath: _groceryCategoryImage(category.name),
                               name: category.name,
                               color: _groceryCategoryColor(category.name),
                               onTap: () {
@@ -564,6 +552,35 @@ class _GroceryScreenState extends State<GroceryScreen> {
   }
 }
 
+String? _groceryCategoryImage(String value) {
+  final normalized = value.toLowerCase();
+  if (normalized.contains('fruit')) return 'assets/images/grocery/grocery_fruits.png';
+  if (normalized.contains('veg') || normalized.contains('salad')) {
+    return 'assets/images/grocery/grocery_vegetable.png';
+  }
+  if (normalized.contains('dairy') || normalized.contains('egg') || normalized.contains('milk')) {
+    return 'assets/images/grocery/grocery_dairy.png';
+  }
+  if (normalized.contains('bakery') || normalized.contains('bread')) {
+    return 'assets/images/grocery/grocery_bakery.png';
+  }
+  if (normalized.contains('biscuit')) {
+    return 'assets/images/grocery/grocery_biscuits.png';
+  }
+  if (normalized.contains('snack')) return 'assets/images/grocery/grocery_snacks.png';
+  if (normalized.contains('frozen')) return 'assets/images/grocery/grocery_frozen.png';
+  if (normalized.contains('house') || normalized.contains('clean')) {
+    return 'assets/images/grocery/grocery_household.png';
+  }
+  if (normalized.contains('grain') || normalized.contains('rice')) {
+    return 'assets/images/grocery/grocery_grains.png';
+  }
+  if (normalized.contains('personal') || normalized.contains('care')) {
+    return 'assets/images/grocery/grocery_personalcare.png';
+  }
+  return null;
+}
+
 IconData _groceryCategoryIcon(String value) {
   final normalized = value.toLowerCase();
   if (normalized.contains('fruit') || normalized.contains('veg')) {
@@ -675,12 +692,14 @@ class _GroceryAddButton extends StatelessWidget {
 
 class _GroceryCategoryCard extends StatelessWidget {
   final String symbol;
+  final String? imagePath;
   final String name;
   final Color color;
   final VoidCallback onTap;
 
   const _GroceryCategoryCard({
     required this.symbol,
+    this.imagePath,
     required this.name,
     required this.color,
     required this.onTap,
@@ -694,15 +713,35 @@ class _GroceryCategoryCard extends StatelessWidget {
         onTap: onTap,
         child: Column(
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Center(
-                child: Text(symbol, style: const TextStyle(fontSize: 24)),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(14),
+              child: SizedBox(
+                width: 64,
+                height: 64,
+                child: imagePath != null
+                    ? Image.asset(
+                        imagePath!,
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: color.withValues(alpha: 0.12),
+                          child: Center(
+                            child: Text(
+                              symbol,
+                              style: const TextStyle(fontSize: 24),
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        color: color.withValues(alpha: 0.12),
+                        child: Center(
+                          child: Text(
+                            symbol,
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 6),

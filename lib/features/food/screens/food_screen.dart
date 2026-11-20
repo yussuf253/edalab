@@ -163,15 +163,15 @@ class _FoodScreenState extends State<FoodScreen> {
         backgroundColor: AppColors.white,
         body: CustomScrollView(
           slivers: [
-            // Green header: back · deliver-to · bell, then the search pill.
+            // Header: back · deliver-to · bell, then the search pill.
             SliverToBoxAdapter(
               child: AnnotatedRegion<SystemUiOverlayStyle>(
-                value: SystemUiOverlayStyle.light,
+                value: SystemUiOverlayStyle.dark,
                 child: Container(
                   decoration: const BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.vertical(
-                      bottom: Radius.circular(28),
+                    color: AppColors.white,
+                    border: Border(
+                      bottom: BorderSide(color: AppColors.border),
                     ),
                   ),
                   child: SafeArea(
@@ -187,7 +187,7 @@ class _FoodScreenState extends State<FoodScreen> {
                                   Icons.arrow_back_rounded,
                                   size: 22,
                                 ),
-                                color: AppColors.white,
+                                color: AppColors.dark,
                                 onPressed: () {
                                   if (context.canPop()) {
                                     context.pop();
@@ -202,9 +202,8 @@ class _FoodScreenState extends State<FoodScreen> {
                                   children: [
                                     Text(
                                       l10n.t('food.title'),
-                                      style: const TextStyle(
-                                        color: Color(0xCCFFFFFF),
-                                        fontSize: 10,
+                                      style: AppTextStyles.caption.copyWith(
+                                        fontSize: 11.5,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -215,16 +214,15 @@ class _FoodScreenState extends State<FoodScreen> {
                                             locationLabel,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              color: AppColors.white,
-                                              fontSize: 13,
+                                            style: AppTextStyles.labelLarge.copyWith(
+                                              fontSize: 14,
                                               fontWeight: FontWeight.w700,
                                             ),
                                           ),
                                         ),
                                         const Icon(
                                           Icons.keyboard_arrow_down_rounded,
-                                          color: AppColors.white,
+                                          color: AppColors.mediumGrey,
                                           size: 18,
                                         ),
                                       ],
@@ -236,7 +234,7 @@ class _FoodScreenState extends State<FoodScreen> {
                                 alignment: Alignment.center,
                                 children: [
                                   IconButton(
-                                    color: AppColors.white,
+                                    color: AppColors.dark,
                                     icon: const Icon(
                                       Icons.shopping_bag_outlined,
                                     ),
@@ -276,9 +274,9 @@ class _FoodScreenState extends State<FoodScreen> {
                                 ],
                               ),
                               const NotificationBell(
-                                size: 36,
-                                backgroundColor: Colors.transparent,
-                                iconColor: AppColors.white,
+                                size: 38,
+                                backgroundColor: AppColors.tile,
+                                iconColor: AppColors.dark,
                                 compact: true,
                                 showBorder: false,
                               ),
@@ -314,17 +312,18 @@ class _FoodScreenState extends State<FoodScreen> {
             ),
             SliverToBoxAdapter(
               child: SizedBox(
-                height: 110,
+                height: 128,
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
-                    vertical: 16,
+                    vertical: 12,
                   ),
                   children: quickCategories
                       .map(
                         (category) => _FoodCategory(
                           icon: category.icon,
+                          imagePath: category.imagePath,
                           name: category.label,
                           color: category.color,
                           isSelected: _selectedCategoryFilter == category.id,
@@ -445,7 +444,7 @@ class _FoodScreenState extends State<FoodScreen> {
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       boxShadow: AppSpacing.shadowSm,
                     ),
                     child: Column(
@@ -787,6 +786,7 @@ class _FoodScreenState extends State<FoodScreen> {
             id: _categoryKey(entry.key),
             label: entry.key,
             icon: _iconForCategory(entry.key),
+            imagePath: _imageForCategory(entry.key),
             color: _colorForCategory(entry.key),
           ),
         )
@@ -801,6 +801,45 @@ class _FoodScreenState extends State<FoodScreen> {
       ),
       ...dynamicOptions,
     ];
+  }
+
+  String? _imageForCategory(String label) {
+    final normalized = _normalize(label);
+    if (normalized.contains('pizza') || normalized.contains('italian')) {
+      return 'assets/images/food/foodcategory_pizza.png';
+    }
+    if (normalized.contains('burger') || normalized.contains('fast food')) {
+      return 'assets/images/food/foodcategory_fastfood.png';
+    }
+    if (normalized.contains('sandwich')) {
+      return 'assets/images/food/foodcategory_sandwich.png';
+    }
+    if (normalized.contains('taco') || normalized.contains('mexican')) {
+      return 'assets/images/food/foodcategory_tacos.png';
+    }
+    if (normalized.contains('hotdog') || normalized.contains('hot dog')) {
+      return 'assets/images/food/foodcategory_hotdog.png';
+    }
+    if (normalized.contains('coffee') ||
+        normalized.contains('cafe') ||
+        normalized.contains('beverage') ||
+        normalized.contains('drink')) {
+      return 'assets/images/food/foodcategory_beverages.png';
+    }
+    if (normalized.contains('bakery') ||
+        normalized.contains('dessert') ||
+        normalized.contains('sweet')) {
+      return 'assets/images/food/foodcategory_dessert.png';
+    }
+    if (normalized.contains('sushi') ||
+        normalized.contains('asian') ||
+        normalized.contains('chinese')) {
+      return 'assets/images/food/foodcategory_chinese.png';
+    }
+    if (normalized.contains('seafood') || normalized.contains('fish')) {
+      return 'assets/images/food/foodcategory_seafood.png';
+    }
+    return null;
   }
 
   IconData _iconForCategory(String label) {
@@ -875,18 +914,21 @@ class _FoodCategoryOption {
   final String id;
   final String label;
   final IconData icon;
+  final String? imagePath;
   final Color color;
 
   const _FoodCategoryOption({
     required this.id,
     required this.label,
     required this.icon,
+    this.imagePath,
     required this.color,
   });
 }
 
 class _FoodCategory extends StatelessWidget {
   final IconData icon;
+  final String? imagePath;
   final String name;
   final Color color;
   final bool isSelected;
@@ -894,6 +936,7 @@ class _FoodCategory extends StatelessWidget {
 
   const _FoodCategory({
     required this.icon,
+    this.imagePath,
     required this.name,
     required this.color,
     required this.isSelected,
@@ -909,17 +952,33 @@ class _FoodCategory extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              width: 62,
-              height: 62,
+              width: 64,
+              height: 64,
+              clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: isSelected ? AppColors.primary : AppColors.tile,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isSelected ? AppColors.primary : AppColors.border,
+                  width: isSelected ? 1.5 : 1,
+                ),
               ),
-              child: Icon(
-                icon,
-                color: isSelected ? AppColors.white : color,
-                size: 26,
-              ),
+              child: imagePath != null
+                  ? Image.asset(
+                      imagePath!,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                        icon,
+                        color: isSelected ? AppColors.white : color,
+                        size: 26,
+                      ),
+                    )
+                  : Icon(
+                      icon,
+                      color: isSelected ? AppColors.white : color,
+                      size: 26,
+                    ),
             ),
             const SizedBox(height: 6),
             Text(

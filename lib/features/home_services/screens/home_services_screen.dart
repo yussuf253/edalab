@@ -274,17 +274,11 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                   child: Container(
                     clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          Color(0xFF0D8067),
-                          AppColors.homeServices,
-                          Color(0xFF43BA92),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                      color: AppColors.homeServicesBg,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppColors.homeServices.withValues(alpha: 0.16),
                       ),
-                      borderRadius: BorderRadius.circular(22),
-                      boxShadow: AppSpacing.shadowSm,
                     ),
                     child: IntrinsicHeight(
                       child: Row(
@@ -309,20 +303,15 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                                     ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: AppTextStyles.h3.copyWith(
-                                      color: AppColors.white,
-                                      fontWeight: FontWeight.w800,
-                                      height: 1.2,
+                                    style: AppTextStyles.h4.copyWith(
+                                      height: 1.25,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     l10n.t('home_services.house_help_subtitle'),
                                     style: AppTextStyles.bodySmall.copyWith(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.85,
-                                      ),
-                                      height: 1.3,
+                                      height: 1.35,
                                     ),
                                   ),
                                   const SizedBox(height: 10),
@@ -485,7 +474,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                                     padding: const EdgeInsets.all(14),
                                     decoration: BoxDecoration(
                                       color: AppColors.white,
-                                      borderRadius: BorderRadius.circular(18),
+                                      borderRadius: BorderRadius.circular(16),
                                       boxShadow: AppSpacing.shadowSm,
                                     ),
                                     child: Column(
@@ -495,19 +484,39 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                                       children: [
                                         Row(
                                           children: [
-                                            Container(
-                                              width: 44,
-                                              height: 44,
-                                              decoration: BoxDecoration(
-                                                color: category.color
-                                                    .withValues(alpha: 0.12),
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: Icon(
-                                                category.icon,
-                                                color: category.color,
-                                                size: 22,
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              child: SizedBox(
+                                                width: 48,
+                                                height: 48,
+                                                child:
+                                                    _homeServiceCategoryImage(
+                                                          category.slug,
+                                                          category.name,
+                                                        ) !=
+                                                        null
+                                                    ? Image.asset(
+                                                        _homeServiceCategoryImage(
+                                                          category.slug,
+                                                          category.name,
+                                                        )!,
+                                                        fit: BoxFit.cover,
+                                                        alignment:
+                                                            Alignment.topCenter,
+                                                      )
+                                                    : Container(
+                                                        color: category.color
+                                                            .withValues(
+                                                              alpha: 0.12,
+                                                            ),
+                                                        child: Icon(
+                                                          category.icon,
+                                                          color:
+                                                              category.color,
+                                                          size: 22,
+                                                        ),
+                                                      ),
                                               ),
                                             ),
                                             const Spacer(),
@@ -713,6 +722,41 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
   }
 }
 
+/// Category art from the handyman illustration set, matched on slug/name.
+String? _homeServiceCategoryImage(String slug, String name) {
+  final value = '$slug $name'.toLowerCase();
+  if (value.contains('sanit') || value.contains('disinfect')) {
+    return 'assets/images/service/categories/handy_sanitize.png';
+  }
+  if (value.contains('clean') || value.contains('house')) {
+    return 'assets/images/service/categories/handy_cleaner.png';
+  }
+  if (value.contains('plumb')) {
+    return 'assets/images/service/categories/handy_plumber.png';
+  }
+  if (value.contains('carpent')) {
+    return 'assets/images/service/categories/handy_carpainter.png';
+  }
+  if (value.contains('elec')) {
+    return 'assets/images/service/categories/handy_elec.png';
+  }
+  if (value.contains('paint')) {
+    return 'assets/images/service/categories/handy_painter.png';
+  }
+  if (value.contains('garden') || value.contains('landscap')) {
+    return 'assets/images/service/categories/handy_gardener.png';
+  }
+  if (value.contains('mov') || value.contains('pack')) {
+    return 'assets/images/service/categories/handy_mover.png';
+  }
+  if (value.contains('salon') ||
+      value.contains('beauty') ||
+      value.contains('hair')) {
+    return 'assets/images/service/categories/handy_salon.png';
+  }
+  return null;
+}
+
 class _HouseHelpTag extends StatelessWidget {
   final String label;
 
@@ -723,15 +767,16 @@ class _HouseHelpTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
+        border: Border.all(color: AppColors.border),
       ),
       child: Text(
         label,
         style: AppTextStyles.labelSmall.copyWith(
-          color: AppColors.white,
-          letterSpacing: 0.2,
+          color: AppColors.homeServices,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0,
         ),
       ),
     );
@@ -800,7 +845,7 @@ class _FeaturedProviderCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: AppSpacing.shadowSm,
         ),
         child: Row(
@@ -810,13 +855,13 @@ class _FeaturedProviderCard extends StatelessWidget {
               height: 68,
               decoration: BoxDecoration(
                 color: accentColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(16),
               ),
               child:
                   provider.imageUrl != null &&
                       provider.imageUrl!.trim().isNotEmpty
                   ? ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       child: Image.network(
                         provider.imageUrl!,
                         fit: BoxFit.cover,

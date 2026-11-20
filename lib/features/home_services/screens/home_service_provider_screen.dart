@@ -368,7 +368,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: AppColors.white,
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppColors.border),
                             boxShadow: AppSpacing.shadowSm,
                           ),
@@ -620,7 +620,7 @@ class _StatRow extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),

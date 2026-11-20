@@ -313,26 +313,19 @@ class _ParcelScreenState extends State<ParcelScreen> {
   Widget _buildHero() {
     return Container(
       padding: const EdgeInsets.all(18),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: AppColors.primarySurface,
-        borderRadius: BorderRadius.circular(18),
+        image: const DecorationImage(
+          image: AssetImage('assets/images/headers/header_package.png'),
+          fit: BoxFit.cover,
+          alignment: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(
-              Icons.inventory_2_outlined,
-              color: AppColors.primary,
-              size: 30,
-            ),
-          ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 64),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,6 +347,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
               ],
             ),
           ),
+          const SizedBox(width: 96),
         ],
       ),
     );

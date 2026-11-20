@@ -23,7 +23,7 @@ class _HomeOnboardingScreenState extends State<HomeOnboardingScreen> {
   int _currentPage = 0;
 
   static const _backgroundGradient = LinearGradient(
-    colors: [Color(0xFFF2FFFB), Color(0xFFDBFCEB)],
+    colors: [AppColors.white, AppColors.primarySurface],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -31,32 +31,32 @@ class _HomeOnboardingScreenState extends State<HomeOnboardingScreen> {
   // ── Services (icônes orbit) ── restent const car pas de texte localisé ──
   static const List<_HomeServiceData> _services = [
     _HomeServiceData(
-      assetPath: 'assets/icons/home_services/cleaning.png',
+      assetPath: 'assets/images/service/categories/handy_cleaner.png',
       fallbackIcon: Icons.cleaning_services_rounded,
       label: '',
     ),
     _HomeServiceData(
-      assetPath: 'assets/icons/home_services/electrician.png',
+      assetPath: 'assets/images/service/categories/handy_elec.png',
       fallbackIcon: Icons.electrical_services_rounded,
       label: '',
     ),
     _HomeServiceData(
-      assetPath: 'assets/icons/home_services/plumber.png',
+      assetPath: 'assets/images/service/categories/handy_plumber.png',
       fallbackIcon: Icons.plumbing_rounded,
       label: '',
     ),
     _HomeServiceData(
-      assetPath: 'assets/icons/home_services/ac.png',
+      assetPath: 'assets/images/service/categories/handy_sanitize.png',
       fallbackIcon: Icons.ac_unit_rounded,
       label: '',
     ),
     _HomeServiceData(
-      assetPath: 'assets/icons/home_services/carpenter.png',
+      assetPath: 'assets/images/service/categories/handy_carpainter.png',
       fallbackIcon: Icons.handyman_rounded,
       label: '',
     ),
     _HomeServiceData(
-      assetPath: 'assets/icons/home_services/beauty.png',
+      assetPath: 'assets/images/service/categories/handy_salon.png',
       fallbackIcon: Icons.spa_rounded,
       label: '',
     ),
@@ -353,7 +353,7 @@ class _HomeOnboardingPageContent extends StatelessWidget {
                   _HomeHeroType.trust => _StepsHero(
                     items: trustItems,
                     compact: compact,
-                    accentColor: const Color(0xFF2C7A4B),
+                    accentColor: AppColors.primaryDark,
                     heroIcon: Icons.verified_user_rounded,
                   ),
                 },
@@ -402,7 +402,7 @@ class _HomeOrbitHero extends StatelessWidget {
     final orbitRadius = compact ? 110.0 : 124.0;
     final totalSize = orbitRadius * 2 + nodeSize;
     final centerSize = compact ? 96.0 : 110.0;
-    const ringColor = Color(0xFFC4F0D4);
+    const ringColor = AppColors.primaryLight;
     final count = services.length.clamp(1, 8);
     final angleStep = (2 * math.pi) / count;
     const startAngle = -math.pi / 2;
@@ -460,18 +460,8 @@ class _HomeOrbitHero extends StatelessWidget {
               height: centerSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [Colors.white, Color(0xFFF4FAFF)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.dark.withValues(alpha: 0.10),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
+                color: AppColors.white,
+                border: Border.all(color: AppColors.border),
               ),
               child: Icon(
                 Icons.home_repair_service_rounded,
@@ -565,17 +555,11 @@ class _StepsHero extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(compact ? 20 : 24),
+      padding: EdgeInsets.all(compact ? 20 : 22),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: accentColor.withValues(alpha: 0.10),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -584,13 +568,13 @@ class _StepsHero extends StatelessWidget {
             width: heroBoxSize,
             height: heroBoxSize,
             decoration: BoxDecoration(
-              color: accentColor.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(28),
+              color: AppColors.tile,
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(heroIcon, color: accentColor, size: compact ? 48 : 56),
           ),
           SizedBox(height: compact ? 20 : 24),
-          Divider(color: AppColors.lightGrey, height: 1),
+          const Divider(color: AppColors.border, height: 1),
           SizedBox(height: compact ? 16 : 18),
           ...items.asMap().entries.map((entry) {
             final i = entry.key;

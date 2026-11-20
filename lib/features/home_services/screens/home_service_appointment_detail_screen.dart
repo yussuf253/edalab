@@ -407,7 +407,7 @@ class _HomeServiceAppointmentDetailScreenState
                             height: 62,
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.16),
-                              borderRadius: BorderRadius.circular(18),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: Icon(
                               provider?.categoryIcon ??
@@ -736,7 +736,7 @@ class _DetailCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),

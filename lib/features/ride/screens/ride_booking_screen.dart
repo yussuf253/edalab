@@ -85,6 +85,23 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
     return Icons.directions_car_rounded;
   }
 
+  /// Vehicle art shipped with the app, matched on the category name.
+  String? _vehicleImage(String name) {
+    final value = name.toLowerCase();
+    if (value.contains('quid')) return 'assets/images/ride/InstaQuid.png';
+    if (value.contains('mini')) return 'assets/images/ride/InstaMini.png';
+    if (value.contains('mega')) return 'assets/images/ride/InstaMega.png';
+    if (value.contains('elect')) return 'assets/images/ride/ElectRide.png';
+    if (value.contains('deliver')) {
+      return 'assets/images/ride/InstDelivry.png';
+    }
+    if (value.contains('same day') || value.contains('sameday')) {
+      return 'assets/images/ride/SameDayDelivery.png';
+    }
+    if (value.contains('ride')) return 'assets/images/ride/InstaRide.png';
+    return null;
+  }
+
   String _categoryDisplayName(RideCategory category, AppLocalizations l10n) {
     switch (category.id) {
       case 'r1':
@@ -269,18 +286,12 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
             flex: 3,
             child: Container(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(28),
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(20),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
+                border: Border(top: BorderSide(color: AppColors.border)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -410,12 +421,28 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                   ),
                                   child: Row(
                                     children: [
-                                      Icon(
-                                        _getIconForCategory(cat.name),
-                                        color: sel
-                                            ? AppColors.ride
-                                            : AppColors.grey,
-                                        size: 32,
+                                      SizedBox(
+                                        width: 46,
+                                        height: 32,
+                                        child: _vehicleImage(cat.name) != null
+                                            ? Image.asset(
+                                                _vehicleImage(cat.name)!,
+                                                fit: BoxFit.contain,
+                                                errorBuilder: (_, _, _) => Icon(
+                                                  _getIconForCategory(cat.name),
+                                                  color: sel
+                                                      ? AppColors.ride
+                                                      : AppColors.grey,
+                                                  size: 32,
+                                                ),
+                                              )
+                                            : Icon(
+                                                _getIconForCategory(cat.name),
+                                                color: sel
+                                                    ? AppColors.ride
+                                                    : AppColors.grey,
+                                                size: 32,
+                                              ),
                                       ),
                                       const SizedBox(width: 14),
                                       Expanded(

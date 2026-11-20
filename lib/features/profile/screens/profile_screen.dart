@@ -96,19 +96,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Container(
                 padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.primary, AppColors.secondary],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.22),
-                      blurRadius: 26,
-                      offset: const Offset(0, 12),
-                    ),
-                  ],
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.border),
                 ),
                 child: Column(
                   children: [
@@ -117,10 +107,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         const NotificationBell(
                           size: 40,
-                          backgroundColor: Color(0x33FFFFFF),
-                          iconColor: AppColors.white,
+                          backgroundColor: AppColors.tile,
+                          iconColor: AppColors.dark,
                           useShadow: false,
                           compact: true,
+                          showBorder: false,
                         ),
                         // const SizedBox(width: 10),
                         // Settings quick access is intentionally disabled for now.
@@ -139,45 +130,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       width: 74,
                       height: 74,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(22),
+                        color: AppColors.primarySurface,
+                        borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.52),
-                          width: 2.5,
+                          color: AppColors.primary.withValues(alpha: 0.18),
+                          width: 1.5,
                         ),
                       ),
                       child: hasAvatar
                           ? ClipRRect(
-                              borderRadius: BorderRadius.circular(19),
+                              borderRadius: BorderRadius.circular(16),
                               child: Image.network(
                                 avatarUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) =>
                                     const Icon(
                                       Icons.person_rounded,
-                                      color: AppColors.white,
-                                      size: 36,
+                                      color: AppColors.primary,
+                                      size: 32,
                                     ),
                               ),
                             )
                           : const Icon(
                               Icons.person_rounded,
-                              color: AppColors.white,
-                              size: 36,
+                              color: AppColors.primary,
+                              size: 32,
                             ),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       user?.fullName ?? l10n.t('profile.guest'),
-                      style: AppTextStyles.h3.copyWith(color: AppColors.white),
+                      style: AppTextStyles.h3,
                     ),
                     const SizedBox(height: 4),
                     if (user != null)
                       Text(
                         user.email,
-                        style: AppTextStyles.caption.copyWith(
-                          color: Colors.white.withValues(alpha: 0.85),
-                        ),
+                        style: AppTextStyles.bodySmall,
                         textAlign: TextAlign.center,
                       ),
                     const SizedBox(height: 16),
@@ -188,8 +177,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        color: AppColors.tile,
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -203,7 +192,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Container(
                             width: 1,
                             height: 30,
-                            color: AppColors.extraLightGrey,
+                            color: AppColors.border,
                           ),
                           _Stat(
                             _statsLoaded || user == null
@@ -216,7 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Container(
                             width: 1,
                             height: 30,
-                            color: AppColors.extraLightGrey,
+                            color: AppColors.border,
                           ),
                           _Stat(
                             user != null ? '${user.points}' : '0',
@@ -418,7 +407,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: isSelected
                             ? AppColors.primary.withValues(alpha: 0.08)
                             : AppColors.background,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isSelected
                               ? AppColors.primary
@@ -503,7 +492,7 @@ class _MenuItem extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),
         child: Row(
@@ -555,7 +544,7 @@ class _LanguageMenuItem extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),
         child: Row(

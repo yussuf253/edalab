@@ -742,12 +742,20 @@ class OrdersShimmer extends StatelessWidget {
     return AppShimmer(
       child: Column(
         children: [
-          Container(
-            height: 48,
-            margin: const EdgeInsets.fromLTRB(20, 14, 20, 10),
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: BorderRadius.circular(14),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: ShimmerBlock(width: double.infinity, height: 46, radius: 14),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(20, 12, 20, 4),
+            child: Row(
+              children: [
+                ShimmerBlock(width: 56, height: 34, radius: 12),
+                SizedBox(width: 8),
+                ShimmerBlock(width: 82, height: 34, radius: 12),
+                SizedBox(width: 8),
+                ShimmerBlock(width: 74, height: 34, radius: 12),
+              ],
             ),
           ),
           const Expanded(

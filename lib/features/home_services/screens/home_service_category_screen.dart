@@ -184,7 +184,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.border),
                     boxShadow: AppSpacing.shadowSm,
                   ),
@@ -271,7 +271,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.border),
                       boxShadow: AppSpacing.shadowSm,
                     ),
@@ -284,13 +284,13 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                             color: provider.categoryColor.withValues(
                               alpha: 0.12,
                             ),
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child:
                               provider.imageUrl != null &&
                                   provider.imageUrl!.trim().isNotEmpty
                               ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(18),
+                                  borderRadius: BorderRadius.circular(16),
                                   child: Image.network(
                                     provider.imageUrl!,
                                     fit: BoxFit.cover,

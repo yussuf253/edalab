@@ -345,7 +345,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
@@ -405,8 +405,8 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.lightGrey),
+                        borderRadius: BorderRadius.circular(100),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Text(
                         item,
@@ -472,7 +472,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.border),
                       boxShadow: AppSpacing.shadowSm,
                     ),

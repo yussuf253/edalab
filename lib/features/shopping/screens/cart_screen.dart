@@ -132,7 +132,7 @@ class _CartScreenState extends State<CartScreen> {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
@@ -259,18 +259,12 @@ class _CartScreenState extends State<CartScreen> {
               // Order summary
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(24),
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(20),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, -5),
-                    ),
-                  ],
+                  border: Border(top: BorderSide(color: AppColors.border)),
                 ),
                 child: SafeArea(
                   child: Column(

@@ -10,6 +10,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/money_format.dart';
@@ -255,7 +256,10 @@ class _OrdersScreenState extends State<OrdersScreen>
     if (_isLoading) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(title: Text(l10n.t('orders.title'))),
+        appBar: ModuleScreenAppBar(
+          title: l10n.t('orders.title'),
+          showBack: false,
+        ),
         body: const OrdersShimmer(),
       );
     }
@@ -263,7 +267,10 @@ class _OrdersScreenState extends State<OrdersScreen>
     if (_error != null) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(title: Text(l10n.t('orders.title'))),
+        appBar: ModuleScreenAppBar(
+          title: l10n.t('orders.title'),
+          showBack: false,
+        ),
         body: Center(
           child: Text(
             _error!,
@@ -327,25 +334,25 @@ class _OrdersScreenState extends State<OrdersScreen>
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(l10n.t('orders.title'), style: AppTextStyles.h3),
-        centerTitle: false,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.grey,
-          indicatorColor: AppColors.primary,
-          tabs: [
-            Tab(text: l10n.t('orders.active')),
-            Tab(text: l10n.t('orders.completed')),
-            Tab(text: l10n.t('orders.cancelled')),
-          ],
-        ),
+      appBar: ModuleScreenAppBar(
+        title: l10n.t('orders.title'),
+        showBack: false,
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            child: _OrdersTabBar(
+              controller: _tabController,
+              labels: [
+                l10n.t('orders.active'),
+                l10n.t('orders.completed'),
+                l10n.t('orders.cancelled'),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
             child: _ModuleFilterBar(
               selectedModule: _selectedModule,
               modules: availableModules,
@@ -758,8 +765,8 @@ class _OrderList extends StatelessWidget {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.extraLightGrey,
-                      borderRadius: BorderRadius.circular(999),
+                      color: AppColors.tile,
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       '${sectionOrders.length}',
@@ -781,25 +788,14 @@ class _OrderList extends StatelessWidget {
                   padding: const EdgeInsets.all(0),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.border),
-                    boxShadow: AppSpacing.shadowSm,
                   ),
                   child: Row(
                     children: [
-                      Container(
-                        width: 6,
-                        height: 112,
-                        decoration: BoxDecoration(
-                          color: _getColor(module),
-                          borderRadius: const BorderRadius.horizontal(
-                            left: Radius.circular(20),
-                          ),
-                        ),
-                      ),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+                          padding: const EdgeInsets.all(16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -832,18 +828,16 @@ class _OrderList extends StatelessWidget {
                                             vertical: 5,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: _getColor(
-                                              module,
-                                            ).withValues(alpha: 0.1),
+                                            color: AppColors.tile,
                                             borderRadius: BorderRadius.circular(
-                                              999,
+                                              8,
                                             ),
                                           ),
                                           child: Text(
                                             l10n.t(_getGroupLabel(module)),
                                             style: AppTextStyles.labelSmall
                                                 .copyWith(
-                                                  color: _getColor(module),
+                                                  color: AppColors.primaryDark,
                                                   fontWeight: FontWeight.w700,
                                                   fontSize: 10.5,
                                                 ),
@@ -978,6 +972,63 @@ class _OrderList extends StatelessWidget {
   }
 }
 
+/// Segmented tab control for active / completed / cancelled orders.
+class _OrdersTabBar extends StatelessWidget {
+  final TabController controller;
+  final List<String> labels;
+
+  const _OrdersTabBar({required this.controller, required this.labels});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        return Container(
+          height: 46,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            children: List.generate(labels.length, (index) {
+              final selected = controller.index == index;
+              return Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => controller.animateTo(index),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: selected ? AppColors.primary : AppColors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      labels[index],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: selected ? AppColors.white : AppColors.grey,
+                        fontWeight: selected
+                            ? FontWeight.w700
+                            : FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _ModuleFilterBar extends StatelessWidget {
   final String selectedModule;
   final List<String> modules;
@@ -1036,15 +1087,16 @@ class _ModuleFilterBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
               decoration: BoxDecoration(
                 color: selected ? AppColors.primary : AppColors.white,
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: BorderRadius.circular(12),
                 border: selected
                     ? null
-                    : Border.all(color: AppColors.lightGrey),
+                    : Border.all(color: AppColors.border),
               ),
               child: Text(
                 l10n.t(_label(module)),
                 style: AppTextStyles.labelMedium.copyWith(
                   color: selected ? AppColors.white : AppColors.dark,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                 ),
               ),
             ),

@@ -12,6 +12,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/utils/money_format.dart';
 
 class ShoppingOrderDetailScreen extends StatefulWidget {
@@ -128,18 +129,15 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('shopping_tracking.title')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/shopping');
-              }
-            },
-          ),
+        appBar: ModuleScreenAppBar(
+          title: l10n.t('shopping_tracking.title'),
+          onBack: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/shopping');
+            }
+          },
         ),
         body: _isLoading
             ? const DetailContentShimmer(
@@ -401,13 +399,9 @@ class _ShoppingHero extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.shopping,
-            AppColors.shopping.withValues(alpha: 0.78),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
+        color: AppColors.shoppingBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,28 +412,25 @@ class _ShoppingHero extends StatelessWidget {
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(16),
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.shopping_bag_rounded,
-                  color: AppColors.white,
+                  color: AppColors.shopping,
                   size: 28,
                 ),
               ),
               const Spacer(),
               _StatusPill(
                 label: status,
-                backgroundColor: Colors.white.withValues(alpha: 0.16),
-                textColor: AppColors.white,
+                backgroundColor: AppColors.white,
+                textColor: AppColors.shopping,
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            storeName,
-            style: AppTextStyles.h3.copyWith(color: AppColors.white),
-          ),
+          Text(storeName, style: AppTextStyles.h3),
           const SizedBox(height: 6),
           Text(
             AppLocalizations.of(context).t(
@@ -449,27 +440,28 @@ class _ShoppingHero extends StatelessWidget {
                 'suffix': itemCount == 1 ? '' : 's',
               },
             ),
-            style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
           ),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(16),
+              color: AppColors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.border),
             ),
             child: Row(
               children: [
                 Text(
                   AppLocalizations.of(context).t('tracking.total_paid'),
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: Colors.white70,
-                  ),
+                  style: AppTextStyles.bodySmall,
                 ),
                 const Spacer(),
                 Text(
                   'DJF${money(total)}',
-                  style: AppTextStyles.h4.copyWith(color: AppColors.white),
+                  style: AppTextStyles.h4.copyWith(
+                    color: AppColors.primaryDark,
+                  ),
                 ),
               ],
             ),
@@ -497,9 +489,8 @@ class _InfoTile extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
-        boxShadow: AppSpacing.shadowSm,
       ),
       child: Row(
         children: [
@@ -542,9 +533,8 @@ class _SectionCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
-        boxShadow: AppSpacing.shadowSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -650,11 +640,14 @@ class _StatusPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,
-        style: AppTextStyles.labelSmall.copyWith(color: textColor),
+        style: AppTextStyles.labelSmall.copyWith(
+          color: textColor,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

@@ -76,7 +76,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: AppColors.border),
                           boxShadow: AppSpacing.shadowSm,
                         ),
@@ -199,7 +199,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: notification.isRead
-                                        ? AppColors.extraLightGrey
+                                        ? AppColors.border
                                         : notification.color.withValues(
                                             alpha: 0.18,
                                           ),
@@ -451,7 +451,7 @@ class _EmptyState extends StatelessWidget {
               height: 78,
               decoration: BoxDecoration(
                 color: AppColors.primarySurface,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(
                 Icons.notifications_none_rounded,

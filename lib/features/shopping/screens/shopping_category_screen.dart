@@ -36,7 +36,7 @@ class ShoppingCategoryScreen extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.border),
                 boxShadow: AppSpacing.shadowSm,
               ),

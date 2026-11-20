@@ -251,7 +251,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: AppColors.background,
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: Row(
                             children: [
@@ -365,15 +365,9 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
           ? null
           : Container(
               padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
+                border: Border(top: BorderSide(color: AppColors.border)),
               ),
               child: SafeArea(
                 top: false,

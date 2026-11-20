@@ -474,7 +474,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
@@ -566,7 +566,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
@@ -735,7 +735,7 @@ class _BookingField extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
           boxShadow: AppSpacing.shadowSm,
         ),
@@ -813,7 +813,7 @@ class _SelectableRoomCard extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? AppColors.hotel : AppColors.border,
             width: isSelected ? 2 : 1,
@@ -989,7 +989,7 @@ class _BookingRoomCardShimmer extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: const Row(
         children: [

@@ -34,8 +34,8 @@ class AppCard extends StatelessWidget {
         padding: padding ?? AppSpacing.cardPadding,
         decoration: BoxDecoration(
           color: color ?? AppColors.white,
-          borderRadius: BorderRadius.circular(borderRadius ?? 18),
-          boxShadow: shadow ?? AppSpacing.shadowSm,
+          borderRadius: BorderRadius.circular(borderRadius ?? 16),
+          boxShadow: shadow,
           border: border ?? Border.all(color: AppColors.border),
         ),
         child: child,
@@ -67,18 +67,18 @@ class ServiceCard extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 60,
-            height: 60,
+            width: 58,
+            height: 58,
             decoration: BoxDecoration(
               color: backgroundColor,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: color, size: 28),
+            child: Icon(icon, color: color, size: 26),
           ),
           const SizedBox(height: 8),
           Text(
             title,
-            style: AppTextStyles.labelMedium,
+            style: AppTextStyles.labelMedium.copyWith(fontSize: 11.5),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -124,8 +124,8 @@ class ProductCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          boxShadow: AppSpacing.shadowSm,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,16 +136,16 @@ class ProductCard extends StatelessWidget {
                 Container(
                   height: 150,
                   width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: AppColors.extraLightGrey,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(AppSpacing.radiusLg),
+                  decoration: const BoxDecoration(
+                    color: AppColors.tile,
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(16),
                     ),
                   ),
                   child: imageUrl != null
                       ? ClipRRect(
                           borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(AppSpacing.radiusLg),
+                            top: Radius.circular(16),
                           ),
                           child: Image.network(
                             imageUrl!,
@@ -158,18 +158,16 @@ class ProductCard extends StatelessWidget {
                 ),
                 if (badge != null)
                   Positioned(
-                    top: 8,
-                    left: 8,
+                    top: 10,
+                    left: 10,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: badgeColor ?? AppColors.accent,
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusSm,
-                        ),
+                        color: badgeColor ?? AppColors.primary,
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(badge!, style: AppTextStyles.badge),
                     ),
@@ -184,19 +182,21 @@ class ProductCard extends StatelessWidget {
                         onTap: onFavorite,
                         borderRadius: BorderRadius.circular(24),
                         child: Ink(
-                          width: 44,
-                          height: 44,
+                          width: 34,
+                          height: 34,
                           decoration: BoxDecoration(
                             color: AppColors.white,
                             shape: BoxShape.circle,
-                            boxShadow: AppSpacing.shadowSm,
+                            border: Border.all(color: AppColors.border),
                           ),
                           child: Icon(
-                            isFavorite ? Icons.favorite : Icons.favorite_border,
-                            size: 20,
+                            isFavorite
+                                ? Icons.favorite_rounded
+                                : Icons.favorite_border_rounded,
+                            size: 17,
                             color: isFavorite
                                 ? AppColors.accent
-                                : AppColors.grey,
+                                : AppColors.mediumGrey,
                           ),
                         ),
                       ),
@@ -216,14 +216,14 @@ class ProductCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     subtitle,
-                    style: AppTextStyles.bodySmall,
+                    style: AppTextStyles.caption,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       Text(price, style: AppTextStyles.priceSmall),
@@ -232,23 +232,7 @@ class ProductCard extends StatelessWidget {
                         Text(oldPrice!, style: AppTextStyles.priceOld),
                       ],
                       const Spacer(),
-                      if (rating != null)
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              size: 16,
-                              color: AppColors.warning,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              rating!.toStringAsFixed(1),
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: AppColors.dark,
-                              ),
-                            ),
-                          ],
-                        ),
+                      if (rating != null) _RatingPill(rating: rating!),
                     ],
                   ),
                 ],
@@ -261,8 +245,46 @@ class ProductCard extends StatelessWidget {
   }
 
   Widget _buildPlaceholder() {
-    return Center(
-      child: Icon(Icons.image_outlined, size: 40, color: AppColors.lightGrey),
+    return const Center(
+      child: Icon(
+        Icons.image_outlined,
+        size: 34,
+        color: AppColors.mediumGrey,
+      ),
+    );
+  }
+}
+
+/// Compact green rating pill — the reference's star treatment, used on cards.
+class _RatingPill extends StatelessWidget {
+  const _RatingPill({required this.rating});
+
+  final double rating;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.star_rounded, size: 11, color: AppColors.white),
+          const SizedBox(width: 3),
+          Text(
+            rating.toStringAsFixed(1),
+            style: const TextStyle(
+              fontSize: 10.5,
+              fontWeight: FontWeight.w700,
+              color: AppColors.white,
+              height: 1.1,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

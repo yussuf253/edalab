@@ -97,7 +97,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.border),
                       ),
                       child: Text(
@@ -123,7 +123,7 @@ class _PaymentMethodsScreenState extends State<PaymentMethodsScreen> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
                               color: color.withValues(alpha: 0.3),

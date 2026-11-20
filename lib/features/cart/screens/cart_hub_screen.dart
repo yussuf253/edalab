@@ -106,9 +106,8 @@ class _CartHubScreenState extends State<CartHubScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.border),
-                        boxShadow: AppSpacing.shadowSm,
                       ),
                       child: Row(
                         children: [
@@ -172,7 +171,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
                               height: 72,
                               decoration: BoxDecoration(
                                 color: AppColors.primarySurface,
-                                borderRadius: BorderRadius.circular(22),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Icon(
                                 Icons.shopping_cart_outlined,
@@ -253,9 +252,8 @@ class _CartModuleTile extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
-          boxShadow: AppSpacing.shadowSm,
         ),
         child: Row(
           children: [

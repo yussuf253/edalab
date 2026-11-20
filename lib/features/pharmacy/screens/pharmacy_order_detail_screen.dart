@@ -13,6 +13,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/utils/money_format.dart';
 
 class PharmacyOrderDetailScreen extends StatefulWidget {
@@ -140,18 +141,15 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('pharmacy_tracking.title')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/pharmacy');
-              }
-            },
-          ),
+        appBar: ModuleScreenAppBar(
+          title: l10n.t('pharmacy_tracking.title'),
+          onBack: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/pharmacy');
+            }
+          },
         ),
         body: _isLoading
             ? const DetailContentShimmer(
@@ -269,7 +267,7 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEFFAF4),
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: AppColors.pharmacy.withValues(alpha: 0.18),
                         ),
@@ -440,13 +438,9 @@ class _PharmacyHero extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.pharmacy,
-            AppColors.pharmacy.withValues(alpha: 0.78),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
+        color: AppColors.pharmacyBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -457,12 +451,12 @@ class _PharmacyHero extends StatelessWidget {
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(16),
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.local_pharmacy_rounded,
-                  color: AppColors.white,
+                  color: AppColors.pharmacy,
                   size: 28,
                 ),
               ),
@@ -473,20 +467,21 @@ class _PharmacyHero extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(999),
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   status,
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.white,
+                    color: AppColors.pharmacy,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Text(title, style: AppTextStyles.h3.copyWith(color: AppColors.white)),
+          Text(title, style: AppTextStyles.h3),
           const SizedBox(height: 6),
           Text(
             AppLocalizations.of(context).t(
@@ -496,14 +491,16 @@ class _PharmacyHero extends StatelessWidget {
                 'suffix': medicineCount == 1 ? '' : 's',
               },
             ),
-            style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
           ),
           const SizedBox(height: 16),
           Text(
             AppLocalizations.of(
               context,
             ).t('pharmacy_tracking.total', params: {'amount': money(total)}),
-            style: AppTextStyles.labelLarge.copyWith(color: AppColors.white),
+            style: AppTextStyles.labelLarge.copyWith(
+              color: AppColors.primaryDark,
+            ),
           ),
         ],
       ),
@@ -529,9 +526,8 @@ class _FulfillmentCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
-        boxShadow: AppSpacing.shadowSm,
       ),
       child: Column(
         children: [
@@ -611,9 +607,8 @@ class _PharmacySection extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
-        boxShadow: AppSpacing.shadowSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -195,7 +195,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [

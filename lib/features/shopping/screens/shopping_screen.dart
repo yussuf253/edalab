@@ -353,22 +353,23 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
                   child: Container(
-                    height: 96,
+                    height: 112,
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.shopping, AppColors.secondaryLight],
+                      color: AppColors.shoppingBg,
+                      image: const DecorationImage(
+                        image: AssetImage(
+                          'assets/images/headers/header_ecommerce.png',
+                        ),
+                        fit: BoxFit.cover,
+                        alignment: Alignment.centerRight,
                       ),
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
                     child: Row(
                       children: [
-                        const Icon(
-                          Icons.storefront_rounded,
-                          color: AppColors.white,
-                          size: 34,
-                        ),
-                        const SizedBox(width: 14),
+                        const SizedBox(width: 36),
                         Expanded(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -376,19 +377,16 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                             children: [
                               Text(
                                 l10n.t('shopping.hero_title'),
-                                style: AppTextStyles.h4.copyWith(
-                                  color: AppColors.white,
-                                ),
+                                style: AppTextStyles.h4,
                               ),
                               Text(
                                 l10n.t('shopping.hero_subtitle'),
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: Colors.white70,
-                                ),
+                                style: AppTextStyles.bodySmall,
                               ),
                             ],
                           ),
                         ),
+                        const SizedBox(width: 104),
                       ],
                     ),
                   ),

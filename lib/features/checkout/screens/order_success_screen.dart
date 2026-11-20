@@ -85,27 +85,16 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
                 const Spacer(),
                 // Success animation placeholder
                 Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [AppColors.success, Color(0xFF55EFC4)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                  width: 96,
+                  height: 96,
+                  decoration: const BoxDecoration(
+                    color: AppColors.successLight,
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.success.withValues(alpha: 0.3),
-                        blurRadius: 30,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
                   ),
                   child: const Icon(
                     Icons.check_rounded,
-                    color: AppColors.white,
-                    size: 60,
+                    color: AppColors.success,
+                    size: 44,
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -128,10 +117,10 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
                 const SizedBox(height: 32),
                 // Order info
                 Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.border),
                   ),
                   child: Column(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
@@ -141,47 +142,89 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
+        bottom: false,
         child: CustomScrollView(
           slivers: [
-            // Header row: avatar · search pill · bell.
+            // Header: greeting, location, notifications, search.
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 14, 0),
-                child: Row(
+              child: Container(
+                color: AppColors.white,
+                padding: const EdgeInsets.fromLTRB(20, 10, 16, 16),
+                child: Column(
                   children: [
-                    _HomeAvatar(user: user, size: 44),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _HomeSearchPill(
-                        hint: l10n.t('common.search_services'),
-                        onTap: () => context.push('/search'),
-                      ),
+                    Row(
+                      children: [
+                        _HomeAvatar(user: user, size: 42),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.location_on_outlined,
+                                    size: 13,
+                                    color: AppColors.mediumGrey,
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Expanded(
+                                    child: Text(
+                                      locationDisplay,
+                                      style: AppTextStyles.caption.copyWith(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                displayName,
+                                style: AppTextStyles.h4.copyWith(
+                                  fontSize: 16.5,
+                                  letterSpacing: -0.3,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const NotificationBell(
+                          size: 40,
+                          backgroundColor: AppColors.white,
+                          iconColor: AppColors.dark,
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 2),
-                    const NotificationBell(
-                      size: 42,
-                      backgroundColor: Colors.transparent,
-                      iconColor: AppColors.dark,
-                      showBorder: false,
+                    const SizedBox(height: 14),
+                    _HomeSearchPill(
+                      hint: l10n.t('common.search_services'),
+                      onTap: () => context.push('/search'),
                     ),
                   ],
                 ),
               ),
             ),
 
-            // Services Grid — icon tiles straight under the header.
+            // Promo banner — swipeable promotions, right under the header.
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                child: _ServicesGrid(enabledModules: enabledModuleIds),
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                child: const _PromoBanner(),
               ),
             ),
 
-            // Promo Banner
+            // Services Grid — module tiles under the banner.
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: _PromoBanner(),
+                padding: const EdgeInsets.fromLTRB(0, 34, 0, 0),
+                child: _ServicesGrid(enabledModules: enabledModuleIds),
               ),
             ),
 
@@ -189,13 +232,13 @@ class _HomeScreenState extends State<HomeScreen> {
             if (hasEnabledOfferModules)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
                   child: Column(
                     children: [
                       SectionHeader(
-                        title: '${l10n.t('home.special_offers')} 🔥',
-                        //actionText: l10n.t('common.see_all'),
-                        //onAction: () => context.push('/promotions'),
+                        title: l10n.t('home.special_offers'),
+                        actionText: l10n.t('common.see_all'),
+                        onAction: () => context.push('/promotions'),
                       ),
                       const SizedBox(height: 12),
                       _SpecialOffers(enabledModules: enabledModuleIds),
@@ -208,15 +251,15 @@ class _HomeScreenState extends State<HomeScreen> {
             if (moduleProvider.isEnabled('food'))
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
                   child: Column(
                     children: [
                       SectionHeader(
                         title: l10n.t('home.popular_restaurants'),
-                        circleAction: true,
+                        actionText: l10n.t('common.see_all'),
                         onAction: () => context.push('/food'),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       _PopularRestaurants(),
                     ],
                   ),
@@ -227,15 +270,15 @@ class _HomeScreenState extends State<HomeScreen> {
             if (moduleProvider.isEnabled('doctor'))
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
                   child: Column(
                     children: [
                       SectionHeader(
                         title: l10n.t('home.top_doctors'),
-                        circleAction: true,
+                        actionText: l10n.t('common.see_all'),
                         onAction: () => context.push('/doctor'),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       _TopDoctors(),
                     ],
                   ),
@@ -246,15 +289,15 @@ class _HomeScreenState extends State<HomeScreen> {
             if (moduleProvider.isEnabled('shopping'))
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 24),
+                  padding: const EdgeInsets.fromLTRB(0, 22, 0, 24),
                   child: Column(
                     children: [
                       SectionHeader(
                         title: l10n.t('home.trending_products'),
-                        circleAction: true,
+                        actionText: l10n.t('common.see_all'),
                         onAction: () => context.push('/shopping'),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       _TrendingProducts(),
                     ],
                   ),
@@ -300,7 +343,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final textScale = MediaQuery.textScalerOf(context).scale(1.0);
     // The SectionHeader row is a single h4 line — scaled like real Text is.
-    final sectionHeaderHeight = 18 * 1.4 * textScale;
+    final sectionHeaderHeight = 16 * 1.4 * textScale;
     final serviceCount = _serviceModuleKeys
         .where((moduleId) => enabledModuleIds.contains(moduleId))
         .length;
@@ -308,27 +351,54 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
+        bottom: false,
         child: AppShimmer(
           child: CustomScrollView(
             slivers: [
-              // Header row — avatar · search pill · bell.
+              // Header block — avatar · greeting · bell · search pill.
+              SliverToBoxAdapter(
+                child: Container(
+                  color: AppColors.white,
+                  padding: const EdgeInsets.fromLTRB(20, 10, 16, 16),
+                  child: Column(
+                    children: const [
+                      Row(
+                        children: [
+                          ShimmerCircle(size: 42),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ShimmerBlock(width: 120, height: 11, radius: 6),
+                                SizedBox(height: 7),
+                                ShimmerBlock(width: 150, height: 15, radius: 6),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          ShimmerBlock(width: 40, height: 40, radius: 20),
+                        ],
+                      ),
+                      SizedBox(height: 14),
+                      ShimmerBlock(
+                        width: double.infinity,
+                        height: 50,
+                        radius: 14,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Promo banner — 150 tall, radius 16.
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 14, 0),
-                  child: Row(
-                    children: const [
-                      ShimmerBlock(width: 44, height: 44, radius: 22),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: ShimmerBlock(
-                          width: double.infinity,
-                          height: 44,
-                          radius: AppSpacing.radiusFull,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      ShimmerBlock(width: 26, height: 26, radius: 13),
-                    ],
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+                  child: const ShimmerBlock(
+                    width: double.infinity,
+                    height: 150,
+                    radius: 16,
                   ),
                 ),
               ),
@@ -336,20 +406,8 @@ class _HomeScreenState extends State<HomeScreen> {
               // Services grid.
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 18, 0, 0),
                   child: _ServicesGridShimmer(count: serviceCount),
-                ),
-              ),
-
-              // Promo banner — 132 tall, radius 16.
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                  child: const ShimmerBlock(
-                    width: double.infinity,
-                    height: 132,
-                    radius: 16,
-                  ),
                 ),
               ),
 
@@ -357,7 +415,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (hasEnabledOfferModules)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
                     child: Column(
                       children: [
                         _shimmerSectionHeader(
@@ -365,7 +423,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: sectionHeaderHeight,
                         ),
                         const SizedBox(height: 12),
-                        _shimmerCardRow(height: 92, cardWidth: 280),
+                        _shimmerCardRow(height: 88, cardWidth: 280),
                       ],
                     ),
                   ),
@@ -375,16 +433,15 @@ class _HomeScreenState extends State<HomeScreen> {
               if (moduleProvider.isEnabled('food'))
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
                     child: Column(
                       children: [
                         _shimmerSectionHeader(
                           titleWidth: 150,
                           height: sectionHeaderHeight,
-                          showAction: true,
                         ),
-                        const SizedBox(height: 16),
-                        _shimmerCardRow(height: 192, cardWidth: 184),
+                        const SizedBox(height: 12),
+                        _shimmerCardRow(height: 190, cardWidth: 184),
                       ],
                     ),
                   ),
@@ -394,16 +451,15 @@ class _HomeScreenState extends State<HomeScreen> {
               if (moduleProvider.isEnabled('doctor'))
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
                     child: Column(
                       children: [
                         _shimmerSectionHeader(
                           titleWidth: 130,
                           height: sectionHeaderHeight,
-                          showAction: true,
                         ),
-                        const SizedBox(height: 16),
-                        _shimmerCardRow(height: 96, cardWidth: 256),
+                        const SizedBox(height: 12),
+                        _shimmerCardRow(height: 88, cardWidth: 256),
                       ],
                     ),
                   ),
@@ -413,16 +469,15 @@ class _HomeScreenState extends State<HomeScreen> {
               if (moduleProvider.isEnabled('shopping'))
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 24),
+                    padding: const EdgeInsets.fromLTRB(0, 22, 0, 24),
                     child: Column(
                       children: [
                         _shimmerSectionHeader(
                           titleWidth: 160,
                           height: sectionHeaderHeight,
-                          showAction: true,
                         ),
-                        const SizedBox(height: 16),
-                        _shimmerCardRow(height: 214, cardWidth: 176),
+                        const SizedBox(height: 12),
+                        _shimmerCardRow(height: 232, cardWidth: 168),
                       ],
                     ),
                   ),
@@ -447,40 +502,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return AppBar(
       automaticallyImplyLeading: false,
       toolbarHeight: 72,
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.white,
       elevation: 0,
       scrolledUnderElevation: 0,
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
       titleSpacing: 20,
+      shape: const Border(bottom: BorderSide(color: AppColors.border)),
       title: Row(
         children: [
-          // Avatar
-          Container(
-            width: 48,
-            height: 48,
-            decoration: const BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              shape: BoxShape.circle,
-            ),
-            child: user?.avatarUrl != null && user!.avatarUrl!.trim().isNotEmpty
-                ? ClipOval(
-                    child: Image.network(
-                      user.avatarUrl!,
-                      width: 48,
-                      height: 48,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, error, stackTrace) => const Icon(
-                        Icons.person_rounded,
-                        color: AppColors.white,
-                        size: 24,
-                      ),
-                    ),
-                  )
-                : const Icon(
-                    Icons.person_rounded,
-                    color: AppColors.white,
-                    size: 24,
-                  ),
-          ),
+          _HomeAvatar(user: user, size: 42),
           const SizedBox(width: 12),
           // Greeting
           Expanded(
@@ -488,19 +518,34 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  locationDisplay,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.grey,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: 13,
+                      color: AppColors.mediumGrey,
+                    ),
+                    const SizedBox(width: 3),
+                    Expanded(
+                      child: Text(
+                        locationDisplay,
+                        style: AppTextStyles.caption.copyWith(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(
                   displayName,
-                  style: AppTextStyles.h4.copyWith(fontWeight: FontWeight.w700),
+                  style: AppTextStyles.h4.copyWith(
+                    fontSize: 16.5,
+                    letterSpacing: -0.3,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -508,31 +553,80 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           // Notification bell
-          const NotificationBell(),
+          const Padding(
+            padding: EdgeInsets.only(right: 8),
+            child: NotificationBell(
+              size: 40,
+              backgroundColor: AppColors.white,
+              iconColor: AppColors.dark,
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _PromoBanner extends StatelessWidget {
+/// Swipeable promotion banners (art ships with its own copy).
+class _PromoBanner extends StatefulWidget {
+  const _PromoBanner();
+
+  @override
+  State<_PromoBanner> createState() => _PromoBannerState();
+}
+
+class _PromoBannerState extends State<_PromoBanner> {
+  static const List<String> _promotions = [
+    'assets/images/promotions/food1.png',
+    'assets/images/promotions/grocery1.png',
+    'assets/images/promotions/food2.png',
+    'assets/images/promotions/grocery2.png',
+  ];
+
+  int _index = 0;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 132,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.secondary.withValues(alpha: 0.18),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-        image: const DecorationImage(
-          image: AssetImage('assets/images/banners/banner.png'),
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: SizedBox(
+        height: 150,
+        width: double.infinity,
+        child: Stack(
+          children: [
+            PageView.builder(
+              itemCount: _promotions.length,
+              onPageChanged: (index) => setState(() => _index = index),
+              itemBuilder: (context, index) => Image.asset(
+                _promotions[index],
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 10,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_promotions.length, (index) {
+                  final isActive = index == _index;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: isActive ? 18 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? AppColors.white
+                          : AppColors.white.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -552,17 +646,19 @@ class _ServicesGrid extends StatelessWidget {
       _ServiceItem(
         key: 'food',
         assetPath: 'assets/icons/food.png',
+        imagePath: 'assets/images/modules/catg_food.png',
         title: l10n.t('home.food'),
         color: AppColors.food,
-        bgColor: AppColors.foodBg,
+        bgColor: AppColors.tile,
         route: '/food',
       ),
       _ServiceItem(
         key: 'shopping',
         assetPath: 'assets/icons/shopping.png',
+        imagePath: 'assets/images/modules/catg_ecommerce.png',
         title: l10n.t('home.shopping'),
         color: AppColors.shopping,
-        bgColor: AppColors.shoppingBg,
+        bgColor: AppColors.tile,
         route: '/shopping',
       ),
       _ServiceItem(
@@ -570,7 +666,7 @@ class _ServicesGrid extends StatelessWidget {
         assetPath: 'assets/icons/doctor.png',
         title: l10n.t('home.doctor'),
         color: AppColors.doctor,
-        bgColor: AppColors.doctorBg,
+        bgColor: AppColors.tile,
         route: '/doctor',
       ),
       _ServiceItem(
@@ -578,39 +674,43 @@ class _ServicesGrid extends StatelessWidget {
         assetPath: 'assets/icons/hotel.png',
         title: l10n.t('home.hotel'),
         color: AppColors.hotel,
-        bgColor: AppColors.hotelBg,
+        bgColor: AppColors.tile,
         route: '/hotel',
       ),
       _ServiceItem(
         key: 'ride',
         assetPath: 'assets/icons/car.png',
+        imagePath: 'assets/images/modules/catg_ride.png',
         title: l10n.t('home.ride'),
         color: AppColors.ride,
-        bgColor: AppColors.rideBg,
+        bgColor: AppColors.tile,
         route: '/ride',
       ),
       _ServiceItem(
         key: 'parcel',
         assetPath: 'assets/icons/package.png',
+        imagePath: 'assets/images/modules/catg_parcel.png',
         title: l10n.t('home.parcel'),
         color: AppColors.shopping,
-        bgColor: AppColors.shoppingBg,
+        bgColor: AppColors.tile,
         route: '/parcel',
       ),
       _ServiceItem(
         key: 'pharmacy',
         assetPath: 'assets/icons/pharmacy.png',
+        imagePath: 'assets/images/modules/catg_medicine.png',
         title: l10n.t('home.pharmacy'),
         color: AppColors.pharmacy,
-        bgColor: AppColors.pharmacyBg,
+        bgColor: AppColors.tile,
         route: '/pharmacy',
       ),
       _ServiceItem(
         key: 'home-services',
         assetPath: 'assets/icons/repair-service.png',
+        imagePath: 'assets/images/modules/catg_hanydman.png',
         title: l10n.t('home.home_services'),
         color: AppColors.homeServices,
-        bgColor: AppColors.homeServicesBg,
+        bgColor: AppColors.tile,
         route: '/home-services',
       ),
       _ServiceItem(
@@ -618,15 +718,16 @@ class _ServicesGrid extends StatelessWidget {
         assetPath: 'assets/icons/laundry.png',
         title: l10n.t('home.laundry'),
         color: AppColors.laundry,
-        bgColor: AppColors.laundryBg,
+        bgColor: AppColors.tile,
         route: '/laundry',
       ),
       _ServiceItem(
         key: 'grocery',
         assetPath: 'assets/icons/grocery.png',
+        imagePath: 'assets/images/modules/catg_grocery.png',
         title: l10n.t('home.grocery'),
         color: AppColors.grocery,
-        bgColor: AppColors.groceryBg,
+        bgColor: AppColors.tile,
         route: '/grocery',
       ),
     ].where((service) => enabledModules.contains(service.key)).toList();
@@ -640,7 +741,7 @@ class _ServicesGrid extends StatelessWidget {
       );
     }
 
-    // ── Fustgo 4-column icon-tile grid (any module count) ────────────────
+    // ── 4-column icon-tile grid (any module count) ────────────────
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: GridView.builder(
@@ -648,8 +749,8 @@ class _ServicesGrid extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          mainAxisSpacing: 14,
-          crossAxisSpacing: 8,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 10,
           childAspectRatio: serviceGridAspectRatio,
         ),
         itemCount: services.length,
@@ -664,26 +765,44 @@ class _ServicesGrid extends StatelessWidget {
                 return Column(
                   mainAxisSize: MainAxisSize.max,
                   children: [
-                    Container(
-                      width: tileSize,
-                      height: tileSize,
-                      decoration: BoxDecoration(
-                        color: service.bgColor,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(tileSize * 0.25),
-                        child: Image.asset(
-                          service.assetPath,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              Icons.widgets_rounded,
-                              color: service.color,
-                              size: 26,
-                            );
-                          },
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        width: tileSize,
+                        height: tileSize,
+                        decoration: BoxDecoration(
+                          color: service.imagePath == null
+                              ? service.bgColor
+                              : null,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.border),
                         ),
+                        child: service.imagePath != null
+                            ? Image.asset(
+                                service.imagePath!,
+                                fit: BoxFit.cover,
+                                alignment: Alignment.topCenter,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Icon(
+                                      Icons.widgets_rounded,
+                                      color: service.color,
+                                      size: 24,
+                                    ),
+                              )
+                            : Padding(
+                                padding: EdgeInsets.all(tileSize * 0.26),
+                                child: Image.asset(
+                                  service.assetPath,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.widgets_rounded,
+                                      color: service.color,
+                                      size: 24,
+                                    );
+                                  },
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -739,7 +858,7 @@ double _servicesGridAspectRatio(BuildContext context) {
 }
 
 /// Section-title placeholder with the same line box as [SectionHeader]
-/// (h4: 18px × 1.4, scaled by the system text scale).
+/// (h4: 16px × 1.4, scaled by the system text scale).
 Widget _shimmerSectionHeader({
   required double titleWidth,
   required double height,
@@ -752,8 +871,8 @@ Widget _shimmerSectionHeader({
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          ShimmerBlock(width: titleWidth, height: 18),
-          if (showAction) const ShimmerBlock(width: 30, height: 30, radius: 15),
+          ShimmerBlock(width: titleWidth, height: 16),
+          if (showAction) const ShimmerBlock(width: 62, height: 12, radius: 6),
         ],
       ),
     ),
@@ -788,8 +907,8 @@ Widget _shimmerCardRow({
   );
 }
 
-/// Services grid skeleton: reproduces the loaded grid's branching layouts
-/// (0 / 1 / 2 / 3 / 4+ enabled modules) with the same dimensions.
+/// Services grid skeleton: reproduces the loaded grid's geometry
+/// (40px icon tile + label line, 4 columns) with the same dimensions.
 class _ServicesGridShimmer extends StatelessWidget {
   const _ServicesGridShimmer({required this.count});
 
@@ -812,8 +931,8 @@ class _ServicesGridShimmer extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 4,
-          mainAxisSpacing: 14,
-          crossAxisSpacing: 8,
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 10,
           childAspectRatio: _servicesGridAspectRatio(context),
         ),
         itemCount: count,
@@ -824,7 +943,7 @@ class _ServicesGridShimmer extends StatelessWidget {
 }
 
 /// One grid cell: icon block over label block, matching the loaded tile
-/// (transparent cell, 54–58px icon, centred label underneath).
+/// (transparent cell, 46–62px icon tile, centred label underneath).
 class _GridServiceTileShimmer extends StatelessWidget {
   const _GridServiceTileShimmer();
 
@@ -836,7 +955,7 @@ class _GridServiceTileShimmer extends StatelessWidget {
         return Column(
           mainAxisSize: MainAxisSize.max,
           children: [
-            ShimmerBlock(width: tileSize, height: tileSize, radius: 18),
+            ShimmerBlock(width: tileSize, height: tileSize, radius: 16),
             const SizedBox(height: 8),
             const ShimmerBlock(width: 52, height: 11, radius: 6),
           ],
@@ -849,6 +968,7 @@ class _GridServiceTileShimmer extends StatelessWidget {
 class _ServiceItem {
   final String key;
   final String assetPath;
+  final String? imagePath;
   final String title;
   final Color color;
   final Color bgColor;
@@ -857,6 +977,7 @@ class _ServiceItem {
   const _ServiceItem({
     required this.key,
     required this.assetPath,
+    this.imagePath,
     required this.title,
     required this.color,
     required this.bgColor,
@@ -904,61 +1025,70 @@ class _SpecialOffers extends StatelessWidget {
     }
 
     return SizedBox(
-      height: 92,
+      height: 88,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: offers.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 14),
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final offer = offers[index];
           return Container(
             width: 280,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: offer.color.withValues(alpha: 0.1),
+              color: AppColors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: offer.color.withValues(alpha: 0.2)),
+              border: Border.all(color: AppColors.border),
             ),
             child: Row(
               children: [
                 Container(
-                  width: 42,
-                  height: 42,
+                  width: 46,
+                  height: 46,
                   decoration: BoxDecoration(
-                    color: offer.color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
+                    color: AppColors.tile,
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(offer.icon, color: offer.color, size: 22),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: offer.color,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          offer.discount,
-                          style: AppTextStyles.badge.copyWith(fontSize: 11),
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primarySurface,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              offer.discount,
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.primaryDark,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 5),
                       Text(
                         offer.title,
-                        style: AppTextStyles.labelLarge,
+                        style: AppTextStyles.labelLarge.copyWith(fontSize: 13.5),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 1),
                       Text(
                         offer.subtitle,
                         style: AppTextStyles.caption,
@@ -1013,7 +1143,7 @@ class _PopularRestaurants extends StatelessWidget {
             : const <RestaurantModel>[];
 
         return SizedBox(
-          height: 192,
+          height: 190,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1029,10 +1159,10 @@ class _PopularRestaurants extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        height: 118,
+                        height: 116,
                         width: 184,
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(14),
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
@@ -1045,10 +1175,8 @@ class _PopularRestaurants extends StatelessWidget {
                                   errorBuilder: (_, _, _) => Center(
                                     child: Icon(
                                       Icons.restaurant_rounded,
-                                      size: 34,
-                                      color: AppColors.food.withValues(
-                                        alpha: 0.45,
-                                      ),
+                                      size: 30,
+                                      color: AppColors.mediumGrey,
                                     ),
                                   ),
                                 )
@@ -1056,33 +1184,29 @@ class _PopularRestaurants extends StatelessWidget {
                                 Center(
                                   child: Icon(
                                     Icons.restaurant_rounded,
-                                    size: 34,
-                                    color: AppColors.food.withValues(
-                                      alpha: 0.45,
-                                    ),
+                                    size: 30,
+                                    color: AppColors.mediumGrey,
                                   ),
                                 ),
                               Positioned(
                                 top: 8,
-                                right: 8,
+                                left: 8,
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 7,
+                                    horizontal: 6,
                                     vertical: 3,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.dark.withValues(
-                                      alpha: 0.7,
-                                    ),
-                                    borderRadius: BorderRadius.circular(999),
+                                    color: AppColors.primary,
+                                    borderRadius: BorderRadius.circular(5),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       const Icon(
                                         Icons.star_rounded,
-                                        size: 11,
-                                        color: AppColors.warning,
+                                        size: 10,
+                                        color: AppColors.white,
                                       ),
                                       const SizedBox(width: 3),
                                       Text(
@@ -1091,6 +1215,7 @@ class _PopularRestaurants extends StatelessWidget {
                                           color: AppColors.white,
                                           fontSize: 10,
                                           fontWeight: FontWeight.w700,
+                                          height: 1.1,
                                         ),
                                       ),
                                     ],
@@ -1101,12 +1226,11 @@ class _PopularRestaurants extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Text(
                         restaurant.name,
                         style: AppTextStyles.labelLarge.copyWith(
                           fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1122,26 +1246,24 @@ class _PopularRestaurants extends StatelessWidget {
                       Row(
                         children: [
                           const Icon(
-                            Icons.delivery_dining_rounded,
-                            size: 14,
-                            color: AppColors.primary,
+                            Icons.schedule_rounded,
+                            size: 13,
+                            color: AppColors.mediumGrey,
                           ),
                           const SizedBox(width: 3),
                           Text(
                             restaurant.deliveryTime,
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.grey,
-                            ),
+                            style: AppTextStyles.caption,
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
                           Text('•', style: AppTextStyles.caption),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 6),
                           Flexible(
                             child: Text(
                               restaurant.deliveryFee,
                               style: AppTextStyles.caption.copyWith(
                                 color: AppColors.primary,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1179,12 +1301,12 @@ class _TopDoctors extends StatelessWidget {
             : const <DoctorModel>[];
 
         return SizedBox(
-          height: 96,
+          height: 88,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: doctors.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 14),
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final doctor = doctors[index];
               return GestureDetector(
@@ -1193,37 +1315,38 @@ class _TopDoctors extends StatelessWidget {
                   width: 256,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.tile,
-                    borderRadius: BorderRadius.circular(18),
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border),
                   ),
                   child: Row(
                     children: [
                       Container(
-                        width: 56,
-                        height: 56,
+                        width: 54,
+                        height: 54,
                         decoration: BoxDecoration(
-                          color: AppColors.doctor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(16),
+                          color: AppColors.tile,
+                          borderRadius: BorderRadius.circular(14),
                         ),
                         child:
                             doctor.imageUrl != null &&
                                 doctor.imageUrl!.trim().isNotEmpty
                             ? ClipRRect(
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(14),
                                 child: Image.network(
                                   doctor.imageUrl!,
                                   fit: BoxFit.cover,
                                   errorBuilder: (_, _, _) => const Icon(
                                     Icons.person_rounded,
-                                    color: AppColors.doctor,
-                                    size: 28,
+                                    color: AppColors.mediumGrey,
+                                    size: 26,
                                   ),
                                 ),
                               )
                             : const Icon(
                                 Icons.person_rounded,
-                                color: AppColors.doctor,
-                                size: 28,
+                                color: AppColors.mediumGrey,
+                                size: 26,
                               ),
                       ),
                       const SizedBox(width: 12),
@@ -1231,24 +1354,29 @@ class _TopDoctors extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               doctor.name,
-                              style: AppTextStyles.labelLarge,
+                              style: AppTextStyles.labelLarge.copyWith(
+                                fontSize: 13.5,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2),
                             Text(
                               doctor.specialty,
                               style: AppTextStyles.caption,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 6),
                             Row(
                               children: [
                                 const Icon(
                                   Icons.star_rounded,
-                                  size: 14,
+                                  size: 13,
                                   color: AppColors.warning,
                                 ),
                                 const SizedBox(width: 3),
@@ -1256,12 +1384,17 @@ class _TopDoctors extends StatelessWidget {
                                   '${doctor.rating}',
                                   style: AppTextStyles.labelSmall.copyWith(
                                     color: AppColors.dark,
+                                    fontSize: 11,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                Text(
-                                  doctor.experience,
-                                  style: AppTextStyles.caption,
+                                Flexible(
+                                  child: Text(
+                                    doctor.experience,
+                                    style: AppTextStyles.caption,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               ],
                             ),
@@ -1300,58 +1433,61 @@ class _TrendingProducts extends StatelessWidget {
             : const <ProductModel>[];
 
         return SizedBox(
-          height: 214,
+          height: 232,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: products.length,
-            separatorBuilder: (context, index) => const SizedBox(width: 14),
+            separatorBuilder: (context, index) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final product = products[index];
               return GestureDetector(
                 onTap: () => context.push('/shopping/product/${product.id}'),
-                child: SizedBox(
-                  width: 176,
+                child: Container(
+                  width: 168,
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Stack(
-                        children: [
-                          Container(
-                            height: 140,
-                            decoration: BoxDecoration(
-                              color: AppColors.tile,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.shopping_bag_rounded,
-                                size: 44,
-                                color: AppColors.shopping.withValues(
-                                  alpha: 0.4,
+                      SizedBox(
+                        height: 128,
+                        width: double.infinity,
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(16),
+                          ),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              const ColoredBox(color: AppColors.tile),
+                              if (product.images.isNotEmpty &&
+                                  product.images.first.trim().isNotEmpty)
+                                Image.network(
+                                  product.images.first,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, _, _) => const Center(
+                                    child: Icon(
+                                      Icons.shopping_bag_rounded,
+                                      size: 32,
+                                      color: AppColors.mediumGrey,
+                                    ),
+                                  ),
+                                )
+                              else
+                                const Center(
+                                  child: Icon(
+                                    Icons.shopping_bag_rounded,
+                                    size: 32,
+                                    color: AppColors.mediumGrey,
+                                  ),
                                 ),
-                              ),
-                            ),
+                            ],
                           ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: AppColors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: AppSpacing.shadowSm,
-                              ),
-                              child: const Icon(
-                                Icons.favorite_border_rounded,
-                                size: 16,
-                                color: AppColors.grey,
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(12),
@@ -1360,7 +1496,9 @@ class _TrendingProducts extends StatelessWidget {
                           children: [
                             Text(
                               product.name,
-                              style: AppTextStyles.labelLarge,
+                              style: AppTextStyles.labelLarge.copyWith(
+                                fontSize: 13,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -1368,6 +1506,8 @@ class _TrendingProducts extends StatelessWidget {
                             Text(
                               product.category,
                               style: AppTextStyles.caption,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 8),
                             Row(
@@ -1376,13 +1516,16 @@ class _TrendingProducts extends StatelessWidget {
                                   'DJF${product.price.toStringAsFixed(0)}',
                                   style: AppTextStyles.priceSmall,
                                 ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  product.originalPrice != null
-                                      ? 'DJF${product.originalPrice!.toStringAsFixed(0)}'
-                                      : '',
-                                  style: AppTextStyles.priceOld,
-                                ),
+                                const SizedBox(width: 5),
+                                if (product.originalPrice != null)
+                                  Flexible(
+                                    child: Text(
+                                      'DJF${product.originalPrice!.toStringAsFixed(0)}',
+                                      style: AppTextStyles.priceOld,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
                               ],
                             ),
                           ],
@@ -1414,7 +1557,7 @@ class _HomeAvatar extends StatelessWidget {
       width: size,
       height: size,
       decoration: const BoxDecoration(
-        gradient: AppColors.primaryGradient,
+        color: AppColors.primarySurface,
         shape: BoxShape.circle,
       ),
       child: avatarUrl != null && avatarUrl.trim().isNotEmpty
@@ -1426,14 +1569,14 @@ class _HomeAvatar extends StatelessWidget {
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => Icon(
                   Icons.person_rounded,
-                  color: AppColors.white,
+                  color: AppColors.primary,
                   size: size * 0.5,
                 ),
               ),
             )
           : Icon(
               Icons.person_rounded,
-              color: AppColors.white,
+              color: AppColors.primary,
               size: size * 0.5,
             ),
     );
@@ -1453,29 +1596,43 @@ class _HomeSearchPill extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: Container(
-        height: 44,
+        height: 50,
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
           color: AppColors.tile,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.border),
         ),
         child: Row(
           children: [
             const Icon(
               Icons.search_rounded,
-              size: 19,
+              size: 20,
               color: AppColors.mediumGrey,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 9),
             Expanded(
               child: Text(
                 hint,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodyMedium.copyWith(
-                  fontSize: 13,
+                  fontSize: 13.5,
                   color: AppColors.mediumGrey,
                 ),
+              ),
+            ),
+            Container(
+              width: 30,
+              height: 30,
+              decoration: const BoxDecoration(
+                color: AppColors.white,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.tune_rounded,
+                size: 16,
+                color: AppColors.dark,
               ),
             ),
           ],

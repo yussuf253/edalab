@@ -9,6 +9,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/utils/money_format.dart';
 
 class LaundryTrackingScreen extends StatefulWidget {
@@ -179,18 +180,15 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('tracking.order_tracking')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/laundry');
-              }
-            },
-          ),
+        appBar: ModuleScreenAppBar(
+          title: l10n.t('tracking.order_tracking'),
+          onBack: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/laundry');
+            }
+          },
         ),
         body: _isLoading
             ? const Padding(
@@ -201,7 +199,7 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                       ShimmerBlock(
                         width: double.infinity,
                         height: 180,
-                        radius: 20,
+                        radius: 16,
                       ),
                       SizedBox(height: 16),
                       ShimmerBlock(
@@ -244,31 +242,34 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [AppColors.laundry, AppColors.secondaryLight],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
+                        color: AppColors.laundryBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Column(
                         children: [
-                          const Icon(
-                            Icons.local_laundry_service_rounded,
-                            color: AppColors.white,
-                            size: 48,
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: AppColors.white,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.local_laundry_service_rounded,
+                              color: AppColors.laundry,
+                              size: 28,
+                            ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 14),
                           Text(
                             l10n.t('laundry_tracking.status'),
-                            style: AppTextStyles.h3.copyWith(
-                              color: AppColors.white,
-                            ),
+                            style: AppTextStyles.h4,
                           ),
                           const SizedBox(height: 4),
                           Text(
                             _localizedStatusLabel(l10n, status),
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: Colors.white70,
-                            ),
+                            style: AppTextStyles.bodySmall,
                           ),
                         ],
                       ),
@@ -278,9 +279,8 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.border),
-                        boxShadow: AppSpacing.shadowSm,
                       ),
                       child: Column(
                         children: [
@@ -324,6 +324,7 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.white,
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

@@ -12,6 +12,7 @@ import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
@@ -285,10 +286,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          conversation?.title ?? l10n.t('messages.chat_fallback_title'),
-        ),
+      appBar: ModuleScreenAppBar(
+        title: conversation?.title ?? l10n.t('messages.chat_fallback_title'),
       ),
       body: _isLoading
           ? const SimpleListShimmer(itemCount: 6)
@@ -302,9 +301,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.border),
-                      boxShadow: AppSpacing.shadowSm,
                     ),
                     child: Row(
                       children: [
@@ -357,8 +355,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: isMine ? AppColors.primary : AppColors.white,
-                            borderRadius: BorderRadius.circular(18),
-                            boxShadow: isMine ? null : AppSpacing.shadowSm,
+                            borderRadius: BorderRadius.only(
+                              topLeft: const Radius.circular(16),
+                              topRight: const Radius.circular(16),
+                              bottomLeft: Radius.circular(isMine ? 16 : 4),
+                              bottomRight: Radius.circular(isMine ? 4 : 16),
+                            ),
+                            border: isMine
+                                ? null
+                                : Border.all(color: AppColors.border),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,7 +395,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                 _formatTime(message.createdAt),
                                 style: AppTextStyles.labelSmall.copyWith(
                                   color: isMine
-                                      ? Colors.white70
+                                      ? AppColors.white.withValues(alpha: 0.75)
                                       : AppColors.mediumGrey,
                                 ),
                               ),
@@ -408,15 +413,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     16,
                     12 + MediaQuery.of(context).padding.bottom,
                   ),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 18,
-                        offset: const Offset(0, -4),
-                      ),
-                    ],
+                    border: Border(
+                      top: BorderSide(color: AppColors.border),
+                    ),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.end,

@@ -61,48 +61,39 @@ class AppShell extends StatelessWidget {
 
     return Scaffold(
       body: widgetChildWithSafeBackground(child),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        minimum: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(4, 7, 4, 7),
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(26),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.dark.withValues(alpha: 0.10),
-                blurRadius: 26,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Row(
-            children: List.generate(navItems.length, (index) {
-              final item = navItems[index];
-              return Expanded(
-                child: _NavButton(
-                  item: item,
-                  isActive: currentIndex == index,
-                  isCenter:
-                      navItems.length.isOdd && index == navItems.length ~/ 2,
-                  cartCount: cartCount,
-                  onTap: () {
-                    AnalyticsService.instance.track(
-                      AnalyticsEvents.navigationTabTapped,
-                      properties: {
-                        'target_path': item.path,
-                        'current_path': path,
-                        'is_reselect': currentIndex == index,
-                        'cart_count': cartCount,
-                      },
-                    );
-                    context.go(item.path);
-                  },
-                ),
-              );
-            }),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.white,
+          border: Border(top: BorderSide(color: AppColors.border)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 62,
+            child: Row(
+              children: List.generate(navItems.length, (index) {
+                final item = navItems[index];
+                return Expanded(
+                  child: _NavButton(
+                    item: item,
+                    isActive: currentIndex == index,
+                    cartCount: cartCount,
+                    onTap: () {
+                      AnalyticsService.instance.track(
+                        AnalyticsEvents.navigationTabTapped,
+                        properties: {
+                          'target_path': item.path,
+                          'current_path': path,
+                          'is_reselect': currentIndex == index,
+                          'cart_count': cartCount,
+                        },
+                      );
+                      context.go(item.path);
+                    },
+                  ),
+                );
+              }),
+            ),
           ),
         ),
       ),
@@ -135,79 +126,33 @@ class _NavButton extends StatelessWidget {
     required this.isActive,
     required this.cartCount,
     required this.onTap,
-    this.isCenter = false,
   });
 
   final _NavItem item;
   final bool isActive;
   final int cartCount;
   final VoidCallback onTap;
-  final bool isCenter;
 
   @override
   Widget build(BuildContext context) {
     final foreground = isActive ? AppColors.primary : AppColors.mediumGrey;
     final badge = item.path == '/cart' && cartCount > 0
-        ? _CartBadge(count: cartCount, onGreen: isCenter)
+        ? _CartBadge(count: cartCount)
         : null;
-
-    // Middle tab of an odd bar becomes the raised green action button.
-    if (isCenter) {
-      return Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(999),
-          onTap: onTap,
-          child: Container(
-            width: 48,
-            height: 48,
-            decoration: const BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x3300A651),
-                  blurRadius: 14,
-                  offset: Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Stack(
-              clipBehavior: Clip.none,
-              alignment: Alignment.center,
-              children: [
-                ColorFiltered(
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.white,
-                    BlendMode.srcIn,
-                  ),
-                  child: Image.asset(
-                    item.assetPath,
-                    width: 22,
-                    height: 22,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                if (badge != null) Positioned(top: 1, right: 1, child: badge),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(18),
         onTap: onTap,
+        splashColor: AppColors.primary.withValues(alpha: 0.06),
+        highlightColor: Colors.transparent,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(
-                height: 26,
+                height: 24,
                 child: Stack(
                   clipBehavior: Clip.none,
                   alignment: Alignment.center,
@@ -219,24 +164,24 @@ class _NavButton extends StatelessWidget {
                       ),
                       child: Image.asset(
                         item.assetPath,
-                        width: 22,
-                        height: 22,
+                        width: 21,
+                        height: 21,
                         fit: BoxFit.contain,
                       ),
                     ),
                     if (badge != null)
-                      Positioned(top: -4, right: 0, child: badge),
+                      Positioned(top: -5, right: 0, child: badge),
                   ],
                 ),
               ),
-              const SizedBox(height: 3),
+              const SizedBox(height: 4),
               Text(
                 item.label,
                 maxLines: 1,
                 overflow: TextOverflow.visible,
                 softWrap: false,
                 style: AppTextStyles.labelMedium.copyWith(
-                  color: isActive ? AppColors.primary : AppColors.mediumGrey,
+                  color: foreground,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                   fontSize: 10,
                   letterSpacing: 0,
@@ -251,27 +196,24 @@ class _NavButton extends StatelessWidget {
 }
 
 class _CartBadge extends StatelessWidget {
-  const _CartBadge({required this.count, this.onGreen = false});
+  const _CartBadge({required this.count});
 
   final int count;
-  final bool onGreen;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minWidth: 16),
+      constraints: const BoxConstraints(minWidth: 15),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
       decoration: BoxDecoration(
-        color: onGreen ? AppColors.white : AppColors.accent,
+        color: AppColors.accent,
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.white, width: 1.4),
       ),
       child: Text(
         count > 99 ? '99+' : '$count',
         textAlign: TextAlign.center,
-        style: AppTextStyles.badge.copyWith(
-          fontSize: 8,
-          color: onGreen ? AppColors.primary : AppColors.white,
-        ),
+        style: AppTextStyles.badge.copyWith(fontSize: 8),
       ),
     );
   }

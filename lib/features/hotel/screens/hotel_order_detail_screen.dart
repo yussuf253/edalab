@@ -309,10 +309,11 @@ class _HotelHero extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.hotel, AppColors.hotel.withValues(alpha: 0.78)],
+        color: AppColors.hotelBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.hotel.withValues(alpha: 0.16),
         ),
-        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,16 +321,16 @@ class _HotelHero extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 54,
-                height: 54,
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(16),
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
                   Icons.hotel_rounded,
-                  color: AppColors.white,
-                  size: 28,
+                  color: AppColors.hotel,
+                  size: 24,
                 ),
               ),
               const Spacer(),
@@ -337,21 +338,15 @@ class _HotelHero extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            hotelName,
-            style: AppTextStyles.h3.copyWith(color: AppColors.white),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            roomName,
-            style: AppTextStyles.bodyMedium.copyWith(color: Colors.white70),
-          ),
-          const SizedBox(height: 16),
+          Text(hotelName, style: AppTextStyles.h3),
+          const SizedBox(height: 4),
+          Text(roomName, style: AppTextStyles.bodySmall),
+          const SizedBox(height: 14),
           Text(
             AppLocalizations.of(
               context,
             ).t('hotel_tracking.total_stay', params: {'amount': money(total)}),
-            style: AppTextStyles.labelLarge.copyWith(color: AppColors.white),
+            style: AppTextStyles.labelLarge,
           ),
         ],
       ),
@@ -377,7 +372,7 @@ class _TimelineCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
@@ -498,7 +493,7 @@ class _HotelStatTile extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
@@ -543,7 +538,7 @@ class _HotelInfoCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
@@ -596,12 +591,13 @@ class _HeroPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.border),
       ),
       child: Text(
         label,
-        style: AppTextStyles.labelSmall.copyWith(color: AppColors.white),
+        style: AppTextStyles.labelSmall.copyWith(color: AppColors.hotel),
       ),
     );
   }

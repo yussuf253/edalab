@@ -264,20 +264,11 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        gradient: const LinearGradient(
-                          colors: [
-                            AppColors.pharmacy,
-                            AppColors.secondaryLight,
-                          ],
+                        color: AppColors.pharmacyBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.pharmacy.withValues(alpha: 0.16),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.pharmacy.withValues(alpha: 0.18),
-                            blurRadius: 24,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -289,8 +280,8 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                                 width: 46,
                                 height: 46,
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(14),
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child:
                                     store?.imageUrl != null &&
@@ -302,15 +293,15 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                                           fit: BoxFit.cover,
                                           errorBuilder: (_, _, _) => const Icon(
                                             Icons.local_pharmacy_rounded,
-                                            color: AppColors.white,
-                                            size: 24,
+                                            color: AppColors.pharmacy,
+                                            size: 22,
                                           ),
                                         ),
                                       )
                                     : const Icon(
                                         Icons.local_pharmacy_rounded,
-                                        color: AppColors.white,
-                                        size: 24,
+                                        color: AppColors.pharmacy,
+                                        size: 22,
                                       ),
                               ),
                               const SizedBox(width: 12),
@@ -320,9 +311,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                                   children: [
                                     Text(
                                       store?.name ?? l10n.t('pharmacy.title'),
-                                      style: AppTextStyles.h4.copyWith(
-                                        color: AppColors.white,
-                                      ),
+                                      style: AppTextStyles.h4,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -333,11 +322,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                                           : l10n.t(
                                               'pharmacy.store_address_private',
                                             ),
-                                      style: AppTextStyles.bodySmall.copyWith(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.9,
-                                        ),
-                                      ),
+                                      style: AppTextStyles.bodySmall,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -481,7 +466,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: AppColors.white,
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppColors.border),
                             boxShadow: AppSpacing.shadowSm,
                           ),
@@ -589,14 +574,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                   ),
                   decoration: BoxDecoration(
                     color: AppColors.pharmacy,
-                    borderRadius: BorderRadius.circular(18),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.pharmacy.withValues(alpha: 0.22),
-                        blurRadius: 22,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: Row(
                     children: [
@@ -652,18 +630,19 @@ class _StoreMetricPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: AppColors.white),
+          Icon(icon, size: 14, color: AppColors.pharmacy),
           const SizedBox(width: 4),
           Text(
             text,
             style: AppTextStyles.caption.copyWith(
-              color: AppColors.white,
+              color: AppColors.pharmacy,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -690,7 +669,7 @@ class _StoreStatCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
@@ -753,7 +732,7 @@ class _StoreSearchCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),

@@ -221,7 +221,7 @@ class _CouponsScreenState extends State<CouponsScreen> {
                   margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.border),
                     boxShadow: AppSpacing.shadowSm,
                   ),

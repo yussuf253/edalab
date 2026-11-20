@@ -189,7 +189,7 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
               decoration: BoxDecoration(
                 color: AppColors.white,
                 border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
@@ -242,7 +242,7 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
                       width: 64,
                       decoration: BoxDecoration(
                         color: selected ? AppColors.secondary : AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: selected
                             ? null
                             : Border.all(color: AppColors.border),
@@ -290,7 +290,7 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: selected ? AppColors.secondary : AppColors.white,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       border: selected
                           ? null
                           : Border.all(color: AppColors.border),

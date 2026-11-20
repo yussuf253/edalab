@@ -97,34 +97,28 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                 children: [
                   Container(
                     margin: const EdgeInsets.all(20),
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.doctor, AppColors.secondaryLight],
+                      color: AppColors.doctorBg,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppColors.doctor.withValues(alpha: 0.16),
                       ),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.doctor.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
                     ),
                     child: Column(
                       children: [
                         Container(
-                          width: 90,
-                          height: 90,
+                          width: 88,
+                          height: 88,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(24),
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child:
                               doctor.imageUrl != null &&
                                   doctor.imageUrl!.trim().isNotEmpty
                               ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(24),
+                                  borderRadius: BorderRadius.circular(20),
                                   child: Image.network(
                                     doctor.imageUrl!,
                                     fit: BoxFit.cover,
@@ -132,8 +126,8 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                                       doctor.isHomeCareProvider
                                           ? Icons.health_and_safety_rounded
                                           : Icons.person_rounded,
-                                      color: AppColors.white,
-                                      size: 48,
+                                      color: AppColors.doctor,
+                                      size: 44,
                                     ),
                                   ),
                                 )
@@ -141,24 +135,20 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                                   doctor.isHomeCareProvider
                                       ? Icons.health_and_safety_rounded
                                       : Icons.person_rounded,
-                                  color: AppColors.white,
-                                  size: 48,
+                                  color: AppColors.doctor,
+                                  size: 44,
                                 ),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           doctor.name,
-                          style: AppTextStyles.h2.copyWith(
-                            color: AppColors.white,
-                          ),
+                          style: AppTextStyles.h2,
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           '${doctor.specialty} • ${l10n.t('doctor_detail.experience_suffix', params: {'experience': doctor.experience})}',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: Colors.white70,
-                          ),
+                          style: AppTextStyles.bodySmall,
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 10),
@@ -170,20 +160,16 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                             children: [
                               _ProfileChip(
                                 label: doctor.professionLabel,
-                                foregroundColor: AppColors.white,
-                                backgroundColor: Colors.white.withValues(
-                                  alpha: 0.14,
-                                ),
+                                foregroundColor: AppColors.doctor,
+                                backgroundColor: AppColors.white,
                               ),
                               ...doctor.careModes
                                   .take(2)
                                   .map(
                                     (mode) => _ProfileChip(
                                       label: mode,
-                                      foregroundColor: AppColors.white,
-                                      backgroundColor: Colors.white.withValues(
-                                        alpha: 0.14,
-                                      ),
+                                      foregroundColor: AppColors.doctor,
+                                      backgroundColor: AppColors.white,
                                     ),
                                   ),
                             ],
@@ -199,7 +185,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                               Container(
                                 width: 1,
                                 height: 30,
-                                color: Colors.white24,
+                                color: AppColors.border,
                               ),
                               _StatCol(
                                 '${doctor.rating}',
@@ -208,7 +194,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                               Container(
                                 width: 1,
                                 height: 30,
-                                color: Colors.white24,
+                                color: AppColors.border,
                               ),
                               _StatCol(
                                 doctor.experience.split(' ').first,
@@ -388,7 +374,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: AppColors.white,
-                              borderRadius: BorderRadius.circular(18),
+                              borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: AppColors.border),
                               boxShadow: AppSpacing.shadowSm,
                             ),
@@ -427,7 +413,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: AppColors.white,
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(16),
                                 border: Border.all(color: AppColors.border),
                                 boxShadow: AppSpacing.shadowSm,
                               ),
@@ -717,11 +703,8 @@ class _StatCol extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(value, style: AppTextStyles.h4.copyWith(color: AppColors.white)),
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(color: Colors.white60),
-        ),
+        Text(value, style: AppTextStyles.h4),
+        Text(label, style: AppTextStyles.caption),
       ],
     );
   }

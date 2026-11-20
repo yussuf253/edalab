@@ -281,7 +281,7 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                       height: 56,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(
                         Icons.health_and_safety_rounded,
@@ -464,7 +464,7 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: AppColors.border),
                     boxShadow: AppSpacing.shadowSm,
                   ),

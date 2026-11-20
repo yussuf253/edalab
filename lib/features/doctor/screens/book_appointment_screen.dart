@@ -173,7 +173,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   border: Border.all(color: AppColors.border),
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   children: [
@@ -214,7 +214,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   border: Border.all(color: AppColors.border),
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -419,7 +419,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                         width: 60,
                         decoration: BoxDecoration(
                           color: selected ? AppColors.doctor : AppColors.white,
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(16),
                           border: selected
                               ? null
                               : Border.all(color: AppColors.border),
@@ -472,7 +472,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: selected ? AppColors.doctor : AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: selected
                             ? null
                             : Border.all(color: AppColors.border),
@@ -712,7 +712,7 @@ class _TypeCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             color: selected ? AppColors.doctor : AppColors.white,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
             border: selected ? null : Border.all(color: AppColors.border),
           ),
           child: Column(

@@ -7,6 +7,7 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/money_format.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final String orderId;
@@ -29,13 +30,7 @@ class OrderDetailScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(_screenTitle(module, l10n)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => context.pop(),
-        ),
-      ),
+      appBar: ModuleScreenAppBar(title: _screenTitle(module, l10n)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -45,41 +40,35 @@ class OrderDetailScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    _moduleColor(module),
-                    _moduleColor(module).withValues(alpha: 0.78),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(22),
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 52,
-                    height: 52,
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(16),
+                      color: _moduleColor(module).withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
                       _moduleIcon(module),
-                      color: AppColors.white,
-                      size: 28,
+                      color: _moduleColor(module),
+                      size: 24,
                     ),
                   ),
                   const SizedBox(height: 14),
                   Text(
                     _title(data, firstItem, l10n),
-                    style: AppTextStyles.h3.copyWith(color: AppColors.white),
+                    style: AppTextStyles.h3,
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
                     data['moduleName']?.toString() ?? module,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Colors.white70,
-                    ),
+                    style: AppTextStyles.bodySmall,
                   ),
                 ],
               ),
@@ -288,9 +277,8 @@ class _Card extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
-        boxShadow: AppSpacing.shadowSm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

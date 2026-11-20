@@ -12,6 +12,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
@@ -78,7 +79,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text(l10n.t('messages.title'))),
+      appBar: ModuleScreenAppBar(
+        title: l10n.t('messages.title'),
+        showBack: false,
+      ),
       body: _isLoading
           ? const SimpleListShimmer(itemCount: 6)
           : !isLoggedIn
@@ -107,12 +111,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     onTap: () =>
                         context.push('/messages/chat/${conversation.id}'),
                     child: Container(
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.border),
-                        boxShadow: AppSpacing.shadowSm,
                       ),
                       child: Row(
                         children: [
@@ -123,7 +126,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                               color: conversation.accent.withValues(
                                 alpha: 0.12,
                               ),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: Icon(
                               _iconForEntity(conversation.entityType),
@@ -186,7 +189,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                                         decoration: BoxDecoration(
                                           color: conversation.accent,
                                           borderRadius: BorderRadius.circular(
-                                            999,
+                                            8,
                                           ),
                                         ),
                                         child: Text(

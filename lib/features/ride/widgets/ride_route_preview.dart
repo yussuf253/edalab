@@ -403,7 +403,7 @@ class _RideRoutePreviewState extends State<RideRoutePreview>
                     ),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(16),
                       boxShadow: AppSpacing.shadowMd,
                     ),
                     child: Row(

@@ -235,16 +235,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
             ),
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.food.withValues(alpha: 0.45),
-                      AppColors.food.withValues(alpha: 0.15),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
+                decoration: const BoxDecoration(color: AppColors.tile),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -532,7 +523,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: AppSpacing.shadowSm,
                   ),
                   child: Column(
@@ -878,7 +869,7 @@ class _MenuItemCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
           boxShadow: AppSpacing.shadowSm,
         ),

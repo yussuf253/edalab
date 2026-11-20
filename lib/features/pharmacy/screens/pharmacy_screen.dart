@@ -583,15 +583,18 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(18),
+                      clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            AppColors.pharmacy,
-                            AppColors.secondaryLight,
-                          ],
+                        color: AppColors.pharmacyBg,
+                        image: const DecorationImage(
+                          image: AssetImage(
+                            'assets/images/headers/header_medicine.png',
+                          ),
+                          fit: BoxFit.cover,
+                          alignment: Alignment.centerRight,
                         ),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
                         children: [
@@ -601,18 +604,14 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                               children: [
                                 Text(
                                   l10n.t('pharmacy.hero_title'),
-                                  style: AppTextStyles.h4.copyWith(
-                                    color: AppColors.white,
-                                  ),
+                                  style: AppTextStyles.h4,
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   selectedPharmacy == null
                                       ? l10n.t('pharmacy.hero_subtitle')
                                       : '${selectedPharmacy.name} • ${selectedPharmacy.distanceLabel(l10n)}',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: Colors.white70,
-                                  ),
+                                  style: AppTextStyles.bodySmall,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -639,19 +638,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                               ],
                             ),
                           ),
-                          Container(
-                            width: 70,
-                            height: 70,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Icon(
-                              Icons.receipt_long_rounded,
-                              color: AppColors.white,
-                              size: 36,
-                            ),
-                          ),
+                          const SizedBox(width: 84),
                         ],
                       ),
                     ),
@@ -820,21 +807,35 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                           decoration: BoxDecoration(
                             color: AppColors.white,
                             borderRadius: BorderRadius.circular(14),
-                            boxShadow: AppSpacing.shadowSm,
+                            border: Border.all(color: AppColors.border),
                           ),
                           child: Row(
                             children: [
-                              Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: AppColors.pharmacyBg,
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: const Icon(
-                                  Icons.medication_rounded,
-                                  color: AppColors.pharmacy,
-                                  size: 28,
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: SizedBox(
+                                  width: 56,
+                                  height: 56,
+                                  child:
+                                      _medicineCategoryImage(
+                                        medicine.category,
+                                      ) !=
+                                      null
+                                      ? Image.asset(
+                                          _medicineCategoryImage(
+                                            medicine.category,
+                                          )!,
+                                          fit: BoxFit.cover,
+                                          alignment: Alignment.topCenter,
+                                        )
+                                      : Container(
+                                          color: AppColors.pharmacyBg,
+                                          child: const Icon(
+                                            Icons.medication_rounded,
+                                            color: AppColors.pharmacy,
+                                            size: 26,
+                                          ),
+                                        ),
                                 ),
                               ),
                               const SizedBox(width: 14),
@@ -985,14 +986,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.pharmacy,
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.pharmacy.withValues(alpha: 0.22),
-                          blurRadius: 22,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Row(
                       children: [
@@ -1049,7 +1043,7 @@ class _PharmacyNearbySkeletonCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: const AppShimmer(
         child: Column(
@@ -1121,16 +1115,8 @@ class _PharmacyNearbyCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          ...AppSpacing.shadowSm,
-          BoxShadow(
-            color: AppColors.pharmacy.withValues(alpha: 0.06),
-            blurRadius: 22,
-            offset: const Offset(0, 8),
-          ),
-        ],
-        border: Border.all(color: AppColors.lightGrey.withValues(alpha: 0.55)),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1706,4 +1692,41 @@ class _PharmacyDirectoryItem {
       'imageUrl': imageUrl,
     };
   }
+}
+
+/// Symptom art shipped with the app, matched on the medicine category.
+String? _medicineCategoryImage(String category) {
+  final value = category.toLowerCase();
+  if (value.contains('cough') || value.contains('cold')) {
+    return 'assets/images/medicine/categories/cough.png';
+  }
+  if (value.contains('head')) {
+    return 'assets/images/medicine/categories/headache.png';
+  }
+  if (value.contains('fever') || value.contains('temperature')) {
+    return 'assets/images/medicine/categories/fever.png';
+  }
+  if (value.contains('skin') || value.contains('derma')) {
+    return 'assets/images/medicine/categories/skinCare.png';
+  }
+  if (value.contains('diabet') || value.contains('sugar')) {
+    return 'assets/images/medicine/categories/diabetic.png';
+  }
+  if (value.contains('digest') ||
+      value.contains('stomach') ||
+      value.contains('gut')) {
+    return 'assets/images/medicine/categories/digestive.png';
+  }
+  if (value.contains('eye') || value.contains('vision')) {
+    return 'assets/images/medicine/categories/eyeCare.png';
+  }
+  if (value.contains('weak') ||
+      value.contains('vitamin') ||
+      value.contains('fatigue')) {
+    return 'assets/images/medicine/categories/weakness.png';
+  }
+  if (value.contains('pain') || value.contains('ache')) {
+    return 'assets/images/medicine/categories/painReleif.png';
+  }
+  return null;
 }

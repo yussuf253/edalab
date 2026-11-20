@@ -321,7 +321,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
         Hero(
           tag: 'rental-car-${car.id}',
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
             child: _carImage(car),
           ),
         ),
@@ -622,7 +622,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
       decoration: BoxDecoration(
         color: AppColors.white,
         border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

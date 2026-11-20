@@ -10,6 +10,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/utils/money_format.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 
 class FoodOrderTrackingScreen extends StatefulWidget {
   final String orderId;
@@ -151,18 +152,15 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          title: Text(l10n.t('tracking.order_tracking')),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/food');
-              }
-            },
-          ),
+        appBar: ModuleScreenAppBar(
+          title: l10n.t('tracking.order_tracking'),
+          onBack: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/food');
+            }
+          },
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -200,7 +198,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: AppColors.warning.withValues(alpha: 0.4),
                           ),
@@ -234,37 +232,44 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [AppColors.food, AppColors.secondaryLight],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
+                          color: AppColors.foodBg,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppColors.border),
                         ),
                         child: Column(
                           children: [
-                            const Icon(
-                              Icons.delivery_dining_rounded,
-                              color: AppColors.white,
-                              size: 48,
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: const Icon(
+                                Icons.delivery_dining_rounded,
+                                color: AppColors.food,
+                                size: 30,
+                              ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 14),
                             Text(
                               l10n.t('food_tracking.estimated_delivery'),
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: Colors.white70,
+                                color: AppColors.mediumGrey,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               eta,
                               style: AppTextStyles.h2.copyWith(
-                                color: AppColors.white,
+                                color: AppColors.dark,
                               ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               displayOrderId,
                               style: AppTextStyles.labelMedium.copyWith(
-                                color: AppColors.white,
+                                color: AppColors.primaryDark,
                               ),
                             ),
                           ],
@@ -276,9 +281,8 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(18),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: AppColors.border),
-                          boxShadow: AppSpacing.shadowSm,
                         ),
                         child: Column(
                           children: [
@@ -329,9 +333,8 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(color: AppColors.border),
-                        boxShadow: AppSpacing.shadowSm,
                       ),
                       child: Row(
                         children: [

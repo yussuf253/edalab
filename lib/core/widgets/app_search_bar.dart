@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import '../localization/app_localizations.dart';
 import '../constants/app_colors.dart';
-import '../constants/app_spacing.dart';
 
+/// Search field used across the product.
+///
+/// One shape everywhere: 50px tall, 14px radius, soft filled surface and a
+/// hairline border — the quiet treatment from the reference screens.
 class AppSearchBar extends StatelessWidget {
   final String hint;
   final VoidCallback? onTap;
@@ -32,18 +35,11 @@ class AppSearchBar extends StatelessWidget {
     return GestureDetector(
       onTap: readOnly ? onTap : null,
       child: Container(
-        height: 52,
+        height: 50,
         decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          color: AppColors.tile,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(color: AppColors.border),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x08000000),
-              blurRadius: 12,
-              offset: Offset(0, 4),
-            ),
-          ],
         ),
         child: TextField(
           controller: controller,
@@ -52,6 +48,7 @@ class AppSearchBar extends StatelessWidget {
           autofocus: autofocus,
           onTap: onTap,
           cursorColor: AppColors.primary,
+          cursorWidth: 1.6,
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -61,15 +58,19 @@ class AppSearchBar extends StatelessWidget {
             hintText: resolvedHint,
             hintStyle: const TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w400,
               color: AppColors.mediumGrey,
             ),
             prefixIcon: prefix ??
                 const Icon(
                   Icons.search_rounded,
                   color: AppColors.mediumGrey,
-                  size: 22,
+                  size: 21,
                 ),
+            prefixIconConstraints: const BoxConstraints(
+              minWidth: 46,
+              minHeight: 46,
+            ),
             suffixIcon: suffix,
             filled: false,
             isDense: true,
@@ -77,8 +78,8 @@ class AppSearchBar extends StatelessWidget {
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 16,
+              horizontal: 12,
+              vertical: 15,
             ),
           ),
         ),

@@ -61,11 +61,18 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/images/logo/
-    - assets/images/onboarding/
-    - assets/images/categories/
     - assets/images/banners/
-    - assets/images/services/
+    - assets/images/promotions/
+    - assets/images/ecommerce/categories/
+    - assets/images/food/
+    - assets/images/grocery/
+    - assets/images/headers/
+    - assets/images/logo/
+    - assets/images/medicine/categories/
+    - assets/images/modules/
+    - assets/images/onboarding/
+    - assets/images/payment/
+    - assets/images/pins/
+    - assets/images/ride/
+    - assets/images/service/categories/
     - assets/icons/
-    - assets/lottie/
-

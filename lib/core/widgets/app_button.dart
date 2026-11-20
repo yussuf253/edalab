@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
-import '../constants/app_spacing.dart';
 
 class AppButton extends StatelessWidget {
   final String text;
@@ -32,18 +31,19 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final buttonColor = color ?? AppColors.primary;
     final foregroundColor = textColor ?? AppColors.white;
+    final radius = BorderRadius.circular(isSmall ? 12 : 14);
 
     if (isOutlined) {
       return SizedBox(
         width: width ?? double.infinity,
-        height: isSmall ? 44 : 56,
+        height: isSmall ? 42 : 52,
         child: OutlinedButton(
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
             foregroundColor: buttonColor,
-            side: BorderSide(color: buttonColor, width: 1.5),
+            side: BorderSide(color: buttonColor, width: 1.2),
             padding: padding,
-            shape: const StadiumBorder(),
+            shape: RoundedRectangleBorder(borderRadius: radius),
           ),
           child: _buildChild(buttonColor),
         ),
@@ -52,16 +52,16 @@ class AppButton extends StatelessWidget {
 
     return SizedBox(
       width: width ?? double.infinity,
-      height: isSmall ? 44 : 56,
+      height: isSmall ? 42 : 52,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: buttonColor,
           foregroundColor: foregroundColor,
-          disabledBackgroundColor: buttonColor.withValues(alpha: 0.6),
+          disabledBackgroundColor: buttonColor.withValues(alpha: 0.45),
           padding: padding,
           elevation: 0,
-          shape: const StadiumBorder(),
+          shape: RoundedRectangleBorder(borderRadius: radius),
         ),
         child: _buildChild(foregroundColor),
       ),
@@ -70,19 +70,16 @@ class AppButton extends StatelessWidget {
 
   Widget _buildChild(Color color) {
     final textStyle = TextStyle(
-      fontSize: isSmall ? 14 : 16,
-      fontWeight: FontWeight.w700,
-      letterSpacing: 0.1,
+      fontSize: isSmall ? 13.5 : 15,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0,
     );
 
     if (isLoading) {
       return SizedBox(
-        width: 24,
-        height: 24,
-        child: CircularProgressIndicator(
-          strokeWidth: 2.5,
-          color: color,
-        ),
+        width: isSmall ? 18 : 20,
+        height: isSmall ? 18 : 20,
+        child: CircularProgressIndicator(strokeWidth: 2.2, color: color),
       );
     }
 
@@ -91,7 +88,7 @@ class AppButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: isSmall ? 18 : 20),
+          Icon(icon, size: isSmall ? 17 : 19),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
