@@ -1193,8 +1193,9 @@ class AppLocalizations {
       'hotel.room_capacity_limit': 'This room supports up to {count} guests.',
       'doctor.title': 'Home Care & Doctors',
       'doctor.search_hint': 'Search services or professionals...',
-      'doctor.hero_title':
-          'Pick a care service, then browse available professionals.',
+      'doctor.hero_title': 'Care, on demand',
+      'doctor.hero_subtitle':
+          'Doctors, lab tests and medicine, delivered to you.',
       'doctor.hero_counts':
           '{homeCount} home care providers • {doctorCount} doctors',
       'doctor.available_services': 'Health Services',
@@ -1202,6 +1203,7 @@ class AppLocalizations {
           'Tap a service to see available health tests and consultations.',
       'doctor.browse_all': 'Browse All Services',
       'doctor.lab_tests': 'Lab Tests at Home',
+      'doctor.medicine': 'Medicine',
       'lab_booking.title': 'Book Lab Test',
       'lab_booking.book': 'Book Test',
       'lab_booking.home_collection': 'Home sample collection',
@@ -2922,8 +2924,9 @@ class AppLocalizations {
           'Cette chambre peut accueillir jusqu\'à {count} personnes.',
       'doctor.title': 'Soins à domicile et médecins',
       'doctor.search_hint': 'Rechercher des services ou professionnels...',
-      'doctor.hero_title':
-          'Choisissez un service de soin puis parcourez les professionnels disponibles.',
+      'doctor.hero_title': 'Des soins à la demande',
+      'doctor.hero_subtitle':
+          'Médecins, analyses et médicaments, livrés chez vous.',
       'doctor.hero_counts':
           '{homeCount} prestataires à domicile • {doctorCount} médecins',
       'doctor.available_services': 'Services de santé',
@@ -2931,6 +2934,7 @@ class AppLocalizations {
           'Touchez un service pour voir les tests et consultations disponibles.',
       'doctor.browse_all': 'Voir tous les services',
       'doctor.lab_tests': 'Tests de labo à domicile',
+      'doctor.medicine': 'Médicaments',
       'lab_booking.title': 'Réserver un test de laboratoire',
       'lab_booking.book': 'Réserver le test',
       'lab_booking.home_collection': 'Prélèvement à domicile',
@@ -4374,13 +4378,15 @@ class AppLocalizations {
       'hotel.room_capacity_limit': 'هذه الغرفة تستوعب حتى {count} ضيوف.',
       'doctor.title': 'الرعاية المنزلية والأطباء',
       'doctor.search_hint': 'ابحث عن الخدمات أو المختصين...',
-      'doctor.hero_title': 'اختر خدمة رعاية ثم تصفح المختصين المتاحين.',
+      'doctor.hero_title': 'رعاية عند الطلب',
+      'doctor.hero_subtitle': 'أطباء وتحاليل وأدوية تُوصَل إليك.',
       'doctor.hero_counts':
           '{homeCount} مقدمي رعاية منزلية • {doctorCount} أطباء',
       'doctor.available_services': 'الخدمات الصحية',
       'doctor.tap_service': 'اضغط على خدمة لرؤية الفحوصات والاستشارات المتاحة.',
       'doctor.browse_all': 'تصفح جميع الخدمات',
       'doctor.lab_tests': 'التحاليل الطبية',
+      'doctor.medicine': 'الأدوية',
       'lab_booking.title': 'حجز تحليل طبي',
       'lab_booking.book': 'احجز التحليل',
       'lab_booking.home_collection': 'سحب العينة في المنزل',

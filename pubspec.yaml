@@ -66,6 +66,7 @@ flutter:
     - assets/images/ecommerce/categories/
     - assets/images/food/
     - assets/images/grocery/
+    - assets/images/doctor/main_category/
     - assets/images/headers/
     - assets/images/logo/
     - assets/images/medicine/categories/

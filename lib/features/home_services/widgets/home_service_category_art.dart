@@ -17,6 +17,9 @@ class HomeServiceCategoryArt extends StatelessWidget {
     this.borderRadius = BorderRadius.zero,
     this.fallbackIcon,
     this.fallbackColor,
+    this.sourceAspectRatio = 1,
+    this.contentWidthFraction = _contentWidth,
+    this.contentHeightFraction = _contentHeight,
   });
 
   /// Resolved asset path, or null when the category has no artwork.
@@ -24,6 +27,15 @@ class HomeServiceCategoryArt extends StatelessWidget {
   final BorderRadius borderRadius;
   final IconData? fallbackIcon;
   final Color? fallbackColor;
+
+  /// Width divided by height of the source canvas. Square by default, which is
+  /// what the handyman set uses.
+  final double sourceAspectRatio;
+
+  /// Share of the canvas width and height the figure covers, flush to the
+  /// canvas' right and top edges.
+  final double contentWidthFraction;
+  final double contentHeightFraction;
 
   /// Share of the source canvas reserved for the figure. The measured figures
   /// cover at most 0.77 x 0.85 of their canvas; keeping a little more on both
@@ -54,12 +66,13 @@ class HomeServiceCategoryArt extends StatelessWidget {
                 ? constraints.maxHeight
                 : boxWidth;
             // Largest canvas whose figure still fits inside the box.
-            final canvas = math.min(
-              boxWidth / _contentWidth,
-              boxHeight / _contentHeight,
+            final canvasHeight = math.min(
+              boxHeight / contentHeightFraction,
+              (boxWidth / contentWidthFraction) / sourceAspectRatio,
             );
-            final contentWidth = canvas * _contentWidth;
-            final contentHeight = canvas * _contentHeight;
+            final canvas = canvasHeight * sourceAspectRatio;
+            final contentWidth = canvas * contentWidthFraction;
+            final contentHeight = canvasHeight * contentHeightFraction;
             return ClipRect(
               child: Stack(
                 children: [
@@ -68,10 +81,10 @@ class HomeServiceCategoryArt extends StatelessWidget {
                     // canvas starts left of the box to centre the figure.
                     left:
                         (boxWidth - contentWidth) / 2 -
-                        canvas * (1 - _contentWidth),
+                        canvas * (1 - contentWidthFraction),
                     top: (boxHeight - contentHeight) / 2,
                     width: canvas,
-                    height: canvas,
+                    height: canvasHeight,
                     child: Image.asset(path, fit: BoxFit.fill),
                   ),
                 ],
