@@ -9,6 +9,8 @@ import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../utils/home_service_category_image.dart';
+import '../widgets/home_service_category_art.dart';
 
 class HomeServiceCategoryScreen extends StatefulWidget {
   final String categorySlug;
@@ -144,6 +146,9 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
     final l10n = context.l10n;
     final query = _searchController.text.trim().toLowerCase();
     final category = _category;
+    final categoryImagePath = category == null
+        ? null
+        : homeServiceCategoryImage(category.slug, category.name);
     final visibleProviders = _providers.where((provider) {
       if (query.isEmpty) return true;
       return provider.name.toLowerCase().contains(query) ||
@@ -190,17 +195,16 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                   ),
                   child: Row(
                     children: [
-                      Container(
+                      // Same category artwork as the services grid, on
+                      // the plate grey the illustrations ship with.
+                      SizedBox(
                         width: 52,
                         height: 52,
-                        decoration: BoxDecoration(
-                          color: category.color.withValues(alpha: 0.12),
+                        child: HomeServiceCategoryArt(
+                          imagePath: categoryImagePath,
                           borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Icon(
-                          category.icon,
-                          color: category.color,
-                          size: 26,
+                          fallbackIcon: category.icon,
+                          fallbackColor: category.color,
                         ),
                       ),
                       const SizedBox(width: 14),

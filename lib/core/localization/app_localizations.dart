@@ -1253,6 +1253,8 @@ class AppLocalizations {
       'home_services.title': 'Home Services',
       'home_services.search_hint': 'Search cleaning, plumbing, beauty...',
       'home_services.hero_title': 'Home services on demand',
+      'home_services.hero_subtitle':
+          'Trusted handymen for cleaning, repairs and more.',
       'home_services.hero_stats':
           '{providers} active professionals across {categories} service types.',
       'home_services.book_service': 'Book a Service',
@@ -2984,6 +2986,8 @@ class AppLocalizations {
       'home_services.title': 'Services maison',
       'home_services.search_hint': 'Rechercher nettoyage, plomberie, beauté...',
       'home_services.hero_title': 'Services à domicile à la demande',
+      'home_services.hero_subtitle':
+          'Des artisans de confiance pour le ménage et les réparations.',
       'home_services.hero_stats':
           '{providers} professionnels actifs dans {categories} services.',
       'home_services.book_service': 'Réserver un service',
@@ -4427,6 +4431,7 @@ class AppLocalizations {
       'home_services.title': 'الخدمات المنزلية',
       'home_services.search_hint': 'ابحث عن التنظيف والسباكة والجمال...',
       'home_services.hero_title': 'خدمات منزلية عند الطلب',
+      'home_services.hero_subtitle': 'حرفيون موثوقون للتنظيف والإصلاحات.',
       'home_services.hero_stats':
           '{providers} مختصين نشطين عبر {categories} أنواع خدمات.',
       'home_services.book_service': 'احجز خدمة',

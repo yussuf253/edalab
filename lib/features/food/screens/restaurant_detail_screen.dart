@@ -859,6 +859,9 @@ class _MenuItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = item.imageUrl?.trim();
+    final hasImage = imageUrl != null && imageUrl.isNotEmpty;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -870,171 +873,200 @@ class _MenuItemCard extends StatelessWidget {
           boxShadow: AppSpacing.shadowSm,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                width: 96,
-                height: 96,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Container(
-                      color: AppColors.tile,
-                      alignment: Alignment.center,
-                      child:
-                          item.imageUrl != null &&
-                              item.imageUrl!.trim().isNotEmpty
-                          ? Image.network(
-                              item.imageUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Icon(
-                                Icons.fastfood_rounded,
-                                size: 34,
-                                color: AppColors.food.withValues(alpha: 0.3),
-                              ),
-                            )
-                          : Icon(
-                              Icons.fastfood_rounded,
-                              size: 34,
-                              color: AppColors.food.withValues(alpha: 0.3),
+                width: 84,
+                height: 84,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      const ColoredBox(color: AppColors.tile),
+                      if (hasImage)
+                        Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => _imageFallback(),
+                        )
+                      else
+                        _imageFallback(),
+                      if (item.isPopular)
+                        Positioned(
+                          top: 6,
+                          left: 6,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
                             ),
-                    ),
-                    if (item.isPopular)
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.white,
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            'Popular',
-                            style: AppTextStyles.labelSmall.copyWith(
+                            decoration: BoxDecoration(
                               color: AppColors.primary,
-                              fontSize: 9,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              'Popular',
+                              style: AppTextStyles.labelSmall.copyWith(
+                                color: AppColors.white,
+                                fontSize: 9,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    Positioned(
-                      right: 8,
-                      bottom: 8,
-                      child: quantity == 0
-                          ? GestureDetector(
-                              onTap: onAdd,
-                              child: Container(
-                                width: 32,
-                                height: 32,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Color(0x1A000000),
-                                      blurRadius: 8,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.add_rounded,
-                                  size: 20,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            )
-                          : Container(
-                              height: 32,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.white,
-                                borderRadius: BorderRadius.circular(999),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x1A000000),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  GestureDetector(
-                                    onTap: onDecrement,
-                                    child: const SizedBox(
-                                      width: 26,
-                                      height: 32,
-                                      child: Icon(
-                                        Icons.remove_rounded,
-                                        size: 16,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    '$quantity',
-                                    style: AppTextStyles.labelMedium.copyWith(
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: onIncrement,
-                                    child: const SizedBox(
-                                      width: 26,
-                                      height: 32,
-                                      child: Icon(
-                                        Icons.add_rounded,
-                                        size: 16,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       item.name,
-                      style: AppTextStyles.labelLarge,
+                      style: AppTextStyles.labelLarge.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.description,
-                      style: AppTextStyles.caption,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
+                    if (item.description.trim().isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        item.description,
+                        style: AppTextStyles.caption,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    const SizedBox(height: 6),
                     Text(
                       'DJF${money(item.price)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.priceSmall,
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 10),
+              // Add button (or quantity stepper) lives at the card's right edge.
+              _QuantityControl(
+                quantity: quantity,
+                onAdd: onAdd,
+                onIncrement: onIncrement,
+                onDecrement: onDecrement,
+              ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _imageFallback() {
+    return Center(
+      child: Icon(
+        Icons.fastfood_rounded,
+        size: 26,
+        color: AppColors.food.withValues(alpha: 0.3),
+      ),
+    );
+  }
+}
+
+/// Right-edge add control: a single add button, or a vertical stepper once the
+/// dish is in the cart.
+class _QuantityControl extends StatelessWidget {
+  final int quantity;
+  final VoidCallback onAdd;
+  final VoidCallback onIncrement;
+  final VoidCallback onDecrement;
+
+  const _QuantityControl({
+    required this.quantity,
+    required this.onAdd,
+    required this.onIncrement,
+    required this.onDecrement,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (quantity == 0) {
+      return GestureDetector(
+        onTap: onAdd,
+        child: Container(
+          width: 34,
+          height: 34,
+          decoration: const BoxDecoration(
+            color: AppColors.primary,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x3300A651),
+                blurRadius: 10,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.add_rounded,
+            size: 20,
+            color: AppColors.white,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: 32,
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.primarySurface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _StepperButton(icon: Icons.add_rounded, onTap: onIncrement),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3),
+            child: Text(
+              '$quantity',
+              style: AppTextStyles.labelLarge.copyWith(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+          _StepperButton(icon: Icons.remove_rounded, onTap: onDecrement),
+        ],
+      ),
+    );
+  }
+}
+
+class _StepperButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _StepperButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 28,
+        height: 26,
+        child: Icon(icon, size: 16, color: AppColors.primary),
       ),
     );
   }

@@ -483,6 +483,7 @@ class _FoodScreenState extends State<FoodScreen> {
                       child: _RestaurantCard(
                         restaurant: restaurant,
                         l10n: l10n,
+                        accentColor: _colorForCategory(restaurant.category),
                         onTap: () {
                           AnalyticsService.instance.track(
                             AnalyticsEvents.entityOpened,
@@ -752,11 +753,13 @@ class _RestaurantCard extends StatelessWidget {
   const _RestaurantCard({
     required this.restaurant,
     required this.l10n,
+    required this.accentColor,
     required this.onTap,
   });
 
   final RestaurantModel restaurant;
   final AppLocalizations l10n;
+  final Color accentColor;
   final VoidCallback onTap;
 
   @override
@@ -774,8 +777,11 @@ class _RestaurantCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
+          // White surface; the category accent only shows as a hairline border
+          // and in the copy, so cards differ without shouting.
           color: AppColors.white,
           borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: accentColor.withValues(alpha: 0.14)),
           boxShadow: AppSpacing.shadowSm,
         ),
         clipBehavior: Clip.antiAlias,
@@ -886,7 +892,10 @@ class _RestaurantCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           restaurant.cuisine,
-                          style: AppTextStyles.caption,
+                          style: AppTextStyles.caption.copyWith(
+                            color: accentColor,
+                            fontWeight: FontWeight.w600,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -923,16 +932,23 @@ class _RestaurantCard extends StatelessWidget {
               ),
             ),
             if (highlights.isNotEmpty) ...[
-              const Divider(height: 1, thickness: 1, color: AppColors.border),
-              SizedBox(
-                height: 120,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.fromLTRB(12, 10, 14, 12),
-                  itemCount: highlights.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 10),
-                  itemBuilder: (context, index) =>
-                      _RestaurantItemTile(item: highlights[index]),
+              Divider(height: 1, thickness: 1, color: AppColors.border),
+              // Sizes to its content (rather than a fixed height) so large
+              // text scales cannot overflow the card.
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(12, 10, 14, 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (var i = 0; i < highlights.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 10),
+                      _RestaurantItemTile(
+                        item: highlights[i],
+                        accentColor: accentColor,
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],
@@ -947,7 +963,7 @@ class _RestaurantCard extends StatelessWidget {
       child: Icon(
         Icons.restaurant_rounded,
         size: 22,
-        color: AppColors.food.withValues(alpha: 0.45),
+        color: accentColor.withValues(alpha: 0.55),
       ),
     );
   }
@@ -955,9 +971,10 @@ class _RestaurantCard extends StatelessWidget {
 
 /// One small dish preview under a restaurant: image, name and price.
 class _RestaurantItemTile extends StatelessWidget {
-  const _RestaurantItemTile({required this.item});
+  const _RestaurantItemTile({required this.item, required this.accentColor});
 
   final MenuItem item;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
@@ -1010,7 +1027,7 @@ class _RestaurantItemTile extends StatelessWidget {
             style: AppTextStyles.labelSmall.copyWith(
               fontSize: 11.5,
               fontWeight: FontWeight.w700,
-              color: AppColors.primary,
+              color: accentColor,
             ),
           ),
         ],
@@ -1023,7 +1040,7 @@ class _RestaurantItemTile extends StatelessWidget {
       child: Icon(
         Icons.fastfood_rounded,
         size: 20,
-        color: AppColors.food.withValues(alpha: 0.45),
+        color: accentColor.withValues(alpha: 0.55),
       ),
     );
   }
@@ -1051,12 +1068,16 @@ class _RestaurantMetaLine extends StatelessWidget {
       children: [
         Icon(icon, size: 12, color: iconColor ?? AppColors.mediumGrey),
         const SizedBox(width: 2),
-        Text(
-          label,
-          style: AppTextStyles.caption.copyWith(
-            fontSize: 11,
-            color: textColor,
-            fontWeight: bold ? FontWeight.w700 : null,
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppTextStyles.caption.copyWith(
+              fontSize: 11,
+              color: textColor,
+              fontWeight: bold ? FontWeight.w700 : null,
+            ),
           ),
         ),
       ],
