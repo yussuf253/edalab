@@ -585,77 +585,73 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                 ),
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          mainAxisExtent: 208,
-                        ),
+                  sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final item = entry.value[index];
                       final itemQuantity = _getItemQuantity(
                         foodCartItems,
                         item.id,
                       );
-                      return _MenuItemCard(
-                        item: item,
-                        quantity: itemQuantity,
-                        onTap: () {
-                          AnalyticsService.instance.track(
-                            AnalyticsEvents.entityOpened,
-                            properties: {
-                              'module': 'food',
-                              'entity_type': 'dish',
-                              'entity_id': item.id,
-                              'source': 'restaurant_detail',
-                              'parent_entity_id': restaurant.id,
-                              'category': entry.key,
-                            },
-                          );
-                          context.push(
-                            '/food/dish/${item.id}',
-                            extra: {
-                              'restaurantName': restaurant.name,
-                              'categoryName': entry.key,
-                              'item': item,
-                            },
-                          );
-                        },
-                        onAdd: () => _addItem(context, item, restaurant.name),
-                        onIncrement: () {
-                          AnalyticsService.instance.track(
-                            AnalyticsEvents.cartAdjustmentInitiated,
-                            properties: {
-                              'module': 'food',
-                              'source': 'restaurant_detail',
-                              'action': 'increment',
-                              'entity_type': 'dish',
-                              'entity_id': item.id,
-                            },
-                          );
-                          context.read<CartProvider>().updateQuantity(
-                            item.id,
-                            itemQuantity + 1,
-                          );
-                        },
-                        onDecrement: () {
-                          AnalyticsService.instance.track(
-                            AnalyticsEvents.cartAdjustmentInitiated,
-                            properties: {
-                              'module': 'food',
-                              'source': 'restaurant_detail',
-                              'action': 'decrement',
-                              'entity_type': 'dish',
-                              'entity_id': item.id,
-                            },
-                          );
-                          context.read<CartProvider>().updateQuantity(
-                            item.id,
-                            itemQuantity - 1,
-                          );
-                        },
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _MenuItemCard(
+                          item: item,
+                          quantity: itemQuantity,
+                          onTap: () {
+                            AnalyticsService.instance.track(
+                              AnalyticsEvents.entityOpened,
+                              properties: {
+                                'module': 'food',
+                                'entity_type': 'dish',
+                                'entity_id': item.id,
+                                'source': 'restaurant_detail',
+                                'parent_entity_id': restaurant.id,
+                                'category': entry.key,
+                              },
+                            );
+                            context.push(
+                              '/food/dish/${item.id}',
+                              extra: {
+                                'restaurantName': restaurant.name,
+                                'categoryName': entry.key,
+                                'item': item,
+                              },
+                            );
+                          },
+                          onAdd: () => _addItem(context, item, restaurant.name),
+                          onIncrement: () {
+                            AnalyticsService.instance.track(
+                              AnalyticsEvents.cartAdjustmentInitiated,
+                              properties: {
+                                'module': 'food',
+                                'source': 'restaurant_detail',
+                                'action': 'increment',
+                                'entity_type': 'dish',
+                                'entity_id': item.id,
+                              },
+                            );
+                            context.read<CartProvider>().updateQuantity(
+                              item.id,
+                              itemQuantity + 1,
+                            );
+                          },
+                          onDecrement: () {
+                            AnalyticsService.instance.track(
+                              AnalyticsEvents.cartAdjustmentInitiated,
+                              properties: {
+                                'module': 'food',
+                                'source': 'restaurant_detail',
+                                'action': 'decrement',
+                                'entity_type': 'dish',
+                                'entity_id': item.id,
+                              },
+                            );
+                            context.read<CartProvider>().updateQuantity(
+                              item.id,
+                              itemQuantity - 1,
+                            );
+                          },
+                        ),
                       );
                     }, childCount: entry.value.length),
                   ),
@@ -873,69 +869,95 @@ class _MenuItemCard extends StatelessWidget {
           border: Border.all(color: AppColors.border),
           boxShadow: AppSpacing.shadowSm,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Container(
-                    color: AppColors.tile,
-                    alignment: Alignment.center,
-                    child:
-                        item.imageUrl != null &&
-                            item.imageUrl!.trim().isNotEmpty
-                        ? Image.network(
-                            item.imageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => Icon(
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 96,
+                height: 96,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Container(
+                      color: AppColors.tile,
+                      alignment: Alignment.center,
+                      child:
+                          item.imageUrl != null &&
+                              item.imageUrl!.trim().isNotEmpty
+                          ? Image.network(
+                              item.imageUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) => Icon(
+                                Icons.fastfood_rounded,
+                                size: 34,
+                                color: AppColors.food.withValues(alpha: 0.3),
+                              ),
+                            )
+                          : Icon(
                               Icons.fastfood_rounded,
                               size: 34,
                               color: AppColors.food.withValues(alpha: 0.3),
                             ),
-                          )
-                        : Icon(
-                            Icons.fastfood_rounded,
-                            size: 34,
-                            color: AppColors.food.withValues(alpha: 0.3),
+                    ),
+                    if (item.isPopular)
+                      Positioned(
+                        top: 8,
+                        left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
                           ),
-                  ),
-                  if (item.isPopular)
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(
-                          'Popular',
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.primary,
-                            fontSize: 9,
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            'Popular',
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: AppColors.primary,
+                              fontSize: 9,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  Positioned(
-                    right: 8,
-                    bottom: 8,
-                    child: quantity == 0
-                        ? GestureDetector(
-                            onTap: onAdd,
-                            child: Container(
-                              width: 32,
+                    Positioned(
+                      right: 8,
+                      bottom: 8,
+                      child: quantity == 0
+                          ? GestureDetector(
+                              onTap: onAdd,
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Color(0x1A000000),
+                                      blurRadius: 8,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.add_rounded,
+                                  size: 20,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            )
+                          : Container(
                               height: 32,
-                              decoration: const BoxDecoration(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 2,
+                              ),
+                              decoration: BoxDecoration(
                                 color: AppColors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
+                                borderRadius: BorderRadius.circular(999),
+                                boxShadow: const [
                                   BoxShadow(
                                     color: Color(0x1A000000),
                                     blurRadius: 8,
@@ -943,94 +965,75 @@ class _MenuItemCard extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              child: const Icon(
-                                Icons.add_rounded,
-                                size: 20,
-                                color: AppColors.primary,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  GestureDetector(
+                                    onTap: onDecrement,
+                                    child: const SizedBox(
+                                      width: 26,
+                                      height: 32,
+                                      child: Icon(
+                                        Icons.remove_rounded,
+                                        size: 16,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    '$quantity',
+                                    style: AppTextStyles.labelMedium.copyWith(
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: onIncrement,
+                                    child: const SizedBox(
+                                      width: 26,
+                                      height: 32,
+                                      child: Icon(
+                                        Icons.add_rounded,
+                                        size: 16,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          )
-                        : Container(
-                            height: 32,
-                            padding: const EdgeInsets.symmetric(horizontal: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.white,
-                              borderRadius: BorderRadius.circular(999),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x1A000000),
-                                  blurRadius: 8,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                GestureDetector(
-                                  onTap: onDecrement,
-                                  child: const SizedBox(
-                                    width: 26,
-                                    height: 32,
-                                    child: Icon(
-                                      Icons.remove_rounded,
-                                      size: 16,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  '$quantity',
-                                  style: AppTextStyles.labelMedium.copyWith(
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: onIncrement,
-                                  child: const SizedBox(
-                                    width: 26,
-                                    height: 32,
-                                    child: Icon(
-                                      Icons.add_rounded,
-                                      size: 16,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.name,
-                    style: AppTextStyles.labelLarge,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    item.description,
-                    style: AppTextStyles.caption,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'DJF${money(item.price)}',
-                    style: AppTextStyles.priceSmall,
-                  ),
-                ],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.name,
+                      style: AppTextStyles.labelLarge,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      item.description,
+                      style: AppTextStyles.caption,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'DJF${money(item.price)}',
+                      style: AppTextStyles.priceSmall,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

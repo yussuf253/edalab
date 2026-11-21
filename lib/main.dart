@@ -45,7 +45,6 @@ Future<void> _main() async {
   // mirroring the Pro app's bootstrap so both variants initialize identically.
   await ApiClient.initialize(scope: ApiSessionScope.user);
   final hasSeenOnboarding = await AppPreferences.hasSeenOnboarding();
-  final hasSeenHomeOnboarding = await AppPreferences.hasSeenHomeOnboarding();
   final authProvider = AuthProvider();
   final cartProvider = CartProvider();
   final languageProvider = LanguageProvider();
@@ -81,7 +80,6 @@ Future<void> _main() async {
     authProvider: authProvider,
     cityAvailabilityProvider: cityAvailabilityProvider,
     hasSeenOnboarding: hasSeenOnboarding,
-    hasSeenHomeOnboarding: hasSeenHomeOnboarding,
   );
   AnalyticsService.instance.attachRouter(router);
 

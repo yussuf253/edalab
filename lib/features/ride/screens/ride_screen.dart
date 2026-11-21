@@ -19,6 +19,7 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
 import '../widgets/ride_route_preview.dart';
 import '../services/nearby_drivers_service.dart';
+import '../utils/ride_category_image.dart';
 import '../../car_rental/services/car_rental_service.dart';
 
 class RideScreen extends StatefulWidget {
@@ -616,6 +617,10 @@ class _RideScreenState extends State<RideScreen> {
                     separatorBuilder: (_, _) => const SizedBox(width: 12),
                     itemBuilder: (context, index) {
                       final ride = _rideCategories[index];
+                      final imagePath = rideCategoryImagePath(
+                        ride.name,
+                        id: ride.id,
+                      );
                       return Container(
                         width: 196,
                         padding: const EdgeInsets.all(14),
@@ -632,25 +637,22 @@ class _RideScreenState extends State<RideScreen> {
                                 SizedBox(
                                   width: 54,
                                   height: 38,
-                                  child: Image.asset(
-                                    'assets/images/ride/'
-                                    '${_carAssetFor(ride.name)}',
-                                    fit: BoxFit.contain,
-                                    alignment: Alignment.centerLeft,
-                                    errorBuilder: (_, _, _) => Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.rideBg,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Icon(
-                                        _iconForRideCategory(ride.name),
-                                        color: AppColors.ride,
-                                        size: 22,
-                                      ),
-                                    ),
-                                  ),
+                                  child: imagePath == null
+                                      ? Icon(
+                                          _iconForRideCategory(ride.name),
+                                          color: AppColors.ride,
+                                          size: 22,
+                                        )
+                                      : Image.asset(
+                                          imagePath,
+                                          fit: BoxFit.contain,
+                                          alignment: Alignment.centerLeft,
+                                          errorBuilder: (_, _, _) => Icon(
+                                            _iconForRideCategory(ride.name),
+                                            color: AppColors.ride,
+                                            size: 22,
+                                          ),
+                                        ),
                                 ),
                                 const Spacer(),
                                 Text(
@@ -933,18 +935,6 @@ class _RideScreenState extends State<RideScreen> {
     if (lower.contains('xl')) return Icons.airport_shuttle_rounded;
     if (lower.contains('premium')) return Icons.local_taxi_rounded;
     return Icons.directions_car_rounded;
-  }
-
-  /// Car art shipped with the app: the small yatzy for economy, the purple
-  /// saloon for the roomier categories.
-  String _carAssetFor(String name) {
-    final lower = name.toLowerCase();
-    if (lower.contains('quid') ||
-        lower.contains('mini') ||
-        lower.contains('eco')) {
-      return 'yellow_car.png';
-    }
-    return 'purple_car.png';
   }
 
   Future<void> _selectPlace({required bool isPickup}) async {

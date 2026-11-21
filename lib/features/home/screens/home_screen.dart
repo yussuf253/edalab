@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/constants/app_text_styles.dart';
-import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
 import '../../../core/config/zone_scope.dart';
@@ -1035,7 +1034,7 @@ class _SpecialOffers extends StatelessWidget {
           final offer = offers[index];
           return Container(
             width: 280,
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             decoration: BoxDecoration(
               color: AppColors.white,
               borderRadius: BorderRadius.circular(16),
@@ -1084,7 +1083,9 @@ class _SpecialOffers extends StatelessWidget {
                       const SizedBox(height: 5),
                       Text(
                         offer.title,
-                        style: AppTextStyles.labelLarge.copyWith(fontSize: 13.5),
+                        style: AppTextStyles.labelLarge.copyWith(
+                          fontSize: 13.5,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -1143,7 +1144,7 @@ class _PopularRestaurants extends StatelessWidget {
             : const <RestaurantModel>[];
 
         return SizedBox(
-          height: 190,
+          height: 132,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1153,16 +1154,21 @@ class _PopularRestaurants extends StatelessWidget {
               final restaurant = restaurants[index];
               return GestureDetector(
                 onTap: () => context.push('/food/restaurant/${restaurant.id}'),
-                child: SizedBox(
-                  width: 184,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                child: Container(
+                  width: 272,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Row(
                     children: [
-                      SizedBox(
-                        height: 116,
-                        width: 184,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: SizedBox(
+                          width: 92,
+                          height: 92,
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
@@ -1175,7 +1181,7 @@ class _PopularRestaurants extends StatelessWidget {
                                   errorBuilder: (_, _, _) => Center(
                                     child: Icon(
                                       Icons.restaurant_rounded,
-                                      size: 30,
+                                      size: 26,
                                       color: AppColors.mediumGrey,
                                     ),
                                   ),
@@ -1184,17 +1190,17 @@ class _PopularRestaurants extends StatelessWidget {
                                 Center(
                                   child: Icon(
                                     Icons.restaurant_rounded,
-                                    size: 30,
+                                    size: 26,
                                     color: AppColors.mediumGrey,
                                   ),
                                 ),
                               Positioned(
-                                top: 8,
-                                left: 8,
+                                top: 6,
+                                left: 6,
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 3,
+                                    horizontal: 5,
+                                    vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
                                     color: AppColors.primary,
@@ -1208,12 +1214,12 @@ class _PopularRestaurants extends StatelessWidget {
                                         size: 10,
                                         color: AppColors.white,
                                       ),
-                                      const SizedBox(width: 3),
+                                      const SizedBox(width: 2),
                                       Text(
                                         restaurant.rating.toString(),
                                         style: const TextStyle(
                                           color: AppColors.white,
-                                          fontSize: 10,
+                                          fontSize: 9.5,
                                           fontWeight: FontWeight.w700,
                                           height: 1.1,
                                         ),
@@ -1226,50 +1232,60 @@ class _PopularRestaurants extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        restaurant.name,
-                        style: AppTextStyles.labelLarge.copyWith(
-                          fontSize: 13.5,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        restaurant.cuisine,
-                        style: AppTextStyles.caption,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.schedule_rounded,
-                            size: 13,
-                            color: AppColors.mediumGrey,
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            restaurant.deliveryTime,
-                            style: AppTextStyles.caption,
-                          ),
-                          const SizedBox(width: 6),
-                          Text('•', style: AppTextStyles.caption),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              restaurant.deliveryFee,
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              restaurant.name,
+                              style: AppTextStyles.labelLarge.copyWith(
+                                fontSize: 13.5,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 2),
+                            Text(
+                              restaurant.cuisine,
+                              style: AppTextStyles.caption,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.schedule_rounded,
+                                  size: 13,
+                                  color: AppColors.mediumGrey,
+                                ),
+                                const SizedBox(width: 3),
+                                Text(
+                                  restaurant.deliveryTime,
+                                  style: AppTextStyles.caption,
+                                  maxLines: 1,
+                                ),
+                                const SizedBox(width: 6),
+                                Text('\u2022', style: AppTextStyles.caption),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    restaurant.deliveryFee,
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

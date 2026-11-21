@@ -744,9 +744,9 @@ class AppLocalizations {
       'onboarding.page1_title': 'Everything Delivered\nTo Your Door',
       'onboarding.page1_subtitle':
           'Food, pharmacy, groceries and shopping - order from your favorite stores and get it delivered fast.',
-      'onboarding.page2_title': 'Home Service Pros\nAt Your Door',
+      'onboarding.page2_title': 'Lightning Fast\nDelivery',
       'onboarding.page2_subtitle':
-          'Book verified pros for cleaning, repairs, plumbing and more — at a time that works for you.',
+          'Get your orders delivered in minutes. Track every step of the way with real-time updates.',
       'onboarding.page3_title': 'Trusted &\nSecure',
       'onboarding.page3_subtitle':
           'Your payments and data are always secure. Verified sellers, certified doctors, licensed drivers.',
@@ -2401,9 +2401,9 @@ class AppLocalizations {
       'onboarding.page1_title': 'Tout est livré\nchez vous',
       'onboarding.page1_subtitle':
           'Repas, pharmacie, courses et shopping - commandez dans vos magasins préférés et faites-vous livrer rapidement.',
-      'onboarding.page2_title': 'Des pros de service\nà votre porte',
+      'onboarding.page2_title': 'Livraison ultra\nrapide',
       'onboarding.page2_subtitle':
-          'Réservez des pros vérifiés pour le ménage, les réparations, la plomberie et plus encore — à l\'heure qui vous convient.',
+          'Recevez vos commandes en quelques minutes. Suivez chaque etape avec des mises a jour en temps reel.',
       'onboarding.page3_title': 'Fiable et\nsécurisé',
       'onboarding.page3_subtitle':
           'Vos paiements et vos données sont toujours protégés. Vendeurs vérifiés, médecins certifiés, chauffeurs agréés.',
@@ -3886,9 +3886,9 @@ class AppLocalizations {
       'onboarding.page1_title': 'كل شيء\nيصلك إلى بابك',
       'onboarding.page1_subtitle':
           'الطعام، الصيدلية، البقالة والتسوق - اطلب من متاجرك المفضلة واستلم طلباتك بسرعة.',
-      'onboarding.page2_title': 'خدمات منزلية\nإلى بابك',
+      'onboarding.page2_title': 'توصيل سريع\nجداً',
       'onboarding.page2_subtitle':
-          'احجز محترفين موثوقين للتنظيف والإصلاح والسباكة والمزيد — في الوقت الذي يناسبك.',
+          'استلم طلباتك خلال دقائق. تابع كل خطوة بتحديثات مباشرة.',
       'onboarding.page3_title': 'موثوق\nوآمن',
       'onboarding.page3_subtitle':
           'مدفوعاتك وبياناتك آمنة دائماً. باعة موثقون، أطباء معتمدون، وسائقون مرخصون.',

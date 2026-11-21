@@ -107,9 +107,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         heroType: _OnboardingHeroType.speed,
         title: l10n.t('onboarding.page2_title'),
         subtitle: l10n.t('onboarding.page2_subtitle'),
-        // Services pros (home-services staff) instead of the delivery rider.
-        heroAssetPath: 'assets/images/banners/home-service-banner.png',
-        centerIcon: Icons.home_repair_service_rounded,
+        heroAssetPath: 'assets/images/onboarding/delivery.png',
+        centerIcon: Icons.flash_on_rounded,
         ctaColor: AppColors.primary,
         backgroundGradient: const LinearGradient(
           colors: [AppColors.white, AppColors.primarySurface],
@@ -477,7 +476,9 @@ class _OrbitHero extends StatelessWidget {
                   node.assetPath,
                   fit: BoxFit.contain,
                   color: node.tintColor,
-                  colorBlendMode: node.tintColor == null ? null : BlendMode.srcIn,
+                  colorBlendMode: node.tintColor == null
+                      ? null
+                      : BlendMode.srcIn,
                   errorBuilder: (context, error, stackTrace) => Icon(
                     node.fallbackIcon ?? Icons.image_not_supported_outlined,
                     color: node.tintColor ?? AppColors.grey,

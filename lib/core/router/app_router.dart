@@ -114,7 +114,6 @@ GoRouter createAppRouter({
   required AuthProvider authProvider,
   required CityAvailabilityProvider cityAvailabilityProvider,
   required bool hasSeenOnboarding,
-  required bool hasSeenHomeOnboarding,
 }) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
@@ -123,9 +122,9 @@ GoRouter createAppRouter({
       cityAvailabilityProvider,
     ]),
     // Onboarding général → /onboarding
-    // Home onboarding → géré via redirect sur /home-services
     // First launch → the full general onboarding (/onboarding). The home
-    // services onboarding still shows once on the first /home-services visit.
+    // services onboarding is not forced on /home-services anymore: tapping the
+    // Services module goes straight to the services screen.
     initialLocation: hasSeenOnboarding ? '/' : '/onboarding',
     redirect: (context, state) {
       final path = state.uri.path;
@@ -141,10 +140,6 @@ GoRouter createAppRouter({
       }
       if (path == '/city-unavailable' && !cityAvailabilityProvider.isBlocking) {
         return authProvider.isLoggedIn ? '/' : '/login';
-      }
-      // Home onboarding : s'affiche une seule fois au premier accès à /home-services
-      if (!hasSeenHomeOnboarding && path == '/home-services') {
-        return '/home-onboarding';
       }
       final moduleId = ModuleAccessService.instance.moduleForPath(path);
       if (moduleId == null) return null;

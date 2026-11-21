@@ -340,6 +340,129 @@ class SliverSectionListShimmer extends StatelessWidget {
   }
 }
 
+/// Skeleton for the restaurant list cards (info line + dish strip), so the
+/// food screen's loader has the same shape as the real cards.
+class SliverRestaurantListShimmer extends StatelessWidget {
+  final int itemCount;
+
+  const SliverRestaurantListShimmer({super.key, this.itemCount = 4});
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) => const AppShimmer(child: _ShimmerRestaurantCard()),
+        childCount: itemCount,
+      ),
+    );
+  }
+}
+
+class _ShimmerRestaurantCard extends StatelessWidget {
+  const _ShimmerRestaurantCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Info line: image, name + rating, speciality, then the delivery
+            // time / location / fee chips.
+            const Padding(
+              padding: EdgeInsets.fromLTRB(10, 10, 12, 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ShimmerBlock(width: 62, height: 62, radius: 12),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: ShimmerBlock(
+                                width: double.infinity,
+                                height: 14,
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            ShimmerBlock(width: 34, height: 14, radius: 999),
+                          ],
+                        ),
+                        SizedBox(height: 6),
+                        ShimmerBlock(width: 120, height: 11, radius: 10),
+                        SizedBox(height: 7),
+                        Row(
+                          children: [
+                            ShimmerBlock(width: 52, height: 11, radius: 10),
+                            SizedBox(width: 8),
+                            ShimmerBlock(width: 42, height: 11, radius: 10),
+                            SizedBox(width: 8),
+                            ShimmerBlock(width: 50, height: 11, radius: 10),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const ShimmerBlock(width: double.infinity, height: 1, radius: 1),
+            SizedBox(
+              height: 120,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(12, 10, 14, 12),
+                children: const [
+                  _ShimmerDishTile(),
+                  SizedBox(width: 10),
+                  _ShimmerDishTile(),
+                  SizedBox(width: 10),
+                  _ShimmerDishTile(),
+                  SizedBox(width: 10),
+                  _ShimmerDishTile(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ShimmerDishTile extends StatelessWidget {
+  const _ShimmerDishTile();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(
+      width: 96,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ShimmerBlock(width: 96, height: 58, radius: 10),
+          SizedBox(height: 6),
+          ShimmerBlock(width: 84, height: 12, radius: 10),
+          SizedBox(height: 5),
+          ShimmerBlock(width: 46, height: 12, radius: 10),
+        ],
+      ),
+    );
+  }
+}
+
 class SliverSectionGridShimmer extends StatelessWidget {
   final int itemCount;
   final double childAspectRatio;

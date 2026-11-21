@@ -12,6 +12,7 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../services/ride_route_service.dart';
 import '../utils/ride_map_launcher.dart';
+import '../utils/ride_category_image.dart';
 import '../widgets/ride_route_preview.dart';
 import '../../../core/utils/money_format.dart';
 
@@ -83,23 +84,6 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
     if (name.toLowerCase().contains('xl')) return Icons.airport_shuttle_rounded;
     if (name.toLowerCase().contains('premium')) return Icons.local_taxi_rounded;
     return Icons.directions_car_rounded;
-  }
-
-  /// Vehicle art shipped with the app, matched on the category name.
-  String? _vehicleImage(String name) {
-    final value = name.toLowerCase();
-    if (value.contains('quid')) return 'assets/images/ride/InstaQuid.png';
-    if (value.contains('mini')) return 'assets/images/ride/InstaMini.png';
-    if (value.contains('mega')) return 'assets/images/ride/InstaMega.png';
-    if (value.contains('elect')) return 'assets/images/ride/ElectRide.png';
-    if (value.contains('deliver')) {
-      return 'assets/images/ride/InstDelivry.png';
-    }
-    if (value.contains('same day') || value.contains('sameday')) {
-      return 'assets/images/ride/SameDayDelivery.png';
-    }
-    if (value.contains('ride')) return 'assets/images/ride/InstaRide.png';
-    return null;
   }
 
   String _categoryDisplayName(RideCategory category, AppLocalizations l10n) {
@@ -288,9 +272,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               decoration: const BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(20),
-                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 border: Border(top: BorderSide(color: AppColors.border)),
               ),
               child: Column(
@@ -387,6 +369,10 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                 const SizedBox(height: 8),
                             itemBuilder: (context, index) {
                               final cat = categories[index];
+                              final vehicleImagePath = rideCategoryImagePath(
+                                cat.name,
+                                id: cat.id,
+                              );
                               final estPrice =
                                   cat.basePrice +
                                   (cat.pricePerMile * routeDistance);
@@ -424,9 +410,9 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                                       SizedBox(
                                         width: 46,
                                         height: 32,
-                                        child: _vehicleImage(cat.name) != null
+                                        child: vehicleImagePath != null
                                             ? Image.asset(
-                                                _vehicleImage(cat.name)!,
+                                                vehicleImagePath,
                                                 fit: BoxFit.contain,
                                                 errorBuilder: (_, _, _) => Icon(
                                                   _getIconForCategory(cat.name),
