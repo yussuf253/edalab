@@ -9,6 +9,7 @@ import '../../../core/providers/auth_provider.dart';
 import '../services/car_rental_service.dart';
 import 'car_rental_confirmation_screen.dart';
 import 'my_car_rentals_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class CarRentalDetailScreen extends StatefulWidget {
   const CarRentalDetailScreen({
@@ -265,7 +266,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
         actions: [
           IconButton(
             tooltip: l10n.t('car_rental.my_bookings'),
-            icon: const Icon(Icons.receipt_long_outlined),
+            icon: const Icon(LucideIcons.receiptText),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const MyCarRentalsScreen()),
             ),
@@ -291,7 +292,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.cloud_off_outlined,
+              LucideIcons.cloudOff,
               size: 44,
               color: AppColors.grey,
             ),
@@ -304,7 +305,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: _loadCar,
-              icon: const Icon(Icons.refresh_rounded),
+              icon: const Icon(LucideIcons.refreshCw),
               label: Text(_l10n.t('car_rental.retry')),
             ),
           ],
@@ -365,12 +366,12 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
           runSpacing: 10,
           children: [
             _spec(
-              Icons.people_outline_rounded,
+              LucideIcons.users,
               '${car.seats} ${l10n.t('car_rental.seats')}',
             ),
-            _spec(Icons.settings_outlined, car.transmission),
-            _spec(Icons.local_gas_station_outlined, car.fuelType),
-            _spec(Icons.speed_outlined, car.mileage),
+            _spec(LucideIcons.settings, car.transmission),
+            _spec(LucideIcons.fuel, car.fuelType),
+            _spec(LucideIcons.gauge, car.mileage),
           ],
         ),
         if (car.features.isNotEmpty) ...[
@@ -395,7 +396,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
               child: _dateButton(
                 l10n.t('car_rental.start_date'),
                 _formatDate(_startDate),
-                Icons.calendar_today_outlined,
+                LucideIcons.calendar,
                 _pickStartDate,
               ),
             ),
@@ -404,7 +405,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
               child: _dateButton(
                 l10n.t('car_rental.end_date'),
                 _formatDate(_endDate),
-                Icons.event_outlined,
+                LucideIcons.calendarDays,
                 _pickEndDate,
               ),
             ),
@@ -428,7 +429,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
           textInputAction: TextInputAction.next,
           decoration: InputDecoration(
             hintText: l10n.t('car_rental.pickup_location_hint'),
-            prefixIcon: const Icon(Icons.location_on_outlined),
+            prefixIcon: const Icon(LucideIcons.mapPin),
             filled: true,
             fillColor: AppColors.white,
             border: OutlineInputBorder(
@@ -444,7 +445,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
           maxLines: 3,
           decoration: InputDecoration(
             hintText: l10n.t('car_rental.notes_optional'),
-            prefixIcon: const Icon(Icons.notes_outlined),
+            prefixIcon: const Icon(LucideIcons.notebookText),
             filled: true,
             fillColor: AppColors.white,
             border: OutlineInputBorder(
@@ -467,7 +468,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
         color: AppColors.primarySurface,
         alignment: Alignment.center,
         child: const Icon(
-          Icons.directions_car_filled_outlined,
+          LucideIcons.car,
           size: 86,
           color: AppColors.primary,
         ),
@@ -483,7 +484,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
         color: AppColors.primarySurface,
         alignment: Alignment.center,
         child: const Icon(
-          Icons.directions_car_filled_outlined,
+          LucideIcons.car,
           size: 86,
           color: AppColors.primary,
         ),
@@ -523,7 +524,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(
-            Icons.check_circle_outline,
+            LucideIcons.checkCircle,
             size: 16,
             color: AppColors.primary,
           ),
@@ -581,19 +582,19 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
     if (_checkingAvailability) {
       label = _l10n.t('car_rental.checking');
       color = AppColors.grey;
-      icon = Icons.more_horiz_rounded;
+      icon = LucideIcons.ellipsis;
     } else if (_availabilityError != null) {
       label = _l10n.t('car_rental.availability_error');
       color = AppColors.error;
-      icon = Icons.error_outline_rounded;
+      icon = LucideIcons.circleAlert;
     } else if (_isAvailable == true) {
       label = _l10n.t('car_rental.available');
       color = AppColors.primary;
-      icon = Icons.check_circle_outline_rounded;
+      icon = LucideIcons.circleCheck;
     } else {
       label = _l10n.t('car_rental.unavailable');
       color = AppColors.error;
-      icon = Icons.cancel_outlined;
+      icon = LucideIcons.circleX;
     }
     return Row(
       children: [
@@ -732,7 +733,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
                       height: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.event_available_outlined),
+                  : const Icon(LucideIcons.calendarCheck),
               label: Text(_l10n.t('car_rental.book_now')),
             ),
           ],

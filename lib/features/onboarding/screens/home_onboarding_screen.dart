@@ -10,6 +10,7 @@ import '../../../../core/localization/app_localizations.dart';
 import '../../../../core/providers/language_provider.dart';
 import '../../../../core/storage/app_preferences.dart';
 import '../../../../core/widgets/app_button.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HomeOnboardingScreen extends StatefulWidget {
   const HomeOnboardingScreen({super.key});
@@ -32,32 +33,32 @@ class _HomeOnboardingScreenState extends State<HomeOnboardingScreen> {
   static const List<_HomeServiceData> _services = [
     _HomeServiceData(
       assetPath: 'assets/images/service/categories/handy_cleaner.png',
-      fallbackIcon: Icons.cleaning_services_rounded,
+      fallbackIcon: LucideIcons.broom,
       label: '',
     ),
     _HomeServiceData(
       assetPath: 'assets/images/service/categories/handy_elec.png',
-      fallbackIcon: Icons.electrical_services_rounded,
+      fallbackIcon: LucideIcons.plug,
       label: '',
     ),
     _HomeServiceData(
       assetPath: 'assets/images/service/categories/handy_plumber.png',
-      fallbackIcon: Icons.plumbing_rounded,
+      fallbackIcon: LucideIcons.wrench,
       label: '',
     ),
     _HomeServiceData(
       assetPath: 'assets/images/service/categories/handy_sanitize.png',
-      fallbackIcon: Icons.ac_unit_rounded,
+      fallbackIcon: LucideIcons.snowflake,
       label: '',
     ),
     _HomeServiceData(
       assetPath: 'assets/images/service/categories/handy_carpainter.png',
-      fallbackIcon: Icons.handyman_rounded,
+      fallbackIcon: LucideIcons.wrench,
       label: '',
     ),
     _HomeServiceData(
       assetPath: 'assets/images/service/categories/handy_salon.png',
-      fallbackIcon: Icons.spa_rounded,
+      fallbackIcon: LucideIcons.flower2,
       label: '',
     ),
   ];
@@ -97,17 +98,17 @@ class _HomeOnboardingScreenState extends State<HomeOnboardingScreen> {
     // ── Listes localisées — définies ici pour accéder à l10n ──────────────
     final bookingSteps = [
       _StepCardData(
-        icon: Icons.touch_app_rounded,
+        icon: LucideIcons.pointer,
         label: l10n.t('home_onboarding.step_choose_service'),
         step: '1',
       ),
       _StepCardData(
-        icon: Icons.calendar_month_rounded,
+        icon: LucideIcons.calendarDays,
         label: l10n.t('home_onboarding.step_select_date'),
         step: '2',
       ),
       _StepCardData(
-        icon: Icons.check_circle_rounded,
+        icon: LucideIcons.checkCircle,
         label: l10n.t('home_onboarding.step_pro_arrives'),
         step: '3',
       ),
@@ -115,17 +116,17 @@ class _HomeOnboardingScreenState extends State<HomeOnboardingScreen> {
 
     final trustItems = [
       _StepCardData(
-        icon: Icons.verified_user_rounded,
+        icon: LucideIcons.shieldCheck,
         label: l10n.t('home_onboarding.trust_verified'),
         step: '✓',
       ),
       _StepCardData(
-        icon: Icons.price_check_rounded,
+        icon: LucideIcons.badgeDollarSign,
         label: l10n.t('home_onboarding.trust_price'),
         step: '✓',
       ),
       _StepCardData(
-        icon: Icons.support_agent_rounded,
+        icon: LucideIcons.headset,
         label: l10n.t('home_onboarding.trust_support'),
         step: '✓',
       ),
@@ -265,7 +266,7 @@ class _LanguagePicker extends StatelessWidget {
               ),
               if (selected)
                 const Icon(
-                  Icons.check_rounded,
+                  LucideIcons.check,
                   color: AppColors.primary,
                   size: 18,
                 ),
@@ -284,7 +285,7 @@ class _LanguagePicker extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.language_rounded,
+              LucideIcons.languages,
               color: AppColors.primaryDark,
               size: 16,
             ),
@@ -298,7 +299,7 @@ class _LanguagePicker extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             const Icon(
-              Icons.keyboard_arrow_down_rounded,
+              LucideIcons.chevronDown,
               color: AppColors.mediumGrey,
               size: 18,
             ),
@@ -348,13 +349,13 @@ class _HomeOnboardingPageContent extends StatelessWidget {
                     items: bookingSteps,
                     compact: compact,
                     accentColor: AppColors.primary,
-                    heroIcon: Icons.calendar_month_rounded,
+                    heroIcon: LucideIcons.calendarDays,
                   ),
                   _HomeHeroType.trust => _StepsHero(
                     items: trustItems,
                     compact: compact,
                     accentColor: AppColors.primaryDark,
-                    heroIcon: Icons.verified_user_rounded,
+                    heroIcon: LucideIcons.shieldCheck,
                   ),
                 },
                 SizedBox(height: compact ? 24 : 32),
@@ -464,7 +465,7 @@ class _HomeOrbitHero extends StatelessWidget {
                 border: Border.all(color: AppColors.border),
               ),
               child: Icon(
-                Icons.home_repair_service_rounded,
+                LucideIcons.hammer,
                 color: AppColors.primary,
                 size: compact ? 42 : 48,
               ),

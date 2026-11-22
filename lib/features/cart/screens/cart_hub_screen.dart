@@ -9,6 +9,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class CartHubScreen extends StatefulWidget {
   const CartHubScreen({super.key});
@@ -40,7 +41,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
         subtitle: l10n.t('cart.shopping_subtitle'),
         route: '/shopping/cart',
         accent: AppColors.shopping,
-        icon: Icons.shopping_bag_rounded,
+        icon: LucideIcons.shoppingBag,
         count: cart.getModuleItemCount('shopping'),
         subtotal: cart.getModuleSubtotal('shopping'),
       ),
@@ -50,7 +51,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
         subtitle: l10n.t('cart.food_subtitle'),
         route: '/food/cart',
         accent: AppColors.food,
-        icon: Icons.restaurant_rounded,
+        icon: LucideIcons.utensilsCrossed,
         count: cart.getModuleItemCount('food'),
         subtotal: cart.getModuleSubtotal('food'),
       ),
@@ -60,7 +61,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
         subtitle: l10n.t('cart.grocery_subtitle'),
         route: '/grocery/cart',
         accent: AppColors.grocery,
-        icon: Icons.local_grocery_store_rounded,
+        icon: LucideIcons.shoppingCart,
         count: cart.getModuleItemCount('grocery'),
         subtotal: cart.getModuleSubtotal('grocery'),
       ),
@@ -70,7 +71,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
         subtitle: l10n.t('cart.pharmacy_subtitle'),
         route: '/pharmacy/cart',
         accent: AppColors.pharmacy,
-        icon: Icons.medication_rounded,
+        icon: LucideIcons.pill,
         count: cart.getModuleItemCount('pharmacy'),
         subtotal: cart.getModuleSubtotal('pharmacy'),
       ),
@@ -119,7 +120,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: const Icon(
-                              Icons.shopping_cart_checkout_rounded,
+                              LucideIcons.shoppingCart,
                               color: AppColors.primary,
                               size: 20,
                             ),
@@ -174,7 +175,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Icon(
-                                Icons.shopping_cart_outlined,
+                                LucideIcons.shoppingCart,
                                 color: AppColors.primary,
                                 size: 34,
                               ),
@@ -310,7 +311,7 @@ class _CartModuleTile extends StatelessWidget {
               ],
             ),
             const SizedBox(width: 6),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+            const Icon(LucideIcons.chevronRight, size: 16),
           ],
         ),
       ),

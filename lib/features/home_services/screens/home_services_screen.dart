@@ -15,6 +15,7 @@ import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../utils/home_service_category_image.dart';
 import '../widgets/home_service_category_art.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HomeServicesScreen extends StatefulWidget {
   const HomeServicesScreen({super.key});
@@ -430,19 +431,19 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                       ),
                       const SizedBox(height: 14),
                       _TrustRow(
-                        icon: Icons.verified_user_rounded,
+                        icon: LucideIcons.shieldCheck,
                         title: l10n.t('home_services.verified_title'),
                         subtitle: l10n.t('home_services.verified_subtitle'),
                       ),
                       const SizedBox(height: 12),
                       _TrustRow(
-                        icon: Icons.schedule_rounded,
+                        icon: LucideIcons.clock,
                         title: l10n.t('home_services.scheduling_title'),
                         subtitle: l10n.t('home_services.scheduling_subtitle'),
                       ),
                       const SizedBox(height: 12),
                       _TrustRow(
-                        icon: Icons.payments_rounded,
+                        icon: LucideIcons.banknote,
                         title: l10n.t('home_services.pricing_title'),
                         subtitle: l10n.t('home_services.pricing_subtitle'),
                       ),

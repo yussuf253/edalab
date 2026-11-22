@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../core/providers/pro_auth_provider.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ParcelDeliveryQueueScreen extends StatefulWidget {
   const ParcelDeliveryQueueScreen({
@@ -180,7 +181,7 @@ class _ParcelDeliveryQueueScreenState extends State<ParcelDeliveryQueueScreen> {
                 padding: const EdgeInsets.all(20),
                 children: [
                   const SizedBox(height: 90),
-                  const Icon(Icons.cloud_off_outlined, size: 42),
+                  const Icon(LucideIcons.cloudOff, size: 42),
                   const SizedBox(height: 12),
                   Text(_error!, textAlign: TextAlign.center),
                   TextButton(
@@ -197,7 +198,7 @@ class _ParcelDeliveryQueueScreenState extends State<ParcelDeliveryQueueScreen> {
                 children: [
                   const SizedBox(height: 90),
                   const Icon(
-                    Icons.inventory_2_outlined,
+                    LucideIcons.package,
                     size: 42,
                     color: AppColors.mediumGrey,
                   ),
@@ -237,7 +238,7 @@ class _ParcelDeliveryQueueScreenState extends State<ParcelDeliveryQueueScreen> {
             Row(
               children: [
                 const Icon(
-                  Icons.inventory_2_outlined,
+                  LucideIcons.package,
                   color: AppColors.shopping,
                 ),
                 const SizedBox(width: 8),
@@ -288,7 +289,7 @@ class _ParcelDeliveryQueueScreenState extends State<ParcelDeliveryQueueScreen> {
                         height: 16,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : Icon(isOpen ? Icons.check : Icons.arrow_forward),
+                    : Icon(isOpen ? LucideIcons.check : LucideIcons.arrowRight),
                 label: Text(_actionLabel(context, parcel)),
               ),
             ),

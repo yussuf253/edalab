@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -10,6 +11,7 @@ import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DoctorDetailScreen extends StatefulWidget {
   final String doctorId;
@@ -86,7 +88,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -124,8 +126,8 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                                     fit: BoxFit.cover,
                                     errorBuilder: (_, _, _) => Icon(
                                       doctor.isHomeCareProvider
-                                          ? Icons.health_and_safety_rounded
-                                          : Icons.person_rounded,
+                                          ? LucideIcons.heartPulse
+                                          : LucideIcons.user,
                                       color: AppColors.doctor,
                                       size: 44,
                                     ),
@@ -133,8 +135,8 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                                 )
                               : Icon(
                                   doctor.isHomeCareProvider
-                                      ? Icons.health_and_safety_rounded
-                                      : Icons.person_rounded,
+                                      ? LucideIcons.heartPulse
+                                      : LucideIcons.user,
                                   color: AppColors.doctor,
                                   size: 44,
                                 ),
@@ -338,7 +340,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 const Icon(
-                                  Icons.location_on_rounded,
+                                  LucideIcons.mapPin,
                                   color: AppColors.primary,
                                   size: 32,
                                 ),
@@ -381,7 +383,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                             child: Column(
                               children: [
                                 _ContactRow(
-                                  icon: Icons.call_rounded,
+                                  icon: LucideIcons.phone,
                                   label: l10n.t('doctor_detail.phone'),
                                   value:
                                       doctor.contactPhone ??
@@ -389,7 +391,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                                 ),
                                 const SizedBox(height: 12),
                                 _ContactRow(
-                                  icon: Icons.chat_rounded,
+                                  icon: LucideIcons.messageCircle,
                                   label: l10n.t('doctor_detail.whatsapp'),
                                   value:
                                       doctor.contactWhatsApp ??
@@ -432,7 +434,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                                           ),
                                         ),
                                         child: const Icon(
-                                          Icons.person_rounded,
+                                          LucideIcons.user,
                                           color: AppColors.doctor,
                                           size: 20,
                                         ),
@@ -447,7 +449,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                                       ...List.generate(
                                         review.rating,
                                         (_) => const Icon(
-                                          Icons.star_rounded,
+                                          CupertinoIcons.star_fill,
                                           size: 14,
                                           color: AppColors.warning,
                                         ),

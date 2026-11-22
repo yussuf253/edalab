@@ -10,6 +10,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/media_upload_service.dart';
 import '../../../core/models/pro_profile.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProviderAvailabilityScreen extends StatefulWidget {
   final String userId;
@@ -816,7 +817,7 @@ class _ProviderAvailabilityScreenState
                       const SizedBox(width: 8),
                       IconButton(
                         onPressed: isSaving ? null : onAdd,
-                        icon: const Icon(Icons.add_circle_outline_rounded),
+                        icon: const Icon(LucideIcons.circlePlus),
                         tooltip: 'Add',
                       ),
                     ],
@@ -1068,7 +1069,7 @@ class _ProviderAvailabilityScreenState
                                 }
                                 setModalState(() => zoneCenter = location);
                               },
-                        icon: const Icon(Icons.my_location_rounded),
+                        icon: const Icon(LucideIcons.locateFixed),
                         label: Text(l10n.useCurrentLocation),
                       ),
                     ),
@@ -1328,7 +1329,7 @@ class _ProviderAvailabilityScreenState
                       const SizedBox(width: 8),
                       IconButton(
                         onPressed: isSaving ? null : onAdd,
-                        icon: const Icon(Icons.add_circle_outline_rounded),
+                        icon: const Icon(LucideIcons.circlePlus),
                         tooltip: 'Add',
                       ),
                     ],
@@ -1652,14 +1653,14 @@ class _ProviderAvailabilityScreenState
                                           stackTrace,
                                         ) => const Center(
                                           child: Icon(
-                                            Icons.home_repair_service_outlined,
+                                            LucideIcons.hammer,
                                             size: 42,
                                           ),
                                         ),
                                   )
                                 : const Center(
                                     child: Icon(
-                                      Icons.home_repair_service_outlined,
+                                      LucideIcons.hammer,
                                       size: 42,
                                     ),
                                   )),
@@ -1675,7 +1676,7 @@ class _ProviderAvailabilityScreenState
                               height: 18,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.photo_library_outlined),
+                          : const Icon(LucideIcons.images),
                       label: Text(
                         isUploadingListingImage
                             ? l10n.uploadingListingImage
@@ -1817,7 +1818,7 @@ class _ProviderAvailabilityScreenState
                                 if (!sheetContext.mounted) return;
                                 setModalState(() => zoneCenter = location);
                               },
-                        icon: const Icon(Icons.my_location_rounded),
+                        icon: const Icon(LucideIcons.locateFixed),
                         label: Text(l10n.useCurrentLocation),
                       ),
                     ),
@@ -2256,7 +2257,7 @@ class _ProviderAvailabilityScreenState
                                           () => draftCatalog.remove(draft),
                                         ),
                                   icon: const Icon(
-                                    Icons.delete_outline_rounded,
+                                    LucideIcons.trash2,
                                   ),
                                   tooltip: 'Remove item',
                                 ),
@@ -2283,7 +2284,7 @@ class _ProviderAvailabilityScreenState
                                   ),
                                 ),
                               ),
-                        icon: const Icon(Icons.add_rounded),
+                        icon: const Icon(LucideIcons.plus),
                         label: const Text('Add unit item'),
                       ),
                     ),
@@ -2348,7 +2349,7 @@ class _ProviderAvailabilityScreenState
                                               () => draftCatalog.remove(draft),
                                             ),
                                       icon: const Icon(
-                                        Icons.delete_outline_rounded,
+                                        LucideIcons.trash2,
                                       ),
                                       tooltip: 'Remove group',
                                     ),
@@ -2390,7 +2391,7 @@ class _ProviderAvailabilityScreenState
                                   ),
                                 ),
                               ),
-                        icon: const Icon(Icons.add_rounded),
+                        icon: const Icon(LucideIcons.plus),
                         label: const Text('Add group'),
                       ),
                     ),
@@ -2565,7 +2566,7 @@ class _ProviderAvailabilityScreenState
           module: 'services',
           label: 'Services',
           color: AppColors.homeServices,
-          icon: Icons.home_repair_service_outlined,
+          icon: LucideIcons.hammer,
           enabledLabel: 'Active',
           disabledLabel: 'Paused',
           emptyMessage: 'No service listings found yet. Tap + to add one.',
@@ -2590,7 +2591,7 @@ class _ProviderAvailabilityScreenState
           module: 'laundry',
           label: 'Laundry',
           color: AppColors.laundry,
-          icon: Icons.local_laundry_service_outlined,
+          icon: LucideIcons.washingMachine,
           enabledLabel: 'Accepting laundry orders',
           disabledLabel: 'Laundry service paused',
           emptyMessage: 'No laundry services found yet. Tap + to add one.',
@@ -2625,13 +2626,13 @@ class _ProviderAvailabilityScreenState
           if (_supportsServices && !_supportsLaundry)
             IconButton(
               onPressed: _openCreateServiceListing,
-              icon: const Icon(Icons.add_business_rounded),
+              icon: const Icon(LucideIcons.building2),
               tooltip: l10n.addServiceListing,
             ),
           if (_supportsLaundry && !_supportsServices)
             IconButton(
               onPressed: _openCreateLaundryService,
-              icon: const Icon(Icons.local_laundry_service_outlined),
+              icon: const Icon(LucideIcons.washingMachine),
               tooltip: l10n.addLaundryService,
             ),
           if (_supportsServices && _supportsLaundry)
@@ -2655,7 +2656,7 @@ class _ProviderAvailabilityScreenState
                   child: Text(l10n.addLaundryService),
                 ),
               ],
-              icon: const Icon(Icons.add_rounded),
+              icon: const Icon(LucideIcons.plus),
               tooltip: l10n.addListing,
             ),
         ],
@@ -2905,7 +2906,7 @@ class _AvailabilityItemsList extends StatelessWidget {
                 if (onEdit != null)
                   IconButton(
                     onPressed: isBusy ? null : () => onEdit!(item),
-                    icon: const Icon(Icons.edit_outlined, size: 20),
+                    icon: const Icon(LucideIcons.edit, size: 20),
                     tooltip: l10n.editListing,
                     style: IconButton.styleFrom(
                       padding: EdgeInsets.zero,

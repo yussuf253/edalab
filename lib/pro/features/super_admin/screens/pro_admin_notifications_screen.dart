@@ -7,6 +7,7 @@ import '../../../core/constants/pro_design_system.dart';
 import '../../../core/models/app_notification_model.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/providers/pro_auth_provider.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// In-app activity feed for super admins. Every platform-wide operation
 /// (user/pro signups, orders, bookings, cancellations, failed payments)
@@ -58,12 +59,12 @@ class _ProAdminNotificationsScreenState
         actions: [
           IconButton(
             tooltip: 'Refresh',
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(LucideIcons.refreshCw),
             onPressed: _refresh,
           ),
           IconButton(
             tooltip: 'Mark all as read',
-            icon: const Icon(Icons.done_all),
+            icon: const Icon(LucideIcons.checkCheck),
             onPressed: unread == 0 ? null : notifications.markAllRead,
           ),
         ],
@@ -201,7 +202,7 @@ class _EmptyFeed extends StatelessWidget {
       children: [
         SizedBox(height: MediaQuery.of(context).size.height * 0.2),
         const Icon(
-          Icons.notifications_none_rounded,
+          LucideIcons.bell,
           size: 64,
           color: AppColors.mediumGrey,
         ),

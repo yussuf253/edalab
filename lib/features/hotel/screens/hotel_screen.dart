@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/analytics/analytics_events.dart';
@@ -14,6 +15,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HotelScreen extends StatefulWidget {
   const HotelScreen({super.key});
@@ -129,7 +131,7 @@ class _HotelScreenState extends State<HotelScreen> {
                 ? null
                 : IconButton(
                     icon: const Icon(
-                      Icons.close_rounded,
+                      LucideIcons.x,
                       color: AppColors.mediumGrey,
                     ),
                     onPressed: () {
@@ -240,7 +242,7 @@ class _HotelScreenState extends State<HotelScreen> {
                     child: Column(
                       children: [
                         const Icon(
-                          Icons.hotel_rounded,
+                          LucideIcons.hotel,
                           size: 44,
                           color: AppColors.mediumGrey,
                         ),
@@ -309,7 +311,7 @@ class _HotelScreenState extends State<HotelScreen> {
                               children: [
                                 Center(
                                   child: Icon(
-                                    Icons.hotel_rounded,
+                                    LucideIcons.hotel,
                                     size: 48,
                                     color: AppColors.hotel.withValues(
                                       alpha: 0.4,
@@ -345,7 +347,7 @@ class _HotelScreenState extends State<HotelScreen> {
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
-                                      Icons.favorite_border_rounded,
+                                      LucideIcons.heart,
                                       size: 18,
                                       color: AppColors.grey,
                                     ),
@@ -364,7 +366,7 @@ class _HotelScreenState extends State<HotelScreen> {
                                 Row(
                                   children: [
                                     const Icon(
-                                      Icons.location_on_outlined,
+                                      LucideIcons.mapPin,
                                       size: 14,
                                       color: AppColors.grey,
                                     ),
@@ -383,7 +385,7 @@ class _HotelScreenState extends State<HotelScreen> {
                                 Row(
                                   children: [
                                     const Icon(
-                                      Icons.star_rounded,
+                                      CupertinoIcons.star_fill,
                                       size: 16,
                                       color: AppColors.warning,
                                     ),

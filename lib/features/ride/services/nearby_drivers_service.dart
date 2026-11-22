@@ -5,6 +5,7 @@ import 'package:flutter/material.dart' show Icons;
 import '../../../core/constants/app_colors.dart';
 import '../../../core/network/api_client.dart';
 import '../widgets/ride_route_preview.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Supplies the small cluster of "nearby drivers" car markers shown on the
 /// Ride landing map before a trip is booked — the same ambient-presence cue
@@ -58,7 +59,7 @@ class NearbyDriversService {
           latitude: (m['latitude'] as num).toDouble(),
           longitude: (m['longitude'] as num).toDouble(),
           color: AppColors.mediumGrey,
-          icon: Icons.directions_car_filled_rounded,
+          icon: LucideIcons.car,
         );
       }).toList();
     } catch (_) {
@@ -96,7 +97,7 @@ class NearbyDriversService {
           latitude: centerLat + deltaLat,
           longitude: centerLng + deltaLng,
           color: AppColors.mediumGrey,
-          icon: Icons.directions_car_filled_rounded,
+          icon: LucideIcons.car,
         ),
       );
     }

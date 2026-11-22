@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/pro_design_system.dart';
 import '../../../l10n/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProPendingVerificationScreen extends StatelessWidget {
   const ProPendingVerificationScreen({
@@ -58,7 +59,7 @@ class ProPendingVerificationScreen extends StatelessWidget {
                     ),
                   ),
                   child: Icon(
-                    Icons.hourglass_top_rounded,
+                    LucideIcons.hourglass,
                     size: 60,
                     color: Colors.amber.shade600,
                   ),
@@ -87,14 +88,14 @@ class ProPendingVerificationScreen extends StatelessWidget {
 
                 // Info cards
                 _VerificationInfoCard(
-                  icon: Icons.business_outlined,
+                  icon: LucideIcons.building2,
                   title: l10n.businessNameLabel,
                   subtitle: businessName,
                 ),
                 const SizedBox(height: ProDesignSystem.spacing12),
 
                 _VerificationInfoCard(
-                  icon: Icons.verified_user_outlined,
+                  icon: LucideIcons.shieldCheck,
                   title: l10n.accountTypeLabel,
                   subtitle: profileType,
                 ),
@@ -139,7 +140,7 @@ class ProPendingVerificationScreen extends StatelessWidget {
                   width: double.infinity,
                   child: FilledButton.icon(
                     onPressed: _openWhatsApp,
-                    icon: const Icon(Icons.chat_outlined),
+                    icon: const Icon(LucideIcons.messageCircle),
                     label: Text(l10n.contactSupportWhatsApp),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(

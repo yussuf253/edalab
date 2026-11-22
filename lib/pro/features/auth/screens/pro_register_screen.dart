@@ -7,6 +7,7 @@ import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/constants/pro_design_system.dart';
 import '../../../l10n/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProRegisterScreen extends StatefulWidget {
   const ProRegisterScreen({super.key});
@@ -104,7 +105,7 @@ class _ProRegisterScreenState extends State<ProRegisterScreen> {
                 if (_errorMessage != null) ...[
                   ModernInfoBox(
                     message: _errorMessage!,
-                    icon: Icons.error_outline,
+                    icon: LucideIcons.circleAlert,
                     backgroundColor: const Color(0xFFFFF5F5),
                     textColor: const Color(0xFFDC2626),
                     borderColor: const Color(0xFFF87171),

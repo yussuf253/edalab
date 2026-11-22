@@ -16,6 +16,7 @@ import '../../provider/screens/provider_dashboard_screen.dart';
 import '../../rider/screens/rider_dashboard_screen.dart';
 import '../../shop/screens/shop_dashboard_screen.dart';
 import '../../../l10n/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProDashboardScreen extends StatefulWidget {
   final int initialIndex;
@@ -206,35 +207,35 @@ class _ProDashboardScreenState extends State<ProDashboardScreen> {
           elevation: 0,
           items: [
             BottomNavigationBarItem(
-              icon: const Icon(Icons.dashboard_outlined),
-              activeIcon: const Icon(Icons.dashboard),
+              icon: const Icon(LucideIcons.layoutDashboard),
+              activeIcon: const Icon(LucideIcons.layoutDashboard),
               label: l10n.dashboard,
             ),
             BottomNavigationBarItem(
-              icon: const Icon(Icons.widgets_outlined),
-              activeIcon: const Icon(Icons.widgets),
+              icon: const Icon(LucideIcons.layoutGrid),
+              activeIcon: const Icon(LucideIcons.layoutGrid),
               label: l10n.operations,
             ),
             BottomNavigationBarItem(
               icon: _buildInboxIcon(
-                icon: Icons.chat_bubble_outline,
+                icon: LucideIcons.messageSquare,
                 unreadCount: proAuth.unreadInboxCount,
               ),
               activeIcon: _buildInboxIcon(
-                icon: Icons.chat_bubble,
+                icon: LucideIcons.messageSquare,
                 unreadCount: proAuth.unreadInboxCount,
                 isActive: true,
               ),
               label: l10n.inbox,
             ),
             BottomNavigationBarItem(
-              icon: const Icon(Icons.insights_outlined),
-              activeIcon: const Icon(Icons.insights),
+              icon: const Icon(LucideIcons.chartLine),
+              activeIcon: const Icon(LucideIcons.chartLine),
               label: l10n.insights,
             ),
             BottomNavigationBarItem(
-              icon: const Icon(Icons.person_outline),
-              activeIcon: const Icon(Icons.person),
+              icon: const Icon(LucideIcons.user),
+              activeIcon: const Icon(LucideIcons.user),
               label: l10n.account,
             ),
           ],

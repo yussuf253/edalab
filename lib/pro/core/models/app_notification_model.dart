@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 enum NotificationModule {
   system,
@@ -279,25 +280,25 @@ extension AppNotificationPresentation on AppNotificationModel {
       case NotificationModule.food:
       case NotificationModule.grocery:
       case NotificationModule.pharmacy:
-        return Icons.shopping_bag_rounded;
+        return LucideIcons.shoppingBag;
       case NotificationModule.ride:
-        return Icons.directions_car_rounded;
+        return LucideIcons.car;
       case NotificationModule.messages:
-        return Icons.chat_bubble_rounded;
+        return LucideIcons.messageSquare;
       case NotificationModule.hotel:
-        return Icons.hotel_rounded;
+        return LucideIcons.hotel;
       case NotificationModule.doctor:
-        return Icons.medical_services_rounded;
+        return LucideIcons.briefcaseMedical;
       case NotificationModule.homeServices:
-        return Icons.home_repair_service_rounded;
+        return LucideIcons.hammer;
       case NotificationModule.laundry:
-        return Icons.local_laundry_service_rounded;
+        return LucideIcons.washingMachine;
       case NotificationModule.promotions:
-        return Icons.local_offer_rounded;
+        return LucideIcons.tag;
       case NotificationModule.account:
-        return Icons.verified_user_rounded;
+        return LucideIcons.shieldCheck;
       case NotificationModule.system:
-        return Icons.notifications_rounded;
+        return LucideIcons.bell;
     }
   }
 

@@ -1,7 +1,9 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
 import '../constants/app_spacing.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -46,7 +48,7 @@ class SectionHeader extends StatelessWidget {
                   border: Border.all(color: AppColors.border),
                 ),
                 child: const Icon(
-                  Icons.arrow_forward_rounded,
+                  LucideIcons.arrowRight,
                   size: 15,
                   color: AppColors.dark,
                 ),
@@ -68,7 +70,7 @@ class SectionHeader extends StatelessWidget {
                   ),
                   const SizedBox(width: 2),
                   const Icon(
-                    Icons.chevron_right_rounded,
+                    LucideIcons.chevronRight,
                     size: 17,
                     color: AppColors.primary,
                   ),
@@ -99,12 +101,12 @@ class RatingStars extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (index) {
         if (index < rating.floor()) {
-          return Icon(Icons.star_rounded, size: size, color: color);
+          return Icon(CupertinoIcons.star_fill, size: size, color: color);
         } else if (index < rating) {
-          return Icon(Icons.star_half_rounded, size: size, color: color);
+          return Icon(CupertinoIcons.star_lefthalf_fill, size: size, color: color);
         }
         return Icon(
-          Icons.star_rounded,
+          CupertinoIcons.star,
           size: size,
           color: AppColors.lightGrey,
         );
@@ -273,7 +275,7 @@ class ImagePlaceholder extends StatelessWidget {
     super.key,
     this.width,
     this.height,
-    this.icon = Icons.image_outlined,
+    this.icon = LucideIcons.image,
     this.color,
     this.borderRadius = 12,
   });

@@ -17,6 +17,7 @@ import '../services/ride_route_service.dart';
 import '../utils/ride_map_launcher.dart';
 import '../widgets/ride_route_preview.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class RideBookingSummaryScreen extends StatefulWidget {
   final Map<String, dynamic> bookingData;
@@ -70,21 +71,21 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
           _data['pickupPoint'],
           fallbackLabel: pickup,
           color: AppColors.success,
-          icon: Icons.my_location_rounded,
+          icon: LucideIcons.locateFixed,
         ) ??
         const RideMapPoint(
           label: 'Pickup',
           latitude: 11.5886,
           longitude: 43.1457,
           color: AppColors.success,
-          icon: Icons.my_location_rounded,
+          icon: LucideIcons.locateFixed,
         );
     final destinationPoint =
         rideMapPointFromJson(
           _data['destinationPoint'],
           fallbackLabel: destination,
           color: AppColors.accent,
-          icon: Icons.location_on_rounded,
+          icon: LucideIcons.mapPin,
         ) ??
         estimateRideDestinationPoint(
           origin: pickupPoint,
@@ -116,7 +117,7 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
       appBar: AppBar(
         title: Text(l10n.t('ride_summary.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -153,21 +154,21 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
                   ),
                   const SizedBox(height: 14),
                   _SummaryLine(
-                    icon: Icons.my_location_rounded,
+                    icon: LucideIcons.locateFixed,
                     label: l10n.t('ride.select_pickup'),
                     value: pickup,
                     color: AppColors.success,
                   ),
                   const SizedBox(height: 12),
                   _SummaryLine(
-                    icon: Icons.location_on_rounded,
+                    icon: LucideIcons.mapPin,
                     label: l10n.t('ride.choose_destination'),
                     value: destination,
                     color: AppColors.accent,
                   ),
                   const SizedBox(height: 12),
                   _SummaryLine(
-                    icon: Icons.route_rounded,
+                    icon: LucideIcons.route,
                     label: l10n.t(
                       'ride_booking.route_summary',
                       params: {
@@ -303,21 +304,21 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
             _data['pickupPoint'],
             fallbackLabel: pickup,
             color: AppColors.success,
-            icon: Icons.my_location_rounded,
+            icon: LucideIcons.locateFixed,
           ) ??
           const RideMapPoint(
             label: 'Pickup',
             latitude: 11.5886,
             longitude: 43.1457,
             color: AppColors.success,
-            icon: Icons.my_location_rounded,
+            icon: LucideIcons.locateFixed,
           );
       final destinationPoint =
           rideMapPointFromJson(
             _data['destinationPoint'],
             fallbackLabel: destination,
             color: AppColors.accent,
-            icon: Icons.location_on_rounded,
+            icon: LucideIcons.mapPin,
           ) ??
           estimateRideDestinationPoint(
             origin: pickupPoint,

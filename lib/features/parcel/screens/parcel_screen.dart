@@ -8,6 +8,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/auth_provider.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ParcelScreen extends StatefulWidget {
   const ParcelScreen({super.key});
@@ -265,12 +266,12 @@ class _ParcelScreenState extends State<ParcelScreen> {
               segments: [
                 ButtonSegment(
                   value: 0,
-                  icon: const Icon(Icons.send_outlined),
+                  icon: const Icon(LucideIcons.send),
                   label: Text(_text('new_request')),
                 ),
                 ButtonSegment(
                   value: 1,
-                  icon: const Icon(Icons.route_outlined),
+                  icon: const Icon(LucideIcons.route),
                   label: Text(_text('my_parcels')),
                 ),
               ],
@@ -420,7 +421,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
                   _text('pickup_address'),
                   validator: (value) => _required(value, minLength: 5),
                   maxLines: 1,
-                  icon: Icons.radio_button_checked,
+                  icon: LucideIcons.circleDot,
                 ),
                 Padding(
                   padding: const EdgeInsets.only(left: 21, bottom: 10),
@@ -437,13 +438,13 @@ class _ParcelScreenState extends State<ParcelScreen> {
                   _dropoffAddress,
                   _text('dropoff_address'),
                   validator: (value) => _required(value, minLength: 5),
-                  icon: Icons.location_on_outlined,
+                  icon: LucideIcons.mapPin,
                 ),
               ],
             ),
           ),
           const SizedBox(height: 14),
-          _infoStrip(Icons.schedule_outlined, _text('courier_eta')),
+          _infoStrip(LucideIcons.clock, _text('courier_eta')),
         ],
       ),
     );
@@ -466,18 +467,18 @@ class _ParcelScreenState extends State<ParcelScreen> {
           const SizedBox(height: 10),
           Row(
             children: [
-              _sizeOption('SMALL', Icons.mail_outline),
+              _sizeOption('SMALL', LucideIcons.mail),
               const SizedBox(width: 8),
-              _sizeOption('MEDIUM', Icons.inventory_2_outlined),
+              _sizeOption('MEDIUM', LucideIcons.package),
               const SizedBox(width: 8),
-              _sizeOption('LARGE', Icons.all_inbox_outlined),
+              _sizeOption('LARGE', LucideIcons.inbox),
             ],
           ),
           const SizedBox(height: 16),
           _field(
             _description,
             _text('package_description'),
-            icon: Icons.description_outlined,
+            icon: LucideIcons.fileText,
           ),
           Text(
             _text('sender_details'),
@@ -486,13 +487,13 @@ class _ParcelScreenState extends State<ParcelScreen> {
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 10),
-          _field(_senderName, _text('sender_name'), icon: Icons.person_outline),
+          _field(_senderName, _text('sender_name'), icon: LucideIcons.user),
           _field(
             _senderPhone,
             _text('sender_phone'),
             validator: (value) => _required(value, minLength: 5),
             keyboardType: TextInputType.phone,
-            icon: Icons.phone_outlined,
+            icon: LucideIcons.phone,
           ),
           Text(
             _text('recipient_details'),
@@ -504,21 +505,21 @@ class _ParcelScreenState extends State<ParcelScreen> {
           _field(
             _recipientName,
             _text('recipient_name'),
-            icon: Icons.person_add_alt_outlined,
+            icon: LucideIcons.userPlus,
           ),
           _field(
             _recipientPhone,
             _text('recipient_phone'),
             validator: (value) => _required(value, minLength: 5),
             keyboardType: TextInputType.phone,
-            icon: Icons.phone_outlined,
+            icon: LucideIcons.phone,
           ),
           _field(
             _notes,
             _text('notes_optional'),
             validator: (_) => null,
             maxLines: 2,
-            icon: Icons.note_alt_outlined,
+            icon: LucideIcons.fileText,
           ),
         ],
       ),
@@ -535,7 +536,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.route_outlined, color: AppColors.primary),
+          const Icon(LucideIcons.route, color: AppColors.primary),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -558,7 +559,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
           IconButton(
             tooltip: _text('edit_route'),
             onPressed: () => setState(() => _step = 0),
-            icon: const Icon(Icons.edit_outlined, size: 18),
+            icon: const Icon(LucideIcons.edit, size: 18),
           ),
         ],
       ),
@@ -640,7 +641,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
               IconButton(
                 onPressed: () => setState(() => _step = 0),
                 tooltip: _text('back'),
-                icon: const Icon(Icons.arrow_back),
+                icon: const Icon(LucideIcons.arrowLeft),
               ),
               const SizedBox(width: 4),
             ],
@@ -675,8 +676,8 @@ class _ParcelScreenState extends State<ParcelScreen> {
                     )
                   : Icon(
                       _step == 0
-                          ? Icons.arrow_forward
-                          : Icons.local_shipping_outlined,
+                          ? LucideIcons.arrowRight
+                          : LucideIcons.truck,
                     ),
               label: Text(_text(_step == 0 ? 'continue' : 'send_request')),
             ),
@@ -744,7 +745,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
         IconButton(
           onPressed: _load,
           tooltip: _text('refresh'),
-          icon: const Icon(Icons.refresh),
+          icon: const Icon(LucideIcons.refreshCw),
         ),
       ],
     );
@@ -765,7 +766,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.outbox_outlined,
+                LucideIcons.send,
                 color: AppColors.primary,
                 size: 34,
               ),
@@ -789,7 +790,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
             const SizedBox(height: 14),
             OutlinedButton.icon(
               onPressed: () => setState(() => _activeTab = 0),
-              icon: const Icon(Icons.add),
+              icon: const Icon(LucideIcons.plus),
               label: Text(_text('new_request')),
             ),
           ],
@@ -806,7 +807,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.cloud_off_outlined,
+              LucideIcons.cloudOff,
               size: 40,
               color: AppColors.grey,
             ),
@@ -815,7 +816,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
             const SizedBox(height: 10),
             TextButton.icon(
               onPressed: _load,
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(LucideIcons.refreshCw),
               label: Text(_text('retry')),
             ),
           ],
@@ -848,7 +849,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
-                    Icons.local_shipping_outlined,
+                    LucideIcons.truck,
                     color: AppColors.primary,
                   ),
                 ),
@@ -874,7 +875,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
                   IconButton(
                     onPressed: () => _cancel(parcel),
                     tooltip: _text('cancel_request'),
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(LucideIcons.x),
                   ),
               ],
             ),
@@ -884,13 +885,13 @@ class _ParcelScreenState extends State<ParcelScreen> {
             _routeLine(
               _text('from'),
               parcel['pickupAddress']?.toString() ?? '',
-              Icons.radio_button_checked,
+              LucideIcons.circleDot,
             ),
             const SizedBox(height: 10),
             _routeLine(
               _text('to'),
               parcel['dropoffAddress']?.toString() ?? '',
-              Icons.location_on_outlined,
+              LucideIcons.mapPin,
             ),
             const Divider(height: 22),
             Text(
@@ -900,7 +901,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
             if (courier != null) ...[
               const SizedBox(height: 10),
               _infoStrip(
-                Icons.person_outline,
+                LucideIcons.user,
                 '${_text('courier')}: ${courier['name'] ?? ''} · ${courier['phone'] ?? ''}',
               ),
             ],

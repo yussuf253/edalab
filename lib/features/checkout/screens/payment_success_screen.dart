@@ -5,6 +5,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class PaymentSuccessScreen extends StatefulWidget {
   final Map<String, dynamic>? paymentData;
@@ -56,7 +57,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.check_rounded,
+                    LucideIcons.check,
                     color: AppColors.success,
                     size: 44,
                   ),

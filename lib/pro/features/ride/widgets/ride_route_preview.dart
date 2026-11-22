@@ -9,6 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class RideMapPoint {
   final String label;
@@ -63,7 +64,7 @@ RideMapPoint estimateRideDestinationPoint({
   required double distanceKm,
   required String label,
   Color color = AppColors.accent,
-  IconData icon = Icons.location_on_rounded,
+  IconData icon = LucideIcons.mapPin,
   double bearingDegrees = 54,
 }) {
   const earthRadiusKm = 6371.0;
@@ -99,7 +100,7 @@ RideMapPoint interpolateRideMapPoint({
   required double progress,
   required String label,
   Color color = AppColors.ride,
-  IconData icon = Icons.directions_car_rounded,
+  IconData icon = LucideIcons.car,
 }) {
   final clampedProgress = progress.clamp(0.0, 1.0);
   return RideMapPoint(
@@ -139,7 +140,7 @@ class RideRoutePreview extends StatefulWidget {
     this.badgeLabel,
     this.emptyLabel,
     this.onActionTap,
-    this.actionIcon = Icons.open_in_new_rounded,
+    this.actionIcon = LucideIcons.externalLink,
     this.actionLabel,
     this.height = 250,
     this.showMyLocation = false,
@@ -272,7 +273,7 @@ class _RideRoutePreviewState extends State<RideRoutePreview> {
               top: 14,
               left: 14,
               child: _MapChip(
-                icon: Icons.map_outlined,
+                icon: LucideIcons.map,
                 label: widget.title,
                 backgroundColor: Colors.white.withValues(alpha: 0.94),
                 foregroundColor: AppColors.ride,
@@ -283,7 +284,7 @@ class _RideRoutePreviewState extends State<RideRoutePreview> {
               top: 14,
               right: 14,
               child: _MapChip(
-                icon: Icons.timer_rounded,
+                icon: LucideIcons.timer,
                 label: widget.badgeLabel!,
                 backgroundColor: AppColors.ride,
                 foregroundColor: AppColors.white,
@@ -310,7 +311,7 @@ class _RideRoutePreviewState extends State<RideRoutePreview> {
                       children: [
                         Icon(
                           widget.overlayStatusIcon ??
-                              Icons.route_rounded,
+                              LucideIcons.route,
                           size: 18,
                           color: AppColors.ride,
                         ),
@@ -529,7 +530,7 @@ class _EmptyRoutePreview extends StatelessWidget {
             top: 14,
             left: 14,
             child: _MapChip(
-              icon: Icons.map_outlined,
+              icon: LucideIcons.map,
               label: title,
               backgroundColor: Colors.white.withValues(alpha: 0.94),
               foregroundColor: AppColors.ride,

@@ -14,6 +14,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/auth_gate.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class LaundryOrderScreen extends StatefulWidget {
   final String? initialServiceId;
@@ -44,7 +45,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
   }
 
   IconData _getIcon(LaundryService _) {
-    return Icons.local_laundry_service_rounded;
+    return LucideIcons.washingMachine;
   }
 
   String _serviceDisplayName(LaundryService service) {
@@ -186,7 +187,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                   height: 36,
                   child: IconButton(
                     padding: EdgeInsets.zero,
-                    icon: const Icon(Icons.remove, size: 16),
+                    icon: const Icon(LucideIcons.minus, size: 16),
                     onPressed: () {
                       setState(() {
                         if ((_itemCounts[item.id] ?? 0) > 0) {
@@ -206,7 +207,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                   height: 36,
                   child: IconButton(
                     padding: EdgeInsets.zero,
-                    icon: const Icon(Icons.add, size: 16),
+                    icon: const Icon(LucideIcons.plus, size: 16),
                     onPressed: () {
                       setState(() {
                         _itemCounts[item.id] = (_itemCounts[item.id] ?? 0) + 1;
@@ -408,7 +409,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
       appBar: AppBar(
         title: Text(l10n.t('laundry_order.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -480,13 +481,13 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                                       selectedServiceImageUrl,
                                       fit: BoxFit.cover,
                                       errorBuilder: (_, _, _) => const Icon(
-                                        Icons.local_laundry_service_rounded,
+                                        LucideIcons.washingMachine,
                                         color: AppColors.laundry,
                                       ),
                                     ),
                                   )
                                 : const Icon(
-                                    Icons.local_laundry_service_rounded,
+                                    LucideIcons.washingMachine,
                                     color: AppColors.laundry,
                                   ),
                           ),
@@ -678,7 +679,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                     child: Row(
                       children: [
                         const Icon(
-                          Icons.location_on_rounded,
+                          LucideIcons.mapPin,
                           color: AppColors.laundry,
                           size: 22,
                         ),

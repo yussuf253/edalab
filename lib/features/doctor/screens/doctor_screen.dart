@@ -8,6 +8,7 @@ import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../home_services/utils/home_service_category_image.dart';
 import '../../home_services/widgets/home_service_category_art.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class _HealthServiceCategory {
   final String id;
@@ -52,7 +53,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
     _HealthServiceCategory(
       id: 'hsc-medicine',
       labelKey: 'doctor.medicine',
-      icon: Icons.medication_rounded,
+      icon: LucideIcons.pill,
       color: Color(0xFFF59E0B),
       imagePath: 'assets/images/doctor/main_category/med.png',
       artWidthFraction: 0.43,
@@ -61,7 +62,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
     _HealthServiceCategory(
       id: 'hsc-lab-tests',
       labelKey: 'doctor.lab_tests',
-      icon: Icons.science_rounded,
+      icon: LucideIcons.flaskConical,
       color: Color(0xFF3B82F6),
       imagePath: 'assets/images/doctor/main_category/lab.png',
       artWidthFraction: 0.44,
@@ -70,7 +71,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
     _HealthServiceCategory(
       id: 'hsc-consultation',
       labelKey: 'doctor.consultation',
-      icon: Icons.medical_services_rounded,
+      icon: LucideIcons.briefcaseMedical,
       color: AppColors.doctor,
       imagePath: 'assets/images/doctor/main_category/doc.png',
       artWidthFraction: 0.24,
@@ -79,13 +80,13 @@ class _DoctorScreenState extends State<DoctorScreen> {
     _HealthServiceCategory(
       id: 'hsc-physiotherapy',
       labelKey: 'doctor.physiotherapy',
-      icon: Icons.accessibility_new_rounded,
+      icon: LucideIcons.accessibility,
       color: AppColors.secondary,
     ),
     _HealthServiceCategory(
       id: 'hsc-home-care',
       labelKey: 'doctor.home_care_title',
-      icon: Icons.medical_information_rounded,
+      icon: LucideIcons.fileHeart,
       color: AppColors.doctor,
     ),
   ];

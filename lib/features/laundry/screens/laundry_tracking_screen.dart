@@ -11,6 +11,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class LaundryTrackingScreen extends StatefulWidget {
   final String orderId;
@@ -256,7 +257,7 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(
-                              Icons.local_laundry_service_rounded,
+                              LucideIcons.washingMachine,
                               color: AppColors.laundry,
                               size: 28,
                             ),
@@ -397,10 +398,10 @@ class _Step extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: isDone
-                  ? const Icon(Icons.check, color: AppColors.white, size: 16)
+                  ? const Icon(LucideIcons.check, color: AppColors.white, size: 16)
                   : isActive
                   ? const Icon(
-                      Icons.local_laundry_service_rounded,
+                      LucideIcons.washingMachine,
                       color: AppColors.white,
                       size: 14,
                     )

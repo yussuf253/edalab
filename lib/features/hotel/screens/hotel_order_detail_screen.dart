@@ -8,6 +8,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HotelOrderDetailScreen extends StatefulWidget {
   final String bookingId;
@@ -200,7 +201,7 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
         appBar: AppBar(
           title: Text(l10n.t('hotel_tracking.title')),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            icon: const Icon(LucideIcons.chevronLeft, size: 20),
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -241,7 +242,7 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
                       children: [
                         Expanded(
                           child: _HotelStatTile(
-                            icon: Icons.people_alt_outlined,
+                            icon: LucideIcons.users,
                             label: l10n.t('hotel_tracking.guests'),
                             value: guestCount,
                           ),
@@ -249,7 +250,7 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _HotelStatTile(
-                            icon: Icons.schedule_outlined,
+                            icon: LucideIcons.clock,
                             label: l10n.t('hotel_tracking.booked'),
                             value: _formatDate(data['createdAt']?.toString()),
                           ),
@@ -328,7 +329,7 @@ class _HotelHero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
-                  Icons.hotel_rounded,
+                  LucideIcons.hotel,
                   color: AppColors.hotel,
                   size: 24,
                 ),

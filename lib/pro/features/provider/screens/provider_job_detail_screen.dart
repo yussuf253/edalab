@@ -7,6 +7,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/pro_message_launcher.dart';
 import '../widgets/provider_job_location_map.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProviderJobDetailScreen extends StatefulWidget {
   final String userId;
@@ -542,8 +543,8 @@ class _ProviderJobDetailScreenState extends State<ProviderJobDetailScreen> {
                                 children: [
                                   Icon(
                                     reached
-                                        ? Icons.check_circle_rounded
-                                        : Icons.radio_button_unchecked_rounded,
+                                        ? LucideIcons.checkCircle
+                                        : LucideIcons.circle,
                                     color: reached
                                         ? AppColors.homeServices
                                         : Colors.grey,
@@ -580,7 +581,7 @@ class _ProviderJobDetailScreenState extends State<ProviderJobDetailScreen> {
                         OutlinedButton.icon(
                           onPressed: () =>
                               launchPhoneCall(context, customerPhone),
-                          icon: const Icon(Icons.call_outlined, size: 18),
+                          icon: const Icon(LucideIcons.phone, size: 18),
                           label: const Text('Call'),
                         ),
                       if (customerUserId.isNotEmpty)
@@ -613,7 +614,7 @@ class _ProviderJobDetailScreenState extends State<ProviderJobDetailScreen> {
                                 'categorySlug': metadata['categorySlug'],
                             },
                           ),
-                          icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                          icon: const Icon(LucideIcons.messageSquare, size: 18),
                           label: const Text('Message'),
                         ),
                     ],

@@ -14,6 +14,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class BookAppointmentScreen extends StatefulWidget {
   final String doctorId;
@@ -147,7 +148,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
               : l10n.t('doctor_booking.book_care_service'),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -186,8 +187,8 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       ),
                       child: Icon(
                         doctor.isHomeCareProvider
-                            ? Icons.health_and_safety_rounded
-                            : Icons.person_rounded,
+                            ? LucideIcons.heartPulse
+                            : LucideIcons.user,
                         color: AppColors.doctor,
                         size: 28,
                       ),
@@ -246,7 +247,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     ),
                     const SizedBox(height: 16),
                     _ContactInfoRow(
-                      icon: Icons.call_rounded,
+                      icon: LucideIcons.phone,
                       label: l10n.t('doctor_booking.phone'),
                       value:
                           doctor.contactPhone ??
@@ -254,7 +255,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                     ),
                     const SizedBox(height: 10),
                     _ContactInfoRow(
-                      icon: Icons.chat_rounded,
+                      icon: LucideIcons.messageCircle,
                       label: l10n.t('doctor_booking.whatsapp'),
                       value:
                           doctor.contactWhatsApp ??
@@ -307,8 +308,8 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 children: [
                   _TypeCard(
                     doctor.isDoctorProvider
-                        ? Icons.videocam_rounded
-                        : Icons.home_rounded,
+                        ? LucideIcons.video
+                        : LucideIcons.home,
                     doctor.isDoctorProvider
                         ? l10n.t('doctor_booking.video_call')
                         : l10n.t('doctor_booking.home_visit'),
@@ -317,7 +318,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                   ),
                   const SizedBox(width: 12),
                   _TypeCard(
-                    Icons.chat_rounded,
+                    LucideIcons.messageCircle,
                     doctor.isDoctorProvider
                         ? l10n.t('doctor_booking.chat')
                         : l10n.t('doctor_booking.phone_advice'),
@@ -327,8 +328,8 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                   const SizedBox(width: 12),
                   _TypeCard(
                     doctor.isDoctorProvider
-                        ? Icons.location_on_rounded
-                        : Icons.videocam_rounded,
+                        ? LucideIcons.mapPin
+                        : LucideIcons.video,
                     doctor.isDoctorProvider
                         ? l10n.t('doctor_booking.in_person')
                         : l10n.t('doctor_booking.video_support'),

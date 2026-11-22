@@ -14,6 +14,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HomeServiceProviderScreen extends StatefulWidget {
   final String providerId;
@@ -147,12 +148,12 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.favorite_border_rounded),
+            icon: const Icon(LucideIcons.heart),
             onPressed: () {
               AnalyticsService.instance.track(
                 AnalyticsEvents.wishlistToggled,
@@ -342,7 +343,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                               child: Row(
                                 children: [
                                   const Icon(
-                                    Icons.check_circle_rounded,
+                                    LucideIcons.checkCircle,
                                     size: 18,
                                     color: AppColors.success,
                                   ),

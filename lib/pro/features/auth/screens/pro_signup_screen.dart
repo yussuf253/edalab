@@ -9,6 +9,7 @@ import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/constants/pro_design_system.dart';
 import '../../../l10n/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProSignupScreen extends StatefulWidget {
   const ProSignupScreen({super.key});
@@ -112,7 +113,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                           ),
                         ),
                         child: Icon(
-                          Icons.lock_outline_rounded,
+                          LucideIcons.lock,
                           size: 40,
                           color: Colors.blue[700],
                         ),
@@ -142,7 +143,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                         message: l10n.signedInAsMessage(
                           proAuth.currentAccount!.email,
                         ),
-                        icon: Icons.verified_user_outlined,
+                        icon: LucideIcons.shieldCheck,
                         backgroundColor: Colors.blue.withValues(alpha: 0.1),
                         textColor: Colors.blue[700]!,
                         borderColor: Colors.blue[300]!,
@@ -161,7 +162,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                     if (_submissionMessage != null) ...[
                       ModernInfoBox(
                         message: _submissionMessage!,
-                        icon: Icons.error_outline,
+                        icon: LucideIcons.circleAlert,
                         backgroundColor: const Color(0xFFFFF5F5),
                         textColor: const Color(0xFFDC2626),
                         borderColor: const Color(0xFFF87171),
@@ -325,7 +326,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                         const SizedBox(height: ProDesignSystem.spacing12),
                         ModernInfoBox(
                           message: l10n.providerInfo,
-                          icon: Icons.tune_rounded,
+                          icon: LucideIcons.slidersHorizontal,
                           backgroundColor: Colors.blue.withValues(alpha: 0.08),
                           textColor: Colors.blue[700]!,
                           borderColor: Colors.blue[200]!,
@@ -335,7 +336,7 @@ class _ProSignupScreenState extends State<ProSignupScreen> {
                         const SizedBox(height: ProDesignSystem.spacing12),
                         ModernInfoBox(
                           message: l10n.doctorInfo,
-                          icon: Icons.medical_services_outlined,
+                          icon: LucideIcons.briefcaseMedical,
                           backgroundColor: Colors.teal.withValues(alpha: 0.08),
                           textColor: Colors.teal[700]!,
                           borderColor: Colors.teal[200]!,

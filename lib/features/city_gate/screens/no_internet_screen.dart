@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/connectivity_provider.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Full-screen gate shown whenever [ConnectivityProvider.isOffline] is true.
 /// Wired into `app.dart` above every route so the whole app is blocked while
@@ -28,7 +29,7 @@ class NoInternetScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Icon(
-                    Icons.wifi_off_rounded,
+                    LucideIcons.wifiOff,
                     size: 88,
                     color: AppColors.primary,
                   ),
@@ -51,7 +52,7 @@ class NoInternetScreen extends StatelessWidget {
                     onPressed: () => context
                         .read<ConnectivityProvider>()
                         .checkNow(),
-                    icon: const Icon(Icons.refresh_rounded),
+                    icon: const Icon(LucideIcons.refreshCw),
                     label: Text(t.t('no_internet.retry_button')),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,

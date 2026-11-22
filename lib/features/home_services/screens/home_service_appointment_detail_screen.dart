@@ -13,6 +13,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HomeServiceAppointmentDetailScreen extends StatefulWidget {
   final String orderId;
@@ -360,7 +361,7 @@ class _HomeServiceAppointmentDetailScreenState
         appBar: AppBar(
           title: Text(l10n.t('home_service_detail.title')),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            icon: const Icon(LucideIcons.chevronLeft, size: 20),
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -411,7 +412,7 @@ class _HomeServiceAppointmentDetailScreenState
                             ),
                             child: Icon(
                               provider?.categoryIcon ??
-                                  Icons.home_repair_service_rounded,
+                                  LucideIcons.hammer,
                               color: AppColors.white,
                               size: 30,
                             ),
@@ -523,8 +524,8 @@ class _HomeServiceAppointmentDetailScreenState
                                 children: [
                                   Icon(
                                     reached
-                                        ? Icons.check_circle_rounded
-                                        : Icons.radio_button_unchecked_rounded,
+                                        ? LucideIcons.checkCircle
+                                        : LucideIcons.circle,
                                     size: 18,
                                     color: reached
                                         ? AppColors.homeServices

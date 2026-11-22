@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -14,6 +15,7 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../services/ride_route_service.dart';
 import '../utils/ride_map_launcher.dart';
 import '../widgets/ride_route_preview.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class RideTrackingScreen extends StatefulWidget {
   final String rideId;
@@ -134,21 +136,21 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
           trackingData['pickup'],
           fallbackLabel: pickup,
           color: AppColors.success,
-          icon: Icons.my_location_rounded,
+          icon: LucideIcons.locateFixed,
         ) ??
         const RideMapPoint(
           label: 'Pickup',
           latitude: 11.5886,
           longitude: 43.1457,
           color: AppColors.success,
-          icon: Icons.my_location_rounded,
+          icon: LucideIcons.locateFixed,
         );
     final destinationPoint =
         rideMapPointFromJson(
           trackingData['destination'],
           fallbackLabel: destination,
           color: AppColors.accent,
-          icon: Icons.location_on_rounded,
+          icon: LucideIcons.mapPin,
         ) ??
         estimateRideDestinationPoint(
           origin: pickupPoint,
@@ -163,7 +165,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                 trackingData['driver'],
                 fallbackLabel: driverName,
                 color: AppColors.ride,
-                icon: Icons.directions_car_rounded,
+                icon: LucideIcons.car,
               ) ??
               interpolateRideMapPoint(
                 from: pickupPoint,
@@ -224,7 +226,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: const Icon(
-                        Icons.arrow_back_ios_new_rounded,
+                        LucideIcons.chevronLeft,
                         size: 18,
                       ),
                     ),
@@ -339,7 +341,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                       borderRadius: BorderRadius.circular(14),
                                     ),
                                     child: const Icon(
-                                      Icons.person_rounded,
+                                      LucideIcons.user,
                                       color: AppColors.ride,
                                       size: 28,
                                     ),
@@ -357,7 +359,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                         Row(
                                           children: [
                                             const Icon(
-                                              Icons.star_rounded,
+                                              CupertinoIcons.star_fill,
                                               color: AppColors.warning,
                                               size: 16,
                                             ),
@@ -394,7 +396,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                 Column(
                                   children: [
                                     const Icon(
-                                      Icons.circle,
+                                      LucideIcons.circle,
                                       color: AppColors.success,
                                       size: 12,
                                     ),
@@ -404,7 +406,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                       color: AppColors.lightGrey,
                                     ),
                                     const Icon(
-                                      Icons.location_on_rounded,
+                                      LucideIcons.mapPin,
                                       color: AppColors.accent,
                                       size: 16,
                                     ),
@@ -454,7 +456,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                       child: Column(
                                         children: [
                                           const Icon(
-                                            Icons.chat_rounded,
+                                            LucideIcons.messageCircle,
                                             color: AppColors.ride,
                                             size: 20,
                                           ),
@@ -494,7 +496,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                       child: Column(
                                         children: [
                                           Icon(
-                                            Icons.call_rounded,
+                                            LucideIcons.phone,
                                             color:
                                                 driverPhone != null &&
                                                     driverPhone.isNotEmpty

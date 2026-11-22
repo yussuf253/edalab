@@ -10,6 +10,7 @@ import '../../../core/models/lab_test_model.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/app_button.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class LabTestsScreen extends StatefulWidget {
   final String? categoryId;
@@ -103,7 +104,7 @@ class _LabTestsScreenState extends State<LabTestsScreen> {
       appBar: AppBar(
         title: Text(_categoryLabel ?? l10n.t('doctor.lab_tests')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -216,7 +217,7 @@ class _TestCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                Icons.science_rounded,
+                LucideIcons.flaskConical,
                 color: AppColors.primary,
                 size: 28,
               ),
@@ -250,7 +251,7 @@ class _TestCard extends StatelessWidget {
                     Row(
                       children: [
                         Icon(
-                          Icons.access_time_rounded,
+                          LucideIcons.clock,
                           size: 12,
                           color: AppColors.grey,
                         ),
@@ -299,7 +300,7 @@ class _TestCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
-                    Icons.arrow_forward_ios_rounded,
+                    LucideIcons.chevronRight,
                     size: 14,
                     color: AppColors.primary,
                   ),
@@ -364,7 +365,7 @@ class _TestDetailsBottomSheet extends StatelessWidget {
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Icon(
-                              Icons.science_rounded,
+                              LucideIcons.flaskConical,
                               color: AppColors.primary,
                               size: 36,
                             ),
@@ -432,7 +433,7 @@ class _TestDetailsBottomSheet extends StatelessWidget {
                         Row(
                           children: [
                             Icon(
-                              Icons.medical_services_rounded,
+                              LucideIcons.briefcaseMedical,
                               size: 16,
                               color: AppColors.primary,
                             ),
@@ -496,7 +497,7 @@ class _TestDetailsBottomSheet extends StatelessWidget {
                             Column(
                               children: [
                                 Icon(
-                                  Icons.access_time_rounded,
+                                  LucideIcons.clock,
                                   size: 16,
                                   color: AppColors.grey,
                                 ),
@@ -556,7 +557,7 @@ class _TestDetailsBottomSheet extends StatelessWidget {
                       Expanded(
                         child: AppButton(
                           text: l10n.t('lab_booking.book'),
-                          icon: Icons.event_available_rounded,
+                          icon: LucideIcons.calendarCheck,
                           color: AppColors.primary,
                           onPressed: onBook,
                         ),

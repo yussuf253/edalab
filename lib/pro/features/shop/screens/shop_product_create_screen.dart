@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/media_upload_service.dart';
 import '../../../l10n/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ShopProductCreateScreen extends StatefulWidget {
   final String userId;
@@ -288,7 +289,7 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.store_mall_directory_outlined, size: 42),
+                    const Icon(LucideIcons.store, size: 42),
                     const SizedBox(height: 12),
                     Text(
                       _isPharmacy
@@ -494,14 +495,14 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                                         errorBuilder: (_, __, ___) =>
                                             const Center(
                                               child: Icon(
-                                                Icons.image_outlined,
+                                                LucideIcons.image,
                                                 size: 42,
                                               ),
                                             ),
                                       )
                                     : const Center(
                                         child: Icon(
-                                          Icons.image_outlined,
+                                          LucideIcons.image,
                                           size: 42,
                                         ),
                                       )),
@@ -519,7 +520,7 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Icon(Icons.photo_library_outlined),
+                              : const Icon(LucideIcons.images),
                           label: Text(
                             _isUploadingPrimaryImage
                                 ? l10n.uploadingPrimaryImage
@@ -557,7 +558,7 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Icon(Icons.collections_outlined),
+                              : const Icon(LucideIcons.images),
                           label: Text(
                             _isUploadingGalleryImage
                                 ? l10n.uploadingGalleryImage
@@ -665,7 +666,7 @@ class _ShopProductCreateScreenState extends State<ShopProductCreateScreen> {
                               _isUploadingGalleryImage
                           ? null
                           : () => _submit(l10n),
-                      icon: const Icon(Icons.add_box_outlined),
+                      icon: const Icon(LucideIcons.squarePlus),
                       label: Text(
                         _isSubmitting
                             ? (_isPharmacy

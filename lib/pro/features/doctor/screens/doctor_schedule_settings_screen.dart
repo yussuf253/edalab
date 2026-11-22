@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/media_upload_service.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DoctorScheduleSettingsScreen extends StatefulWidget {
   final String userId;
@@ -233,7 +234,7 @@ class _DoctorScheduleSettingsScreenState
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Icon(Icons.photo_library_outlined),
+                                : const Icon(LucideIcons.images),
                             label: Text(
                               isUploadingImage
                                   ? l10n.uploadingImage
@@ -446,7 +447,7 @@ class _DoctorScheduleSettingsScreenState
                             onPressed: _busyIds.contains(doctorId)
                                 ? null
                                 : () => _openEditor(item),
-                            icon: const Icon(Icons.edit_outlined),
+                            icon: const Icon(LucideIcons.edit),
                             label: Text(l10n.edit),
                           ),
                         ],
@@ -542,7 +543,7 @@ class _DoctorAvatar extends StatelessWidget {
       radius: radius,
       backgroundColor: AppColors.doctor.withValues(alpha: 0.12),
       child: Icon(
-        Icons.local_hospital_outlined,
+        LucideIcons.cross,
         color: AppColors.doctor,
         size: radius,
       ),

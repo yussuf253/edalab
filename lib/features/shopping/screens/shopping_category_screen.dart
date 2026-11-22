@@ -5,6 +5,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ShoppingCategoryScreen extends StatelessWidget {
   final String categoryId;
@@ -18,7 +19,7 @@ class ShoppingCategoryScreen extends StatelessWidget {
       appBar: ModuleScreenAppBar(
         title: l10n.t('shopping_category.electronics'),
         actions: [
-          IconButton(icon: const Icon(Icons.tune_rounded), onPressed: () {}),
+          IconButton(icon: const Icon(LucideIcons.slidersHorizontal), onPressed: () {}),
         ],
       ),
       body: GridView.builder(
@@ -54,7 +55,7 @@ class ShoppingCategoryScreen extends StatelessWidget {
                       ),
                       child: Center(
                         child: Icon(
-                          Icons.devices_rounded,
+                          LucideIcons.monitorSmartphone,
                           size: 40,
                           color: AppColors.lightGrey,
                         ),

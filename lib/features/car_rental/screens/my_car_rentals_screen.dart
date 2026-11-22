@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
@@ -102,7 +102,7 @@ class _MyCarRentalsScreenState extends State<MyCarRentalsScreen> {
       return ListView(
         children: [
           const SizedBox(height: 80),
-          const Icon(Iconsax.cloud, size: 48, color: AppColors.mediumGrey),
+          const Icon(LucideIcons.cloud, size: 48, color: AppColors.mediumGrey),
           const SizedBox(height: 16),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -122,7 +122,7 @@ class _MyCarRentalsScreenState extends State<MyCarRentalsScreen> {
       return ListView(
         children: [
           const SizedBox(height: 80),
-          const Icon(Iconsax.car, size: 48, color: AppColors.mediumGrey),
+          const Icon(LucideIcons.car, size: 48, color: AppColors.mediumGrey),
           const SizedBox(height: 16),
           Center(
             child: Text(

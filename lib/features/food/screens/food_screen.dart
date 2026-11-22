@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +19,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/notification_bell.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class FoodScreen extends StatefulWidget {
   const FoodScreen({super.key});
@@ -183,7 +185,7 @@ class _FoodScreenState extends State<FoodScreen> {
                             children: [
                               IconButton(
                                 icon: const Icon(
-                                  Icons.arrow_back_rounded,
+                                  LucideIcons.arrowLeft,
                                   size: 22,
                                 ),
                                 color: AppColors.dark,
@@ -221,7 +223,7 @@ class _FoodScreenState extends State<FoodScreen> {
                                           ),
                                         ),
                                         const Icon(
-                                          Icons.keyboard_arrow_down_rounded,
+                                          LucideIcons.chevronDown,
                                           color: AppColors.mediumGrey,
                                           size: 18,
                                         ),
@@ -236,7 +238,7 @@ class _FoodScreenState extends State<FoodScreen> {
                                   IconButton(
                                     color: AppColors.dark,
                                     icon: const Icon(
-                                      Icons.shopping_bag_outlined,
+                                      LucideIcons.shoppingBag,
                                     ),
                                     onPressed: () {
                                       AnalyticsService.instance.track(
@@ -293,7 +295,7 @@ class _FoodScreenState extends State<FoodScreen> {
                                 ? null
                                 : IconButton(
                                     icon: const Icon(
-                                      Icons.close_rounded,
+                                      LucideIcons.x,
                                       color: AppColors.mediumGrey,
                                     ),
                                     onPressed: () {
@@ -398,10 +400,10 @@ class _FoodScreenState extends State<FoodScreen> {
                           children: [
                             Icon(
                               sort == 'fastest'
-                                  ? Icons.bolt_rounded
+                                  ? LucideIcons.bolt
                                   : sort == 'free_delivery'
-                                  ? Icons.delivery_dining_rounded
-                                  : Icons.star_rounded,
+                                  ? LucideIcons.scooter
+                                  : CupertinoIcons.star_fill,
                               size: 16,
                               color: isSelected
                                   ? AppColors.white
@@ -450,7 +452,7 @@ class _FoodScreenState extends State<FoodScreen> {
                     child: Column(
                       children: [
                         const Icon(
-                          Icons.search_off_rounded,
+                          LucideIcons.searchX,
                           size: 44,
                           color: AppColors.mediumGrey,
                         ),
@@ -600,7 +602,7 @@ class _FoodScreenState extends State<FoodScreen> {
         _FoodCategoryOption(
           id: 'all',
           label: l10n.t('common.all'),
-          icon: Icons.restaurant_rounded,
+          icon: LucideIcons.utensilsCrossed,
           color: AppColors.food,
         ),
       ];
@@ -635,7 +637,7 @@ class _FoodScreenState extends State<FoodScreen> {
       _FoodCategoryOption(
         id: 'all',
         label: l10n.t('common.all'),
-        icon: Icons.restaurant_menu_rounded,
+        icon: LucideIcons.utensilsCrossed,
         color: AppColors.primary,
       ),
       ...dynamicOptions,
@@ -684,36 +686,36 @@ class _FoodScreenState extends State<FoodScreen> {
   IconData _iconForCategory(String label) {
     final normalized = _normalize(label);
     if (normalized.contains('burger') || normalized.contains('fast food')) {
-      return Icons.lunch_dining_rounded;
+      return LucideIcons.utensils;
     }
     if (normalized.contains('pizza') || normalized.contains('italian')) {
-      return Icons.local_pizza_rounded;
+      return LucideIcons.pizza;
     }
     if (normalized.contains('taco') || normalized.contains('mexican')) {
-      return Icons.local_fire_department_rounded;
+      return LucideIcons.flame;
     }
     if (normalized.contains('coffee') || normalized.contains('cafe')) {
-      return Icons.coffee_rounded;
+      return LucideIcons.coffee;
     }
     if (normalized.contains('bakery') || normalized.contains('dessert')) {
-      return Icons.cake_rounded;
+      return LucideIcons.cake;
     }
     if (normalized.contains('sushi') || normalized.contains('asian')) {
-      return Icons.set_meal_rounded;
+      return LucideIcons.utensils;
     }
     if (normalized.contains('bbq') || normalized.contains('grill')) {
-      return Icons.outdoor_grill_rounded;
+      return LucideIcons.flame;
     }
     if (normalized.contains('healthy') || normalized.contains('salad')) {
-      return Icons.spa_rounded;
+      return LucideIcons.flower2;
     }
     if (normalized.contains('ice cream') || normalized.contains('frozen')) {
-      return Icons.icecream_rounded;
+      return LucideIcons.iceCreamCone;
     }
     if (normalized.contains('indian')) {
-      return Icons.dinner_dining_rounded;
+      return LucideIcons.utensils;
     }
-    return Icons.restaurant_rounded;
+    return LucideIcons.utensilsCrossed;
   }
 
   Color _colorForCategory(String label) {
@@ -871,7 +873,7 @@ class _RestaurantCard extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(
-                                    Icons.star_rounded,
+                                    CupertinoIcons.star_fill,
                                     size: 10,
                                     color: AppColors.warning,
                                   ),
@@ -907,17 +909,17 @@ class _RestaurantCard extends StatelessWidget {
                           runSpacing: 3,
                           children: [
                             _RestaurantMetaLine(
-                              icon: Icons.schedule_rounded,
+                              icon: LucideIcons.clock,
                               label: restaurant.deliveryTime,
                             ),
                             _RestaurantMetaLine(
-                              icon: Icons.near_me_outlined,
+                              icon: LucideIcons.navigation,
                               label:
                                   '${restaurant.distance.toStringAsFixed(1)} km',
                               iconColor: AppColors.primary,
                             ),
                             _RestaurantMetaLine(
-                              icon: Icons.delivery_dining_rounded,
+                              icon: LucideIcons.scooter,
                               label: feeLabel,
                               iconColor: AppColors.primary,
                               textColor: AppColors.primary,
@@ -961,7 +963,7 @@ class _RestaurantCard extends StatelessWidget {
   Widget _imageFallback() {
     return Center(
       child: Icon(
-        Icons.restaurant_rounded,
+        LucideIcons.utensilsCrossed,
         size: 22,
         color: accentColor.withValues(alpha: 0.55),
       ),
@@ -1038,7 +1040,7 @@ class _RestaurantItemTile extends StatelessWidget {
   Widget _fallback() {
     return Center(
       child: Icon(
-        Icons.fastfood_rounded,
+        LucideIcons.sandwich,
         size: 20,
         color: accentColor.withValues(alpha: 0.55),
       ),

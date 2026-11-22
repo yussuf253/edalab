@@ -5,6 +5,7 @@ import 'package:edalab/core/utils/app_store_util.dart';
 import 'package:edalab/core/constants/app_colors.dart';
 import 'package:edalab/core/constants/app_spacing.dart';
 import 'package:edalab/core/constants/app_text_styles.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Reusable widget for displaying app update dialogs
 /// Styled to match the app's card and dialog architecture
@@ -92,7 +93,7 @@ class _AppUpdateDialogState extends State<AppUpdateDialog>
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Icon(
-                          Icons.system_update_rounded,
+                          LucideIcons.refreshCw,
                           color: AppColors.white,
                           size: 24,
                         ),
@@ -169,7 +170,7 @@ class _AppUpdateDialogState extends State<AppUpdateDialog>
                         ),
                         const SizedBox(width: 8),
                         const Icon(
-                          Icons.arrow_forward_rounded,
+                          LucideIcons.arrowRight,
                           size: 14,
                           color: AppColors.mediumGrey,
                         ),

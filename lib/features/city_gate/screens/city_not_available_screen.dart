@@ -6,6 +6,7 @@ import '../../../core/config/service_zones.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/city_availability_provider.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Full-screen gate shown whenever [CityAvailabilityProvider.isBlocking] is
 /// true — either because the device is outside every active service zone,
@@ -56,7 +57,7 @@ class CityNotAvailableScreen extends StatelessWidget {
       case CityAvailabilityStatus.locationServiceDisabled:
         return _infoLayout(
           context: context,
-          icon: Icons.location_disabled_rounded,
+          icon: LucideIcons.mapPinOff,
           iconColor: AppColors.warning,
           title: t.t('city_gate.location_disabled_title'),
           message: t.t('city_gate.location_disabled_message'),
@@ -66,7 +67,7 @@ class CityNotAvailableScreen extends StatelessWidget {
       case CityAvailabilityStatus.permissionDenied:
         return _infoLayout(
           context: context,
-          icon: Icons.location_off_rounded,
+          icon: LucideIcons.mapPinOff,
           iconColor: AppColors.warning,
           title: t.t('city_gate.permission_denied_title'),
           message: t.t('city_gate.permission_denied_message'),
@@ -76,7 +77,7 @@ class CityNotAvailableScreen extends StatelessWidget {
       case CityAvailabilityStatus.permissionDeniedForever:
         return _infoLayout(
           context: context,
-          icon: Icons.location_off_rounded,
+          icon: LucideIcons.mapPinOff,
           iconColor: AppColors.error,
           title: t.t('city_gate.permission_denied_title'),
           message: t.t('city_gate.permission_denied_forever_message'),
@@ -88,7 +89,7 @@ class CityNotAvailableScreen extends StatelessWidget {
       case CityAvailabilityStatus.error:
         return _infoLayout(
           context: context,
-          icon: Icons.error_outline_rounded,
+          icon: LucideIcons.circleAlert,
           iconColor: AppColors.error,
           title: t.t('city_gate.title'),
           message: t.t('city_gate.error_message'),
@@ -125,7 +126,7 @@ class CityNotAvailableScreen extends StatelessWidget {
     final upcoming = kUpcomingServiceZones;
 
     return [
-      Icon(Icons.map_outlined, size: 88, color: AppColors.primary),
+      Icon(LucideIcons.map, size: 88, color: AppColors.primary),
       const SizedBox(height: 24),
       Text(
         t.t('city_gate.title'),
@@ -172,7 +173,7 @@ class CityNotAvailableScreen extends StatelessWidget {
       ElevatedButton.icon(
         onPressed: () =>
             context.read<CityAvailabilityProvider>().checkAvailability(),
-        icon: const Icon(Icons.refresh_rounded),
+        icon: const Icon(LucideIcons.refreshCw),
         label: Text(t.t('city_gate.retry_button')),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,

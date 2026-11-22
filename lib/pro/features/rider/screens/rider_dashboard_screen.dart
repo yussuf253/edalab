@@ -9,6 +9,7 @@ import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/utils/pro_module_helper.dart';
 import 'rider_active_trip_screen.dart';
 import 'rider_queue_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class RiderDashboardScreen extends StatefulWidget {
   final ProProfile profile;
@@ -157,7 +158,7 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
         foregroundColor: AppColors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.list_alt_outlined),
+            icon: const Icon(LucideIcons.listTodo),
             onPressed: _openQueue,
           ),
           Switch(
@@ -266,7 +267,7 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: _openQueue,
-                  icon: const Icon(Icons.list_alt_outlined),
+                  icon: const Icon(LucideIcons.listTodo),
                   label: Text(l10n.openFullQueueLabel),
                 ),
               ],
@@ -389,7 +390,7 @@ class _RiderShiftHero extends StatelessWidget {
           const SizedBox(height: 12),
           FilledButton.icon(
             onPressed: onOpenQueue,
-            icon: const Icon(Icons.alt_route),
+            icon: const Icon(LucideIcons.route),
             label: Text(l10n.openRiderQueue),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.white,
@@ -512,7 +513,7 @@ class _UrgentTripCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.local_taxi, color: AppColors.ride),
+                const Icon(LucideIcons.carTaxiFront, color: AppColors.ride),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -542,7 +543,7 @@ class _UrgentTripCard extends StatelessWidget {
                     child: Row(
                       children: [
                         const Icon(
-                          Icons.arrow_right_alt,
+                          LucideIcons.arrowRight,
                           color: AppColors.ride,
                         ),
                         const SizedBox(width: 8),

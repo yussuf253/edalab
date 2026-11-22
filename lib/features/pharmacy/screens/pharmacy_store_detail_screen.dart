@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../widgets/medicine_stock_badge.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class PharmacyStoreDetailScreen extends StatefulWidget {
   const PharmacyStoreDetailScreen({
@@ -207,7 +209,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
           overflow: TextOverflow.ellipsis,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -224,7 +226,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                 splashRadius: 24,
                 constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
                 padding: const EdgeInsets.all(12),
-                icon: const Icon(Icons.shopping_bag_outlined, size: 24),
+                icon: const Icon(LucideIcons.shoppingBag, size: 24),
                 onPressed: () => context.push('/pharmacy/cart'),
               ),
               if (cartItemCount > 0)
@@ -292,14 +294,14 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                                           store.imageUrl!,
                                           fit: BoxFit.cover,
                                           errorBuilder: (_, _, _) => const Icon(
-                                            Icons.local_pharmacy_rounded,
+                                            LucideIcons.pill,
                                             color: AppColors.pharmacy,
                                             size: 22,
                                           ),
                                         ),
                                       )
                                     : const Icon(
-                                        Icons.local_pharmacy_rounded,
+                                        LucideIcons.pill,
                                         color: AppColors.pharmacy,
                                         size: 22,
                                       ),
@@ -337,7 +339,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                             runSpacing: 8,
                             children: [
                               _StoreMetricPill(
-                                icon: Icons.verified_rounded,
+                                icon: LucideIcons.verified,
                                 text: l10n.t('pharmacy.store_verified'),
                               ),
                             ],
@@ -356,7 +358,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                           children: [
                             Expanded(
                               child: _StoreStatCard(
-                                icon: Icons.star_rate_rounded,
+                                icon: CupertinoIcons.star_fill,
                                 title: (store?.rating ?? 0).toStringAsFixed(1),
                                 subtitle: l10n.t(
                                   'pharmacy.reviews_count',
@@ -369,7 +371,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: _StoreStatCard(
-                                icon: Icons.near_me_rounded,
+                                icon: LucideIcons.navigation,
                                 title: hasDistance
                                     ? store!.distanceLabel(l10n)
                                     : l10n.t('pharmacy.store_distance_pending'),
@@ -480,7 +482,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                                   borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: const Icon(
-                                  Icons.medication_rounded,
+                                  LucideIcons.pill,
                                   color: AppColors.pharmacy,
                                   size: 26,
                                 ),
@@ -746,7 +748,7 @@ class _StoreSearchCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
-              Icons.search_rounded,
+              LucideIcons.search,
               color: AppColors.pharmacy,
               size: 18,
             ),
@@ -772,7 +774,7 @@ class _StoreSearchCard extends StatelessWidget {
               onPressed: onClear,
               splashRadius: 18,
               icon: const Icon(
-                Icons.close_rounded,
+                LucideIcons.x,
                 size: 18,
                 color: AppColors.mediumGrey,
               ),

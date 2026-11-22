@@ -10,6 +10,7 @@ import '../../../../core/providers/providers.dart';
 import '../../../../core/utils/auth_gate.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../services/car_rental_service.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 const _rentalPrimary = Color(0xFF00A651);
 const _rentalAccent = Color(0xFF33C176);
@@ -238,13 +239,13 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
       ),
       child: Row(
         children: [
-          _SpecItem(Icons.people_rounded, '${car.seats} Seats'),
+          _SpecItem(LucideIcons.users, '${car.seats} Seats'),
           _divider(),
-          _SpecItem(Icons.settings_rounded, car.transmission),
+          _SpecItem(LucideIcons.settings, car.transmission),
           _divider(),
-          _SpecItem(Icons.local_gas_station_rounded, car.fuelType),
+          _SpecItem(LucideIcons.fuel, car.fuelType),
           _divider(),
-          _SpecItem(Icons.speed_rounded, car.mileage),
+          _SpecItem(LucideIcons.gauge, car.mileage),
         ],
       ),
     );
@@ -296,7 +297,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(
-                        Icons.check_circle_rounded,
+                        LucideIcons.checkCircle,
                         size: 14,
                         color: _rentalPrimary,
                       ),
@@ -361,7 +362,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
             child: Row(
               children: [
                 const Icon(
-                  Icons.calendar_today_rounded,
+                  LucideIcons.calendar,
                   size: 16,
                   color: _rentalPrimary,
                 ),
@@ -381,7 +382,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
             controller: _pickupController,
             decoration: _inputDecoration(
               'Pickup Location',
-              Icons.location_on_outlined,
+              LucideIcons.mapPin,
             ),
             style: AppTextStyles.bodyMedium,
           ),
@@ -404,7 +405,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
                   ),
                   child: _sameDropoff
                       ? const Icon(
-                          Icons.check_rounded,
+                          LucideIcons.check,
                           size: 14,
                           color: Colors.white,
                         )
@@ -421,7 +422,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
               controller: _dropoffController,
               decoration: _inputDecoration(
                 'Dropoff Location',
-                Icons.flag_outlined,
+                LucideIcons.flag,
               ),
               style: AppTextStyles.bodyMedium,
             ),
@@ -432,7 +433,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
             maxLines: 2,
             decoration: _inputDecoration(
               'Special requests (optional)',
-              Icons.notes_rounded,
+              LucideIcons.notebookText,
             ),
             style: AppTextStyles.bodyMedium,
           ),
@@ -507,13 +508,13 @@ class _DetailAppBar extends StatelessWidget {
   IconData get _icon {
     switch (car.type.toLowerCase()) {
       case 'suv':
-        return Icons.airport_shuttle_rounded;
+        return LucideIcons.bus;
       case 'van':
-        return Icons.directions_bus_filled_rounded;
+        return LucideIcons.busFront;
       case 'premium':
-        return Icons.local_taxi_rounded;
+        return LucideIcons.carTaxiFront;
       default:
-        return Icons.directions_car_rounded;
+        return LucideIcons.car;
     }
   }
 
@@ -525,7 +526,7 @@ class _DetailAppBar extends StatelessWidget {
       backgroundColor: _rentalPrimary,
       leading: IconButton(
         icon: const Icon(
-          Icons.arrow_back_ios_new_rounded,
+          LucideIcons.chevronLeft,
           size: 20,
           color: Colors.white,
         ),
@@ -773,7 +774,7 @@ class _ConfirmationSheet extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.check_rounded,
+                LucideIcons.check,
                 color: _rentalAccent,
                 size: 40,
               ),

@@ -12,6 +12,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DoctorAppointmentDetailScreen extends StatefulWidget {
   final String appointmentId;
@@ -138,7 +139,7 @@ class _DoctorAppointmentDetailScreenState
         appBar: AppBar(
           title: Text(l10n.t('appointments.detail_title')),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            icon: const Icon(LucideIcons.chevronLeft, size: 20),
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -186,7 +187,7 @@ class _DoctorAppointmentDetailScreenState
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Icon(
-                              Icons.person_rounded,
+                              LucideIcons.user,
                               color: AppColors.white,
                               size: 32,
                             ),

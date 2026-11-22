@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/constants/pro_design_system.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProWelcomeScreen extends StatelessWidget {
   const ProWelcomeScreen({super.key});
@@ -30,7 +31,7 @@ class ProWelcomeScreen extends StatelessWidget {
                   ),
                 ),
                 child: Icon(
-                  Icons.work_outline_rounded,
+                  LucideIcons.briefcase,
                   color: Colors.teal[700],
                   size: 30,
                 ),

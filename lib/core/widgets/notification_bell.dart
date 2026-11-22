@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_spacing.dart';
 import '../providers/notification_provider.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class NotificationBell extends StatelessWidget {
   const NotificationBell({
@@ -44,7 +45,7 @@ class NotificationBell extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             Icon(
-              Icons.notifications_none_rounded,
+              LucideIcons.bell,
               color: iconColor,
               size: compact ? 20 : 22,
             ),

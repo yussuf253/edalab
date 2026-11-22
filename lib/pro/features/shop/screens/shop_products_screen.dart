@@ -11,6 +11,7 @@ import '../widgets/shop_module_bottom_nav.dart';
 import 'shop_product_create_screen.dart';
 import 'shop_store_setup_screen.dart';
 import '../../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ShopProductsScreen extends StatefulWidget {
   final String userId;
@@ -365,7 +366,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                               )
                               .toList(growable: false),
                         ),
-                        icon: const Icon(Icons.add_box_outlined),
+                        icon: const Icon(LucideIcons.squarePlus),
                         label: Text(
                           _isPharmacyModule
                               ? l10n.addMedicine
@@ -380,7 +381,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                           onPressed: () => _openStoreSetup(
                             stores.isEmpty ? null : stores.first,
                           ),
-                          icon: const Icon(Icons.store_mall_directory_outlined),
+                          icon: const Icon(LucideIcons.store),
                           label: Text(
                             stores.isEmpty ? l10n.createStore : l10n.storeSetup,
                           ),
@@ -509,7 +510,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                     hintText: _isPharmacyModule
                         ? l10n.searchMedicinesHint
                         : l10n.searchProductsHint,
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(LucideIcons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -530,7 +531,7 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                     ),
                     child: Column(
                       children: [
-                        const Icon(Icons.inventory_2_outlined, size: 34),
+                        const Icon(LucideIcons.package, size: 34),
                         const SizedBox(height: 10),
                         const CircularProgressIndicator(),
                         const SizedBox(height: 10),
@@ -597,12 +598,12 @@ class _ShopProductsScreenState extends State<ShopProductsScreen> {
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: imageUrl.isEmpty
-                      ? const Icon(Icons.inventory_2_outlined)
+                      ? const Icon(LucideIcons.package)
                       : Image.network(
                           imageUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (_, _, _) =>
-                              const Icon(Icons.broken_image_outlined),
+                              const Icon(LucideIcons.imageOff),
                         ),
                 ),
                 const SizedBox(width: 12),

@@ -8,6 +8,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/utils/money_format.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class OrderDetailScreen extends StatelessWidget {
   final String orderId;
@@ -130,13 +131,13 @@ class OrderDetailScreen extends StatelessWidget {
   IconData _moduleIcon(String module) {
     switch (module) {
       case 'SHOPPING':
-        return Icons.shopping_bag_rounded;
+        return LucideIcons.shoppingBag;
       case 'HOTEL':
-        return Icons.hotel_rounded;
+        return LucideIcons.hotel;
       case 'PHARMACY':
-        return Icons.local_pharmacy_rounded;
+        return LucideIcons.pill;
       default:
-        return Icons.receipt_long_rounded;
+        return LucideIcons.receiptText;
     }
   }
 

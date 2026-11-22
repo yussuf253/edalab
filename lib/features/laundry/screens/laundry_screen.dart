@@ -11,6 +11,7 @@ import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class LaundryScreen extends StatefulWidget {
   const LaundryScreen({super.key});
@@ -24,7 +25,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
   bool _isLoading = true;
 
   IconData _getIcon(String _) {
-    return Icons.local_laundry_service_rounded;
+    return LucideIcons.washingMachine;
   }
 
   Color _getColor(String _) {
@@ -149,7 +150,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(
-                        Icons.local_laundry_service_rounded,
+                        LucideIcons.washingMachine,
                         color: AppColors.laundry,
                         size: 32,
                       ),
@@ -244,7 +245,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
                             ),
                           ),
                           const Icon(
-                            Icons.arrow_forward_ios_rounded,
+                            LucideIcons.chevronRight,
                             size: 16,
                             color: AppColors.mediumGrey,
                           ),
@@ -262,25 +263,25 @@ class _LaundryScreenState extends State<LaundryScreen> {
                   '1',
                   l10n.t('laundry.step1_title'),
                   l10n.t('laundry.step1_subtitle'),
-                  Icons.calendar_today_rounded,
+                  LucideIcons.calendar,
                 ),
                 (
                   '2',
                   l10n.t('laundry.step2_title'),
                   l10n.t('laundry.step2_subtitle'),
-                  Icons.directions_car_rounded,
+                  LucideIcons.car,
                 ),
                 (
                   '3',
                   l10n.t('laundry.step3_title'),
                   l10n.t('laundry.step3_subtitle'),
-                  Icons.dry_cleaning_rounded,
+                  LucideIcons.washingMachine,
                 ),
                 (
                   '4',
                   l10n.t('laundry.step4_title'),
                   l10n.t('laundry.step4_subtitle'),
-                  Icons.home_rounded,
+                  LucideIcons.home,
                 ),
               ].map(
                 (s) => Container(

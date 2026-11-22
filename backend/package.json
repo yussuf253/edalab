@@ -17,7 +17,9 @@
     "db:google-places:extract": "tsx prisma/importGooglePlaces.ts --dry-run",
     "db:google-places:apply": "tsx prisma/importGooglePlaces.ts --apply --prune",
     "db:kikidrop:extract": "tsx prisma/importKikiDropRestaurants.ts --dry-run",
-    "db:kikidrop:apply": "tsx prisma/importKikiDropRestaurants.ts --apply --prune"
+    "db:kikidrop:apply": "tsx prisma/importKikiDropRestaurants.ts --apply --prune",
+    "db:kikidrop-produits:extract": "tsx prisma/importKikidropProduitsPropres.ts --dry-run",
+    "db:kikidrop-produits:apply": "tsx prisma/importKikidropProduitsPropres.ts --apply"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

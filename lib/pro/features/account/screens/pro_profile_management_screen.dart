@@ -15,6 +15,7 @@ import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
 import '../../shop/screens/shop_store_setup_screen.dart';
 import '../../../l10n/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProProfileManagementScreen extends StatefulWidget {
   const ProProfileManagementScreen({super.key, required this.profile});
@@ -570,14 +571,14 @@ class _ProProfileManagementScreenState
                                         (context, error, stackTrace) =>
                                             const Center(
                                               child: Icon(
-                                                Icons.restaurant_outlined,
+                                                LucideIcons.utensilsCrossed,
                                                 size: 38,
                                               ),
                                             ),
                                   )
                                 : const Center(
                                     child: Icon(
-                                      Icons.restaurant_outlined,
+                                      LucideIcons.utensilsCrossed,
                                       size: 38,
                                     ),
                                   )),
@@ -591,7 +592,7 @@ class _ProProfileManagementScreenState
                               width: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.photo_library_outlined),
+                          : const Icon(LucideIcons.images),
                       label: Text(
                         isUploadingImage
                             ? l10n.uploadingImage
@@ -613,7 +614,7 @@ class _ProProfileManagementScreenState
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Icon(Icons.save_outlined),
+                            : const Icon(LucideIcons.save),
                         label: Text(
                           isSubmitting
                               ? l10n.saving
@@ -679,7 +680,7 @@ class _ProProfileManagementScreenState
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Icon(Icons.redeem_outlined),
+                              : const Icon(LucideIcons.gift),
                           label: Text(
                             isRedeeming
                                 ? l10n.redeemingRestaurantButton
@@ -800,7 +801,7 @@ class _ProProfileManagementScreenState
                               width: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.save_outlined),
+                          : const Icon(LucideIcons.save),
                       label: Text(
                         isSubmitting
                             ? l10n.saving
@@ -1192,7 +1193,7 @@ class _ProProfileManagementScreenState
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Icon(Icons.save_outlined),
+                            : const Icon(LucideIcons.save),
                         label: Text(
                           isSubmitting
                               ? l10n.saving
@@ -1746,14 +1747,14 @@ class _ProProfileManagementScreenState
                                         (context, error, stackTrace) =>
                                             const Center(
                                               child: Icon(
-                                                Icons.local_laundry_service,
+                                                LucideIcons.washingMachine,
                                                 size: 34,
                                               ),
                                             ),
                                   )
                                 : const Center(
                                     child: Icon(
-                                      Icons.local_laundry_service,
+                                      LucideIcons.washingMachine,
                                       size: 34,
                                     ),
                                   )),
@@ -1767,7 +1768,7 @@ class _ProProfileManagementScreenState
                               width: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.photo_library_outlined),
+                          : const Icon(LucideIcons.images),
                       label: Text(
                         isUploadingImage
                             ? l10n.uploadingImage
@@ -1789,7 +1790,7 @@ class _ProProfileManagementScreenState
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Icon(Icons.save_outlined),
+                            : const Icon(LucideIcons.save),
                         label: Text(
                           isSubmitting
                               ? l10n.saving
@@ -2030,14 +2031,14 @@ class _ProProfileManagementScreenState
                                         (context, error, stackTrace) =>
                                             const Center(
                                               child: Icon(
-                                                Icons.medical_services_outlined,
+                                                LucideIcons.briefcaseMedical,
                                                 size: 34,
                                               ),
                                             ),
                                   )
                                 : const Center(
                                     child: Icon(
-                                      Icons.medical_services_outlined,
+                                      LucideIcons.briefcaseMedical,
                                       size: 34,
                                     ),
                                   )),
@@ -2051,7 +2052,7 @@ class _ProProfileManagementScreenState
                               width: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.photo_library_outlined),
+                          : const Icon(LucideIcons.images),
                       label: Text(
                         isUploadingImage
                             ? l10n.uploadingImage
@@ -2073,7 +2074,7 @@ class _ProProfileManagementScreenState
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Icon(Icons.save_outlined),
+                            : const Icon(LucideIcons.save),
                         label: Text(
                           isSubmitting ? l10n.saving : l10n.saveDoctorProfile,
                         ),
@@ -2413,7 +2414,7 @@ class _ProProfileManagementScreenState
                           const SizedBox(height: ProDesignSystem.spacing12),
                           OutlinedButton.icon(
                             onPressed: _refreshInsights,
-                            icon: const Icon(Icons.refresh_rounded),
+                            icon: const Icon(LucideIcons.refreshCw),
                             label: Text(l10n.retry),
                           ),
                         ],
@@ -2457,7 +2458,7 @@ class _ProProfileManagementScreenState
                   final claimCards = <Widget>[
                     if (hasShoppingModule)
                       _InlineProfileEditorCard(
-                        icon: Icons.store_mall_directory_outlined,
+                        icon: LucideIcons.store,
                         title: l10n.shoppingStoreProfile,
                         value: storeName,
                         subtitle: l10n.editStoreNameTaglineDescription,
@@ -2465,7 +2466,7 @@ class _ProProfileManagementScreenState
                       ),
                     if (hasFoodModule)
                       _InlineProfileEditorCard(
-                        icon: Icons.restaurant_menu_outlined,
+                        icon: LucideIcons.utensilsCrossed,
                         title: l10n.restaurantProfile,
                         value: restaurantName,
                         subtitle: restaurantCuisine.isNotEmpty
@@ -2475,7 +2476,7 @@ class _ProProfileManagementScreenState
                       ),
                     if (hasPharmacyModule)
                       _InlineProfileEditorCard(
-                        icon: Icons.local_pharmacy_outlined,
+                        icon: LucideIcons.pill,
                         title: l10n.pharmacyProfile,
                         value: pharmacyName,
                         subtitle: details.pharmacyBusinesses.length > 1
@@ -2535,7 +2536,7 @@ class _ProProfileManagementScreenState
                           const SizedBox(height: ProDesignSystem.spacing12),
                           OutlinedButton.icon(
                             onPressed: _refreshInsights,
-                            icon: const Icon(Icons.refresh_rounded),
+                            icon: const Icon(LucideIcons.refreshCw),
                             label: Text(l10n.retry),
                           ),
                         ],
@@ -2562,7 +2563,7 @@ class _ProProfileManagementScreenState
                             onPressed: supportsServices
                                 ? _openProviderCreateEditor
                                 : null,
-                            icon: const Icon(Icons.add_business_outlined),
+                            icon: const Icon(LucideIcons.building2),
                             label: Text(l10n.createProviderListing),
                           ),
                         ],
@@ -2598,7 +2599,7 @@ class _ProProfileManagementScreenState
                             bottom: ProDesignSystem.spacing12,
                           ),
                           child: _InlineProfileEditorCard(
-                            icon: Icons.home_repair_service_outlined,
+                            icon: LucideIcons.hammer,
                             title: name,
                             value: title,
                             subtitle: detailParts.join(' • '),
@@ -2612,7 +2613,7 @@ class _ProProfileManagementScreenState
                           onPressed: supportsServices
                               ? _openProviderCreateEditor
                               : null,
-                          icon: const Icon(Icons.add_business_outlined),
+                          icon: const Icon(LucideIcons.building2),
                           label: Text(l10n.addProviderListing),
                         ),
                       ),
@@ -2648,7 +2649,7 @@ class _ProProfileManagementScreenState
                           const SizedBox(height: ProDesignSystem.spacing12),
                           OutlinedButton.icon(
                             onPressed: _refreshInsights,
-                            icon: const Icon(Icons.refresh_rounded),
+                            icon: const Icon(LucideIcons.refreshCw),
                             label: Text(l10n.retry),
                           ),
                         ],
@@ -2684,7 +2685,7 @@ class _ProProfileManagementScreenState
                                 ? () => _openLaundryServiceEditor()
                                 : null,
                             icon: const Icon(
-                              Icons.local_laundry_service_outlined,
+                              LucideIcons.washingMachine,
                             ),
                             label: Text(l10n.createLaundryService),
                           ),
@@ -2726,7 +2727,7 @@ class _ProProfileManagementScreenState
                             bottom: ProDesignSystem.spacing12,
                           ),
                           child: _InlineProfileEditorCard(
-                            icon: Icons.local_laundry_service_outlined,
+                            icon: LucideIcons.washingMachine,
                             title: name,
                             value: service['enabled'] == true
                                 ? l10n.enabled
@@ -2743,7 +2744,7 @@ class _ProProfileManagementScreenState
                           onPressed: supportsLaundry
                               ? () => _openLaundryServiceEditor()
                               : null,
-                          icon: const Icon(Icons.add_circle_outline),
+                          icon: const Icon(LucideIcons.circlePlus),
                           label: Text(l10n.addLaundryService),
                         ),
                       ),
@@ -2781,7 +2782,7 @@ class _ProProfileManagementScreenState
                           const SizedBox(height: ProDesignSystem.spacing12),
                           OutlinedButton.icon(
                             onPressed: _refreshInsights,
-                            icon: const Icon(Icons.refresh_rounded),
+                            icon: const Icon(LucideIcons.refreshCw),
                             label: Text(l10n.retry),
                           ),
                         ],
@@ -2821,7 +2822,7 @@ class _ProProfileManagementScreenState
                               bottom: ProDesignSystem.spacing12,
                             ),
                             child: _InlineProfileEditorCard(
-                              icon: Icons.medical_services_outlined,
+                              icon: LucideIcons.briefcaseMedical,
                               title: name,
                               value: l10n.moduleDoctor,
                               subtitle: detail,
@@ -2863,7 +2864,7 @@ class _ProProfileManagementScreenState
                           const SizedBox(height: ProDesignSystem.spacing12),
                           OutlinedButton.icon(
                             onPressed: _refreshInsights,
-                            icon: const Icon(Icons.refresh_rounded),
+                            icon: const Icon(LucideIcons.refreshCw),
                             label: Text(l10n.retry),
                           ),
                         ],
@@ -2924,7 +2925,7 @@ class _ProProfileManagementScreenState
                             OutlinedButton.icon(
                               onPressed: () =>
                                   context.push(ProRoutePaths.deliveryQueue),
-                              icon: const Icon(Icons.local_shipping_outlined),
+                              icon: const Icon(LucideIcons.truck),
                               label: Text(l10n.openDispatchQueue),
                             ),
                           ],
@@ -2957,7 +2958,7 @@ class _ProProfileManagementScreenState
                               top: ProDesignSystem.spacing12,
                             ),
                             child: ModernTile(
-                              leadingIcon: Icons.local_shipping_outlined,
+                              leadingIcon: LucideIcons.truck,
                               title:
                                   item['title']?.toString() ??
                                   l10n.deliveryRequest,
@@ -3025,7 +3026,7 @@ class _ProProfileManagementScreenState
                           const SizedBox(height: ProDesignSystem.spacing12),
                           OutlinedButton.icon(
                             onPressed: _refreshInsights,
-                            icon: const Icon(Icons.refresh_rounded),
+                            icon: const Icon(LucideIcons.refreshCw),
                             label: Text(l10n.retry),
                           ),
                         ],
@@ -3086,7 +3087,7 @@ class _ProProfileManagementScreenState
                             OutlinedButton.icon(
                               onPressed: () =>
                                   context.push(ProRoutePaths.riderQueue),
-                              icon: const Icon(Icons.local_taxi_outlined),
+                              icon: const Icon(LucideIcons.carTaxiFront),
                               label: Text(l10n.openRideQueue),
                             ),
                           ],
@@ -3113,7 +3114,7 @@ class _ProProfileManagementScreenState
                               top: ProDesignSystem.spacing12,
                             ),
                             child: ModernTile(
-                              leadingIcon: Icons.local_taxi_outlined,
+                              leadingIcon: LucideIcons.carTaxiFront,
                               title:
                                   item['title']?.toString() ?? l10n.rideRequest,
                               subtitle: subtitle,
@@ -3255,7 +3256,7 @@ class _ProfileIdentityCard extends StatelessWidget {
                                 ),
                               )
                             : Icon(
-                                Icons.camera_alt_rounded,
+                                LucideIcons.camera,
                                 size: 14,
                                 color: profileColor,
                               ),
@@ -3294,7 +3295,7 @@ class _ProfileIdentityCard extends StatelessWidget {
             decoration: ProDesignSystem.inputDecoration(
               label: l10n.businessName,
               hint: l10n.nameShownToCustomers,
-              prefixIcon: Icons.storefront_outlined,
+              prefixIcon: LucideIcons.store,
             ),
           ),
           const SizedBox(height: ProDesignSystem.spacing12),
@@ -3334,7 +3335,7 @@ class _ProfileIdentityCard extends StatelessWidget {
                       height: 16,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.save_outlined),
+                  : const Icon(LucideIcons.save),
               label: Text(isSavingProfile ? l10n.saving : l10n.saveProfile),
             ),
           ),
@@ -3439,7 +3440,7 @@ class _InlineProfileEditorCard extends StatelessWidget {
               ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 2),
-            const Icon(Icons.edit_outlined, size: 16, color: Color(0xFF6B7280)),
+            const Icon(LucideIcons.edit, size: 16, color: Color(0xFF6B7280)),
           ],
         ),
       ),

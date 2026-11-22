@@ -6,6 +6,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class PromotionsScreen extends StatefulWidget {
   const PromotionsScreen({super.key});
@@ -109,7 +110,7 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
-                        Icons.sell_rounded,
+                        LucideIcons.tag,
                         color: AppColors.primary,
                         size: 20,
                       ),
@@ -486,21 +487,21 @@ class _PromoDeal {
   static IconData _iconForModule(String? moduleType) {
     switch (moduleType) {
       case 'FOOD':
-        return Icons.restaurant_rounded;
+        return LucideIcons.utensilsCrossed;
       case 'GROCERY':
-        return Icons.local_grocery_store_rounded;
+        return LucideIcons.shoppingCart;
       case 'PHARMACY':
-        return Icons.medication_rounded;
+        return LucideIcons.pill;
       case 'DOCTOR':
-        return Icons.medical_services_rounded;
+        return LucideIcons.briefcaseMedical;
       case 'HOTEL':
-        return Icons.hotel_rounded;
+        return LucideIcons.hotel;
       case 'RIDE':
-        return Icons.directions_car_rounded;
+        return LucideIcons.car;
       case 'LAUNDRY':
-        return Icons.local_laundry_service_rounded;
+        return LucideIcons.washingMachine;
       default:
-        return Icons.local_offer_rounded;
+        return LucideIcons.tag;
     }
   }
 }
@@ -513,7 +514,7 @@ const _fallbackSpecialOffers = [
     reason: null,
     discountLabel: 'promotions.free_ride',
     color: AppColors.ride,
-    icon: Icons.directions_car_rounded,
+    icon: LucideIcons.car,
   ),
   _PromoDeal(
     title: 'promotions.laundry_weekend',
@@ -522,7 +523,7 @@ const _fallbackSpecialOffers = [
     reason: null,
     discountLabel: 'promotions.percent_off|50',
     color: AppColors.laundry,
-    icon: Icons.local_laundry_service_rounded,
+    icon: LucideIcons.washingMachine,
   ),
 ];
 
@@ -534,7 +535,7 @@ const _fallbackFlashSales = [
     reason: 'promotions.dinner_rush_reason',
     discountLabel: 'promotions.percent_off|20',
     color: AppColors.food,
-    icon: Icons.restaurant_rounded,
+    icon: LucideIcons.utensilsCrossed,
   ),
   _PromoDeal(
     title: 'promotions.fresh_basket',
@@ -543,7 +544,7 @@ const _fallbackFlashSales = [
     reason: 'promotions.fresh_basket_reason',
     discountLabel: 'promotions.percent_off|15',
     color: AppColors.grocery,
-    icon: Icons.local_grocery_store_rounded,
+    icon: LucideIcons.shoppingCart,
   ),
 ];
 
@@ -555,7 +556,7 @@ const _fallbackCoupons = [
     reason: 'promotions.weekend_escape_reason',
     discountLabel: 'STAY25',
     color: AppColors.hotel,
-    icon: Icons.hotel_rounded,
+    icon: LucideIcons.hotel,
   ),
   _PromoDeal(
     title: 'promotions.first_visit',
@@ -564,6 +565,6 @@ const _fallbackCoupons = [
     reason: 'promotions.first_visit_reason',
     discountLabel: 'HEALTH10',
     color: AppColors.doctor,
-    icon: Icons.medical_services_rounded,
+    icon: LucideIcons.briefcaseMedical,
   ),
 ];

@@ -11,6 +11,7 @@ import '../../../../features/ride/utils/ride_map_launcher.dart';
 import '../../../../features/ride/widgets/ride_route_preview.dart';
 import '../../../core/utils/pro_message_launcher.dart';
 import '../../../core/widgets/swipeable_button.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class RiderActiveDeliveryScreen extends StatefulWidget {
   final String orderId;
@@ -198,7 +199,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
       latitude: 11.5886,
       longitude: 43.1457,
       color: AppColors.success,
-      icon: Icons.storefront_rounded,
+      icon: LucideIcons.store,
     );
   }
 
@@ -210,14 +211,14 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
       metadata?['pickup'] ?? metadata?['pickupLocation'] ?? metadata?['store'],
       fallbackLabel: label,
       color: AppColors.success,
-      icon: Icons.storefront_rounded,
+      icon: LucideIcons.store,
     );
     if (fromMetadata != null) return fromMetadata;
     final flattenedMetadata = _mapPointFrom(
       metadata,
       fallbackLabel: label,
       color: AppColors.success,
-      icon: Icons.storefront_rounded,
+      icon: LucideIcons.store,
     );
     if (flattenedMetadata != null) return flattenedMetadata;
     return _defaultPickup(label);
@@ -234,7 +235,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
           metadata?['dropoff'],
       fallbackLabel: label,
       color: AppColors.accent,
-      icon: Icons.location_on_rounded,
+      icon: LucideIcons.mapPin,
     );
     if (fromMetadata != null) return fromMetadata;
     return estimateRideDestinationPoint(
@@ -242,7 +243,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
       distanceKm: _distanceKm(metadata),
       label: label,
       color: AppColors.accent,
-      icon: Icons.location_on_rounded,
+      icon: LucideIcons.mapPin,
       bearingDegrees: 132,
     );
   }
@@ -300,7 +301,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                 l10n.courierLabel
           : l10n.courierLabel,
       color: AppColors.ride,
-      icon: Icons.delivery_dining_rounded,
+      icon: LucideIcons.scooter,
     );
     final routeDetails = metadata?['routeDetails'] is Map
         ? RideRouteDetails.fromJson(
@@ -330,9 +331,9 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                   badgeLabel: _isLoading ? null : eta,
                   routePolyline: routeDetails?.polylinePoints,
                   overlayStatusIcon: _isLoading
-                      ? Icons.local_shipping_outlined
+                      ? LucideIcons.truck
                       : _error != null
-                      ? Icons.error_outline_rounded
+                      ? LucideIcons.circleAlert
                       : null,
                   overlayStatusMessage: _isLoading
                       ? l10n.loadingAssignedDelivery
@@ -416,7 +417,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           const Icon(
-                                            Icons.storefront_rounded,
+                                            LucideIcons.store,
                                             color: AppColors.success,
                                           ),
                                           const SizedBox(width: 12),
@@ -434,7 +435,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           const Icon(
-                                            Icons.location_on_rounded,
+                                            LucideIcons.mapPin,
                                             color: AppColors.accent,
                                           ),
                                           const SizedBox(width: 12),
@@ -470,7 +471,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                                           ),
                                         ),
                                         child: const Icon(
-                                          Icons.inventory_2_outlined,
+                                          LucideIcons.package,
                                           color: AppColors.food,
                                         ),
                                       ),
@@ -516,7 +517,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                                                 context,
                                                 customerPhone,
                                               ),
-                                        icon: const Icon(Icons.call_outlined),
+                                        icon: const Icon(LucideIcons.phone),
                                         label: Text(l10n.callCustomerAction),
                                       ),
                                     ),
@@ -548,7 +549,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                                                 },
                                               ),
                                         icon: const Icon(
-                                          Icons.chat_bubble_outline,
+                                          LucideIcons.messageSquare,
                                         ),
                                         label: Text(l10n.messageAction),
                                       ),
@@ -598,7 +599,7 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
                     ),
                   ],
                 ),
-                child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                child: const Icon(LucideIcons.chevronLeft, size: 18),
               ),
             ),
           ),

@@ -8,6 +8,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
 import '../services/car_rental_service.dart';
 import 'my_car_rentals_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class CarRentalScreen extends StatefulWidget {
   const CarRentalScreen({super.key});
@@ -86,7 +87,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
         actions: [
           IconButton(
             tooltip: l10n.t('car_rental.my_bookings'),
-            icon: const Icon(Icons.receipt_long_outlined),
+            icon: const Icon(LucideIcons.receiptText),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const MyCarRentalsScreen()),
             ),
@@ -226,7 +227,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
               borderRadius: BorderRadius.circular(15),
             ),
             child: const Icon(
-              Icons.directions_car_filled_outlined,
+              LucideIcons.car,
               color: AppColors.white,
               size: 30,
             ),
@@ -242,12 +243,12 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
       onChanged: (value) => setState(() => _search = value),
       decoration: InputDecoration(
         hintText: l10n.t('car_rental.search_hint'),
-        prefixIcon: const Icon(Icons.search_rounded),
+        prefixIcon: const Icon(LucideIcons.search),
         suffixIcon: _search.isEmpty
             ? null
             : IconButton(
                 tooltip: l10n.t('car_rental.clear_search'),
-                icon: const Icon(Icons.close_rounded),
+                icon: const Icon(LucideIcons.x),
                 onPressed: () {
                   _searchController.clear();
                   setState(() => _search = '');
@@ -297,7 +298,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.cloud_off_outlined,
+              LucideIcons.cloudOff,
               size: 42,
               color: AppColors.grey,
             ),
@@ -310,7 +311,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
             const SizedBox(height: 12),
             OutlinedButton.icon(
               onPressed: _load,
-              icon: const Icon(Icons.refresh_rounded),
+              icon: const Icon(LucideIcons.refreshCw),
               label: Text(l10n.t('car_rental.retry')),
             ),
           ],
@@ -327,7 +328,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.directions_car_outlined,
+              LucideIcons.car,
               size: 52,
               color: AppColors.mediumGrey,
             ),
@@ -453,7 +454,7 @@ class _CarCard extends StatelessWidget {
                     runSpacing: 8,
                     children: [
                       _CarSpec(
-                        icon: Icons.people_outline_rounded,
+                        icon: LucideIcons.users,
                         text: l10n.t(
                           'car_rental.seat_count',
                           params: {'count': '${car.seats}'},
@@ -461,12 +462,12 @@ class _CarCard extends StatelessWidget {
                       ),
                       if (car.transmission.isNotEmpty)
                         _CarSpec(
-                          icon: Icons.settings_outlined,
+                          icon: LucideIcons.settings,
                           text: car.transmission,
                         ),
                       if (car.fuelType.isNotEmpty)
                         _CarSpec(
-                          icon: Icons.local_gas_station_outlined,
+                          icon: LucideIcons.fuel,
                           text: car.fuelType,
                         ),
                     ],
@@ -483,7 +484,7 @@ class _CarCard extends StatelessWidget {
                         ),
                       ),
                       const Icon(
-                        Icons.arrow_forward_rounded,
+                        LucideIcons.arrowRight,
                         color: AppColors.primary,
                       ),
                     ],
@@ -524,7 +525,7 @@ class _CarImage extends StatelessWidget {
       color: AppColors.primarySurface,
       alignment: Alignment.center,
       child: const Icon(
-        Icons.directions_car_filled_outlined,
+        LucideIcons.car,
         size: 76,
         color: AppColors.primary,
       ),

@@ -13,6 +13,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class BookPhysiotherapyScreen extends StatefulWidget {
   final PhysiotherapyServiceModel service;
@@ -175,7 +176,7 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
       appBar: AppBar(
         title: Text(l10n.t('physio_booking.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -201,7 +202,7 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Icon(
-                      Icons.accessibility_new_rounded,
+                      LucideIcons.accessibility,
                       color: AppColors.secondary,
                       size: 28,
                     ),
@@ -363,7 +364,7 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
           color: AppColors.white,
           child: AppButton(
             text: l10n.t('physio_booking.confirm'),
-            icon: Icons.event_available_rounded,
+            icon: LucideIcons.calendarCheck,
             color: AppColors.secondary,
             isLoading: _isSubmitting,
             onPressed: _isSubmitting ? null : _confirmBooking,

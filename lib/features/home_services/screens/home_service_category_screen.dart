@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -11,6 +12,7 @@ import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../utils/home_service_category_image.dart';
 import '../widgets/home_service_category_art.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HomeServiceCategoryScreen extends StatefulWidget {
   final String categorySlug;
@@ -165,7 +167,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
           widget.categoryLabel ?? l10n.t('home_category.professionals'),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -326,7 +328,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                                   ),
                                   if (provider.isVerified)
                                     const Icon(
-                                      Icons.verified_rounded,
+                                      LucideIcons.verified,
                                       size: 18,
                                       color: AppColors.success,
                                     ),
@@ -388,7 +390,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                               Row(
                                 children: [
                                   const Icon(
-                                    Icons.star_rounded,
+                                    CupertinoIcons.star_fill,
                                     size: 16,
                                     color: AppColors.warning,
                                   ),

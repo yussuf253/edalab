@@ -5,6 +5,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class PaymentFailureScreen extends StatefulWidget {
   final Map<String, dynamic>? paymentData;
@@ -62,7 +63,7 @@ class _PaymentFailureScreenState extends State<PaymentFailureScreen> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.close_rounded,
+                    LucideIcons.x,
                     color: AppColors.error,
                     size: 44,
                   ),

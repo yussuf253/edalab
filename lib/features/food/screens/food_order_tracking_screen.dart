@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_colors.dart';
@@ -11,6 +12,7 @@ import '../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/message_launcher.dart';
 import '../../../core/utils/money_format.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class FoodOrderTrackingScreen extends StatefulWidget {
   final String orderId;
@@ -181,7 +183,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                           });
                           _loadOrder();
                         },
-                        icon: const Icon(Icons.refresh_rounded),
+                        icon: const Icon(LucideIcons.refreshCw),
                         label: Text(l10n.t('tracking.retry')),
                       ),
                     ],
@@ -206,7 +208,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                         child: Column(
                           children: [
                             const Icon(
-                              Icons.cancel_rounded,
+                              LucideIcons.circleX,
                               color: AppColors.warning,
                               size: 48,
                             ),
@@ -246,7 +248,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: const Icon(
-                                Icons.delivery_dining_rounded,
+                                LucideIcons.scooter,
                                 color: AppColors.food,
                                 size: 30,
                               ),
@@ -346,7 +348,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: const Icon(
-                              Icons.person_rounded,
+                              LucideIcons.user,
                               color: AppColors.primary,
                             ),
                           ),
@@ -363,7 +365,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                                 Row(
                                   children: [
                                     const Icon(
-                                      Icons.star_rounded,
+                                      CupertinoIcons.star_fill,
                                       size: 14,
                                       color: AppColors.warning,
                                     ),
@@ -385,7 +387,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               _ContactActionIcon(
-                                icon: Icons.chat_rounded,
+                                icon: LucideIcons.messageCircle,
                                 iconColor: AppColors.food,
                                 backgroundColor: AppColors.food.withValues(
                                   alpha: 0.12,
@@ -395,7 +397,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                               ),
                               const SizedBox(width: 8),
                               _ContactActionIcon(
-                                icon: Icons.phone_rounded,
+                                icon: LucideIcons.phone,
                                 iconColor: AppColors.success,
                                 backgroundColor: AppColors.successLight,
                                 enabled:
@@ -509,10 +511,10 @@ class _TimelineStep extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: isDone
-                  ? const Icon(Icons.check, color: AppColors.white, size: 16)
+                  ? const Icon(LucideIcons.check, color: AppColors.white, size: 16)
                   : isActive
                   ? const Icon(
-                      Icons.delivery_dining_rounded,
+                      LucideIcons.scooter,
                       color: AppColors.white,
                       size: 16,
                     )

@@ -8,6 +8,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/language_provider.dart';
 import '../../../core/storage/app_preferences.dart';
 import '../../../core/widgets/app_button.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -59,7 +60,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         title: l10n.t('onboarding.page1_title'),
         subtitle: l10n.t('onboarding.page1_subtitle'),
         centerAssetPath: _brandLogoAsset,
-        centerIcon: Icons.widgets_rounded,
+        centerIcon: LucideIcons.layoutGrid,
         ctaColor: AppColors.primary,
         backgroundGradient: const LinearGradient(
           colors: [AppColors.white, AppColors.primarySurface],
@@ -71,7 +72,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           // First-step spotlight: Food, Pharmacy, Grocery, Shopping only.
           _OrbitNodeData(
             assetPath: 'assets/icons/food.png',
-            fallbackIcon: Icons.restaurant_rounded,
+            fallbackIcon: LucideIcons.utensilsCrossed,
             alignment: const Alignment(0.00, -0.94),
             size: 58,
             backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
@@ -79,7 +80,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           _OrbitNodeData(
             assetPath: 'assets/icons/pharmacy.png',
-            fallbackIcon: Icons.local_pharmacy_rounded,
+            fallbackIcon: LucideIcons.pill,
             alignment: const Alignment(0.90, -0.20),
             size: 58,
             backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
@@ -87,7 +88,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           _OrbitNodeData(
             assetPath: '',
-            fallbackIcon: Icons.shopping_basket_rounded,
+            fallbackIcon: LucideIcons.shoppingBasket,
             alignment: const Alignment(0.00, 0.94),
             size: 58,
             backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
@@ -95,7 +96,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           _OrbitNodeData(
             assetPath: 'assets/icons/shopping.png',
-            fallbackIcon: Icons.shopping_bag_rounded,
+            fallbackIcon: LucideIcons.shoppingBag,
             alignment: const Alignment(-0.90, -0.20),
             size: 58,
             backgroundColor: AppColors.secondary.withValues(alpha: 0.14),
@@ -108,7 +109,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         title: l10n.t('onboarding.page2_title'),
         subtitle: l10n.t('onboarding.page2_subtitle'),
         heroAssetPath: 'assets/images/onboarding/delivery.png',
-        centerIcon: Icons.flash_on_rounded,
+        centerIcon: LucideIcons.zap,
         ctaColor: AppColors.primary,
         backgroundGradient: const LinearGradient(
           colors: [AppColors.white, AppColors.primarySurface],
@@ -121,7 +122,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         title: l10n.t('onboarding.page3_title'),
         subtitle: l10n.t('onboarding.page3_subtitle'),
         heroAssetPath: 'assets/images/onboarding/secure.png',
-        centerIcon: Icons.verified_user_rounded,
+        centerIcon: LucideIcons.shieldCheck,
         ctaColor: AppColors.primary,
         backgroundGradient: const LinearGradient(
           colors: [AppColors.white, AppColors.primarySurface],
@@ -250,7 +251,7 @@ class _TopBar extends StatelessWidget {
                   ),
                   if (isSelected)
                     const Icon(
-                      Icons.check_rounded,
+                      LucideIcons.check,
                       color: AppColors.primary,
                       size: 18,
                     ),
@@ -270,7 +271,7 @@ class _TopBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
-                Icons.language_rounded,
+                LucideIcons.languages,
                 color: AppColors.primaryDark,
                 size: 16,
               ),
@@ -284,7 +285,7 @@ class _TopBar extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               const Icon(
-                Icons.keyboard_arrow_down_rounded,
+                LucideIcons.chevronDown,
                 color: AppColors.mediumGrey,
                 size: 18,
               ),
@@ -466,7 +467,7 @@ class _OrbitHero extends StatelessWidget {
         ),
         child: node.assetPath.isEmpty
             ? Icon(
-                node.fallbackIcon ?? Icons.image_not_supported_outlined,
+                node.fallbackIcon ?? LucideIcons.imageOff,
                 color: node.tintColor ?? AppColors.grey,
                 size: node.size * 0.46,
               )
@@ -480,7 +481,7 @@ class _OrbitHero extends StatelessWidget {
                       ? null
                       : BlendMode.srcIn,
                   errorBuilder: (context, error, stackTrace) => Icon(
-                    node.fallbackIcon ?? Icons.image_not_supported_outlined,
+                    node.fallbackIcon ?? LucideIcons.imageOff,
                     color: node.tintColor ?? AppColors.grey,
                     size: node.size * 0.46,
                   ),

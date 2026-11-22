@@ -12,6 +12,7 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -38,7 +39,7 @@ class _CartScreenState extends State<CartScreen> {
       appBar: AppBar(
         title: Text(l10n.t('shopping_cart.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -83,7 +84,7 @@ class _CartScreenState extends State<CartScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.shopping_bag_outlined,
+                    LucideIcons.shoppingBag,
                     size: 80,
                     color: AppColors.lightGrey,
                   ),
@@ -146,7 +147,7 @@ class _CartScreenState extends State<CartScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
-                              Icons.shopping_bag_rounded,
+                              LucideIcons.shoppingBag,
                               color: AppColors.lightGrey,
                             ),
                           ),
@@ -189,7 +190,7 @@ class _CartScreenState extends State<CartScreen> {
                                             child: IconButton(
                                               padding: EdgeInsets.zero,
                                               icon: const Icon(
-                                                Icons.remove,
+                                                LucideIcons.minus,
                                                 size: 16,
                                               ),
                                               onPressed: () {
@@ -223,7 +224,7 @@ class _CartScreenState extends State<CartScreen> {
                                             child: IconButton(
                                               padding: EdgeInsets.zero,
                                               icon: const Icon(
-                                                Icons.add,
+                                                LucideIcons.plus,
                                                 size: 16,
                                               ),
                                               onPressed: () {

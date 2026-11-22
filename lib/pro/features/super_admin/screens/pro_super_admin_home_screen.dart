@@ -9,6 +9,7 @@ import '../../../core/providers/notification_provider.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Entry experience for super admins who have no pro profile. Shows
 /// platform-wide stats and links to admin tools without ever requiring a
@@ -139,7 +140,7 @@ class _ProSuperAdminHomeScreenState extends State<ProSuperAdminHomeScreen> {
                 icon: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    const Icon(Icons.notifications_outlined),
+                    const Icon(LucideIcons.bell),
                     if (unread > 0)
                       Positioned(
                         right: 0,
@@ -170,7 +171,7 @@ class _ProSuperAdminHomeScreenState extends State<ProSuperAdminHomeScreen> {
           ),
           IconButton(
             tooltip: 'Sign out',
-            icon: const Icon(Icons.logout),
+            icon: const Icon(LucideIcons.logOut),
             onPressed: _signOut,
           ),
         ],
@@ -247,7 +248,7 @@ class _AdminToolsPanel extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _AdminToolTile(
-                  icon: Icons.monitor_heart_outlined,
+                  icon: LucideIcons.heartPulse,
                   title: 'Operations Control Center',
                   subtitle:
                       'Fulfillment, rides, care, hotel, laundry, and account '
@@ -256,28 +257,28 @@ class _AdminToolsPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: ProDesignSystem.spacing12),
                 _AdminToolTile(
-                  icon: Icons.people_outline,
+                  icon: LucideIcons.users,
                   title: 'User Management',
                   subtitle: 'Search all customer accounts, view activity, ban or unban.',
                   onTap: () => context.push(ProRoutePaths.adminUsers),
                 ),
                 const SizedBox(height: ProDesignSystem.spacing12),
                 _AdminToolTile(
-                  icon: Icons.badge_outlined,
+                  icon: LucideIcons.badge,
                   title: 'Pro Account Management',
                   subtitle: 'Browse pro accounts, verification state, and ban controls.',
                   onTap: () => context.push(ProRoutePaths.adminProAccounts),
                 ),
                 const SizedBox(height: ProDesignSystem.spacing12),
                 _AdminToolTile(
-                  icon: Icons.receipt_long_outlined,
+                  icon: LucideIcons.receiptText,
                   title: 'Order Explorer',
                   subtitle: 'All orders across store, rides, laundry, hotels, and care.',
                   onTap: () => context.push(ProRoutePaths.adminOrders),
                 ),
                 const SizedBox(height: ProDesignSystem.spacing12),
                 _AdminToolTile(
-                  icon: Icons.notifications_active_outlined,
+                  icon: LucideIcons.bellRing,
                   title: 'Activity Feed',
                   subtitle:
                       'Live feed of signups, orders, bookings, and '
@@ -287,14 +288,14 @@ class _AdminToolsPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: ProDesignSystem.spacing12),
                 _AdminToolTile(
-                  icon: Icons.restaurant_outlined,
+                  icon: LucideIcons.utensilsCrossed,
                   title: 'Restaurant Catalog',
                   subtitle: 'Browse restaurants and regenerate their redeem codes.',
                   onTap: () => context.push(ProRoutePaths.adminRestaurants),
                 ),
                 const SizedBox(height: ProDesignSystem.spacing12),
                 _AdminToolTile(
-                  icon: Icons.logout_rounded,
+                  icon: LucideIcons.logOut,
                   title: 'Sign out',
                   subtitle: 'End the super admin session on this device.',
                   onTap: onSignOut,
@@ -331,7 +332,7 @@ class _AdminToolTile extends StatelessWidget {
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
       subtitle: Text(subtitle),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: const Icon(LucideIcons.chevronRight),
       onTap: onTap,
     );
   }
@@ -448,7 +449,7 @@ class _PendingProfileTile extends StatelessWidget {
         children: [
           CircleAvatar(
             backgroundColor: AppColors.warning.withValues(alpha: 0.15),
-            child: const Icon(Icons.hourglass_top, color: AppColors.warning),
+            child: const Icon(LucideIcons.hourglass, color: AppColors.warning),
           ),
           const SizedBox(width: ProDesignSystem.spacing12),
           Expanded(
@@ -484,13 +485,13 @@ class _PendingProfileTile extends StatelessWidget {
           const SizedBox(width: ProDesignSystem.spacing8),
           IconButton(
             tooltip: 'Details',
-            icon: const Icon(Icons.info_outline, size: 22),
+            icon: const Icon(LucideIcons.info, size: 22),
             onPressed: () => _openDetails(context),
           ),
           IconButton(
             tooltip: 'Approve',
             icon: const Icon(
-              Icons.check_circle_outline,
+              LucideIcons.checkCircle,
               color: Colors.green,
               size: 26,
             ),
@@ -499,7 +500,7 @@ class _PendingProfileTile extends StatelessWidget {
           IconButton(
             tooltip: 'Reject',
             icon: const Icon(
-              Icons.cancel_outlined,
+              LucideIcons.circleX,
               color: AppColors.error,
               size: 26,
             ),
@@ -647,7 +648,7 @@ class _PendingProfileDetailsSheetState
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(LucideIcons.x),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -734,7 +735,7 @@ class _PendingProfileDetailsSheetState
                               width: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.cancel_outlined, size: 18),
+                          : const Icon(LucideIcons.circleX, size: 18),
                       label: const Text('Reject'),
                     ),
                   ),
@@ -750,7 +751,7 @@ class _PendingProfileDetailsSheetState
                               width: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.check_circle_outline, size: 18),
+                          : const Icon(LucideIcons.checkCircle, size: 18),
                       label: const Text('Approve'),
                     ),
                   ),
@@ -1022,32 +1023,32 @@ class _StatsPanel extends StatelessWidget {
               _StatTile(
                 label: 'Users',
                 value: '${stats.users}',
-                icon: Icons.people_outline,
+                icon: LucideIcons.users,
               ),
               _StatTile(
                 label: 'Pro accounts',
                 value: '${stats.proAccounts}',
-                icon: Icons.badge_outlined,
+                icon: LucideIcons.badge,
               ),
               _StatTile(
                 label: 'Orders',
                 value: '${stats.orders}',
-                icon: Icons.receipt_long_outlined,
+                icon: LucideIcons.receiptText,
               ),
               _StatTile(
                 label: 'Rides',
                 value: '${stats.rides}',
-                icon: Icons.local_taxi_outlined,
+                icon: LucideIcons.carTaxiFront,
               ),
               _StatTile(
                 label: 'Revenue',
                 value: 'DJF ${money(stats.revenueTotal)}',
-                icon: Icons.payments_outlined,
+                icon: LucideIcons.banknote,
               ),
               _StatTile(
                 label: 'Today orders',
                 value: '${stats.todayOrders}',
-                icon: Icons.today_outlined,
+                icon: LucideIcons.calendarDays,
               ),
             ],
           );

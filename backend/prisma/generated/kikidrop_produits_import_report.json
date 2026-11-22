@@ -1,0 +1,1329 @@
+{
+  "generatedAt": "2026-11-22T13:52:02.592Z",
+  "sourcePath": "/Users/youssoufhassan/edalab_app/kikidrop_produits_propres.xlsx",
+  "summary": {
+    "storesInFile": 154,
+    "productsInFile": 10688,
+    "existingRestaurantsMatched": 118,
+    "newFoodRestaurants": 0,
+    "nonFoodStoresSkipped": 36,
+    "ambiguousDuplicateNamesSkipped": 0,
+    "menuCategories": 1212,
+    "menuItems": 7429,
+    "duplicateProductRowsCollapsed": 22,
+    "restaurantsWithEmptyMenu": 12,
+    "existingRestaurantsNotInFile": 36,
+    "preExistingDuplicateNames": 0
+  },
+  "preExistingDuplicateNames": [],
+  "newRestaurants": [],
+  "matchedRestaurants": [
+    {
+      "name": "+253 TACOS",
+      "id": "kiki-rest-b66257b71037",
+      "products": 44,
+      "newItems": 44,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "9'Smash burger",
+      "id": "kiki-rest-60ecd0ee4b32",
+      "products": 5,
+      "newItems": 5,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "ALBERTOS",
+      "id": "kiki-rest-886b00144a87",
+      "products": 45,
+      "newItems": 45,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Allo Pizza Aviation",
+      "id": "kiki-rest-36de58fbf8d3",
+      "products": 88,
+      "newItems": 88,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "AMORE-PASTA",
+      "id": "kiki-rest-0bbaaa105c64",
+      "products": 0,
+      "newItems": 0,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "APPETITO RESTAURANT",
+      "id": "kiki-rest-8f4594f8519f",
+      "products": 129,
+      "newItems": 129,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Atypique centre ville",
+      "id": "kiki-rest-b3255c762935",
+      "products": 35,
+      "newItems": 35,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "AYLA CAFE",
+      "id": "kiki-rest-af7fb9b29cb2",
+      "products": 86,
+      "newItems": 86,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "BAIT AL MANDI",
+      "id": "kiki-rest-6e875bd7e81a",
+      "products": 83,
+      "newItems": 83,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "BARBECUE HOUSE",
+      "id": "kiki-rest-cb8dbc898fda",
+      "products": 41,
+      "newItems": 41,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Bawadi Bakery",
+      "id": "kiki-rest-ce3a5d72e87a",
+      "products": 86,
+      "newItems": 86,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "BENDO'S",
+      "id": "kiki-rest-46c262a0a9e0",
+      "products": 47,
+      "newItems": 47,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Bento Zen",
+      "id": "kiki-rest-328d288c4a6e",
+      "products": 0,
+      "newItems": 0,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Best western premier Djibouti",
+      "id": "kiki-rest-4f2ebb8861e1",
+      "products": 89,
+      "newItems": 89,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "BHARAT MAHAL",
+      "id": "kiki-rest-de7c878943cd",
+      "products": 84,
+      "newItems": 84,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Bunna House Venise",
+      "id": "kiki-rest-ffe4926a863a",
+      "products": 124,
+      "newItems": 124,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Burger King Bawadi Mall",
+      "id": "kiki-rest-67598428dab8",
+      "products": 108,
+      "newItems": 108,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Burger King Gabode",
+      "id": "kiki-rest-0742c1baa6f7",
+      "products": 115,
+      "newItems": 115,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "BURGER PLUS",
+      "id": "kiki-rest-71d8666662b7",
+      "products": 25,
+      "newItems": 25,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Café Barbera- SVAMC Boulaous",
+      "id": "kiki-rest-7283ec25a5bf",
+      "products": 145,
+      "newItems": 145,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Chez Davi’do",
+      "id": "kiki-rest-21af7106a17a",
+      "products": 125,
+      "newItems": 125,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "CHEZ SAMBA",
+      "id": "kiki-rest-befbed5fcfe2",
+      "products": 8,
+      "newItems": 8,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Chicking",
+      "id": "kiki-rest-ac019e93a613",
+      "products": 97,
+      "newItems": 97,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Coastal Palm Restaurant",
+      "id": "kiki-rest-853956708d20",
+      "products": 261,
+      "newItems": 261,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Cold Stone Creamery mall",
+      "id": "kiki-rest-cf709b757bd6",
+      "products": 12,
+      "newItems": 12,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Coldstone Creamery Gabode",
+      "id": "kiki-rest-ffa2a3c7ecbe",
+      "products": 1,
+      "newItems": 1,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "CTR CHICKEN",
+      "id": "kiki-rest-135a415e09dd",
+      "products": 73,
+      "newItems": 73,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "DAILY'S GOURMET BURGERS",
+      "id": "kiki-rest-fa50f25230fc",
+      "products": 55,
+      "newItems": 55,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "DELUXE",
+      "id": "kiki-rest-6b13e434e161",
+      "products": 128,
+      "newItems": 128,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "DJIB BURGER",
+      "id": "kiki-rest-0ced06ff0b31",
+      "products": 121,
+      "newItems": 121,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Djollof kitchen",
+      "id": "kiki-rest-67dc9f8f6adb",
+      "products": 0,
+      "newItems": 0,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "ETHIOPIAN RESTAURANT",
+      "id": "kiki-rest-675ffae83cfb",
+      "products": 57,
+      "newItems": 57,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Han's Cake",
+      "id": "kiki-rest-3ede52bb28d3",
+      "products": 0,
+      "newItems": 0,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Healthy Zone",
+      "id": "kiki-rest-38c92297d24b",
+      "products": 55,
+      "newItems": 55,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "ImaanCake",
+      "id": "kiki-rest-ae6f39751122",
+      "products": 15,
+      "newItems": 15,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Italian Shanghai Restaurant",
+      "id": "kiki-rest-d89d4a6c1a35",
+      "products": 51,
+      "newItems": 51,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "JANATEYN",
+      "id": "kiki-rest-20fae0c58be5",
+      "products": 52,
+      "newItems": 52,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Jano café & restaurant",
+      "id": "kiki-rest-80a9739082f2",
+      "products": 49,
+      "newItems": 49,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Joy's Kitchen",
+      "id": "kiki-rest-2cbe6ab39361",
+      "products": 30,
+      "newItems": 30,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "K La Gourmande",
+      "id": "kiki-rest-2b824e47a390",
+      "products": 0,
+      "newItems": 0,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "KATKOUT",
+      "id": "kiki-rest-dd5a73283b51",
+      "products": 25,
+      "newItems": 25,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "KPB FASTFOOD",
+      "id": "kiki-rest-c4ca622a5c33",
+      "products": 100,
+      "newItems": 100,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "L'as du tacos",
+      "id": "kiki-rest-bb52db882bef",
+      "products": 19,
+      "newItems": 19,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "L'ATYPIQUE",
+      "id": "kiki-rest-ee599f6b29b7",
+      "products": 99,
+      "newItems": 99,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "L'Historil",
+      "id": "kiki-rest-e0cb1bfadcaa",
+      "products": 114,
+      "newItems": 114,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "L'héritier",
+      "id": "kiki-rest-80b6ba8fadbc",
+      "products": 47,
+      "newItems": 47,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "LA CAFET",
+      "id": "kiki-rest-bf36f7e8afde",
+      "products": 50,
+      "newItems": 50,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "LA CHAUMIERE",
+      "id": "r2",
+      "products": 61,
+      "newItems": 61,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "LA FONTAINE",
+      "id": "r12",
+      "products": 90,
+      "newItems": 90,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "LA FUSION",
+      "id": "kiki-rest-afa9f73f279d",
+      "products": 111,
+      "newItems": 111,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "La Taverne Restaurant",
+      "id": "kiki-rest-d52f8e4cb6ce",
+      "products": 25,
+      "newItems": 25,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "LAC ABBÉ",
+      "id": "kiki-rest-b3847ed277f0",
+      "products": 57,
+      "newItems": 57,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "LAVAZZA CAFE",
+      "id": "kiki-rest-928d987e5d7e",
+      "products": 11,
+      "newItems": 11,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "LE COIN LIBANAIS - hummus republic",
+      "id": "kiki-rest-1645bbdf6f9c",
+      "products": 30,
+      "newItems": 30,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "LE MOFO",
+      "id": "kiki-rest-f9a401729f1c",
+      "products": 20,
+      "newItems": 20,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "LE MOULIN",
+      "id": "kiki-rest-2fc144b963ca",
+      "products": 36,
+      "newItems": 36,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Le QG",
+      "id": "kiki-rest-7fe89f5483e2",
+      "products": 63,
+      "newItems": 63,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "MANDI HADHRAMAUT",
+      "id": "kiki-rest-93773a8102e3",
+      "products": 43,
+      "newItems": 43,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Mirra Fastfood",
+      "id": "kiki-rest-ec8387fe17d6",
+      "products": 36,
+      "newItems": 36,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "MK Moukbasa",
+      "id": "kiki-rest-78c2dfe05040",
+      "products": 49,
+      "newItems": 49,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Mon secret indien",
+      "id": "kiki-rest-5a13b0553e84",
+      "products": 4,
+      "newItems": 4,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "MONT LIBAN",
+      "id": "kiki-rest-5d58969bbe67",
+      "products": 35,
+      "newItems": 35,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Mont'Régal",
+      "id": "kiki-rest-c57ec4e4f3a9",
+      "products": 0,
+      "newItems": 0,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Mood sweet&coffee",
+      "id": "kiki-rest-71e3ce34b984",
+      "products": 0,
+      "newItems": 0,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Moun's Healthy",
+      "id": "kiki-rest-b009d2b8731e",
+      "products": 34,
+      "newItems": 34,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "N.I La Maison du Tiramisu",
+      "id": "kiki-rest-4bf3bf0a2d84",
+      "products": 1,
+      "newItems": 1,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Naan Stop Balbala",
+      "id": "kiki-rest-44f204f78b70",
+      "products": 7,
+      "newItems": 7,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Naan Stop centre ville",
+      "id": "kiki-rest-a1e95d9b8d73",
+      "products": 41,
+      "newItems": 41,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Nasma's Food",
+      "id": "kiki-rest-f93911824d30",
+      "products": 23,
+      "newItems": 23,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Number one",
+      "id": "kiki-rest-16fb45b7de68",
+      "products": 233,
+      "newItems": 233,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "O' TACOS DE LYON",
+      "id": "kiki-rest-eeb9758866fe",
+      "products": 25,
+      "newItems": 25,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Oslaw",
+      "id": "kiki-rest-a98cbd61f237",
+      "products": 46,
+      "newItems": 46,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "PAPA PIZZA",
+      "id": "kiki-rest-4f14ae6845d1",
+      "products": 157,
+      "newItems": 157,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Papou's Coffee Corner",
+      "id": "kiki-rest-d8b7e92138bb",
+      "products": 18,
+      "newItems": 18,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "PAPPAROTI",
+      "id": "kiki-rest-1140810d3027",
+      "products": 88,
+      "newItems": 88,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Pikaya Kitchen",
+      "id": "kiki-rest-f06c15edd847",
+      "products": 41,
+      "newItems": 41,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Pizza Di Bassem",
+      "id": "kiki-rest-01873bc36ef3",
+      "products": 52,
+      "newItems": 52,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "PIZZA HUT - MALL",
+      "id": "kiki-rest-633aadd992ad",
+      "products": 0,
+      "newItems": 0,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "PIZZA HUT GABODE",
+      "id": "kiki-rest-be1cb181b650",
+      "products": 0,
+      "newItems": 0,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Pizzailo Heron",
+      "id": "kiki-rest-c7f9b635222d",
+      "products": 229,
+      "newItems": 229,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Pizzaiolo Centre ville",
+      "id": "kiki-rest-f3274ce09256",
+      "products": 144,
+      "newItems": 144,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "PIZZAIOLO HARAMOUS",
+      "id": "kiki-rest-3fa2b9ad0d9c",
+      "products": 115,
+      "newItems": 115,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "PIZZERIA SNACK",
+      "id": "kiki-rest-9223de54bb77",
+      "products": 56,
+      "newItems": 56,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Pâtisserie d'ambouli",
+      "id": "kiki-rest-de8f84435c25",
+      "products": 146,
+      "newItems": 146,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Pâtisserie Napoléon",
+      "id": "kiki-rest-3fa01b76d01c",
+      "products": 35,
+      "newItems": 35,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Restaurant Al Saddah",
+      "id": "kiki-rest-dfca65d9aa70",
+      "products": 15,
+      "newItems": 15,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "RESTAURANT BONNE FAMILLE",
+      "id": "kiki-rest-161410a59db1",
+      "products": 47,
+      "newItems": 47,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Restaurant sénégalais",
+      "id": "kiki-rest-7a9b21f43023",
+      "products": 5,
+      "newItems": 5,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "RESTAURANT ZHONG HUA",
+      "id": "kiki-rest-c34b64b7a9c5",
+      "products": 58,
+      "newItems": 58,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "SABLES BLANCS",
+      "id": "kiki-rest-06750541b88d",
+      "products": 170,
+      "newItems": 170,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "SALT BURGER",
+      "id": "kiki-rest-1f0b8fd11e77",
+      "products": 14,
+      "newItems": 14,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Samarina Express",
+      "id": "kiki-rest-25ed4eb67e76",
+      "products": 86,
+      "newItems": 86,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Shakpot - Tacos & more",
+      "id": "kiki-rest-1a741cb0797b",
+      "products": 34,
+      "newItems": 34,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Sheraton Djibouti",
+      "id": "kiki-rest-ea525e4f939d",
+      "products": 0,
+      "newItems": 0,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Signatures",
+      "id": "kiki-rest-172ae818c778",
+      "products": 61,
+      "newItems": 61,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Sing's Paradise",
+      "id": "kiki-rest-67376f1ae7f4",
+      "products": 402,
+      "newItems": 402,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "SINGH'S RESTAURANT",
+      "id": "kiki-rest-3432c539049d",
+      "products": 130,
+      "newItems": 130,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Smile Lounge",
+      "id": "kiki-rest-91640bad4ce1",
+      "products": 17,
+      "newItems": 17,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Snack Attack",
+      "id": "kiki-rest-b490aa1037b2",
+      "products": 58,
+      "newItems": 33,
+      "skippedExistingNames": 25
+    },
+    {
+      "name": "Snow Cream",
+      "id": "kiki-rest-bfe9c9dcfbfd",
+      "products": 70,
+      "newItems": 70,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Soleil ice Cream",
+      "id": "kiki-rest-b0530f743004",
+      "products": 0,
+      "newItems": 0,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Star Coffee",
+      "id": "kiki-rest-68c78aac2163",
+      "products": 81,
+      "newItems": 81,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "STR’EAT",
+      "id": "kiki-rest-22972ae057bb",
+      "products": 36,
+      "newItems": 36,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Sushi-Do",
+      "id": "kiki-rest-9d3c4de39a9e",
+      "products": 56,
+      "newItems": 56,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Sweet Home Bakery",
+      "id": "kiki-rest-2cf40d2fe929",
+      "products": 36,
+      "newItems": 36,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Tacos AKG",
+      "id": "kiki-rest-2fbe0fb1aef8",
+      "products": 3,
+      "newItems": 3,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Tacos de paris",
+      "id": "kiki-rest-09c55fac56e9",
+      "products": 35,
+      "newItems": 35,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Tacos King",
+      "id": "kiki-rest-c32df3996df4",
+      "products": 38,
+      "newItems": 38,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Tasty Food",
+      "id": "kiki-rest-dd04aa05dfaf",
+      "products": 29,
+      "newItems": 29,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Te'Amo Héron",
+      "id": "kiki-rest-653237cd39de",
+      "products": 83,
+      "newItems": 83,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Te'Amo Mall",
+      "id": "kiki-rest-c40534e9e74f",
+      "products": 36,
+      "newItems": 36,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "THE CAMEL COFFEE SHOP",
+      "id": "kiki-rest-048303aa32f1",
+      "products": 192,
+      "newItems": 192,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "The First Coffee",
+      "id": "kiki-rest-f54061d79a02",
+      "products": 99,
+      "newItems": 99,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Time out indian restaurant",
+      "id": "kiki-rest-ba55d485ba3a",
+      "products": 109,
+      "newItems": 109,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "V.P SINGH RESTAURANT",
+      "id": "kiki-rest-3ba7454d8da8",
+      "products": 248,
+      "newItems": 248,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Velvet coffee",
+      "id": "kiki-rest-ed0c9062aca7",
+      "products": 9,
+      "newItems": 9,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Villa camille",
+      "id": "kiki-rest-f88f7540eaba",
+      "products": 34,
+      "newItems": 34,
+      "skippedExistingNames": 0
+    },
+    {
+      "name": "Yummy wings",
+      "id": "kiki-rest-7db13a10d6ef",
+      "products": 0,
+      "newItems": 0,
+      "skippedExistingNames": 0
+    }
+  ],
+  "skippedNonFood": [
+    {
+      "name": "Al haramain Perfumes",
+      "products": 262
+    },
+    {
+      "name": "Baby Station",
+      "products": 270
+    },
+    {
+      "name": "BricoCoeur",
+      "products": 23
+    },
+    {
+      "name": "CAMELLIA POWDERS",
+      "products": 1
+    },
+    {
+      "name": "Cosmo",
+      "products": 47
+    },
+    {
+      "name": "Djib nature detox",
+      "products": 2
+    },
+    {
+      "name": "Eau & Boissons en volume",
+      "products": 33
+    },
+    {
+      "name": "Gaz & fuel",
+      "products": 10
+    },
+    {
+      "name": "Glow Orginal Cosmétique",
+      "products": 0
+    },
+    {
+      "name": "Hypermarché Al Gamil",
+      "products": 738
+    },
+    {
+      "name": "JOY-SVAMC",
+      "products": 50
+    },
+    {
+      "name": "Karim flowers",
+      "products": 2
+    },
+    {
+      "name": "Khaty's Shop",
+      "products": 61
+    },
+    {
+      "name": "Le Marché",
+      "products": 30
+    },
+    {
+      "name": "LET'S VAPE",
+      "products": 0
+    },
+    {
+      "name": "MBBS MAGASIN",
+      "products": 1
+    },
+    {
+      "name": "MR VAPOUR",
+      "products": 46
+    },
+    {
+      "name": "Nouga mobile",
+      "products": 51
+    },
+    {
+      "name": "NOUGAPRIX",
+      "products": 92
+    },
+    {
+      "name": "Outlet SVAMC",
+      "products": 166
+    },
+    {
+      "name": "PAIEMENT DE FACTURES ET PLANTON",
+      "products": 5
+    },
+    {
+      "name": "PHARMACIE AL HAYAT",
+      "products": 126
+    },
+    {
+      "name": "Pharmacie de la capitale",
+      "products": 22
+    },
+    {
+      "name": "PHARMACIE INTERNATIONAL",
+      "products": 152
+    },
+    {
+      "name": "PHARMACIE LA NATION",
+      "products": 128
+    },
+    {
+      "name": "PHARMACIE TAYBA",
+      "products": 127
+    },
+    {
+      "name": "RAHO KHAT",
+      "products": 13
+    },
+    {
+      "name": "Roi Des Epices",
+      "products": 170
+    },
+    {
+      "name": "RUCHES DE DOAAN POUR LE MIEL YÉMÉNITE ET LA PARFUMERIE",
+      "products": 80
+    },
+    {
+      "name": "SH Beauty Box",
+      "products": 114
+    },
+    {
+      "name": "Sheraton events",
+      "products": 12
+    },
+    {
+      "name": "Vape House",
+      "products": 123
+    },
+    {
+      "name": "WALLY SHOP",
+      "products": 138
+    },
+    {
+      "name": "Warso Khat",
+      "products": 17
+    },
+    {
+      "name": "Ximi V",
+      "products": 100
+    },
+    {
+      "name": "Zawam honey",
+      "products": 0
+    }
+  ],
+  "skippedAmbiguous": [],
+  "emptyRestaurants": [
+    {
+      "id": "kiki-rest-0bbaaa105c64",
+      "name": "AMORE-PASTA"
+    },
+    {
+      "id": "kiki-rest-328d288c4a6e",
+      "name": "Bento Zen"
+    },
+    {
+      "id": "kiki-rest-67dc9f8f6adb",
+      "name": "Djollof kitchen"
+    },
+    {
+      "id": "kiki-rest-3ede52bb28d3",
+      "name": "Han's Cake"
+    },
+    {
+      "id": "kiki-rest-2b824e47a390",
+      "name": "K La Gourmande"
+    },
+    {
+      "id": "kiki-rest-c57ec4e4f3a9",
+      "name": "Mont'Régal"
+    },
+    {
+      "id": "kiki-rest-71e3ce34b984",
+      "name": "Mood sweet&coffee"
+    },
+    {
+      "id": "kiki-rest-633aadd992ad",
+      "name": "PIZZA HUT - MALL"
+    },
+    {
+      "id": "kiki-rest-be1cb181b650",
+      "name": "PIZZA HUT GABODE"
+    },
+    {
+      "id": "kiki-rest-ea525e4f939d",
+      "name": "Sheraton Djibouti"
+    },
+    {
+      "id": "kiki-rest-b0530f743004",
+      "name": "Soleil ice Cream"
+    },
+    {
+      "id": "kiki-rest-7db13a10d6ef",
+      "name": "Yummy wings"
+    }
+  ],
+  "existingNotInFile": [
+    {
+      "id": "r4",
+      "name": "Mukbassa Central Chez Youssouf",
+      "menuItems": 2
+    },
+    {
+      "id": "kiki-rest-d34882f49cac",
+      "name": "Healthy Zone Gabode",
+      "menuItems": 0
+    },
+    {
+      "id": "r18",
+      "name": "Lados",
+      "menuItems": 51
+    },
+    {
+      "id": "r21",
+      "name": "Royal Café",
+      "menuItems": 32
+    },
+    {
+      "id": "r5",
+      "name": "Kuriftu Lounge Djibouti",
+      "menuItems": 2
+    },
+    {
+      "id": "r6",
+      "name": "Cafe de la Gare",
+      "menuItems": 2
+    },
+    {
+      "id": "r1",
+      "name": "Melting Pot",
+      "menuItems": 1
+    },
+    {
+      "id": "r3",
+      "name": "Kokeb",
+      "menuItems": 2
+    },
+    {
+      "id": "r7",
+      "name": "Le Pizzaiollo",
+      "menuItems": 2
+    },
+    {
+      "id": "r19",
+      "name": "Aska Tacos",
+      "menuItems": 38
+    },
+    {
+      "id": "r20",
+      "name": "SOHO Café",
+      "menuItems": 9
+    },
+    {
+      "id": "r8",
+      "name": "Kingdom Of Sheba Restaurant",
+      "menuItems": 2
+    },
+    {
+      "id": "kiki-rest-a30e82b641ef",
+      "name": "MARKI RESTAURANT",
+      "menuItems": 0
+    },
+    {
+      "id": "r10",
+      "name": "Sixteen Eleven Kitchen",
+      "menuItems": 1
+    },
+    {
+      "id": "kiki-rest-ece5bf796b24",
+      "name": "Coastal Palm Coffee",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-9095d2c15477",
+      "name": "NANGADEF",
+      "menuItems": 0
+    },
+    {
+      "id": "r11",
+      "name": "Bankouale",
+      "menuItems": 1
+    },
+    {
+      "id": "r13",
+      "name": "La Mer Rouge",
+      "menuItems": 1
+    },
+    {
+      "id": "r14",
+      "name": "Saba",
+      "menuItems": 1
+    },
+    {
+      "id": "r15",
+      "name": "Sings Restaurant",
+      "menuItems": 1
+    },
+    {
+      "id": "r16",
+      "name": "HanCake's",
+      "menuItems": 1
+    },
+    {
+      "id": "r17",
+      "name": "Restaurant La Terrasse",
+      "menuItems": 1
+    },
+    {
+      "id": "r9",
+      "name": "Restaurant Le Tamara",
+      "menuItems": 1
+    },
+    {
+      "id": "kiki-rest-7b0cb90b15e0",
+      "name": "Seven Restaurant",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-c3e58d3ef7c8",
+      "name": "Hummus Republic-cuisine Libanaise",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-d08ae730c8f7",
+      "name": "G.S.K RESTAURANT",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-8aee97a0a20e",
+      "name": "Soirée marocaine",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-2fcd67e0af4a",
+      "name": "BIG HOUSE",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-e80cc8894ced",
+      "name": "The squid place",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-c93ebd9c2e95",
+      "name": "24H FAST FOOD",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-c4f474b593b3",
+      "name": "Vizion Gaming Lounge Club",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-ca661f410097",
+      "name": "888 (TACOS HOUSE)",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-9ce67856ed86",
+      "name": "Royal Kebab",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-01e3f2b539ec",
+      "name": "Les Tagines de Hiba",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-01f18bd9b491",
+      "name": "Maymas Restaurant",
+      "menuItems": 0
+    },
+    {
+      "id": "kiki-rest-7ba8e3e0025b",
+      "name": "PAUSE CAFE",
+      "menuItems": 0
+    }
+  ],
+  "sampleDuplicateRows": [
+    {
+      "restaurant": "kiki-rest-8f4594f8519f",
+      "name": "Okra sauce",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-af7fb9b29cb2",
+      "name": "CARROT",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-af7fb9b29cb2",
+      "name": "AVOCADO",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-af7fb9b29cb2",
+      "name": "Sweet and sour cocktail",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-af7fb9b29cb2",
+      "name": "ICED COFFEE",
+      "rows": 3
+    },
+    {
+      "restaurant": "kiki-rest-af7fb9b29cb2",
+      "name": "COCA COLA",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-cb8dbc898fda",
+      "name": "Chicken yoghurt",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-cb8dbc898fda",
+      "name": "Shawarma chicken",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-ce3a5d72e87a",
+      "name": "CHOCOLATE GATEAUX 10 1KG different design ( 8persons)",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-ce3a5d72e87a",
+      "name": "VANILLA GATEAUX 10 1KG different design ( 8persons)",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-21af7106a17a",
+      "name": "brochette de boeuf",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-675ffae83cfb",
+      "name": "KITFO",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-e0cb1bfadcaa",
+      "name": "Moyenne Carnivore",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-e0cb1bfadcaa",
+      "name": "Moyenne aux olives",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-e0cb1bfadcaa",
+      "name": "Moyenne hawaienne",
+      "rows": 2
+    },
+    {
+      "restaurant": "r2",
+      "name": "ROULEAUX DE PRINTEMPS",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-2fc144b963ca",
+      "name": "Tiramisu",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-b009d2b8731e",
+      "name": "Healthy breakfast",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-06750541b88d",
+      "name": "Croque Madame",
+      "rows": 2
+    },
+    {
+      "restaurant": "kiki-rest-06750541b88d",
+      "name": "PETIT DEJEUNER CONTINENTAL",
+      "rows": 2
+    }
+  ]
+}

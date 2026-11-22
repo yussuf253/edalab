@@ -11,6 +11,7 @@ import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -209,7 +210,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     context.l10n.t('search.restaurant'),
                 route: '/food/restaurant/${data['id']}',
                 color: AppColors.food,
-                icon: Icons.restaurant_rounded,
+                icon: LucideIcons.utensilsCrossed,
               );
             case 'doctor':
               searchItem = _SearchItem(
@@ -219,7 +220,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     context.l10n.t('search.doctor'),
                 route: '/doctor/detail/${data['id']}',
                 color: AppColors.doctor,
-                icon: Icons.medical_services_rounded,
+                icon: LucideIcons.briefcaseMedical,
               );
             case 'shopping':
               searchItem = _SearchItem(
@@ -229,7 +230,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     context.l10n.t('search.product'),
                 route: '/shopping/product/${data['id']}',
                 color: AppColors.shopping,
-                icon: Icons.shopping_bag_rounded,
+                icon: LucideIcons.shoppingBag,
               );
             case 'pharmacy':
               searchItem = _SearchItem(
@@ -239,7 +240,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     context.l10n.t('search.medicine'),
                 route: '/pharmacy/medicine/${data['id']}',
                 color: AppColors.pharmacy,
-                icon: Icons.medication_rounded,
+                icon: LucideIcons.pill,
               );
             case 'hotel':
               searchItem = _SearchItem(
@@ -248,7 +249,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     data['city']?.toString() ?? context.l10n.t('search.hotel'),
                 route: '/hotel/detail/${data['id']}',
                 color: AppColors.hotel,
-                icon: Icons.hotel_rounded,
+                icon: LucideIcons.hotel,
               );
             case 'grocery':
               searchItem = _SearchItem(
@@ -258,7 +259,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     context.l10n.t('module.grocery'),
                 route: '/grocery/product/${data['id']}',
                 color: AppColors.grocery,
-                icon: Icons.local_grocery_store_rounded,
+                icon: LucideIcons.shoppingCart,
               );
             default:
               continue;
@@ -302,7 +303,7 @@ class _SearchScreenState extends State<SearchScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
         title: TextField(
@@ -377,7 +378,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                           ),
                           const Icon(
-                            Icons.arrow_forward_ios_rounded,
+                            LucideIcons.chevronRight,
                             size: 16,
                             color: AppColors.mediumGrey,
                           ),
@@ -425,42 +426,42 @@ class _SearchScreenState extends State<SearchScreen> {
                 if (_enabledModules.contains('food'))
                   (
                     l10n.t('search.order_food'),
-                    Icons.restaurant_rounded,
+                    LucideIcons.utensilsCrossed,
                     AppColors.food,
                     '/food',
                   ),
                 if (_enabledModules.contains('ride'))
                   (
                     l10n.t('search.book_ride'),
-                    Icons.directions_car_rounded,
+                    LucideIcons.car,
                     AppColors.ride,
                     '/ride',
                   ),
                 if (_enabledModules.contains('doctor'))
                   (
                     l10n.t('search.find_doctor'),
-                    Icons.medical_services_rounded,
+                    LucideIcons.briefcaseMedical,
                     AppColors.doctor,
                     '/doctor',
                   ),
                 if (_enabledModules.contains('shopping'))
                   (
                     l10n.t('search.shop_online'),
-                    Icons.shopping_bag_rounded,
+                    LucideIcons.shoppingBag,
                     AppColors.shopping,
                     '/shopping',
                   ),
                 if (_enabledModules.contains('pharmacy'))
                   (
                     l10n.t('module.pharmacy'),
-                    Icons.medication_rounded,
+                    LucideIcons.pill,
                     AppColors.pharmacy,
                     '/pharmacy',
                   ),
                 if (_enabledModules.contains('grocery'))
                   (
                     l10n.t('module.grocery'),
-                    Icons.local_grocery_store_rounded,
+                    LucideIcons.shoppingCart,
                     AppColors.grocery,
                     '/grocery',
                   ),
@@ -495,7 +496,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                         ),
                         const Icon(
-                          Icons.arrow_forward_ios_rounded,
+                          LucideIcons.chevronRight,
                           size: 16,
                           color: AppColors.mediumGrey,
                         ),

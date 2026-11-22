@@ -9,6 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../features/ride/services/ride_route_service.dart';
 import '../../../../features/ride/widgets/ride_route_preview.dart';
 import '../../../../../core/constants/app_colors.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProviderJobLocationMap extends StatefulWidget {
   final LatLng serviceLocation;
@@ -121,14 +122,14 @@ class _ProviderJobLocationMapState extends State<ProviderJobLocationMap> {
         latitude: providerPoint.latitude,
         longitude: providerPoint.longitude,
         color: AppColors.homeServices,
-        icon: Icons.person_pin_circle_rounded,
+        icon: LucideIcons.mapPin,
       ),
       destination: RideMapPoint(
         label: widget.customerName,
         latitude: widget.serviceLocation.latitude,
         longitude: widget.serviceLocation.longitude,
         color: AppColors.accent,
-        icon: Icons.location_on_rounded,
+        icon: LucideIcons.mapPin,
       ),
     );
     if (!mounted) return;
@@ -309,7 +310,7 @@ class _ProviderJobLocationMapState extends State<ProviderJobLocationMap> {
                 shape: const CircleBorder(),
                 elevation: 3,
                 child: IconButton(
-                  icon: const Icon(Icons.my_location_rounded),
+                  icon: const Icon(LucideIcons.locateFixed),
                   color: AppColors.homeServices,
                   onPressed: _fitCamera,
                 ),

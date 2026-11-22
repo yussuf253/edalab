@@ -12,6 +12,7 @@ import '../../../core/services/notification_service.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final Map<String, dynamic>? checkoutData;
@@ -125,14 +126,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         'waafipay',
         'checkout.waafipay',
         'checkout.waafipay_description',
-        Icons.account_balance_wallet_rounded,
+        LucideIcons.wallet,
         AppColors.food,
       ),
       (
         'cash_on_delivery',
         'checkout.cash_on_delivery',
         'checkout.pay_when_delivered',
-        Icons.attach_money_rounded,
+        LucideIcons.dollarSign,
         AppColors.success,
       ),
     ];
@@ -154,7 +155,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       appBar: AppBar(
         title: Text(l10n.t('checkout.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -185,8 +186,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       ),
                       child: Icon(
                         moduleType == 'food'
-                            ? Icons.restaurant_rounded
-                            : Icons.shopping_bag_rounded,
+                            ? LucideIcons.utensilsCrossed
+                            : LucideIcons.shoppingBag,
                         color: moduleType == 'food'
                             ? AppColors.food
                             : AppColors.primary,
@@ -245,8 +246,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 ),
                                 child: Icon(
                                   moduleType == 'food'
-                                      ? Icons.restaurant_menu_rounded
-                                      : Icons.shopping_bag_rounded,
+                                      ? LucideIcons.utensilsCrossed
+                                      : LucideIcons.shoppingBag,
                                   color: moduleType == 'food'
                                       ? AppColors.food
                                       : AppColors.primary,
@@ -303,7 +304,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 child: Row(
                   children: [
                     const Icon(
-                      Icons.location_on_rounded,
+                      LucideIcons.mapPin,
                       color: AppColors.grey,
                     ),
                     const SizedBox(width: 14),
@@ -354,8 +355,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           ),
                           child: Icon(
                             a.label == 'Home'
-                                ? Icons.home_rounded
-                                : Icons.work_rounded,
+                                ? LucideIcons.home
+                                : LucideIcons.briefcase,
                             color: sel ? AppColors.primary : AppColors.grey,
                             size: 22,
                           ),
@@ -379,7 +380,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                         if (sel)
                           const Icon(
-                            Icons.check_circle_rounded,
+                            LucideIcons.checkCircle,
                             color: AppColors.primary,
                           ),
                       ],
@@ -491,7 +492,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                         child: sel
                             ? const Icon(
-                                Icons.check,
+                                LucideIcons.check,
                                 color: AppColors.white,
                                 size: 14,
                               )

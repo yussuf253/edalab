@@ -9,6 +9,7 @@ import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/utils/pro_message_launcher.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../rider/screens/rider_active_delivery_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DeliveryQueueScreen extends StatefulWidget {
   final String userId;
@@ -218,7 +219,7 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.local_shipping_outlined, size: 34),
+                    const Icon(LucideIcons.truck, size: 34),
                     const SizedBox(height: 10),
                     const CircularProgressIndicator(),
                     const SizedBox(height: 10),
@@ -233,7 +234,7 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
                   child: Column(
                     children: [
                       const Icon(
-                        Icons.cloud_off_rounded,
+                        LucideIcons.cloudOff,
                         size: 34,
                         color: AppColors.mediumGrey,
                       ),
@@ -245,7 +246,7 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
                         onPressed: _loadQueue,
-                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        icon: const Icon(LucideIcons.refreshCw, size: 18),
                         label: Text(l10n.retry),
                       ),
                     ],
@@ -332,7 +333,7 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => launchPhoneCall(context, phone),
-                      icon: const Icon(Icons.call_outlined, size: 18),
+                      icon: const Icon(LucideIcons.phone, size: 18),
                       label: Text(l10n.callAction),
                     ),
                   ),
@@ -352,7 +353,7 @@ class _DeliveryQueueScreenState extends State<DeliveryQueueScreen> {
                         accentColor: '#3BAA5C',
                         metadata: {'orderId': id, 'customerPhone': phone},
                       ),
-                      icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                      icon: const Icon(LucideIcons.messageSquare, size: 18),
                       label: Text(l10n.messageAction),
                     ),
                   ),

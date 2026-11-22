@@ -15,6 +15,7 @@ import '../utils/ride_map_launcher.dart';
 import '../utils/ride_category_image.dart';
 import '../widgets/ride_route_preview.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class RideBookingScreen extends StatefulWidget {
   final Map<String, dynamic>? bookingData;
@@ -81,9 +82,9 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
   }
 
   IconData _getIconForCategory(String name) {
-    if (name.toLowerCase().contains('xl')) return Icons.airport_shuttle_rounded;
-    if (name.toLowerCase().contains('premium')) return Icons.local_taxi_rounded;
-    return Icons.directions_car_rounded;
+    if (name.toLowerCase().contains('xl')) return LucideIcons.bus;
+    if (name.toLowerCase().contains('premium')) return LucideIcons.carTaxiFront;
+    return LucideIcons.car;
   }
 
   String _categoryDisplayName(RideCategory category, AppLocalizations l10n) {
@@ -122,21 +123,21 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
           widget.bookingData?['pickupPoint'],
           fallbackLabel: pickup,
           color: AppColors.success,
-          icon: Icons.my_location_rounded,
+          icon: LucideIcons.locateFixed,
         ) ??
         const RideMapPoint(
           label: 'Pickup',
           latitude: 11.5886,
           longitude: 43.1457,
           color: AppColors.success,
-          icon: Icons.my_location_rounded,
+          icon: LucideIcons.locateFixed,
         );
     final destinationPoint =
         rideMapPointFromJson(
           widget.bookingData?['destinationPoint'],
           fallbackLabel: destinationTitle,
           color: AppColors.accent,
-          icon: Icons.location_on_rounded,
+          icon: LucideIcons.mapPin,
         ) ??
         estimateRideDestinationPoint(
           origin: pickupPoint,
@@ -176,21 +177,21 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
           widget.bookingData?['pickupPoint'],
           fallbackLabel: pickup,
           color: AppColors.success,
-          icon: Icons.my_location_rounded,
+          icon: LucideIcons.locateFixed,
         ) ??
         const RideMapPoint(
           label: 'Pickup',
           latitude: 11.5886,
           longitude: 43.1457,
           color: AppColors.success,
-          icon: Icons.my_location_rounded,
+          icon: LucideIcons.locateFixed,
         );
     final destinationPoint =
         rideMapPointFromJson(
           widget.bookingData?['destinationPoint'],
           fallbackLabel: destinationTitle,
           color: AppColors.accent,
-          icon: Icons.location_on_rounded,
+          icon: LucideIcons.mapPin,
         ) ??
         estimateRideDestinationPoint(
           origin: pickupPoint,
@@ -214,7 +215,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
       appBar: AppBar(
         title: Text(l10n.t('ride_booking.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -234,9 +235,9 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                 badgeLabel: routeDurationBadgeLabel,
                 routePolyline: _routeDetails?.polylinePoints,
                 overlayStatusIcon: _isLoadingRoute
-                    ? Icons.route_rounded
+                    ? LucideIcons.route
                     : routeDurationLabel == null
-                    ? Icons.info_outline_rounded
+                    ? LucideIcons.info
                     : null,
                 overlayStatusMessage: _isLoadingRoute
                     ? l10n.t('ride_booking.calculating_route_time')
@@ -300,7 +301,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                       ),
                       const SizedBox(width: 12),
                       const Icon(
-                        Icons.arrow_forward_rounded,
+                        LucideIcons.arrowRight,
                         size: 16,
                         color: AppColors.mediumGrey,
                       ),

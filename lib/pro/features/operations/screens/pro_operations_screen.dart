@@ -11,6 +11,7 @@ import '../../../core/models/pro_profile.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProOperationsScreen extends StatefulWidget {
   const ProOperationsScreen({super.key, required this.profile});
@@ -72,21 +73,21 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
           _OperationAction(
             title: l10n.ordersQueue,
             subtitle: l10n.ordersQueueSubtitle,
-            icon: Icons.receipt_long_outlined,
+            icon: LucideIcons.receiptText,
             color: AppColors.shopping,
             onTap: () => _open(ProRoutePaths.shopQueue),
           ),
           _OperationAction(
             title: l10n.storeSetup,
             subtitle: l10n.editStoreNameTaglineDescription,
-            icon: Icons.store_mall_directory_outlined,
+            icon: LucideIcons.store,
             color: AppColors.primary,
             onTap: () => _open(ProRoutePaths.shopProducts),
           ),
           _OperationAction(
             title: l10n.productsManager,
             subtitle: l10n.productsManagerSubtitle,
-            icon: Icons.inventory_2_outlined,
+            icon: LucideIcons.package,
             color: AppColors.shopping,
             onTap: () => _open(ProRoutePaths.shopProducts),
           ),
@@ -96,7 +97,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             _OperationAction(
               title: l10n.shoppingLane,
               subtitle: l10n.shoppingLaneSubtitle,
-              icon: Icons.shopping_bag_outlined,
+              icon: LucideIcons.shoppingBag,
               color: AppColors.shopping,
               onTap: () => _open('${ProRoutePaths.shopQueue}?module=shopping'),
             ),
@@ -104,7 +105,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             _OperationAction(
               title: l10n.foodLane,
               subtitle: l10n.foodLaneSubtitle,
-              icon: Icons.restaurant_menu,
+              icon: LucideIcons.utensilsCrossed,
               color: AppColors.food,
               onTap: () => _open('${ProRoutePaths.shopQueue}?module=food'),
             ),
@@ -112,7 +113,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             _OperationAction(
               title: l10n.pharmacyLane,
               subtitle: l10n.pharmacyLaneSubtitle,
-              icon: Icons.local_pharmacy_outlined,
+              icon: LucideIcons.pill,
               color: AppColors.pharmacy,
               onTap: () => _open('${ProRoutePaths.shopQueue}?module=pharmacy'),
             ),
@@ -134,21 +135,21 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
           _OperationAction(
             title: l10n.jobsQueue,
             subtitle: queueSubtitle,
-            icon: Icons.work_outline,
+            icon: LucideIcons.briefcase,
             color: AppColors.homeServices,
             onTap: () => _open(ProRoutePaths.providerQueue),
           ),
           _OperationAction(
             title: l10n.availability,
             subtitle: availabilitySubtitle,
-            icon: Icons.toggle_on_outlined,
+            icon: LucideIcons.toggleRight,
             color: AppColors.info,
             onTap: () => _open(ProRoutePaths.providerAvailability),
           ),
           _OperationAction(
             title: l10n.schedulingSettings,
             subtitle: l10n.schedulingSettingsSubtitle,
-            icon: Icons.schedule_outlined,
+            icon: LucideIcons.clock,
             color: AppColors.warning,
             onTap: () => _open(ProRoutePaths.providerSchedule),
           ),
@@ -158,7 +159,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             _OperationAction(
               title: l10n.servicesOnly,
               subtitle: l10n.servicesOnlySubtitle,
-              icon: Icons.home_repair_service_outlined,
+              icon: LucideIcons.hammer,
               color: AppColors.homeServices,
               onTap: () =>
                   _open('${ProRoutePaths.providerQueue}?module=services'),
@@ -170,7 +171,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             _OperationAction(
               title: l10n.laundryOnly,
               subtitle: l10n.laundryOnlySubtitle,
-              icon: Icons.local_laundry_service_outlined,
+              icon: LucideIcons.washingMachine,
               color: AppColors.laundry,
               onTap: () =>
                   _open('${ProRoutePaths.providerQueue}?module=laundry'),
@@ -183,21 +184,21 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
           _OperationAction(
             title: l10n.appointmentsQueue,
             subtitle: l10n.appointmentsQueueSubtitle,
-            icon: Icons.event_note_outlined,
+            icon: LucideIcons.calendarRange,
             color: AppColors.doctor,
             onTap: () => _open(ProRoutePaths.doctorAppointments),
           ),
           _OperationAction(
             title: l10n.doctorAvailability,
             subtitle: l10n.doctorAvailabilitySubtitle,
-            icon: Icons.toggle_on_outlined,
+            icon: LucideIcons.toggleRight,
             color: AppColors.info,
             onTap: () => _open(ProRoutePaths.doctorAvailability),
           ),
           _OperationAction(
             title: l10n.scheduleSettings,
             subtitle: l10n.scheduleSettingsSubtitle,
-            icon: Icons.schedule_outlined,
+            icon: LucideIcons.clock,
             color: AppColors.warning,
             onTap: () => _open(ProRoutePaths.doctorSchedule),
           ),
@@ -207,7 +208,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
           _OperationAction(
             title: l10n.dispatchQueue,
             subtitle: l10n.dispatchQueueSubtitle,
-            icon: Icons.local_shipping_outlined,
+            icon: LucideIcons.truck,
             color: AppColors.food,
             onTap: () => _open(ProRoutePaths.deliveryQueue),
           ),
@@ -215,7 +216,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
             _OperationAction(
               title: 'Parcel delivery',
               subtitle: 'Accept requests and manage parcel handoffs.',
-              icon: Icons.inventory_2_outlined,
+              icon: LucideIcons.package,
               color: AppColors.shopping,
               onTap: () => _open(ProRoutePaths.parcelDeliveryQueue),
             ),
@@ -225,7 +226,7 @@ class _ProOperationsScreenState extends State<ProOperationsScreen> {
           _OperationAction(
             title: l10n.rideQueue,
             subtitle: l10n.rideQueueSubtitle,
-            icon: Icons.local_taxi_outlined,
+            icon: LucideIcons.carTaxiFront,
             color: AppColors.ride,
             onTap: () => _open(ProRoutePaths.riderQueue),
           ),
@@ -579,7 +580,7 @@ class _OperationCard extends StatelessWidget {
                 ),
               ),
               Icon(
-                Icons.arrow_forward_ios_rounded,
+                LucideIcons.chevronRight,
                 color: action.color,
                 size: 18,
               ),

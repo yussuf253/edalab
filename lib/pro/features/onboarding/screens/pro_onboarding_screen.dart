@@ -9,6 +9,7 @@ import '../../../../core/providers/language_provider.dart';
 import '../../../../core/storage/app_preferences.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../core/router/pro_route_paths.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProOnboardingScreen extends StatefulWidget {
   const ProOnboardingScreen({super.key});
@@ -28,7 +29,7 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
       titleKey: 'onboardingTitle1',
       subtitleKey: 'onboardingSubtitle1',
       centerAssetPath: _brandLogoAsset,
-      centerIcon: Icons.health_and_safety_rounded,
+      centerIcon: LucideIcons.heartPulse,
       ctaColor: AppColors.primary,
       backgroundGradient: LinearGradient(
         colors: [Color(0xFFF6FFF9), Color(0xFFE8FEEB)],
@@ -39,25 +40,25 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
       nodes: [
         _OrbitNodeData(
           // Use built‑in icon instead of asset image
-          icon: Icons.medical_services,
+          icon: LucideIcons.briefcaseMedical,
           alignment: Alignment(-0.82, -0.50),
           size: 58,
           backgroundColor: Color(0xFFE4F8EC),
         ),
         _OrbitNodeData(
-          icon: Icons.local_pharmacy,
+          icon: LucideIcons.pill,
           alignment: Alignment(0.82, -0.56),
           size: 56,
           backgroundColor: Color(0xFFDEF7ED),
         ),
         _OrbitNodeData(
-          icon: Icons.shopping_cart,
+          icon: LucideIcons.shoppingCart,
           alignment: Alignment(0.82, 0.54),
           size: 62,
           backgroundColor: Color(0xFFFFF3DD),
         ),
         _OrbitNodeData(
-          icon: Icons.message,
+          icon: LucideIcons.messageSquare,
           alignment: Alignment(-0.82, 0.52),
           size: 60,
           backgroundColor: Color(0xFFE4F8EC),
@@ -68,7 +69,7 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
       heroType: _ProOnboardingHeroType.flow,
       titleKey: 'onboardingTitle2',
       subtitleKey: 'onboardingSubtitle2',
-      centerIcon: Icons.bolt_rounded,
+      centerIcon: LucideIcons.bolt,
       ctaColor: AppColors.primary,
       backgroundGradient: LinearGradient(
         colors: [Color(0xFFF6FFF9), Color(0xFFE8FEEB)],
@@ -80,7 +81,7 @@ class _ProOnboardingScreenState extends State<ProOnboardingScreen> {
       heroType: _ProOnboardingHeroType.insights,
       titleKey: 'onboardingTitle3',
       subtitleKey: 'onboardingSubtitle3',
-      centerIcon: Icons.insights_rounded,
+      centerIcon: LucideIcons.chartLine,
       ctaColor: AppColors.primary,
       backgroundGradient: LinearGradient(
         colors: [Color(0xFFF6FFF9), Color(0xFFE8FEEB)],
@@ -315,7 +316,7 @@ class _TopBar extends StatelessWidget {
                         if (languageProvider.locale.languageCode ==
                             lang.locale.languageCode)
                           const Icon(
-                            Icons.check_circle_rounded,
+                            LucideIcons.checkCircle,
                             color: AppColors.primary,
                             size: 20,
                           ),
@@ -592,12 +593,12 @@ class _OrbitHero extends StatelessWidget {
                   node.assetPath!,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.image_not_supported_outlined,
+                    LucideIcons.imageOff,
                     color: AppColors.grey,
                   ),
                 )
               : Icon(
-                  node.icon ?? Icons.help_outline,
+                  node.icon ?? LucideIcons.circleHelp,
                   color: AppColors.dark,
                   size: node.size * 0.5,
                 ),
@@ -657,7 +658,7 @@ class _FlowHero extends StatelessWidget {
           _FlowStep(
             label: queuedText,
             detail: queuedDetail,
-            icon: Icons.inventory_2_rounded,
+            icon: LucideIcons.package,
             color: const Color(0xFF2A9E64),
           ),
           const _FlowConnector(),
@@ -671,7 +672,7 @@ class _FlowHero extends StatelessWidget {
           _FlowStep(
             label: completedText,
             detail: completedDetail,
-            icon: Icons.check_circle_rounded,
+            icon: LucideIcons.checkCircle,
             color: const Color(0xFF19844D),
           ),
         ],
@@ -748,7 +749,7 @@ class _FlowConnector extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Icon(
-        Icons.keyboard_arrow_down_rounded,
+        LucideIcons.chevronDown,
         color: AppColors.mediumGrey,
       ),
     );

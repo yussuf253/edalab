@@ -7,6 +7,7 @@ import '../../../core/constants/pro_design_system.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../l10n/app_localizations.dart';
 import 'restaurant_menu_item_edit_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class RestaurantMenuScreen extends StatefulWidget {
   final String userId;
@@ -139,7 +140,7 @@ class _RestaurantMenuScreenState extends State<RestaurantMenuScreen> {
       appBar: AppBar(
         title: Text(l10n.restaurantMenuTitle),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -180,7 +181,7 @@ class _RestaurantMenuScreenState extends State<RestaurantMenuScreen> {
                 children: [
                   const SizedBox(height: 80),
                   Icon(
-                    Icons.restaurant_menu_rounded,
+                    LucideIcons.utensilsCrossed,
                     size: 48,
                     color: AppColors.grey.withValues(alpha: 0.6),
                   ),
@@ -254,7 +255,7 @@ class _RestaurantMenuScreenState extends State<RestaurantMenuScreen> {
                 onPressed: () => _addCategory(restaurantId),
                 backgroundColor: AppColors.white,
                 foregroundColor: AppColors.food,
-                icon: const Icon(Icons.category_outlined),
+                icon: const Icon(LucideIcons.layoutGrid),
                 label: Text(l10n.addMenuCategory),
               ),
               const SizedBox(width: ProDesignSystem.spacing12),
@@ -265,7 +266,7 @@ class _RestaurantMenuScreenState extends State<RestaurantMenuScreen> {
                   categories: categories,
                 ),
                 backgroundColor: AppColors.food,
-                icon: const Icon(Icons.add_rounded),
+                icon: const Icon(LucideIcons.plus),
                 label: Text(l10n.addMenuItem),
               ),
             ],
@@ -385,7 +386,7 @@ class _MenuItemRow extends StatelessWidget {
                   if (hasCustomizations) ...[
                     const SizedBox(height: 2),
                     Icon(
-                      Icons.tune_rounded,
+                      LucideIcons.slidersHorizontal,
                       size: 14,
                       color: AppColors.grey,
                     ),

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/media_upload_service.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ShopStoreSetupScreen extends StatefulWidget {
   final String userId;
@@ -209,11 +210,11 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
                             _uploadedImageUrl!,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => const Center(
-                              child: Icon(Icons.storefront_outlined, size: 42),
+                              child: Icon(LucideIcons.store, size: 42),
                             ),
                           )
                         : const Center(
-                            child: Icon(Icons.storefront_outlined, size: 42),
+                            child: Icon(LucideIcons.store, size: 42),
                           )),
             ),
             const SizedBox(height: 10),
@@ -225,7 +226,7 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
                       width: 18,
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
-                  : const Icon(Icons.photo_library_outlined),
+                  : const Icon(LucideIcons.images),
               label: Text(
                 _isUploadingImage ? l10n.uploadingImage : l10n.uploadStoreImage,
               ),
@@ -243,7 +244,7 @@ class _ShopStoreSetupScreenState extends State<ShopStoreSetupScreen> {
                   width: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Icon(Icons.save_outlined),
+              : const Icon(LucideIcons.save),
           label: Text(_isSubmitting ? l10n.saving : l10n.saveStoreSetup),
         ),
       ),

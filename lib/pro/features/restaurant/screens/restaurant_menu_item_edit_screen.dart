@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../core/constants/pro_design_system.dart';
 import '../../../l10n/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class _EditableOption {
   String id;
@@ -255,13 +256,13 @@ class _RestaurantMenuItemEditScreenState
       appBar: AppBar(
         title: Text(_isEditing ? l10n.editMenuItem : l10n.newMenuItem),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => Navigator.of(context).pop(false),
         ),
         actions: [
           if (_isEditing)
             IconButton(
-              icon: const Icon(Icons.delete_outline_rounded),
+              icon: const Icon(LucideIcons.trash2),
               onPressed: _isSubmitting ? null : _delete,
             ),
         ],
@@ -358,7 +359,7 @@ class _RestaurantMenuItemEditScreenState
                 ),
                 TextButton.icon(
                   onPressed: _addGroup,
-                  icon: const Icon(Icons.add_rounded, size: 18),
+                  icon: const Icon(LucideIcons.plus, size: 18),
                   label: Text(l10n.addCustomizationGroup),
                 ),
               ],
@@ -446,7 +447,7 @@ class _GroupEditor extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close_rounded, size: 18),
+                icon: const Icon(LucideIcons.x, size: 18),
                 onPressed: onRemove,
               ),
             ],
@@ -525,7 +526,7 @@ class _GroupEditor extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, size: 16),
+                    icon: const Icon(LucideIcons.x, size: 16),
                     onPressed: () => onRemoveOption(option),
                   ),
                 ],
@@ -533,7 +534,7 @@ class _GroupEditor extends StatelessWidget {
             ),
           TextButton.icon(
             onPressed: onAddOption,
-            icon: const Icon(Icons.add_rounded, size: 16),
+            icon: const Icon(LucideIcons.plus, size: 16),
             label: Text(l10n.addOption),
           ),
         ],

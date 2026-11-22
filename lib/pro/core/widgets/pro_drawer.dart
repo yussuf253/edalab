@@ -6,6 +6,7 @@ import '../router/pro_route_paths.dart';
 import '../models/pro_profile.dart';
 import '../providers/pro_auth_provider.dart';
 import '../utils/pro_module_helper.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProDrawer extends StatelessWidget {
   const ProDrawer({super.key});
@@ -43,7 +44,7 @@ class ProDrawer extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               children: [
-                const Icon(Icons.verified, color: Colors.blue, size: 20),
+                const Icon(LucideIcons.verified, color: Colors.blue, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   proProfile.isVerified
@@ -62,7 +63,7 @@ class ProDrawer extends StatelessWidget {
               padding: EdgeInsets.zero,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.dashboard),
+                  leading: const Icon(LucideIcons.layoutDashboard),
                   title: Text(
                     proProfile.type == ProProfileType.shop
                         ? 'Store Dashboard'
@@ -76,7 +77,7 @@ class ProDrawer extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.widgets_outlined),
+                  leading: const Icon(LucideIcons.layoutGrid),
                   title: Text(
                     proProfile.type == ProProfileType.shop
                         ? 'Store Tools'
@@ -88,7 +89,7 @@ class ProDrawer extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.chat_bubble_outline),
+                  leading: const Icon(LucideIcons.messageSquare),
                   title: const Text('Inbox'),
                   onTap: () {
                     Navigator.pop(context);
@@ -96,7 +97,7 @@ class ProDrawer extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.insights_outlined),
+                  leading: const Icon(LucideIcons.chartLine),
                   title: Text(
                     proProfile.type == ProProfileType.shop
                         ? 'Store Insights'
@@ -108,7 +109,7 @@ class ProDrawer extends StatelessWidget {
                   },
                 ),
                 ListTile(
-                  leading: const Icon(Icons.person_outline),
+                  leading: const Icon(LucideIcons.user),
                   title: const Text('Account'),
                   onTap: () {
                     Navigator.pop(context);
@@ -117,7 +118,7 @@ class ProDrawer extends StatelessWidget {
                 ),
                 if (proAuth.isSuperAdmin)
                   ListTile(
-                    leading: const Icon(Icons.admin_panel_settings_outlined),
+                    leading: const Icon(LucideIcons.shieldCheck),
                     title: const Text('Super Admin'),
                     onTap: () {
                       Navigator.pop(context);
@@ -156,7 +157,7 @@ class ProDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
+            leading: const Icon(LucideIcons.logOut, color: Colors.red),
             title: const Text(
               'Sign Out from Pro',
               style: TextStyle(color: Colors.red),

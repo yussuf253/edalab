@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -24,6 +25,7 @@ import '../../hotel/screens/hotel_screen.dart';
 import '../../home_services/screens/home_services_screen.dart';
 import '../../laundry/screens/laundry_screen.dart';
 import '../../grocery/screens/grocery_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -165,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Row(
                                 children: [
                                   const Icon(
-                                    Icons.location_on_outlined,
+                                    LucideIcons.mapPin,
                                     size: 13,
                                     color: AppColors.mediumGrey,
                                   ),
@@ -522,7 +524,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   children: [
                     const Icon(
-                      Icons.location_on_outlined,
+                      LucideIcons.mapPin,
                       size: 13,
                       color: AppColors.mediumGrey,
                     ),
@@ -746,7 +748,7 @@ class _ServicesGrid extends StatelessWidget {
                                 alignment: Alignment.topCenter,
                                 errorBuilder: (context, error, stackTrace) =>
                                     Icon(
-                                      Icons.widgets_rounded,
+                                      LucideIcons.layoutGrid,
                                       color: service.color,
                                       size: 24,
                                     ),
@@ -758,7 +760,7 @@ class _ServicesGrid extends StatelessWidget {
                                   fit: BoxFit.contain,
                                   errorBuilder: (context, error, stackTrace) {
                                     return Icon(
-                                      Icons.widgets_rounded,
+                                      LucideIcons.layoutGrid,
                                       color: service.color,
                                       size: 24,
                                     );
@@ -961,7 +963,7 @@ class _SpecialOffers extends StatelessWidget {
         l10n.t('home.offer.grocery_title'),
         l10n.t('home.offer.grocery_subtitle'),
         AppColors.grocery,
-        Icons.local_grocery_store_rounded,
+        LucideIcons.shoppingCart,
         moduleId: 'grocery',
       ),
       _OfferData(
@@ -969,7 +971,7 @@ class _SpecialOffers extends StatelessWidget {
         l10n.t('home.offer.pharmacy_title'),
         l10n.t('home.offer.pharmacy_subtitle'),
         AppColors.pharmacy,
-        Icons.medication_rounded,
+        LucideIcons.pill,
         moduleId: 'pharmacy',
       ),
       _OfferData(
@@ -977,7 +979,7 @@ class _SpecialOffers extends StatelessWidget {
         l10n.t('home.offer.ride_title'),
         l10n.t('home.offer.ride_subtitle'),
         AppColors.ride,
-        Icons.directions_car_rounded,
+        LucideIcons.car,
         moduleId: 'ride',
       ),
     ].where((offer) => enabledModules.contains(offer.moduleId)).toList();
@@ -1254,7 +1256,7 @@ class _PopularRestaurantCard extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(
-                                    Icons.star_rounded,
+                                    CupertinoIcons.star_fill,
                                     size: 10,
                                     color: AppColors.mediumGrey,
                                   ),
@@ -1290,16 +1292,16 @@ class _PopularRestaurantCard extends StatelessWidget {
                           runSpacing: 3,
                           children: [
                             _PopularRestaurantMeta(
-                              icon: Icons.schedule_rounded,
+                              icon: LucideIcons.clock,
                               label: restaurant.deliveryTime,
                             ),
                             _PopularRestaurantMeta(
-                              icon: Icons.near_me_outlined,
+                              icon: LucideIcons.navigation,
                               label:
                                   '${restaurant.distance.toStringAsFixed(1)} km',
                             ),
                             _PopularRestaurantMeta(
-                              icon: Icons.delivery_dining_rounded,
+                              icon: LucideIcons.scooter,
                               label: feeLabel,
                               bold: true,
                             ),
@@ -1338,7 +1340,7 @@ class _PopularRestaurantCard extends StatelessWidget {
   Widget _imageFallback() {
     return const Center(
       child: Icon(
-        Icons.restaurant_rounded,
+        LucideIcons.utensilsCrossed,
         size: 22,
         color: AppColors.mediumGrey,
       ),
@@ -1414,7 +1416,7 @@ class _PopularRestaurantDish extends StatelessWidget {
   Widget _fallback() {
     return const Center(
       child: Icon(
-        Icons.fastfood_rounded,
+        LucideIcons.sandwich,
         size: 20,
         color: AppColors.mediumGrey,
       ),
@@ -1511,14 +1513,14 @@ class _TopDoctors extends StatelessWidget {
                                   doctor.imageUrl!,
                                   fit: BoxFit.cover,
                                   errorBuilder: (_, _, _) => const Icon(
-                                    Icons.person_rounded,
+                                    LucideIcons.user,
                                     color: AppColors.mediumGrey,
                                     size: 26,
                                   ),
                                 ),
                               )
                             : const Icon(
-                                Icons.person_rounded,
+                                LucideIcons.user,
                                 color: AppColors.mediumGrey,
                                 size: 26,
                               ),
@@ -1549,7 +1551,7 @@ class _TopDoctors extends StatelessWidget {
                             Row(
                               children: [
                                 const Icon(
-                                  Icons.star_rounded,
+                                  CupertinoIcons.star_fill,
                                   size: 13,
                                   color: AppColors.warning,
                                 ),
@@ -1645,7 +1647,7 @@ class _TrendingProducts extends StatelessWidget {
                                   fit: BoxFit.cover,
                                   errorBuilder: (_, _, _) => const Center(
                                     child: Icon(
-                                      Icons.shopping_bag_rounded,
+                                      LucideIcons.shoppingBag,
                                       size: 32,
                                       color: AppColors.mediumGrey,
                                     ),
@@ -1654,7 +1656,7 @@ class _TrendingProducts extends StatelessWidget {
                               else
                                 const Center(
                                   child: Icon(
-                                    Icons.shopping_bag_rounded,
+                                    LucideIcons.shoppingBag,
                                     size: 32,
                                     color: AppColors.mediumGrey,
                                   ),
@@ -1742,14 +1744,14 @@ class _HomeAvatar extends StatelessWidget {
                 height: size,
                 fit: BoxFit.cover,
                 errorBuilder: (_, _, _) => Icon(
-                  Icons.person_rounded,
+                  LucideIcons.user,
                   color: AppColors.primary,
                   size: size * 0.5,
                 ),
               ),
             )
           : Icon(
-              Icons.person_rounded,
+              LucideIcons.user,
               color: AppColors.primary,
               size: size * 0.5,
             ),
@@ -1780,7 +1782,7 @@ class _HomeSearchPill extends StatelessWidget {
         child: Row(
           children: [
             const Icon(
-              Icons.search_rounded,
+              LucideIcons.search,
               size: 20,
               color: AppColors.mediumGrey,
             ),
@@ -1804,7 +1806,7 @@ class _HomeSearchPill extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.tune_rounded,
+                LucideIcons.slidersHorizontal,
                 size: 16,
                 color: AppColors.dark,
               ),

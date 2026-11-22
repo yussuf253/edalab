@@ -8,6 +8,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/contact_launcher.dart';
 import '../../../core/utils/pro_message_launcher.dart';
 import 'doctor_telemedicine_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DoctorAppointmentsQueueScreen extends StatefulWidget {
   final String userId;
@@ -191,7 +192,7 @@ class _DoctorAppointmentsQueueScreenState
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.medical_information_outlined, size: 34),
+                    const Icon(LucideIcons.fileHeart, size: 34),
                     const SizedBox(height: 10),
                     const CircularProgressIndicator(),
                     const SizedBox(height: 10),
@@ -275,7 +276,7 @@ class _DoctorAppointmentsQueueScreenState
                 if (phone.isNotEmpty)
                   OutlinedButton.icon(
                     onPressed: () => launchPhoneCall(context, phone),
-                    icon: const Icon(Icons.call_outlined, size: 18),
+                    icon: const Icon(LucideIcons.phone, size: 18),
                     label: Text(l10n.callAction),
                   ),
                 if (customerUserId.isNotEmpty)
@@ -296,7 +297,7 @@ class _DoctorAppointmentsQueueScreenState
                         'specialty': doctorName,
                       },
                     ),
-                    icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                    icon: const Icon(LucideIcons.messageSquare, size: 18),
                     label: Text(l10n.messageAction),
                   ),
                 if (status == 'PENDING') ...[

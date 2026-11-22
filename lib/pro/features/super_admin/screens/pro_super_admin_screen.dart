@@ -6,6 +6,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../core/constants/pro_design_system.dart';
 import '../../../../core/utils/money_format.dart';
 import '../../../core/router/pro_route_paths.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProSuperAdminScreen extends StatefulWidget {
   const ProSuperAdminScreen({super.key});
@@ -145,36 +146,36 @@ class _MetricsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tiles = [
-      _MetricData('Users', metrics.users, Icons.people_outline,
+      _MetricData('Users', metrics.users, LucideIcons.users,
           route: ProRoutePaths.adminUsers),
-      _MetricData('Pro accounts', metrics.proAccounts, Icons.badge_outlined,
+      _MetricData('Pro accounts', metrics.proAccounts, LucideIcons.badge,
           route: ProRoutePaths.adminProAccounts),
-      _MetricData('Orders', metrics.orders, Icons.receipt_long_outlined,
+      _MetricData('Orders', metrics.orders, LucideIcons.receiptText,
           route: ProRoutePaths.adminStoreOrders),
-      _MetricData('Rides', metrics.rides, Icons.local_taxi_outlined,
+      _MetricData('Rides', metrics.rides, LucideIcons.carTaxiFront,
           route: ProRoutePaths.adminRides),
-      _MetricData('Appointments', metrics.appointments, Icons.event_note,
+      _MetricData('Appointments', metrics.appointments, LucideIcons.calendarRange,
           route: ProRoutePaths.adminAppointments),
       _MetricData(
         'Laundry',
         metrics.laundryOrders,
-        Icons.local_laundry_service,
+        LucideIcons.washingMachine,
         route: ProRoutePaths.adminLaundry,
       ),
-      _MetricData('Hotels', metrics.hotelBookings, Icons.hotel_outlined,
+      _MetricData('Hotels', metrics.hotelBookings, LucideIcons.hotel,
           route: ProRoutePaths.adminHotels),
-      _MetricData('Revenue', metrics.revenueTotal, Icons.payments_outlined,
+      _MetricData('Revenue', metrics.revenueTotal, LucideIcons.banknote,
           route: ProRoutePaths.adminStoreOrders),
-      _MetricData('Today orders', metrics.todayOrders, Icons.today_outlined,
+      _MetricData('Today orders', metrics.todayOrders, LucideIcons.calendarDays,
           route: ProRoutePaths.adminStoreOrders),
-      _MetricData('Today rides', metrics.todayRides, Icons.route_outlined,
+      _MetricData('Today rides', metrics.todayRides, LucideIcons.route,
           route: ProRoutePaths.adminRides),
-      _MetricData('Banned users', metrics.bannedUsers, Icons.block_outlined,
+      _MetricData('Banned users', metrics.bannedUsers, LucideIcons.ban,
           route: ProRoutePaths.adminUsers),
       _MetricData(
         'Banned Pro',
         metrics.bannedProAccounts,
-        Icons.admin_panel_settings_outlined,
+        LucideIcons.shieldCheck,
         route: ProRoutePaths.adminProAccounts,
       ),
     ];
@@ -332,15 +333,15 @@ class _ActivityList extends StatelessWidget {
   static IconData _iconForType(String type) {
     switch (type) {
       case 'ride':
-        return Icons.local_taxi_outlined;
+        return LucideIcons.carTaxiFront;
       case 'appointment':
-        return Icons.event_note;
+        return LucideIcons.calendarRange;
       case 'laundry':
-        return Icons.local_laundry_service;
+        return LucideIcons.washingMachine;
       case 'hotel':
-        return Icons.hotel_outlined;
+        return LucideIcons.hotel;
       default:
-        return Icons.receipt_long_outlined;
+        return LucideIcons.receiptText;
     }
   }
 }
@@ -374,7 +375,7 @@ class _AccountList extends StatelessWidget {
                     ? AppColors.error.withValues(alpha: 0.12)
                     : AppColors.primary.withValues(alpha: 0.12),
                 child: Icon(
-                  account.banned ? Icons.block : Icons.person_outline,
+                  account.banned ? LucideIcons.ban : LucideIcons.user,
                   color: account.banned ? AppColors.error : AppColors.primary,
                 ),
               ),

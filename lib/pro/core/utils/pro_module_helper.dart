@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../models/pro_profile.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProModuleHelper {
   static List<ProModule> getModulesForProfile(ProProfileType type) {
@@ -131,29 +132,29 @@ class ProModuleHelper {
   static IconData getModuleIcon(ProModule module) {
     switch (module) {
       case ProModule.shopping:
-        return Icons.storefront;
+        return LucideIcons.store;
       case ProModule.food:
-        return Icons.restaurant_menu;
+        return LucideIcons.utensilsCrossed;
       case ProModule.pharmacy:
-        return Icons.local_pharmacy;
+        return LucideIcons.pill;
       case ProModule.services:
-        return Icons.home_repair_service;
+        return LucideIcons.hammer;
       case ProModule.laundry:
-        return Icons.local_laundry_service;
+        return LucideIcons.washingMachine;
       case ProModule.doctor:
-        return Icons.medical_services;
+        return LucideIcons.briefcaseMedical;
       case ProModule.shoppingDelivery:
-        return Icons.inventory_2_outlined;
+        return LucideIcons.package;
       case ProModule.foodDelivery:
-        return Icons.delivery_dining;
+        return LucideIcons.scooter;
       case ProModule.pharmacyDelivery:
-        return Icons.medication_outlined;
+        return LucideIcons.pill;
       case ProModule.parcelDelivery:
-        return Icons.inventory_2_outlined;
+        return LucideIcons.package;
       case ProModule.ride:
-        return Icons.local_taxi;
+        return LucideIcons.carTaxiFront;
       case ProModule.ecologicalCleaning:
-        return Icons.cleaning_services;
+        return LucideIcons.broom;
     }
   }
 
@@ -190,15 +191,15 @@ class ProModuleHelper {
   static IconData getProfileIcon(ProProfileType type) {
     switch (type) {
       case ProProfileType.shop:
-        return Icons.store;
+        return LucideIcons.store;
       case ProProfileType.provider:
-        return Icons.cleaning_services;
+        return LucideIcons.broom;
       case ProProfileType.doctor:
-        return Icons.local_hospital;
+        return LucideIcons.cross;
       case ProProfileType.delivery:
-        return Icons.local_shipping;
+        return LucideIcons.truck;
       case ProProfileType.rider:
-        return Icons.two_wheeler;
+        return LucideIcons.carTaxiFront;
     }
   }
 

@@ -7,6 +7,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/router/pro_route_paths.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProviderScheduleSettingsScreen extends StatefulWidget {
   final String userId;
@@ -231,7 +232,7 @@ class _ProviderScheduleSettingsScreenState
                                 ? null
                                 : () =>
                                       pickSlotTime(slot: slot, pickStart: true),
-                            icon: const Icon(Icons.schedule_outlined, size: 18),
+                            icon: const Icon(LucideIcons.clock, size: 18),
                             label: Text(startLabel),
                           ),
                         ),
@@ -247,7 +248,7 @@ class _ProviderScheduleSettingsScreenState
                                     slot: slot,
                                     pickStart: false,
                                   ),
-                            icon: const Icon(Icons.schedule, size: 18),
+                            icon: const Icon(LucideIcons.clock, size: 18),
                             label: Text(endLabel),
                           ),
                         ),
@@ -403,7 +404,7 @@ class _ProviderScheduleSettingsScreenState
                     ElevatedButton.icon(
                       onPressed: () =>
                           context.push(ProRoutePaths.providerAvailability),
-                      icon: const Icon(Icons.settings_outlined),
+                      icon: const Icon(LucideIcons.settings),
                       label: Text(l10n.openOfferedServices),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.homeServices,
@@ -447,7 +448,7 @@ class _ProviderScheduleSettingsScreenState
                               alpha: 0.12,
                             ),
                             child: const Icon(
-                              Icons.schedule_outlined,
+                              LucideIcons.clock,
                               color: AppColors.homeServices,
                             ),
                           ),
@@ -510,7 +511,7 @@ class _ProviderScheduleSettingsScreenState
                         alignment: Alignment.centerRight,
                         child: TextButton.icon(
                           onPressed: isBusy ? null : () => _openEditor(item),
-                          icon: const Icon(Icons.edit_outlined),
+                          icon: const Icon(LucideIcons.edit),
                           label: Text(l10n.editTimeSlots),
                         ),
                       ),

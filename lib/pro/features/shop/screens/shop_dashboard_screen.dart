@@ -8,6 +8,7 @@ import '../../../core/models/pro_dashboard_data.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../l10n/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 int _parseMetricCount(String value) {
   final match = RegExp(r'\d+').firstMatch(value);
@@ -190,7 +191,7 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
         foregroundColor: AppColors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined),
+            icon: const Icon(LucideIcons.bell),
             onPressed: () => context.push(ProRoutePaths.inbox),
           ),
         ],
@@ -252,7 +253,7 @@ class _ShopDashboardScreenState extends State<ShopDashboardScreen> {
                     shadows: ProDesignSystem.shadowElevation1,
                     child: Row(
                       children: [
-                        Icon(Icons.restaurant_menu_rounded, color: AppColors.food),
+                        Icon(LucideIcons.utensilsCrossed, color: AppColors.food),
                         const SizedBox(width: ProDesignSystem.spacing12),
                         Expanded(
                           child: Text(
@@ -346,7 +347,7 @@ class _DashboardHero extends StatelessWidget {
                       ),
                     ),
                   ),
-                  icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                  icon: const Icon(LucideIcons.receiptText, size: 18),
                   label: Text(
                     l10n.orderQueue,
                     style: const TextStyle(fontWeight: FontWeight.w700),
@@ -369,7 +370,7 @@ class _DashboardHero extends StatelessWidget {
                       ),
                     ),
                   ),
-                  icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                  icon: const Icon(LucideIcons.package, size: 18),
                   label: Text(
                     l10n.products,
                     style: const TextStyle(fontWeight: FontWeight.w700),
@@ -406,7 +407,7 @@ class _ShopPulseRow extends StatelessWidget {
             label: l10n.liveOrdersLabel,
             value: '$liveOrders',
             color: AppColors.shopping,
-            icon: Icons.receipt_long_outlined,
+            icon: LucideIcons.receiptText,
           ),
         ),
         const SizedBox(width: ProDesignSystem.spacing12),
@@ -415,7 +416,7 @@ class _ShopPulseRow extends StatelessWidget {
             label: l10n.completedLabel,
             value: '$completedToday',
             color: AppColors.info,
-            icon: Icons.check_circle_outline,
+            icon: LucideIcons.checkCircle,
           ),
         ),
         const SizedBox(width: ProDesignSystem.spacing12),
@@ -424,7 +425,7 @@ class _ShopPulseRow extends StatelessWidget {
             label: l10n.stockAlertsLabel,
             value: '$attentionCount',
             color: AppColors.warning,
-            icon: Icons.warning_outlined,
+            icon: LucideIcons.triangleAlert,
           ),
         ),
       ],
@@ -497,7 +498,7 @@ class _StoreManagementPanel extends StatelessWidget {
                 child: _ManagementActionTile(
                   title: l10n.orderQueue,
                   subtitle: l10n.handleActiveOrders,
-                  icon: Icons.receipt_long_outlined,
+                  icon: LucideIcons.receiptText,
                   color: AppColors.shopping,
                   onTap: onOpenOrders,
                 ),
@@ -507,7 +508,7 @@ class _StoreManagementPanel extends StatelessWidget {
                 child: _ManagementActionTile(
                   title: l10n.products,
                   subtitle: l10n.updateCatalog,
-                  icon: Icons.inventory_2_outlined,
+                  icon: LucideIcons.package,
                   color: AppColors.success,
                   onTap: onOpenProducts,
                 ),
@@ -690,7 +691,7 @@ class _RecentOrderTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(ProDesignSystem.radiusSmall),
             ),
             child: Icon(
-              Icons.receipt_long_outlined,
+              LucideIcons.receiptText,
               color: moduleColor,
               size: 20,
             ),

@@ -26,7 +26,7 @@ dependencies:
   badges: ^3.1.2
   percent_indicator: ^4.2.3
   lottie: ^3.3.1
-  iconsax_flutter: ^1.0.0
+  lucide_icons_flutter: ^4.0.2
   flutter_staggered_animations: ^1.1.1
   readmore: ^3.0.0
   dotted_border: ^2.1.0
@@ -50,6 +50,7 @@ dependencies:
   flutter_gen: ^5.14.1
   connectivity_plus: ^7.3.1
   shimmer: ^4.0.0
+  lucide_icons: ^0.257.0
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class RestaurantDetailScreen extends StatefulWidget {
   final String restaurantId;
@@ -226,7 +228,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                   customBorder: const CircleBorder(),
                   onTap: () => context.pop(),
                   child: const Icon(
-                    Icons.arrow_back_rounded,
+                    LucideIcons.arrowLeft,
                     size: 20,
                     color: AppColors.dark,
                   ),
@@ -280,7 +282,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                       ),
                       Center(
                         child: Icon(
-                          Icons.restaurant_rounded,
+                          LucideIcons.utensilsCrossed,
                           size: 72,
                           color: AppColors.food.withValues(alpha: 0.35),
                         ),
@@ -307,7 +309,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                         child: Column(
                           children: [
                             Icon(
-                              Icons.cloud_off_rounded,
+                              LucideIcons.cloudOff,
                               size: 56,
                               color: Colors.grey.shade400,
                             ),
@@ -323,7 +325,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                                 setState(() => _isLoading = true);
                                 _loadRestaurant();
                               },
-                              icon: const Icon(Icons.refresh_rounded),
+                              icon: const Icon(LucideIcons.refreshCw),
                               label: Text(l10n.t('city_gate.retry_button')),
                             ),
                           ],
@@ -405,7 +407,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                         Row(
                           children: [
                             _StatChip(
-                              Icons.star_rounded,
+                              CupertinoIcons.star_fill,
                               '${restaurant.rating}',
                               l10n.t(
                                 'restaurant_detail.reviews',
@@ -417,14 +419,14 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                             ),
                             const SizedBox(width: 10),
                             _StatChip(
-                              Icons.schedule_rounded,
+                              LucideIcons.clock,
                               restaurant.deliveryTime,
                               l10n.t('restaurant_detail.min_delivery'),
                               AppColors.primary,
                             ),
                             const SizedBox(width: 10),
                             _StatChip(
-                              Icons.delivery_dining_rounded,
+                              LucideIcons.scooter,
                               restaurant.deliveryFee == 'Free'
                                   ? 'Free'
                                   : restaurant.deliveryFee,
@@ -529,7 +531,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                   child: Column(
                     children: [
                       Icon(
-                        Icons.search_off_rounded,
+                        LucideIcons.searchX,
                         size: 44,
                         color: AppColors.mediumGrey,
                       ),
@@ -971,7 +973,7 @@ class _MenuItemCard extends StatelessWidget {
   Widget _imageFallback() {
     return Center(
       child: Icon(
-        Icons.fastfood_rounded,
+        LucideIcons.sandwich,
         size: 26,
         color: AppColors.food.withValues(alpha: 0.3),
       ),
@@ -1014,7 +1016,7 @@ class _QuantityControl extends StatelessWidget {
             ],
           ),
           child: const Icon(
-            Icons.add_rounded,
+            LucideIcons.plus,
             size: 20,
             color: AppColors.white,
           ),
@@ -1033,7 +1035,7 @@ class _QuantityControl extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _StepperButton(icon: Icons.add_rounded, onTap: onIncrement),
+          _StepperButton(icon: LucideIcons.plus, onTap: onIncrement),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 3),
             child: Text(
@@ -1045,7 +1047,7 @@ class _QuantityControl extends StatelessWidget {
               ),
             ),
           ),
-          _StepperButton(icon: Icons.remove_rounded, onTap: onDecrement),
+          _StepperButton(icon: LucideIcons.minus, onTap: onDecrement),
         ],
       ),
     );

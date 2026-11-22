@@ -4,6 +4,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/money_format.dart';
 import '../../../core/constants/pro_design_system.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Shared scaffolding for super-admin data management screens: search bar,
 /// paginated list with load-more, pull-to-refresh, and error states.
@@ -28,13 +29,13 @@ class AdminSearchBar extends StatelessWidget {
       onSubmitted: (_) => onSubmitted(),
       decoration: InputDecoration(
         hintText: hint,
-        prefixIcon: const Icon(Icons.search),
+        prefixIcon: const Icon(LucideIcons.search),
         suffixIcon: ValueListenableBuilder<TextEditingValue>(
           valueListenable: controller,
           builder: (context, value, _) => value.text.isEmpty
               ? const SizedBox.shrink()
               : IconButton(
-                  icon: const Icon(Icons.clear),
+                  icon: const Icon(LucideIcons.x),
                   onPressed: () {
                     controller.clear();
                     onSubmitted();
@@ -64,7 +65,7 @@ class AdminErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 40, color: AppColors.error),
+            const Icon(LucideIcons.circleAlert, size: 40, color: AppColors.error),
             const SizedBox(height: ProDesignSystem.spacing12),
             Text(
               'Could not load data: $error',
@@ -306,8 +307,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                                   : AppColors.primary.withValues(alpha: 0.12),
                               child: Icon(
                                 (user['isPro'] as bool? ?? false)
-                                    ? Icons.storefront
-                                    : Icons.person_outline,
+                                    ? LucideIcons.store
+                                    : LucideIcons.user,
                                 color: (user['banned'] as bool? ?? false)
                                     ? AppColors.error
                                     : AppColors.primaryDark,
@@ -566,10 +567,10 @@ class _AdminProAccountsScreenState extends State<AdminProAccountsScreen> {
                                   : AppColors.warning.withValues(alpha: 0.15),
                               child: Icon(
                                 account['banned'] == true
-                                    ? Icons.block
+                                    ? LucideIcons.ban
                                     : verified
-                                    ? Icons.verified_outlined
-                                    : Icons.hourglass_top,
+                                    ? LucideIcons.verified
+                                    : LucideIcons.hourglass,
                                 color: account['banned'] == true
                                     ? AppColors.error
                                     : verified
@@ -823,11 +824,11 @@ class _AdminOrdersScreenState extends State<AdminOrdersScreen> {
                               ).withValues(alpha: 0.15),
                               child: Icon(
                                 switch (order['kind']) {
-                                  'ride' => Icons.local_taxi_outlined,
-                                  'laundry' => Icons.local_laundry_service_outlined,
-                                  'hotel' => Icons.hotel_outlined,
-                                  'appointment' => Icons.event_note_outlined,
-                                  _ => Icons.receipt_long_outlined,
+                                  'ride' => LucideIcons.carTaxiFront,
+                                  'laundry' => LucideIcons.washingMachine,
+                                  'hotel' => LucideIcons.hotel,
+                                  'appointment' => LucideIcons.calendarRange,
+                                  _ => LucideIcons.receiptText,
                                 },
                                 color: _statusColor(status),
                               ),
@@ -1037,7 +1038,7 @@ class _AdminRestaurantsScreenState extends State<AdminRestaurantsScreen> {
                             leading: const CircleAvatar(
                               backgroundColor: AppColors.food,
                               child: Icon(
-                                Icons.restaurant_outlined,
+                                LucideIcons.utensilsCrossed,
                                 color: AppColors.white,
                               ),
                             ),
@@ -1054,7 +1055,7 @@ class _AdminRestaurantsScreenState extends State<AdminRestaurantsScreen> {
                             ),
                             trailing: IconButton(
                               tooltip: 'Regenerate redeem code',
-                              icon: const Icon(Icons.refresh),
+                              icon: const Icon(LucideIcons.refreshCw),
                               onPressed: () => _regenerateCode(restaurant),
                             ),
                           ),

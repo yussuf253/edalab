@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProBannedScreen extends StatelessWidget {
   const ProBannedScreen({this.banReason, super.key});
@@ -21,7 +22,7 @@ class ProBannedScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Icon(
-                Icons.block,
+                LucideIcons.ban,
                 size: 80,
                 color: Theme.of(context).colorScheme.error,
               ),

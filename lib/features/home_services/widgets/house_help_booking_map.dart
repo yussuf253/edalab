@@ -6,6 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/models/home_service_model.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HouseHelpBookingMap extends StatefulWidget {
   final double selectedLatitude;
@@ -203,7 +204,7 @@ class _HouseHelpBookingMapState extends State<HouseHelpBookingMap> {
               right: 10,
               bottom: 10,
               child: _MapCircleButton(
-                icon: Icons.my_location_rounded,
+                icon: LucideIcons.locateFixed,
                 onPressed: _fitCamera,
               ),
             ),

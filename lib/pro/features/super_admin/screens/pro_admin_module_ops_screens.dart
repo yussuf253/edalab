@@ -5,6 +5,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/money_format.dart';
 import '../../../core/constants/pro_design_system.dart';
 import 'pro_admin_data_screens.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Dedicated, module-specific operations screens for the super admin.
 /// Each vertical (store orders, rides, laundry, hotels, appointments) gets its
@@ -30,7 +31,7 @@ class _ModuleConfig {
 const _orderConfig = _ModuleConfig(
   kind: 'order',
   title: 'Store Orders',
-  icon: Icons.receipt_long_outlined,
+  icon: LucideIcons.receiptText,
   statuses: [
     'DRAFT',
     'PENDING',
@@ -48,7 +49,7 @@ const _orderConfig = _ModuleConfig(
 const _rideConfig = _ModuleConfig(
   kind: 'ride',
   title: 'Rides',
-  icon: Icons.local_taxi_outlined,
+  icon: LucideIcons.carTaxiFront,
   statuses: [
     'REQUESTED',
     'ACCEPTED',
@@ -63,7 +64,7 @@ const _rideConfig = _ModuleConfig(
 const _laundryConfig = _ModuleConfig(
   kind: 'laundry',
   title: 'Laundry',
-  icon: Icons.local_laundry_service_outlined,
+  icon: LucideIcons.washingMachine,
   statuses: [
     'PENDING',
     'SCHEDULED',
@@ -79,7 +80,7 @@ const _laundryConfig = _ModuleConfig(
 const _hotelConfig = _ModuleConfig(
   kind: 'hotel',
   title: 'Hotel Bookings',
-  icon: Icons.hotel_outlined,
+  icon: LucideIcons.hotel,
   statuses: ['PENDING', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED'],
   terminalStatuses: ['CHECKED_OUT', 'CANCELLED'],
 );
@@ -87,7 +88,7 @@ const _hotelConfig = _ModuleConfig(
 const _appointmentConfig = _ModuleConfig(
   kind: 'appointment',
   title: 'Appointments',
-  icon: Icons.event_note_outlined,
+  icon: LucideIcons.calendarRange,
   statuses: [
     'PENDING',
     'APPROVED',
@@ -541,7 +542,7 @@ class _AdminModuleOpsScreenState extends State<AdminModuleOpsScreen> {
                                   if (!terminal) ...[
                                     const SizedBox(width: 4),
                                     PopupMenuButton<String>(
-                                      icon: const Icon(Icons.more_vert),
+                                      icon: const Icon(LucideIcons.ellipsisVertical),
                                       onSelected: (value) =>
                                           _quickAction(record, value),
                                       itemBuilder: (context) => [
@@ -747,7 +748,7 @@ class _ModuleDetailSheetState extends State<_ModuleDetailSheet> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close),
+                      icon: const Icon(LucideIcons.x),
                       onPressed: () => Navigator.pop(context, false),
                     ),
                   ],

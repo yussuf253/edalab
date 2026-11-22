@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/network/api_client.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DoctorAvailabilityScreen extends StatefulWidget {
   final String userId;
@@ -127,7 +128,7 @@ class _DoctorAvailabilityScreenState extends State<DoctorAvailabilityScreen> {
                 leading: CircleAvatar(
                   backgroundColor: AppColors.doctor.withValues(alpha: 0.12),
                   child: const Icon(
-                    Icons.local_hospital,
+                    LucideIcons.cross,
                     color: AppColors.doctor,
                   ),
                 ),

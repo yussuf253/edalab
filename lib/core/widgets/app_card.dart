@@ -1,7 +1,9 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_spacing.dart';
 import '../constants/app_text_styles.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class AppCard extends StatelessWidget {
   final Widget child;
@@ -191,8 +193,8 @@ class ProductCard extends StatelessWidget {
                           ),
                           child: Icon(
                             isFavorite
-                                ? Icons.favorite_rounded
-                                : Icons.favorite_border_rounded,
+                                ? CupertinoIcons.heart_fill
+                                : LucideIcons.heart,
                             size: 17,
                             color: isFavorite
                                 ? AppColors.accent
@@ -247,7 +249,7 @@ class ProductCard extends StatelessWidget {
   Widget _buildPlaceholder() {
     return const Center(
       child: Icon(
-        Icons.image_outlined,
+        LucideIcons.image,
         size: 34,
         color: AppColors.mediumGrey,
       ),
@@ -272,7 +274,7 @@ class _RatingPill extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.star_rounded, size: 11, color: AppColors.white),
+          const Icon(CupertinoIcons.star_fill, size: 11, color: AppColors.white),
           const SizedBox(width: 3),
           Text(
             rating.toStringAsFixed(1),

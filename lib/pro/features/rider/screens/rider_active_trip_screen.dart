@@ -11,6 +11,7 @@ import '../../../../features/ride/widgets/ride_route_preview.dart';
 import '../../../core/utils/pro_message_launcher.dart';
 import '../../../core/widgets/swipeable_button.dart';
 import '../../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class RiderActiveTripScreen extends StatefulWidget {
   final String rideId;
@@ -179,21 +180,21 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
           trackingData['pickup'],
           fallbackLabel: pickup,
           color: AppColors.success,
-          icon: Icons.my_location_rounded,
+          icon: LucideIcons.locateFixed,
         ) ??
         const RideMapPoint(
           label: 'Pickup',
           latitude: 11.5886,
           longitude: 43.1457,
           color: AppColors.success,
-          icon: Icons.my_location_rounded,
+          icon: LucideIcons.locateFixed,
         );
     final destinationPoint =
         rideMapPointFromJson(
           trackingData['destination'],
           fallbackLabel: destination,
           color: AppColors.accent,
-          icon: Icons.location_on_rounded,
+          icon: LucideIcons.mapPin,
         ) ??
         estimateRideDestinationPoint(
           origin: pickupPoint,
@@ -232,9 +233,9 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                   badgeLabel: _isLoading ? null : eta,
                   routePolyline: routeDetails?.polylinePoints,
                   overlayStatusIcon: _isLoading
-                      ? Icons.route_rounded
+                      ? LucideIcons.route
                       : _error != null
-                      ? Icons.error_outline_rounded
+                      ? LucideIcons.circleAlert
                       : null,
                   overlayStatusMessage: _isLoading
                       ? l10n.loadingAssignedTrip
@@ -332,7 +333,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           const Icon(
-                                            Icons.my_location_rounded,
+                                            LucideIcons.locateFixed,
                                             color: AppColors.success,
                                           ),
                                           const SizedBox(width: 12),
@@ -350,7 +351,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                             CrossAxisAlignment.start,
                                         children: [
                                           const Icon(
-                                            Icons.location_on_rounded,
+                                            LucideIcons.mapPin,
                                             color: AppColors.accent,
                                           ),
                                           const SizedBox(width: 12),
@@ -384,7 +385,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                           ),
                                         ),
                                         child: const Icon(
-                                          Icons.directions_car_rounded,
+                                          LucideIcons.car,
                                           color: AppColors.ride,
                                         ),
                                       ),
@@ -420,7 +421,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                                 context,
                                                 passengerPhone,
                                               ),
-                                        icon: const Icon(Icons.call_outlined),
+                                        icon: const Icon(LucideIcons.phone),
                                         label: Text(l10n.callPassengerAction),
                                       ),
                                     ),
@@ -449,7 +450,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                                                 },
                                               ),
                                         icon: const Icon(
-                                          Icons.chat_bubble_outline,
+                                          LucideIcons.messageSquare,
                                         ),
                                         label: Text(l10n.messageAction),
                                       ),
@@ -485,7 +486,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: AppSpacing.shadowMd,
                 ),
-                child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+                child: const Icon(LucideIcons.chevronLeft, size: 18),
               ),
             ),
           ),

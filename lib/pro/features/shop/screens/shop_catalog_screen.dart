@@ -14,6 +14,7 @@ import '../../../core/utils/pro_module_helper.dart';
 import '../widgets/shop_module_bottom_nav.dart';
 import 'shop_product_create_screen.dart';
 import 'shop_store_setup_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ShopCatalogScreen extends StatefulWidget {
   final String userId;
@@ -303,14 +304,14 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                                     fit: BoxFit.cover,
                                     errorBuilder: (_, _, _) => const Center(
                                       child: Icon(
-                                        Icons.restaurant_outlined,
+                                        LucideIcons.utensilsCrossed,
                                         size: 38,
                                       ),
                                     ),
                                   )
                                 : const Center(
                                     child: Icon(
-                                      Icons.restaurant_outlined,
+                                      LucideIcons.utensilsCrossed,
                                       size: 38,
                                     ),
                                   )),
@@ -324,7 +325,7 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                               width: 16,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Icon(Icons.photo_library_outlined),
+                          : const Icon(LucideIcons.images),
                       label: Text(
                         isUploadingImage
                             ? l10n.uploadingImage
@@ -346,7 +347,7 @@ class _ShopCatalogScreenState extends State<ShopCatalogScreen> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Icon(Icons.save_outlined),
+                            : const Icon(LucideIcons.save),
                         label: Text(
                           isSubmitting
                               ? l10n.saving
@@ -707,7 +708,7 @@ class _StorefrontModuleTab extends StatelessWidget {
           onChanged: onSearchChanged,
           decoration: InputDecoration(
             hintText: _searchHint(module, l10n),
-            prefixIcon: const Icon(Icons.search),
+            prefixIcon: const Icon(LucideIcons.search),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
           ),
         ),
@@ -881,7 +882,7 @@ class _ShoppingActionsRow extends StatelessWidget {
         Expanded(
           child: FilledButton.icon(
             onPressed: onCreateStore,
-            icon: const Icon(Icons.add_business_outlined),
+            icon: const Icon(LucideIcons.building2),
             label: Text(
               hasBindings
                   ? (isPharmacy ? l10n.editPharmacy : l10n.editStoreSetup)
@@ -893,7 +894,7 @@ class _ShoppingActionsRow extends StatelessWidget {
         Expanded(
           child: OutlinedButton.icon(
             onPressed: hasBindings ? onAddProduct : null,
-            icon: const Icon(Icons.add_box_outlined),
+            icon: const Icon(LucideIcons.squarePlus),
             label: Text(isPharmacy ? l10n.addMedicine : l10n.addProduct),
           ),
         ),
@@ -920,7 +921,7 @@ class _FoodActionsRow extends StatelessWidget {
       child: FilledButton.icon(
         onPressed: onCreateOrEditRestaurant,
         icon: Icon(
-          hasBindings ? Icons.edit_outlined : Icons.add_business_outlined,
+          hasBindings ? LucideIcons.edit : LucideIcons.building2,
         ),
         label: Text(
           hasBindings ? l10n.editRestaurantSetup : l10n.connectRestaurant,
@@ -1137,7 +1138,7 @@ class _EmptyModuleState extends StatelessWidget {
               const SizedBox(height: 16),
               FilledButton.icon(
                 onPressed: onCreateModule,
-                icon: const Icon(Icons.add_business_outlined),
+                icon: const Icon(LucideIcons.building2),
                 label: Text(_createLabel(module, l10n)),
               ),
             ],
@@ -1230,7 +1231,7 @@ class _StorefrontHeaderCard extends StatelessWidget {
                     backgroundColor: AppColors.shopping,
                     foregroundColor: Colors.white,
                   ),
-                  icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                  icon: const Icon(LucideIcons.receiptText, size: 18),
                   label: Text(l10n.openQueue),
                 ),
               ),
@@ -1238,7 +1239,7 @@ class _StorefrontHeaderCard extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: onOpenProducts,
-                  icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                  icon: const Icon(LucideIcons.package, size: 18),
                   label: Text(l10n.productsLabel),
                 ),
               ),

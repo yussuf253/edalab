@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-11-22T14:13:51.739Z",
+  "applied": true,
+  "summary": {
+    "storesInFile": 36,
+    "pharmacies": 5,
+    "shoppingStores": 31,
+    "reusedExistingStores": 36,
+    "newCategories": 0,
+    "products": 3212,
+    "uniqueMenuRows": 3114,
+    "storesWithoutProducts": [
+      "Glow Orginal Cosmétique",
+      "LET'S VAPE",
+      "Zawam honey"
+    ]
+  },
+  "created": {
+    "pharmacies": 0,
+    "shoppingStores": 0,
+    "categories": 0,
+    "products": 0,
+    "medicines": 0
+  }
+}

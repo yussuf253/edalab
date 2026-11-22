@@ -15,6 +15,7 @@ import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ChatScreen extends StatefulWidget {
   final String conversationId;
@@ -490,7 +491,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                     ),
                                   )
                                 : const Icon(
-                                    Icons.send_rounded,
+                                    LucideIcons.send,
                                     color: AppColors.white,
                                     size: 20,
                                   ),
@@ -508,17 +509,17 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   IconData _iconForEntity(String entityType) {
     switch (entityType) {
       case 'DOCTOR':
-        return Icons.local_hospital_rounded;
+        return LucideIcons.cross;
       case 'HOME_SERVICE_PROVIDER':
-        return Icons.home_repair_service_rounded;
+        return LucideIcons.hammer;
       case 'SHOP':
-        return Icons.storefront_rounded;
+        return LucideIcons.store;
       case 'DELIVERY':
-        return Icons.local_shipping_rounded;
+        return LucideIcons.truck;
       case 'RIDE':
-        return Icons.directions_car_rounded;
+        return LucideIcons.car;
       default:
-        return Icons.chat_rounded;
+        return LucideIcons.messageCircle;
     }
   }
 
@@ -535,7 +536,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.wifi_off_rounded,
+              LucideIcons.wifiOff,
               size: 40,
               color: AppColors.mediumGrey,
             ),

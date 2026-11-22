@@ -10,6 +10,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/app_notification_model.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -46,7 +47,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       appBar: AppBar(
         title: Text(l10n.t('notifications.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -454,7 +455,7 @@ class _EmptyState extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: const Icon(
-                Icons.notifications_none_rounded,
+                LucideIcons.bell,
                 color: AppColors.primary,
                 size: 36,
               ),

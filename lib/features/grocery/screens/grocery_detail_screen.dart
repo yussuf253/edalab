@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +15,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class GroceryDetailScreen extends StatefulWidget {
   final String productId;
@@ -99,7 +101,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
       backgroundColor: AppColors.white,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
         title: Text(l10n.t('grocery_detail.title')),
@@ -119,7 +121,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                   );
                   context.push('/grocery/cart');
                 },
-                icon: const Icon(Icons.shopping_bag_outlined),
+                icon: const Icon(LucideIcons.shoppingBag),
               ),
               if (cartItemCount > 0)
                 Positioned(
@@ -222,7 +224,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                         Row(
                           children: [
                             const Icon(
-                              Icons.star_rounded,
+                              CupertinoIcons.star_fill,
                               size: 18,
                               color: AppColors.warning,
                             ),
@@ -257,21 +259,21 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                             children: [
                               Expanded(
                                 child: _DetailStat(
-                                  icon: Icons.local_shipping_outlined,
+                                  icon: LucideIcons.truck,
                                   label: l10n.t('grocery_detail.delivery'),
                                   value: '20-35 min',
                                 ),
                               ),
                               Expanded(
                                 child: _DetailStat(
-                                  icon: Icons.inventory_2_outlined,
+                                  icon: LucideIcons.package,
                                   label: l10n.t('grocery_detail.unit'),
                                   value: _item.unit,
                                 ),
                               ),
                               Expanded(
                                 child: _DetailStat(
-                                  icon: Icons.eco_outlined,
+                                  icon: LucideIcons.leaf,
                                   label: l10n.t('grocery_detail.quality'),
                                   value: _item.isOrganic
                                       ? l10n.t('grocery_detail.organic')
@@ -325,7 +327,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                                         setState(() => _quantity--);
                                       }
                                     : null,
-                                icon: const Icon(Icons.remove_rounded),
+                                icon: const Icon(LucideIcons.minus),
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -350,7 +352,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                                   );
                                   setState(() => _quantity++);
                                 },
-                                icon: const Icon(Icons.add_rounded),
+                                icon: const Icon(LucideIcons.plus),
                               ),
                             ],
                           ),
@@ -393,7 +395,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                     Expanded(
                       child: AppButton(
                         text: l10n.t('grocery_detail.add_to_cart'),
-                        icon: Icons.shopping_bag_outlined,
+                        icon: LucideIcons.shoppingBag,
                         color: AppColors.grocery,
                         onPressed: _addToCart,
                       ),
@@ -483,22 +485,22 @@ class _DetailStat extends StatelessWidget {
 IconData _groceryCategoryIcon(String value) {
   final normalized = value.toLowerCase();
   if (normalized.contains('fruit') || normalized.contains('veg')) {
-    return Icons.apple_rounded;
+    return LucideIcons.apple;
   }
   if (normalized.contains('dairy') || normalized.contains('egg')) {
-    return Icons.egg_alt_rounded;
+    return LucideIcons.egg;
   }
   if (normalized.contains('meat') || normalized.contains('seafood')) {
-    return Icons.set_meal_rounded;
+    return LucideIcons.utensils;
   }
   if (normalized.contains('bakery') || normalized.contains('bread')) {
-    return Icons.bakery_dining_rounded;
+    return LucideIcons.croissant;
   }
   if (normalized.contains('beverage') || normalized.contains('drink')) {
-    return Icons.local_drink_rounded;
+    return LucideIcons.cupSoda;
   }
   if (normalized.contains('snack')) {
-    return Icons.cookie_rounded;
+    return LucideIcons.cookie;
   }
-  return Icons.shopping_basket_rounded;
+  return LucideIcons.shoppingBasket;
 }

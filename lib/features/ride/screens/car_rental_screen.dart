@@ -6,6 +6,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/widgets/app_shimmer.dart';
 import '../services/car_rental_service.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 // ─── Color palette for the rental module ──────────────────────────────────
 // Using a dark teal/slate palette distinct from ride (AppColors.ride = green)
@@ -176,7 +177,7 @@ class _RentalAppBar extends StatelessWidget {
       backgroundColor: _rentalPrimary,
       leading: IconButton(
         icon: const Icon(
-          Icons.arrow_back_ios_new_rounded,
+          LucideIcons.chevronLeft,
           size: 20,
           color: Colors.white,
         ),
@@ -239,7 +240,7 @@ class _RentalAppBar extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
-                          Icons.car_rental_rounded,
+                          LucideIcons.carFront,
                           color: _rentalAccent,
                           size: 22,
                         ),
@@ -346,17 +347,17 @@ class _CarCard extends StatelessWidget {
                   Row(
                     children: [
                       _SpecChip(
-                        icon: Icons.people_rounded,
+                        icon: LucideIcons.users,
                         label: '${car.seats} seats',
                       ),
                       const SizedBox(width: 8),
                       _SpecChip(
-                        icon: Icons.settings_rounded,
+                        icon: LucideIcons.settings,
                         label: car.transmission,
                       ),
                       const SizedBox(width: 8),
                       _SpecChip(
-                        icon: Icons.local_gas_station_rounded,
+                        icon: LucideIcons.fuel,
                         label: car.fuelType,
                       ),
                     ],
@@ -422,13 +423,13 @@ class _CarImageSection extends StatelessWidget {
   IconData get _icon {
     switch (car.type.toLowerCase()) {
       case 'suv':
-        return Icons.airport_shuttle_rounded;
+        return LucideIcons.bus;
       case 'van':
-        return Icons.directions_bus_filled_rounded;
+        return LucideIcons.busFront;
       case 'premium':
-        return Icons.local_taxi_rounded;
+        return LucideIcons.carTaxiFront;
       default:
-        return Icons.directions_car_rounded;
+        return LucideIcons.car;
     }
   }
 

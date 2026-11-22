@@ -14,6 +14,7 @@ import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ShoppingOrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -164,7 +165,7 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                       children: [
                         Expanded(
                           child: _InfoTile(
-                            icon: Icons.schedule_rounded,
+                            icon: LucideIcons.clock,
                             label: l10n.t('tracking.placed'),
                             value: _formatDate(data['createdAt']?.toString()),
                           ),
@@ -172,7 +173,7 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _InfoTile(
-                            icon: Icons.local_shipping_outlined,
+                            icon: LucideIcons.truck,
                             label: l10n.t('tracking.delivery'),
                             value:
                                 data['deliveryEta']?.toString() ??
@@ -201,7 +202,7 @@ class _ShoppingOrderDetailScreenState extends State<ShoppingOrderDetailScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
-                                Icons.location_on_outlined,
+                                LucideIcons.mapPin,
                                 color: AppColors.shopping,
                               ),
                             ),
@@ -305,7 +306,7 @@ class _CourierCard extends StatelessWidget {
             color: accentColor.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(Icons.person_rounded, color: accentColor),
+          child: Icon(LucideIcons.user, color: accentColor),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -325,7 +326,7 @@ class _CourierCard extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         _DetailActionIcon(
-          icon: Icons.chat_rounded,
+          icon: LucideIcons.messageCircle,
           color: accentColor,
           backgroundColor: accentColor.withValues(alpha: 0.10),
           enabled: true,
@@ -333,7 +334,7 @@ class _CourierCard extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         _DetailActionIcon(
-          icon: Icons.phone_rounded,
+          icon: LucideIcons.phone,
           color: AppColors.success,
           backgroundColor: AppColors.successLight,
           enabled: phone != null && phone!.trim().isNotEmpty,
@@ -416,7 +417,7 @@ class _ShoppingHero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
-                  Icons.shopping_bag_rounded,
+                  LucideIcons.shoppingBag,
                   color: AppColors.shopping,
                   size: 28,
                 ),
@@ -583,7 +584,7 @@ class _ShoppingItemCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
-              Icons.inventory_2_outlined,
+              LucideIcons.package,
               color: AppColors.shopping,
             ),
           ),
@@ -693,7 +694,7 @@ class _MissingOrderState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(
-              Icons.receipt_long_rounded,
+              LucideIcons.receiptText,
               size: 42,
               color: AppColors.grey,
             ),

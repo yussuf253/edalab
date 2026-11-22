@@ -7,6 +7,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_button.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -103,7 +104,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.white,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -141,7 +142,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: _buildField(
                     label: l10n.t('auth.full_name'),
                     hint: l10n.t('auth.full_name_hint'),
-                    icon: Icons.person_outline_rounded,
+                    icon: LucideIcons.user,
                     controller: _nameController,
                   ),
                 ),
@@ -152,7 +153,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: _buildField(
                     label: l10n.t('auth.email'),
                     hint: l10n.t('auth.email_hint'),
-                    icon: Icons.email_outlined,
+                    icon: LucideIcons.mail,
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                   ),
@@ -164,7 +165,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: _buildField(
                     label: l10n.t('auth.phone_number'),
                     hint: l10n.t('auth.phone_hint'),
-                    icon: Icons.phone_outlined,
+                    icon: LucideIcons.phone,
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                   ),
@@ -186,12 +187,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
                           hintText: l10n.t('auth.password_create_hint'),
-                          prefixIcon: const Icon(Icons.lock_outlined),
+                          prefixIcon: const Icon(LucideIcons.lock),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
+                                  ? LucideIcons.eyeOff
+                                  : LucideIcons.eye,
                             ),
                             onPressed: () {
                               setState(

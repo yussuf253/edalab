@@ -12,6 +12,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/utils/money_format.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class MedicineDetailScreen extends StatefulWidget {
   final String medicineId;
@@ -79,7 +80,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -101,7 +102,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                   );
                   context.push('/pharmacy/cart');
                 },
-                icon: const Icon(Icons.shopping_bag_outlined, size: 24),
+                icon: const Icon(LucideIcons.shoppingBag, size: 24),
               ),
               if (cartItemCount > 0)
                 Positioned(
@@ -146,7 +147,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: const Icon(
-                        Icons.medication_rounded,
+                        LucideIcons.pill,
                         color: AppColors.pharmacy,
                         size: 64,
                       ),
@@ -241,7 +242,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                     child: Row(
                       children: [
                         const Icon(
-                          Icons.info_outline_rounded,
+                          LucideIcons.info,
                           size: 16,
                           color: AppColors.pharmacy,
                         ),
@@ -272,7 +273,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                     child: Row(
                       children: [
                         const Icon(
-                          Icons.warning_amber_rounded,
+                          LucideIcons.triangleAlert,
                           color: AppColors.warning,
                         ),
                         const SizedBox(width: 10),

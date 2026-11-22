@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/utils/pro_module_helper.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProviderCalendarScreen extends StatelessWidget {
   final String businessName;
@@ -20,7 +21,7 @@ class ProviderCalendarScreen extends StatelessWidget {
         title: Text('$businessName Schedule'),
         elevation: 0,
         actions: [
-          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
+          IconButton(icon: const Icon(LucideIcons.settings), onPressed: () {}),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(80),
@@ -147,7 +148,7 @@ class ProviderCalendarScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {},
-        icon: const Icon(Icons.block),
+        icon: const Icon(LucideIcons.ban),
         label: const Text('Block Time'),
       ),
     );
@@ -208,7 +209,7 @@ class ProviderCalendarScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(Icons.timer, size: 14, color: color),
+                            Icon(LucideIcons.timer, size: 14, color: color),
                             const SizedBox(width: 4),
                             Text(duration, style: TextStyle(color: color)),
                           ],

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:edalab/core/providers/app_version_provider.dart';
 import 'package:edalab/core/widgets/app_update_dialog.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ExampleVersionCheckWidget extends StatelessWidget {
   const ExampleVersionCheckWidget({Key? key}) : super(key: key);
@@ -123,7 +124,7 @@ class ExampleVersionCheckWidget extends StatelessWidget {
                         onSkipPressed: () => versionProvider.skipUpdate(),
                       );
                     },
-                    icon: const Icon(Icons.system_update),
+                    icon: const Icon(LucideIcons.refreshCw),
                     label: Text(
                       versionProvider.isForceUpdateRequired
                           ? 'Update Required'

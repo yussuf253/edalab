@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/utils/pro_module_helper.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProMessagesScreen extends StatefulWidget {
   final ProProfile profile;
@@ -112,7 +113,7 @@ class _ProMessagesScreenState extends State<ProMessagesScreen> {
               title: 'Inbox is coming next for this profile',
               subtitle:
                   'Two-way customer chat is now live for doctor, provider, delivery, and rider roles. Store messaging can plug into the same flow next.',
-              icon: Icons.forum_outlined,
+              icon: LucideIcons.messagesSquare,
               color: accent,
             )
           : _conversations.isEmpty
@@ -120,7 +121,7 @@ class _ProMessagesScreenState extends State<ProMessagesScreen> {
               title: 'No active conversations yet',
               subtitle:
                   'Customer messages from assigned deliveries and rides will appear here as soon as they start a chat.',
-              icon: Icons.chat_bubble_outline_rounded,
+              icon: LucideIcons.messageSquare,
               color: accent,
             )
           : RefreshIndicator(
@@ -226,17 +227,17 @@ class _ProMessagesScreenState extends State<ProMessagesScreen> {
   IconData _iconForEntity(String entityType) {
     switch (entityType) {
       case 'SHOP':
-        return Icons.storefront_rounded;
+        return LucideIcons.store;
       case 'DOCTOR':
-        return Icons.local_hospital_rounded;
+        return LucideIcons.cross;
       case 'HOME_SERVICE_PROVIDER':
-        return Icons.home_repair_service_rounded;
+        return LucideIcons.hammer;
       case 'DELIVERY':
-        return Icons.local_shipping_rounded;
+        return LucideIcons.truck;
       case 'RIDE':
-        return Icons.directions_car_rounded;
+        return LucideIcons.car;
       default:
-        return Icons.chat_rounded;
+        return LucideIcons.messageCircle;
     }
   }
 }

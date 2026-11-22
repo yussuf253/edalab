@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +14,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/utils/money_format.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class FoodDishDetailScreen extends StatefulWidget {
   final String itemId;
@@ -243,7 +245,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
         title: Text(l10n.t('food_detail.title')),
@@ -253,8 +255,8 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                 IconButton(
                   icon: Icon(
                     isFavorite
-                        ? Icons.favorite_rounded
-                        : Icons.favorite_border_rounded,
+                        ? CupertinoIcons.heart_fill
+                        : LucideIcons.heart,
                     color: isFavorite ? AppColors.accent : null,
                   ),
                   splashRadius: 24,
@@ -321,7 +323,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                             fit: BoxFit.cover,
                             errorBuilder: (_, _, _) => Center(
                               child: Icon(
-                                Icons.fastfood_rounded,
+                                LucideIcons.sandwich,
                                 size: 90,
                                 color: AppColors.food.withValues(alpha: 0.3),
                               ),
@@ -337,7 +339,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                           )
                         : Center(
                             child: Icon(
-                              Icons.fastfood_rounded,
+                              LucideIcons.sandwich,
                               size: 90,
                               color: AppColors.food.withValues(alpha: 0.3),
                             ),
@@ -472,7 +474,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                                       Icon(
                                         group.multiSelect
                                             ? (isSelected
-                                                  ? Icons.check_box_rounded
+                                                  ? LucideIcons.squareCheck
                                                   : Icons
                                                         .check_box_outline_blank_rounded)
                                             : (isSelected
@@ -547,7 +549,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                                             }
                                           }
                                         : null,
-                                    icon: const Icon(Icons.remove),
+                                    icon: const Icon(LucideIcons.minus),
                                   ),
                                   Text(
                                     '$quantity',
@@ -574,7 +576,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                                         setState(() => _quantity += 1);
                                       }
                                     },
-                                    icon: const Icon(Icons.add),
+                                    icon: const Icon(LucideIcons.plus),
                                   ),
                                 ],
                               ),
@@ -724,7 +726,7 @@ class _DishNotFoundState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.fastfood_outlined,
+              LucideIcons.sandwich,
               size: 56,
               color: AppColors.mediumGrey,
             ),

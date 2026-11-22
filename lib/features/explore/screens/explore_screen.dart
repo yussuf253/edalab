@@ -5,6 +5,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/widgets/app_search_bar.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ExploreScreen extends StatelessWidget {
   const ExploreScreen({super.key});
@@ -16,56 +17,56 @@ class ExploreScreen extends StatelessWidget {
       _ServiceItem(
         l10n.t('explore.food_delivery'),
         l10n.t('explore.restaurants_count'),
-        Icons.restaurant_rounded,
+        LucideIcons.utensilsCrossed,
         AppColors.food,
         '/food',
       ),
       _ServiceItem(
         l10n.t('explore.shopping'),
         l10n.t('explore.products_count'),
-        Icons.shopping_bag_rounded,
+        LucideIcons.shoppingBag,
         AppColors.shopping,
         '/shopping',
       ),
       _ServiceItem(
         l10n.t('explore.doctor'),
         l10n.t('explore.specialists_count'),
-        Icons.medical_services_rounded,
+        LucideIcons.briefcaseMedical,
         AppColors.doctor,
         '/doctor',
       ),
       _ServiceItem(
         l10n.t('explore.hotel'),
         l10n.t('explore.hotels_count'),
-        Icons.hotel_rounded,
+        LucideIcons.hotel,
         AppColors.hotel,
         '/hotel',
       ),
       _ServiceItem(
         l10n.t('explore.ride'),
         l10n.t('explore.anywhere_anytime'),
-        Icons.directions_car_rounded,
+        LucideIcons.car,
         AppColors.ride,
         '/ride',
       ),
       _ServiceItem(
         l10n.t('explore.pharmacy'),
         l10n.t('explore.medicines_count'),
-        Icons.local_pharmacy_rounded,
+        LucideIcons.pill,
         AppColors.pharmacy,
         '/pharmacy',
       ),
       _ServiceItem(
         l10n.t('explore.grocery'),
         l10n.t('explore.fresh_everyday'),
-        Icons.eco_rounded,
+        LucideIcons.leaf,
         AppColors.grocery,
         '/grocery',
       ),
       _ServiceItem(
         l10n.t('explore.laundry'),
         l10n.t('explore.clean_fresh'),
-        Icons.local_laundry_service_rounded,
+        LucideIcons.washingMachine,
         AppColors.laundry,
         '/laundry',
       ),
@@ -159,28 +160,28 @@ class ExploreScreen extends StatelessWidget {
               child: Column(
                 children: [
                   _ActionTile(
-                    Icons.fastfood_rounded,
+                    LucideIcons.sandwich,
                     l10n.t('explore.order_food'),
                     l10n.t('explore.order_food_subtitle'),
                     AppColors.food,
                     () => context.push('/food'),
                   ),
                   _ActionTile(
-                    Icons.directions_car_rounded,
+                    LucideIcons.car,
                     l10n.t('explore.book_ride'),
                     l10n.t('explore.book_ride_subtitle'),
                     AppColors.ride,
                     () => context.push('/ride'),
                   ),
                   _ActionTile(
-                    Icons.medical_services_rounded,
+                    LucideIcons.briefcaseMedical,
                     l10n.t('explore.consult_doctor'),
                     l10n.t('explore.consult_doctor_subtitle'),
                     AppColors.doctor,
                     () => context.push('/doctor'),
                   ),
                   _ActionTile(
-                    Icons.local_laundry_service_rounded,
+                    LucideIcons.washingMachine,
                     l10n.t('explore.laundry_pickup'),
                     l10n.t('explore.laundry_pickup_subtitle'),
                     AppColors.laundry,
@@ -252,7 +253,7 @@ class _ActionTile extends StatelessWidget {
               ),
             ),
             const Icon(
-              Icons.arrow_forward_ios_rounded,
+              LucideIcons.chevronRight,
               size: 16,
               color: AppColors.mediumGrey,
             ),

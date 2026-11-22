@@ -9,6 +9,7 @@ import '../../../../core/utils/contact_launcher.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/utils/pro_message_launcher.dart';
 import 'provider_job_detail_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProviderJobsQueueScreen extends StatefulWidget {
   final String userId;
@@ -378,7 +379,7 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
                 ),
                 child: const Column(
                   children: [
-                    Icon(Icons.handyman_outlined, size: 34),
+                    Icon(LucideIcons.wrench, size: 34),
                     SizedBox(height: 10),
                     CircularProgressIndicator(),
                     SizedBox(height: 10),
@@ -507,13 +508,13 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
               children: [
                 OutlinedButton.icon(
                   onPressed: () => _openDetails(item),
-                  icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                  icon: const Icon(LucideIcons.receiptText, size: 18),
                   label: Text(l10n.detailsAction),
                 ),
                 if (customerPhone.isNotEmpty)
                   OutlinedButton.icon(
                     onPressed: () => launchPhoneCall(context, customerPhone),
-                    icon: const Icon(Icons.call_outlined, size: 18),
+                    icon: const Icon(LucideIcons.phone, size: 18),
                     label: Text(l10n.callAction),
                   ),
                 if (customerUserId.isNotEmpty)
@@ -538,7 +539,7 @@ class _ProviderJobsQueueScreenState extends State<ProviderJobsQueueScreen> {
                         'moduleType': conversationModuleType,
                       },
                     ),
-                    icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                    icon: const Icon(LucideIcons.messageSquare, size: 18),
                     label: Text(l10n.messageAction),
                   ),
                 if (nextStatus != null)

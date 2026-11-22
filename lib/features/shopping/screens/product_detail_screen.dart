@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,7 @@ import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String productId;
@@ -108,7 +110,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       backgroundColor: AppColors.white,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
         title: Text(l10n.t('product_detail.title')),
@@ -117,8 +119,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             IconButton(
               icon: Icon(
                 isFavorite
-                    ? Icons.favorite_rounded
-                    : Icons.favorite_border_rounded,
+                    ? CupertinoIcons.heart_fill
+                    : LucideIcons.heart,
                 color: isFavorite ? AppColors.accent : null,
               ),
               splashRadius: 24,
@@ -175,7 +177,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               fit: BoxFit.cover,
                               errorBuilder: (_, _, _) => Center(
                                 child: Icon(
-                                  Icons.shopping_bag_rounded,
+                                  LucideIcons.shoppingBag,
                                   size: 100,
                                   color: AppColors.shopping.withValues(
                                     alpha: 0.3,
@@ -187,7 +189,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         else
                           Center(
                             child: Icon(
-                              Icons.shopping_bag_rounded,
+                              LucideIcons.shoppingBag,
                               size: 100,
                               color: AppColors.shopping.withValues(alpha: 0.3),
                             ),
@@ -271,8 +273,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               5,
                               (i) => Icon(
                                 i < product.rating.floor()
-                                    ? Icons.star_rounded
-                                    : Icons.star_half_rounded,
+                                    ? CupertinoIcons.star_fill
+                                    : CupertinoIcons.star_lefthalf_fill,
                                 size: 18,
                                 color: AppColors.warning,
                               ),
@@ -400,13 +402,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                           (uicolor == Colors.white ||
                                               uicolor == Colors.grey.shade400)
                                       ? const Icon(
-                                          Icons.check,
+                                          LucideIcons.check,
                                           color: AppColors.dark,
                                           size: 18,
                                         )
                                       : _selectedColor == i
                                       ? const Icon(
-                                          Icons.check,
+                                          LucideIcons.check,
                                           color: AppColors.white,
                                           size: 18,
                                         )
@@ -486,7 +488,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               child: Row(
                                 children: [
                                   IconButton(
-                                    icon: const Icon(Icons.remove, size: 18),
+                                    icon: const Icon(LucideIcons.minus, size: 18),
                                     onPressed: () {
                                       if (_quantity > 1) {
                                         setState(() => _quantity--);
@@ -503,7 +505,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.add, size: 18),
+                                    icon: const Icon(LucideIcons.plus, size: 18),
                                     onPressed: () =>
                                         setState(() => _quantity++),
                                   ),
@@ -542,7 +544,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               child: Row(
                                 children: [
                                   const Icon(
-                                    Icons.check_circle_rounded,
+                                    LucideIcons.checkCircle,
                                     color: AppColors.success,
                                     size: 20,
                                   ),
@@ -609,8 +611,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ? l10n.t('product_detail.view_cart')
                             : l10n.t('product_detail.add_to_cart'),
                         icon: isInCart
-                            ? Icons.arrow_forward_rounded
-                            : Icons.shopping_bag_outlined,
+                            ? LucideIcons.arrowRight
+                            : LucideIcons.shoppingBag,
                         width: 220,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         onPressed: () {
@@ -703,7 +705,7 @@ class _ProductUnavailable extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
               ),
               child: const Icon(
-                Icons.shopping_bag_outlined,
+                LucideIcons.shoppingBag,
                 color: AppColors.grey,
                 size: 40,
               ),
@@ -723,7 +725,7 @@ class _ProductUnavailable extends StatelessWidget {
             const SizedBox(height: 20),
             AppButton(
               text: l10n.t('product_detail.retry'),
-              icon: Icons.refresh_rounded,
+              icon: LucideIcons.refreshCw,
               width: 180,
               onPressed: onRetry,
             ),

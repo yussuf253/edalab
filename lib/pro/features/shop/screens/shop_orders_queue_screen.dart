@@ -8,6 +8,7 @@ import '../../../../core/utils/contact_launcher.dart';
 import '../../../core/models/pro_profile.dart';
 import '../../../core/utils/pro_message_launcher.dart';
 import '../../../l10n/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ShopOrdersQueueScreen extends StatefulWidget {
   final String userId;
@@ -360,7 +361,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.inventory_2_outlined, size: 34),
+                    const Icon(LucideIcons.package, size: 34),
                     const SizedBox(height: 10),
                     const CircularProgressIndicator(),
                     const SizedBox(height: 10),
@@ -505,7 +506,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                 if (customerPhone.isNotEmpty)
                   OutlinedButton.icon(
                     onPressed: () => launchPhoneCall(context, customerPhone),
-                    icon: const Icon(Icons.call_outlined, size: 18),
+                    icon: const Icon(LucideIcons.phone, size: 18),
                     label: Text(l10n.callAction),
                   ),
                 if (customerUserId.isNotEmpty)
@@ -526,7 +527,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                         'customerPhone': customerPhone,
                       },
                     ),
-                    icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                    icon: const Icon(LucideIcons.messageSquare, size: 18),
                     label: Text(l10n.messageAction),
                   ),
                 if (nextStatus != null)
@@ -541,7 +542,7 @@ class _ShopOrdersQueueScreenState extends State<ShopOrdersQueueScreen> {
                 if (prescriptionImageUrl.isNotEmpty)
                   OutlinedButton.icon(
                     onPressed: () => _openPrescription(prescriptionImageUrl),
-                    icon: const Icon(Icons.description_outlined, size: 18),
+                    icon: const Icon(LucideIcons.fileText, size: 18),
                     label: Text(l10n.viewRxAction),
                   ),
               ],

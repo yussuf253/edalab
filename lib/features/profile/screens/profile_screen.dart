@@ -7,6 +7,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/notification_bell.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -120,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         //   child: Container(
                         //     width: 40, height: 40,
                         //     decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-                        //     child: const Icon(Icons.settings_outlined, color: AppColors.white, size: 22),
+                        //     child: const Icon(LucideIcons.settings, color: AppColors.white, size: 22),
                         //   ),
                         // ),
                       ],
@@ -145,14 +146,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) =>
                                     const Icon(
-                                      Icons.person_rounded,
+                                      LucideIcons.user,
                                       color: AppColors.primary,
                                       size: 32,
                                     ),
                               ),
                             )
                           : const Icon(
-                              Icons.person_rounded,
+                              LucideIcons.user,
                               color: AppColors.primary,
                               size: 32,
                             ),
@@ -231,13 +232,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(l10n.t('profile.account'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
                   _MenuItem(
-                    Icons.person_outline_rounded,
+                    LucideIcons.user,
                     l10n.t('profile.edit_profile'),
                     AppColors.primary,
                     onTap: () => context.push('/profile/edit'),
                   ),
                   _MenuItem(
-                    Icons.location_on_outlined,
+                    LucideIcons.mapPin,
                     l10n.t('profile.addresses'),
                     AppColors.secondary,
                     onTap: () => context.push('/profile/addresses'),
@@ -247,13 +248,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(l10n.t('profile.preferences'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
                   _MenuItem(
-                    Icons.notifications_outlined,
+                    LucideIcons.bell,
                     l10n.t('profile.notifications'),
                     AppColors.warning,
                     onTap: () => context.push('/notifications'),
                   ),
                   _LanguageMenuItem(
-                    icon: Icons.language_rounded,
+                    icon: LucideIcons.languages,
                     title: l10n.t('settings.language'),
                     value: languageProvider.currentLanguage.nativeName,
                     color: AppColors.success,
@@ -261,7 +262,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   // Settings row intentionally disabled for now.
                   // _MenuItem(
-                  //   Icons.settings_outlined,
+                  //   LucideIcons.settings,
                   //   l10n.t('profile.settings'),
                   //   AppColors.dark,
                   //   onTap: () => context.push('/profile/settings'),
@@ -271,7 +272,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(l10n.t('profile.support'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
                   _MenuItem(
-                    Icons.help_outline_rounded,
+                    LucideIcons.circleHelp,
                     l10n.t('profile.help_center'),
                     AppColors.success,
                     onTap: () => context.push('/profile/help'),
@@ -298,7 +299,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(
-                              Icons.logout_rounded,
+                              LucideIcons.logOut,
                               color: AppColors.accent,
                               size: 22,
                             ),
@@ -326,7 +327,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             const Icon(
-                              Icons.login_rounded,
+                              LucideIcons.logIn,
                               color: AppColors.primary,
                               size: 22,
                             ),
@@ -434,7 +435,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           if (isSelected)
                             const Icon(
-                              Icons.check_circle_rounded,
+                              LucideIcons.checkCircle,
                               color: AppColors.primary,
                             ),
                         ],
@@ -509,7 +510,7 @@ class _MenuItem extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(child: Text(title, style: AppTextStyles.labelMedium)),
             const Icon(
-              Icons.arrow_forward_ios_rounded,
+              LucideIcons.chevronRight,
               size: 16,
               color: AppColors.mediumGrey,
             ),
@@ -563,7 +564,7 @@ class _LanguageMenuItem extends StatelessWidget {
             Text(value, style: AppTextStyles.caption),
             const SizedBox(width: 4),
             const Icon(
-              Icons.arrow_forward_ios_rounded,
+              LucideIcons.chevronRight,
               size: 14,
               color: AppColors.mediumGrey,
             ),

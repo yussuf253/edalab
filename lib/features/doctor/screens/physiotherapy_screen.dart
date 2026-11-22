@@ -10,6 +10,7 @@ import '../../../core/models/physiotherapy_service_model.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/app_button.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class PhysiotherapyScreen extends StatefulWidget {
   final String? categoryId;
@@ -109,7 +110,7 @@ class _PhysiotherapyScreenState extends State<PhysiotherapyScreen> {
       appBar: AppBar(
         title: Text(_categoryLabel ?? l10n.t('doctor.physiotherapy')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -222,7 +223,7 @@ class _ServiceCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                Icons.accessibility_new_rounded,
+                LucideIcons.accessibility,
                 color: AppColors.secondary,
                 size: 28,
               ),
@@ -256,7 +257,7 @@ class _ServiceCard extends StatelessWidget {
                     Row(
                       children: [
                         Icon(
-                          Icons.fitness_center_rounded,
+                          LucideIcons.dumbbell,
                           size: 12,
                           color: AppColors.grey,
                         ),
@@ -305,7 +306,7 @@ class _ServiceCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
-                    Icons.arrow_forward_ios_rounded,
+                    LucideIcons.chevronRight,
                     size: 14,
                     color: AppColors.secondary,
                   ),
@@ -373,7 +374,7 @@ class _ServiceDetailsBottomSheet extends StatelessWidget {
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Icon(
-                              Icons.accessibility_new_rounded,
+                              LucideIcons.accessibility,
                               color: AppColors.secondary,
                               size: 36,
                             ),
@@ -424,7 +425,7 @@ class _ServiceDetailsBottomSheet extends StatelessWidget {
                         Row(
                           children: [
                             Icon(
-                              Icons.fitness_center_rounded,
+                              LucideIcons.dumbbell,
                               size: 16,
                               color: AppColors.secondary,
                             ),
@@ -450,7 +451,7 @@ class _ServiceDetailsBottomSheet extends StatelessWidget {
                         Row(
                           children: [
                             Icon(
-                              Icons.schedule_rounded,
+                              LucideIcons.clock,
                               size: 16,
                               color: AppColors.secondary,
                             ),
@@ -476,7 +477,7 @@ class _ServiceDetailsBottomSheet extends StatelessWidget {
                         Row(
                           children: [
                             Icon(
-                              Icons.school_rounded,
+                              LucideIcons.school,
                               size: 16,
                               color: AppColors.secondary,
                             ),
@@ -540,7 +541,7 @@ class _ServiceDetailsBottomSheet extends StatelessWidget {
                             Column(
                               children: [
                                 Icon(
-                                  Icons.access_time_rounded,
+                                  LucideIcons.clock,
                                   size: 16,
                                   color: AppColors.grey,
                                 ),
@@ -600,7 +601,7 @@ class _ServiceDetailsBottomSheet extends StatelessWidget {
                       Expanded(
                         child: AppButton(
                           text: l10n.t('physio_booking.book'),
-                          icon: Icons.event_available_rounded,
+                          icon: LucideIcons.calendarCheck,
                           color: AppColors.secondary,
                           onPressed: onBook,
                         ),

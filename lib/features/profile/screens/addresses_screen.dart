@@ -7,6 +7,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/providers/providers.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 const Map<String, List<String>> _djiboutiCityQuartiers = {
   'Djibouti': [
@@ -33,16 +34,16 @@ class AddressesScreen extends StatelessWidget {
 
   IconData _iconForLabel(String label) {
     final normalized = label.toLowerCase();
-    if (normalized.contains('home')) return Icons.home_rounded;
+    if (normalized.contains('home')) return LucideIcons.home;
     if (normalized.contains('work') || normalized.contains('office')) {
-      return Icons.work_rounded;
+      return LucideIcons.briefcase;
     }
     if (normalized.contains('family') ||
         normalized.contains('mom') ||
         normalized.contains('dad')) {
-      return Icons.favorite_rounded;
+      return LucideIcons.heart;
     }
-    return Icons.location_on_rounded;
+    return LucideIcons.mapPin;
   }
 
   Future<void> _showAddressSheet(
@@ -86,7 +87,7 @@ class AddressesScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(l10n.t('addresses.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -105,7 +106,7 @@ class AddressesScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: const Icon(
-                        Icons.location_off_rounded,
+                        LucideIcons.mapPinOff,
                         color: AppColors.primary,
                         size: 40,
                       ),
@@ -217,7 +218,7 @@ class AddressesScreen extends StatelessWidget {
                               Row(
                                 children: [
                                   const Icon(
-                                    Icons.my_location_rounded,
+                                    LucideIcons.locateFixed,
                                     size: 12,
                                     color: AppColors.grey,
                                   ),
@@ -240,7 +241,7 @@ class AddressesScreen extends StatelessWidget {
                       ),
                       PopupMenuButton<String>(
                         icon: const Icon(
-                          Icons.more_vert_rounded,
+                          LucideIcons.ellipsisVertical,
                           color: AppColors.mediumGrey,
                         ),
                         onSelected: (value) async {
@@ -311,7 +312,7 @@ class AddressesScreen extends StatelessWidget {
           style: const TextStyle(color: AppColors.white),
         ),
         icon: Icon(
-          isLoggedIn ? Icons.add_rounded : Icons.lock_outline_rounded,
+          isLoggedIn ? LucideIcons.plus : LucideIcons.lock,
           color: AppColors.white,
         ),
       ),
@@ -535,7 +536,7 @@ class _AddressSheetState extends State<_AddressSheet> {
                       controller: _labelController,
                       decoration: InputDecoration(
                         labelText: l10n.t('addresses.label'),
-                        prefixIcon: const Icon(Icons.label_outline_rounded),
+                        prefixIcon: const Icon(LucideIcons.tag),
                         hintText: l10n.t('addresses.label_hint'),
                       ),
                     ),
@@ -554,7 +555,7 @@ class _AddressSheetState extends State<_AddressSheet> {
                       decoration: InputDecoration(
                         labelText: l10n.t('addresses.city'),
                         hintText: l10n.t('addresses.city_hint'),
-                        prefixIcon: const Icon(Icons.location_city_outlined),
+                        prefixIcon: const Icon(LucideIcons.building),
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -589,7 +590,7 @@ class _AddressSheetState extends State<_AddressSheet> {
                       decoration: InputDecoration(
                         labelText: l10n.t('addresses.quartier'),
                         hintText: l10n.t('addresses.quartier_hint'),
-                        prefixIcon: const Icon(Icons.map_outlined),
+                        prefixIcon: const Icon(LucideIcons.map),
                       ),
                       onChanged: selectedCityValue == null
                           ? null
@@ -635,7 +636,7 @@ class _AddressSheetState extends State<_AddressSheet> {
                                       ),
                                     )
                                   : const Icon(
-                                      Icons.my_location_rounded,
+                                      LucideIcons.locateFixed,
                                       size: 18,
                                     ),
                               label: Text(

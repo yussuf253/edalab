@@ -1,6 +1,7 @@
 import '/pro/l10n/app_localizations.dart';
 
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DoctorTelemedicineScreen extends StatelessWidget {
   const DoctorTelemedicineScreen({super.key});
@@ -17,7 +18,7 @@ class DoctorTelemedicineScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.person, size: 120, color: Colors.white24),
+                  const Icon(LucideIcons.user, size: 120, color: Colors.white24),
                   const SizedBox(height: 16),
                   Text(
                     AppLocalizations.of(context)!.waitingForPatientLabel(
@@ -45,7 +46,7 @@ class DoctorTelemedicineScreen extends StatelessWidget {
                 ),
                 child: const Center(
                   child: Icon(
-                    Icons.camera_front,
+                    LucideIcons.switchCamera,
                     color: Colors.white54,
                     size: 40,
                   ),
@@ -72,7 +73,7 @@ class DoctorTelemedicineScreen extends StatelessWidget {
                       radius: 16,
                       backgroundColor: Colors.teal,
                       child: Icon(
-                        Icons.medical_services,
+                        LucideIcons.briefcaseMedical,
                         size: 16,
                         color: Colors.white,
                       ),
@@ -86,7 +87,7 @@ class DoctorTelemedicineScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                    const Icon(LucideIcons.chevronDown, color: Colors.white),
                   ],
                 ),
               ),
@@ -108,22 +109,22 @@ class DoctorTelemedicineScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildControlButton(
-                      Icons.mic_off,
+                      LucideIcons.micOff,
                       Colors.white24,
                       Colors.white,
                     ),
                     _buildControlButton(
-                      Icons.videocam,
+                      LucideIcons.video,
                       Colors.white24,
                       Colors.white,
                     ),
                     _buildControlButton(
-                      Icons.chat_bubble_outline,
+                      LucideIcons.messageSquare,
                       Colors.white24,
                       Colors.white,
                     ),
                     _buildControlButton(
-                      Icons.call_end,
+                      LucideIcons.phoneOff,
                       Colors.red,
                       Colors.white,
                     ),

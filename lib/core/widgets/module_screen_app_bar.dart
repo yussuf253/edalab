@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Module header shared by the module listing screens.
 ///
@@ -52,7 +53,7 @@ class ModuleScreenAppBar extends StatelessWidget
           ? Padding(
               padding: const EdgeInsets.only(left: 8),
               child: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, size: 22),
+                icon: const Icon(LucideIcons.arrowLeft, size: 22),
                 onPressed:
                     onBack ??
                     () {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/providers/auth_provider.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class BannedUserScreen extends StatelessWidget {
   const BannedUserScreen({this.banReason, super.key});
@@ -20,7 +21,7 @@ class BannedUserScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Icon(
-                Icons.block,
+                LucideIcons.ban,
                 size: 80,
                 color: Theme.of(context).colorScheme.error,
               ),

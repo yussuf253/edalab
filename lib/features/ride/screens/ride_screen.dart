@@ -21,6 +21,7 @@ import '../widgets/ride_route_preview.dart';
 import '../services/nearby_drivers_service.dart';
 import '../utils/ride_category_image.dart';
 import '../../car_rental/services/car_rental_service.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class RideScreen extends StatefulWidget {
   const RideScreen({super.key});
@@ -33,7 +34,7 @@ class _RideScreenState extends State<RideScreen> {
   static const _fallbackPickup = _RidePlace(
     title: 'Current Location',
     address: 'Place Menelik, Djibouti',
-    icon: Icons.my_location_rounded,
+    icon: LucideIcons.locateFixed,
     distance: 0,
     latitude: 11.5886,
     longitude: 43.1457,
@@ -93,7 +94,7 @@ class _RideScreenState extends State<RideScreen> {
           _RidePlace(
             title: destination['label']?.toString() ?? address,
             address: address,
-            icon: Icons.history_rounded,
+            icon: LucideIcons.history,
             distance: 0,
             latitude: lat,
             longitude: lng,
@@ -235,7 +236,7 @@ class _RideScreenState extends State<RideScreen> {
         _pickupPlace = _RidePlace(
           title: resolvedLocation.title,
           address: resolvedLocation.subtitle,
-          icon: Icons.my_location_rounded,
+          icon: LucideIcons.locateFixed,
           distance: 0,
           latitude: resolvedLocation.latitude,
           longitude: resolvedLocation.longitude,
@@ -282,7 +283,7 @@ class _RideScreenState extends State<RideScreen> {
             latitude: pickupPlace!.latitude!,
             longitude: pickupPlace.longitude!,
             color: AppColors.success,
-            icon: Icons.my_location_rounded,
+            icon: LucideIcons.locateFixed,
           )
         : null;
     final destinationPoint =
@@ -293,7 +294,7 @@ class _RideScreenState extends State<RideScreen> {
             latitude: destinationPlace.latitude!,
             longitude: destinationPlace.longitude!,
             color: AppColors.accent,
-            icon: Icons.location_on_rounded,
+            icon: LucideIcons.mapPin,
           )
         : null;
     final homeQuickRide = _findPlace(savedPlaces, l10n.t('ride.home'));
@@ -474,7 +475,7 @@ class _RideScreenState extends State<RideScreen> {
                 emptyLabel: _isResolvingPickup
                     ? 'Finding your current location...'
                     : l10n.t('ride.choose_destination'),
-                actionIcon: Icons.my_location_rounded,
+                actionIcon: LucideIcons.locateFixed,
                 onActionTap: _requestLocationAccess,
               ),
               // ── Route input card ─────────────────────────────────────────
@@ -727,7 +728,7 @@ class _RideScreenState extends State<RideScreen> {
                                 ),
                               )
                             : _AddQuickRidePlace(
-                                icon: Icons.home_rounded,
+                                icon: LucideIcons.home,
                                 label: l10n.t('ride.home'),
                                 onTap: () => context.push('/profile/addresses'),
                               ),
@@ -745,7 +746,7 @@ class _RideScreenState extends State<RideScreen> {
                                 ),
                               )
                             : _AddQuickRidePlace(
-                                icon: Icons.work_rounded,
+                                icon: LucideIcons.briefcase,
                                 label: l10n.t('ride.work'),
                                 onTap: () => context.push('/profile/addresses'),
                               ),
@@ -769,7 +770,7 @@ class _RideScreenState extends State<RideScreen> {
                   child: Row(
                     children: [
                       const Icon(
-                        Icons.history_rounded,
+                        LucideIcons.history,
                         color: AppColors.mediumGrey,
                         size: 20,
                       ),
@@ -830,7 +831,7 @@ class _RideScreenState extends State<RideScreen> {
                               ),
                             ),
                             const Icon(
-                              Icons.arrow_forward_ios_rounded,
+                              LucideIcons.chevronRight,
                               size: 16,
                               color: AppColors.mediumGrey,
                             ),
@@ -932,9 +933,9 @@ class _RideScreenState extends State<RideScreen> {
 
   IconData _iconForRideCategory(String name) {
     final lower = name.toLowerCase();
-    if (lower.contains('xl')) return Icons.airport_shuttle_rounded;
-    if (lower.contains('premium')) return Icons.local_taxi_rounded;
-    return Icons.directions_car_rounded;
+    if (lower.contains('xl')) return LucideIcons.bus;
+    if (lower.contains('premium')) return LucideIcons.carTaxiFront;
+    return LucideIcons.car;
   }
 
   Future<void> _selectPlace({required bool isPickup}) async {
@@ -1215,13 +1216,13 @@ class _RideScreenState extends State<RideScreen> {
 
   IconData _iconForLabel(String label) {
     final lower = label.toLowerCase();
-    if (lower.contains('home')) return Icons.home_rounded;
+    if (lower.contains('home')) return LucideIcons.home;
     if (lower.contains('work') || lower.contains('office')) {
-      return Icons.work_rounded;
+      return LucideIcons.briefcase;
     }
-    if (lower.contains('airport')) return Icons.flight_rounded;
-    if (lower.contains('station')) return Icons.train_rounded;
-    return Icons.place_rounded;
+    if (lower.contains('airport')) return LucideIcons.plane;
+    if (lower.contains('station')) return LucideIcons.train;
+    return LucideIcons.mapPin;
   }
 }
 
@@ -1435,7 +1436,7 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
                   hintText: widget.isPickup
                       ? l10n.t('ride.search_pickup')
                       : l10n.t('ride.search_destination'),
-                  prefixIcon: const Icon(Icons.search_rounded),
+                  prefixIcon: const Icon(LucideIcons.search),
                   filled: true,
                   fillColor: AppColors.extraLightGrey,
                   border: OutlineInputBorder(
@@ -1476,16 +1477,16 @@ class _PlacePickerSheetState extends State<_PlacePickerSheet> {
               Expanded(
                 child: !widget.isPickup && query.isEmpty && _isLoadingPopular
                     ? _PlacePickerStatus(
-                        icon: Icons.travel_explore_rounded,
+                        icon: LucideIcons.globe,
                         message: l10n.t('ride.loading_popular_places'),
                       )
                     : filteredPlaces.isEmpty
                     ? _PlacePickerStatus(
                         icon: query.isEmpty
                             ? (widget.isPickup
-                                  ? Icons.my_location_rounded
-                                  : Icons.location_city_rounded)
-                            : Icons.search_off_rounded,
+                                  ? LucideIcons.locateFixed
+                                  : LucideIcons.building)
+                            : LucideIcons.searchX,
                         message: widget.isPickup
                             ? l10n.t('ride.no_pickup_places')
                             : query.isEmpty
@@ -1572,24 +1573,24 @@ _RidePlace? _ridePlaceFromNominatim(Map<String, dynamic> data) {
 IconData _iconForPlaceCategory(String? type, String? category) {
   final merged = '${type ?? ''} ${category ?? ''}'.toLowerCase();
   if (merged.contains('airport') || merged.contains('aerodrome')) {
-    return Icons.flight_rounded;
+    return LucideIcons.plane;
   }
   if (merged.contains('hotel') || merged.contains('accommodation')) {
-    return Icons.hotel_rounded;
+    return LucideIcons.hotel;
   }
   if (merged.contains('restaurant') || merged.contains('cafe')) {
-    return Icons.restaurant_rounded;
+    return LucideIcons.utensilsCrossed;
   }
   if (merged.contains('hospital') || merged.contains('clinic')) {
-    return Icons.local_hospital_rounded;
+    return LucideIcons.cross;
   }
   if (merged.contains('school') || merged.contains('university')) {
-    return Icons.school_rounded;
+    return LucideIcons.school;
   }
   if (merged.contains('shop') || merged.contains('mall')) {
-    return Icons.shopping_bag_rounded;
+    return LucideIcons.shoppingBag;
   }
-  return Icons.place_rounded;
+  return LucideIcons.mapPin;
 }
 
 // ─── Small reusable widgets ───────────────────────────────────────────────────
@@ -1676,7 +1677,7 @@ class _AddQuickRidePlace extends StatelessWidget {
                 color: AppColors.extraLightGrey,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(Icons.add_rounded, color: AppColors.mediumGrey),
+              child: Icon(LucideIcons.plus, color: AppColors.mediumGrey),
             ),
             const SizedBox(height: 16),
             Text(
@@ -1884,7 +1885,7 @@ class _RentContentState extends State<RentContent> {
                         alignment: Alignment.center,
                         children: [
                           const Icon(
-                            Icons.directions_car_rounded,
+                            LucideIcons.car,
                             color: AppColors.mediumGrey,
                             size: 40,
                           ),

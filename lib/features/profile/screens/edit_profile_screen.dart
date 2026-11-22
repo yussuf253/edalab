@@ -11,6 +11,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/services/media_upload_service.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -121,7 +122,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(
         title: Text(l10n.t('profile_edit.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -156,14 +157,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   const Icon(
-                                    Icons.person_rounded,
+                                    LucideIcons.user,
                                     color: AppColors.primary,
                                     size: 48,
                                   ),
                             ),
                           )
                         : const Icon(
-                            Icons.person_rounded,
+                            LucideIcons.user,
                             color: AppColors.primary,
                             size: 48,
                           ),
@@ -196,7 +197,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   ),
                                 )
                               : const Icon(
-                                  Icons.camera_alt_rounded,
+                                  LucideIcons.camera,
                                   color: AppColors.white,
                                   size: 18,
                                 ),
@@ -216,7 +217,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     controller: _firstNameController,
                     decoration: InputDecoration(
                       labelText: l10n.t('profile_edit.first_name'),
-                      prefixIcon: Icon(Icons.person_outline_rounded),
+                      prefixIcon: Icon(LucideIcons.user),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -224,7 +225,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     controller: _lastNameController,
                     decoration: InputDecoration(
                       labelText: l10n.t('profile_edit.last_name'),
-                      prefixIcon: Icon(Icons.person_outline_rounded),
+                      prefixIcon: Icon(LucideIcons.user),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -232,7 +233,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     controller: _emailController,
                     decoration: InputDecoration(
                       labelText: l10n.t('profile_edit.email'),
-                      prefixIcon: const Icon(Icons.email_outlined),
+                      prefixIcon: const Icon(LucideIcons.mail),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -240,7 +241,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     controller: _phoneController,
                     decoration: InputDecoration(
                       labelText: l10n.t('profile_edit.phone'),
-                      prefixIcon: Icon(Icons.phone_outlined),
+                      prefixIcon: Icon(LucideIcons.phone),
                     ),
                   ),
                 ],

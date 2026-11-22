@@ -15,6 +15,7 @@ import '../../../core/utils/message_launcher.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class PharmacyOrderDetailScreen extends StatefulWidget {
   final String orderId;
@@ -283,7 +284,7 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
-                              Icons.health_and_safety_outlined,
+                              LucideIcons.heartPulse,
                               color: AppColors.pharmacy,
                             ),
                           ),
@@ -344,7 +345,7 @@ class _CourierRow extends StatelessWidget {
             color: AppColors.pharmacy.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(14),
           ),
-          child: const Icon(Icons.person_rounded, color: AppColors.pharmacy),
+          child: const Icon(LucideIcons.user, color: AppColors.pharmacy),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -364,7 +365,7 @@ class _CourierRow extends StatelessWidget {
         ),
         const SizedBox(width: 12),
         _PharmacyActionIcon(
-          icon: Icons.chat_rounded,
+          icon: LucideIcons.messageCircle,
           color: AppColors.pharmacy,
           backgroundColor: AppColors.pharmacy.withValues(alpha: 0.10),
           enabled: true,
@@ -372,7 +373,7 @@ class _CourierRow extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         _PharmacyActionIcon(
-          icon: Icons.phone_rounded,
+          icon: LucideIcons.phone,
           color: AppColors.success,
           backgroundColor: AppColors.successLight,
           enabled: phone != null && phone!.trim().isNotEmpty,
@@ -455,7 +456,7 @@ class _PharmacyHero extends StatelessWidget {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
-                  Icons.local_pharmacy_rounded,
+                  LucideIcons.pill,
                   color: AppColors.pharmacy,
                   size: 28,
                 ),
@@ -532,19 +533,19 @@ class _FulfillmentCard extends StatelessWidget {
       child: Column(
         children: [
           _FulfillmentRow(
-            icon: Icons.schedule_rounded,
+            icon: LucideIcons.clock,
             label: AppLocalizations.of(context).t('tracking.placed'),
             value: placedAt,
           ),
           const SizedBox(height: 12),
           _FulfillmentRow(
-            icon: Icons.delivery_dining_rounded,
+            icon: LucideIcons.scooter,
             label: AppLocalizations.of(context).t('tracking.delivery'),
             value: delivery,
           ),
           const SizedBox(height: 12),
           _FulfillmentRow(
-            icon: Icons.payments_outlined,
+            icon: LucideIcons.banknote,
             label: AppLocalizations.of(context).t('checkout.payment_method'),
             value: payment,
           ),
@@ -737,7 +738,7 @@ class _MedicineLine extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
-              Icons.medication_outlined,
+              LucideIcons.pill,
               color: AppColors.pharmacy,
             ),
           ),

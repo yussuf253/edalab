@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import 'my_car_rentals_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class CarRentalConfirmationScreen extends StatelessWidget {
   const CarRentalConfirmationScreen({
@@ -54,7 +55,7 @@ class CarRentalConfirmationScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
-                        Icons.check_rounded,
+                        LucideIcons.check,
                         color: AppColors.primary,
                         size: 38,
                       ),
@@ -132,7 +133,7 @@ class CarRentalConfirmationScreen extends StatelessWidget {
                         (route) => route.isFirst,
                       );
                     },
-                    icon: const Icon(Icons.receipt_long_outlined),
+                    icon: const Icon(LucideIcons.receiptText),
                     label: Text(l10n.t('car_rental.my_bookings')),
                   ),
                   const SizedBox(height: 8),

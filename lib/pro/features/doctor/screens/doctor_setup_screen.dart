@@ -9,6 +9,7 @@ import '../../../../core/widgets/app_button.dart';
 
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/constants/pro_design_system.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DoctorSetupScreen extends StatefulWidget {
   final String userId;
@@ -285,7 +286,7 @@ class _DoctorSetupScreenState extends State<DoctorSetupScreen> {
                     if (_errorMessage != null) ...[
                       ModernInfoBox(
                         message: _errorMessage!,
-                        icon: Icons.error_outline,
+                        icon: LucideIcons.circleAlert,
                         backgroundColor: const Color(0xFFFFF5F5),
                         textColor: const Color(0xFFDC2626),
                         borderColor: const Color(0xFFF87171),
@@ -303,25 +304,25 @@ class _DoctorSetupScreenState extends State<DoctorSetupScreen> {
                       l10n.inPersonClinicVisit,
                       l10n.clinicVisitSubtitle,
                       l10n.clinicVisit,
-                      Icons.local_hospital_outlined,
+                      LucideIcons.cross,
                     ),
                     _buildModeCheckbox(
                       l10n.videoConsultation,
                       l10n.videoConsultationSubtitle,
                       l10n.videoConsultation,
-                      Icons.video_camera_front_outlined,
+                      LucideIcons.video,
                     ),
                     _buildModeCheckbox(
                       l10n.chatPhoneAdvice,
                       l10n.chatPhoneSubtitle,
                       l10n.phoneAdvice,
-                      Icons.chat_outlined,
+                      LucideIcons.messageCircle,
                     ),
                     _buildModeCheckbox(
                       l10n.homeCareServices,
                       l10n.homeCareSubtitle,
                       l10n.homeVisit,
-                      Icons.home_repair_service_outlined,
+                      LucideIcons.hammer,
                     ),
                     const SizedBox(height: ProDesignSystem.spacing24),
                     if (_selectedModes.contains(l10n.clinicVisit) ||

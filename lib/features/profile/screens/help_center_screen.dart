@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/constants/app_spacing.dart';
 import '../../../core/localization/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HelpCenterScreen extends StatelessWidget {
   const HelpCenterScreen({super.key});
@@ -31,7 +32,7 @@ class HelpCenterScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(l10n.t('help.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -51,7 +52,7 @@ class HelpCenterScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.search_rounded, color: AppColors.mediumGrey),
+                  const Icon(LucideIcons.search, color: AppColors.mediumGrey),
                   const SizedBox(width: 10),
                   Text(
                     l10n.t('help.search_hint'),
@@ -108,7 +109,7 @@ class HelpCenterScreen extends StatelessWidget {
               child: Column(
                 children: [
                   const Icon(
-                    Icons.headset_mic_rounded,
+                    LucideIcons.headset,
                     color: AppColors.primary,
                     size: 36,
                   ),

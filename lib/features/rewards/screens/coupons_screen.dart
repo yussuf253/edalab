@@ -8,6 +8,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class CouponsScreen extends StatefulWidget {
   const CouponsScreen({super.key});
@@ -58,7 +59,7 @@ class _CouponsScreenState extends State<CouponsScreen> {
       appBar: AppBar(
         title: Text(l10n.t('rewards.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -316,25 +317,25 @@ class _CouponsScreenState extends State<CouponsScreen> {
                     (
                       l10n.t('rewards.order_food'),
                       l10n.t('rewards.order_food_points'),
-                      Icons.restaurant_rounded,
+                      LucideIcons.utensilsCrossed,
                       AppColors.food,
                     ),
                     (
                       l10n.t('rewards.book_ride'),
                       l10n.t('rewards.book_ride_points'),
-                      Icons.directions_car_rounded,
+                      LucideIcons.car,
                       AppColors.ride,
                     ),
                     (
                       l10n.t('rewards.shop_online'),
                       l10n.t('rewards.shop_online_points'),
-                      Icons.shopping_bag_rounded,
+                      LucideIcons.shoppingBag,
                       AppColors.shopping,
                     ),
                     (
                       l10n.t('rewards.refer_friend'),
                       l10n.t('rewards.refer_friend_points'),
-                      Icons.group_add_rounded,
+                      LucideIcons.userPlus,
                       AppColors.primary,
                     ),
                   ].map(

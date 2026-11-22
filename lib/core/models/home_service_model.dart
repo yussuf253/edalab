@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HomeServiceCategoryModel {
   final String id;
@@ -34,24 +35,24 @@ class HomeServiceCategoryModel {
   IconData get icon {
     switch (iconKey) {
       case 'cleaning':
-        return Icons.cleaning_services_rounded;
+        return LucideIcons.broom;
       case 'plumbing':
-        return Icons.plumbing_rounded;
+        return LucideIcons.wrench;
       case 'electrical':
-        return Icons.electrical_services_rounded;
+        return LucideIcons.plug;
       case 'ac':
-        return Icons.ac_unit_rounded;
+        return LucideIcons.snowflake;
       case 'beauty':
-        return Icons.content_cut_rounded;
+        return LucideIcons.scissors;
       case 'handyman':
-        return Icons.handyman_rounded;
+        return LucideIcons.wrench;
       case 'house_help':
       case 'house-help':
       case 'househelp':
       case 'maid':
-        return Icons.cleaning_services_rounded;
+        return LucideIcons.broom;
       default:
-        return Icons.home_repair_service_rounded;
+        return LucideIcons.hammer;
     }
   }
 
@@ -203,24 +204,24 @@ class HomeServiceProviderModel {
   IconData get categoryIcon {
     switch (categoryIconKey) {
       case 'cleaning':
-        return Icons.cleaning_services_rounded;
+        return LucideIcons.broom;
       case 'plumbing':
-        return Icons.plumbing_rounded;
+        return LucideIcons.wrench;
       case 'electrical':
-        return Icons.electrical_services_rounded;
+        return LucideIcons.plug;
       case 'ac':
-        return Icons.ac_unit_rounded;
+        return LucideIcons.snowflake;
       case 'beauty':
-        return Icons.content_cut_rounded;
+        return LucideIcons.scissors;
       case 'handyman':
-        return Icons.handyman_rounded;
+        return LucideIcons.wrench;
       case 'house_help':
       case 'house-help':
       case 'househelp':
       case 'maid':
-        return Icons.cleaning_services_rounded;
+        return LucideIcons.broom;
       default:
-        return Icons.home_repair_service_rounded;
+        return LucideIcons.hammer;
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../localization/app_localizations.dart';
 import '../constants/app_colors.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 /// Search field used across the product.
 ///
@@ -63,7 +64,7 @@ class AppSearchBar extends StatelessWidget {
             ),
             prefixIcon: prefix ??
                 const Icon(
-                  Icons.search_rounded,
+                  LucideIcons.search,
                   color: AppColors.mediumGrey,
                   size: 21,
                 ),

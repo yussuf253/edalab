@@ -13,6 +13,7 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class FoodCartScreen extends StatefulWidget {
   const FoodCartScreen({super.key});
@@ -50,7 +51,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
         appBar: AppBar(
           title: Text(l10n.t('food_cart.title')),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            icon: const Icon(LucideIcons.chevronLeft, size: 20),
             onPressed: () => context.pop(),
           ),
         ),
@@ -79,7 +80,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
       appBar: AppBar(
         title: Text(l10n.t('food_cart.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -115,7 +116,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.fastfood_outlined,
+                    LucideIcons.sandwich,
                     size: 80,
                     color: AppColors.lightGrey,
                   ),
@@ -166,7 +167,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Icon(
-                          Icons.restaurant_rounded,
+                          LucideIcons.utensilsCrossed,
                           color: AppColors.food,
                           size: 22,
                         ),
@@ -212,7 +213,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
-                                Icons.local_shipping_rounded,
+                                LucideIcons.truck,
                                 color: AppColors.food,
                               ),
                             ),
@@ -312,7 +313,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                             Row(
                               children: [
                                 const Icon(
-                                  Icons.note_alt_outlined,
+                                  LucideIcons.fileText,
                                   color: AppColors.primary,
                                   size: 20,
                                 ),
@@ -606,12 +607,12 @@ class _CartRow extends StatelessWidget {
                     height: 50,
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) => Icon(
-                      Icons.fastfood_rounded,
+                      LucideIcons.sandwich,
                       color: AppColors.food.withValues(alpha: 0.3),
                     ),
                   )
                 : Icon(
-                    Icons.fastfood_rounded,
+                    LucideIcons.sandwich,
                     color: AppColors.food.withValues(alpha: 0.3),
                   ),
           ),
@@ -658,7 +659,7 @@ class _CartRow extends StatelessWidget {
                   child: const SizedBox(
                     width: 28,
                     height: 28,
-                    child: Icon(Icons.remove_rounded, size: 16),
+                    child: Icon(LucideIcons.minus, size: 16),
                   ),
                 ),
                 Padding(
@@ -670,7 +671,7 @@ class _CartRow extends StatelessWidget {
                   child: const SizedBox(
                     width: 28,
                     height: 28,
-                    child: Icon(Icons.add_rounded, size: 16),
+                    child: Icon(LucideIcons.plus, size: 16),
                   ),
                 ),
               ],
@@ -708,7 +709,7 @@ class _RecommendedFoodCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
-              Icons.restaurant_menu_rounded,
+              LucideIcons.utensilsCrossed,
               color: AppColors.food,
             ),
           ),

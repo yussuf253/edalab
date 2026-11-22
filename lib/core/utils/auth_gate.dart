@@ -7,6 +7,7 @@ import '../analytics/analytics_service.dart';
 import '../constants/app_colors.dart';
 import '../localization/app_localizations.dart';
 import '../providers/auth_provider.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 Future<bool> requireLoggedIn(BuildContext context, {String? message}) async {
   final auth = context.read<AuthProvider>();
@@ -94,7 +95,7 @@ class LoginRequiredView extends StatelessWidget {
             const SizedBox(height: 18),
             FilledButton.icon(
               onPressed: () => context.push('/login'),
-              icon: const Icon(Icons.login_rounded),
+              icon: const Icon(LucideIcons.logIn),
               label: Text(
                 actionLabel == 'Log In' ? l10n.t('common.log_in') : actionLabel,
               ),

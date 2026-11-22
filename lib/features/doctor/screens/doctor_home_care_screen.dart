@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,6 +10,7 @@ import '../../../core/models/models.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class _HomeCareCategory {
   final String id;
@@ -40,42 +42,42 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
     _HomeCareCategory(
       id: 'all',
       labelKey: 'doctor.all_care',
-      icon: Icons.favorite_border_rounded,
+      icon: LucideIcons.heart,
       color: AppColors.doctor,
       keywords: [],
     ),
     _HomeCareCategory(
       id: 'nursing',
       labelKey: 'doctor.nursing',
-      icon: Icons.medical_services_rounded,
+      icon: LucideIcons.briefcaseMedical,
       color: AppColors.primary,
       keywords: ['nursing', 'wound', 'injection'],
     ),
     _HomeCareCategory(
       id: 'physio',
       labelKey: 'doctor.physio',
-      icon: Icons.accessibility_new_rounded,
+      icon: LucideIcons.accessibility,
       color: AppColors.secondary,
       keywords: ['physio', 'therapy', 'rehab', 'kine'],
     ),
     _HomeCareCategory(
       id: 'elderly',
       labelKey: 'doctor.elderly',
-      icon: Icons.elderly_rounded,
+      icon: LucideIcons.personStanding,
       color: AppColors.hotel,
       keywords: ['elderly', 'senior', 'monitoring'],
     ),
     _HomeCareCategory(
       id: 'recovery',
       labelKey: 'doctor.recovery',
-      icon: Icons.healing_rounded,
+      icon: LucideIcons.stethoscope,
       color: AppColors.food,
       keywords: ['recovery', 'post-op', 'post op', 'pain'],
     ),
     _HomeCareCategory(
       id: 'mental',
       labelKey: 'doctor.mental',
-      icon: Icons.psychology_rounded,
+      icon: LucideIcons.brain,
       color: AppColors.homeServices,
       keywords: ['mental', 'counseling', 'emotional', 'stress'],
     ),
@@ -195,7 +197,7 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
       appBar: AppBar(
         title: Text(l10n.t('doctor.home_care_title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -284,7 +286,7 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(
-                        Icons.health_and_safety_rounded,
+                        LucideIcons.heartPulse,
                         color: AppColors.white,
                         size: 30,
                       ),
@@ -430,7 +432,7 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                           borderRadius: BorderRadius.circular(22),
                         ),
                         child: const Icon(
-                          Icons.search_off_rounded,
+                          LucideIcons.searchX,
                           color: AppColors.doctor,
                           size: 34,
                         ),
@@ -489,14 +491,14 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                                       provider.imageUrl!,
                                       fit: BoxFit.cover,
                                       errorBuilder: (_, _, _) => const Icon(
-                                        Icons.health_and_safety_rounded,
+                                        LucideIcons.heartPulse,
                                         color: AppColors.doctor,
                                         size: 30,
                                       ),
                                     ),
                                   )
                                 : const Icon(
-                                    Icons.health_and_safety_rounded,
+                                    LucideIcons.heartPulse,
                                     color: AppColors.doctor,
                                     size: 30,
                                   ),
@@ -533,7 +535,7 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                       Row(
                         children: [
                           const Icon(
-                            Icons.star_rounded,
+                            CupertinoIcons.star_fill,
                             size: 16,
                             color: AppColors.warning,
                           ),

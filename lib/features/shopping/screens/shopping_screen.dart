@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +19,7 @@ import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ShoppingScreen extends StatefulWidget {
   const ShoppingScreen({super.key});
@@ -191,7 +193,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.favorite_border_rounded),
+              icon: const Icon(LucideIcons.heart),
               onPressed: () {
                 AnalyticsService.instance.track(
                   AnalyticsEvents.entityOpened,
@@ -209,7 +211,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
               alignment: Alignment.center,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.shopping_bag_outlined),
+                  icon: const Icon(LucideIcons.shoppingBag),
                   onPressed: () {
                     AnalyticsService.instance.track(
                       AnalyticsEvents.viewCartTapped,
@@ -277,7 +279,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Icons.storefront_rounded,
+                                    LucideIcons.store,
                                     size: 18,
                                     color: !_showAliExpress
                                         ? AppColors.white
@@ -321,7 +323,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    Icons.language_rounded,
+                                    LucideIcons.languages,
                                     size: 18,
                                     color: _showAliExpress
                                         ? AppColors.white
@@ -676,13 +678,13 @@ class _ShoppingStoreCard extends StatelessWidget {
                   Row(
                     children: [
                       _StoreStat(
-                        icon: Icons.star_rounded,
+                        icon: CupertinoIcons.star_fill,
                         value: store.rating.toStringAsFixed(1),
                         color: AppColors.warning,
                       ),
                       const SizedBox(width: 12),
                       _StoreStat(
-                        icon: Icons.inventory_2_outlined,
+                        icon: LucideIcons.package,
                         value: '${store.productCount} items',
                         color: AppColors.primary,
                       ),
@@ -879,7 +881,7 @@ Widget _buildAliExpressContent(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline, size: 48, color: AppColors.grey),
+              const Icon(LucideIcons.circleAlert, size: 48, color: AppColors.grey),
               const SizedBox(height: 12),
               Text(
                 provider.searchError!,
@@ -938,7 +940,7 @@ Widget _buildAliExpressContent(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.shopping_bag_outlined,
+              LucideIcons.shoppingBag,
               size: 64,
               color: AppColors.lightGrey,
             ),
@@ -1028,14 +1030,14 @@ class _AliExpressProductCard extends StatelessWidget {
                         product.images.first,
                         fit: BoxFit.cover,
                         errorBuilder: (_, _, _) => const Icon(
-                          Icons.shopping_bag_rounded,
+                          LucideIcons.shoppingBag,
                           color: AppColors.lightGrey,
                           size: 36,
                         ),
                       ),
                     )
                   : const Icon(
-                      Icons.shopping_bag_rounded,
+                      LucideIcons.shoppingBag,
                       color: AppColors.lightGrey,
                       size: 36,
                     ),
@@ -1065,7 +1067,7 @@ class _AliExpressProductCard extends StatelessWidget {
                       children: [
                         if (product.rating > 0) ...[
                           const Icon(
-                            Icons.star_rounded,
+                            CupertinoIcons.star_fill,
                             size: 14,
                             color: AppColors.warning,
                           ),
@@ -1114,10 +1116,10 @@ class _AliExpressProductCard extends StatelessWidget {
 
 IconData _storeIcon(List<String> categories) {
   final joined = categories.join(' ').toLowerCase();
-  if (joined.contains('shoe')) return Icons.shopping_bag_rounded;
-  if (joined.contains('electronic')) return Icons.headphones_rounded;
-  if (joined.contains('clothing')) return Icons.checkroom_rounded;
-  if (joined.contains('home')) return Icons.chair_rounded;
-  if (joined.contains('accessor')) return Icons.watch_rounded;
-  return Icons.storefront_rounded;
+  if (joined.contains('shoe')) return LucideIcons.shoppingBag;
+  if (joined.contains('electronic')) return LucideIcons.headphones;
+  if (joined.contains('clothing')) return LucideIcons.shirt;
+  if (joined.contains('home')) return LucideIcons.armchair;
+  if (joined.contains('accessor')) return LucideIcons.watch;
+  return LucideIcons.store;
 }

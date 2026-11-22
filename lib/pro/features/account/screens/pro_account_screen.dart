@@ -15,6 +15,7 @@ import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
 import '../../../../core/providers/language_provider.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProAccountScreen extends StatelessWidget {
   const ProAccountScreen({super.key, required this.profile});
@@ -42,11 +43,11 @@ class ProAccountScreen extends StatelessWidget {
                       languageProvider.locale.languageCode;
                   return ListTile(
                     leading: Icon(
-                      Icons.language,
+                      LucideIcons.languages,
                       color: isSelected ? Theme.of(context).primaryColor : null,
                     ),
                     title: Text(lang.nativeName),
-                    trailing: isSelected ? const Icon(Icons.check) : null,
+                    trailing: isSelected ? const Icon(LucideIcons.check) : null,
                     onTap: () {
                       languageProvider.setLocale(lang.locale);
                       Navigator.of(sheetContext).pop();
@@ -176,7 +177,7 @@ class ProAccountScreen extends StatelessWidget {
             ModernHeader(title: 'Super Admin'),
             const SizedBox(height: ProDesignSystem.spacing12),
             ModernTile(
-              leadingIcon: Icons.admin_panel_settings_outlined,
+              leadingIcon: LucideIcons.shieldCheck,
               title: 'Operations Control Center',
               subtitle:
                   'Track release actions, operational signals, and admin workflows.',
@@ -205,7 +206,7 @@ class ProAccountScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: ProDesignSystem.spacing12),
             child: ModernTile(
-              leadingIcon: Icons.language,
+              leadingIcon: LucideIcons.languages,
               title: AppLocalizations.of(context)!.language,
               subtitle: context
                   .watch<LanguageProvider>()
@@ -224,7 +225,7 @@ class ProAccountScreen extends StatelessWidget {
                 ),
               ),
               child: ListTile(
-                leading: const Icon(Icons.logout, color: Colors.red),
+                leading: const Icon(LucideIcons.logOut, color: Colors.red),
                 title: Text(
                   AppLocalizations.of(context)!.signOut,
                   style: const TextStyle(
@@ -234,7 +235,7 @@ class ProAccountScreen extends StatelessWidget {
                 ),
                 subtitle: Text(AppLocalizations.of(context)!.signOutSubtitle),
                 trailing: const Icon(
-                  Icons.arrow_forward_ios_rounded,
+                  LucideIcons.chevronRight,
                   size: 16,
                   color: Colors.red,
                 ),
@@ -282,7 +283,7 @@ class ProAccountScreen extends StatelessWidget {
   List<Widget> _buildManagementTiles(BuildContext context, ProProfile profile) {
     final baseTiles = <Widget>[
       _AccountActionTile(
-        icon: Icons.manage_accounts_outlined,
+        icon: LucideIcons.userCog,
         color: AppColors.primary,
         title: AppLocalizations.of(context)!.profileManagement,
         subtitle: AppLocalizations.of(context)!.profileManagementSubtitle,
@@ -295,21 +296,21 @@ class ProAccountScreen extends StatelessWidget {
         return [
           ...baseTiles,
           _AccountActionTile(
-            icon: Icons.receipt_long_outlined,
+            icon: LucideIcons.receiptText,
             color: AppColors.shopping,
             title: AppLocalizations.of(context)!.ordersQueue,
             subtitle: AppLocalizations.of(context)!.ordersQueueSubtitle,
             onTap: () => _open(context, ProRoutePaths.shopQueue),
           ),
           _AccountActionTile(
-            icon: Icons.store_mall_directory_outlined,
+            icon: LucideIcons.store,
             color: AppColors.shopping,
             title: AppLocalizations.of(context)!.storeSetup,
             subtitle: AppLocalizations.of(context)!.storeSetupSubtitle,
             onTap: () => _open(context, ProRoutePaths.shopStoreSetup),
           ),
           _AccountActionTile(
-            icon: Icons.inventory_2_outlined,
+            icon: LucideIcons.package,
             color: AppColors.primary,
             title: AppLocalizations.of(context)!.productsManager,
             subtitle: AppLocalizations.of(context)!.productsManagerSubtitle,
@@ -320,7 +321,7 @@ class ProAccountScreen extends StatelessWidget {
         return [
           ...baseTiles,
           _AccountActionTile(
-            icon: Icons.toggle_on_outlined,
+            icon: LucideIcons.toggleRight,
             color: AppColors.homeServices,
             title: AppLocalizations.of(context)!.providerAvailability,
             subtitle: AppLocalizations.of(
@@ -329,7 +330,7 @@ class ProAccountScreen extends StatelessWidget {
             onTap: () => _open(context, ProRoutePaths.providerAvailability),
           ),
           _AccountActionTile(
-            icon: Icons.schedule_outlined,
+            icon: LucideIcons.clock,
             color: AppColors.warning,
             title: AppLocalizations.of(context)!.schedulingSettings,
             subtitle: AppLocalizations.of(context)!.schedulingSettingsSubtitle,
@@ -340,14 +341,14 @@ class ProAccountScreen extends StatelessWidget {
         return [
           ...baseTiles,
           _AccountActionTile(
-            icon: Icons.local_hospital_outlined,
+            icon: LucideIcons.cross,
             color: AppColors.doctor,
             title: AppLocalizations.of(context)!.doctorAvailability,
             subtitle: AppLocalizations.of(context)!.doctorAvailabilitySubtitle,
             onTap: () => _open(context, ProRoutePaths.doctorAvailability),
           ),
           _AccountActionTile(
-            icon: Icons.schedule_outlined,
+            icon: LucideIcons.clock,
             color: AppColors.warning,
             title: AppLocalizations.of(context)!.scheduleSettings,
             subtitle: AppLocalizations.of(context)!.scheduleSettingsSubtitle,
@@ -358,7 +359,7 @@ class ProAccountScreen extends StatelessWidget {
         return [
           ...baseTiles,
           _AccountActionTile(
-            icon: Icons.local_shipping_outlined,
+            icon: LucideIcons.truck,
             color: AppColors.food,
             title: AppLocalizations.of(context)!.dispatchQueue,
             subtitle: AppLocalizations.of(context)!.dispatchQueueSubtitle,
@@ -369,7 +370,7 @@ class ProAccountScreen extends StatelessWidget {
         return [
           ...baseTiles,
           _AccountActionTile(
-            icon: Icons.local_taxi_outlined,
+            icon: LucideIcons.carTaxiFront,
             color: AppColors.ride,
             title: AppLocalizations.of(context)!.rideQueue,
             subtitle: AppLocalizations.of(context)!.rideQueueSubtitle,
@@ -527,7 +528,7 @@ class _ProAccountHeaderCardState extends State<_ProAccountHeaderCard> {
                                 ),
                               )
                             : Icon(
-                                Icons.camera_alt_rounded,
+                                LucideIcons.camera,
                                 size: 14,
                                 color: widget.profileColor,
                               ),
@@ -635,7 +636,7 @@ class _AccountActionTile extends StatelessWidget {
         subtitle: subtitle,
         onTap: onTap,
         trailing: const Icon(
-          Icons.arrow_forward_ios_rounded,
+          LucideIcons.chevronRight,
           size: 16,
           color: Color(0xFF6B7280),
         ),

@@ -16,6 +16,7 @@ import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HotelBookingScreen extends StatefulWidget {
   final String hotelId;
@@ -176,7 +177,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                           ),
                         ),
                         _GuestAdjustButton(
-                          icon: Icons.remove_rounded,
+                          icon: LucideIcons.minus,
                           onTap: tempGuests > 1
                               ? () => setModalState(() => tempGuests--)
                               : null,
@@ -186,7 +187,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                           child: Text('$tempGuests', style: AppTextStyles.h4),
                         ),
                         _GuestAdjustButton(
-                          icon: Icons.add_rounded,
+                          icon: LucideIcons.plus,
                           onTap: tempGuests < 10
                               ? () => setModalState(() => tempGuests++)
                               : null,
@@ -457,7 +458,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
       appBar: AppBar(
         title: Text(l10n.t('hotel_booking.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -488,7 +489,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                               borderRadius: BorderRadius.circular(14),
                             ),
                             child: const Icon(
-                              Icons.hotel_rounded,
+                              LucideIcons.hotel,
                               color: AppColors.hotel,
                               size: 28,
                             ),
@@ -522,7 +523,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                           child: _BookingField(
                             label: l10n.t('hotel_booking.check_in'),
                             value: DateFormat('MMM d, y').format(_checkInDate),
-                            icon: Icons.calendar_today_rounded,
+                            icon: LucideIcons.calendar,
                             onTap: _selectCheckInDate,
                           ),
                         ),
@@ -531,7 +532,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                           child: _BookingField(
                             label: l10n.t('hotel_booking.check_out'),
                             value: DateFormat('MMM d, y').format(_checkOutDate),
-                            icon: Icons.calendar_today_rounded,
+                            icon: LucideIcons.calendar,
                             onTap: _selectCheckOutDate,
                           ),
                         ),
@@ -540,7 +541,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                           child: _BookingField(
                             label: l10n.t('hotel_booking.guests'),
                             value: '$_guestCount',
-                            icon: Icons.person_outline_rounded,
+                            icon: LucideIcons.user,
                             onTap: _selectGuests,
                           ),
                         ),
@@ -598,7 +599,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
                         hintText: l10n.t('hotel_booking.full_name'),
-                        prefixIcon: const Icon(Icons.person_outline_rounded),
+                        prefixIcon: const Icon(LucideIcons.user),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -614,7 +615,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
                         hintText: l10n.t('hotel_booking.email'),
-                        prefixIcon: const Icon(Icons.email_outlined),
+                        prefixIcon: const Icon(LucideIcons.mail),
                       ),
                       validator: (value) {
                         final email = value?.trim() ?? '';
@@ -637,7 +638,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       textInputAction: TextInputAction.next,
                       decoration: InputDecoration(
                         hintText: l10n.t('hotel_booking.phone'),
-                        prefixIcon: const Icon(Icons.phone_outlined),
+                        prefixIcon: const Icon(LucideIcons.phone),
                       ),
                       validator: (value) {
                         final phone = value?.trim() ?? '';
@@ -830,7 +831,7 @@ class _SelectableRoomCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
-                Icons.bed_rounded,
+                LucideIcons.bed,
                 color: AppColors.hotel,
                 size: 32,
               ),
@@ -864,9 +865,9 @@ class _SelectableRoomCard extends StatelessWidget {
             Icon(
               option.available
                   ? isSelected
-                        ? Icons.radio_button_checked_rounded
-                        : Icons.radio_button_off_rounded
-                  : Icons.block_rounded,
+                        ? LucideIcons.circleDot
+                        : LucideIcons.circle
+                  : LucideIcons.ban,
               color: option.available ? AppColors.hotel : AppColors.accent,
             ),
           ],

@@ -10,6 +10,7 @@ import '../../../core/utils/pro_module_helper.dart';
 import '../../../core/widgets/pro_stat_card.dart';
 
 import '../../../l10n/app_localizations.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProInsightsScreen extends StatefulWidget {
   const ProInsightsScreen({super.key, required this.profile});
@@ -157,7 +158,7 @@ class _MetricCard extends StatelessWidget {
     return ProStatCard(
       title: metric.title,
       value: metric.value,
-      icon: Icons.pie_chart_outline,
+      icon: LucideIcons.pieChart,
       color: AppColors.primary,
       trend: metric.trend,
       isUp: metric.isUp,

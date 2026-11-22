@@ -11,6 +11,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/config/zone_scope.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/models/models.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class MyAppointmentsScreen extends StatelessWidget {
   const MyAppointmentsScreen({super.key});
@@ -55,7 +56,7 @@ class MyAppointmentsScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text(l10n.t('appointments.title')),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            icon: const Icon(LucideIcons.chevronLeft, size: 20),
             onPressed: () {
               if (context.canPop()) {
                 context.pop();
@@ -92,7 +93,7 @@ class MyAppointmentsScreen extends StatelessWidget {
             if (appointments.isEmpty) {
               return Center(
                 child: EmptyState(
-                  icon: Icons.calendar_today_rounded,
+                  icon: LucideIcons.calendar,
                   title: l10n.t('appointments.empty_title'),
                   subtitle: l10n.t('appointments.empty_subtitle'),
                 ),
@@ -156,7 +157,7 @@ class MyAppointmentsScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: const Icon(
-                                Icons.person_rounded,
+                                LucideIcons.user,
                                 color: AppColors.doctor,
                                 size: 26,
                               ),
@@ -188,7 +189,7 @@ class MyAppointmentsScreen extends StatelessWidget {
                           child: Row(
                             children: [
                               const Icon(
-                                Icons.calendar_today_rounded,
+                                LucideIcons.calendar,
                                 size: 16,
                                 color: AppColors.primary,
                               ),

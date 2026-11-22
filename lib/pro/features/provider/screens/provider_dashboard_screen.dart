@@ -11,6 +11,7 @@ import '../../../core/models/pro_profile.dart';
 import '../../../core/providers/pro_auth_provider.dart';
 import '../../../core/router/pro_route_paths.dart';
 import '../../../core/utils/pro_module_helper.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProviderDashboardScreen extends StatefulWidget {
   final ProProfile profile;
@@ -296,11 +297,11 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
         foregroundColor: AppColors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined),
+            icon: const Icon(LucideIcons.settings),
             onPressed: _openSchedule,
           ),
           IconButton(
-            icon: const Icon(Icons.chat_bubble_outline),
+            icon: const Icon(LucideIcons.messageSquare),
             onPressed: () => context.push(ProRoutePaths.inbox),
           ),
         ],
@@ -728,7 +729,7 @@ class _ProviderDashboardScreenState extends State<ProviderDashboardScreen> {
                 children: [
                   OutlinedButton.icon(
                     onPressed: () => context.push(ProRoutePaths.inbox),
-                    icon: const Icon(Icons.chat_bubble_outline),
+                    icon: const Icon(LucideIcons.messageSquare),
                     label: Text(l10n.inbox),
                   ),
                   const SizedBox(width: ProDesignSystem.spacing12),
@@ -835,7 +836,7 @@ class _ProviderPipelineHero extends StatelessWidget {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: onOpenSchedule,
-                  icon: const Icon(Icons.schedule_outlined),
+                  icon: const Icon(LucideIcons.clock),
                   label: const Text('Schedule'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.white,
@@ -853,7 +854,7 @@ class _ProviderPipelineHero extends StatelessWidget {
               Expanded(
                 child: FilledButton.icon(
                   onPressed: onOpenAvailability,
-                  icon: const Icon(Icons.tune),
+                  icon: const Icon(LucideIcons.slidersHorizontal),
                   label: const Text('Services'),
                   style: FilledButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -1263,11 +1264,11 @@ class _ProviderSetupOnboardingCard extends StatelessWidget {
     if (setup.supportsServices && !setup.hasServiceListing) {
       primaryAction = () => onOpenAvailability();
       primaryLabel = 'Create service listing';
-      primaryIcon = Icons.add_business_rounded;
+      primaryIcon = LucideIcons.building2;
     } else if (setup.supportsLaundry && !setup.hasLaundryBinding) {
       primaryAction = () => onOpenAvailability();
       primaryLabel = 'Review laundry links';
-      primaryIcon = Icons.local_laundry_service_rounded;
+      primaryIcon = LucideIcons.washingMachine;
     } else if (setup.supportsServices &&
         (!setup.hasOfferConfigured ||
             !setup.hasZoneConfigured ||
@@ -1276,16 +1277,16 @@ class _ProviderSetupOnboardingCard extends StatelessWidget {
       primaryLabel = setup.hasHouseHelpListing
           ? 'Configure service details'
           : 'Configure schedule';
-      primaryIcon = Icons.tune;
+      primaryIcon = LucideIcons.slidersHorizontal;
     } else if ((setup.supportsServices && !setup.hasEnabledService) ||
         (setup.supportsLaundry && !setup.hasEnabledLaundry)) {
       primaryAction = () => onOpenAvailability();
       primaryLabel = 'Enable intake';
-      primaryIcon = Icons.toggle_on_rounded;
+      primaryIcon = LucideIcons.toggleRight;
     } else {
       primaryAction = isUpdatingOnline ? null : () => onSetOnline();
       primaryLabel = isUpdatingOnline ? 'Updating...' : 'Go online';
-      primaryIcon = Icons.wifi_tethering_rounded;
+      primaryIcon = LucideIcons.wifi;
     }
 
     return ModernCard(
@@ -1337,8 +1338,8 @@ class _ProviderSetupOnboardingCard extends StatelessWidget {
                 children: [
                   Icon(
                     step.done
-                        ? Icons.check_circle_rounded
-                        : Icons.radio_button_unchecked_rounded,
+                        ? LucideIcons.checkCircle
+                        : LucideIcons.circle,
                     size: 20,
                     color: step.done ? Colors.green : const Color(0xFF9CA3AF),
                   ),
@@ -1383,7 +1384,7 @@ class _ProviderSetupOnboardingCard extends StatelessWidget {
               const SizedBox(width: 10),
               OutlinedButton.icon(
                 onPressed: () => onRefresh(),
-                icon: const Icon(Icons.refresh_rounded),
+                icon: const Icon(LucideIcons.refreshCw),
                 label: const Text('Refresh'),
               ),
             ],

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class SwipeableButton extends StatefulWidget {
   final String label;
@@ -87,7 +88,7 @@ class _SwipeableButtonState extends State<SwipeableButton> {
                       ],
                     ),
                     child: const Icon(
-                      Icons.arrow_forward_ios,
+                      LucideIcons.chevronRight,
                       color: Colors.white,
                       size: 20,
                     ),

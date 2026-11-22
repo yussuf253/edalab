@@ -14,6 +14,7 @@ import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 String _canonicalOrderModuleType(String? moduleType) {
   final normalized = (moduleType ?? '').toUpperCase();
@@ -418,26 +419,26 @@ class _OrderList extends StatelessWidget {
   IconData _getIcon(String mod) {
     switch (mod) {
       case 'FOOD':
-        return Icons.restaurant_rounded;
+        return LucideIcons.utensilsCrossed;
       case 'LAUNDRY':
-        return Icons.local_laundry_service_rounded;
+        return LucideIcons.washingMachine;
       case 'SHOPPING':
-        return Icons.shopping_bag_rounded;
+        return LucideIcons.shoppingBag;
       case 'HOTEL':
-        return Icons.hotel_rounded;
+        return LucideIcons.hotel;
       case 'DOCTOR':
-        return Icons.medical_services_rounded;
+        return LucideIcons.briefcaseMedical;
       case 'PHARMACY':
-        return Icons.local_pharmacy_rounded;
+        return LucideIcons.pill;
       case 'GROCERY':
-        return Icons.local_grocery_store_rounded;
+        return LucideIcons.shoppingCart;
       case 'RIDE':
-        return Icons.directions_car_rounded;
+        return LucideIcons.car;
       case 'HOME_SERVICES':
       case 'HOUSE_HELP':
-        return Icons.home_repair_service_rounded;
+        return LucideIcons.hammer;
       default:
-        return Icons.receipt_long_rounded;
+        return LucideIcons.receiptText;
     }
   }
 
@@ -706,7 +707,7 @@ class _OrderList extends StatelessWidget {
     if (orders.isEmpty) {
       return Center(
         child: EmptyState(
-          icon: Icons.receipt_long_rounded,
+          icon: LucideIcons.receiptText,
           title: l10n.t('orders.empty_title'),
           subtitle: l10n.t('orders.empty_subtitle'),
         ),

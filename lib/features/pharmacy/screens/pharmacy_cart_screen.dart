@@ -12,6 +12,7 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/utils/auth_gate.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class PharmacyCartScreen extends StatefulWidget {
   const PharmacyCartScreen({super.key});
@@ -40,7 +41,7 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
         appBar: AppBar(
           title: Text(l10n.t('pharmacy_cart.title')),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            icon: const Icon(LucideIcons.chevronLeft, size: 20),
             onPressed: () => context.pop(),
           ),
         ),
@@ -58,7 +59,7 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
       appBar: AppBar(
         title: Text(l10n.t('pharmacy_cart.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
         actions: [
@@ -94,7 +95,7 @@ class _PharmacyCartScreenState extends State<PharmacyCartScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(
-                    Icons.medical_services_outlined,
+                    LucideIcons.briefcaseMedical,
                     size: 80,
                     color: AppColors.lightGrey,
                   ),
@@ -290,7 +291,7 @@ class _ItemRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
-              Icons.medication_rounded,
+              LucideIcons.pill,
               color: AppColors.pharmacy,
             ),
           ),
@@ -332,7 +333,7 @@ class _ItemRow extends StatelessWidget {
                   child: const SizedBox(
                     width: 28,
                     height: 28,
-                    child: Icon(Icons.remove, size: 16),
+                    child: Icon(LucideIcons.minus, size: 16),
                   ),
                 ),
                 Padding(
@@ -347,7 +348,7 @@ class _ItemRow extends StatelessWidget {
                   child: const SizedBox(
                     width: 28,
                     height: 28,
-                    child: Icon(Icons.add, size: 16),
+                    child: Icon(LucideIcons.plus, size: 16),
                   ),
                 ),
               ],

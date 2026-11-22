@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +8,7 @@ import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/language_provider.dart';
 import '../../../core/providers/notification_provider.dart';
 import '../../../core/providers/theme_provider.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -20,7 +22,7 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(l10n.t('settings.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -39,21 +41,21 @@ class SettingsScreen extends StatelessWidget {
                   Text(l10n.t('settings.general'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
                   _SettingTile(
-                    Icons.language_rounded,
+                    LucideIcons.languages,
                     l10n.t('settings.language'),
                     languageProvider.currentLanguage.nativeName,
                     AppColors.primary,
                     onTap: () => _showLanguagePicker(context, languageProvider),
                   ),
                   _SettingTile(
-                    Icons.location_on_outlined,
+                    LucideIcons.mapPin,
                     l10n.t('settings.location'),
                     'Djibouti City',
                     AppColors.secondary,
                     onTap: () {},
                   ),
                   _SettingToggle(
-                    Icons.dark_mode_outlined,
+                    LucideIcons.moon,
                     l10n.t('settings.dark_mode'),
                     '',
                     AppColors.dark,
@@ -68,7 +70,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _SettingToggle(
-                    Icons.notifications_outlined,
+                    LucideIcons.bell,
                     l10n.t('settings.push_notifications'),
                     '',
                     AppColors.warning,
@@ -76,7 +78,7 @@ class SettingsScreen extends StatelessWidget {
                     notificationProvider.setPushEnabled,
                   ),
                   _SettingToggle(
-                    Icons.email_outlined,
+                    LucideIcons.mail,
                     l10n.t('settings.email_notifications'),
                     '',
                     AppColors.doctor,
@@ -84,7 +86,7 @@ class SettingsScreen extends StatelessWidget {
                     notificationProvider.setEmailEnabled,
                   ),
                   _SettingToggle(
-                    Icons.campaign_outlined,
+                    LucideIcons.megaphone,
                     l10n.t('settings.promotions'),
                     '',
                     AppColors.food,
@@ -92,7 +94,7 @@ class SettingsScreen extends StatelessWidget {
                     notificationProvider.setPromotionsEnabled,
                   ),
                   _SettingToggle(
-                    Icons.location_on_outlined,
+                    LucideIcons.mapPin,
                     l10n.t('settings.location_alerts'),
                     '',
                     AppColors.success,
@@ -107,14 +109,14 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _SettingTile(
-                    Icons.lock_outlined,
+                    LucideIcons.lock,
                     l10n.t('settings.change_password'),
                     '',
                     AppColors.accent,
                     onTap: () {},
                   ),
                   _SettingToggle(
-                    Icons.fingerprint_rounded,
+                    LucideIcons.fingerprint,
                     l10n.t('settings.biometric_login'),
                     '',
                     AppColors.primary,
@@ -122,14 +124,14 @@ class SettingsScreen extends StatelessWidget {
                     (_) {},
                   ),
                   _SettingTile(
-                    Icons.shield_outlined,
+                    LucideIcons.shield,
                     l10n.t('settings.two_factor_auth'),
                     l10n.t('common.enabled'),
                     AppColors.success,
                     onTap: () {},
                   ),
                   _SettingTile(
-                    Icons.history_rounded,
+                    LucideIcons.history,
                     l10n.t('settings.login_activity'),
                     '',
                     AppColors.grey,
@@ -143,14 +145,14 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _SettingTile(
-                    Icons.download_rounded,
+                    LucideIcons.download,
                     l10n.t('settings.download_history'),
                     '',
                     AppColors.primary,
                     onTap: () {},
                   ),
                   _SettingTile(
-                    Icons.storage_rounded,
+                    LucideIcons.database,
                     l10n.t('settings.clear_cache'),
                     '23 MB',
                     AppColors.food,
@@ -161,21 +163,21 @@ class SettingsScreen extends StatelessWidget {
                   Text(l10n.t('settings.about'), style: AppTextStyles.h4),
                   const SizedBox(height: 12),
                   _SettingTile(
-                    Icons.info_outline_rounded,
+                    LucideIcons.info,
                     l10n.t('settings.app_version'),
                     'v1.5.0',
                     AppColors.grey,
                     onTap: () {},
                   ),
                   _SettingTile(
-                    Icons.star_outline_rounded,
+                    CupertinoIcons.star_fill,
                     l10n.t('settings.rate_app'),
                     '',
                     AppColors.warning,
                     onTap: () {},
                   ),
                   _SettingTile(
-                    Icons.share_outlined,
+                    LucideIcons.share,
                     l10n.t('settings.share_app'),
                     '',
                     AppColors.primary,
@@ -202,7 +204,7 @@ class SettingsScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
-                            Icons.delete_outline_rounded,
+                            LucideIcons.trash2,
                             color: AppColors.error,
                             size: 22,
                           ),
@@ -228,7 +230,7 @@ class SettingsScreen extends StatelessWidget {
                           ),
                         ),
                         const Icon(
-                          Icons.arrow_forward_ios_rounded,
+                          LucideIcons.chevronRight,
                           size: 16,
                           color: AppColors.error,
                         ),
@@ -316,7 +318,7 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           if (isSelected)
                             const Icon(
-                              Icons.check_circle_rounded,
+                              LucideIcons.checkCircle,
                               color: AppColors.primary,
                             ),
                         ],
@@ -375,7 +377,7 @@ class _SettingTile extends StatelessWidget {
               Text(subtitle, style: AppTextStyles.caption),
             const SizedBox(width: 4),
             const Icon(
-              Icons.arrow_forward_ios_rounded,
+              LucideIcons.chevronRight,
               size: 14,
               color: AppColors.mediumGrey,
             ),

@@ -10,6 +10,7 @@ import '../../../core/utils/pro_module_helper.dart';
 import '../../rider/screens/rider_active_delivery_screen.dart';
 import 'delivery_queue_screen.dart';
 import 'parcel_delivery_queue_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DeliveryDashboardScreen extends StatefulWidget {
   final ProProfile profile;
@@ -222,11 +223,11 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
           if (widget.profile.activeModules.contains(ProModule.parcelDelivery))
             IconButton(
               tooltip: 'Parcel dispatch',
-              icon: const Icon(Icons.inventory_2_outlined),
+              icon: const Icon(LucideIcons.package),
               onPressed: _openParcelQueue,
             ),
           IconButton(
-            icon: const Icon(Icons.list_alt_outlined),
+            icon: const Icon(LucideIcons.listTodo),
             onPressed: _openQueue,
           ),
           Switch(
@@ -346,7 +347,7 @@ class _DeliveryDashboardScreenState extends State<DeliveryDashboardScreen> {
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: _openQueue,
-                  icon: const Icon(Icons.list_alt_outlined),
+                  icon: const Icon(LucideIcons.listTodo),
                   label: Text(l10n.openFullQueue),
                 ),
               ],
@@ -458,7 +459,7 @@ class _DeliveryDispatchHero extends StatelessWidget {
           const SizedBox(height: 12),
           FilledButton.icon(
             onPressed: onOpenQueue,
-            icon: const Icon(Icons.route_outlined),
+            icon: const Icon(LucideIcons.route),
             label: Text(l10n.openDispatchQueue),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.white,
@@ -617,7 +618,7 @@ class _DeliveryLaneCard extends StatelessWidget {
             const SizedBox(height: 12),
             ElevatedButton.icon(
               onPressed: onOpenLane,
-              icon: const Icon(Icons.arrow_forward),
+              icon: const Icon(LucideIcons.arrowRight),
               label: Text(summary.actionLabel),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.food,
@@ -661,7 +662,7 @@ class _PriorityDispatchCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.notifications_active, color: Colors.redAccent),
+                const Icon(LucideIcons.bellRing, color: Colors.redAccent),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -691,7 +692,7 @@ class _PriorityDispatchCard extends StatelessWidget {
                     child: Row(
                       children: [
                         const Icon(
-                          Icons.arrow_right_alt,
+                          LucideIcons.arrowRight,
                           color: AppColors.food,
                         ),
                         const SizedBox(width: 8),

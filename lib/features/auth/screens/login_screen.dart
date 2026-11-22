@@ -7,6 +7,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_button.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -84,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) =>
                             const Icon(
-                              Icons.image_not_supported_outlined,
+                              LucideIcons.imageOff,
                               color: AppColors.primary,
                               size: 24,
                             ),
@@ -131,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           hintText: l10n.t('auth.email_hint'),
-                          prefixIcon: const Icon(Icons.email_outlined),
+                          prefixIcon: const Icon(LucideIcons.mail),
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
@@ -160,12 +161,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
                           hintText: l10n.t('auth.password_hint'),
-                          prefixIcon: const Icon(Icons.lock_outlined),
+                          prefixIcon: const Icon(LucideIcons.lock),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
+                                  ? LucideIcons.eyeOff
+                                  : LucideIcons.eye,
                             ),
                             onPressed: () {
                               setState(() {

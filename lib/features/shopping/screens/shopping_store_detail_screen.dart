@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ShoppingStoreDetailScreen extends StatefulWidget {
   final String storeId;
@@ -198,7 +200,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                 backgroundColor: AppColors.white,
                 child: IconButton(
                   icon: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
+                    LucideIcons.chevronLeft,
                     size: 18,
                     color: AppColors.dark,
                   ),
@@ -216,7 +218,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                       backgroundColor: AppColors.white,
                       child: IconButton(
                         icon: const Icon(
-                          Icons.shopping_bag_outlined,
+                          LucideIcons.shoppingBag,
                           size: 20,
                           color: AppColors.dark,
                         ),
@@ -373,13 +375,13 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                         Row(
                           children: [
                             _StoreDetailChip(
-                              icon: Icons.star_rounded,
+                              icon: CupertinoIcons.star_fill,
                               label: _store.rating.toStringAsFixed(1),
                               color: AppColors.warning,
                             ),
                             const SizedBox(width: 10),
                             _StoreDetailChip(
-                              icon: Icons.inventory_2_outlined,
+                              icon: LucideIcons.package,
                               label: l10n.t(
                                 'store_detail.products',
                                 params: {
@@ -390,7 +392,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                             ),
                             const SizedBox(width: 10),
                             _StoreDetailChip(
-                              icon: Icons.payments_outlined,
+                              icon: LucideIcons.banknote,
                               label:
                                   'DJF${_store.minPrice.toStringAsFixed(0)}-\$${_store.maxPrice.toStringAsFixed(0)}',
                               color: AppColors.shopping,
@@ -558,8 +560,8 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                                         padding: const EdgeInsets.all(8),
                                         child: Icon(
                                           isFavorite
-                                              ? Icons.favorite_rounded
-                                              : Icons.favorite_border_rounded,
+                                              ? CupertinoIcons.heart_fill
+                                              : LucideIcons.heart,
                                           size: 18,
                                           color: isFavorite
                                               ? AppColors.accent
@@ -937,7 +939,7 @@ class _StoreProductActionButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Center(
-            child: Icon(Icons.add_rounded, color: AppColors.white, size: 18),
+            child: Icon(LucideIcons.plus, color: AppColors.white, size: 18),
           ),
         ),
       ),
@@ -947,10 +949,10 @@ class _StoreProductActionButton extends StatelessWidget {
 
 IconData _storeIcon(List<String> categories) {
   final joined = categories.join(' ').toLowerCase();
-  if (joined.contains('shoe')) return Icons.shopping_bag_rounded;
-  if (joined.contains('electronic')) return Icons.headphones_rounded;
-  if (joined.contains('clothing')) return Icons.checkroom_rounded;
-  if (joined.contains('home')) return Icons.chair_rounded;
-  if (joined.contains('accessor')) return Icons.watch_rounded;
-  return Icons.storefront_rounded;
+  if (joined.contains('shoe')) return LucideIcons.shoppingBag;
+  if (joined.contains('electronic')) return LucideIcons.headphones;
+  if (joined.contains('clothing')) return LucideIcons.shirt;
+  if (joined.contains('home')) return LucideIcons.armchair;
+  if (joined.contains('accessor')) return LucideIcons.watch;
+  return LucideIcons.store;
 }

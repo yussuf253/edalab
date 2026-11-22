@@ -13,6 +13,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class GroceryCategoryScreen extends StatelessWidget {
   final String categoryId;
@@ -30,7 +31,7 @@ class GroceryCategoryScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(l10n.t('grocery_category.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -338,7 +339,7 @@ class _GroceryAddButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Center(
-            child: Icon(Icons.add_rounded, color: AppColors.white, size: 18),
+            child: Icon(LucideIcons.plus, color: AppColors.white, size: 18),
           ),
         ),
       ),
@@ -349,22 +350,22 @@ class _GroceryAddButton extends StatelessWidget {
 IconData _groceryCategoryIcon(String value) {
   final normalized = value.toLowerCase();
   if (normalized.contains('fruit') || normalized.contains('veg')) {
-    return Icons.apple_rounded;
+    return LucideIcons.apple;
   }
   if (normalized.contains('dairy') || normalized.contains('egg')) {
-    return Icons.egg_alt_rounded;
+    return LucideIcons.egg;
   }
   if (normalized.contains('meat') || normalized.contains('seafood')) {
-    return Icons.set_meal_rounded;
+    return LucideIcons.utensils;
   }
   if (normalized.contains('bakery') || normalized.contains('bread')) {
-    return Icons.bakery_dining_rounded;
+    return LucideIcons.croissant;
   }
   if (normalized.contains('beverage') || normalized.contains('drink')) {
-    return Icons.local_drink_rounded;
+    return LucideIcons.cupSoda;
   }
   if (normalized.contains('snack')) {
-    return Icons.cookie_rounded;
+    return LucideIcons.cookie;
   }
-  return Icons.shopping_basket_rounded;
+  return LucideIcons.shoppingBasket;
 }

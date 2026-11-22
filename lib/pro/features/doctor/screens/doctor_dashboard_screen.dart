@@ -10,6 +10,7 @@ import 'doctor_appointments_queue_screen.dart';
 import 'doctor_home_care_queue_screen.dart';
 import 'doctor_schedule_settings_screen.dart';
 import 'doctor_telemedicine_screen.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DoctorDashboardScreen extends StatefulWidget {
   final ProProfile profile;
@@ -177,19 +178,19 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         actions: [
           IconButton(
             onPressed: _openSchedule,
-            icon: const Icon(Icons.schedule_outlined),
+            icon: const Icon(LucideIcons.clock),
           ),
           IconButton(
             onPressed: _openAvailability,
-            icon: const Icon(Icons.tune),
+            icon: const Icon(LucideIcons.slidersHorizontal),
           ),
           IconButton(
             onPressed: _openAppointmentsQueue,
-            icon: const Icon(Icons.event_note_outlined),
+            icon: const Icon(LucideIcons.calendarRange),
           ),
           IconButton(
             onPressed: _openHomeCareQueue,
-            icon: const Icon(Icons.home_repair_service_rounded),
+            icon: const Icon(LucideIcons.hammer),
           ),
         ],
       ),
@@ -244,31 +245,31 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                     scrollDirection: Axis.horizontal,
                     children: [
                       _QuickActionCard(
-                        icon: Icons.event_note_outlined,
+                        icon: LucideIcons.calendarRange,
                         label: l10n.appointments,
                         color: AppColors.doctor,
                         onTap: _openAppointmentsQueue,
                       ),
                       _QuickActionCard(
-                        icon: Icons.video_call_outlined,
+                        icon: LucideIcons.video,
                         label: l10n.telemedicine,
                         color: Colors.purple,
                         onTap: _openTelemedicine,
                       ),
                       _QuickActionCard(
-                        icon: Icons.home_repair_service_outlined,
+                        icon: LucideIcons.hammer,
                         label: l10n.homeCare,
                         color: AppColors.info,
                         onTap: _openHomeCareQueue,
                       ),
                       _QuickActionCard(
-                        icon: Icons.tune,
+                        icon: LucideIcons.slidersHorizontal,
                         label: l10n.availability,
                         color: Colors.orange,
                         onTap: _openAvailability,
                       ),
                       _QuickActionCard(
-                        icon: Icons.schedule_outlined,
+                        icon: LucideIcons.clock,
                         label: l10n.schedule,
                         color: Colors.teal,
                         onTap: _openSchedule,
@@ -360,8 +361,8 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
                                 IconButton(
                                   icon: Icon(
                                     isVideo
-                                        ? Icons.video_call
-                                        : Icons.event_available,
+                                        ? LucideIcons.video
+                                        : LucideIcons.calendarCheck,
                                     size: 24,
                                     color: Colors.teal,
                                   ),
@@ -453,7 +454,7 @@ class _DoctorDashboardScreenState extends State<DoctorDashboardScreen> {
         backgroundColor: AppColors.doctor,
         foregroundColor: AppColors.white,
         onPressed: _openAppointmentsQueue,
-        child: const Icon(Icons.medical_information_outlined),
+        child: const Icon(LucideIcons.fileHeart),
       ),
     );
   }
@@ -511,18 +512,18 @@ class _DoctorClinicalHero extends StatelessWidget {
           Row(
             children: [
               _HeroBadge(
-                icon: Icons.priority_high_outlined,
+                icon: LucideIcons.circleAlert,
                 label: l10n.pendingCountLabel(pendingCount),
               ),
               const SizedBox(width: 10),
               _HeroBadge(
-                icon: Icons.video_camera_front_outlined,
+                icon: LucideIcons.video,
                 label: l10n.videoConsultsLabel(videoCount),
               ),
               const Spacer(),
               FilledButton.tonalIcon(
                 onPressed: onOpenQueue,
-                icon: const Icon(Icons.event_note_outlined),
+                icon: const Icon(LucideIcons.calendarRange),
                 label: Text(l10n.openQueue),
                 style: FilledButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -725,7 +726,7 @@ class _DoctorMetricsGrid extends StatelessWidget {
           child: _DoctorMetricCard(
             title: stats.elementAtOrNull(0)?.title ?? l10n.patientsToday,
             value: stats.elementAtOrNull(0)?.value ?? '$fallbackPatients',
-            icon: Icons.people_outline,
+            icon: LucideIcons.users,
             color: AppColors.doctor,
           ),
         ),
@@ -734,7 +735,7 @@ class _DoctorMetricsGrid extends StatelessWidget {
           child: _DoctorMetricCard(
             title: stats.elementAtOrNull(1)?.title ?? l10n.videoQueue,
             value: stats.elementAtOrNull(1)?.value ?? '$fallbackVideo',
-            icon: Icons.video_camera_front_outlined,
+            icon: LucideIcons.video,
             color: Colors.purple,
           ),
         ),
@@ -743,7 +744,7 @@ class _DoctorMetricsGrid extends StatelessWidget {
           child: _DoctorMetricCard(
             title: stats.elementAtOrNull(2)?.title ?? l10n.upcoming,
             value: stats.elementAtOrNull(2)?.value ?? '$fallbackUpcoming',
-            icon: Icons.assignment_outlined,
+            icon: LucideIcons.clipboardList,
             color: AppColors.info,
           ),
         ),

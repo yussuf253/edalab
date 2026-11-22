@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/analytics/analytics_events.dart';
@@ -11,6 +12,7 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/models/models.dart';
 import '../../../core/utils/auth_gate.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HotelDetailScreen extends StatefulWidget {
   final String hotelId;
@@ -83,7 +85,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                 backgroundColor: AppColors.white,
                 child: IconButton(
                   icon: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
+                    LucideIcons.chevronLeft,
                     size: 18,
                     color: AppColors.dark,
                   ),
@@ -96,7 +98,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                 decoration: const BoxDecoration(color: AppColors.tile),
                 child: Center(
                   child: Icon(
-                    Icons.hotel_rounded,
+                    LucideIcons.hotel,
                     size: 64,
                     color: AppColors.hotel.withValues(alpha: 0.4),
                   ),
@@ -134,7 +136,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                         Row(
                           children: [
                             const Icon(
-                              Icons.location_on_rounded,
+                              LucideIcons.mapPin,
                               size: 16,
                               color: AppColors.hotel,
                             ),
@@ -151,25 +153,25 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                           runSpacing: 10,
                           children: [
                             _InfoChip(
-                              Icons.star_rounded,
+                              CupertinoIcons.star_fill,
                               '${h.rating}',
                               AppColors.warning,
                             ),
                             if (h.amenities.contains('Free WiFi'))
                               _InfoChip(
-                                Icons.wifi_rounded,
+                                LucideIcons.wifi,
                                 'Free WiFi',
                                 AppColors.primary,
                               ),
                             if (h.amenities.contains('Pool'))
                               _InfoChip(
-                                Icons.pool_rounded,
+                                LucideIcons.waves,
                                 'Pool',
                                 AppColors.secondary,
                               ),
                             if (h.amenities.contains('Restaurant'))
                               _InfoChip(
-                                Icons.restaurant_rounded,
+                                LucideIcons.utensilsCrossed,
                                 'Restaurant',
                                 AppColors.food,
                               ),
@@ -200,7 +202,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                           children: h.amenities
                               .map(
                                 (a) => _Amenity(
-                                  Icons.check_circle_outline_rounded,
+                                  LucideIcons.circleCheck,
                                   a,
                                 ),
                               )
@@ -248,7 +250,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: const Icon(
-                                      Icons.person_rounded,
+                                      LucideIcons.user,
                                       color: AppColors.hotel,
                                       size: 20,
                                     ),
@@ -262,7 +264,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                                   ...List.generate(
                                     5,
                                     (_) => const Icon(
-                                      Icons.star_rounded,
+                                      CupertinoIcons.star_fill,
                                       size: 14,
                                       color: AppColors.warning,
                                     ),
@@ -558,7 +560,7 @@ class _RoomCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
-              Icons.bed_rounded,
+              LucideIcons.bed,
               color: AppColors.hotel,
               size: 32,
             ),

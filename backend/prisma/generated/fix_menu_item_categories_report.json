@@ -1,0 +1,160 @@
+{
+  "generatedAt": "2026-11-22T13:58:46.452Z",
+  "applied": true,
+  "movedItems": 19,
+  "remainingMismatches": 0,
+  "updates": [
+    {
+      "itemId": "kiki-mi-2c3d4e5f",
+      "itemName": "Americano",
+      "from": "Mocktails",
+      "to": "Coffee",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-coffee",
+      "reason": "hot coffee drink"
+    },
+    {
+      "itemId": "kiki-mi-3d4e5f6a",
+      "itemName": "Black coffee",
+      "from": "Desserts",
+      "to": "Coffee",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-coffee",
+      "reason": "hot coffee drink"
+    },
+    {
+      "itemId": "kiki-mi-5f6a7b8c",
+      "itemName": "Cafe latte noisette",
+      "from": "Shared Platters",
+      "to": "Coffee",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-coffee",
+      "reason": "latte"
+    },
+    {
+      "itemId": "kiki-mi-6a7b8c9d",
+      "itemName": "Caf√© latte caramel",
+      "from": "Rolls & Plates",
+      "to": "Coffee",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-coffee",
+      "reason": "latte (mojibake name, duplicate of the imported Café latte caramel)"
+    },
+    {
+      "itemId": "kiki-mi-8c9daef0",
+      "itemName": "Tea arabic",
+      "from": "Rolls & Plates",
+      "to": "Boissons",
+      "toId": "r1-drinks",
+      "reason": "tea, not coffee"
+    },
+    {
+      "itemId": "kiki-mi-e3456789",
+      "itemName": "Burgers Chicken",
+      "from": "Ethiopian Plates",
+      "to": "Lunch & Diner Menu",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-lunch-diner-menu",
+      "reason": "burger main (Burger beef already there)"
+    },
+    {
+      "itemId": "kiki-mi-f4567890",
+      "itemName": "Salads Chicken cesar",
+      "from": "Seafood Signatures",
+      "to": "Lunch & Diner Menu",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-lunch-diner-menu",
+      "reason": "salad main, no salad category exists"
+    },
+    {
+      "itemId": "kiki-mi-d2345678",
+      "itemName": "Special Chicken Waffles",
+      "from": "Breakfast",
+      "to": "Lunch & Diner Menu",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-lunch-diner-menu",
+      "reason": "savory main at 1500 (sweet waffles stay in Sweets)"
+    },
+    {
+      "itemId": "food-m1",
+      "itemName": "Teriyaki Chicken Bowl",
+      "from": "Signatures",
+      "to": "Lunch & Diner Menu",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-lunch-diner-menu",
+      "reason": "rice bowl main"
+    },
+    {
+      "itemId": "kiki-mi-04567890",
+      "itemName": "Tacos chicken",
+      "from": "Yemeni Fish",
+      "to": "Snacks Menu",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-snacks-menu",
+      "reason": "fast-food snack"
+    },
+    {
+      "itemId": "kiki-mi-c1234567",
+      "itemName": "Vegetable Wrap",
+      "from": "Hot Dishes",
+      "to": "Snacks Menu",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-snacks-menu",
+      "reason": "wrap/snack"
+    },
+    {
+      "itemId": "kiki-mi-aef01234",
+      "itemName": "Wrap chicken",
+      "from": "Buffet Plates",
+      "to": "Snacks Menu",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-snacks-menu",
+      "reason": "wrap/snack"
+    },
+    {
+      "itemId": "kiki-mi-b0123456",
+      "itemName": "Pulled beef wrap",
+      "from": "Drinks",
+      "to": "Snacks Menu",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-snacks-menu",
+      "reason": "wrap/snack"
+    },
+    {
+      "itemId": "kiki-mi-b1d2a3c4",
+      "itemName": "Pain au raisin",
+      "from": "Buffet Plates",
+      "to": "Breakfast Menu",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-breakfast-menu",
+      "reason": "viennoiserie"
+    },
+    {
+      "itemId": "kiki-mi-f5b6c7d8",
+      "itemName": "Snack attack granola yogurt",
+      "from": "Côtés",
+      "to": "Breakfast Menu",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-breakfast-menu",
+      "reason": "breakfast bowl"
+    },
+    {
+      "itemId": "kiki-mi-15678901",
+      "itemName": "Crepes strawberry banana",
+      "from": "Côtés",
+      "to": "Sweets",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-sweets",
+      "reason": "sweet crepe"
+    },
+    {
+      "itemId": "kiki-mi-14789012",
+      "itemName": "Waffle fruit",
+      "from": "Drinks",
+      "to": "Sweets",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-sweets",
+      "reason": "sweet waffle"
+    },
+    {
+      "itemId": "kiki-mi-25890123",
+      "itemName": "Waffle fruit nutella",
+      "from": "Shared Platters",
+      "to": "Sweets",
+      "toId": "kiki-rest-b490aa1037b2-xlsx-sweets",
+      "reason": "sweet waffle"
+    },
+    {
+      "itemId": "kiki-mi-36901234",
+      "itemName": "Stir fry noodles Chicken",
+      "from": "BBQ Plates",
+      "to": "Menu",
+      "toId": "kiki-rest-018697fbe096-menu",
+      "reason": "restaurant has no categories yet"
+    }
+  ]
+}

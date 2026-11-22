@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
@@ -24,6 +25,7 @@ import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class PharmacyScreen extends StatefulWidget {
   final String? initialSelectedPharmacyName;
@@ -538,7 +540,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                     minHeight: 52,
                   ),
                   padding: const EdgeInsets.all(12),
-                  icon: const Icon(Icons.shopping_bag_outlined, size: 24),
+                  icon: const Icon(LucideIcons.shoppingBag, size: 24),
                   onPressed: () {
                     AnalyticsService.instance.track(
                       AnalyticsEvents.viewCartTapped,
@@ -831,7 +833,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                                       : Container(
                                           color: AppColors.pharmacyBg,
                                           child: const Icon(
-                                            Icons.medication_rounded,
+                                            LucideIcons.pill,
                                             color: AppColors.pharmacy,
                                             size: 26,
                                           ),
@@ -1140,14 +1142,14 @@ class _PharmacyNearbyCard extends StatelessWidget {
                           pharmacy.imageUrl!,
                           fit: BoxFit.cover,
                           errorBuilder: (_, _, _) => const Icon(
-                            Icons.local_pharmacy_rounded,
+                            LucideIcons.pill,
                             color: AppColors.pharmacy,
                             size: 22,
                           ),
                         ),
                       )
                     : const Icon(
-                        Icons.local_pharmacy_rounded,
+                        LucideIcons.pill,
                         color: AppColors.pharmacy,
                         size: 22,
                       ),
@@ -1199,7 +1201,7 @@ class _PharmacyNearbyCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _MiniInlineStat(
-                  icon: Icons.star_rounded,
+                  icon: CupertinoIcons.star_fill,
                   label:
                       '${pharmacy.rating.toStringAsFixed(1)} • ${pharmacy.reviewCount}',
                 ),
@@ -1207,7 +1209,7 @@ class _PharmacyNearbyCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _MiniInlineStat(
-                  icon: Icons.medication_liquid_rounded,
+                  icon: LucideIcons.pillBottle,
                   label: l10n.t(
                     'pharmacy.medicines_count_short',
                     params: {'count': '${pharmacy.productCount}'},
@@ -1237,7 +1239,7 @@ class _PharmacyNearbyCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(width: 6),
-                  const Icon(Icons.arrow_forward_rounded, size: 16),
+                  const Icon(LucideIcons.arrowRight, size: 16),
                 ],
               ),
             ),
@@ -1444,7 +1446,7 @@ class _PrescriptionRequestSheetState extends State<_PrescriptionRequestSheet> {
                       ? Row(
                           children: [
                             const Icon(
-                              Icons.photo_camera_back_outlined,
+                              LucideIcons.camera,
                               color: AppColors.pharmacy,
                             ),
                             const SizedBox(width: 10),
@@ -1520,7 +1522,7 @@ class _PrescriptionRequestSheetState extends State<_PrescriptionRequestSheet> {
                         onPressed: _isPickingImage
                             ? null
                             : () => _pickPrescriptionImage(ImageSource.camera),
-                        icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                        icon: const Icon(LucideIcons.camera, size: 18),
                         label: Text(
                           l10n.t('pharmacy.prescription_image_camera'),
                         ),
@@ -1533,7 +1535,7 @@ class _PrescriptionRequestSheetState extends State<_PrescriptionRequestSheet> {
                             ? null
                             : () => _pickPrescriptionImage(ImageSource.gallery),
                         icon: const Icon(
-                          Icons.photo_library_outlined,
+                          LucideIcons.images,
                           size: 18,
                         ),
                         label: Text(

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +10,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class WishlistScreen extends StatefulWidget {
   const WishlistScreen({super.key});
@@ -92,7 +94,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
       appBar: AppBar(
         title: Text(l10n.t('wishlist.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -130,7 +132,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
-                          Icons.shopping_bag_rounded,
+                          LucideIcons.shoppingBag,
                           color: AppColors.lightGrey,
                         ),
                       ),
@@ -183,7 +185,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                       GestureDetector(
                         onTap: () => _removeItem(item),
                         child: const Icon(
-                          Icons.favorite_rounded,
+                          CupertinoIcons.heart_fill,
                           color: AppColors.accent,
                           size: 22,
                         ),

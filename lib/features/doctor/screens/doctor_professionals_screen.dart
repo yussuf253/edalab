@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,6 +11,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/widgets/app_search_bar.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class DoctorProfessionalsScreen extends StatefulWidget {
   final String categoryId;
@@ -219,8 +221,8 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
                                     fit: BoxFit.cover,
                                     errorBuilder: (_, _, _) => Icon(
                                       provider.isHomeCareProvider
-                                          ? Icons.health_and_safety_rounded
-                                          : Icons.local_hospital_rounded,
+                                          ? LucideIcons.heartPulse
+                                          : LucideIcons.cross,
                                       color: AppColors.doctor,
                                       size: 32,
                                     ),
@@ -228,8 +230,8 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
                                 )
                               : Icon(
                                   provider.isHomeCareProvider
-                                      ? Icons.health_and_safety_rounded
-                                      : Icons.local_hospital_rounded,
+                                      ? LucideIcons.heartPulse
+                                      : LucideIcons.cross,
                                   color: AppColors.doctor,
                                   size: 32,
                                 ),
@@ -274,7 +276,7 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
                               Row(
                                 children: [
                                   const Icon(
-                                    Icons.star_rounded,
+                                    CupertinoIcons.star_fill,
                                     size: 16,
                                     color: AppColors.warning,
                                   ),
@@ -374,7 +376,7 @@ class _ProfessionalsEmptyState extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
             ),
             child: const Icon(
-              Icons.search_off_rounded,
+              LucideIcons.searchX,
               color: AppColors.doctor,
               size: 34,
             ),

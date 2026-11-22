@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class ProStatCard extends StatelessWidget {
   final String title;
@@ -88,7 +89,7 @@ class ProStatCard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              isUp ? Icons.arrow_upward : Icons.arrow_downward,
+                              isUp ? LucideIcons.arrowUp : LucideIcons.arrowDown,
                               size: 14,
                               color: isUp ? Colors.green : Colors.red,
                             ),

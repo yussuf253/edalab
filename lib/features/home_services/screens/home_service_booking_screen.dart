@@ -15,6 +15,7 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../widgets/house_help_booking_map.dart';
 import '../../../core/utils/money_format.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class HomeServiceBookingScreen extends StatefulWidget {
   final String providerId;
@@ -641,13 +642,13 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
       (
         l10n.t('home_service_booking.pay_on_confirmation'),
         l10n.t('home_service_booking.pay_on_confirmation_description'),
-        Icons.handshake_rounded,
+        LucideIcons.handshake,
         AppColors.homeServices,
       ),
       (
         l10n.t('home_service_booking.waafipay'),
         l10n.t('home_service_booking.waafipay_description'),
-        Icons.account_balance_wallet_rounded,
+        LucideIcons.wallet,
         AppColors.food,
       ),
     ];
@@ -659,7 +660,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
       appBar: AppBar(
         title: Text(l10n.t('home_service_booking.title')),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: const Icon(LucideIcons.chevronLeft, size: 20),
           onPressed: () => context.pop(),
         ),
       ),
@@ -1173,7 +1174,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                             ),
                                             if (isSelected)
                                               const Icon(
-                                                Icons.check_circle_rounded,
+                                                LucideIcons.checkCircle,
                                                 color: AppColors.homeServices,
                                                 size: 20,
                                               ),
@@ -1347,7 +1348,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               child: Row(
                                 children: [
                                   const Icon(
-                                    Icons.location_on_rounded,
+                                    LucideIcons.mapPin,
                                     color: AppColors.grey,
                                   ),
                                   const SizedBox(width: 14),
@@ -1413,7 +1414,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                             ),
                                           ),
                                           child: const Icon(
-                                            Icons.location_on_rounded,
+                                            LucideIcons.mapPin,
                                             color: AppColors.homeServices,
                                             size: 20,
                                           ),
@@ -1651,7 +1652,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     ),
                                     if (selected)
                                       Icon(
-                                        Icons.check_circle_rounded,
+                                        LucideIcons.checkCircle,
                                         color: method.$4,
                                       ),
                                   ],
