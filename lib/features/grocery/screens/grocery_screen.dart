@@ -630,7 +630,7 @@ Color _groceryCategoryColor(String value) {
     return const Color(0xFF2ED573);
   }
   if (normalized.contains('dairy') || normalized.contains('egg')) {
-    return const Color(0xFFFFBE21);
+    return AppColors.warning;
   }
   if (normalized.contains('meat') || normalized.contains('seafood')) {
     return const Color(0xFF3498DB);
@@ -674,13 +674,13 @@ class _GroceryAddButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         child: Ink(
           width: 34,
           height: 34,
           decoration: BoxDecoration(
             color: AppColors.grocery,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: const Center(
             child: Icon(LucideIcons.plus, color: AppColors.white, size: 18),

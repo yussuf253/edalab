@@ -69,7 +69,7 @@ class AppShell extends StatelessWidget {
         child: SafeArea(
           top: false,
           child: SizedBox(
-            height: 62,
+            height: 64,
             child: Row(
               children: List.generate(navItems.length, (index) {
                 final item = navItems[index];
@@ -151,8 +151,19 @@ class _NavButton extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(
-                height: 24,
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? AppColors.primarySurface
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(999),
+                ),
                 child: Stack(
                   clipBehavior: Clip.none,
                   alignment: Alignment.center,
@@ -164,17 +175,17 @@ class _NavButton extends StatelessWidget {
                       ),
                       child: Image.asset(
                         item.assetPath,
-                        width: 21,
-                        height: 21,
+                        width: 20,
+                        height: 20,
                         fit: BoxFit.contain,
                       ),
                     ),
                     if (badge != null)
-                      Positioned(top: -5, right: 0, child: badge),
+                      Positioned(top: -6, right: -9, child: badge),
                   ],
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 5),
               Text(
                 item.label,
                 maxLines: 1,

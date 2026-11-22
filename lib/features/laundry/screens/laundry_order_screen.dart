@@ -178,7 +178,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
           Container(
             decoration: BoxDecoration(
               color: AppColors.extraLightGrey,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
@@ -889,7 +889,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                             backgroundColor: AppColors.success,
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         );
@@ -1036,7 +1036,7 @@ class _ServiceOption extends StatelessWidget {
                 width: 32,
                 height: 32,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                   child: Image.network(
                     imageUrl,
                     fit: BoxFit.cover,

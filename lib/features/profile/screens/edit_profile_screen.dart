@@ -139,11 +139,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     height: 100,
                     decoration: BoxDecoration(
                       color: AppColors.primarySurface,
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(24),
                     ),
                     child: _pickedAvatarBytes != null
                         ? ClipRRect(
-                            borderRadius: BorderRadius.circular(28),
+                            borderRadius: BorderRadius.circular(24),
                             child: Image.memory(
                               _pickedAvatarBytes!,
                               fit: BoxFit.cover,
@@ -151,7 +151,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           )
                         : _avatarUrl != null && _avatarUrl!.isNotEmpty
                         ? ClipRRect(
-                            borderRadius: BorderRadius.circular(28),
+                            borderRadius: BorderRadius.circular(24),
                             child: Image.network(
                               _avatarUrl!,
                               fit: BoxFit.cover,

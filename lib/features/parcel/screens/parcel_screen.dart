@@ -380,7 +380,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
         ),
         const SizedBox(height: 10),
         ClipRRect(
-          borderRadius: BorderRadius.circular(99),
+          borderRadius: BorderRadius.circular(999),
           child: LinearProgressIndicator(
             value: firstStep ? 0.5 : 1,
             minHeight: 5,
@@ -915,7 +915,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
     return Column(
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(99),
+          borderRadius: BorderRadius.circular(999),
           child: LinearProgressIndicator(
             value: progress,
             minHeight: 5,

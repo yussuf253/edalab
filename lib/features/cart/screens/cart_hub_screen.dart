@@ -117,7 +117,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
                             height: 40,
                             decoration: BoxDecoration(
                               color: AppColors.primarySurface,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
                               LucideIcons.shoppingCart,

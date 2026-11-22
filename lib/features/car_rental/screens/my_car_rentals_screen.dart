@@ -253,7 +253,7 @@ class _BookingCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
       decoration: BoxDecoration(
         color: (isCancelled ? AppColors.errorLight : AppColors.successLight),
-        borderRadius: BorderRadius.circular(7),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,

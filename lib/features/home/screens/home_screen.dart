@@ -1032,7 +1032,7 @@ class _SpecialOffers extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.primarySurface,
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               offer.discount,
@@ -1165,7 +1165,7 @@ class _PopularRestaurantCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
           boxShadow: AppSpacing.shadowSm,
         ),
@@ -1366,7 +1366,7 @@ class _PopularRestaurantDish extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
             child: SizedBox(
               width: 96,
               height: 58,

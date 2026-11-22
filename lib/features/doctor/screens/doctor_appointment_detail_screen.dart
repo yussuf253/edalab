@@ -175,7 +175,7 @@ class _DoctorAppointmentDetailScreenState
                         gradient: const LinearGradient(
                           colors: [AppColors.doctor, AppColors.secondaryLight],
                         ),
-                        borderRadius: BorderRadius.circular(22),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         children: [

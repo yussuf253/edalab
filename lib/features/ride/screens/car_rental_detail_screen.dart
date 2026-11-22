@@ -12,7 +12,7 @@ import '../../../../core/widgets/app_button.dart';
 import '../services/car_rental_service.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
-const _rentalPrimary = Color(0xFF00A651);
+const _rentalPrimary = AppColors.primary;
 const _rentalAccent = Color(0xFF33C176);
 const _rentalBg = Color(0xFFF7F8FA);
 
@@ -758,7 +758,7 @@ class _ConfirmationSheet extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 32),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Padding(
         padding: const EdgeInsets.all(28),

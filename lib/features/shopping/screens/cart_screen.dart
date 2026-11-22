@@ -180,7 +180,7 @@ class _CartScreenState extends State<CartScreen> {
                                     Container(
                                       decoration: BoxDecoration(
                                         color: AppColors.extraLightGrey,
-                                        borderRadius: BorderRadius.circular(10),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Row(
                                         children: [

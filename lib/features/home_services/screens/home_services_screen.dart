@@ -357,7 +357,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                                     clipBehavior: Clip.antiAlias,
                                     decoration: BoxDecoration(
                                       color: homeServiceCategoryPlateColor,
-                                      borderRadius: BorderRadius.circular(18),
+                                      borderRadius: BorderRadius.circular(16),
                                     ),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,

@@ -31,7 +31,8 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final buttonColor = color ?? AppColors.primary;
     final foregroundColor = textColor ?? AppColors.white;
-    final radius = BorderRadius.circular(isSmall ? 12 : 14);
+    // One pill geometry for every action, in step with the themed buttons.
+    const radius = BorderRadius.all(Radius.circular(999));
 
     if (isOutlined) {
       return SizedBox(

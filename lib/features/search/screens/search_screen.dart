@@ -406,7 +406,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(100),
+                        borderRadius: BorderRadius.circular(999),
                         border: Border.all(color: AppColors.border),
                       ),
                       child: Text(

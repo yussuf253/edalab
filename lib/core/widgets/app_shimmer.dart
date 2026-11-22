@@ -215,7 +215,7 @@ class ModuleFeedShimmer extends StatelessWidget {
                   height: 132,
                   decoration: BoxDecoration(
                     color: accentColor.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.all(20),
                   child: const Row(
@@ -368,7 +368,7 @@ class _ShimmerRestaurantCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
         ),
         clipBehavior: Clip.antiAlias,
@@ -684,7 +684,7 @@ class FormPageShimmer extends StatelessWidget {
               height: 88,
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(16),
               ),
               padding: const EdgeInsets.all(16),
               child: const Row(
@@ -1126,7 +1126,7 @@ class _ShimmerGridCard extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             color: AppColors.white,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: compactTile
               ? Padding(
@@ -1165,7 +1165,7 @@ class _ShimmerGridCard extends StatelessWidget {
                       flex: 4,
                       child: ClipRRect(
                         borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(18),
+                          top: Radius.circular(16),
                         ),
                         child: ColoredBox(
                           color: AppColors.white,
@@ -1285,7 +1285,7 @@ class _ShimmerListCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: const Row(
           children: [

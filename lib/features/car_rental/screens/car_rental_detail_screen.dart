@@ -517,7 +517,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
         color: AppColors.primarySurface,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
       ),
       child: Row(

@@ -589,7 +589,7 @@ class _StepsHero extends StatelessWidget {
                     height: compact ? 36 : 40,
                     decoration: BoxDecoration(
                       color: accentColor.withValues(alpha: 0.10),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       item.icon,

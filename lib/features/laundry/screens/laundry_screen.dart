@@ -128,7 +128,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
                               ),
                               decoration: BoxDecoration(
                                 color: AppColors.laundry,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 l10n.t('laundry.order_now'),

@@ -672,7 +672,7 @@ class _PrescriptionImagePreview extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
             child: Image.network(
               imageUrl,
               width: double.infinity,

@@ -10,7 +10,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 // ─── Color palette for the rental module ──────────────────────────────────
 // Using a dark teal/slate palette distinct from ride (AppColors.ride = green)
-const _rentalPrimary = Color(0xFF00A651); // brand green
+const _rentalPrimary = AppColors.primary; // brand green
 const _rentalAccent = Color(0xFF33C176); // light green accent
 const _rentalBg = Color(0xFFF7F8FA); // app background
 const _rentalSurface = Color(0xFF007B3C); // darker green for headers
@@ -124,7 +124,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               decoration: BoxDecoration(
                 color: selected ? _rentalPrimary : AppColors.white,
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: AppSpacing.shadowSm,
               ),
               child: Text(
@@ -496,7 +496,7 @@ class _SpecChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: _rentalBg,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

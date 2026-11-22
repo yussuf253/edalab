@@ -69,15 +69,15 @@ class ServiceCard extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            width: 58,
-            height: 58,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
               color: backgroundColor,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
             ),
             child: Icon(icon, color: color, size: 26),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
             title,
             style: AppTextStyles.labelMedium.copyWith(fontSize: 11.5),
@@ -169,7 +169,7 @@ class ProductCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: badgeColor ?? AppColors.primary,
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(badge!, style: AppTextStyles.badge),
                     ),
@@ -269,7 +269,7 @@ class _RatingPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: AppColors.primary,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

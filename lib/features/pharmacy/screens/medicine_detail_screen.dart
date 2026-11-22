@@ -325,7 +325,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                               height: 34,
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.18),
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Center(
                                 child: Text(

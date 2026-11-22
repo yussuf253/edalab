@@ -184,7 +184,7 @@ class MyAppointmentsScreen extends StatelessWidget {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: AppColors.extraLightGrey,
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             children: [

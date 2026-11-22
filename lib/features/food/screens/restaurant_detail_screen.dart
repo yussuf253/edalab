@@ -298,7 +298,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
               padding: const EdgeInsets.all(20),
               decoration: const BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: _isLoading
                   ? const _RestaurantDetailShimmer()
@@ -311,7 +311,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                             Icon(
                               LucideIcons.cloudOff,
                               size: 56,
-                              color: Colors.grey.shade400,
+                              color: AppColors.mediumGrey,
                             ),
                             const SizedBox(height: 16),
                             Text(

@@ -429,7 +429,7 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                         height: 70,
                         decoration: BoxDecoration(
                           color: AppColors.doctorBg,
-                          borderRadius: BorderRadius.circular(22),
+                          borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Icon(
                           LucideIcons.searchX,

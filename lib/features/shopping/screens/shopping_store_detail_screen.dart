@@ -930,13 +930,13 @@ class _StoreProductActionButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         child: Ink(
           width: 34,
           height: 34,
           decoration: BoxDecoration(
             color: AppColors.shopping,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: const Center(
             child: Icon(LucideIcons.plus, color: AppColors.white, size: 18),

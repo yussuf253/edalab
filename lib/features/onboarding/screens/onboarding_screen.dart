@@ -261,11 +261,11 @@ class _TopBar extends StatelessWidget {
           }).toList();
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.86),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.95)),
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: AppColors.border),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,

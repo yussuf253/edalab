@@ -162,7 +162,7 @@ class _GroceryDetailScreenState extends State<GroceryDetailScreen> {
                         height: 160,
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(36),
+                          borderRadius: BorderRadius.circular(24),
                         ),
                         child: Icon(
                           _groceryCategoryIcon(

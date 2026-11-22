@@ -291,7 +291,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                               height: 4,
                               decoration: BoxDecoration(
                                 color: AppColors.lightGrey,
-                                borderRadius: BorderRadius.circular(2),
+                                borderRadius: BorderRadius.circular(6),
                               ),
                             ),
                             const SizedBox(height: 16),

@@ -290,7 +290,7 @@ class _MainCategoryCard extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(6, 6, 6, 8),
         decoration: BoxDecoration(
           color: homeServiceCategoryPlateColor,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           children: [

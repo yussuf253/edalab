@@ -517,7 +517,7 @@ class _AddressSheetState extends State<_AddressSheet> {
           ),
           child: Material(
             color: AppColors.white,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(24),
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: SingleChildScrollView(

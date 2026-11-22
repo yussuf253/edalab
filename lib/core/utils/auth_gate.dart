@@ -71,7 +71,7 @@ class LoginRequiredView extends StatelessWidget {
               height: 72,
               decoration: BoxDecoration(
                 color: AppColors.primarySurface,
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(icon, color: AppColors.primary, size: 34),
             ),

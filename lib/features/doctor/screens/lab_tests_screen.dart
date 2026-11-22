@@ -344,7 +344,7 @@ class _TestDetailsBottomSheet extends StatelessWidget {
                 margin: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: AppColors.lightGrey,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(6),
                 ),
               ),
               Expanded(

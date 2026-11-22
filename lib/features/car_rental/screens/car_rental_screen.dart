@@ -224,7 +224,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
             height: 54,
             decoration: BoxDecoration(
               color: AppColors.white.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
               LucideIcons.car,

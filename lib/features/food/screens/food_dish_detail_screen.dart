@@ -594,7 +594,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 16),
         decoration: const BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
             BoxShadow(
               color: Color(0x14000000),

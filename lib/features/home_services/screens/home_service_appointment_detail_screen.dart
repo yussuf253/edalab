@@ -399,7 +399,7 @@ class _HomeServiceAppointmentDetailScreenState
                             AppColors.secondaryLight,
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(22),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         children: [

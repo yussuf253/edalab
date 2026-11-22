@@ -271,7 +271,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                               color: !_showAliExpress
                                   ? AppColors.primary
                                   : Colors.transparent,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
@@ -315,7 +315,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                               color: _showAliExpress
                                   ? AppColors.primary
                                   : Colors.transparent,
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
@@ -589,7 +589,7 @@ class _ShoppingStoreCard extends StatelessWidget {
                       height: 72,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.55),
-                        borderRadius: BorderRadius.circular(22),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Icon(
                         _storeIcon(store.categories),
@@ -1091,7 +1091,7 @@ class _AliExpressProductCard extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: AppColors.accent.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               product.badge!,

@@ -19,10 +19,16 @@ class AppTheme {
   );
   static const BorderRadius _cardRadius = BorderRadius.all(Radius.circular(16));
   static const BorderRadius _dialogRadius = BorderRadius.all(
-    Radius.circular(18),
+    Radius.circular(20),
   );
   static const BorderRadius _sheetRadius = BorderRadius.vertical(
-    top: Radius.circular(20),
+    top: Radius.circular(24),
+  );
+
+  /// Actions, chips and pills are all fully rounded, so a button never reads
+  /// as a different species from the chip sitting next to it.
+  static const BorderRadius _pillRadius = BorderRadius.all(
+    Radius.circular(999),
   );
 
   static ThemeData get lightTheme => _build(Brightness.light);
@@ -118,7 +124,7 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         indicatorColor: soft,
         indicatorShape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
+          borderRadius: BorderRadius.all(Radius.circular(999)),
         ),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         labelTextStyle: WidgetStateProperty.resolveWith(
@@ -149,8 +155,8 @@ class AppTheme {
           disabledForegroundColor: AppColors.white.withValues(alpha: 0.85),
           elevation: 0,
           minimumSize: const Size(0, 52),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          shape: const RoundedRectangleBorder(borderRadius: _controlRadius),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: const RoundedRectangleBorder(borderRadius: _pillRadius),
           textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 15,
             fontWeight: FontWeight.w600,
@@ -164,8 +170,8 @@ class AppTheme {
           foregroundColor: AppColors.white,
           elevation: 0,
           minimumSize: const Size(0, 52),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          shape: const RoundedRectangleBorder(borderRadius: _controlRadius),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: const RoundedRectangleBorder(borderRadius: _pillRadius),
           textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 15,
             fontWeight: FontWeight.w600,
@@ -178,7 +184,7 @@ class AppTheme {
           elevation: 0,
           minimumSize: const Size(0, 52),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          shape: const RoundedRectangleBorder(borderRadius: _controlRadius),
+          shape: const RoundedRectangleBorder(borderRadius: _pillRadius),
           side: const BorderSide(color: AppColors.primary, width: 1.2),
           textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 15,
@@ -190,8 +196,8 @@ class AppTheme {
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primary,
           minimumSize: const Size(0, 40),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          shape: const RoundedRectangleBorder(borderRadius: _controlRadius),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          shape: const RoundedRectangleBorder(borderRadius: _pillRadius),
           textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -211,23 +217,23 @@ class AppTheme {
         filled: true,
         fillColor: tile,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: _controlRadius,
           borderSide: BorderSide(color: border),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: _controlRadius,
           borderSide: BorderSide(color: border),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: _controlRadius,
           borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: _controlRadius,
           borderSide: const BorderSide(color: AppColors.error, width: 1.4),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: _controlRadius,
           borderSide: const BorderSide(color: AppColors.error, width: 1.4),
         ),
         contentPadding: const EdgeInsets.symmetric(
@@ -277,7 +283,7 @@ class AppTheme {
         ),
         minLeadingWidth: 20,
         contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-        shape: const RoundedRectangleBorder(borderRadius: _controlRadius),
+        shape: const RoundedRectangleBorder(borderRadius: _cardRadius),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: tile,
@@ -338,7 +344,7 @@ class AppTheme {
           fontWeight: FontWeight.w500,
           color: AppColors.white,
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       popupMenuTheme: PopupMenuThemeData(
         color: surface,

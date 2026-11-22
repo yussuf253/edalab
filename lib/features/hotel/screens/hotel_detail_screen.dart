@@ -247,7 +247,7 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                                     height: 36,
                                     decoration: BoxDecoration(
                                       color: AppColors.hotelBg,
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: const Icon(
                                       LucideIcons.user,
@@ -508,7 +508,7 @@ class _Amenity extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: AppColors.extraLightGrey,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

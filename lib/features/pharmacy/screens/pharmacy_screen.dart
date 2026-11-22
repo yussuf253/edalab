@@ -627,7 +627,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: AppColors.white,
-                                      borderRadius: BorderRadius.circular(10),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
                                       l10n.t('pharmacy.upload_now'),
@@ -997,7 +997,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                           height: 34,
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Center(
                             child: Text(
@@ -1262,7 +1262,7 @@ class _MiniInlineStat extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: AppColors.extraLightGrey,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.lightGrey.withValues(alpha: 0.5)),
       ),
       child: Row(
@@ -1470,7 +1470,7 @@ class _PrescriptionRequestSheetState extends State<_PrescriptionRequestSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(12),
                               child: Image.memory(
                                 _selectedImageBytes!,
                                 width: double.infinity,

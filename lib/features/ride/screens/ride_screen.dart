@@ -509,7 +509,7 @@ class _RideScreenState extends State<RideScreen> {
                               ),
                               decoration: BoxDecoration(
                                 color: AppColors.extraLightGrey,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 currentLocationLabel,
@@ -559,7 +559,7 @@ class _RideScreenState extends State<RideScreen> {
                               ),
                               decoration: BoxDecoration(
                                 color: AppColors.extraLightGrey,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 destinationLabel,
@@ -892,7 +892,7 @@ class _RideScreenState extends State<RideScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           l10n.t('ride.claim'),

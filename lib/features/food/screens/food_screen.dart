@@ -382,7 +382,7 @@ class _FoodScreenState extends State<FoodScreen> {
                           color: isSelected
                               ? AppColors.primary
                               : AppColors.white,
-                          borderRadius: BorderRadius.circular(100),
+                          borderRadius: BorderRadius.circular(999),
                           border: isSelected
                               ? null
                               : Border.all(color: AppColors.border),
@@ -782,7 +782,7 @@ class _RestaurantCard extends StatelessWidget {
           // White surface; the category accent only shows as a hairline border
           // and in the copy, so cards differ without shouting.
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: accentColor.withValues(alpha: 0.14)),
           boxShadow: AppSpacing.shadowSm,
         ),
@@ -990,7 +990,7 @@ class _RestaurantItemTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
             child: SizedBox(
               width: 96,
               height: 58,

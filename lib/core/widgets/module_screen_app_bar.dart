@@ -53,7 +53,12 @@ class ModuleScreenAppBar extends StatelessWidget
           ? Padding(
               padding: const EdgeInsets.only(left: 8),
               child: IconButton(
-                icon: const Icon(LucideIcons.arrowLeft, size: 22),
+                icon: const Icon(LucideIcons.arrowLeft, size: 20),
+                style: IconButton.styleFrom(
+                  backgroundColor: AppColors.tile,
+                  foregroundColor: AppColors.dark,
+                  shape: const CircleBorder(),
+                ),
                 onPressed:
                     onBack ??
                     () {
@@ -70,7 +75,7 @@ class ModuleScreenAppBar extends StatelessWidget
         title,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: AppTextStyles.h3.copyWith(fontSize: 19, letterSpacing: -0.3),
+        style: AppTextStyles.h3.copyWith(fontSize: 18, letterSpacing: -0.3),
       ),
       actions: actions,
       bottom: search == null

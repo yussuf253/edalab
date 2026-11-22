@@ -1006,7 +1006,7 @@ class _OrdersTabBar extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: selected ? AppColors.primary : AppColors.white,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       labels[index],

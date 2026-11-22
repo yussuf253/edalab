@@ -585,7 +585,7 @@ class _PharmacyStoreDetailScreenState extends State<PharmacyStoreDetailScreen> {
                         height: 34,
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Center(
                           child: Text(
@@ -682,7 +682,7 @@ class _StoreStatCard extends StatelessWidget {
             height: 34,
             decoration: BoxDecoration(
               color: AppColors.pharmacyBg,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: AppColors.pharmacy, size: 18),
           ),
@@ -745,7 +745,7 @@ class _StoreSearchCard extends StatelessWidget {
             height: 34,
             decoration: BoxDecoration(
               color: AppColors.pharmacyBg,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
               LucideIcons.search,

@@ -40,16 +40,15 @@ class SectionHeader extends StatelessWidget {
               behavior: HitTestBehavior.opaque,
               onTap: onAction,
               child: Container(
-                width: 30,
-                height: 30,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: AppColors.tile,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.border),
                 ),
                 child: const Icon(
                   LucideIcons.arrowRight,
-                  size: 15,
+                  size: 16,
                   color: AppColors.dark,
                 ),
               ),
@@ -190,12 +189,12 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: isCompact ? 8 : 10,
-        vertical: isCompact ? 3 : 4,
+        horizontal: isCompact ? 9 : 11,
+        vertical: isCompact ? 4 : 5,
       ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         text,
@@ -234,13 +233,13 @@ class EmptyState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 72,
-              height: 72,
+              width: 84,
+              height: 84,
               decoration: const BoxDecoration(
-                color: AppColors.tile,
+                color: AppColors.primarySurface,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 32, color: AppColors.mediumGrey),
+              child: Icon(icon, size: 34, color: AppColors.primary),
             ),
             const SizedBox(height: 20),
             Text(title, style: AppTextStyles.h3, textAlign: TextAlign.center),
@@ -277,7 +276,7 @@ class ImagePlaceholder extends StatelessWidget {
     this.height,
     this.icon = LucideIcons.image,
     this.color,
-    this.borderRadius = 12,
+    this.borderRadius = 14,
   });
 
   @override

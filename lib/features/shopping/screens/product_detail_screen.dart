@@ -84,7 +84,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     'Red': AppColors.error,
     'Dark Blue': Colors.indigo,
     'Light Blue': Colors.lightBlue,
-    'Silver': Colors.grey.shade400,
+    'Silver': AppColors.mediumGrey,
     'Rose Gold': Colors.pink.shade200,
     'Gold/Green': Colors.amber,
     'Silver/Blue': Colors.blueGrey,
@@ -400,7 +400,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   child:
                                       _selectedColor == i &&
                                           (uicolor == Colors.white ||
-                                              uicolor == Colors.grey.shade400)
+                                              uicolor == AppColors.mediumGrey)
                                       ? const Icon(
                                           LucideIcons.check,
                                           color: AppColors.dark,

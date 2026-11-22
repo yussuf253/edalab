@@ -159,7 +159,7 @@ class _AppUpdateDialogState extends State<AppUpdateDialog>
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.extraLightGrey,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
