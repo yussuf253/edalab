@@ -229,6 +229,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'See performance snapshots, urgent priorities, and customer activity in real time so nothing slips through.';
 
   @override
+  String get onboardingServiceCity => 'Pro services in Djibouti';
+
+  @override
   String get onboardingGetStarted => 'Get Started';
 
   @override

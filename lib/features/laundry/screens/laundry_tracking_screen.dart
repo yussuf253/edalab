@@ -200,19 +200,19 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                       ShimmerBlock(
                         width: double.infinity,
                         height: 180,
-                        radius: 16,
+                        radius: 18,
                       ),
                       SizedBox(height: 16),
                       ShimmerBlock(
                         width: double.infinity,
                         height: 230,
-                        radius: 16,
+                        radius: 18,
                       ),
                       SizedBox(height: 16),
                       ShimmerBlock(
                         width: double.infinity,
                         height: 180,
-                        radius: 16,
+                        radius: 18,
                       ),
                     ],
                   ),
@@ -244,7 +244,7 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         color: AppColors.laundryBg,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(color: AppColors.border),
                       ),
                       child: Column(
@@ -254,7 +254,7 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                             height: 56,
                             decoration: BoxDecoration(
                               color: AppColors.white,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: const Icon(
                               LucideIcons.washingMachine,
@@ -280,7 +280,7 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(color: AppColors.border),
                       ),
                       child: Column(
@@ -318,13 +318,13 @@ class _LaundryTrackingScreenState extends State<LaundryTrackingScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(color: AppColors.border),
                       ),
                       child: Column(

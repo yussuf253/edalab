@@ -445,17 +445,17 @@ class AppTheme {
     final base = GoogleFonts.plusJakartaSansTextTheme();
     return base.copyWith(
       displaySmall: GoogleFonts.plusJakartaSans(
-        fontSize: 28,
+        fontSize: 30,
         fontWeight: FontWeight.w700,
-        height: 1.25,
-        letterSpacing: -0.7,
+        height: 1.2,
+        letterSpacing: -0.9,
         color: ink,
       ),
       headlineMedium: GoogleFonts.plusJakartaSans(
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: FontWeight.w700,
-        height: 1.3,
-        letterSpacing: -0.4,
+        height: 1.25,
+        letterSpacing: -0.7,
         color: ink,
       ),
       headlineSmall: GoogleFonts.plusJakartaSans(
@@ -466,17 +466,17 @@ class AppTheme {
         color: ink,
       ),
       titleLarge: GoogleFonts.plusJakartaSans(
-        fontSize: 18,
+        fontSize: 19,
         fontWeight: FontWeight.w700,
-        height: 1.35,
-        letterSpacing: -0.2,
+        height: 1.3,
+        letterSpacing: -0.4,
         color: ink,
       ),
       titleMedium: GoogleFonts.plusJakartaSans(
-        fontSize: 16,
+        fontSize: 16.5,
         fontWeight: FontWeight.w700,
-        height: 1.4,
-        letterSpacing: -0.1,
+        height: 1.35,
+        letterSpacing: -0.25,
         color: ink,
       ),
       titleSmall: GoogleFonts.plusJakartaSans(

@@ -404,7 +404,7 @@ class _RideRoutePreviewState extends State<RideRoutePreview>
                     ),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       boxShadow: AppSpacing.shadowMd,
                     ),
                     child: Row(
@@ -752,7 +752,7 @@ class _ActionButton extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

@@ -200,7 +200,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(
                             color: AppColors.warning.withValues(alpha: 0.4),
                           ),
@@ -235,7 +235,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           color: AppColors.foodBg,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(color: AppColors.border),
                         ),
                         child: Column(
@@ -245,7 +245,7 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                               height: 56,
                               decoration: BoxDecoration(
                                 color: AppColors.white,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(14),
                               ),
                               child: const Icon(
                                 LucideIcons.scooter,
@@ -277,13 +277,13 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                           ],
                         ),
                       ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 14),
                     if (!_isCancelledStatus(status))
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(color: AppColors.border),
                         ),
                         child: Column(
@@ -330,12 +330,12 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                           ],
                         ),
                       ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(color: AppColors.border),
                       ),
                       child: Row(
@@ -411,13 +411,13 @@ class _FoodOrderTrackingScreenState extends State<FoodOrderTrackingScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

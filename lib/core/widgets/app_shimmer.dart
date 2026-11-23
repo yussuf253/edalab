@@ -368,7 +368,7 @@ class _ShimmerRestaurantCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border),
         ),
         clipBehavior: Clip.antiAlias,
@@ -382,7 +382,7 @@ class _ShimmerRestaurantCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ShimmerBlock(width: 62, height: 62, radius: 12),
+                  ShimmerBlock(width: 62, height: 62, radius: 14),
                   SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -1126,7 +1126,7 @@ class _ShimmerGridCard extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             color: AppColors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
           ),
           child: compactTile
               ? Padding(
@@ -1163,17 +1163,18 @@ class _ShimmerGridCard extends StatelessWidget {
                   children: [
                     Expanded(
                       flex: 4,
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(16),
-                        ),
-                        child: ColoredBox(
-                          color: AppColors.white,
-                          child: const Center(
-                            child: ShimmerBlock(
-                              width: 86,
-                              height: 86,
-                              radius: 22,
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: ColoredBox(
+                            color: AppColors.white,
+                            child: const Center(
+                              child: ShimmerBlock(
+                                width: 86,
+                                height: 86,
+                                radius: 14,
+                              ),
                             ),
                           ),
                         ),

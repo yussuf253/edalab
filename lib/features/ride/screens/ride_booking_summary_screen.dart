@@ -143,7 +143,7 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
                 destinationPoint: destinationPoint,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
             _SummaryCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,7 +183,7 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             _SummaryCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -208,7 +208,7 @@ class _RideBookingSummaryScreenState extends State<RideBookingSummaryScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             _SummaryCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -417,7 +417,7 @@ class _SummaryCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),

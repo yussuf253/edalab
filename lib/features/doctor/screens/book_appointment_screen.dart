@@ -164,7 +164,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                   child: ShimmerBlock(
                     width: double.infinity,
                     height: 84,
-                    radius: 16,
+                    radius: 18,
                   ),
                 ),
               )
@@ -174,7 +174,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   border: Border.all(color: AppColors.border),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Row(
                   children: [
@@ -183,7 +183,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       height: 56,
                       decoration: BoxDecoration(
                         color: AppColors.doctorBg,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Icon(
                         doctor.isHomeCareProvider
@@ -215,7 +215,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   border: Border.all(color: AppColors.border),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,12 +270,12 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppColors.doctorBg,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Column(
                   children: [
@@ -420,7 +420,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                         width: 60,
                         decoration: BoxDecoration(
                           color: selected ? AppColors.doctor : AppColors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           border: selected
                               ? null
                               : Border.all(color: AppColors.border),
@@ -473,7 +473,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: selected ? AppColors.doctor : AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: selected
                             ? null
                             : Border.all(color: AppColors.border),
@@ -506,7 +506,7 @@ class _BookAppointmentScreenState extends State<BookAppointmentScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppColors.doctorBg,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Column(
                   children: [
@@ -713,7 +713,7 @@ class _TypeCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             color: selected ? AppColors.doctor : AppColors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
             border: selected ? null : Border.all(color: AppColors.border),
           ),
           child: Column(

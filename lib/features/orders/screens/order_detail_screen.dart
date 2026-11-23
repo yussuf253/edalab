@@ -42,7 +42,7 @@ class OrderDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
                 border: Border.all(color: AppColors.border),
               ),
               child: Column(
@@ -74,7 +74,7 @@ class OrderDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             _Card(
               title: l10n.t('order_detail.summary'),
               child: Column(
@@ -275,10 +275,10 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(

@@ -7,35 +7,35 @@ class AppTextStyles {
 
   // Headings
   static TextStyle h1 = GoogleFonts.plusJakartaSans(
-    fontSize: 28,
+    fontSize: 30,
+    fontWeight: FontWeight.w700,
+    color: AppColors.dark,
+    height: 1.2,
+    letterSpacing: -0.9,
+  );
+
+  static TextStyle h2 = GoogleFonts.plusJakartaSans(
+    fontSize: 24,
     fontWeight: FontWeight.w700,
     color: AppColors.dark,
     height: 1.25,
     letterSpacing: -0.7,
   );
 
-  static TextStyle h2 = GoogleFonts.plusJakartaSans(
-    fontSize: 22,
+  static TextStyle h3 = GoogleFonts.plusJakartaSans(
+    fontSize: 19,
     fontWeight: FontWeight.w700,
     color: AppColors.dark,
     height: 1.3,
     letterSpacing: -0.4,
   );
 
-  static TextStyle h3 = GoogleFonts.plusJakartaSans(
-    fontSize: 18,
+  static TextStyle h4 = GoogleFonts.plusJakartaSans(
+    fontSize: 16.5,
     fontWeight: FontWeight.w700,
     color: AppColors.dark,
     height: 1.35,
-    letterSpacing: -0.2,
-  );
-
-  static TextStyle h4 = GoogleFonts.plusJakartaSans(
-    fontSize: 16,
-    fontWeight: FontWeight.w700,
-    color: AppColors.dark,
-    height: 1.4,
-    letterSpacing: -0.1,
+    letterSpacing: -0.25,
   );
 
   // Body

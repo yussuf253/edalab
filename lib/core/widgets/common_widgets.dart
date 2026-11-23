@@ -139,11 +139,11 @@ class AppChip extends StatelessWidget {
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primarySurface : AppColors.white,
+          color: isSelected ? color : AppColors.white,
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
           border: Border.all(
             color: isSelected ? color : AppColors.border,
-            width: isSelected ? 1.2 : 1,
+            width: 1,
           ),
         ),
         child: Row(
@@ -153,14 +153,14 @@ class AppChip extends StatelessWidget {
               Icon(
                 icon,
                 size: 15,
-                color: isSelected ? color : AppColors.mediumGrey,
+                color: isSelected ? AppColors.white : AppColors.mediumGrey,
               ),
               const SizedBox(width: 6),
             ],
             Text(
               label,
               style: AppTextStyles.labelMedium.copyWith(
-                color: isSelected ? color : AppColors.grey,
+                color: isSelected ? AppColors.white : AppColors.grey,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),

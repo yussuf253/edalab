@@ -32,12 +32,14 @@ class AppSpacing {
   static const double radiusXxl = 20;
   static const double radiusFull = 100;
 
-  // Elevation — surfaces are separated by hairlines, not drop shadows.
+  // Elevation — hairline borders carry the structure, shadows only lift a
+  // surface off the canvas. The tint is warm-neutral, never pure black, so
+  // cards on the green-tinted canvas don't read as dirty.
   static const List<BoxShadow> shadowSm = [
     BoxShadow(
-      color: Color(0x07000000),
-      blurRadius: 2,
-      offset: Offset(0, 1),
+      color: Color(0x0A0B1A14),
+      blurRadius: 10,
+      offset: Offset(0, 3),
     ),
   ];
 

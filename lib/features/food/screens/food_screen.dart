@@ -17,6 +17,7 @@ import '../../../core/utils/money_format.dart';
 import '../../../core/config/zone_scope.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_search_bar.dart';
+import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/notification_bell.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -163,7 +164,7 @@ class _FoodScreenState extends State<FoodScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.white,
+        backgroundColor: AppColors.background,
         body: CustomScrollView(
           slivers: [
             // Header: back · deliver-to · bell, then the search pill.
@@ -180,15 +181,19 @@ class _FoodScreenState extends State<FoodScreen> {
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(6, 2, 10, 0),
+                          padding: const EdgeInsets.fromLTRB(12, 2, 10, 0),
                           child: Row(
                             children: [
                               IconButton(
                                 icon: const Icon(
                                   LucideIcons.arrowLeft,
-                                  size: 22,
+                                  size: 20,
                                 ),
-                                color: AppColors.dark,
+                                style: IconButton.styleFrom(
+                                  backgroundColor: AppColors.tile,
+                                  foregroundColor: AppColors.dark,
+                                  shape: const CircleBorder(),
+                                ),
                                 onPressed: () {
                                   if (context.canPop()) {
                                     context.pop();
@@ -204,30 +209,53 @@ class _FoodScreenState extends State<FoodScreen> {
                                     Text(
                                       l10n.t('food.title'),
                                       style: AppTextStyles.caption.copyWith(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w500,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.2,
                                       ),
                                     ),
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            locationLabel,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: AppTextStyles.labelLarge
-                                                .copyWith(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
+                                    const SizedBox(height: 3),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.tile,
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            LucideIcons.mapPin,
+                                            size: 12,
+                                            color: AppColors.primary,
                                           ),
-                                        ),
-                                        const Icon(
-                                          LucideIcons.chevronDown,
-                                          color: AppColors.mediumGrey,
-                                          size: 18,
-                                        ),
-                                      ],
+                                          const SizedBox(width: 4),
+                                          Flexible(
+                                            child: Text(
+                                              locationLabel,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: AppTextStyles.labelMedium
+                                                  .copyWith(
+                                                    fontSize: 11.5,
+                                                    fontWeight:
+                                                        FontWeight.w600,
+                                                    color: AppColors.grey,
+                                                  ),
+                                            ),
+                                          ),
+                                          const Icon(
+                                            LucideIcons.chevronDown,
+                                            color: AppColors.mediumGrey,
+                                            size: 14,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -237,8 +265,14 @@ class _FoodScreenState extends State<FoodScreen> {
                                 children: [
                                   IconButton(
                                     color: AppColors.dark,
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: AppColors.tile,
+                                      foregroundColor: AppColors.dark,
+                                      shape: const CircleBorder(),
+                                    ),
                                     icon: const Icon(
                                       LucideIcons.shoppingBag,
+                                      size: 20,
                                     ),
                                     onPressed: () {
                                       AnalyticsService.instance.track(
@@ -386,15 +420,6 @@ class _FoodScreenState extends State<FoodScreen> {
                           border: isSelected
                               ? null
                               : Border.all(color: AppColors.border),
-                          boxShadow: isSelected
-                              ? const [
-                                  BoxShadow(
-                                    color: Color(0x2600A651),
-                                    blurRadius: 12,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ]
-                              : AppSpacing.shadowSm,
                         ),
                         child: Row(
                           children: [
@@ -428,11 +453,8 @@ class _FoodScreenState extends State<FoodScreen> {
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 22, 20, 4),
-                child: Text(
-                  l10n.t('food.popular_nearby'),
-                  style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
-                ),
+                padding: const EdgeInsets.only(top: 24, bottom: 4),
+                child: SectionHeader(title: l10n.t('food.popular_nearby')),
               ),
             ),
             if (_isLoading) ...[
@@ -446,7 +468,7 @@ class _FoodScreenState extends State<FoodScreen> {
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       boxShadow: AppSpacing.shadowSm,
                     ),
                     child: Column(
@@ -782,7 +804,7 @@ class _RestaurantCard extends StatelessWidget {
           // White surface; the category accent only shows as a hairline border
           // and in the copy, so cards differ without shouting.
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: accentColor.withValues(alpha: 0.14)),
           boxShadow: AppSpacing.shadowSm,
         ),
@@ -801,7 +823,7 @@ class _RestaurantCard extends StatelessWidget {
                     width: 62,
                     height: 62,
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
@@ -990,7 +1012,7 @@ class _RestaurantItemTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(14),
             child: SizedBox(
               width: 96,
               height: 58,
@@ -1140,7 +1162,7 @@ class _FoodCategory extends StatelessWidget {
                 color: hasImage
                     ? AppColors.white
                     : (isSelected ? AppColors.primary : AppColors.tile),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
                 border: hasImage
                     ? null
                     : Border.all(

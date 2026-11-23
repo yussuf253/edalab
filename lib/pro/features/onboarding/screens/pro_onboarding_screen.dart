@@ -428,6 +428,8 @@ class _OnboardingPageContent extends StatelessWidget {
                   ),
                 },
                 SizedBox(height: compact ? 24 : 30),
+                _CityPill(label: l10n.onboardingServiceCity),
+                const SizedBox(height: 14),
                 Text(
                   _getString(l10n, page.titleKey),
                   style: AppTextStyles.h2.copyWith(
@@ -473,6 +475,43 @@ class _OnboardingPageContent extends StatelessWidget {
       default:
         return key;
     }
+  }
+}
+
+/// Service-area badge above the page title.
+///
+/// The Pro app onboardes service providers in Djibouti, so the city is stated
+/// on the onboarding itself rather than enforced with a GPS gate.
+class _CityPill extends StatelessWidget {
+  const _CityPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(LucideIcons.mapPin, size: 14, color: AppColors.primary),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: AppColors.dark,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -164,28 +164,43 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    LucideIcons.mapPin,
-                                    size: 13,
-                                    color: AppColors.mediumGrey,
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
                                   ),
-                                  const SizedBox(width: 3),
-                                  Expanded(
-                                    child: Text(
-                                      locationDisplay,
-                                      style: AppTextStyles.caption.copyWith(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w500,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.tile,
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        LucideIcons.mapPin,
+                                        size: 12,
+                                        color: AppColors.primary,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                      const SizedBox(width: 4),
+                                      Flexible(
+                                        child: Text(
+                                          locationDisplay,
+                                          style: AppTextStyles.caption.copyWith(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.grey,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                              const SizedBox(height: 3),
+                              const SizedBox(height: 4),
                               Text(
                                 displayName,
                                 style: AppTextStyles.h4.copyWith(
@@ -235,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (hasEnabledOfferModules)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 24, 0, 0),
                   child: Column(
                     children: [
                       SectionHeader(
@@ -254,7 +269,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (moduleProvider.isEnabled('food'))
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 24, 0, 0),
                   child: Column(
                     children: [
                       SectionHeader(
@@ -273,7 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (moduleProvider.isEnabled('doctor'))
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(0, 24, 0, 0),
                   child: Column(
                     children: [
                       SectionHeader(
@@ -292,7 +307,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (moduleProvider.isEnabled('shopping'))
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 22, 0, 24),
+                  padding: const EdgeInsets.fromLTRB(0, 24, 0, 24),
                   child: Column(
                     children: [
                       SectionHeader(
@@ -418,7 +433,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (hasEnabledOfferModules)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 24, 0, 0),
                     child: Column(
                       children: [
                         _shimmerSectionHeader(
@@ -436,7 +451,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (moduleProvider.isEnabled('food'))
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 24, 0, 0),
                     child: Column(
                       children: [
                         _shimmerSectionHeader(
@@ -454,7 +469,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (moduleProvider.isEnabled('doctor'))
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 22, 0, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 24, 0, 0),
                     child: Column(
                       children: [
                         _shimmerSectionHeader(
@@ -472,7 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (moduleProvider.isEnabled('shopping'))
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 22, 0, 24),
+                    padding: const EdgeInsets.fromLTRB(0, 24, 0, 24),
                     child: Column(
                       children: [
                         _shimmerSectionHeader(
@@ -521,28 +536,43 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    const Icon(
-                      LucideIcons.mapPin,
-                      size: 13,
-                      color: AppColors.mediumGrey,
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
                     ),
-                    const SizedBox(width: 3),
-                    Expanded(
-                      child: Text(
-                        locationDisplay,
-                        style: AppTextStyles.caption.copyWith(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w500,
+                    decoration: BoxDecoration(
+                      color: AppColors.tile,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          LucideIcons.mapPin,
+                          size: 12,
+                          color: AppColors.primary,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            locationDisplay,
+                            style: AppTextStyles.caption.copyWith(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.grey,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 4),
                 Text(
                   displayName,
                   style: AppTextStyles.h4.copyWith(
@@ -579,7 +609,7 @@ class _PromoBanner extends StatelessWidget {
     return Container(
       height: 132,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: AppColors.secondary.withValues(alpha: 0.18),
@@ -730,7 +760,7 @@ class _ServicesGrid extends StatelessWidget {
                   mainAxisSize: MainAxisSize.max,
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       child: Container(
                         width: tileSize,
                         height: tileSize,
@@ -738,8 +768,10 @@ class _ServicesGrid extends StatelessWidget {
                           color: service.imagePath == null
                               ? service.bgColor
                               : null,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.border),
+                          borderRadius: BorderRadius.circular(18),
+                          border: service.imagePath == null
+                              ? Border.all(color: AppColors.border)
+                              : null,
                         ),
                         child: service.imagePath != null
                             ? Image.asset(
@@ -775,7 +807,7 @@ class _ServicesGrid extends StatelessWidget {
                       style: AppTextStyles.labelMedium.copyWith(
                         color: AppColors.dark,
                         fontWeight: FontWeight.w600,
-                        fontSize: 11,
+                        fontSize: 11.5,
                         height: 1.25,
                       ),
                       textAlign: TextAlign.center,
@@ -1776,7 +1808,7 @@ class _HomeSearchPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14),
         decoration: BoxDecoration(
           color: AppColors.tile,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(999),
           border: Border.all(color: AppColors.border),
         ),
         child: Row(
@@ -1799,16 +1831,16 @@ class _HomeSearchPill extends StatelessWidget {
               ),
             ),
             Container(
-              width: 30,
-              height: 30,
+              width: 32,
+              height: 32,
               decoration: const BoxDecoration(
-                color: AppColors.white,
+                color: AppColors.primarySurface,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 LucideIcons.slidersHorizontal,
                 size: 16,
-                color: AppColors.dark,
+                color: AppColors.primary,
               ),
             ),
           ],

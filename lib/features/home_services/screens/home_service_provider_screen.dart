@@ -219,7 +219,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                                   size: 42,
                                 ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                         Text(
                           provider.name,
                           style: AppTextStyles.h2.copyWith(
@@ -278,7 +278,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           experience: provider.yearsExperience,
                           price: provider.startingPrice,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                         Text(
                           l10n.t('home_provider.about'),
                           style: AppTextStyles.h4,
@@ -292,7 +292,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                             height: 1.6,
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                         Text(
                           l10n.t('home_provider.services'),
                           style: AppTextStyles.h4,
@@ -311,7 +311,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                               .toList(),
                         ),
                         if (provider.bookingModes.isNotEmpty) ...[
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                           Text(
                             l10n.t('home_provider.booking_options'),
                             style: AppTextStyles.h4,
@@ -331,7 +331,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           ),
                         ],
                         if (provider.highlights.isNotEmpty) ...[
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                           Text(
                             l10n.t('home_provider.highlights'),
                             style: AppTextStyles.h4,
@@ -359,17 +359,17 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                             ),
                           ),
                         ],
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                         Text(
                           l10n.t('home_provider.availability'),
                           style: AppTextStyles.h4,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: AppColors.white,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(18),
                             border: Border.all(color: AppColors.border),
                             boxShadow: AppSpacing.shadowSm,
                           ),
@@ -400,7 +400,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                           ),
                         ),
                         if (provider.location != null) ...[
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                           Text(
                             l10n.t('home_provider.service_area'),
                             style: AppTextStyles.h4,
@@ -415,7 +415,7 @@ class _HomeServiceProviderScreenState extends State<HomeServiceProviderScreen> {
                         ],
                         if (provider.contactPhone != null &&
                             provider.contactPhone!.isNotEmpty) ...[
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                           Text(
                             l10n.t('home_provider.contact'),
                             style: AppTextStyles.h4,
@@ -621,7 +621,7 @@ class _StatRow extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),

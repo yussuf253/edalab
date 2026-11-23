@@ -9,7 +9,7 @@ import 'core/providers/city_availability_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/providers/theme_provider.dart';
 import 'features/city_gate/screens/city_not_available_screen.dart';
-import 'features/city_gate/screens/no_internet_screen.dart';
+import 'features/city_gate/widgets/no_internet_alert.dart';
 
 class EdaLabApp extends StatelessWidget {
   const EdaLabApp({required this.router, this.title = 'EdaLab', super.key});
@@ -44,21 +44,21 @@ class EdaLabApp extends StatelessWidget {
             // links resolve to a sane place once the gate lifts.
             return Consumer2<CityAvailabilityProvider, ConnectivityProvider>(
               builder: (context, cityProvider, connectivityProvider, _) {
-                // Offline gate first: no internet means nothing in the app
-                // can work, regardless of city availability.
-                if (connectivityProvider.isOffline) {
-                  return const Directionality(
-                    textDirection: TextDirection.ltr,
-                    child: NoInternetScreen(),
-                  );
-                }
-                if (cityProvider.isBlocking) {
-                  return const Directionality(
-                    textDirection: TextDirection.ltr,
-                    child: CityNotAvailableScreen(),
-                  );
-                }
-                return child ?? const SizedBox.shrink();
+                final app = cityProvider.isBlocking
+                    ? const Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: CityNotAvailableScreen(),
+                      )
+                    : child ?? const SizedBox.shrink();
+
+                // No internet is an alert, not a gate: the app stays usable
+                // and a strip above it explains what is offline. It clears
+                // itself as soon as the device reconnects.
+                if (!connectivityProvider.isOffline) return app;
+
+                return Column(
+                  children: [const NoInternetAlert(), Expanded(child: app)],
+                );
               },
             );
           },

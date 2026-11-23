@@ -136,19 +136,19 @@ class _PhysiotherapyScreenState extends State<PhysiotherapyScreen> {
                       ShimmerBlock(
                         width: double.infinity,
                         height: 120,
-                        radius: 16,
+                        radius: 18,
                       ),
                       SizedBox(height: 12),
                       ShimmerBlock(
                         width: double.infinity,
                         height: 120,
-                        radius: 16,
+                        radius: 18,
                       ),
                       SizedBox(height: 12),
                       ShimmerBlock(
                         width: double.infinity,
                         height: 120,
-                        radius: 16,
+                        radius: 18,
                       ),
                     ],
                   ),
@@ -208,7 +208,7 @@ class _ServiceCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border),
           boxShadow: AppSpacing.shadowSm,
         ),
@@ -371,7 +371,7 @@ class _ServiceDetailsBottomSheet extends StatelessWidget {
                             height: 70,
                             decoration: BoxDecoration(
                               color: AppColors.secondary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: Icon(
                               LucideIcons.accessibility,

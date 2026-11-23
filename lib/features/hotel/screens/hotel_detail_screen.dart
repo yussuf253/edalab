@@ -228,12 +228,12 @@ class _HotelDetailScreenState extends State<HotelDetailScreen> {
                           l10n.t('hotel_detail.reviews'),
                           style: AppTextStyles.h4,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: AppColors.white,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(18),
                             border: Border.all(color: AppColors.border),
                             boxShadow: AppSpacing.shadowSm,
                           ),
@@ -546,7 +546,7 @@ class _RoomCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),

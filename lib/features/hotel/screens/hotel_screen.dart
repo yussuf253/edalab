@@ -236,7 +236,7 @@ class _HotelScreenState extends State<HotelScreen> {
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       boxShadow: AppSpacing.shadowSm,
                     ),
                     child: Column(
@@ -288,7 +288,7 @@ class _HotelScreenState extends State<HotelScreen> {
                       margin: const EdgeInsets.fromLTRB(20, 0, 20, 14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         boxShadow: AppSpacing.shadowSm,
                       ),
                       child: Column(
@@ -515,7 +515,7 @@ class _HotelCardShimmer extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -534,7 +534,7 @@ class _HotelCardShimmer extends StatelessWidget {
                     ),
                   ),
                 ),
-                Center(child: ShimmerBlock(width: 48, height: 48, radius: 16)),
+                Center(child: ShimmerBlock(width: 48, height: 48, radius: 14)),
                 Positioned(
                   top: 12,
                   left: 12,

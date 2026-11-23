@@ -8,6 +8,7 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/utils/money_format.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -95,7 +96,10 @@ class _CartHubScreenState extends State<CartHubScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text(l10n.t('cart.title')), centerTitle: false),
+      appBar: ModuleScreenAppBar(
+        title: l10n.t('cart.title'),
+        showBack: false,
+      ),
       body: cart.isHydrating
           ? const CartHubShimmer()
           : CustomScrollView(
@@ -107,7 +111,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(color: AppColors.border),
                       ),
                       child: Row(
@@ -117,7 +121,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
                             height: 40,
                             decoration: BoxDecoration(
                               color: AppColors.primarySurface,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: const Icon(
                               LucideIcons.shoppingCart,
@@ -172,7 +176,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
                               height: 72,
                               decoration: BoxDecoration(
                                 color: AppColors.primarySurface,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(18),
                               ),
                               child: const Icon(
                                 LucideIcons.shoppingCart,
@@ -217,7 +221,7 @@ class _CartHubScreenState extends State<CartHubScreen> {
                 else ...[
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 12),
                       child: Text(
                         l10n.t('cart.active_modules'),
                         style: AppTextStyles.h4,
@@ -249,11 +253,11 @@ class _CartModuleTile extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.push(section.route),
       child: Container(
-        margin: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 14),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border),
         ),
         child: Row(
@@ -263,7 +267,7 @@ class _CartModuleTile extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: section.accent.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(section.icon, color: section.accent, size: 20),
             ),

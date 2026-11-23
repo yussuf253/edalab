@@ -401,7 +401,7 @@ class _ShoppingHero extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.shoppingBg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
@@ -490,7 +490,7 @@ class _InfoTile extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(
@@ -500,7 +500,7 @@ class _InfoTile extends StatelessWidget {
             height: 40,
             decoration: BoxDecoration(
               color: AppColors.shopping.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: AppColors.shopping, size: 20),
           ),
@@ -531,10 +531,10 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
@@ -571,7 +571,7 @@ class _ShoppingItemCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.shopping.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -581,7 +581,7 @@ class _ShoppingItemCard extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               color: AppColors.white,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
               LucideIcons.package,

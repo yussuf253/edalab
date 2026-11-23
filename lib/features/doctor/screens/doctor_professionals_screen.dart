@@ -198,7 +198,7 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(color: AppColors.border),
                       boxShadow: AppSpacing.shadowSm,
                     ),
@@ -209,13 +209,13 @@ class _DoctorProfessionalsScreenState extends State<DoctorProfessionalsScreen> {
                           height: 72,
                           decoration: BoxDecoration(
                             color: AppColors.doctorBg,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                           child:
                               provider.imageUrl != null &&
                                   provider.imageUrl!.trim().isNotEmpty
                               ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(14),
                                   child: Image.network(
                                     provider.imageUrl!,
                                     fit: BoxFit.cover,

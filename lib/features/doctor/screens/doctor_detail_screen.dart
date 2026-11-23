@@ -102,7 +102,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: AppColors.doctorBg,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(
                         color: AppColors.doctor.withValues(alpha: 0.16),
                       ),
@@ -141,7 +141,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                                   size: 44,
                                 ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                         Text(
                           doctor.name,
                           style: AppTextStyles.h2,
@@ -225,7 +225,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                             height: 1.6,
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                         Text(
                           l10n.t('doctor_detail.services_offered'),
                           style: AppTextStyles.h4,
@@ -244,7 +244,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                               .toList(),
                         ),
                         if (doctor.languages.isNotEmpty) ...[
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                           Text(
                             l10n.t('doctor_detail.languages'),
                             style: AppTextStyles.h4,
@@ -263,7 +263,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                                 .toList(),
                           ),
                         ],
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                         Text(
                           l10n.t('doctor_detail.care_modes'),
                           style: AppTextStyles.h4,
@@ -281,7 +281,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                               )
                               .toList(),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                         Text(
                           l10n.t('doctor_detail.working_hours'),
                           style: AppTextStyles.h4,
@@ -322,7 +322,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                         Text(
                           l10n.t('doctor_detail.location'),
                           style: AppTextStyles.h4,
@@ -333,7 +333,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: AppColors.extraLightGrey,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                           child: Center(
                             child: Column(
@@ -366,17 +366,17 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                         ),
                         if (doctor.contactPhone != null ||
                             doctor.contactWhatsApp != null) ...[
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                           Text(
                             l10n.t('doctor_detail.direct_contact'),
                             style: AppTextStyles.h4,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 14),
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: AppColors.white,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
                               border: Border.all(color: AppColors.border),
                               boxShadow: AppSpacing.shadowSm,
                             ),
@@ -403,7 +403,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                         ],
                         if (!doctor.usesDirectContactOnly &&
                             doctor.reviews.isNotEmpty) ...[
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 24),
                           Text(
                             l10n.t('doctor_detail.patient_reviews'),
                             style: AppTextStyles.h4,
@@ -415,7 +415,7 @@ class _DoctorDetailScreenState extends State<DoctorDetailScreen> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: AppColors.white,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(18),
                                 border: Border.all(color: AppColors.border),
                                 boxShadow: AppSpacing.shadowSm,
                               ),
@@ -654,7 +654,7 @@ class _DoctorDetailShimmer extends StatelessWidget {
                 SizedBox(height: 20),
                 ShimmerBlock(width: 84, height: 20),
                 SizedBox(height: 12),
-                ShimmerBlock(width: double.infinity, height: 150, radius: 16),
+                ShimmerBlock(width: double.infinity, height: 150, radius: 14),
                 SizedBox(height: 110),
               ],
             ),

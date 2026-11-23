@@ -77,7 +77,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(color: AppColors.border),
                           boxShadow: AppSpacing.shadowSm,
                         ),
@@ -179,7 +179,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           itemBuilder: (context, index) {
                             final notification = filteredNotifications[index];
                             return InkWell(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
                               onTap: () async {
                                 await provider.markAsRead(notification.id);
                                 if (!context.mounted ||
@@ -197,7 +197,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                       : notification.color.withValues(
                                           alpha: 0.08,
                                         ),
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
                                     color: notification.isRead
                                         ? AppColors.border
@@ -452,7 +452,7 @@ class _EmptyState extends StatelessWidget {
               height: 78,
               decoration: BoxDecoration(
                 color: AppColors.primarySurface,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: const Icon(
                 LucideIcons.bell,

@@ -184,7 +184,7 @@ class _DoctorAppointmentDetailScreenState
                             height: 62,
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.16),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: const Icon(
                               LucideIcons.user,
@@ -249,7 +249,7 @@ class _DoctorAppointmentDetailScreenState
                         _DetailRow(l10n.t('appointments.fee'), 'DJF$fee'),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     _DetailCard(
                       title: l10n.t('appointments.notes'),
                       children: [
@@ -291,7 +291,7 @@ class _DoctorAppointmentDetailScreenState
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(color: AppColors.border),
                           boxShadow: AppSpacing.shadowSm,
                         ),
@@ -324,7 +324,7 @@ class _DetailCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),

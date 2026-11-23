@@ -118,7 +118,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: AppColors.border),
                     boxShadow: AppSpacing.shadowSm,
                   ),
@@ -129,7 +129,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                         height: 80,
                         decoration: BoxDecoration(
                           color: AppColors.extraLightGrey,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Icon(
                           LucideIcons.shoppingBag,

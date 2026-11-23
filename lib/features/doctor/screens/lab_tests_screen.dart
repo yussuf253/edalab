@@ -130,19 +130,19 @@ class _LabTestsScreenState extends State<LabTestsScreen> {
                       ShimmerBlock(
                         width: double.infinity,
                         height: 120,
-                        radius: 16,
+                        radius: 18,
                       ),
                       SizedBox(height: 12),
                       ShimmerBlock(
                         width: double.infinity,
                         height: 120,
-                        radius: 16,
+                        radius: 18,
                       ),
                       SizedBox(height: 12),
                       ShimmerBlock(
                         width: double.infinity,
                         height: 120,
-                        radius: 16,
+                        radius: 18,
                       ),
                     ],
                   ),
@@ -202,7 +202,7 @@ class _TestCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border),
           boxShadow: AppSpacing.shadowSm,
         ),
@@ -362,7 +362,7 @@ class _TestDetailsBottomSheet extends StatelessWidget {
                             height: 70,
                             decoration: BoxDecoration(
                               color: AppColors.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: Icon(
                               LucideIcons.flaskConical,

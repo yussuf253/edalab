@@ -23,6 +23,7 @@ import '../../../core/providers/providers.dart';
 import '../../../core/services/media_upload_service.dart';
 import '../../../core/utils/auth_gate.dart';
 import '../../../core/widgets/app_search_bar.dart';
+import '../../../core/widgets/common_widgets.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -583,7 +584,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                     child: Container(
                       padding: const EdgeInsets.all(18),
                       clipBehavior: Clip.antiAlias,
@@ -596,7 +597,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                           fit: BoxFit.cover,
                           alignment: Alignment.centerRight,
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: Row(
                         children: [
@@ -648,30 +649,21 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            l10n.t('pharmacy.nearby_title'),
-                            style: AppTextStyles.h4,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            setState(() => _selectedPharmacyName = null);
-                            AnalyticsService.instance.track(
-                              AnalyticsEvents.filterApplied,
-                              properties: {
-                                'module': 'pharmacy',
-                                'filter_type': 'pharmacy_name',
-                                'filter_value': 'all',
-                              },
-                            );
+                    padding: const EdgeInsets.only(top: 4, bottom: 4),
+                    child: SectionHeader(
+                      title: l10n.t('pharmacy.nearby_title'),
+                      actionText: l10n.t('pharmacy.all_pharmacies'),
+                      onAction: () {
+                        setState(() => _selectedPharmacyName = null);
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.filterApplied,
+                          properties: {
+                            'module': 'pharmacy',
+                            'filter_type': 'pharmacy_name',
+                            'filter_value': 'all',
                           },
-                          child: Text(l10n.t('pharmacy.all_pharmacies')),
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -696,7 +688,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(18),
                           boxShadow: AppSpacing.shadowSm,
                         ),
                         child: Column(
@@ -772,7 +764,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(
                             color: AppColors.lightGrey.withValues(alpha: 0.65),
                           ),
@@ -808,13 +800,13 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: AppColors.white,
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(18),
                             border: Border.all(color: AppColors.border),
                           ),
                           child: Row(
                             children: [
                               ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(14),
                                 child: SizedBox(
                                   width: 56,
                                   height: 56,
@@ -939,7 +931,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -988,7 +980,7 @@ class _PharmacyScreenState extends State<PharmacyScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: AppColors.pharmacy,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                     child: Row(
                       children: [
@@ -1045,7 +1037,7 @@ class _PharmacyNearbySkeletonCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: const AppShimmer(
         child: Column(
@@ -1117,7 +1109,7 @@ class _PharmacyNearbyCard extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
@@ -1131,13 +1123,13 @@ class _PharmacyNearbyCard extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: AppColors.pharmacyBg,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child:
                     pharmacy.imageUrl != null &&
                         pharmacy.imageUrl!.trim().isNotEmpty
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(14),
                         child: Image.network(
                           pharmacy.imageUrl!,
                           fit: BoxFit.cover,

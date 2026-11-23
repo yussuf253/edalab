@@ -275,7 +275,7 @@ class _ItemRow extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
@@ -286,7 +286,7 @@ class _ItemRow extends StatelessWidget {
             height: 50,
             decoration: BoxDecoration(
               color: AppColors.groceryBg,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(LucideIcons.leaf, color: AppColors.grocery),
           ),

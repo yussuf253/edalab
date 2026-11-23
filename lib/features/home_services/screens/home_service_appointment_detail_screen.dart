@@ -408,7 +408,7 @@ class _HomeServiceAppointmentDetailScreenState
                             height: 62,
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.16),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: Icon(
                               provider?.categoryIcon ??
@@ -465,7 +465,7 @@ class _HomeServiceAppointmentDetailScreenState
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     _DetailCard(
                       title: l10n.t('home_service_detail.summary'),
                       children: [
@@ -507,7 +507,7 @@ class _HomeServiceAppointmentDetailScreenState
                           ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     _DetailCard(
                       title: l10n.t('home_service_detail.status_overview'),
                       children: statusSteps
@@ -552,7 +552,7 @@ class _HomeServiceAppointmentDetailScreenState
                           .toList(growable: false),
                     ),
                     if (isHouseHelpOrder) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       _DetailCard(
                         title: l10n.t(
                           'home_service_booking.house_help_format_title',
@@ -608,7 +608,7 @@ class _HomeServiceAppointmentDetailScreenState
                       ),
                     ],
                     if (showDispatchDetails) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       _DetailCard(
                         title: l10n.t('home_service_detail.dispatch_title'),
                         children: [
@@ -647,7 +647,7 @@ class _HomeServiceAppointmentDetailScreenState
                       ),
                     ],
                     if (provider != null) ...[
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       _DetailCard(
                         title: l10n.t('home_service_detail.provider'),
                         children: [
@@ -737,7 +737,7 @@ class _DetailCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),

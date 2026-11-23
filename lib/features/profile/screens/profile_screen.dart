@@ -6,6 +6,8 @@ import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/widgets/common_widgets.dart';
+import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/widgets/notification_bell.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -88,17 +90,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      appBar: ModuleScreenAppBar(
+        title: l10n.t('profile.account'),
+        showBack: false,
+      ),
       body: CustomScrollView(
         slivers: [
           // Profile header
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 56, 16, 8),
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
               child: Container(
                 padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: AppColors.border),
                 ),
                 child: Column(
@@ -120,7 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         //   onTap: () => context.push('/profile/settings'),
                         //   child: Container(
                         //     width: 40, height: 40,
-                        //     decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+                        //     decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(14)),
                         //     child: const Icon(LucideIcons.settings, color: AppColors.white, size: 22),
                         //   ),
                         // ),
@@ -132,7 +138,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       height: 74,
                       decoration: BoxDecoration(
                         color: AppColors.primarySurface,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: AppColors.primary.withValues(alpha: 0.18),
                           width: 1.5,
@@ -140,7 +146,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       child: hasAvatar
                           ? ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                               child: Image.network(
                                 avatarUrl,
                                 fit: BoxFit.cover,
@@ -229,7 +235,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l10n.t('profile.account'), style: AppTextStyles.h4),
+                  SectionHeader(
+                    title: l10n.t('profile.account'),
+                    padding: EdgeInsets.zero,
+                  ),
                   const SizedBox(height: 12),
                   _MenuItem(
                     LucideIcons.user,
@@ -245,7 +254,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  Text(l10n.t('profile.preferences'), style: AppTextStyles.h4),
+                  SectionHeader(
+                    title: l10n.t('profile.preferences'),
+                    padding: EdgeInsets.zero,
+                  ),
                   const SizedBox(height: 12),
                   _MenuItem(
                     LucideIcons.bell,
@@ -269,7 +281,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // ),
                   const SizedBox(height: 20),
 
-                  Text(l10n.t('profile.support'), style: AppTextStyles.h4),
+                  SectionHeader(
+                    title: l10n.t('profile.support'),
+                    padding: EdgeInsets.zero,
+                  ),
                   const SizedBox(height: 12),
                   _MenuItem(
                     LucideIcons.circleHelp,
@@ -408,7 +423,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: isSelected
                             ? AppColors.primary.withValues(alpha: 0.08)
                             : AppColors.background,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: isSelected
                               ? AppColors.primary
@@ -493,7 +508,7 @@ class _MenuItem extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border),
         ),
         child: Row(
@@ -503,7 +518,7 @@ class _MenuItem extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon, color: color, size: 22),
             ),
@@ -545,7 +560,7 @@ class _LanguageMenuItem extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border),
         ),
         child: Row(
@@ -555,7 +570,7 @@ class _LanguageMenuItem extends StatelessWidget {
               height: 40,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon, color: color, size: 22),
             ),

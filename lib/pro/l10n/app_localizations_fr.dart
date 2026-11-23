@@ -231,6 +231,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Consultez les instantanés de performance, les priorités urgentes et l\'activité des clients en temps réel pour ne rien manquer.';
 
   @override
+  String get onboardingServiceCity => 'Services pro à Djibouti';
+
+  @override
   String get onboardingGetStarted => 'Commencer';
 
   @override

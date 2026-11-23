@@ -172,7 +172,7 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
                       medicineCount: medicineCount,
                       total: ((data['total'] as num?)?.toDouble() ?? 0),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     _FulfillmentCard(
                       placedAt: _formatDate(data['createdAt']?.toString()),
                       delivery:
@@ -268,7 +268,7 @@ class _PharmacyOrderDetailScreenState extends State<PharmacyOrderDetailScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: const Color(0xFFEFFAF4),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(
                           color: AppColors.pharmacy.withValues(alpha: 0.18),
                         ),
@@ -440,7 +440,7 @@ class _PharmacyHero extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.pharmacyBg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
@@ -481,7 +481,7 @@ class _PharmacyHero extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Text(title, style: AppTextStyles.h3),
           const SizedBox(height: 6),
           Text(
@@ -527,7 +527,7 @@ class _FulfillmentCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
@@ -608,7 +608,7 @@ class _PharmacySection extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
@@ -725,7 +725,7 @@ class _MedicineLine extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.pharmacy.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

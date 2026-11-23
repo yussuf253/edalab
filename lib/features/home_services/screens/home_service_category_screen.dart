@@ -191,7 +191,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: AppColors.border),
                     boxShadow: AppSpacing.shadowSm,
                   ),
@@ -204,7 +204,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                         height: 52,
                         child: HomeServiceCategoryArt(
                           imagePath: categoryImagePath,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(14),
                           fallbackIcon: category.icon,
                           fallbackColor: category.color,
                         ),
@@ -277,7 +277,7 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(color: AppColors.border),
                       boxShadow: AppSpacing.shadowSm,
                     ),
@@ -290,13 +290,13 @@ class _HomeServiceCategoryScreenState extends State<HomeServiceCategoryScreen> {
                             color: provider.categoryColor.withValues(
                               alpha: 0.12,
                             ),
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                           child:
                               provider.imageUrl != null &&
                                   provider.imageUrl!.trim().isNotEmpty
                               ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(14),
                                   child: Image.network(
                                     provider.imageUrl!,
                                     fit: BoxFit.cover,

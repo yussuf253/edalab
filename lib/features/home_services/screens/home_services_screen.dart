@@ -267,7 +267,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                         fit: BoxFit.cover,
                         alignment: Alignment.centerRight,
                       ),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                     child: Row(
                       children: [
@@ -357,7 +357,7 @@ class _HomeServicesScreenState extends State<HomeServicesScreen> {
                                     clipBehavior: Clip.antiAlias,
                                     decoration: BoxDecoration(
                                       color: homeServiceCategoryPlateColor,
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(18),
                                     ),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,

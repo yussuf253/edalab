@@ -304,7 +304,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
           _buildHero(),
           const SizedBox(height: 20),
           _buildStepHeader(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           if (_step == 0) _buildRouteStep() else _buildDetailsStep(),
         ],
       ),
@@ -322,7 +322,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
           fit: BoxFit.cover,
           alignment: Alignment.centerRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
         children: [
@@ -409,7 +409,7 @@ class _ParcelScreenState extends State<ParcelScreen> {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: AppColors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: AppColors.lightGrey.withValues(alpha: 0.7),
               ),

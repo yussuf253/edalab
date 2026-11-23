@@ -252,11 +252,12 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
             // Source toggle: Local Stores vs AliExpress
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                 child: Container(
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: AppColors.border),
                     boxShadow: AppSpacing.shadowSm,
                   ),
                   padding: const EdgeInsets.all(4),
@@ -271,7 +272,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                               color: !_showAliExpress
                                   ? AppColors.primary
                                   : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(999),
                             ),
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
@@ -315,7 +316,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                               color: _showAliExpress
                                   ? AppColors.primary
                                   : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(999),
                             ),
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
@@ -353,7 +354,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
             if (!_showAliExpress)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                   child: Container(
                     height: 112,
                     clipBehavior: Clip.antiAlias,
@@ -366,7 +367,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                         fit: BoxFit.cover,
                         alignment: Alignment.centerRight,
                       ),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 18),
                     child: Row(
@@ -398,12 +399,12 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
             if (!_showAliExpress)
               SliverToBoxAdapter(
                 child: SizedBox(
-                  height: 52,
+                  height: 64,
                   child: _isLoading
                       ? const _ShoppingFiltersShimmer()
                       : ListView.separated(
                           scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                           itemCount: categories.length,
                           separatorBuilder: (_, _) => const SizedBox(width: 8),
                           itemBuilder: (context, index) {
@@ -435,7 +436,10 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                                   color: isSelected
                                       ? AppColors.primary
                                       : AppColors.white,
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(999),
+                                  border: isSelected
+                                      ? null
+                                      : Border.all(color: AppColors.border),
                                 ),
                                 child: Text(
                                   category == 'all'
@@ -459,7 +463,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
             else if (_isLoading)
               const SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(20, 14, 20, 24),
+                  padding: EdgeInsets.fromLTRB(20, 12, 20, 24),
                   child: _ShoppingStoreListShimmer(itemCount: 4),
                 ),
               )
@@ -475,7 +479,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                 sliver: SliverList.builder(
                   itemCount: stores.length,
                   itemBuilder: (context, index) {
@@ -527,7 +531,7 @@ class _ShoppingStoreCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: AppSpacing.shadowSm,
         ),
         child: Column(
@@ -545,7 +549,7 @@ class _ShoppingStoreCard extends StatelessWidget {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
+                  top: Radius.circular(18),
                 ),
               ),
               child: Stack(
@@ -554,7 +558,7 @@ class _ShoppingStoreCard extends StatelessWidget {
                     Positioned.fill(
                       child: ClipRRect(
                         borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(20),
+                          top: Radius.circular(18),
                         ),
                         child: Image.network(
                           store.imageUrl,
@@ -576,7 +580,7 @@ class _ShoppingStoreCard extends StatelessWidget {
                             ],
                           ),
                           borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(20),
+                            top: Radius.circular(18),
                           ),
                         ),
                       ),
@@ -589,7 +593,7 @@ class _ShoppingStoreCard extends StatelessWidget {
                       height: 72,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.55),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Icon(
                         _storeIcon(store.categories),
@@ -739,7 +743,7 @@ class _ShoppingFiltersShimmer extends StatelessWidget {
     return AppShimmer(
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
         itemCount: 4,
         separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
@@ -766,7 +770,7 @@ class _ShoppingStoreListShimmer extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -780,7 +784,7 @@ class _ShoppingStoreListShimmer extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: Color(0xFFF1F4FA),
                               borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(20),
+                                top: Radius.circular(18),
                               ),
                             ),
                           ),
@@ -800,7 +804,7 @@ class _ShoppingStoreListShimmer extends StatelessWidget {
                           child: ShimmerBlock(
                             width: 72,
                             height: 72,
-                            radius: 22,
+                            radius: 14,
                           ),
                         ),
                         Positioned(
@@ -894,7 +898,7 @@ Widget _buildAliExpressContent(
       );
     }
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
       sliver: SliverList.builder(
         itemCount: provider.searchResults.length,
         itemBuilder: (context, index) {
@@ -960,7 +964,7 @@ Widget _buildAliExpressContent(
     );
   }
   return SliverPadding(
-    padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+    padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
     sliver: SliverList.builder(
       itemCount: provider.trendingProducts.length,
       itemBuilder: (context, index) {
@@ -1006,27 +1010,25 @@ class _AliExpressProductCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: AppSpacing.shadowSm,
         ),
         child: Row(
           children: [
-            // Product image
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: AppColors.extraLightGrey,
-                borderRadius: const BorderRadius.horizontal(
-                  left: Radius.circular(16),
+            // Product image — inset and stepped down to 14 so it nests inside
+            // the 18pt card instead of mirroring it.
+            Padding(
+              padding: const EdgeInsets.all(6),
+              child: Container(
+                width: 100,
+                height: 100,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: AppColors.extraLightGrey,
+                  borderRadius: BorderRadius.circular(14),
                 ),
-              ),
-              child: hasImage
-                  ? ClipRRect(
-                      borderRadius: const BorderRadius.horizontal(
-                        left: Radius.circular(16),
-                      ),
-                      child: Image.network(
+                child: hasImage
+                    ? Image.network(
                         product.images.first,
                         fit: BoxFit.cover,
                         errorBuilder: (_, _, _) => const Icon(
@@ -1034,13 +1036,13 @@ class _AliExpressProductCard extends StatelessWidget {
                           color: AppColors.lightGrey,
                           size: 36,
                         ),
+                      )
+                    : const Icon(
+                        LucideIcons.shoppingBag,
+                        color: AppColors.lightGrey,
+                        size: 36,
                       ),
-                    )
-                  : const Icon(
-                      LucideIcons.shoppingBag,
-                      color: AppColors.lightGrey,
-                      size: 36,
-                    ),
+              ),
             ),
             // Product info
             Expanded(

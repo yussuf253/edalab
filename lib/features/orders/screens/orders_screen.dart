@@ -342,7 +342,7 @@ class _OrdersScreenState extends State<OrdersScreen>
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
             child: _OrdersTabBar(
               controller: _tabController,
               labels: [
@@ -789,7 +789,7 @@ class _OrderList extends StatelessWidget {
                   padding: const EdgeInsets.all(0),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: AppColors.border),
                   ),
                   child: Row(
@@ -809,7 +809,7 @@ class _OrderList extends StatelessWidget {
                                       color: _getColor(
                                         module,
                                       ).withValues(alpha: 0.12),
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(14),
                                     ),
                                     child: Icon(
                                       _getIcon(module),
@@ -990,7 +990,7 @@ class _OrdersTabBar extends StatelessWidget {
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: AppColors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(999),
             border: Border.all(color: AppColors.border),
           ),
           child: Row(
@@ -1006,7 +1006,7 @@ class _OrdersTabBar extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: selected ? AppColors.primary : AppColors.white,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
                       labels[index],
@@ -1088,7 +1088,7 @@ class _ModuleFilterBar extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
               decoration: BoxDecoration(
                 color: selected ? AppColors.primary : AppColors.white,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(999),
                 border: selected
                     ? null
                     : Border.all(color: AppColors.border),

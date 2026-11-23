@@ -258,13 +258,13 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                             ShimmerBlock(
                               width: double.infinity,
                               height: 82,
-                              radius: 16,
+                              radius: 18,
                             ),
                             SizedBox(height: 14),
                             ShimmerBlock(
                               width: double.infinity,
                               height: 84,
-                              radius: 16,
+                              radius: 18,
                             ),
                           ],
                         ),
@@ -323,12 +323,12 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 14),
                             Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: AppColors.white,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(18),
                                 border: Border.all(color: AppColors.border),
                               ),
                               child: Row(
@@ -451,7 +451,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                         border: Border.all(
                                           color: AppColors.border,
                                         ),
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(18),
                                       ),
                                       child: Column(
                                         children: [
@@ -491,7 +491,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                                 driverPhone.isNotEmpty
                                             ? AppColors.ride
                                             : AppColors.lightGrey,
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(18),
                                       ),
                                       child: Column(
                                         children: [

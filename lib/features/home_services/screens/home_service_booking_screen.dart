@@ -673,13 +673,13 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                     ShimmerBlock(
                       width: double.infinity,
                       height: 84,
-                      radius: 16,
+                      radius: 18,
                     ),
                     SizedBox(height: 24),
                     ShimmerBlock(
                       width: double.infinity,
                       height: 160,
-                      radius: 16,
+                      radius: 18,
                     ),
                   ],
                 ),
@@ -829,7 +829,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                       color: selected
                                           ? AppColors.homeServices
                                           : AppColors.white,
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(18),
                                       border: selected
                                           ? null
                                           : Border.all(color: AppColors.border),
@@ -855,12 +855,12 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               ),
                               style: AppTextStyles.h4,
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 14),
                             Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: AppColors.white,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(18),
                                 border: Border.all(color: AppColors.border),
                               ),
                               child: Column(
@@ -1122,7 +1122,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                     color: AppColors.white,
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(18),
                                     border: Border.all(color: AppColors.border),
                                   ),
                                   child: Text(
@@ -1148,7 +1148,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
                                       color: AppColors.white,
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(18),
                                       border: Border.all(
                                         color: isSelected
                                             ? AppColors.homeServices
@@ -1253,7 +1253,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                         color: selected
                                             ? AppColors.homeServices
                                             : AppColors.white,
-                                        borderRadius: BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(14),
                                         border: selected
                                             ? null
                                             : Border.all(
@@ -1313,7 +1313,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                       color: selected
                                           ? AppColors.homeServices
                                           : AppColors.white,
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(18),
                                       border: selected
                                           ? null
                                           : Border.all(color: AppColors.border),
@@ -1342,7 +1342,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
                                 color: AppColors.white,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(18),
                                 border: Border.all(color: AppColors.border),
                               ),
                               child: Row(
@@ -1392,7 +1392,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                     padding: const EdgeInsets.all(14),
                                     decoration: BoxDecoration(
                                       color: AppColors.white,
-                                      borderRadius: BorderRadius.circular(16),
+                                      borderRadius: BorderRadius.circular(18),
                                       border: isSelected
                                           ? Border.all(
                                               color: AppColors.homeServices,
@@ -1497,7 +1497,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: AppColors.homeServicesBg,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
                             ),
                             child: Column(
                               children: [
@@ -1608,7 +1608,7 @@ class _HomeServiceBookingScreenState extends State<HomeServiceBookingScreen> {
                                 padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
                                   color: AppColors.white,
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
                                     color: selected
                                         ? method.$4

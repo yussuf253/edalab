@@ -36,8 +36,8 @@ class AppCard extends StatelessWidget {
         padding: padding ?? AppSpacing.cardPadding,
         decoration: BoxDecoration(
           color: color ?? AppColors.white,
-          borderRadius: BorderRadius.circular(borderRadius ?? 16),
-          boxShadow: shadow,
+          borderRadius: BorderRadius.circular(borderRadius ?? 18),
+          boxShadow: shadow ?? AppSpacing.shadowSm,
           border: border ?? Border.all(color: AppColors.border),
         ),
         child: child,
@@ -126,37 +126,35 @@ class ProductCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image
+            // Image — framed inside the 18pt card and rounded to 14 so the
+            // two curves nest concentrically instead of running parallel.
             Stack(
               children: [
-                Container(
-                  height: 150,
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: AppColors.tile,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(16),
+                Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Container(
+                    height: 150,
+                    width: double.infinity,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      color: AppColors.tile,
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                  ),
-                  child: imageUrl != null
-                      ? ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(16),
-                          ),
-                          child: Image.network(
+                    child: imageUrl != null
+                        ? Image.network(
                             imageUrl!,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
                                 _buildPlaceholder(),
-                          ),
-                        )
-                      : _buildPlaceholder(),
+                          )
+                        : _buildPlaceholder(),
+                  ),
                 ),
                 if (badge != null)
                   Positioned(

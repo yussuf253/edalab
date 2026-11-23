@@ -190,7 +190,7 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
               decoration: BoxDecoration(
                 color: AppColors.white,
                 border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Row(
                 children: [
@@ -199,7 +199,7 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
                     height: 56,
                     decoration: BoxDecoration(
                       color: AppColors.secondary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
                       LucideIcons.accessibility,
@@ -243,7 +243,7 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
                       width: 64,
                       decoration: BoxDecoration(
                         color: selected ? AppColors.secondary : AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: selected
                             ? null
                             : Border.all(color: AppColors.border),
@@ -291,7 +291,7 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: selected ? AppColors.secondary : AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       border: selected
                           ? null
                           : Border.all(color: AppColors.border),
@@ -324,7 +324,7 @@ class _BookPhysiotherapyScreenState extends State<BookPhysiotherapyScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.secondary.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Column(
                 children: [

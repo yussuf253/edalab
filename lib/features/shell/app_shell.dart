@@ -2,14 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/constants/app_assets.dart';
+import '../../core/analytics/analytics_events.dart';
+import '../../core/analytics/analytics_service.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_text_styles.dart';
 import '../../core/localization/app_localizations.dart';
-import '../../core/analytics/analytics_events.dart';
-import '../../core/analytics/analytics_service.dart';
 import '../../core/providers/providers.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+/// Root shell: a flat bottom navigation bar over one shared canvas.
+///
+/// The bar is docked edge to edge at the bottom of the screen — no inset,
+/// rounded card or shadow — so it reads as part of the page. A hairline top
+/// border separates it from content, and the active tab is marked by a soft
+/// brand pill behind its icon and label. Icons come from the same Lucide set
+/// as the rest of the app, so the nav can never drift back to a second
+/// iconography.
 class AppShell extends StatelessWidget {
   final Widget child;
 
@@ -31,28 +39,33 @@ class AppShell extends StatelessWidget {
         moduleProvider.isEnabled('pharmacy');
     final navItems = [
       _NavItem(
-        assetPath: AppAssets.navHome,
+        icon: LucideIcons.house,
+        activeIcon: LucideIcons.house,
         label: l10n.t('home.services'),
         path: '/',
       ),
       _NavItem(
-        assetPath: AppAssets.navOrders,
+        icon: LucideIcons.receiptText,
+        activeIcon: LucideIcons.receiptText,
         label: l10n.t('module.orders'),
         path: '/orders',
       ),
       if (showCartTab)
         _NavItem(
-          assetPath: AppAssets.navCart,
+          icon: LucideIcons.shoppingBag,
+          activeIcon: LucideIcons.shoppingBag,
           label: l10n.t('cart.title'),
           path: '/cart',
         ),
       _NavItem(
-        assetPath: AppAssets.navMessages,
+        icon: LucideIcons.messageCircle,
+        activeIcon: LucideIcons.messageCircle,
         label: l10n.t('messages.title'),
         path: '/messages',
       ),
       _NavItem(
-        assetPath: AppAssets.navProfile,
+        icon: LucideIcons.userRound,
+        activeIcon: LucideIcons.userRound,
         label: l10n.t('profile.account'),
         path: '/profile',
       ),
@@ -60,7 +73,8 @@ class AppShell extends StatelessWidget {
     final currentIndex = _indexOfPath(path, navItems);
 
     return Scaffold(
-      body: widgetChildWithSafeBackground(child),
+      backgroundColor: AppColors.background,
+      body: child,
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: AppColors.white,
@@ -68,40 +82,40 @@ class AppShell extends StatelessWidget {
         ),
         child: SafeArea(
           top: false,
+          minimum: const EdgeInsets.only(bottom: 6),
           child: SizedBox(
-            height: 64,
-            child: Row(
-              children: List.generate(navItems.length, (index) {
-                final item = navItems[index];
-                return Expanded(
-                  child: _NavButton(
-                    item: item,
-                    isActive: currentIndex == index,
-                    cartCount: cartCount,
-                    onTap: () {
-                      AnalyticsService.instance.track(
-                        AnalyticsEvents.navigationTabTapped,
-                        properties: {
-                          'target_path': item.path,
-                          'current_path': path,
-                          'is_reselect': currentIndex == index,
-                          'cart_count': cartCount,
-                        },
-                      );
-                      context.go(item.path);
-                    },
-                  ),
-                );
-              }),
+            height: 52,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              child: Row(
+                children: List.generate(navItems.length, (index) {
+                  final item = navItems[index];
+                  return Expanded(
+                    child: _NavButton(
+                      item: item,
+                      isActive: currentIndex == index,
+                      cartCount: cartCount,
+                      onTap: () {
+                        AnalyticsService.instance.track(
+                          AnalyticsEvents.navigationTabTapped,
+                          properties: {
+                            'target_path': item.path,
+                            'current_path': path,
+                            'is_reselect': currentIndex == index,
+                            'cart_count': cartCount,
+                          },
+                        );
+                        context.go(item.path);
+                      },
+                    ),
+                  );
+                }),
+              ),
             ),
           ),
         ),
       ),
     );
-  }
-
-  Widget widgetChildWithSafeBackground(Widget child) {
-    return ColoredBox(color: AppColors.background, child: child);
   }
 
   /// Highlight index derived from the *actual* tab list, so hiding the cart
@@ -141,51 +155,45 @@ class _NavButton extends StatelessWidget {
         : null;
 
     return Material(
-      color: Colors.transparent,
+      type: MaterialType.transparency,
       child: InkWell(
         onTap: onTap,
-        splashColor: AppColors.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14),
+        // No ripple and no highlight: the pill under the tapped tab is the
+        // only feedback, so a tap never flashes a second colour over the
+        // icon and then fades it away.
+        splashFactory: NoSplash.splashFactory,
         highlightColor: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+        hoverColor: Colors.transparent,
+        focusColor: Colors.transparent,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          decoration: BoxDecoration(
+            color: isActive
+                ? AppColors.primarySurface
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          // Selection is applied in the same frame on every tab: the old tab
+          // drops its pill and returns to grey exactly when the new one takes
+          // them, so nothing trails behind the tap.
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOut,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 15,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? AppColors.primarySurface
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.center,
-                  children: [
-                    ColorFiltered(
-                      colorFilter: ColorFilter.mode(
-                        foreground,
-                        BlendMode.srcIn,
-                      ),
-                      child: Image.asset(
-                        item.assetPath,
-                        width: 20,
-                        height: 20,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    if (badge != null)
-                      Positioned(top: -6, right: -9, child: badge),
-                  ],
-                ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(
+                    isActive ? item.activeIcon : item.icon,
+                    size: 20,
+                    color: foreground,
+                  ),
+                  if (badge != null)
+                    Positioned(top: -6, right: -10, child: badge),
+                ],
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 2),
               Text(
                 item.label,
                 maxLines: 1,
@@ -214,7 +222,7 @@ class _CartBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(minWidth: 15),
+      constraints: const BoxConstraints(minWidth: 16),
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
       decoration: BoxDecoration(
         color: AppColors.accent,
@@ -232,12 +240,14 @@ class _CartBadge extends StatelessWidget {
 
 class _NavItem {
   const _NavItem({
-    required this.assetPath,
+    required this.icon,
+    required this.activeIcon,
     required this.label,
     required this.path,
   });
 
-  final String assetPath;
+  final IconData icon;
+  final IconData activeIcon;
   final String label;
   final String path;
 }

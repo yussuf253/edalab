@@ -30,16 +30,20 @@ enum CityAvailabilityStatus {
   error,
 }
 
-/// Restricts the app to the cities eDalab currently operates in.
+/// Resolves which service zone the device is in.
 ///
 /// Uses the device's raw GPS position (not a manually-picked address) and
-/// checks it against [kServiceZones]. This is intentionally a *client-side,
-/// UX-level* gate for a phased rollout — it stops honest users from landing
-/// in a city with no real service coverage, showing a friendly "coming soon"
-/// screen instead of a broken/empty app. It is not a security boundary: a
-/// determined user could spoof GPS. If that ever matters for you (fraud,
-/// abuse), add a matching check server-side against delivery/pickup
-/// addresses in the backend.
+/// checks it against [kServiceZones]. The matched zone is published through
+/// [ZoneScope] so module data fetches can be filtered per location.
+///
+/// The city itself is **not** a restriction: being outside every active zone
+/// ([CityAvailabilityStatus.outOfZone]) keeps the app usable — the service
+/// area is communicated by the onboarding rather than enforced by a gate.
+/// Only device-level location problems (services off, permission refused, no
+/// fix) still raise the location screen, because the delivery flows need a
+/// position. This was never a security boundary: a determined user could
+/// spoof GPS. If that ever matters (fraud, abuse), add a matching check
+/// server-side against delivery/pickup addresses in the backend.
 class CityAvailabilityProvider extends ChangeNotifier {
   CityAvailabilityStatus _status = CityAvailabilityStatus.unknown;
   CityZone? _matchedZone;
@@ -54,11 +58,17 @@ class CityAvailabilityProvider extends ChangeNotifier {
   /// position — used only for "coming soon" messaging, not for access.
   CityZone? get nearestZone => _nearestZone;
 
-  /// Whether the app should currently be blocked behind the city gate.
+  /// Whether the app should currently be blocked behind the location screen.
+  ///
+  /// [CityAvailabilityStatus.outOfZone] is deliberately *not* blocking: the
+  /// user app serves Ali Sabieh while the Pro app serves Djibouti, and both
+  /// stay usable from anywhere. Only a device that cannot provide a position
+  /// (services off, permission refused, no GPS fix, error) is gated.
   bool get isBlocking =>
       _status != CityAvailabilityStatus.unknown &&
       _status != CityAvailabilityStatus.checking &&
-      _status != CityAvailabilityStatus.available;
+      _status != CityAvailabilityStatus.available &&
+      _status != CityAvailabilityStatus.outOfZone;
 
   Future<void> checkAvailability() async {
     _status = CityAvailabilityStatus.checking;

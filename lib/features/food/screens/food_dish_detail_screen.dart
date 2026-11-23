@@ -393,7 +393,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                             ],
                           ],
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                         Text(
                           l10n.t('food_detail.description'),
                           style: AppTextStyles.h4,
@@ -461,7 +461,7 @@ class _FoodDishDetailScreenState extends State<FoodDishDetailScreen> {
                                     color: isSelected
                                         ? AppColors.primarySurface
                                         : AppColors.white,
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(18),
                                     border: Border.all(
                                       color: isSelected
                                           ? AppColors.primary

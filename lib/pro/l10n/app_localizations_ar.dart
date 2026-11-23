@@ -228,6 +228,9 @@ class AppLocalizationsAr extends AppLocalizations {
       'شاهد لقطات الأداء، والأولويات العاجلة، ونشاط العملاء في الوقت الفعلي لا تفوت شيئاً.';
 
   @override
+  String get onboardingServiceCity => 'الخدمات الاحترافية في جيبوتي';
+
+  @override
   String get onboardingGetStarted => 'ابدأ الآن';
 
   @override

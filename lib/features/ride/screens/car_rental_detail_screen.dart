@@ -234,7 +234,7 @@ class _CarRentalDetailScreenState extends State<CarRentalDetailScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: AppSpacing.shadowSm,
       ),
       child: Row(

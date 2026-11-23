@@ -504,7 +504,7 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
@@ -515,19 +515,20 @@ class _ShoppingStoreDetailScreenState extends State<ShoppingStoreDetailScreen> {
                             flex: 3,
                             child: Stack(
                               children: [
-                                Container(
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.extraLightGrey,
-                                    borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(16),
+                                Padding(
+                                  padding: const EdgeInsets.all(6),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: AppColors.extraLightGrey,
+                                      borderRadius: BorderRadius.circular(14),
                                     ),
-                                  ),
-                                  child: Center(
-                                    child: Icon(
-                                      _storeIcon([product.category]),
-                                      size: 40,
-                                      color: AppColors.shopping.withValues(
-                                        alpha: 0.35,
+                                    child: Center(
+                                      child: Icon(
+                                        _storeIcon([product.category]),
+                                        size: 40,
+                                        color: AppColors.shopping.withValues(
+                                          alpha: 0.35,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -826,7 +827,7 @@ class _StoreProductCardShimmer extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -836,11 +837,12 @@ class _StoreProductCardShimmer extends StatelessWidget {
             child: Stack(
               children: [
                 Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: AppColors.extraLightGrey,
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(16),
+                  child: Padding(
+                    padding: EdgeInsets.all(6),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: AppColors.extraLightGrey,
+                        borderRadius: BorderRadius.all(Radius.circular(14)),
                       ),
                     ),
                   ),

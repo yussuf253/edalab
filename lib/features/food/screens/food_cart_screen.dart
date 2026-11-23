@@ -150,11 +150,11 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
               children: [
                 // Restaurant name
                 Container(
-                  margin: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+                  margin: const EdgeInsets.fromLTRB(20, 20, 20, 14),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: AppColors.border),
                   ),
                   child: Row(
@@ -197,11 +197,11 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     children: [
                       Container(
-                        margin: const EdgeInsets.only(bottom: 12),
+                        margin: const EdgeInsets.only(bottom: 14),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.primarySurface,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                         ),
                         child: Row(
                           children: [
@@ -210,7 +210,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                               height: 40,
                               decoration: BoxDecoration(
                                 color: AppColors.white,
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(14),
                               ),
                               child: const Icon(
                                 LucideIcons.truck,
@@ -298,13 +298,13 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                           },
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       // Add instructions
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(color: AppColors.border),
                         ),
                         child: Column(
@@ -347,13 +347,13 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
                       // Tip
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(color: AppColors.border),
                         ),
                         child: Column(
@@ -419,7 +419,7 @@ class _FoodCartScreenState extends State<FoodCartScreen> {
                         ),
                       ),
                       if (recommendedItems.isNotEmpty) ...[
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                         Text(
                           l10n.t(
                             'food_cart.add_more_from',
@@ -582,11 +582,11 @@ class _CartRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
@@ -692,11 +692,11 @@ class _RecommendedFoodCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
       child: Row(

@@ -231,7 +231,7 @@ class _HotelOrderDetailScreenState extends State<HotelOrderDetailScreen> {
                       status: _pretty(data['status']?.toString()),
                       total: ((data['total'] as num?)?.toDouble() ?? 0),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     _TimelineCard(
                       checkIn: checkIn,
                       checkOut: checkOut,
@@ -311,7 +311,7 @@ class _HotelHero extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppColors.hotelBg,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: AppColors.hotel.withValues(alpha: 0.16),
         ),
@@ -338,7 +338,7 @@ class _HotelHero extends StatelessWidget {
               _HeroPill(label: status),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Text(hotelName, style: AppTextStyles.h3),
           const SizedBox(height: 4),
           Text(roomName, style: AppTextStyles.bodySmall),
@@ -373,7 +373,7 @@ class _TimelineCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
@@ -494,7 +494,7 @@ class _HotelStatTile extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),
@@ -539,7 +539,7 @@ class _HotelInfoCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
         boxShadow: AppSpacing.shadowSm,
       ),

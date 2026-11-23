@@ -363,6 +363,7 @@ class _OnboardingPageContent extends StatelessWidget {
       },
     );
   }
+
 }
 
 class _OrbitHero extends StatelessWidget {

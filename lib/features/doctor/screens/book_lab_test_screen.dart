@@ -187,7 +187,7 @@ class _BookLabTestScreenState extends State<BookLabTestScreen> {
               decoration: BoxDecoration(
                 color: AppColors.white,
                 border: Border.all(color: AppColors.border),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Row(
                 children: [
@@ -196,7 +196,7 @@ class _BookLabTestScreenState extends State<BookLabTestScreen> {
                     height: 56,
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Icon(
                       LucideIcons.flaskConical,
@@ -240,7 +240,7 @@ class _BookLabTestScreenState extends State<BookLabTestScreen> {
                       width: 64,
                       decoration: BoxDecoration(
                         color: selected ? AppColors.primary : AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: selected
                             ? null
                             : Border.all(color: AppColors.border),
@@ -288,7 +288,7 @@ class _BookLabTestScreenState extends State<BookLabTestScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: selected ? AppColors.primary : AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       border: selected
                           ? null
                           : Border.all(color: AppColors.border),
@@ -321,7 +321,7 @@ class _BookLabTestScreenState extends State<BookLabTestScreen> {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Column(
                 children: [

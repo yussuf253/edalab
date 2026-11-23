@@ -750,6 +750,7 @@ class AppLocalizations {
       'onboarding.page3_title': 'Trusted &\nSecure',
       'onboarding.page3_subtitle':
           'Your payments and data are always secure. Verified sellers, certified doctors, licensed drivers.',
+      'onboarding.delivery_city': 'Delivery in {city}',
       'messages.title': 'Messages',
       'messages.login_title': 'Login to access messages',
       'messages.login_subtitle':
@@ -2411,6 +2412,7 @@ class AppLocalizations {
       'onboarding.page3_title': 'Fiable et\nsécurisé',
       'onboarding.page3_subtitle':
           'Vos paiements et vos données sont toujours protégés. Vendeurs vérifiés, médecins certifiés, chauffeurs agréés.',
+      'onboarding.delivery_city': 'Livraison à {city}',
       'messages.title': 'Messages',
       'messages.login_title': 'Connectez-vous pour accéder aux messages',
       'messages.login_subtitle':
@@ -3015,8 +3017,7 @@ class AppLocalizations {
       'home_services.available_count': '{count} disponibles',
       'home_services.open': 'Ouvert',
       'home_services.per_start': '/départ',
-      'home_services.why_people_use':
-          'Pourquoi les gens utilisent les Services maison',
+      'home_services.why_people_use': 'Pourquoi utiliser eDalab Services ?',
       'home_services.verified_title': 'Professionnels vérifiés',
       'home_services.verified_subtitle':
           'Prestataires de confiance avec avis clairs et profils détaillés.',
@@ -3900,6 +3901,7 @@ class AppLocalizations {
       'onboarding.page3_title': 'موثوق\nوآمن',
       'onboarding.page3_subtitle':
           'مدفوعاتك وبياناتك آمنة دائماً. باعة موثقون، أطباء معتمدون، وسائقون مرخصون.',
+      'onboarding.delivery_city': 'التوصيل في {city}',
       'messages.title': 'الرسائل',
       'messages.login_title': 'سجل الدخول للوصول إلى الرسائل',
       'messages.login_subtitle':

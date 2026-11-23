@@ -475,7 +475,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
@@ -547,7 +547,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     Text(
                       l10n.t('hotel_detail.available_rooms'),
                       style: AppTextStyles.h4,
@@ -562,12 +562,12 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                             : null,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 14),
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(color: AppColors.border),
                         boxShadow: AppSpacing.shadowSm,
                       ),
@@ -588,7 +588,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     Text(
                       l10n.t('hotel_booking.guest_info'),
                       style: AppTextStyles.h4,
@@ -651,7 +651,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     Text(
                       l10n.t('hotel_booking.special_requests'),
                       style: AppTextStyles.h4,
@@ -669,7 +669,7 @@ class _HotelBookingScreenState extends State<HotelBookingScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.hotelBg,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: Column(
                         children: [
@@ -736,7 +736,7 @@ class _BookingField extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border),
           boxShadow: AppSpacing.shadowSm,
         ),
@@ -814,7 +814,7 @@ class _SelectableRoomCard extends StatelessWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isSelected ? AppColors.hotel : AppColors.border,
             width: isSelected ? 2 : 1,
@@ -920,7 +920,7 @@ class _HotelBookingShimmer extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
-            ShimmerBlock(width: double.infinity, height: 88, radius: 16),
+            ShimmerBlock(width: double.infinity, height: 88, radius: 18),
             SizedBox(height: 20),
             Row(
               children: [
@@ -956,7 +956,7 @@ class _HotelBookingShimmer extends StatelessWidget {
             SizedBox(height: 12),
             _BookingRoomCardShimmer(),
             SizedBox(height: 20),
-            ShimmerBlock(width: double.infinity, height: 112, radius: 16),
+            ShimmerBlock(width: double.infinity, height: 112, radius: 18),
             SizedBox(height: 20),
             ShimmerBlock(width: 140, height: 20),
             SizedBox(height: 12),
@@ -970,9 +970,9 @@ class _HotelBookingShimmer extends StatelessWidget {
             SizedBox(height: 12),
             ShimmerBlock(width: double.infinity, height: 96, radius: 14),
             SizedBox(height: 20),
-            ShimmerBlock(width: double.infinity, height: 132, radius: 16),
+            ShimmerBlock(width: double.infinity, height: 132, radius: 18),
             SizedBox(height: 24),
-            ShimmerBlock(width: double.infinity, height: 54, radius: 16),
+            ShimmerBlock(width: double.infinity, height: 54, radius: 14),
           ],
         ),
       ),
@@ -990,7 +990,7 @@ class _BookingRoomCardShimmer extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: const Row(
         children: [

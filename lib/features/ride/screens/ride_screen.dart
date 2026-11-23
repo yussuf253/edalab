@@ -483,7 +483,7 @@ class _RideScreenState extends State<RideScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   boxShadow: AppSpacing.shadowSm,
                 ),
                 child: Column(
@@ -627,7 +627,7 @@ class _RideScreenState extends State<RideScreen> {
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppColors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(18),
                           boxShadow: AppSpacing.shadowSm,
                         ),
                         child: Column(
@@ -1611,7 +1611,7 @@ class _QuickRide extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: AppSpacing.shadowSm,
         ),
         child: Column(
@@ -1661,7 +1661,7 @@ class _AddQuickRidePlace extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: AppColors.lightGrey,
             style: BorderStyle.solid,
@@ -1712,7 +1712,7 @@ class _PlacePickerStatus extends StatelessWidget {
               height: 54,
               decoration: BoxDecoration(
                 color: AppColors.rideBg,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon, color: AppColors.ride, size: 26),
             ),
@@ -1865,7 +1865,7 @@ class _RentContentState extends State<RentContent> {
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   boxShadow: AppSpacing.shadowSm,
                 ),
                 child: Column(

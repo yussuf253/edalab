@@ -166,11 +166,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           children: [
             if (moduleType != null)
               Container(
-                margin: const EdgeInsets.only(bottom: 20),
-                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   boxShadow: AppSpacing.shadowSm,
                 ),
                 child: Row(
@@ -225,7 +225,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   boxShadow: AppSpacing.shadowSm,
                 ),
                 child: Column(
@@ -242,7 +242,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   color: moduleType == 'food'
                                       ? AppColors.foodBg
                                       : AppColors.primarySurface,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(14),
                                 ),
                                 child: Icon(
                                   moduleType == 'food'
@@ -288,7 +288,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       .toList(),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
             ],
             // Delivery Address
             Text(l10n.t('checkout.delivery_address'), style: AppTextStyles.h4),
@@ -298,7 +298,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: AppColors.lightGrey),
                 ),
                 child: Row(
@@ -336,7 +336,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: AppColors.white,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(18),
                       border: sel
                           ? Border.all(color: AppColors.primary, width: 2)
                           : null,
@@ -351,7 +351,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             color: sel
                                 ? AppColors.primarySurface
                                 : AppColors.extraLightGrey,
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
                           ),
                           child: Icon(
                             a.label == 'Home'
@@ -388,7 +388,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   ),
                 );
               }),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             // Delivery Time
             Text(l10n.t('checkout.delivery_option'), style: AppTextStyles.h4),
@@ -417,7 +417,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 );
               }).toList(),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             if (instructions != null && instructions.isNotEmpty) ...[
               Text(l10n.t('checkout.order_notes'), style: AppTextStyles.h4),
@@ -427,12 +427,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(18),
                   boxShadow: AppSpacing.shadowSm,
                 ),
                 child: Text(instructions, style: AppTextStyles.bodyMedium),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
             ],
 
             // Payment method
@@ -450,7 +450,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(18),
                     border: sel
                         ? Border.all(color: AppColors.primary, width: 2)
                         : Border.all(color: AppColors.border),
@@ -462,7 +462,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         height: 44,
                         decoration: BoxDecoration(
                           color: p.$5.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                         child: Icon(p.$4, color: p.$5, size: 22),
                       ),
@@ -503,7 +503,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               );
             }),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             // Promo code
             Text(l10n.t('checkout.promo_code'), style: AppTextStyles.h4),
@@ -598,7 +598,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: AppColors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
                 border: Border.all(color: AppColors.border),
               ),
               child: Column(
@@ -902,7 +902,7 @@ class _TimeChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           color: selected ? AppColors.primary : AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           border: selected ? null : Border.all(color: AppColors.border),
         ),
         child: Column(

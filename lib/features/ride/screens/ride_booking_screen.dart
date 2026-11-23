@@ -355,7 +355,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   Text(
                     l10n.t('ride_booking.choose_vehicle'),
                     style: AppTextStyles.h4,

@@ -283,7 +283,7 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                       height: 56,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: const Icon(
                         LucideIcons.heartPulse,
@@ -466,7 +466,7 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     border: Border.all(color: AppColors.border),
                     boxShadow: AppSpacing.shadowSm,
                   ),
@@ -480,13 +480,13 @@ class _DoctorHomeCareScreenState extends State<DoctorHomeCareScreen> {
                             height: 62,
                             decoration: BoxDecoration(
                               color: AppColors.doctorBg,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child:
                                 provider.imageUrl != null &&
                                     provider.imageUrl!.trim().isNotEmpty
                                 ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(14),
                                     child: Image.network(
                                       provider.imageUrl!,
                                       fit: BoxFit.cover,

@@ -457,13 +457,13 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       l10n.t('laundry_order.service_type'),
                       style: AppTextStyles.h4,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.white,
                         border: Border.all(color: AppColors.border),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: Row(
                         children: [
@@ -547,7 +547,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.white,
                         border: Border.all(color: AppColors.border),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                       ),
                       child: Text(
                         l10n.t('laundry_order.no_pricing_configured'),
@@ -588,7 +588,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                             width: 60,
                             decoration: BoxDecoration(
                               color: sel ? AppColors.laundry : AppColors.white,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(18),
                               border: sel
                                   ? null
                                   : Border.all(color: AppColors.border),
@@ -646,7 +646,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                                 color: sel
                                     ? AppColors.laundry
                                     : AppColors.white,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(18),
                                 border: sel
                                     ? null
                                     : Border.all(color: AppColors.border),
@@ -668,13 +668,13 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                     l10n.t('laundry_order.pickup_address'),
                     style: AppTextStyles.h4,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: AppColors.white,
                       border: Border.all(color: AppColors.border),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                     child: Row(
                       children: [
@@ -723,7 +723,7 @@ class _LaundryOrderScreenState extends State<LaundryOrderScreen> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: AppColors.laundryBg,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                     ),
                     child: Column(
                       children: [
@@ -950,7 +950,7 @@ class _LaundryOrderShimmer extends StatelessWidget {
                   child: ShimmerBlock(
                     width: double.infinity,
                     height: 92,
-                    radius: 16,
+                    radius: 18,
                   ),
                 ),
                 SizedBox(width: 10),
@@ -958,7 +958,7 @@ class _LaundryOrderShimmer extends StatelessWidget {
                   child: ShimmerBlock(
                     width: double.infinity,
                     height: 92,
-                    radius: 16,
+                    radius: 18,
                   ),
                 ),
                 SizedBox(width: 10),
@@ -966,7 +966,7 @@ class _LaundryOrderShimmer extends StatelessWidget {
                   child: ShimmerBlock(
                     width: double.infinity,
                     height: 92,
-                    radius: 16,
+                    radius: 18,
                   ),
                 ),
               ],
@@ -1026,7 +1026,7 @@ class _ServiceOption extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           color: selected ? AppColors.laundry : AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: selected ? null : Border.all(color: AppColors.border),
         ),
         child: Column(

@@ -180,7 +180,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                       // anchoring the crop there keeps all of it in view.
                       alignment: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                   ),
                   child: Row(
                     children: [
@@ -254,7 +254,7 @@ class _DoctorScreenState extends State<DoctorScreen> {
                 foregroundColor: AppColors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                 ),
               ),
               child: Text(
@@ -290,7 +290,7 @@ class _MainCategoryCard extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(6, 6, 6, 8),
         decoration: BoxDecoration(
           color: homeServiceCategoryPlateColor,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
           children: [

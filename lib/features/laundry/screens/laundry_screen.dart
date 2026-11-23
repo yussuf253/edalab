@@ -91,7 +91,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: AppColors.laundryBg,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     color: AppColors.laundry.withValues(alpha: 0.16),
                   ),
@@ -147,7 +147,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
                       height: 70,
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: const Icon(
                         LucideIcons.washingMachine,
@@ -179,7 +179,7 @@ class _LaundryScreenState extends State<LaundryScreen> {
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(18),
                         boxShadow: AppSpacing.shadowSm,
                       ),
                       child: Row(
@@ -189,11 +189,11 @@ class _LaundryScreenState extends State<LaundryScreen> {
                             height: 56,
                             decoration: BoxDecoration(
                               color: _getColor(s.id).withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: hasServiceImage
                                 ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(14),
                                     child: Image.network(
                                       s.iconUrl,
                                       fit: BoxFit.cover,

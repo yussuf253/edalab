@@ -231,7 +231,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                       height: 1.6,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   Text(
                     l10n.t('medicine_detail.dosage'),
                     style: AppTextStyles.h4,
@@ -258,7 +258,7 @@ class _MedicineDetailScreenState extends State<MedicineDetailScreen> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   Text(
                     l10n.t('medicine_detail.warnings'),
                     style: AppTextStyles.h4,

@@ -313,7 +313,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                               size: 56,
                               color: AppColors.mediumGrey,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 24),
                             Text(
                               l10n.t('food.no_restaurants'),
                               style: AppTextStyles.h3,
@@ -441,7 +441,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                           onChanged: _onMenuSearchChanged,
                           hint: l10n.t('restaurant_detail.search_hint'),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 24),
                         Text(
                           l10n.t('restaurant_detail.categories'),
                           style: AppTextStyles.h3,
@@ -525,7 +525,7 @@ class _RestaurantDetailScreenState extends State<RestaurantDetailScreen> {
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(18),
                     boxShadow: AppSpacing.shadowSm,
                   ),
                   child: Column(
@@ -789,7 +789,7 @@ class _RestaurantDetailShimmer extends StatelessWidget {
                 child: ShimmerBlock(
                   width: double.infinity,
                   height: 56,
-                  radius: 16,
+                  radius: 14,
                 ),
               ),
               SizedBox(width: 10),
@@ -797,7 +797,7 @@ class _RestaurantDetailShimmer extends StatelessWidget {
                 child: ShimmerBlock(
                   width: double.infinity,
                   height: 56,
-                  radius: 16,
+                  radius: 14,
                 ),
               ),
               SizedBox(width: 10),
@@ -805,13 +805,13 @@ class _RestaurantDetailShimmer extends StatelessWidget {
                 child: ShimmerBlock(
                   width: double.infinity,
                   height: 56,
-                  radius: 16,
+                  radius: 14,
                 ),
               ),
             ],
           ),
           SizedBox(height: 14),
-          ShimmerBlock(width: double.infinity, height: 56, radius: 16),
+          ShimmerBlock(width: double.infinity, height: 56, radius: 14),
           SizedBox(height: 16),
           ShimmerBlock(width: 130, height: 20),
           SizedBox(height: 10),
@@ -870,7 +870,7 @@ class _MenuItemCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border),
           boxShadow: AppSpacing.shadowSm,
         ),
@@ -1029,7 +1029,7 @@ class _QuantityControl extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 3),
       decoration: BoxDecoration(
         color: AppColors.primarySurface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
       ),
       child: Column(

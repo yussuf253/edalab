@@ -532,6 +532,12 @@ abstract class AppLocalizations {
   /// **'See performance snapshots, urgent priorities, and customer activity in real time so nothing slips through.'**
   String get onboardingSubtitle3;
 
+  /// No description provided for @onboardingServiceCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro services in Djibouti'**
+  String get onboardingServiceCity;
+
   /// No description provided for @onboardingGetStarted.
   ///
   /// In en, this message translates to:
