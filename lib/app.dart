@@ -52,12 +52,17 @@ class EdaLabApp extends StatelessWidget {
                     : child ?? const SizedBox.shrink();
 
                 // No internet is an alert, not a gate: the app stays usable
-                // and a strip above it explains what is offline. It clears
-                // itself as soon as the device reconnects.
+                // and a strip overlays the top of the screen. It floats above
+                // the content instead of pushing it down (a Column here would
+                // reflow every route and overflow fixed layouts), and it
+                // clears itself as soon as the device reconnects.
                 if (!connectivityProvider.isOffline) return app;
 
-                return Column(
-                  children: [const NoInternetAlert(), Expanded(child: app)],
+                return Stack(
+                  children: [
+                    Positioned.fill(child: app),
+                    Positioned(top: 0, left: 0, right: 0, child: const NoInternetAlert()),
+                  ],
                 );
               },
             );

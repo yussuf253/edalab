@@ -71,14 +71,21 @@ class NoInternetAlert extends StatelessWidget {
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () =>
-                      context.read<ConnectivityProvider>().checkNow(),
-                  tooltip: l10n.t('no_internet.retry_button'),
-                  icon: const Icon(
-                    LucideIcons.refreshCw,
-                    size: 18,
-                    color: AppColors.primary,
+                Semantics(
+                  label: l10n.t('no_internet.retry_button'),
+                  button: true,
+                  child: IconButton(
+                    onPressed: () =>
+                        context.read<ConnectivityProvider>().checkNow(),
+                    // No `tooltip` here: this alert lives above the Navigator
+                    // (in MaterialApp.builder), so there is no Overlay ancestor
+                    // and Tooltip throws — blowing the strip up to full-screen
+                    // height. The Semantics label keeps it accessible.
+                    icon: const Icon(
+                      LucideIcons.refreshCw,
+                      size: 18,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ],
