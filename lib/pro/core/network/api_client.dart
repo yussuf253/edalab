@@ -279,6 +279,15 @@ class ApiClient {
         messageLower.contains('failed host lookup') ||
         messageLower.contains('connection refused') ||
         messageLower.contains('network is unreachable') ||
+        // Supabase/goTrue wraps TLS and transport failures in its own
+        // exception types; these must map to the friendly offline message
+        // instead of leaking exception class names to the user.
+        messageLower.contains('authretriablefetchexception') ||
+        messageLower.contains('certificate_verify_error') ||
+        messageLower.contains('handshake') ||
+        messageLower.contains('clientexception') ||
+        messageLower.contains('secure socket') ||
+        messageLower.contains('bad certificate') ||
         _legacyConnectionLeakPattern.hasMatch(rawMessage) ||
         rawMessage.contains(baseUrl);
 

@@ -134,7 +134,11 @@ class _RiderActiveDeliveryScreenState extends State<RiderActiveDeliveryScreen> {
       if (!mounted) return;
       final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.couldNotUpdateDelivery(error.toString()))),
+        SnackBar(
+          content: Text(
+            l10n.couldNotUpdateDelivery(ApiClient.userFacingError(error)),
+          ),
+        ),
       );
     } finally {
       if (mounted) {

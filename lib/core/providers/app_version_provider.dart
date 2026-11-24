@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:edalab/core/models/app_version_model.dart';
+import 'package:edalab/core/network/api_client.dart';
 import 'package:edalab/core/repositories/app_version_repository.dart';
 
 /// Provider for managing app version and update checks
@@ -80,8 +81,11 @@ class AppVersionProvider extends ChangeNotifier {
       }
       _error = null;
     } catch (e) {
-      _error = 'Failed to check for updates: ${e.toString()}';
-      print('Error checking for updates: $_error');
+      // Keep the message user-facing: network/TLS failures (Supabase
+      // AuthRetriableFetchException, handshake errors, …) must not leak
+      // raw exception text into the UI.
+      _error = ApiClient.userFacingError(e);
+      print('Error checking for updates: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -105,8 +109,8 @@ class AppVersionProvider extends ChangeNotifier {
       }
       _error = null;
     } catch (e) {
-      _error = 'Failed to check for updates: ${e.toString()}';
-      print('Error checking for updates: $_error');
+      _error = ApiClient.userFacingError(e);
+      print('Error checking for updates: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

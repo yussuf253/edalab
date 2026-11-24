@@ -91,7 +91,7 @@ class _ProInsightsScreenState extends State<ProInsightsScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(24),
                 child: Text(
-                  snapshot.error.toString().replaceFirst('Exception: ', ''),
+                  ApiClient.userFacingError(snapshot.error!),
                 ),
               ),
             );

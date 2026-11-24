@@ -175,9 +175,7 @@ class _RiderDashboardScreenState extends State<RiderDashboardScreen> {
                 if (!mounted) return;
                 messenger.showSnackBar(
                   SnackBar(
-                    content: Text(
-                      error.toString().replaceFirst('Exception: ', ''),
-                    ),
+                    content: Text(ApiClient.userFacingError(error)),
                   ),
                 );
               }

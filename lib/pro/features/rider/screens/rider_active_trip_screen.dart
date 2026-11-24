@@ -53,7 +53,7 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
     } catch (error) {
       if (!mounted) return;
       setState(() {
-        _error = error.toString();
+        _error = ApiClient.userFacingError(error);
         _isLoading = false;
       });
     }
@@ -127,7 +127,11 @@ class _RiderActiveTripScreenState extends State<RiderActiveTripScreen> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.couldNotUpdateRide(error.toString()))),
+        SnackBar(
+          content: Text(
+            l10n.couldNotUpdateRide(ApiClient.userFacingError(error)),
+          ),
+        ),
       );
     } finally {
       if (mounted) {
