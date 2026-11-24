@@ -1038,7 +1038,8 @@ class AppLocalizations {
       'shopping.all': 'All',
       'shopping.local_stores': 'Local Stores',
       'shopping.hero_title': 'Shop from AliExpress',
-      'shopping.hero_subtitle': 'Discover trending products at great\nprices',
+      'shopping.hero_subtitle':
+          'Discover trending products at great prices',
       'shopping.no_shops': 'No shops found.',
       'shopping.items_count': '{count} items',
       'grocery.title': 'Grocery',
@@ -2726,7 +2727,7 @@ class AppLocalizations {
       'shopping.local_stores': 'Boutiques locales',
       'shopping.hero_title': 'Achetez sur AliExpress',
       'shopping.hero_subtitle':
-          'Découvrez des produits tendance à des\nprix imbattables',
+          'Découvrez des produits tendance à des prix imbattables',
       'shopping.no_shops': 'Aucune boutique trouvée.',
       'shopping.items_count': '{count} articles',
       'grocery.title': 'Courses',
@@ -4202,7 +4203,7 @@ class AppLocalizations {
       'shopping.all': 'الكل',
       'shopping.local_stores': 'المتاجر المحلية',
       'shopping.hero_title': 'اشترِ من AliExpress',
-      'shopping.hero_subtitle': 'اكتشف منتجات رائجة بأسعار\nمناسبة',
+      'shopping.hero_subtitle': 'اكتشف منتجات رائجة بأسعار مناسبة',
       'shopping.no_shops': 'لم يتم العثور على متاجر.',
       'shopping.items_count': '{count} عناصر',
       'grocery.title': 'البقالة',

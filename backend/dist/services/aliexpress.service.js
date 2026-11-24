@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.USD_TO_DJF_RATE = void 0;
 exports.clearAliExpressCache = clearAliExpressCache;
 exports.extractAliExpressError = extractAliExpressError;
 exports.throwIfAliExpressError = throwIfAliExpressError;
@@ -14,6 +15,7 @@ exports.refreshAccessToken = refreshAccessToken;
 exports.queryOrderList = queryOrderList;
 exports.queryOrderDetail = queryOrderDetail;
 exports.parsePrice = parsePrice;
+exports.usdToDjf = usdToDjf;
 exports.parseRating = parseRating;
 exports.normalizeProduct = normalizeProduct;
 exports.verifyWebhookSignature = verifyWebhookSignature;
@@ -487,6 +489,20 @@ function parsePrice(priceStr) {
     return Number.isFinite(parsed) ? parsed : 0;
 }
 /**
+ * The app prices everything in Djiboutian francs, but AliExpress returns
+ * product prices in USD (target_currency is requested as 'USD'). The DJF is
+ * pegged to the USD at 1 USD = 177.721 DJF, so conversion is a fixed rate —
+ * no live FX lookup needed.
+ */
+exports.USD_TO_DJF_RATE = 177.721;
+/**
+ * Convert a USD amount to whole DJF francs (DJF has no fractional coins in
+ * use, and the app renders whole-number prices).
+ */
+function usdToDjf(usd) {
+    return Math.round(usd * exports.USD_TO_DJF_RATE);
+}
+/**
  * Parse evaluate rate "96.5%" to a 1-5 star rating.
  */
 function parseRating(evaluateRate) {
@@ -501,9 +517,10 @@ function parseRating(evaluateRate) {
  * Normalize an AliExpress product to the ProductModel shape used by the Flutter app.
  */
 function normalizeProduct(product) {
-    const price = parsePrice(product.salePrice);
+    // Prices arrive in USD; convert to the app's DJF display currency.
+    const price = usdToDjf(parsePrice(product.salePrice));
     const originalPrice = product.originalPrice
-        ? parsePrice(product.originalPrice)
+        ? usdToDjf(parsePrice(product.originalPrice))
         : undefined;
     return {
         id: product.productId,

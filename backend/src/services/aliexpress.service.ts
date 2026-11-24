@@ -731,6 +731,22 @@ export function parsePrice(priceStr: string): number {
 }
 
 /**
+ * The app prices everything in Djiboutian francs, but AliExpress returns
+ * product prices in USD (target_currency is requested as 'USD'). The DJF is
+ * pegged to the USD at 1 USD = 177.721 DJF, so conversion is a fixed rate —
+ * no live FX lookup needed.
+ */
+export const USD_TO_DJF_RATE = 177.721;
+
+/**
+ * Convert a USD amount to whole DJF francs (DJF has no fractional coins in
+ * use, and the app renders whole-number prices).
+ */
+export function usdToDjf(usd: number): number {
+  return Math.round(usd * USD_TO_DJF_RATE);
+}
+
+/**
  * Parse evaluate rate "96.5%" to a 1-5 star rating.
  */
 export function parseRating(evaluateRate: string): number {
@@ -745,9 +761,10 @@ export function parseRating(evaluateRate: string): number {
  * Normalize an AliExpress product to the ProductModel shape used by the Flutter app.
  */
 export function normalizeProduct(product: AliExpressProduct) {
-  const price = parsePrice(product.salePrice);
+  // Prices arrive in USD; convert to the app's DJF display currency.
+  const price = usdToDjf(parsePrice(product.salePrice));
   const originalPrice = product.originalPrice
-    ? parsePrice(product.originalPrice)
+    ? usdToDjf(parsePrice(product.originalPrice))
     : undefined;
 
   return {

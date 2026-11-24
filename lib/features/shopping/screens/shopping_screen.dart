@@ -218,6 +218,8 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                             ],
                           ),
                         ),
+                        // Keeps the text clear of the icon art on the right.
+                        const SizedBox(width: 96),
                       ],
                     ),
                   ),

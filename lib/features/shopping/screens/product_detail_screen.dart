@@ -944,10 +944,13 @@ class _ProductImageViewerState extends State<_ProductImageViewer> {
     initialPage: widget.initialIndex,
   );
   late int _index = widget.initialIndex;
+  /// Shared across pages so paging can be locked while any image is zoomed.
+  final ValueNotifier<bool> _zoomed = ValueNotifier(false);
 
   @override
   void dispose() {
     _controller.dispose();
+    _zoomed.dispose();
     super.dispose();
   }
 
@@ -958,12 +961,20 @@ class _ProductImageViewerState extends State<_ProductImageViewer> {
       body: SafeArea(
         child: Stack(
           children: [
-            PageView.builder(
-              controller: _controller,
-              itemCount: widget.images.length,
-              onPageChanged: (value) => setState(() => _index = value),
-              itemBuilder: (context, pageIndex) =>
-                  _ZoomableImage(url: widget.images[pageIndex]),
+            ValueListenableBuilder<bool>(
+              valueListenable: _zoomed,
+              builder: (context, zoomed, _) => PageView.builder(
+                controller: _controller,
+                // While an image is zoomed in, paging is locked so one-finger
+                // drags pan the zoomed image instead of flipping pages.
+                physics: zoomed
+                    ? const NeverScrollableScrollPhysics()
+                    : const PageScrollPhysics(),
+                itemCount: widget.images.length,
+                onPageChanged: (value) => setState(() => _index = value),
+                itemBuilder: (context, pageIndex) =>
+                    _ZoomableImage(url: widget.images[pageIndex], zoomed: _zoomed),
+              ),
             ),
             Positioned(
               top: 8,
@@ -1009,8 +1020,9 @@ class _ProductImageViewerState extends State<_ProductImageViewer> {
 /// horizontal swipes still page between images at normal scale.
 class _ZoomableImage extends StatefulWidget {
   final String url;
+  final ValueNotifier<bool> zoomed;
 
-  const _ZoomableImage({required this.url});
+  const _ZoomableImage({required this.url, required this.zoomed});
 
   @override
   State<_ZoomableImage> createState() => _ZoomableImageState();
@@ -1028,7 +1040,10 @@ class _ZoomableImageState extends State<_ZoomableImage> {
 
   void _onTransform() {
     final zoomed = _transform.value.getMaxScaleOnAxis() > 1.01;
-    if (zoomed != _zoomed) setState(() => _zoomed = zoomed);
+    if (zoomed != _zoomed) {
+      setState(() => _zoomed = zoomed);
+      widget.zoomed.value = zoomed;
+    }
   }
 
   @override
