@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/providers/providers.dart';
@@ -100,7 +99,10 @@ class _CartHubScreenState extends State<CartHubScreen> {
         title: l10n.t('cart.title'),
         showBack: false,
       ),
-      body: cart.isHydrating
+      // Sections are filtered by module activation, which is unknown until a
+      // real configuration arrives: keep the skeleton up rather than claim an
+      // empty cart while that answer is still missing.
+      body: cart.isHydrating || !moduleProvider.hasKnownConfig
           ? const CartHubShimmer()
           : CustomScrollView(
               slivers: [

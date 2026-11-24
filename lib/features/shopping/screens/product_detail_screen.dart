@@ -28,6 +28,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int _selectedColor = 0;
   int _selectedSize = 0;
   int _quantity = 1;
+  int _imageIndex = 0;
   bool _isLoading = true;
   bool _hasTrackedView = false;
 
@@ -40,23 +41,33 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _loadProduct() async {
-    try {
-      final response = await ApiClient.get(
-        '/catalog/products/${widget.productId}',
-      );
-      if (!mounted) return;
-      setState(() {
-        _product = ProductModel.fromApi(
-          Map<String, dynamic>.from(response as Map),
-        );
-        _isLoading = false;
-      });
-      _trackProductViewed(source: 'remote');
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      _trackProductViewed(source: 'error');
+    final product = await _fetchProduct();
+    if (!mounted) return;
+    setState(() {
+      _product = product;
+      _isLoading = false;
+    });
+    _trackProductViewed(source: product == null ? 'error' : 'remote');
+  }
+
+  /// Catalogue products (shopping, pharmacy, grocery) live in Supabase, while
+  /// the AliExpress tab opens items that only the AliExpress proxy knows about,
+  /// so fall back to it when the catalogue lookup misses.
+  Future<ProductModel?> _fetchProduct() async {
+    for (final path in <String>[
+      '/catalog/products/${widget.productId}',
+      '/aliexpress/products/${widget.productId}',
+    ]) {
+      try {
+        final response = await ApiClient.get(path);
+        if (response is Map) {
+          return ProductModel.fromApi(Map<String, dynamic>.from(response));
+        }
+      } catch (_) {
+        // Try the next source.
+      }
     }
+    return null;
   }
 
   void _trackProductViewed({required String source}) {
@@ -118,9 +129,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           if (product != null)
             IconButton(
               icon: Icon(
-                isFavorite
-                    ? CupertinoIcons.heart_fill
-                    : LucideIcons.heart,
+                isFavorite ? CupertinoIcons.heart_fill : LucideIcons.heart,
                 color: isFavorite ? AppColors.accent : null,
               ),
               splashRadius: 24,
@@ -161,95 +170,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Product Image
-                  Container(
-                    height: 320,
-                    width: double.infinity,
-                    color: AppColors.extraLightGrey,
-                    child: Stack(
-                      children: [
-                        // Show network image if available, otherwise fallback icon
-                        if (product.images.isNotEmpty &&
-                            product.images.first.isNotEmpty)
-                          Positioned.fill(
-                            child: Image.network(
-                              product.images.first,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Center(
-                                child: Icon(
-                                  LucideIcons.shoppingBag,
-                                  size: 100,
-                                  color: AppColors.shopping.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        else
-                          Center(
-                            child: Icon(
-                              LucideIcons.shoppingBag,
-                              size: 100,
-                              color: AppColors.shopping.withValues(alpha: 0.3),
-                            ),
-                          ),
-                        if (product.badge != null)
-                          Positioned(
-                            top: 20,
-                            left: 20,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                product.badge!,
-                                style: AppTextStyles.labelSmall.copyWith(
-                                  color: AppColors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        // Image gallery indicator if multiple images
-                        if (product.images.length > 1)
-                          Positioned(
-                            bottom: 12,
-                            left: 0,
-                            right: 0,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: product.images
-                                  .take(5)
-                                  .toList()
-                                  .asMap()
-                                  .entries
-                                  .map(
-                                    (entry) => Container(
-                                      width: 8,
-                                      height: 8,
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 3,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: entry.key == 0
-                                            ? AppColors.white
-                                            : AppColors.white.withValues(
-                                                alpha: 0.5,
-                                              ),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
-                          ),
-                      ],
-                    ),
+                  // Product gallery — swipe between images, tap to zoom.
+                  _ProductGallery(
+                    images: product.images,
+                    badge: product.badge,
+                    index: _imageIndex,
+                    onIndexChanged: (index) =>
+                        setState(() => _imageIndex = index),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(20),
@@ -488,7 +415,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               child: Row(
                                 children: [
                                   IconButton(
-                                    icon: const Icon(LucideIcons.minus, size: 18),
+                                    icon: const Icon(
+                                      LucideIcons.minus,
+                                      size: 18,
+                                    ),
                                     onPressed: () {
                                       if (_quantity > 1) {
                                         setState(() => _quantity--);
@@ -505,7 +435,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                     ),
                                   ),
                                   IconButton(
-                                    icon: const Icon(LucideIcons.plus, size: 18),
+                                    icon: const Icon(
+                                      LucideIcons.plus,
+                                      size: 18,
+                                    ),
                                     onPressed: () =>
                                         setState(() => _quantity++),
                                   ),
@@ -741,135 +674,388 @@ class _ProductDetailShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          height: 320,
-          width: double.infinity,
-          color: AppColors.extraLightGrey,
-          child: const Center(
+    // Scrollable so the placeholder never overflows short viewports while the
+    // real content is still loading.
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 320,
+            width: double.infinity,
+            color: AppColors.extraLightGrey,
+            child: const Center(
+              child: AppShimmer(
+                child: ShimmerBlock(width: 100, height: 100, radius: 28),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
             child: AppShimmer(
-              child: ShimmerBlock(width: 100, height: 100, radius: 28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  ShimmerBlock(width: 84, height: 12, radius: 10),
+                  SizedBox(height: 8),
+                  ShimmerBlock(width: 220, height: 28),
+                  SizedBox(height: 14),
+                  Row(
+                    children: [
+                      ShimmerBlock(width: 116, height: 18, radius: 10),
+                      Spacer(),
+                      ShimmerBlock(width: 78, height: 24, radius: 8),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      ShimmerBlock(width: 96, height: 30),
+                      SizedBox(width: 8),
+                      ShimmerBlock(width: 62, height: 18, radius: 10),
+                      SizedBox(width: 8),
+                      ShimmerBlock(width: 46, height: 22, radius: 8),
+                    ],
+                  ),
+                  SizedBox(height: 24),
+                  Divider(),
+                  SizedBox(height: 20),
+                  ShimmerBlock(width: 68, height: 18, radius: 10),
+                  SizedBox(height: 12),
+                  Row(
+                    children: [
+                      ShimmerBlock(width: 36, height: 36, radius: 999),
+                      SizedBox(width: 12),
+                      ShimmerBlock(width: 36, height: 36, radius: 999),
+                      SizedBox(width: 12),
+                      ShimmerBlock(width: 36, height: 36, radius: 999),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  ShimmerBlock(width: 56, height: 18, radius: 10),
+                  SizedBox(height: 12),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      ShimmerBlock(width: 56, height: 44, radius: 12),
+                      ShimmerBlock(width: 64, height: 44, radius: 12),
+                      ShimmerBlock(width: 60, height: 44, radius: 12),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      ShimmerBlock(width: 74, height: 18, radius: 10),
+                      Spacer(),
+                      ShimmerBlock(width: 122, height: 44, radius: 12),
+                    ],
+                  ),
+                  SizedBox(height: 24),
+                  ShimmerBlock(width: 102, height: 20),
+                  SizedBox(height: 10),
+                  ShimmerBlock(width: double.infinity, height: 14, radius: 10),
+                  SizedBox(height: 8),
+                  ShimmerBlock(width: double.infinity, height: 14, radius: 10),
+                  SizedBox(height: 8),
+                  ShimmerBlock(width: 220, height: 14, radius: 10),
+                  SizedBox(height: 24),
+                  ShimmerBlock(width: 82, height: 20),
+                  SizedBox(height: 12),
+                  Row(
+                    children: [
+                      ShimmerBlock(width: 20, height: 20, radius: 999),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: ShimmerBlock(
+                          width: double.infinity,
+                          height: 14,
+                          radius: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      ShimmerBlock(width: 20, height: 20, radius: 999),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: ShimmerBlock(
+                          width: double.infinity,
+                          height: 14,
+                          radius: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      ShimmerBlock(width: 20, height: 20, radius: 999),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: ShimmerBlock(width: 180, height: 14, radius: 10),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 100),
+                ],
+              ),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: AppShimmer(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                ShimmerBlock(width: 84, height: 12, radius: 10),
-                SizedBox(height: 8),
-                ShimmerBlock(width: 220, height: 28),
-                SizedBox(height: 14),
-                Row(
-                  children: [
-                    ShimmerBlock(width: 116, height: 18, radius: 10),
-                    Spacer(),
-                    ShimmerBlock(width: 78, height: 24, radius: 8),
-                  ],
-                ),
-                SizedBox(height: 20),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    ShimmerBlock(width: 96, height: 30),
-                    SizedBox(width: 8),
-                    ShimmerBlock(width: 62, height: 18, radius: 10),
-                    SizedBox(width: 8),
-                    ShimmerBlock(width: 46, height: 22, radius: 8),
-                  ],
-                ),
-                SizedBox(height: 24),
-                Divider(),
-                SizedBox(height: 20),
-                ShimmerBlock(width: 68, height: 18, radius: 10),
-                SizedBox(height: 12),
-                Row(
-                  children: [
-                    ShimmerBlock(width: 36, height: 36, radius: 999),
-                    SizedBox(width: 12),
-                    ShimmerBlock(width: 36, height: 36, radius: 999),
-                    SizedBox(width: 12),
-                    ShimmerBlock(width: 36, height: 36, radius: 999),
-                  ],
-                ),
-                SizedBox(height: 20),
-                ShimmerBlock(width: 56, height: 18, radius: 10),
-                SizedBox(height: 12),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    ShimmerBlock(width: 56, height: 44, radius: 12),
-                    ShimmerBlock(width: 64, height: 44, radius: 12),
-                    ShimmerBlock(width: 60, height: 44, radius: 12),
-                  ],
-                ),
-                SizedBox(height: 20),
-                Row(
-                  children: [
-                    ShimmerBlock(width: 74, height: 18, radius: 10),
-                    Spacer(),
-                    ShimmerBlock(width: 122, height: 44, radius: 12),
-                  ],
-                ),
-                SizedBox(height: 24),
-                ShimmerBlock(width: 102, height: 20),
-                SizedBox(height: 10),
-                ShimmerBlock(width: double.infinity, height: 14, radius: 10),
-                SizedBox(height: 8),
-                ShimmerBlock(width: double.infinity, height: 14, radius: 10),
-                SizedBox(height: 8),
-                ShimmerBlock(width: 220, height: 14, radius: 10),
-                SizedBox(height: 24),
-                ShimmerBlock(width: 82, height: 20),
-                SizedBox(height: 12),
-                Row(
-                  children: [
-                    ShimmerBlock(width: 20, height: 20, radius: 999),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: ShimmerBlock(
-                        width: double.infinity,
-                        height: 14,
-                        radius: 10,
+        ],
+      ),
+    );
+  }
+}
+
+/// Hero area of the product page: paged images, badge, dots, tap to open the
+/// full-screen pinch-to-zoom viewer.
+class _ProductGallery extends StatelessWidget {
+  final List<String> images;
+  final String? badge;
+  final int index;
+  final ValueChanged<int> onIndexChanged;
+
+  const _ProductGallery({
+    required this.images,
+    required this.badge,
+    required this.index,
+    required this.onIndexChanged,
+  });
+
+  void _openViewer(BuildContext context, int startIndex) {
+    if (images.isEmpty) return;
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (_) =>
+            _ProductImageViewer(images: images, initialIndex: startIndex),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasImages = images.isNotEmpty;
+    final current = index.clamp(0, hasImages ? images.length - 1 : 0);
+
+    return SizedBox(
+      height: 320,
+      width: double.infinity,
+      child: Stack(
+        children: [
+          if (hasImages)
+            PageView.builder(
+              itemCount: images.length,
+              onPageChanged: onIndexChanged,
+              itemBuilder: (context, pageIndex) => GestureDetector(
+                onTap: () => _openViewer(context, pageIndex),
+                child: Container(
+                  color: AppColors.extraLightGrey,
+                  child: Image.network(
+                    images[pageIndex],
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Center(
+                      child: Icon(
+                        LucideIcons.shoppingBag,
+                        size: 100,
+                        color: AppColors.shopping.withValues(alpha: 0.3),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    ShimmerBlock(width: 20, height: 20, radius: 999),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: ShimmerBlock(
-                        width: double.infinity,
-                        height: 14,
-                        radius: 10,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    ShimmerBlock(width: 20, height: 20, radius: 999),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: ShimmerBlock(width: 180, height: 14, radius: 10),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 100),
-              ],
+              ),
+            )
+          else
+            Center(
+              child: Icon(
+                LucideIcons.shoppingBag,
+                size: 100,
+                color: AppColors.shopping.withValues(alpha: 0.3),
+              ),
             ),
+          if (badge != null)
+            Positioned(
+              top: 20,
+              left: 20,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  badge!,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: AppColors.white,
+                  ),
+                ),
+              ),
+            ),
+          if (hasImages && images.length > 1)
+            Positioned(
+              bottom: 12,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  images.length.clamp(1, 5),
+                  (dotIndex) => Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: dotIndex == current
+                          ? AppColors.white
+                          : AppColors.white.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Full-screen image viewer: swipe between images, pinch or double-tap to zoom.
+class _ProductImageViewer extends StatefulWidget {
+  final List<String> images;
+  final int initialIndex;
+
+  const _ProductImageViewer({required this.images, required this.initialIndex});
+
+  @override
+  State<_ProductImageViewer> createState() => _ProductImageViewerState();
+}
+
+class _ProductImageViewerState extends State<_ProductImageViewer> {
+  late final PageController _controller = PageController(
+    initialPage: widget.initialIndex,
+  );
+  late int _index = widget.initialIndex;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            PageView.builder(
+              controller: _controller,
+              itemCount: widget.images.length,
+              onPageChanged: (value) => setState(() => _index = value),
+              itemBuilder: (context, pageIndex) =>
+                  _ZoomableImage(url: widget.images[pageIndex]),
+            ),
+            Positioned(
+              top: 8,
+              left: 8,
+              child: IconButton(
+                style: IconButton.styleFrom(backgroundColor: Colors.black45),
+                icon: const Icon(LucideIcons.x, color: AppColors.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+            if (widget.images.length > 1)
+              Positioned(
+                bottom: 24,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black45,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      '${_index + 1} / ${widget.images.length}',
+                      style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Pinch-to-zoom image that only takes over dragging once it is zoomed in, so
+/// horizontal swipes still page between images at normal scale.
+class _ZoomableImage extends StatefulWidget {
+  final String url;
+
+  const _ZoomableImage({required this.url});
+
+  @override
+  State<_ZoomableImage> createState() => _ZoomableImageState();
+}
+
+class _ZoomableImageState extends State<_ZoomableImage> {
+  final TransformationController _transform = TransformationController();
+  bool _zoomed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _transform.addListener(_onTransform);
+  }
+
+  void _onTransform() {
+    final zoomed = _transform.value.getMaxScaleOnAxis() > 1.01;
+    if (zoomed != _zoomed) setState(() => _zoomed = zoomed);
+  }
+
+  @override
+  void dispose() {
+    _transform.removeListener(_onTransform);
+    _transform.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InteractiveViewer(
+      transformationController: _transform,
+      minScale: 1,
+      maxScale: 4,
+      panEnabled: _zoomed,
+      child: Center(
+        child: Image.network(
+          widget.url,
+          fit: BoxFit.contain,
+          errorBuilder: (_, _, _) => const Icon(
+            LucideIcons.shoppingBag,
+            size: 64,
+            color: AppColors.grey,
           ),
         ),
-      ],
+      ),
     );
   }
 }

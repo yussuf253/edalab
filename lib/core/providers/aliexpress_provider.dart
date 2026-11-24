@@ -2,41 +2,74 @@ import 'package:flutter/foundation.dart';
 import '../models/product_model.dart';
 import '../network/api_client.dart';
 
+/// A top-level AliExpress category offered as a chip in the shopping tab.
+///
+/// The ids come from `aliexpress.ds.category.get`; the label is short so the
+/// chip row stays readable.
+class AliExpressCategory {
+  /// `null` means "All" — no category filter.
+  final String? id;
+  final String label;
+
+  const AliExpressCategory({this.id, required this.label});
+}
+
 /// Provides access to AliExpress product data through the backend proxy.
 ///
 /// All AliExpress API calls are routed through the backend which handles
 /// HMAC-SHA256 signing and credential management. The Flutter app never
 /// sees the App Secret.
 class AliExpressProvider extends ChangeNotifier {
+  /// Browse chips for the AliExpress tab.
+  static const List<AliExpressCategory> browseCategories = [
+    AliExpressCategory(label: 'All'),
+    AliExpressCategory(id: '509', label: 'Phones'),
+    AliExpressCategory(id: '44', label: 'Electronics'),
+    AliExpressCategory(id: '7', label: 'Computers'),
+    AliExpressCategory(id: '3', label: 'Fashion'),
+    AliExpressCategory(id: '15', label: 'Home & Garden'),
+    AliExpressCategory(id: '66', label: 'Beauty'),
+    AliExpressCategory(id: '26', label: 'Toys'),
+    AliExpressCategory(id: '18', label: 'Sports'),
+    AliExpressCategory(id: '34', label: 'Auto'),
+    AliExpressCategory(id: '1511', label: 'Watches'),
+    AliExpressCategory(id: '1524', label: 'Bags'),
+    AliExpressCategory(id: '322', label: 'Shoes'),
+  ];
+
+  static const int _pageSize = 20;
+
   List<ProductModel> _searchResults = [];
-  List<ProductModel> _trendingProducts = [];
-  List<Map<String, dynamic>> _categories = [];
   bool _isSearching = false;
-  bool _isLoadingTrending = false;
-  bool _isLoadingCategories = false;
   String? _searchError;
-  String? _trendingError;
   int _currentPage = 1;
   int _totalPages = 1;
   int _totalRecords = 0;
   String _lastQuery = '';
 
-  // Getters
+  List<ProductModel> _feedProducts = [];
+  bool _isLoadingFeed = false;
+  bool _feedHasMore = true;
+  String? _feedError;
+  int _feedPage = 1;
+  String? _selectedCategoryId;
+
+  // Search state
   List<ProductModel> get searchResults => List.unmodifiable(_searchResults);
-  List<ProductModel> get trendingProducts =>
-      List.unmodifiable(_trendingProducts);
-  List<Map<String, dynamic>> get categories =>
-      List.unmodifiable(_categories);
   bool get isSearching => _isSearching;
-  bool get isLoadingTrending => _isLoadingTrending;
-  bool get isLoadingCategories => _isLoadingCategories;
   String? get searchError => _searchError;
-  String? get trendingError => _trendingError;
   int get currentPage => _currentPage;
   int get totalPages => _totalPages;
   int get totalRecords => _totalRecords;
   String get lastQuery => _lastQuery;
   bool get hasMorePages => _currentPage < _totalPages;
+
+  // Browse feed state
+  List<ProductModel> get feedProducts => List.unmodifiable(_feedProducts);
+  bool get isLoadingFeed => _isLoadingFeed;
+  bool get hasMoreFeed => _feedHasMore;
+  String? get feedError => _feedError;
+  String? get selectedCategoryId => _selectedCategoryId;
 
   /// Search AliExpress products by keyword.
   ///
@@ -67,8 +100,9 @@ class AliExpressProvider extends ChangeNotifier {
         'sort': sort,
       };
 
-      final queryString =
-          queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+      final queryString = queryParams.entries
+          .map((e) => '${e.key}=${e.value}')
+          .join('&');
       final response = await ApiClient.get(
         '/aliexpress/products/search?$queryString',
         forceRefresh: page == 1,
@@ -109,58 +143,92 @@ class AliExpressProvider extends ChangeNotifier {
     await searchProducts(_lastQuery, page: _currentPage + 1);
   }
 
-  /// Fetch trending/hot products from AliExpress.
-  Future<void> loadTrendingProducts() async {
-    _isLoadingTrending = true;
-    _trendingError = null;
+  /// Clears search state so the tab falls back to the browse feed.
+  void resetSearch() {
+    if (_lastQuery.isEmpty && _searchResults.isEmpty) return;
+    _lastQuery = '';
+    _searchResults = [];
+    _searchError = null;
+    _currentPage = 1;
+    _totalPages = 1;
+    _totalRecords = 0;
+    notifyListeners();
+  }
+
+  /// Loads the browse feed, or the feed filtered by the selected category.
+  ///
+  /// Pass [refresh] to start again from page 1 (tab opened, category changed).
+  /// Repeated calls append the next page, de-duplicated by product id.
+  Future<void> loadFeed({bool refresh = false}) async {
+    if (refresh) {
+      _feedProducts = [];
+      _feedPage = 1;
+      _feedHasMore = true;
+      _feedError = null;
+    }
+    if (_isLoadingFeed || !_feedHasMore) return;
+
+    _isLoadingFeed = true;
     notifyListeners();
 
     try {
       final response = await ApiClient.get(
-        '/aliexpress/products/search?q=trending&page=1&pageSize=10&sort=DEFAULT',
-        cacheDuration: const Duration(minutes: 15),
+        _feedPath(_feedPage),
+        cacheDuration: const Duration(minutes: 10),
+        forceRefresh: _feedPage == 1,
       );
 
       final data = Map<String, dynamic>.from(response as Map);
-      _trendingProducts = (data['products'] as List? ?? [])
+      final pageProducts = (data['products'] as List? ?? [])
           .map(
             (entry) =>
                 ProductModel.fromApi(Map<String, dynamic>.from(entry as Map)),
           )
+          .where((product) => product.id.isNotEmpty)
           .toList();
-      _trendingError = null;
+
+      final knownIds = _feedProducts.map((product) => product.id).toSet();
+      _feedProducts = [
+        ..._feedProducts,
+        ...pageProducts.where((product) => !knownIds.contains(product.id)),
+      ];
+
+      final pagination =
+          data['pagination'] as Map<String, dynamic>? ?? const {};
+      _feedHasMore = pagination['hasMore'] == true && pageProducts.isNotEmpty;
+      _feedPage += 1;
+      _feedError = null;
     } catch (e) {
-      debugPrint('[AliExpress] Trending products failed: $e');
-      _trendingError = 'Unable to load trending products.';
-      _trendingProducts = const [];
+      debugPrint('[AliExpress] Feed failed: $e');
+      _feedError = 'Unable to load AliExpress products. Please try again.';
     } finally {
-      _isLoadingTrending = false;
+      _isLoadingFeed = false;
       notifyListeners();
     }
   }
 
-  /// Fetch AliExpress category tree.
-  Future<void> loadCategories({int parentId = 0}) async {
-    _isLoadingCategories = true;
+  /// Appends the next feed page; safe to call repeatedly while scrolling.
+  Future<void> loadMoreFeed() async {
+    if (_isLoadingFeed || !_feedHasMore || _feedError != null) return;
+    await loadFeed();
+  }
+
+  /// Switches browsing to [categoryId] (`null` for all categories).
+  Future<void> selectCategory(String? categoryId) async {
+    if (_selectedCategoryId == categoryId) return;
+    _selectedCategoryId = categoryId;
     notifyListeners();
+    await loadFeed(refresh: true);
+  }
 
-    try {
-      final response = await ApiClient.get(
-        '/aliexpress/categories?parentId=$parentId',
-        cacheDuration: const Duration(hours: 1),
-      );
-
-      final data = Map<String, dynamic>.from(response as Map);
-      _categories = (data['categories'] as List? ?? [])
-          .map((entry) => Map<String, dynamic>.from(entry as Map))
-          .toList();
-    } catch (e) {
-      debugPrint('[AliExpress] Categories failed: $e');
-      _categories = [];
-    } finally {
-      _isLoadingCategories = false;
-      notifyListeners();
-    }
+  String _feedPath(int page) {
+    final params = <String, String>{
+      'page': '$page',
+      'pageSize': '$_pageSize',
+      'categoryId': ?_selectedCategoryId,
+    };
+    return '/aliexpress/feed?'
+        '${params.entries.map((entry) => '${entry.key}=${entry.value}').join('&')}';
   }
 
   /// Fetch a single product detail by AliExpress product ID.
@@ -170,9 +238,7 @@ class AliExpressProvider extends ChangeNotifier {
         '/aliexpress/products/$productId',
         forceRefresh: false,
       );
-      return ProductModel.fromApi(
-        Map<String, dynamic>.from(response as Map),
-      );
+      return ProductModel.fromApi(Map<String, dynamic>.from(response as Map));
     } catch (e) {
       debugPrint('[AliExpress] Product detail failed: $e');
       return null;
@@ -182,14 +248,17 @@ class AliExpressProvider extends ChangeNotifier {
   /// Clear all cached data and reset state.
   void clear() {
     _searchResults = [];
-    _trendingProducts = [];
-    _categories = [];
     _searchError = null;
-    _trendingError = null;
     _currentPage = 1;
     _totalPages = 1;
     _totalRecords = 0;
     _lastQuery = '';
+
+    _feedProducts = [];
+    _feedHasMore = true;
+    _feedError = null;
+    _feedPage = 1;
+    _selectedCategoryId = null;
     notifyListeners();
   }
 }

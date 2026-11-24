@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import 'gateway/gateway_router.dart';
 import 'gateway/gateway_admin.dart' as gateway_admin;
+import 'gateway/gateway_aliexpress.dart' as gateway_aliexpress;
 import 'gateway/gateway_catalog.dart' as gateway_catalog;
 import 'gateway/gateway_media.dart' as gateway_media;
 import 'gateway/gateway_messages.dart' as gateway_messages;
@@ -48,6 +49,7 @@ class SupabaseGateway {
     gateway_admin.register();
     gateway_media.register();
     gateway_payments.register();
+    gateway_aliexpress.register();
   }
 
   /// Executes a legacy-API call against Supabase.

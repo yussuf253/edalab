@@ -12,11 +12,9 @@ import '../../../core/constants/app_spacing.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/models/models.dart';
-import '../../../core/config/zone_scope.dart';
-import '../../../core/network/api_client.dart';
 import '../../../core/providers/providers.dart';
+import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_search_bar.dart';
-import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/module_screen_app_bar.dart';
 import '../../../core/utils/money_format.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -30,83 +28,49 @@ class ShoppingScreen extends StatefulWidget {
 
 class _ShoppingScreenState extends State<ShoppingScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String _selectedCategory = 'all';
+  final ScrollController _scrollController = ScrollController();
   String _searchQuery = '';
-  bool _isLoading = true;
-  List<ShoppingStoreModel> _stores = [];
   Timer? _searchDebounce;
   String _lastTrackedSearch = '';
-  bool _showAliExpress = false;
-  final ScrollController _aliExpressScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _loadStores();
+    _scrollController.addListener(_onScroll);
+    // The tab is the AliExpress storefront, so its first page loads up front.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final provider = context.read<AliExpressProvider>();
+      if (provider.feedProducts.isEmpty && !provider.isLoadingFeed) {
+        provider.loadFeed(refresh: true);
+      }
+    });
   }
 
-  Future<void> _loadStores() async {
-    try {
-      final response = await ApiClient.get(
-        ZoneScope.appendZone('/catalog/shopping-stores'),
-      );
-      final stores = (response as List)
-          .map(
-            (entry) => ShoppingStoreModel.fromApi(
-              Map<String, dynamic>.from(entry as Map),
-            ),
-          )
-          .toList();
-
-      if (!mounted) return;
-      setState(() {
-        _stores = stores;
-        if (_selectedCategory != 'all' &&
-            !_stores.any(
-              (store) => store.categories.contains(_selectedCategory),
-            )) {
-          _selectedCategory = 'all';
-        }
-        _isLoading = false;
-      });
-      AnalyticsService.instance.track(
-        AnalyticsEvents.catalogResultsLoaded,
-        properties: {
-          'module': 'shopping',
-          'entity_type': 'store',
-          'result_count': _stores.length,
-          'source': 'remote',
-        },
-      );
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _stores = const [];
-        _isLoading = false;
-      });
-      AnalyticsService.instance.track(
-        AnalyticsEvents.catalogResultsLoaded,
-        properties: {
-          'module': 'shopping',
-          'entity_type': 'store',
-          'result_count': 0,
-          'source': 'error',
-        },
-      );
-    }
+  /// Pulls the next feed page as the storefront nears its end.
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels < position.maxScrollExtent - 600) return;
+    context.read<AliExpressProvider>().loadMoreFeed();
   }
 
   void _onSearchChanged(String value) {
     setState(() => _searchQuery = value);
     _searchDebounce?.cancel();
     _searchDebounce = Timer(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
       final normalizedQuery = value.trim().toLowerCase();
       if (normalizedQuery == _lastTrackedSearch) return;
       _lastTrackedSearch = normalizedQuery;
       if (normalizedQuery.isNotEmpty && normalizedQuery.length < 2) return;
 
-      if (_showAliExpress && normalizedQuery.isNotEmpty) {
-        context.read<AliExpressProvider>().searchProducts(normalizedQuery);
+      final aliExpress = context.read<AliExpressProvider>();
+      if (normalizedQuery.isEmpty) {
+        // Clearing the field drops back to the browse feed.
+        aliExpress.resetSearch();
+      } else {
+        aliExpress.searchProducts(normalizedQuery);
       }
 
       AnalyticsService.instance.track(
@@ -115,37 +79,18 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
           'module': 'shopping',
           'query': normalizedQuery,
           'query_length': normalizedQuery.length,
-          'selected_category': _selectedCategory,
-          'source': _showAliExpress ? 'aliexpress' : 'local',
-          'result_count': _showAliExpress
-              ? context.read<AliExpressProvider>().searchResults.length
-              : _visibleStoreCount(
-                  category: _selectedCategory,
-                  query: normalizedQuery,
-                ),
+          'source': 'aliexpress',
+          'result_count': aliExpress.searchResults.length,
         },
       );
     });
-  }
-
-  int _visibleStoreCount({required String category, required String query}) {
-    return _stores.where((store) {
-      final matchesCategory =
-          category == 'all' || store.categories.contains(category);
-      final matchesSearch =
-          query.isEmpty ||
-          store.name.toLowerCase().contains(query) ||
-          store.tagline.toLowerCase().contains(query) ||
-          store.categories.any((entry) => entry.toLowerCase().contains(query));
-      return matchesCategory && matchesSearch;
-    }).length;
   }
 
   @override
   void dispose() {
     _searchDebounce?.cancel();
     _searchController.dispose();
-    _aliExpressScrollController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -156,24 +101,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
       'shopping',
     );
     final aliExpressProvider = context.watch<AliExpressProvider>();
-    final categories = [
-      'all',
-      ...{for (final store in _stores) ...store.categories},
-    ];
     final normalizedQuery = _searchQuery.trim().toLowerCase();
-    final stores = _stores.where((store) {
-      final matchesCategory =
-          _selectedCategory == 'all' ||
-          store.categories.contains(_selectedCategory);
-      final matchesSearch =
-          normalizedQuery.isEmpty ||
-          store.name.toLowerCase().contains(normalizedQuery) ||
-          store.tagline.toLowerCase().contains(normalizedQuery) ||
-          store.categories.any(
-            (category) => category.toLowerCase().contains(normalizedQuery),
-          );
-      return matchesCategory && matchesSearch;
-    }).toList();
 
     return PopScope(
       canPop: context.canPop(),
@@ -248,110 +176,10 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
           ],
         ),
         body: CustomScrollView(
+          controller: _scrollController,
           slivers: [
-            // Source toggle: Local Stores vs AliExpress
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: AppColors.border),
-                    boxShadow: AppSpacing.shadowSm,
-                  ),
-                  padding: const EdgeInsets.all(4),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () => setState(() => _showAliExpress = false),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            decoration: BoxDecoration(
-                              color: !_showAliExpress
-                                  ? AppColors.primary
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    LucideIcons.store,
-                                    size: 18,
-                                    color: !_showAliExpress
-                                        ? AppColors.white
-                                        : AppColors.grey,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    l10n.t('shopping.local_stores'),
-                                    style: AppTextStyles.labelMedium.copyWith(
-                                      color: !_showAliExpress
-                                          ? AppColors.white
-                                          : AppColors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() => _showAliExpress = true);
-                            if (aliExpressProvider.trendingProducts.isEmpty &&
-                                !aliExpressProvider.isLoadingTrending) {
-                              aliExpressProvider.loadTrendingProducts();
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            decoration: BoxDecoration(
-                              color: _showAliExpress
-                                  ? AppColors.primary
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    LucideIcons.languages,
-                                    size: 18,
-                                    color: _showAliExpress
-                                        ? AppColors.white
-                                        : AppColors.grey,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'AliExpress',
-                                    style: AppTextStyles.labelMedium.copyWith(
-                                      color: _showAliExpress
-                                          ? AppColors.white
-                                          : AppColors.grey,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // Hero banner (local stores only)
-            if (!_showAliExpress)
+            // Hero banner
+            if (normalizedQuery.isEmpty)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
@@ -371,8 +199,8 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                     ),
                     padding: const EdgeInsets.symmetric(horizontal: 18),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const SizedBox(width: 36),
                         Expanded(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -382,6 +210,7 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                                 l10n.t('shopping.hero_title'),
                                 style: AppTextStyles.h4,
                               ),
+                              const SizedBox(height: 4),
                               Text(
                                 l10n.t('shopping.hero_subtitle'),
                                 style: AppTextStyles.bodySmall,
@@ -389,127 +218,14 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 104),
                       ],
                     ),
                   ),
                 ),
               ),
-            // Category filters (local stores only)
-            if (!_showAliExpress)
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 64,
-                  child: _isLoading
-                      ? const _ShoppingFiltersShimmer()
-                      : ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                          itemCount: categories.length,
-                          separatorBuilder: (_, _) => const SizedBox(width: 8),
-                          itemBuilder: (context, index) {
-                            final category = categories[index];
-                            final isSelected = _selectedCategory == category;
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() => _selectedCategory = category);
-                                AnalyticsService.instance.track(
-                                  AnalyticsEvents.filterApplied,
-                                  properties: {
-                                    'module': 'shopping',
-                                    'filter_type': 'category',
-                                    'filter_value': category,
-                                    'query': normalizedQuery,
-                                    'result_count': _visibleStoreCount(
-                                      category: category,
-                                      query: normalizedQuery,
-                                    ),
-                                  },
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 14,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.white,
-                                  borderRadius: BorderRadius.circular(999),
-                                  border: isSelected
-                                      ? null
-                                      : Border.all(color: AppColors.border),
-                                ),
-                                child: Text(
-                                  category == 'all'
-                                      ? l10n.t('shopping.all')
-                                      : category,
-                                  style: AppTextStyles.labelMedium.copyWith(
-                                    color: isSelected
-                                        ? AppColors.white
-                                        : AppColors.dark,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              ),
-            // Content: Local stores or AliExpress products
-            if (_showAliExpress)
-              _buildAliExpressContent(aliExpressProvider, l10n)
-            else if (_isLoading)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(20, 12, 20, 24),
-                  child: _ShoppingStoreListShimmer(itemCount: 4),
-                ),
-              )
-            else if (stores.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: Text(
-                    l10n.t('shopping.no_shops'),
-                    style: AppTextStyles.bodyMedium,
-                  ),
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                sliver: SliverList.builder(
-                  itemCount: stores.length,
-                  itemBuilder: (context, index) {
-                    final store = stores[index];
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: index == stores.length - 1 ? 0 : 14,
-                      ),
-                      child: _ShoppingStoreCard(
-                        store: store,
-                        onTap: () {
-                          AnalyticsService.instance.track(
-                            AnalyticsEvents.entityOpened,
-                            properties: {
-                              'module': 'shopping',
-                              'entity_type': 'store',
-                              'entity_id': store.id,
-                              'position': index + 1,
-                              'result_count': stores.length,
-                              'selected_category': _selectedCategory,
-                              'query': normalizedQuery,
-                            },
-                          );
-                          context.push('/shopping/store/${store.id}');
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
+            if (normalizedQuery.isEmpty)
+              _buildAliExpressFilters(aliExpressProvider),
+            ..._buildAliExpressContent(context, aliExpressProvider, l10n),
           ],
         ),
       ),
@@ -517,15 +233,211 @@ class _ShoppingScreenState extends State<ShoppingScreen> {
   }
 }
 
-class _ShoppingStoreCard extends StatelessWidget {
-  final ShoppingStoreModel store;
+Widget _buildAliExpressFilters(AliExpressProvider provider) {
+  return SliverToBoxAdapter(
+    child: SizedBox(
+      height: 64,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+        itemCount: AliExpressProvider.browseCategories.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final category = AliExpressProvider.browseCategories[index];
+          final isSelected = provider.selectedCategoryId == category.id;
+          return GestureDetector(
+            onTap: () {
+              provider.selectCategory(category.id);
+              AnalyticsService.instance.track(
+                AnalyticsEvents.filterApplied,
+                properties: {
+                  'module': 'shopping',
+                  'filter_type': 'aliexpress_category',
+                  'filter_value': category.id ?? 'all',
+                },
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primary : AppColors.white,
+                borderRadius: BorderRadius.circular(999),
+                border: isSelected ? null : Border.all(color: AppColors.border),
+              ),
+              child: Text(
+                category.label,
+                style: AppTextStyles.labelMedium.copyWith(
+                  color: isSelected ? AppColors.white : AppColors.dark,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    ),
+  );
+}
+
+/// AliExpress tab slivers: keyword results while searching, otherwise the
+/// browsable feed grid that keeps appending pages as the user scrolls.
+List<Widget> _buildAliExpressContent(
+  BuildContext context,
+  AliExpressProvider provider,
+  AppLocalizations l10n,
+) {
+  if (provider.lastQuery.isNotEmpty) {
+    if (provider.isSearching && provider.searchResults.isEmpty) {
+      return const [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ];
+    }
+    if (provider.searchError != null && provider.searchResults.isEmpty) {
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _AliExpressMessage(
+            icon: LucideIcons.circleAlert,
+            title: provider.searchError!,
+          ),
+        ),
+      ];
+    }
+    return [
+      SliverPadding(
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+        sliver: SliverList.builder(
+          itemCount: provider.searchResults.length,
+          itemBuilder: (context, index) {
+            final product = provider.searchResults[index];
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: index == provider.searchResults.length - 1 ? 0 : 14,
+              ),
+              child: _AliExpressProductCard(
+                product: product,
+                onTap: () {
+                  AnalyticsService.instance.track(
+                    AnalyticsEvents.entityOpened,
+                    properties: {
+                      'module': 'shopping',
+                      'entity_type': 'aliexpress_product',
+                      'entity_id': product.id,
+                      'position': index + 1,
+                      'source': 'aliexpress_search',
+                    },
+                  );
+                  context.push('/shopping/product/${product.id}');
+                },
+              ),
+            );
+          },
+        ),
+      ),
+    ];
+  }
+
+  if (provider.isLoadingFeed && provider.feedProducts.isEmpty) {
+    return const [
+      SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    ];
+  }
+  if (provider.feedError != null && provider.feedProducts.isEmpty) {
+    return [
+      SliverFillRemaining(
+        hasScrollBody: false,
+        child: _AliExpressMessage(
+          icon: LucideIcons.circleAlert,
+          title: provider.feedError!,
+          actionLabel: 'Try again',
+          onAction: () => provider.loadFeed(refresh: true),
+        ),
+      ),
+    ];
+  }
+  if (provider.feedProducts.isEmpty) {
+    return const [
+      SliverFillRemaining(
+        hasScrollBody: false,
+        child: _AliExpressMessage(
+          icon: LucideIcons.shoppingBag,
+          title: 'No AliExpress products right now',
+          subtitle: 'Pick another category or try again in a moment.',
+        ),
+      ),
+    ];
+  }
+
+  return [
+    SliverPadding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      sliver: SliverGrid(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 14,
+          crossAxisSpacing: 14,
+          mainAxisExtent: 292,
+        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final product = provider.feedProducts[index];
+          return _AliExpressGridCard(
+            product: product,
+            onTap: () {
+              AnalyticsService.instance.track(
+                AnalyticsEvents.entityOpened,
+                properties: {
+                  'module': 'shopping',
+                  'entity_type': 'aliexpress_product',
+                  'entity_id': product.id,
+                  'position': index + 1,
+                  'category_id': provider.selectedCategoryId,
+                  'source': 'aliexpress_feed',
+                },
+              );
+              context.push('/shopping/product/${product.id}');
+            },
+          );
+        }, childCount: provider.feedProducts.length),
+      ),
+    ),
+    SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
+        child: Center(
+          child: provider.isLoadingFeed
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2.5),
+                )
+              : provider.hasMoreFeed
+              ? const SizedBox.shrink()
+              : Text(
+                  'You have reached the end of the results',
+                  style: AppTextStyles.caption.copyWith(color: AppColors.grey),
+                ),
+        ),
+      ),
+    ),
+  ];
+}
+
+/// Compact 2-column card for the browse feed.
+class _AliExpressGridCard extends StatelessWidget {
+  final ProductModel product;
   final VoidCallback onTap;
 
-  const _ShoppingStoreCard({required this.store, required this.onTap});
+  const _AliExpressGridCard({required this.product, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final hasImage = store.imageUrl.trim().isNotEmpty;
+    final hasImage =
+        product.images.isNotEmpty && product.images.first.isNotEmpty;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -534,171 +446,66 @@ class _ShoppingStoreCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           boxShadow: AppSpacing.shadowSm,
         ),
+        padding: const EdgeInsets.all(6),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              height: 150,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.shopping.withValues(alpha: 0.18),
-                    AppColors.primary.withValues(alpha: 0.10),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(18),
-                ),
-              ),
-              child: Stack(
-                children: [
-                  if (hasImage)
-                    Positioned.fill(
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(18),
-                        ),
-                        child: Image.network(
-                          store.imageUrl,
+            // Image stepped down to 14 so it nests inside the 18pt card.
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  width: double.infinity,
+                  color: AppColors.extraLightGrey,
+                  child: hasImage
+                      ? Image.network(
+                          product.images.first,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                        ),
-                      ),
-                    ),
-                  if (hasImage)
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withValues(alpha: 0.08),
-                              Colors.black.withValues(alpha: 0.28),
-                            ],
+                          errorBuilder: (_, _, _) => const Icon(
+                            LucideIcons.shoppingBag,
+                            color: AppColors.lightGrey,
+                            size: 36,
                           ),
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(18),
-                          ),
+                        )
+                      : const Icon(
+                          LucideIcons.shoppingBag,
+                          color: AppColors.lightGrey,
+                          size: 36,
                         ),
-                      ),
-                    ),
-                  Positioned(
-                    top: 18,
-                    right: 18,
-                    child: Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.55),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(
-                        _storeIcon(store.categories),
-                        color: AppColors.shopping,
-                        size: 38,
-                      ),
-                    ),
-                  ),
-                  if (store.badge != null)
-                    Positioned(
-                      top: 16,
-                      left: 16,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.accent,
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: Text(store.badge!, style: AppTextStyles.badge),
-                      ),
-                    ),
-                  Positioned(
-                    left: 18,
-                    bottom: 18,
-                    right: 110,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          store.name,
-                          style: AppTextStyles.h3.copyWith(
-                            color: hasImage ? AppColors.white : AppColors.dark,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          store.tagline,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: hasImage
-                                ? Colors.white.withValues(alpha: 0.86)
-                                : AppColors.grey,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(6, 10, 6, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: store.categories
-                        .take(3)
-                        .map(
-                          (category) => Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primarySurface,
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              category,
-                              style: AppTextStyles.labelSmall.copyWith(
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ),
-                        )
-                        .toList(),
+                  Text(
+                    product.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.labelMedium,
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
-                      _StoreStat(
-                        icon: CupertinoIcons.star_fill,
-                        value: store.rating.toStringAsFixed(1),
-                        color: AppColors.warning,
-                      ),
-                      const SizedBox(width: 12),
-                      _StoreStat(
-                        icon: LucideIcons.package,
-                        value: '${store.productCount} items',
-                        color: AppColors.primary,
+                      Text(
+                        'DJF${money(product.price)}',
+                        style: AppTextStyles.priceSmall,
                       ),
                       const Spacer(),
-                      Text(
-                        'DJF${store.minPrice.toStringAsFixed(0)} - DJF${store.maxPrice.toStringAsFixed(0)}',
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: AppColors.shopping,
+                      if (product.rating > 0) ...[
+                        const Icon(
+                          CupertinoIcons.star_fill,
+                          size: 12,
+                          color: AppColors.warning,
                         ),
-                      ),
+                        const SizedBox(width: 2),
+                        Text(
+                          product.rating.toStringAsFixed(1),
+                          style: AppTextStyles.labelSmall,
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -711,288 +518,59 @@ class _ShoppingStoreCard extends StatelessWidget {
   }
 }
 
-class _StoreStat extends StatelessWidget {
+/// Centred empty/error state used by the AliExpress tab.
+class _AliExpressMessage extends StatelessWidget {
   final IconData icon;
-  final String value;
-  final Color color;
+  final String title;
+  final String? subtitle;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
-  const _StoreStat({
+  const _AliExpressMessage({
     required this.icon,
-    required this.value,
-    required this.color,
+    required this.title,
+    this.subtitle,
+    this.actionLabel,
+    this.onAction,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 16, color: color),
-        const SizedBox(width: 4),
-        Text(value, style: AppTextStyles.labelSmall),
-      ],
-    );
-  }
-}
-
-class _ShoppingFiltersShimmer extends StatelessWidget {
-  const _ShoppingFiltersShimmer();
-
-  @override
-  Widget build(BuildContext context) {
-    return AppShimmer(
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-        itemCount: 4,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final widths = [68.0, 94.0, 106.0, 88.0];
-          return ShimmerBlock(width: widths[index], height: 36, radius: 999);
-        },
-      ),
-    );
-  }
-}
-
-class _ShoppingStoreListShimmer extends StatelessWidget {
-  final int itemCount;
-
-  const _ShoppingStoreListShimmer({this.itemCount = 4});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppShimmer(
-      child: Column(
-        children: List.generate(itemCount, (index) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: index == itemCount - 1 ? 0 : 14),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    height: 150,
-                    child: Stack(
-                      children: const [
-                        Positioned.fill(
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: Color(0xFFF1F4FA),
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(18),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 16,
-                          left: 16,
-                          child: ShimmerBlock(
-                            width: 64,
-                            height: 26,
-                            radius: 999,
-                          ),
-                        ),
-                        Positioned(
-                          top: 18,
-                          right: 18,
-                          child: ShimmerBlock(
-                            width: 72,
-                            height: 72,
-                            radius: 14,
-                          ),
-                        ),
-                        Positioned(
-                          left: 18,
-                          right: 110,
-                          bottom: 18,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ShimmerBlock(width: 140, height: 24),
-                              SizedBox(height: 8),
-                              ShimmerBlock(
-                                width: double.infinity,
-                                height: 12,
-                                radius: 10,
-                              ),
-                              SizedBox(height: 6),
-                              ShimmerBlock(width: 150, height: 12, radius: 10),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: [
-                            ShimmerBlock(width: 72, height: 28, radius: 999),
-                            ShimmerBlock(width: 84, height: 28, radius: 999),
-                            ShimmerBlock(width: 96, height: 28, radius: 999),
-                          ],
-                        ),
-                        SizedBox(height: 14),
-                        Row(
-                          children: [
-                            ShimmerBlock(width: 56, height: 14, radius: 10),
-                            SizedBox(width: 12),
-                            ShimmerBlock(width: 82, height: 14, radius: 10),
-                            Spacer(),
-                            ShimmerBlock(width: 86, height: 16, radius: 10),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-}
-
-Widget _buildAliExpressContent(
-  AliExpressProvider provider,
-  AppLocalizations l10n,
-) {
-  // Show search results if a query is active
-  if (provider.lastQuery.isNotEmpty) {
-    if (provider.isSearching && provider.searchResults.isEmpty) {
-      return const SliverFillRemaining(
-        hasScrollBody: false,
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-    if (provider.searchError != null && provider.searchResults.isEmpty) {
-      return SliverFillRemaining(
-        hasScrollBody: false,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(LucideIcons.circleAlert, size: 48, color: AppColors.grey),
-              const SizedBox(height: 12),
-              Text(
-                provider.searchError!,
-                style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-      sliver: SliverList.builder(
-        itemCount: provider.searchResults.length,
-        itemBuilder: (context, index) {
-          final product = provider.searchResults[index];
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: index == provider.searchResults.length - 1 ? 0 : 14,
-            ),
-            child: _AliExpressProductCard(
-              product: product,
-              onTap: () {
-                AnalyticsService.instance.track(
-                  AnalyticsEvents.entityOpened,
-                  properties: {
-                    'module': 'shopping',
-                    'entity_type': 'aliexpress_product',
-                    'entity_id': product.id,
-                    'position': index + 1,
-                    'source': 'aliexpress_search',
-                  },
-                );
-                context.push('/shopping/product/${product.id}');
-              },
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // Show trending products
-  if (provider.isLoadingTrending && provider.trendingProducts.isEmpty) {
-    return const SliverFillRemaining(
-      hasScrollBody: false,
-      child: Center(child: CircularProgressIndicator()),
-    );
-  }
-  if (provider.trendingError != null && provider.trendingProducts.isEmpty) {
-    return SliverFillRemaining(
-      hasScrollBody: false,
-      child: Center(
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              LucideIcons.shoppingBag,
-              size: 64,
-              color: AppColors.lightGrey,
-            ),
+            Icon(icon, size: 48, color: AppColors.lightGrey),
             const SizedBox(height: 16),
             Text(
-              'Search for products on AliExpress',
-              style: AppTextStyles.h4.copyWith(color: AppColors.grey),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Type in the search bar above to find products',
+              title,
+              textAlign: TextAlign.center,
               style: AppTextStyles.bodyMedium.copyWith(color: AppColors.grey),
             ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                subtitle!,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.caption.copyWith(color: AppColors.grey),
+              ),
+            ],
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 20),
+              AppButton(
+                text: actionLabel!,
+                icon: LucideIcons.refreshCw,
+                width: 180,
+                onPressed: onAction!,
+              ),
+            ],
           ],
         ),
       ),
     );
   }
-  return SliverPadding(
-    padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-    sliver: SliverList.builder(
-      itemCount: provider.trendingProducts.length,
-      itemBuilder: (context, index) {
-        final product = provider.trendingProducts[index];
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: index == provider.trendingProducts.length - 1 ? 0 : 14,
-          ),
-          child: _AliExpressProductCard(
-            product: product,
-            onTap: () {
-              AnalyticsService.instance.track(
-                AnalyticsEvents.entityOpened,
-                properties: {
-                  'module': 'shopping',
-                  'entity_type': 'aliexpress_product',
-                  'entity_id': product.id,
-                  'position': index + 1,
-                  'source': 'aliexpress_trending',
-                },
-              );
-              context.push('/shopping/product/${product.id}');
-            },
-          ),
-        );
-      },
-    ),
-  );
 }
 
 class _AliExpressProductCard extends StatelessWidget {
@@ -1114,14 +692,4 @@ class _AliExpressProductCard extends StatelessWidget {
       ),
     );
   }
-}
-
-IconData _storeIcon(List<String> categories) {
-  final joined = categories.join(' ').toLowerCase();
-  if (joined.contains('shoe')) return LucideIcons.shoppingBag;
-  if (joined.contains('electronic')) return LucideIcons.headphones;
-  if (joined.contains('clothing')) return LucideIcons.shirt;
-  if (joined.contains('home')) return LucideIcons.armchair;
-  if (joined.contains('accessor')) return LucideIcons.watch;
-  return LucideIcons.store;
 }

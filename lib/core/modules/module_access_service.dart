@@ -142,6 +142,17 @@ class ModuleAccessService {
 
   Map<String, ManagedModule> _modulesById = {};
 
+  /// Whether a real configuration (persisted or fetched) has been applied.
+  ///
+  /// The hardcoded defaults alone are *not* a configuration: they mark every
+  /// module active, which is exactly the state that must never be presented
+  /// while the real answer is still unknown (slow or failed `/modules` call,
+  /// fresh install). Consumers read [enabledModuleIds] / [isEnabled], which
+  /// fail closed until this turns true.
+  bool _hasConfig = false;
+
+  bool get hasConfig => _hasConfig;
+
   UnmodifiableListView<ManagedModule> get modules {
     final values = _modulesById.values.toList()
       ..sort((left, right) {
@@ -153,15 +164,27 @@ class ModuleAccessService {
     return UnmodifiableListView(values);
   }
 
-  Set<String> get enabledModuleIds => modules
-      .where((module) => module.active)
-      .map((module) => module.id)
-      .toSet();
+  /// The active module ids — the single source of truth shared by the home
+  /// grid, the bottom nav tabs and every module-scoped section.
+  ///
+  /// Empty while the configuration is unknown, so a pending, timed-out or
+  /// failed fetch can never light up modules the admin has switched off.
+  Set<String> get enabledModuleIds => _hasConfig
+      ? modules
+            .where((module) => module.active)
+            .map((module) => module.id)
+            .toSet()
+      : const <String>{};
 
+  /// A module counts as enabled only against a known configuration. While the
+  /// configuration is unknown this fails closed instead of advertising every
+  /// module as active. Modules the configuration does not list are treated as
+  /// disabled, so a partial payload can never widen the visible set.
   bool isEnabled(String moduleIdOrType) {
     final id = canonicalModuleId(moduleIdOrType);
     if (id.isEmpty) return true;
-    return _modulesById[id]?.active ?? true;
+    if (!_hasConfig) return false;
+    return _modulesById[id]?.active ?? false;
   }
 
   String? moduleForPath(String path) {
@@ -176,30 +199,43 @@ class ModuleAccessService {
 
   void applyModules(Iterable<ManagedModule> modules) {
     if (modules.isEmpty) {
+      // An empty list carries no answer: keep the defaults as placeholders
+      // but stay in the unknown state, so nothing is reported active.
       _applyDefaults();
       return;
     }
 
-    final next = {for (final module in _defaultModules) module.id: module};
+    // Build the map from the payload alone. Seeding it with the all-active
+    // defaults would silently keep every module the payload omits switched
+    // on — exactly the "everything shows regardless" case.
+    final next = <String, ManagedModule>{};
 
     for (final incoming in modules) {
       final incomingId = canonicalModuleId(incoming.id);
       if (incomingId.isEmpty) continue;
-      final fallback = next[incomingId];
       next[incomingId] = ManagedModule(
         id: incomingId,
         name: incoming.name.trim().isNotEmpty
             ? incoming.name.trim()
-            : fallback?.name ?? defaultModuleName(incomingId),
+            : defaultModuleName(incomingId),
         moduleType: incoming.moduleType.trim().isNotEmpty
             ? incoming.moduleType.trim().toUpperCase()
-            : fallback?.moduleType ?? moduleTypeForId(incomingId),
+            : moduleTypeForId(incomingId),
         active: incoming.active,
         sortOrder: incoming.sortOrder,
       );
     }
 
     _modulesById = next;
+    _hasConfig = true;
+  }
+
+  /// Drops everything known about module activation, e.g. when storage holds
+  /// no usable configuration. UI keeps its skeleton (or shows nothing) until
+  /// a real configuration arrives — never the all-active defaults.
+  void resetToUnknown() {
+    _modulesById = {};
+    _hasConfig = false;
   }
 
   static String canonicalModuleId(String raw) {
@@ -287,5 +323,6 @@ class ModuleAccessService {
 
   void _applyDefaults() {
     _modulesById = {for (final module in _defaultModules) module.id: module};
+    _hasConfig = false;
   }
 }

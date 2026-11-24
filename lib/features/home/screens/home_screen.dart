@@ -68,21 +68,18 @@ class _HomeScreenState extends State<HomeScreen> {
         moduleProvider.isEnabled('pharmacy') ||
         moduleProvider.isEnabled('ride');
 
-    // ── Config-not-ready guard ────────────────────────────────────────────
-    // Until the persisted module config is loaded (fresh install: nothing
-    // stored yet, server fetch still in flight), the enabled set only
-    // reflects hardcoded defaults. Show a shimmer instead of flashing all
-    // modules on for a moment.
-    //
-    // Hydration is awaited before the first frame, so the real wait is the
-    // *first server sync* of this app run — on a fresh install nothing is
-    // stored yet (the enabled set would just be the all-active defaults),
-    // and even with a stored config the sync is what makes the screen
-    // current. Keep the shimmer up until it settles instead of flashing
-    // content that is about to change.
-    final isInitialSyncPending =
-        moduleProvider.isLoading && !moduleProvider.hasSyncedOnce;
-    if (!moduleProvider.isReady || isInitialSyncPending) {
+    // ── Config-unknown guard ────────────────────────────────────────────
+    // The enabled set is only trustworthy once a real configuration is known;
+    // until then it is empty, never the all-active defaults, so a slow,
+    // timed-out or failed `/modules` call cannot light up switched-off modules.
+    // A config restored from storage applies before the first frame, so the
+    // home renders immediately from that last known set while the sync
+    // revalidates. The shimmer is only for a fresh install with no last known
+    // set whose first fetch is still in flight.
+    final isConfigPending =
+        !moduleProvider.hasKnownConfig &&
+        (moduleProvider.isLoading || !moduleProvider.hasSyncedOnce);
+    if (!moduleProvider.isReady || isConfigPending) {
       return _buildInitialSyncShimmer(
         user: user,
         displayName: displayName,
@@ -362,9 +359,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final textScale = MediaQuery.textScalerOf(context).scale(1.0);
     // The SectionHeader row is a single h4 line — scaled like real Text is.
     final sectionHeaderHeight = 16 * 1.4 * textScale;
-    final serviceCount = _serviceModuleKeys
-        .where((moduleId) => enabledModuleIds.contains(moduleId))
-        .length;
+    // While the configuration is unknown the skeleton cannot know which
+    // sections survive gating, so it mirrors the full layout it always had;
+    // nothing jumps when the real, gated content replaces it.
+    final configKnown = moduleProvider.hasKnownConfig;
+    final serviceCount = configKnown
+        ? _serviceModuleKeys
+              .where((moduleId) => enabledModuleIds.contains(moduleId))
+              .length
+        : _serviceModuleKeys.length;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -430,7 +433,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
 
               // Special offers (grocery / pharmacy / ride).
-              if (hasEnabledOfferModules)
+              if (!configKnown || hasEnabledOfferModules)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(0, 24, 0, 0),
@@ -448,7 +451,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
               // Popular restaurants (food).
-              if (moduleProvider.isEnabled('food'))
+              if (!configKnown || moduleProvider.isEnabled('food'))
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(0, 24, 0, 0),
@@ -466,7 +469,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
               // Top doctors.
-              if (moduleProvider.isEnabled('doctor'))
+              if (!configKnown || moduleProvider.isEnabled('doctor'))
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(0, 24, 0, 0),
@@ -484,7 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
 
               // Trending products (shopping).
-              if (moduleProvider.isEnabled('shopping'))
+              if (!configKnown || moduleProvider.isEnabled('shopping'))
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(0, 24, 0, 24),

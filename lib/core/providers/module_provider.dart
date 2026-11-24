@@ -15,14 +15,11 @@ class ModuleProvider extends ChangeNotifier {
   bool _isLoading = false;
 
   /// True once the persisted configuration has been loaded from storage.
-  /// Before this, [modules] only reflects hardcoded defaults — UI should not
-  /// trust it (a fresh install would briefly show every module as enabled).
   bool _hydrated = false;
 
-  /// True while [modules] only reflects the hardcoded defaults because no
-  /// configuration has ever been persisted (fresh install). The defaults
-  /// show every module as enabled, so UI should keep its loading skeleton
-  /// up until the first server sync lands instead of flashing all modules.
+  /// True while no real configuration is known yet (nothing usable in
+  /// storage, no successful server sync). The enabled set is then empty —
+  /// never the all-active defaults — so gating fails closed.
   bool _usingDefaults = false;
 
   /// True once a server sync has completed at least once this app run
@@ -37,14 +34,24 @@ class ModuleProvider extends ChangeNotifier {
   /// server sync may still be in flight afterwards).
   bool get isReady => _hydrated;
 
-  /// True while the enabled set is only the hardcoded defaults (nothing
-  /// persisted yet — see [_usingDefaults]).
+  /// True when a real module configuration is known — restored from storage
+  /// or fetched from the server. While false, [enabledModuleIds] is empty and
+  /// [isEnabled] answers false, so no module is treated as active until the
+  /// gating is actually known.
+  bool get hasKnownConfig => _accessService.hasConfig;
+
+  /// True while the enabled set is still unknown (no usable stored config and
+  /// no successful sync yet).
   bool get isUsingDefaults => _usingDefaults;
 
   /// True after the first server sync of this run has settled.
   bool get hasSyncedOnce => _hasSyncedOnce;
   String? get errorMessage => _errorMessage;
   List<ManagedModule> get modules => _accessService.modules;
+
+  /// The active module ids — the one set the home grid, the nav tabs and the
+  /// module-scoped sections all read. Empty (not all-active) while the
+  /// configuration is unknown, including during a slow or failed fetch.
   Set<String> get enabledModuleIds => _accessService.enabledModuleIds;
 
   bool isEnabled(String moduleIdOrType) =>
@@ -54,7 +61,7 @@ class ModuleProvider extends ChangeNotifier {
     final raw = await AppPreferences.getModuleConfigJson();
     if (raw == null || raw.trim().isEmpty) {
       _usingDefaults = true;
-      _accessService.applyModules(const []);
+      _accessService.resetToUnknown();
       _hydrated = true;
       notifyListeners();
       return;
@@ -63,30 +70,31 @@ class ModuleProvider extends ChangeNotifier {
     var appliedStoredConfig = false;
     try {
       final decoded = json.decode(raw);
-      if (decoded is! List) {
-        _hydrated = true;
-        notifyListeners();
-        return;
-      }
-      final modules = decoded
-          .whereType<Map>()
-          .map(
-            (entry) => ManagedModule.fromJson(Map<String, dynamic>.from(entry)),
-          )
-          .toList();
-      if (modules.isNotEmpty) {
-        _accessService.applyModules(modules);
-        appliedStoredConfig = true;
+      if (decoded is List) {
+        final modules = decoded
+            .whereType<Map>()
+            .map(
+              (entry) =>
+                  ManagedModule.fromJson(Map<String, dynamic>.from(entry)),
+            )
+            .toList();
+        if (modules.isNotEmpty) {
+          _accessService.applyModules(modules);
+          appliedStoredConfig = true;
+        }
       }
     } catch (_) {
       if (kDebugMode) {
         debugPrint('Failed to hydrate module configuration from storage.');
       }
-    } finally {
-      _usingDefaults = !appliedStoredConfig;
-      _hydrated = true;
-      notifyListeners();
     }
+
+    if (!appliedStoredConfig) {
+      _accessService.resetToUnknown();
+    }
+    _usingDefaults = !appliedStoredConfig;
+    _hydrated = true;
+    notifyListeners();
   }
 
   Future<void> initialize() async {
@@ -144,16 +152,25 @@ class ModuleProvider extends ChangeNotifier {
             (entry) => ManagedModule.fromJson(Map<String, dynamic>.from(entry)),
           )
           .toList();
+      if (modules.isEmpty) {
+        // An empty payload carries no configuration — it must not be read as
+        // "every module active". Keep the last known set (and its stored
+        // copy) instead.
+        _errorMessage = null;
+        return;
+      }
       _accessService.applyModules(modules);
-      _usingDefaults = modules.isEmpty;
+      _usingDefaults = false;
       await AppPreferences.setModuleConfigJson(
         json.encode(modules.map((module) => module.toJson()).toList()),
       );
       _errorMessage = null;
     } catch (error) {
       _errorMessage = ApiClient.userFacingError(error);
-      // Persisted config still stands; the next trigger (app resume,
-      // pull-to-refresh) will retry.
+      // The last known configuration (restored from storage or from an
+      // earlier successful sync) still stands: a timeout or a dropped
+      // connection must never widen the active set. The next trigger (app
+      // resume, poll, pull-to-refresh) retries.
     } finally {
       _hasSyncedOnce = true;
       _isLoading = false;

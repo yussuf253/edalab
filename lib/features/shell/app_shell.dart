@@ -32,11 +32,11 @@ class AppShell extends StatelessWidget {
     // modules (see cart_hub_screen) — when every one of them is disabled,
     // the tab has nothing to show and disappears from the bar.
     final moduleProvider = context.watch<ModuleProvider>();
-    final showCartTab =
-        moduleProvider.isEnabled('shopping') ||
-        moduleProvider.isEnabled('food') ||
-        moduleProvider.isEnabled('grocery') ||
-        moduleProvider.isEnabled('pharmacy');
+    // Same enabled set as the home grid: empty while the module
+    // configuration is still unknown (slow connection, timeout), so the tab
+    // cannot appear for modules the admin may have switched off.
+    final activeModules = moduleProvider.enabledModuleIds;
+    final showCartTab = activeModules.any(_cartModuleIds.contains);
     final navItems = [
       _NavItem(
         icon: LucideIcons.house,
@@ -133,6 +133,9 @@ class AppShell extends StatelessWidget {
     return 0;
   }
 }
+
+/// Modules whose items the cart hub can show.
+const _cartModuleIds = <String>{'shopping', 'food', 'grocery', 'pharmacy'};
 
 class _NavButton extends StatelessWidget {
   const _NavButton({
